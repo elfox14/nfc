@@ -9,7 +9,7 @@ const app = express();
 const port = 3000;
 
 // --- إعدادات قاعدة البيانات ---
-mongodb+srv://nfc_db_user:mahMAH123%23%40@cluster0.tscffw5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0; // الرابط الافتراضي لـ MongoDB
+const mongoUrl = 'mongodb+srv://nfc_db_user:mahMAH123%23%40@cluster0.tscffw5.mongodb.net/digital_cards_db?retryWrites=true&w=majority&appName=Cluster0'; // الرابط الافتراضي لـ MongoDB
 const dbName = 'nfc_db';
 const collectionName = 'designs';
 let db;
