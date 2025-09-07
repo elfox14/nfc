@@ -79,7 +79,7 @@ app.get('/api/get-design/:id', async (req, res) => {
 // --- Page Routing ---
 // أي رابط يبدأ بـ /card/ سيعرض صفحة التطبيق الرئيسية
 app.get('/card/:id', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname,  'index.html'));
 });
 
 app.listen(port, () => {
