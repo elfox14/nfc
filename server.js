@@ -33,6 +33,9 @@ app.get('/about', (req, res) => {
 app.get('/privacy', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
+app.get('/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+});
 
 // --- تحديد معدل الطلبات ---
 const apiLimiter = rateLimit({
