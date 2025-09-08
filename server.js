@@ -1,5 +1,5 @@
 // server.js
-
+const fs = require('fs');
 require('dotenv').config();
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
@@ -80,7 +80,56 @@ app.get('/api/get-design/:id', async (req, res) => {
 
 // --- Page Routing ---
 // أي رابط يبدأ بـ /card/ سيعرض صفحة التطبيق الرئيسية
-app.get('/card/:id', (req, res) => {
+// --- الكود الجديد والمحسن ---
+app.get('/card/:id', async (req, res) => {
+  try {
+    // 1. تحديد ما إذا كان الزائر هو روبوت أم مستخدم عادي
+    const userAgent = req.headers['user-agent'] || '';
+    const isBot = /facebookexternalhit|FacebookBot|Twitterbot|Pinterest|Discordbot/i.test(userAgent);
+
+    if (isBot) {
+      // 2. إذا كان الزائر روبوتًا، نجلب بيانات البطاقة من قاعدة البيانات
+      const { id } = req.params;
+      const collection = db.collection(collectionName);
+      const design = await collection.findOne({ shortId: id });
+
+      if (design && design.data) {
+        // 3. إذا وجدنا بيانات البطاقة، نقرأ ملف index.html
+        const filePath = path.join(__dirname, 'public', 'index.html');
+        let htmlData = fs.readFileSync(filePath, 'utf8');
+
+        // 4. نستخرج البيانات ونضع قيمًا افتراضية إذا كانت فارغة
+        const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
+        const cardTagline = design.data.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
+        const cardImage = design.data.inputs['input-logo'] || 'https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png';
+        const pageUrl = `https://www.elfoxdm.com/elfox/nfc/card/${id}`; // تأكد من أن هذا هو رابط موقعك الصحيح
+
+        // 5. نستبدل الوسوم الوصفية في ملف HTML بالبيانات الجديدة
+        htmlData = htmlData
+          .replace(/<title>.*?<\/title>/, `<title>${cardName}</title>`)
+          .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${cardTagline}"/>`)
+          .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${cardName}"/>`)
+          .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardTagline}"/>`)
+          .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${cardImage}"/>`)
+          .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
+          .replace(/<meta property="twitter:title" content=".*?"\/>/, `<meta property="twitter:title" content="${cardName}"/>`)
+          .replace(/<meta property="twitter:description" content=".*?"\/>/, `<meta property="twitter:description" content="${cardTagline}"/>`)
+          .replace(/<meta property="twitter:image" content=".*?"\/>/, `<meta property="twitter:image" content="${cardImage}"/>`);
+        
+        // 6. نرسل ملف HTML المعدّل إلى الروبوت
+        return res.send(htmlData);
+      }
+    }
+    
+    // 7. إذا كان الزائر مستخدمًا عاديًا أو لم نجد البطاقة، نرسل الملف الأصلي
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+
+  } catch (error) {
+    console.error('Error handling card request:', error);
+    // في حالة حدوث أي خطأ، نرسل الملف الأصلي لضمان عمل الموقع للمستخدم
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+});
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
