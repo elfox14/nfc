@@ -30,6 +30,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/about', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
+app.get('/privacy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
 
 // --- تحديد معدل الطلبات ---
 const apiLimiter = rateLimit({
