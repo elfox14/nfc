@@ -1,4 +1,19 @@
 // server.js
+const fs = require('fs'); // تم استيراد المكتبة المطلوبة
+// ...
+// Page Routing (النسخة النهائية مع تحسين السيو)
+app.get('/card/:id', async (req, res) => {
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+
+  try {
+    // ... (الكود الكامل لجلب البيانات من الداتابيز واستبدال الوسوم)
+    let html = fs.readFileSync(indexPath, 'utf8');
+    // ...
+    res.send(html);
+  } catch (error) {
+    // ...
+  }
+});
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
 const { nanoid } = require('nanoid');
