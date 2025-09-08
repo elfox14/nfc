@@ -11,7 +11,7 @@ const app = express();
 const port = 3000;
 
 // --- إعدادات قاعدة البيانات ---
-const mongoUrl = process.env.MONGO_URI'; // الرابط الافتراضي لـ MongoDB
+const mongoUrl = process.env.MONGO_URI; // الرابط الافتراضي لـ MongoDB
 const dbName = 'nfc_db';
 const collectionName = 'designs';
 let db;
