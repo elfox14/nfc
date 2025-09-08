@@ -136,7 +136,7 @@ app.get('/card/:id', async (req, res) => {
                 const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
                 const cardTagline = design.data.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
                 const cardImage = design.data.inputs['input-logo'] || 'https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png';
-                const pageUrl = `https://www.elfoxdm.com/elfox/nfc/card/${id}`;
+                const pageUrl = `https://mcprim.com/nfc/card/${id}`;
                 
                 // --- إضافة Schema ديناميكي لتحسين SEO ---
                 const personSchema = `<script type="application/ld+json">
