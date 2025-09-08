@@ -167,6 +167,16 @@ app.get('/card/:id', async (req, res) => {
     }
 });
 
+// صفحة 404 مخصصة
+app.use((req, res, next) => {
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
+
+// صفحة 500 مخصصة لأخطاء السيرفر
+app.use((err, req, res, next) => {
+  console.error('Internal Server Error:', err);
+  res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
+});
 
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
