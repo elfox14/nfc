@@ -87,3 +87,13 @@ app.get('/card/:id', (req, res) => {
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
+// مثال في server.js
+const rateLimit = require('express-rate-limit');
+
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 دقيقة
+    max: 100, // 100 طلب لكل IP
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+
+app.use('/api/', apiLimiter); // تطبيق المحدد على كل الـ API
