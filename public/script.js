@@ -6,7 +6,7 @@
         MAX_LOGO_SIZE_MB: 2, MAX_BG_SIZE_MB: 5, RESIZED_IMAGE_MAX_DIMENSION: 1280,
         THEMES: {
             'deep-sea': { name: 'بحر عميق', gradient: ['#2a3d54', '#223246'], values: { textPrimary: '#e6f0f7', taglineColor: '#4da6ff', backButtonBg: '#364f6b', backButtonText: '#aab8c2', phoneBtnBg: '#4da6ff', phoneBtnText: '#ffffff'}},
-            'modern-light': { name: 'أبيض حديث', gradient: ['#e9e9e9', '#ffffff'], values: { textPrimary: '#121212', taglineColor: '#007BFF', backButtonBg: '#f0f2f5', backButtonText: '#343a40', phoneBtnBg: 'transparent', phoneBtnText: '#007BFF'}},
+            'modern-light': { name: 'أبيض حديث', gradient: ['#e9e99', '#ffffff'], values: { textPrimary: '#121212', taglineColor: '#007BFF', backButtonBg: '#f0f2f5', backButtonText: '#343a40', phoneBtnBg: 'transparent', phoneBtnText: '#007BFF'}},
             'forest-whisper': { name: 'همس الغابة', gradient: ['#234d20', '#364935'], values: { textPrimary: '#f0f3f0', taglineColor: '#77ab59', backButtonBg: '#4a785f', backButtonText: '#f0f3f0', phoneBtnBg: '#77ab59', phoneBtnText: '#f0f3f0'}},
             'sunset-gradient': { name: 'غروب الشمس', gradient: ['#ff8c42', '#c44d56'], values: { textPrimary: '#ffffff', taglineColor: '#ffcc80', backButtonBg: '#8c4356', backButtonText: '#ffffff', phoneBtnBg: 'rgba(255,255,255,0.2)', phoneBtnText: '#ffffff'}},
             'corporate-elegance': { name: 'أناقة الشركات', gradient: ['#f8f9fa', '#e9ecef'], values: { textPrimary: '#212529', taglineColor: '#0056b3', backButtonBg: '#343a40', backButtonText: '#ffffff', phoneBtnBg: '#0056b3', phoneBtnText: '#ffffff'}},
@@ -490,7 +490,7 @@
         downloadQrCode() {
             const vcfData = this.getVCardString();
             const container = DOMElements.qrCodeContainer;
-            container.innerHTML = ''; // Clear previous QR code
+            container.innerHTML = '';
             
             new QRCode(container, {
                 text: vcfData,
@@ -553,13 +553,13 @@
             const renameBtn = itemElement.querySelector('.gallery-rename-btn');
             const icon = renameBtn.querySelector('i');
         
-            if (nameInput.style.display === 'none') { // Start renaming
+            if (nameInput.style.display === 'none') {
                 nameSpan.style.display = 'none';
                 nameInput.style.display = 'block';
                 nameInput.value = this.designs[index].name;
                 nameInput.focus();
                 icon.className = 'fas fa-save';
-            } else { // Save name
+            } else {
                 const newName = nameInput.value.trim();
                 if (newName) {
                     this.designs[index].name = newName;
@@ -684,11 +684,19 @@
         }
     };
     const ShareManager = {
+        // -- دالة جديدة لتحديد المسار الأساسي الصحيح للتطبيق --
+        getBasePath() {
+            // path will be "/elfox/nfc/index.html" or "/elfox/nfc/"
+            const path = window.location.pathname; 
+            // We want to get just "/elfox/nfc/"
+            return path.substring(0, path.lastIndexOf('/') + 1);
+        },
+
         async generateShareableLink() {
             UIManager.setButtonLoadingState(DOMElements.buttons.share, true, 'جاري إنشاء الرابط...');
             const state = StateManager.getStateObject();
             try {
-                const response = await fetch('/api/save-design', {
+                const response = await fetch('https://nfc-vjy6.onrender.com/api/save-design', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(state),
@@ -700,7 +708,10 @@
 
                 const result = await response.json();
                 if (result.success && result.id) {
-                    return `${window.location.origin}/card/${result.id}`;
+                    // -- تم التعديل هنا --
+                    // استخدمنا window.location.origin مع المسار الأساسي الصحيح
+                    const baseUrl = window.location.origin + this.getBasePath();
+                    return `${baseUrl}card/${result.id}`;
                 } else {
                     throw new Error('Invalid response from server');
                 }
@@ -750,24 +761,29 @@
 
         async loadFromUrl() {
             const path = window.location.pathname;
-            const match = path.match(/^\/card\/([a-zA-Z0-9_-]{8})$/);
+            // -- تم التعديل هنا --
+            // تم تعديل التعبير النمطي (regex) ليعمل داخل أي مجلد فرعي
+            const match = path.match(/\/card\/([a-zA-Z0-9_-]{8})$/);
 
             if (match && match[1]) {
                 const designId = match[1];
                 try {
-                    const response = await fetch(`/api/get-design/${designId}`);
+                    const response = await fetch(`https://nfc-vjy6.onrender.com/api/get-design/${designId}`);
                     if (!response.ok) {
                         throw new Error('Design not found or server error');
                     }
                     const state = await response.json();
                     StateManager.applyState(state, true);
                     UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
-                    window.history.replaceState({}, document.title, '/');
+                    
+                    // -- تم التعديل هنا --
+                    // قم بتنظيف الرابط وإعادته إلى المسار الأساسي الصحيح للتطبيق
+                    window.history.replaceState({}, document.title, this.getBasePath());
                     return true;
                 } catch (e) {
                     console.error("Failed to load state from URL:", e);
                     UIManager.announce("فشل تحميل التصميم من الرابط.");
-                    window.history.replaceState({}, document.title, '/');
+                    window.history.replaceState({}, document.title, this.getBasePath());
                     return false;
                 }
             }
