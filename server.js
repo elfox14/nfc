@@ -27,6 +27,9 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/about', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'about.html'));
+});
 
 // --- تحديد معدل الطلبات ---
 const apiLimiter = rateLimit({
