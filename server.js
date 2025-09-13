@@ -1,5 +1,4 @@
-// --- START OF server.js FILE ---
-
+// server.js
 require('dotenv').config();
 const express = require('express');
 const { MongoClient } = require('mongodb');
@@ -28,10 +27,17 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
+// --- خدمة الملفات الثابتة (CSS الخاص بالقالب) من المجلد الرئيسي ---
+app.use(express.static(path.join(__dirname)));
+
+// --- خدمة الملفات الثابتة (المحرر) من مجلد public ---
+app.use(express.static(path.join(__dirname, 'public')));
+
+
 // --- تحديد معدل الطلبات لواجهة API ---
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api/', apiLimiter);
@@ -53,9 +59,7 @@ MongoClient.connect(mongoUrl)
 
 // المسار الرئيسي لعرض صفحة البطاقة النهائية
 app.get('/card/:id', async (req, res) => {
-    if (!db) {
-        return res.status(503).send('<h1>Service temporarily unavailable</h1>');
-    }
+    if (!db) return res.status(503).send('<h1>Service temporarily unavailable</h1>');
     
     try {
         const { id } = req.params;
@@ -75,7 +79,10 @@ app.get('/card/:id', async (req, res) => {
         const logoUrl = cardData.inputs['input-logo'] || 'https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png';
         const email = cardData.inputs['input-email'] || '';
         const whatsapp = cardData.inputs['input-whatsapp'] || '';
-        const pageUrl = `https://nfc-vjy6.onrender.com/card/${id}`; // <-- تأكد من تعديل هذا الرابط
+        
+        // *** تأكد من أن هذا هو الرابط الصحيح لموقعك ***
+        const pageUrl = `https://mcprim.com/nfc/card/${id}`;
+        
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pageUrl)}`;
 
         // بناء أزرار الاتصال الديناميكية
@@ -180,7 +187,7 @@ app.get('/api/get-design/:id', async (req, res) => {
     }
 });
 
-// مسار جديد لإنشاء وتنزيل ملف vCard
+// مسار لإنشاء وتنزيل ملف vCard
 app.get('/api/vcard/:id', async (req, res) => {
     if (!db) return res.status(500).send('Database not connected');
     
@@ -222,24 +229,20 @@ app.get('/api/vcard/:id', async (req, res) => {
 // --- المسارات الثابتة (يجب أن تأتي أخيراً) ---
 // =============================================
 
-// خدمة الملفات الثابتة من مجلد public
-app.use(express.static(path.join(__dirname, 'public')));
-
-// مسار لعرض المحرر
+// مسار لعرض المحرر الرئيسي
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// الصفحات الأخرى
 app.get('/about', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'about.html'));
+  res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
-
 app.get('/privacy', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
-
 app.get('/contact', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+  res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
 
 // التعامل مع الصفحات غير الموجودة
@@ -256,5 +259,3 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
-
-// --- END OF server.js FILE ---
