@@ -1,4 +1,4 @@
-// server.js - الكود المحدث
+// server.js - الكود المحدث بالترتيب الصحيح
 
 require('dotenv').config();
 const express = require('express');
@@ -28,20 +28,12 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
-// --- خدمة الملفات الثابتة (CSS, JS, images) من المجلد الرئيسي ---
-app.use(express.static(path.join(__dirname)));
-
-// --- خدمة الملفات الثابتة (المحرر والصفحات الأخرى) من مجلد public ---
-app.use(express.static(path.join(__dirname, 'public')));
-
-
 // --- تحديد معدل الطلبات لواجهة API ---
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });
-app.use('/api/', apiLimiter);
 
 // --- الاتصال بقاعدة البيانات ---
 MongoClient.connect(mongoUrl)
@@ -54,12 +46,11 @@ MongoClient.connect(mongoUrl)
         process.exit(1);
     });
 
-// ===============================================
-// --- المسارات الديناميكية (يجب أن تأتي أولاً) ---
-// ===============================================
+// =================================================================
+// الخطوة 1: تعريف المسارات الديناميكية ومسارات API أولاً
+// =================================================================
 
-// *** بداية: الكود الجديد المضاف لتطبيق SSR على viewer.html ***
-// المسار الجديد لعرض البطاقة مع وسوم SEO (هذا هو المسار الذي يجب أن يستخدمه المحرر للمشاركة)
+// المسار الجديد لعرض البطاقة مع وسوم SEO (SSR)
 app.get('/view/:id', async (req, res) => {
     if (!db) return res.status(503).send('<h1>Service temporarily unavailable</h1>');
     
@@ -71,39 +62,33 @@ app.get('/view/:id', async (req, res) => {
             return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }
         
-        // استخدام قالب viewer.html
         const templatePath = path.join(__dirname, 'viewer.html');
         let template = fs.readFileSync(templatePath, 'utf8');
 
-        // استخلاص البيانات
         const cardData = design.data;
         const name = cardData.inputs['input-name'] || 'بطاقة عمل رقمية';
         const tagline = cardData.inputs['input-tagline'] || 'تصميم احترافي';
         const title = `${name} | ${tagline}`;
         const description = `ألقِ نظرة على بطاقة العمل الرقمية الخاصة بـ ${name}. ${tagline}.`;
-        const logoUrl = cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png'; // صورة المعاينة
+        const logoUrl = cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png';
 
-        // استبدال المتغيرات في القالب
         template = template
             .replace(/%%TITLE%%/g, purify.sanitize(title))
             .replace(/%%DESCRIPTION%%/g, purify.sanitize(description))
             .replace(/%%OG_TITLE%%/g, purify.sanitize(title))
             .replace(/%%OG_DESCRIPTION%%/g, purify.sanitize(description))
             .replace(/%%OG_IMAGE%%/g, logoUrl)
-            // حقن البيانات داخل الصفحة لتجنب طلب API آخر من المتصفح
             .replace('%%CARD_DATA%%', JSON.stringify(cardData));
 
         res.send(template);
 
     } catch (error) {
         console.error('Error serving viewer page (SSR):', error);
-        res.status(500).send('<h1>Internal Server Error</h1>');
+        res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
     }
 });
-// *** نهاية: الكود الجديد المضاف ***
 
-
-// المسار الرئيسي لعرض صفحة البطاقة النهائية (الكود الحالي الخاص بك)
+// المسار القديم لعرض صفحة البطاقة النهائية
 app.get('/card/:id', async (req, res) => {
     if (!db) return res.status(503).send('<h1>Service temporarily unavailable</h1>');
     
@@ -118,19 +103,15 @@ app.get('/card/:id', async (req, res) => {
         const templatePath = path.join(__dirname, 'card-template.html');
         let template = fs.readFileSync(templatePath, 'utf8');
 
-        // استخلاص البيانات
         const cardData = design.data;
         const name = cardData.inputs['input-name'] || 'بطاقة عمل رقمية';
         const tagline = cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
         const logoUrl = cardData.inputs['input-logo'] || 'https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png';
         const email = cardData.inputs['input-email'] || '';
         const whatsapp = cardData.inputs['input-whatsapp'] || '';
-        
         const pageUrl = `https://mcprim.com/nfc/card/${id}`;
-        
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pageUrl)}`;
 
-        // بناء أزرار الاتصال الديناميكية
         let contactButtonsHtml = '';
         if (cardData.dynamic.phones && cardData.dynamic.phones.length > 0 && cardData.dynamic.phones[0]) {
             contactButtonsHtml += `<a href="tel:${cardData.dynamic.phones[0]}" class="action-button contact-btn"><i class="fas fa-phone"></i><span>اتصال</span></a>`;
@@ -142,7 +123,6 @@ app.get('/card/:id', async (req, res) => {
             contactButtonsHtml += `<a href="mailto:${email}" class="action-button contact-btn"><i class="fas fa-envelope"></i><span>بريد إلكتروني</span></a>`;
         }
 
-        // بناء روابط التواصل الاجتماعي الديناميكية
         let socialLinksHtml = '';
         const socialLinks = [...(cardData.dynamic.social || [])];
         if (cardData.inputs['input-facebook']) socialLinks.unshift({ platform: 'facebook-f', value: cardData.inputs['input-facebook'] });
@@ -153,7 +133,6 @@ app.get('/card/:id', async (req, res) => {
             socialLinksHtml += `<a href="${link.value}" target="_blank" rel="noopener noreferrer"><i class="fab ${icon}"></i></a>`;
         });
         
-        // استبدال المتغيرات في القالب
         template = template.replace(/{{CARD_NAME}}/g, purify.sanitize(name));
         template = template.replace(/{{TAGLINE}}/g, purify.sanitize(tagline));
         template = template.replace(/{{LOGO_URL}}/g, logoUrl);
@@ -166,13 +145,13 @@ app.get('/card/:id', async (req, res) => {
 
     } catch (error) {
         console.error('Error serving card page:', error);
-        res.status(500).send('<h1>Internal Server Error</h1>');
+        res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
     }
 });
 
-// ===================================
-// --- مسارات الواجهة البرمجية (API) ---
-// ===================================
+
+// تطبيق محدد السرعة على جميع مسارات API التالية
+app.use('/api/', apiLimiter);
 
 // API لحفظ تصميم جديد
 app.post(
@@ -184,26 +163,19 @@ app.post(
         body('dynamic.phones.*').optional({ checkFalsy: true }).isMobilePhone().withMessage('Invalid phone number'),
     ],
     async (req, res) => {
-        // ... (الكود هنا يبقى كما هو بدون تغيير)
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-
-        if (!db) {
-            return res.status(500).json({ error: 'Database not connected' });
-        }
+        if (!db) return res.status(500).json({ error: 'Database not connected' });
         try {
             const designData = req.body;
             const shortId = nanoid(8);
-
-            const collection = db.collection(collectionName);
-            await collection.insertOne({
+            await db.collection(collectionName).insertOne({
                 shortId: shortId,
                 data: designData,
                 createdAt: new Date()
             });
-
             res.json({ success: true, id: shortId });
         } catch (error) {
             console.error('Error saving design:', error);
@@ -214,15 +186,10 @@ app.post(
 
 // API لجلب تصميم محفوظ (للمحرر)
 app.get('/api/get-design/:id', async (req, res) => {
-    // ... (الكود هنا يبقى كما هو بدون تغيير)
-    if (!db) {
-        return res.status(500).json({ error: 'Database not connected' });
-    }
+    if (!db) return res.status(500).json({ error: 'Database not connected' });
     try {
         const { id } = req.params;
-        const collection = db.collection(collectionName);
-        const design = await collection.findOne({ shortId: id });
-
+        const design = await db.collection(collectionName).findOne({ shortId: id });
         if (design) {
             res.json(design.data);
         } else {
@@ -236,13 +203,10 @@ app.get('/api/get-design/:id', async (req, res) => {
 
 // مسار لإنشاء وتنزيل ملف vCard
 app.get('/api/vcard/:id', async (req, res) => {
-    // ... (الكود هنا يبقى كما هو بدون تغيير)
     if (!db) return res.status(500).send('Database not connected');
-    
     try {
         const { id } = req.params;
         const design = await db.collection(collectionName).findOne({ shortId: id });
-
         if (!design) return res.status(404).send('Card not found');
 
         const data = design.data;
@@ -273,9 +237,20 @@ app.get('/api/vcard/:id', async (req, res) => {
     }
 });
 
-// =============================================
-// --- المسارات الثابتة (يجب أن تأتي أخيراً) ---
-// =============================================
+
+// =================================================================
+// الخطوة 2: تعريف خدمة الملفات الثابتة بعد المسارات الديناميكية
+// =================================================================
+
+// خدمة الملفات الثابتة (مثل viewer.html, style.css) من المجلد الرئيسي
+app.use(express.static(path.join(__dirname)));
+// خدمة الملفات الثابتة (المحرر والصفحات الأخرى) من مجلد public
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+// =================================================================
+// الخطوة 3: تعريف المسارات الثابتة والصفحات الاحتياطية أخيراً
+// =================================================================
 
 // مسار لعرض المحرر الرئيسي
 app.get('/', (req, res) => {
@@ -284,24 +259,24 @@ app.get('/', (req, res) => {
 
 // الصفحات الأخرى
 app.get('/about', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'about.html'));
+  res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
 app.get('/privacy', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
 app.get('/contact', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+  res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
 
 // التعامل مع الصفحات غير الموجودة
 app.use((req, res, next) => {
-    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 // التعامل مع الأخطاء الداخلية
 app.use((err, req, res, next) => {
-    console.error('Internal Server Error:', err);
-    res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
+  console.error('Internal Server Error:', err);
+  res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
 });
 
 app.listen(port, () => {
