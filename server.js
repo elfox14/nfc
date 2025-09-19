@@ -1,4 +1,5 @@
-// server.js
+// server.js - الكود المحدث
+
 require('dotenv').config();
 const express = require('express');
 const { MongoClient } = require('mongodb');
@@ -27,10 +28,10 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
-// --- خدمة الملفات الثابتة (CSS الخاص بالقالب) من المجلد الرئيسي ---
+// --- خدمة الملفات الثابتة (CSS, JS, images) من المجلد الرئيسي ---
 app.use(express.static(path.join(__dirname)));
 
-// --- خدمة الملفات الثابتة (المحرر) من مجلد public ---
+// --- خدمة الملفات الثابتة (المحرر والصفحات الأخرى) من مجلد public ---
 app.use(express.static(path.join(__dirname, 'public')));
 
 
@@ -57,7 +58,52 @@ MongoClient.connect(mongoUrl)
 // --- المسارات الديناميكية (يجب أن تأتي أولاً) ---
 // ===============================================
 
-// المسار الرئيسي لعرض صفحة البطاقة النهائية
+// *** بداية: الكود الجديد المضاف لتطبيق SSR على viewer.html ***
+// المسار الجديد لعرض البطاقة مع وسوم SEO (هذا هو المسار الذي يجب أن يستخدمه المحرر للمشاركة)
+app.get('/view/:id', async (req, res) => {
+    if (!db) return res.status(503).send('<h1>Service temporarily unavailable</h1>');
+    
+    try {
+        const { id } = req.params;
+        const design = await db.collection(collectionName).findOne({ shortId: id });
+
+        if (!design || !design.data) {
+            return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+        }
+        
+        // استخدام قالب viewer.html
+        const templatePath = path.join(__dirname, 'viewer.html');
+        let template = fs.readFileSync(templatePath, 'utf8');
+
+        // استخلاص البيانات
+        const cardData = design.data;
+        const name = cardData.inputs['input-name'] || 'بطاقة عمل رقمية';
+        const tagline = cardData.inputs['input-tagline'] || 'تصميم احترافي';
+        const title = `${name} | ${tagline}`;
+        const description = `ألقِ نظرة على بطاقة العمل الرقمية الخاصة بـ ${name}. ${tagline}.`;
+        const logoUrl = cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png'; // صورة المعاينة
+
+        // استبدال المتغيرات في القالب
+        template = template
+            .replace(/%%TITLE%%/g, purify.sanitize(title))
+            .replace(/%%DESCRIPTION%%/g, purify.sanitize(description))
+            .replace(/%%OG_TITLE%%/g, purify.sanitize(title))
+            .replace(/%%OG_DESCRIPTION%%/g, purify.sanitize(description))
+            .replace(/%%OG_IMAGE%%/g, logoUrl)
+            // حقن البيانات داخل الصفحة لتجنب طلب API آخر من المتصفح
+            .replace('%%CARD_DATA%%', JSON.stringify(cardData));
+
+        res.send(template);
+
+    } catch (error) {
+        console.error('Error serving viewer page (SSR):', error);
+        res.status(500).send('<h1>Internal Server Error</h1>');
+    }
+});
+// *** نهاية: الكود الجديد المضاف ***
+
+
+// المسار الرئيسي لعرض صفحة البطاقة النهائية (الكود الحالي الخاص بك)
 app.get('/card/:id', async (req, res) => {
     if (!db) return res.status(503).send('<h1>Service temporarily unavailable</h1>');
     
@@ -80,7 +126,6 @@ app.get('/card/:id', async (req, res) => {
         const email = cardData.inputs['input-email'] || '';
         const whatsapp = cardData.inputs['input-whatsapp'] || '';
         
-        // *** تأكد من أن هذا هو الرابط الصحيح لموقعك ***
         const pageUrl = `https://mcprim.com/nfc/card/${id}`;
         
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pageUrl)}`;
@@ -139,6 +184,7 @@ app.post(
         body('dynamic.phones.*').optional({ checkFalsy: true }).isMobilePhone().withMessage('Invalid phone number'),
     ],
     async (req, res) => {
+        // ... (الكود هنا يبقى كما هو بدون تغيير)
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -168,6 +214,7 @@ app.post(
 
 // API لجلب تصميم محفوظ (للمحرر)
 app.get('/api/get-design/:id', async (req, res) => {
+    // ... (الكود هنا يبقى كما هو بدون تغيير)
     if (!db) {
         return res.status(500).json({ error: 'Database not connected' });
     }
@@ -189,6 +236,7 @@ app.get('/api/get-design/:id', async (req, res) => {
 
 // مسار لإنشاء وتنزيل ملف vCard
 app.get('/api/vcard/:id', async (req, res) => {
+    // ... (الكود هنا يبقى كما هو بدون تغيير)
     if (!db) return res.status(500).send('Database not connected');
     
     try {
@@ -236,24 +284,24 @@ app.get('/', (req, res) => {
 
 // الصفحات الأخرى
 app.get('/about', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'about.html'));
+    res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
 app.get('/privacy', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+    res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
 app.get('/contact', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+    res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
 
 // التعامل مع الصفحات غير الموجودة
 app.use((req, res, next) => {
-  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 // التعامل مع الأخطاء الداخلية
 app.use((err, req, res, next) => {
-  console.error('Internal Server Error:', err);
-  res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
+    console.error('Internal Server Error:', err);
+    res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
 });
 
 app.listen(port, () => {
