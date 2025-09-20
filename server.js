@@ -121,12 +121,25 @@ app.get('/api/get-design/:id', async (req, res) => {
     }
 });
 
-// --- Page Routing (مع العرض من جانب الخادم - SSR) ---
+// --- Page Routing ---
+
+// ✨ **التحسين الجديد: إعادة توجيه الروابط القديمة** ✨
+app.get('/viewer.html', (req, res) => {
+    const cardId = req.query.id;
+    if (cardId) {
+        // إذا كان هناك ID، قم بإعادة التوجيه الدائم (301) إلى المسار الجديد
+        return res.redirect(301, `/card/${cardId}`);
+    }
+    // إذا لم يكن هناك ID، أعد التوجيه إلى الصفحة الرئيسية
+    res.redirect(301, '/');
+});
+
+
+// المسار الرئيسي لعرض البطاقات (مع العرض من جانب الخادم - SSR)
 app.get('/card/:id', async (req, res) => {
     try {
         const { id } = req.params;
         if (!db) {
-            // إذا لم تكن قاعدة البيانات متصلة بعد، أرسل صفحة تحميل بسيطة
             return res.status(503).send('Service temporarily unavailable. Please try again in a moment.');
         }
 
@@ -137,20 +150,17 @@ app.get('/card/:id', async (req, res) => {
             const cardData = design.data;
             const pageUrl = `${req.protocol}://${req.get('host')}/card/${id}`;
 
-            // تجهيز بيانات الصفحة للعرض في القالب
             const pageData = {
                 cardName: cardData.inputs['input-name'] || 'بطاقة عمل رقمية',
                 cardTagline: cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية',
                 cardImage: cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png',
                 pageUrl: pageUrl,
-                cardData: cardData // تمرير كل بيانات البطاقة للقالب
+                cardData: cardData
             };
             
-            // عرض القالب viewer.ejs مع تمرير البيانات إليه
             res.render('viewer', pageData);
 
         } else {
-            // إذا لم يتم العثور على التصميم، أرسل صفحة 404
             res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }
     } catch (error) {
