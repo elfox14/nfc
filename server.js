@@ -4,17 +4,18 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const path = require('path');
 const cors = require('cors');
+const fs = require('fs');
 const rateLimit = require('express-rate-limit');
-const { nanoid } = require('nanoid');
-const { body, validationResult } = require('express-validator');
-const { JSDOM } = require('jsdom');
-const DOMPurify = require('dompurify');
+const { nanoid } = require('nanoid'); // <-- استخدام nanoid
+const { body, validationResult } = require('express-validator'); // <-- للتحقق من المدخلات
+const { JSDOM } = require('jsdom'); // <-- لمعالجة HTML وتنقيته
+const DOMPurify = require('dompurify'); // <-- لتنقية المدخلات من XSS
 
 const window = new JSDOM('').window;
 const purify = DOMPurify(window);
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
 // --- إعدادات قاعدة البيانات ---
 const mongoUrl = process.env.MONGO_URI;
@@ -22,62 +23,10 @@ const dbName = 'nfc_db';
 const collectionName = 'designs';
 let db;
 
-// --- إعداد محرك القوالب EJS ---
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'public'));
-
 // --- Middlewares ---
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
-
-// --- ✨ التعديل هنا: تم نقل مسارات الصفحات الديناميكية قبل مسار الملفات الثابتة ✨ ---
-
-// --- Page Routing (المسارات الديناميكية أولاً) ---
-
-// إعادة توجيه الروابط القديمة
-app.get('/viewer.html', (req, res) => {
-    const cardId = req.query.id;
-    if (cardId) {
-        return res.redirect(301, `/card/${cardId}`);
-    }
-    res.redirect(301, '/');
-});
-
-// المسار الرئيسي لعرض البطاقات (SSR)
-app.get('/card/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        if (!db) {
-            return res.status(503).send('Service temporarily unavailable. Please try again in a moment.');
-        }
-
-        const collection = db.collection(collectionName);
-        const design = await collection.findOne({ shortId: id });
-
-        if (design && design.data) {
-            const cardData = design.data;
-            const pageUrl = `${req.protocol}://${req.get('host')}/card/${id}`;
-
-            const pageData = {
-                cardName: cardData.inputs['input-name'] || 'بطاقة عمل رقمية',
-                cardTagline: cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية',
-                cardImage: cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png',
-                pageUrl: pageUrl,
-                cardData: cardData
-            };
-            
-            res.render('viewer', pageData);
-
-        } else {
-            res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
-        }
-    } catch (error) {
-        console.error('Error handling card request:', error);
-        res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
-    }
-});
-
-// الصفحات الثابتة الأخرى
+app.use(express.static(path.join(__dirname, 'public')));
 app.get('/about', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
@@ -87,11 +36,6 @@ app.get('/privacy', (req, res) => {
 app.get('/contact', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
-
-
-// --- ✨ يأتي أمر خدمة الملفات الثابتة (الحارس الأول سابقًا) الآن في هذا المكان ✨ ---
-app.use(express.static(path.join(__dirname, 'public')));
-
 
 // --- تحديد معدل الطلبات ---
 const apiLimiter = rateLimit({
@@ -113,8 +57,11 @@ MongoClient.connect(mongoUrl)
     });
 
 // --- API Routes ---
+
+// API لحفظ تصميم جديد مع التحقق والتنقية
 app.post(
     '/api/save-design',
+    // --- إضافة التحقق والتنقية هنا ---
     [
         body('inputs.input-name').trim().customSanitizer(value => purify.sanitize(value)),
         body('inputs.input-tagline').trim().customSanitizer(value => purify.sanitize(value)),
@@ -122,17 +69,25 @@ app.post(
         body('dynamic.phones.*').isMobilePhone().withMessage('Invalid phone number'),
     ],
     async (req, res) => {
-        // ... (باقي الكود كما هو)
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-        if (!db) { return res.status(500).json({ error: 'Database not connected' }); }
+
+        if (!db) {
+            return res.status(500).json({ error: 'Database not connected' });
+        }
         try {
             const designData = req.body;
-            const shortId = nanoid(8);
+            const shortId = nanoid(8); // <-- استخدام nanoid لإنشاء معرف آمن
+
             const collection = db.collection(collectionName);
-            await collection.insertOne({ shortId: shortId, data: designData, createdAt: new Date() });
+            await collection.insertOne({
+                shortId: shortId,
+                data: designData,
+                createdAt: new Date()
+            });
+
             res.json({ success: true, id: shortId });
         } catch (error) {
             console.error('Error saving design:', error);
@@ -141,23 +96,80 @@ app.post(
     }
 );
 
+
+// API لجلب تصميم محفوظ
 app.get('/api/get-design/:id', async (req, res) => {
-    // ... (باقي الكود كما هو)
-    if (!db) { return res.status(500).json({ error: 'Database not connected' }); }
+    if (!db) {
+        return res.status(500).json({ error: 'Database not connected' });
+    }
     try {
         const { id } = req.params;
         const collection = db.collection(collectionName);
         const design = await collection.findOne({ shortId: id });
-        if (design) { res.json(design.data); } 
-        else { res.status(404).json({ error: 'Design not found' }); }
+
+        if (design) {
+            res.json(design.data);
+        } else {
+            res.status(404).json({ error: 'Design not found' });
+        }
     } catch (error) {
         console.error('Error fetching design:', error);
         res.status(500).json({ error: 'Failed to fetch design' });
     }
 });
 
+// --- Page Routing (مع الوسوم الديناميكية و SEO المحسن) ---
+app.get('/card/:id', async (req, res) => {
+    try {
+        const userAgent = req.headers['user-agent'] || '';
+        const isBot = /facebookexternalhit|FacebookBot|Twitterbot|Pinterest|Discordbot/i.test(userAgent);
 
-// معالجة الأخطاء في النهاية
+        if (isBot) {
+            const { id } = req.params;
+            const collection = db.collection(collectionName);
+            const design = await collection.findOne({ shortId: id });
+
+            if (design && design.data) {
+                const filePath = path.join(__dirname, 'public', 'index.html');
+                let htmlData = fs.readFileSync(filePath, 'utf8');
+
+                const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
+                const cardTagline = design.data.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
+                const cardImage = design.data.inputs['input-logo'] || 'https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png';
+                const pageUrl = `https://mcprim.com/nfc/card/${id}`;
+                
+                // --- إضافة Schema ديناميكي لتحسين SEO ---
+                const personSchema = `<script type="application/ld+json">
+                {
+                  "@context": "https://schema.org",
+                  "@type": "Person",
+                  "name": "${cardName.replace(/"/g, '\\"')}",
+                  "jobTitle": "${cardTagline.replace(/"/g, '\\"')}",
+                  "image": "${cardImage}",
+                  "url": "${pageUrl}"
+                }
+                </script>`;
+
+                htmlData = htmlData
+                    .replace(/<title>.*?<\/title>/, `<title>${cardName}</title>`)
+                    .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${cardTagline}"/>`)
+                    .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${cardName}"/>`)
+                    .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardTagline}"/>`)
+                    .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${cardImage}"/>`)
+                    .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
+                    .replace('</head>', `${personSchema}</head>`); // حقن الـ Schema في نهاية ה-head
+                
+                return res.send(htmlData);
+            }
+        }
+
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    } catch (error) {
+        console.error('Error handling card request:', error);
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
+});
+
 app.use((req, res, next) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
