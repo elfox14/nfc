@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>محرر بطاقة الأعمال الرقمية | إصدار احترافي</title>
+    <meta name="description" content="صمم واحفظ وشارك بطاقات عمل رقمية احترافية مع خيارات تصدير متقدمة.">
+    
+    <meta property="og:title" content="محرر بطاقة الأعمال الرقمية | تصميم متقدم">
+    <meta property="twitter:card" content="summary_large_image">
+
+    <link rel="icon" id="favicon" href="https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png" type="image/png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;700&family=El+Messiri:wght@400;700&family=Lalezar&family=Lemonada:wght@400;700&family=Markazi+Text:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=Poppins:wght@400;700&family=Reem+Kufi:wght@400;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.0/jszip.min.js"></script>
+
+    <meta name="theme-color" content="#1c2a3b">
+    <link rel="manifest" href="manifest.json">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "محرر بطاقة الأعمال الرقمية",
+  "operatingSystem": "Web",
+  "applicationCategory": "BusinessApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EGP"
+  },
+  "description": "صمم واحفظ وشارك بطاقات عمل رقمية احترافية مع خيارات تصدير متقدمة.",
+  "author": {
+    "@type": "Person",
+    "name": "Mahmoud Mamdouh" 
+  }
+}
+</script>
+</head>
+<body>
+
+    <div class="generator-layout">
+        <div class="preview-container">
+            <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
+                <div class="business-card" id="card-front-preview">
+                    <div class="card-background-layer" id="front-bg-image-layer"></div>
+                    <div class="card-background-layer" id="front-bg-gradient-layer"></div>
+                    <div class="card-content-layer card-front">
+                        <div id="drag-container" class="drag-container">
+                            <img src="https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png" alt="شعار الشركة" class="logo-front" id="card-logo">
+                            <div class="identity-front" id="identity-front">
+                                <h1 id="card-name">محمود ممدوح خميس</h1>
+                                <h2 class="tagline" id="card-tagline">MC PRIME للتوريدات الطبية</h2>
+                            </div>
+                        </div>
+                        <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
+                    </div>
+                </div>
+                <div class="business-card" id="card-back-preview">
+                    <div class="card-background-layer" id="back-bg-image-layer"></div>
+                    <div class="card-background-layer" id="back-bg-gradient-layer"></div>
+                    <div class="card-content-layer card-back" id="card-back-content">
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <div class="middle-column">
+            <fieldset class="fieldset">
+                <legend>التصاميم واللغة</legend>
+                <div class="form-group">
+                    <label for="theme-select">اختر تصميمًا جاهزًا</label>
+                    <select id="theme-select"></select>
+                </div>
+                 <button id="direction-toggle-btn" title="تغيير اللغة / Change Language">
+                    <i class="fas fa-language" aria-hidden="true"></i> <span>EN</span>
+                </button>
+            </fieldset>
+
+            <fieldset class="fieldset" id="export-fieldset">
+                <legend>خيارات</legend>
+                <div class="action-buttons">
+                    <button id="undo-btn" title="تراجع (Ctrl+Z)"><i class="fas fa-undo" aria-hidden="true"></i></button>
+                    <button id="redo-btn" title="إعادة (Ctrl+Y)"><i class="fas fa-redo" aria-hidden="true"></i></button>
+                </div>
+                <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
+                <button id="save-to-gallery-btn" class="full-width" style="margin-bottom: 10px;"><span>حفظ في المعرض (Ctrl+S)</span><i class="fas fa-save" aria-hidden="true"></i></button>
+                <button id="show-gallery-btn" class="full-width" style="margin-bottom: 10px; background-color: var(--accent-secondary)"><span>عرض المعرض</span><i class="fas fa-images" aria-hidden="true"></i></button>
+                <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
+                <div class="export-buttons"><button id="download-png-front"><span>حفظ الواجهة</span><i class="fas fa-download" aria-hidden="true"></i></button><button id="download-png-back"><span>حفظ الخلفية</span><i class="fas fa-download" aria-hidden="true"></i></button></div>
+                <button id="download-pdf" class="full-width"><span>حفظ PDF</span><i class="fas fa-file-pdf" aria-hidden="true"></i></button>
+                <button id="download-vcf" class="full-width"><span>حفظ جهة الاتصال (VCF)</span><i class="fas fa-address-card" aria-hidden="true"></i></button>
+                <button id="download-qrcode" class="full-width"><span>حفظ QR Code</span><i class="fas fa-qrcode" aria-hidden="true"></i></button>
+                <button id="share-btn" class="full-width" style="background-color: var(--success-color); margin-top: 10px;"><span>مشاركة</span><i class="fas fa-share-alt" aria-hidden="true"></i></button>
+                <hr style="border-color: var(--accent-secondary); margin: 20px 0;">
+                <button id="reset-design-btn" class="full-width danger"><span>إعادة تعيين التصميم</span><i class="fas fa-undo" aria-hidden="true"></i></button>
+            </fieldset>
+        </div>
+
+        <div class="form-wrapper">
+            <div class="form-container" id="left-column">
+                <h3>الواجهة الأمامية</h3>
+                
+                <fieldset class="fieldset">
+                    <legend>تخطيط البطاقة</legend>
+                    <div class="form-group">
+                        <label for="layout-select">اختر شكل التخطيط</label>
+                        <select id="layout-select">
+                            <option value="classic">كلاسيكي (افتراضي)</option>
+                            <option value="modern">عصري (الشعار بجانب النص)</option>
+                            <option value="vertical">طولي</option>
+                        </select>
+                    </div>
+                </fieldset>
+
+                <fieldset class="fieldset" id="logo-drop-zone">
+                    <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة هنا</span></div>
+                    <legend>الشعار (Logo)</legend>
+                    <div class="form-group"><label for="input-logo">رابط الشعار</label><input type="url" id="input-logo" value="https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png" data-update-target="card-logo" data-update-property="src"></div>
+                    <div class="form-group">
+                        <label for="input-logo-upload">أو ارفع صورة (أقل من 2MB)</label>
+                        <div class="logo-upload-group">
+                            <img id="logo-preview" src="" alt="معاينة الشعار المرفوع">
+                            <div class="file-input-wrapper">
+                               <input type="file" id="input-logo-upload" accept="image/*">
+                               <div class="input-error-msg" id="logo-upload-error"></div>
+                            </div>
+                            <div class="spinner" id="logo-spinner" style="display: none;"></div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend>الاسم الكامل</legend>
+                    <div class="form-group">
+                        <label for="input-name">النص</label>
+                        <textarea id="input-name" rows="2" data-update-target="card-name" data-update-property="innerText">محمود ممدوح خميس</textarea>
+                    </div>
+                    <div class="control-grid">
+                        <div class="form-group"><label for="name-font-size">حجم الخط</label><input type="range" id="name-font-size" min="16" max="48" value="22" data-update-target="card-name" data-update-property="style.fontSize" data-update-unit="px"></div>
+                        <div class="form-group"><label for="name-color">اللون</label><input type="color" id="name-color" value="#e6f0f7" data-update-target="card-name" data-update-property="style.color"></div>
+                    </div>
+                    <div class="form-group"><label for="name-font">الخط</label><select id="name-font" data-update-target="card-name" data-update-property="style.fontFamily"><option value="'Tajawal', sans-serif">Tajawal</option><option value="'Cairo', sans-serif">Cairo</option><option value="'Lalezar', cursive">Lalezar</option><option value="'Markazi Text', serif">Markazi Text</option><option value="'El Messiri', sans-serif">El Messiri</option><option value="'Amiri', serif">Amiri</option><option value="'Reem Kufi', sans-serif">Reem Kufi</option><option value="'Aref Ruqaa', serif">Aref Ruqaa</option><option value="'Lemonada', cursive">Lemonada</option></select></div>
+                </fieldset>
+                
+                <fieldset class="fieldset">
+                    <legend>النشاط/المسمى الوظيفي</legend>
+                    <div class="form-group">
+                        <label for="input-tagline">النص</label>
+                        <textarea id="input-tagline" rows="2" data-update-target="card-tagline" data-update-property="innerText">MC PRIME للتوريدات الطبية</textarea>
+                    </div>
+                    <div class="control-grid">
+                        <div class="form-group"><label for="tagline-font-size">حجم الخط</label><input type="range" id="tagline-font-size" min="12" max="32" value="14" data-update-target="card-tagline" data-update-property="style.fontSize" data-update-unit="px"></div>
+                        <div class="form-group"><label for="tagline-color">اللون</label><input type="color" id="tagline-color" value="#4da6ff" data-update-target="card-tagline" data-update-property="style.color"></div>
+                    </div>
+                    <div class="form-group"><label for="tagline-font">الخط</label><select id="tagline-font" data-update-target="card-tagline" data-update-property="style.fontFamily"><option value="'Tajawal', sans-serif">Tajawal</option><option value="'Cairo', sans-serif">Cairo</option><option value="'Lalezar', cursive">Lalezar</option><option value="'Markazi Text', serif">Markazi Text</option><option value="'El Messiri', sans-serif">El Messiri</option><option value="'Amiri', serif">Amiri</option><option value="'Reem Kufi', sans-serif">Reem Kufi</option><option value="'Aref Ruqaa', serif">Aref Ruqaa</option><option value="'Lemonada', cursive">Lemonada</option></select></div>
+                </fieldset>
+                
+                <fieldset class="fieldset">
+                    <legend>أرقام الهواتف</legend>
+                    <div id="phone-numbers-container"></div>
+                    <button id="add-phone-btn" class="full-width"><i class="fas fa-plus" aria-hidden="true"></i> إضافة رقم هاتف</button>
+                    <h4>تصميم الأزرار</h4>
+                    <div class="control-grid">
+                        <div class="form-group"><label for="phone-btn-bg-color">لون الزر</label><input type="color" id="phone-btn-bg-color" value="#4da6ff"></div>
+                        <div class="form-group"><label for="phone-btn-text-color">لون النص</label><input type="color" id="phone-btn-text-color" value="#ffffff"></div>
+                    </div>
+                    <div class="form-group"><label for="phone-btn-font-size">حجم خط الزر</label><input type="range" id="phone-btn-font-size" min="10" max="24" value="12"></div>
+                    <div class="form-group"><label for="phone-btn-padding">حجم حشو الزر (Padding)</label><input type="range" id="phone-btn-padding" min="4" max="16" value="6"></div>
+                    <div class="form-group"><label for="phone-btn-font">خط الزر</label><select id="phone-btn-font"><option value="'Poppins', sans-serif">Poppins</option><option value="'Tajawal', sans-serif">Tajawal</option><option value="'Cairo', sans-serif">Cairo</option><option value="'Amiri', serif">Amiri</option><option value="'Reem Kufi', sans-serif">Reem Kufi</option></select></div>
+                </fieldset>
+
+                <fieldset class="fieldset" id="front-bg-drop-zone">
+                    <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة هنا</span></div>
+                    <legend>خلفية الواجهة</legend>
+                    <div class="form-group"><label>لون الخلفية</label><div class="control-grid"><input type="color" id="front-bg-start" value="#2a3d54"><input type="color" id="front-bg-end" value="#223246"></div></div>
+                    <div class="form-group">
+                        <label for="front-bg-upload">رفع صورة للخلفية</label>
+                        <div class="file-input-group">
+                            <input type="file" id="front-bg-upload" accept="image/*">
+                            <button type="button" class="remove-image-btn" id="remove-front-bg-btn" style="display: none;" title="إزالة الصورة"><i class="fas fa-times" aria-hidden="true"></i></button>
+                            <div class="spinner" id="front-bg-spinner" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label for="front-bg-opacity">شفافية اللون فوق الصورة</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05" value="1"></div>
+                </fieldset>
+            </div>
+
+            <div class="form-container" id="right-column">
+                <h3>الواجهة الخلفية وبيانات التواصل</h3>
+                <fieldset class="fieldset" id="contact-info-fieldset">
+                    <legend>بيانات التواصل</legend>
+                     <div class="form-group">
+                        <label for="input-qr-url">رابط صورة QR Code</label>
+                        <input type="url" id="input-qr-url" value="https://www.elfoxdm.com/elfox/mcprime_qr.png">
+                    </div>
+                    <div class="form-group">
+                        <label for="input-email">البريد الإلكتروني</label>
+                        <input type="email" id="input-email" value="hthefox14@gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="input-website">الموقع الإلكتروني</label>
+                        <input type="url" id="input-website" value="https://www.elfoxdm.com/elfox/elfox.html">
+                    </div>
+                    <div class="form-group">
+                        <label for="input-whatsapp">واتساب</label>
+                        <input type="text" id="input-whatsapp" value="201062071741">
+                    </div>
+                    <div class="form-group">
+                        <label for="input-facebook">فيسبوك</label>
+                        <input type="url" id="input-facebook" value="https://www.facebook.com/thefox14/">
+                    </div>
+                    <div class="form-group">
+                        <label for="input-linkedin">لينكدإن</label>
+                        <input type="url" id="input-linkedin" value="https://www.linkedin.com/in/elfox/">
+                    </div>
+                    <hr>
+                    <h4>إضافة روابط أخرى</h4>
+                    <div class="add-social-group">
+                        <div class="form-group">
+                            <label for="social-media-type">اختر المنصة</label>
+                            <select id="social-media-type"></select>
+                        </div>
+                        <button id="add-social-btn" title="إضافة رابط"><i class="fas fa-plus" aria-hidden="true"></i></button>
+                    </div>
+                    <div class="form-group">
+                        <label for="social-media-input">ادخل الرابط أو المعرف</label>
+                        <input type="text" id="social-media-input" placeholder="الرابط هنا...">
+                    </div>
+                    <div id="dynamic-social-links-container"></div>
+                </fieldset>
+
+                 <fieldset class="fieldset" id="back-bg-drop-zone">
+                    <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة هنا</span></div>
+                    <legend>تصميم الوجه الخلفي</legend>
+                    <div class="form-group"><label>لون الخلفية</label><div class="control-grid"><input type="color" id="back-bg-start" value="#2a3d54"><input type="color" id="back-bg-end" value="#223246"></div></div>
+                    <div class="form-group">
+                        <label for="back-bg-upload">رفع صورة للخلفية</label>
+                        <div class="file-input-group">
+                            <input type="file" id="back-bg-upload" accept="image/*">
+                            <button type="button" class="remove-image-btn" id="remove-back-bg-btn" style="display: none;" title="إزالة الصورة"><i class="fas fa-times" aria-hidden="true"></i></button>
+                            <div class="spinner" id="back-bg-spinner" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label for="back-bg-opacity">شفافية اللون فوق الصورة</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05" value="1"></div>
+                    <h4>تصميم أزرار التواصل</h4>
+                    <div class="form-group">
+                        <label for="back-buttons-size">حجم الأيقونات</label>
+                        <input type="range" id="back-buttons-size" min="10" max="20" value="10">
+                    </div>
+                    <div class="control-grid">
+                        <div class="form-group"><label for="back-buttons-bg-color">لون الزر</label><input type="color" id="back-buttons-bg-color" value="#364f6b"></div>
+                        <div class="form-group"><label for="back-buttons-text-color">لون النص</label><input type="color" id="back-buttons-text-color" value="#aab8c2"></div>
+                    </div>
+                    <div class="form-group"><label for="back-buttons-font">خط الأزرار</label><select id="back-buttons-font"><option value="'Poppins', sans-serif">Poppins</option><option value="'Tajawal', sans-serif">Tajawal</option><option value="'Cairo', sans-serif">Cairo</option><option value="'Amiri', serif">Amiri</option><option value="'Reem Kufi', sans-serif">Reem Kufi</option></select></div>
+                </fieldset>
+            </div>
+        </div>
+
+    </div>
+    <div class="visually-hidden" aria-live="polite" id="live-announcer"></div>
+
+    <div id="save-toast" class="toast"></div>
+    
+    <div id="export-loading-overlay" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <div class="spinner" style="margin: 0 auto 15px auto;"></div>
+            <p>جاري تجهيز الصورة عالية الجودة، قد يستغرق الأمر بضع لحظات...</p>
+        </div>
+    </div>
+
+    <div id="export-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3>خيارات التصدير</h3>
+            <button id="export-modal-close" class="modal-close">&times;</button>
+            <div class="form-group">
+                <label for="export-format">نوع الملف</label>
+                <select id="export-format">
+                    <option value="png">PNG (جودة عالية)</option>
+                    <option value="jpeg">JPEG (حجم أصغر)</option>
+                </select>
+            </div>
+            <div class="form-group" id="export-quality-group" style="display: none;">
+                <label for="export-quality">الجودة (1-100)</label>
+                <div class="quality-slider-wrapper">
+                    <input type="range" id="export-quality" min="10" max="100" value="92">
+                    <span id="export-quality-value">92</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>حجم الصورة (الدقة) <i class="fas fa-question-circle" data-tooltip="اختر 2x أو 3x للحصول على جودة مناسبة للطباعة." aria-hidden="true"></i></label>
+                <div class="scale-buttons">
+                    <button class="scale-btn" data-scale="1">1x (ويب)</button>
+                    <button class="scale-btn selected" data-scale="2">2x (طباعة)</button>
+                    <button class="scale-btn" data-scale="3">3x (فائقة)</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirm-export-btn" class="modal-confirm">تأكيد الحفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gallery-modal-overlay" class="modal-overlay">
+        <div class="modal-content gallery-modal">
+            <h3>معرض التصاميم المحفوظة</h3>
+            <button id="gallery-modal-close" class="modal-close">&times;</button>
+            <div id="gallery-grid" class="gallery-grid">
+            </div>
+            <div class="modal-footer">
+                <button id="gallery-select-all">تحديد الكل</button>
+                <button id="gallery-deselect-all">إلغاء تحديد الكل</button>
+                <button id="gallery-download-zip" class="modal-confirm" disabled><i class="fas fa-file-archive" aria-hidden="true"></i> تحميل المحددات (ZIP)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="share-fallback-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3>مشاركة الرابط</h3>
+            <button id="share-fallback-modal-close" class="modal-close">&times;</button>
+            <p>متصفحك لا يدعم المشاركة المباشرة. استخدم أحد الخيارات التالية:</p>
+            <div class="share-fallback-buttons">
+                <a id="share-email" target="_blank"><i class="fas fa-envelope" aria-hidden="true"></i> بريد إلكتروني</a>
+                <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> واتساب</a>
+                <a id="share-twitter" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i> تويتر</a>
+                <button id="share-copy-link"><i class="fas fa-copy" aria-hidden="true"></i> نسخ الرابط</button>
+            </div>
+        </div>
+    </div>
+
+
+    <audio id="audio-success" src="data:audio/mpeg;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhBQAAAAgAAgA="></audio>
+    <audio id="audio-error" src="data:audio/mpeg;base64,UklGRkYAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YSIBAAD2/v3//vj79/77/P/8/f7/+Pn49/b19fXz9PLu8erw6+7k6uTm5+Th49/f3tna2tXW1dvT1tHX0dnP0c/NzczGxcTDwsHCwsHCwsHCAgA="></audio>
+    
+    <div id="qrcode-container" style="display: none;"></div>
+
+    <button id="back-to-top-btn" title="الرجوع للأعلى"><i class="fas fa-arrow-up" aria-hidden="true"></i></button>
+
+    <script src="script.js" defer></script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful: ', registration.scope);
+            })
+            .catch(error => {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+    </script>
+</body>
+</html>
