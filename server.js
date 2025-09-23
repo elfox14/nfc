@@ -199,9 +199,13 @@ app.get('/', (req, res) => {
     res.redirect('/nfc/');
 });
 
-app.use('/nfc', express.static(path.join(__dirname, 'public')));
-app.use('/nfc/api', apiRouter);
+
+// --- بداية التعديل ---
+// يجب وضع الروابط الديناميكية (frontendRouter) قبل خدمة الملفات الثابتة
 app.use('/nfc', frontendRouter);
+app.use('/nfc/api', apiRouter);
+app.use('/nfc', express.static(path.join(__dirname, 'public')));
+// --- نهاية التعديل ---
 
 
 // 404 and Error Handling
@@ -217,4 +221,3 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
-
