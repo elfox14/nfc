@@ -6,33 +6,23 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
-const { nanoid } = require('nanoid');
-const { body, validationResult } = require('express-validator');
-const { JSDOM } = require('jsdom');
-const DOMPurify = require('dompurify');
-const multer = require('multer');
-const sharp = require('sharp');
-const ejs = require('ejs');
+const { nanoid } = require('nanoid'); // <-- استخدام nanoid
+const { body, validationResult } = require('express-validator'); // <-- للتحقق من المدخلات
+const { JSDOM } = require('jsdom'); // <-- لمعالجة HTML وتنقيته
+const DOMPurify = require('dompurify'); // <-- لتنقية المدخلات من XSS
+const sharp = require('sharp'); // For image processing
+const multer = require('multer'); // For handling file uploads
 
 const window = new JSDOM('').window;
 const purify = DOMPurify(window);
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
-<<<<<<< Updated upstream
-// --- إعداد EJS كمحرك القوالب ---
-app.set('view engine', 'ejs');
-// --- تحديد مسار مجلد العرض (views) ليكون المجلد العام (public) ---
-app.set('views', path.join(__dirname, 'public'));
-
-
-=======
 // --- EJS Setup ---
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public'));
 
->>>>>>> Stashed changes
 // --- إعدادات قاعدة البيانات ---
 const mongoUrl = process.env.MONGO_URI;
 const dbName = 'nfc_db';
@@ -43,17 +33,15 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
-<<<<<<< Updated upstream
-=======
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploaded images statically
 
-// --- Create uploads directory if it doesn't exist ---
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir);
+// Create uploads directory if it doesn't exist and make it static
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
 }
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
->>>>>>> Stashed changes
+
 app.get('/about', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
@@ -62,6 +50,17 @@ app.get('/privacy', (req, res) => {
 });
 app.get('/contact', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+});
+// Add route for the new gallery page
+app.get('/gallery', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'gallery.html'));
+});
+
+// --- Multer Setup for image uploads ---
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
 
@@ -72,21 +71,6 @@ const apiLimiter = rateLimit({
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api/', apiLimiter);
-
-// --- Multer Configuration for Image Uploads ---
-const storage = multer.memoryStorage(); // Store image in memory for processing
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Not an image! Please upload an image file.'), false);
-        }
-    }
-});
-
 
 // --- الاتصال بقاعدة البيانات ---
 MongoClient.connect(mongoUrl)
@@ -101,22 +85,23 @@ MongoClient.connect(mongoUrl)
 
 // --- API Routes ---
 
-// API Route for Image Uploading and Processing
+// API for image uploading and processing
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
     if (!req.file) {
-        return res.status(400).json({ error: 'No image file uploaded.' });
+        return res.status(400).json({ error: 'No image file provided.' });
     }
 
     try {
-        const filename = `${nanoid(10)}.webp`;
-        const outputPath = path.join(uploadDir, filename);
+        const uniqueFilename = `${Date.now()}-${nanoid(6)}.webp`;
+        const outputPath = path.join(uploadsDir, uniqueFilename);
 
         await sharp(req.file.buffer)
-            .resize({ width: 1280, height: 1280, fit: 'inside', withoutEnlargement: true })
+            .resize({ width: 1280, withoutEnlargement: true })
             .webp({ quality: 80 })
             .toFile(outputPath);
-
-        const imageUrl = `/uploads/${filename}`;
+        
+        // Return the public URL of the processed image
+        const imageUrl = `/uploads/${uniqueFilename}`;
         res.json({ success: true, url: imageUrl });
 
     } catch (error) {
@@ -129,18 +114,17 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
 // API لحفظ تصميم جديد مع التحقق والتنقية
 app.post(
     '/api/save-design',
+    // --- إضافة التحقق والتنقية هنا ---
     [
         body('inputs.input-name').trim().customSanitizer(value => purify.sanitize(value)),
         body('inputs.input-tagline').trim().customSanitizer(value => purify.sanitize(value)),
-        // ملاحظة: التحقق من البريد الإلكتروني والهاتف قد يكون صارماً جداً، يمكن تعديله إذا لزم الأمر
-        body('inputs.input-email').optional({ checkFalsy: true }).isEmail().normalizeEmail(),
-        body('dynamic.phones.*').optional({ checkFalsy: true }).isMobilePhone().withMessage('Invalid phone number'),
+        body('inputs.input-email').isEmail().normalizeEmail(),
+        body('dynamic.phones.*').isMobilePhone().withMessage('Invalid phone number'),
     ],
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            // لا ترسل خطأ 400 للمستخدم النهائي، فقط سجل الأخطاء
-            console.warn('Validation errors:', errors.array());
+            return res.status(400).json({ errors: errors.array() });
         }
 
         if (!db) {
@@ -148,7 +132,7 @@ app.post(
         }
         try {
             const designData = req.body;
-            const shortId = nanoid(8);
+            const shortId = nanoid(8); // <-- استخدام nanoid لإنشاء معرف آمن
 
             const collection = db.collection(collectionName);
             await collection.insertOne({
@@ -187,57 +171,63 @@ app.get('/api/get-design/:id', async (req, res) => {
     }
 });
 
-// --- Page Routing (مع الوسوم الديناميكية و SEO المحسن) ---
-<<<<<<< Updated upstream
-// *** التعديل الجوهري هنا ***
-app.get('/card/:id', async (req, res) => {
+// --- NEW: API for fetching gallery cards ---
+app.get('/api/gallery', async (req, res) => {
+    if (!db) {
+        return res.status(500).json({ error: 'Database not connected' });
+    }
     try {
-        const { id } = req.params;
-        if (!db) {
-            // إذا لم تكن قاعدة البيانات متصلة، اعرض صفحة خطأ بسيطة
-            return res.status(503).send('Service Unavailable. Please try again later.');
-        }
+        const collection = db.collection(collectionName);
+        // Fetch the 12 most recent designs
+        const designs = await collection.find({})
+            .sort({ createdAt: -1 })
+            .limit(12)
+            .project({ 
+                shortId: 1, 
+                'data.inputs.input-name': 1,
+                'data.inputs.input-tagline': 1,
+                'data.inputs.input-logo': 1 // We need the logo for the thumbnail
+            })
+            .toArray();
+        
+        res.json(designs);
 
-=======
+    } catch (error) {
+        console.error('Error fetching gallery designs:', error);
+        res.status(500).json({ error: 'Failed to fetch gallery designs' });
+    }
+});
+
+
+// --- Page Routing (مع الوسوم الديناميكية و SEO المحسن) ---
 app.get('/card/:id', async (req, res) => {
     try {
+        if (!db) {
+            return res.status(503).sendFile(path.join(__dirname, 'public', '500.html'));
+        }
+        
         const { id } = req.params;
->>>>>>> Stashed changes
         const collection = db.collection(collectionName);
         const design = await collection.findOne({ shortId: id });
 
-        if (design && design.data) {
-            const cardData = design.data;
-<<<<<<< Updated upstream
-            const cardName = cardData.inputs['input-name'] || 'بطاقة عمل رقمية';
-            const cardTagline = cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
-            // استخدم شعار البطاقة كصورة أساسية، مع وجود صورة احتياطية
-            const cardImage = cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/og-image.png';
-            const pageUrl = `https://www.mcprim.com/nfc/card/${id}`; // استخدم الدومين الفعلي هنا
-
-            // استخدم res.render لعرض قالب viewer.ejs مع تمرير البيانات
-            res.render('viewer', {
-                cardName,
-                cardTagline,
-                cardImage,
-                pageUrl,
-                cardData // مرر كل بيانات البطاقة للقالب
-            });
-        } else {
-            // إذا لم يتم العثور على البطاقة، اعرض صفحة 404
-=======
-            const renderData = {
-                cardName: cardData.inputs['input-name'] || 'بطاقة عمل رقمية',
-                cardTagline: cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية',
-                cardImage: cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png',
-                pageUrl: `https://www.mcprim.com/nfc/card/${id}`,
-                cardData: cardData
-            };
-            res.render('viewer', renderData);
-        } else {
->>>>>>> Stashed changes
-            res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+        if (!design || !design.data) {
+            return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }
+
+        const cardData = design.data;
+        const cardName = cardData.inputs['input-name'] || 'بطاقة عمل رقمية';
+        const cardTagline = cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
+        const cardImage = cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png';
+        const pageUrl = `https://mcprim.com/nfc/card/${id}`;
+
+        res.render('viewer', {
+            cardName,
+            cardTagline,
+            cardImage,
+            pageUrl,
+            cardData // Pass the full data object to the template
+        });
+
     } catch (error) {
         console.error('Error handling card request:', error);
         res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
@@ -245,15 +235,6 @@ app.get('/card/:id', async (req, res) => {
 });
 
 
-<<<<<<< Updated upstream
-// توجيه الصفحة الرئيسية إلى المحرر
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-
-=======
->>>>>>> Stashed changes
 app.use((req, res, next) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
