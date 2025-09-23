@@ -5,19 +5,20 @@ const { MongoClient } = require('mongodb');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+const ejs = require('ejs');
 const rateLimit = require('express-rate-limit');
-const { nanoid } = require('nanoid'); // <-- استخدام nanoid
-const { body, validationResult } = require('express-validator'); // <-- للتحقق من المدخلات
-const { JSDOM } = require('jsdom'); // <-- لمعالجة HTML وتنقيته
-const DOMPurify = require('dompurify'); // <-- لتنقية المدخلات من XSS
-const sharp = require('sharp'); // For image processing
-const multer = require('multer'); // For handling file uploads
+const { nanoid } = require('nanoid');
+const { body, validationResult } = require('express-validator');
+const { JSDOM } = require('jsdom');
+const DOMPurify = require('dompurify');
+const multer = require('multer');
+const sharp = require('sharp');
 
 const window = new JSDOM('').window;
 const purify = DOMPurify(window);
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // --- EJS Setup ---
 app.set('view engine', 'ejs');
@@ -30,38 +31,40 @@ const collectionName = 'designs';
 let db;
 
 // --- Middlewares ---
-app.use(cors());
-app.use(express.json({ limit: '5mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Create uploads directory if it doesn't exist and make it static
+// CORS Configuration to allow requests from your specific domain
+const allowedOrigins = [
+    'https://www.mcprim.com', 
+    'http://localhost:3000', 
+    'http://127.0.0.1:5500'
+];
+
+const corsOptions = {
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests) or from the allowed list
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+};
+app.use(cors(corsOptions)); // Use configured CORS
+
+app.use(express.json({ limit: '5mb' }));
+
+// Ensure 'uploads' directory exists and is static
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
+    fs.mkdirSync(uploadsDir, { recursive: true });
 }
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.get('/about', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'about.html'));
-});
-app.get('/privacy', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
-});
-app.get('/contact', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'contact.html'));
-});
-// Add route for the new gallery page
-app.get('/gallery', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'gallery.html'));
-});
-
-// --- Multer Setup for image uploads ---
+// --- Multer and Sharp Setup for Image Uploads ---
 const storage = multer.memoryStorage();
-const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
-});
+const upload = multer({ storage: storage });
 
 
 // --- تحديد معدل الطلبات ---
@@ -85,23 +88,23 @@ MongoClient.connect(mongoUrl)
 
 // --- API Routes ---
 
-// API for image uploading and processing
+// API for handling image uploads
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
     if (!req.file) {
-        return res.status(400).json({ error: 'No image file provided.' });
+        return res.status(400).json({ error: 'No image file uploaded.' });
     }
 
-    try {
-        const uniqueFilename = `${Date.now()}-${nanoid(6)}.webp`;
-        const outputPath = path.join(uploadsDir, uniqueFilename);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const filename = `${uniqueSuffix}.webp`;
+    const outputPath = path.join(uploadsDir, filename);
 
+    try {
         await sharp(req.file.buffer)
-            .resize({ width: 1280, withoutEnlargement: true })
-            .webp({ quality: 80 })
+            .resize({ width: 1280, withoutEnlargement: true }) // Resize without enlarging
+            .webp({ quality: 80 }) // Convert to WebP with 80% quality
             .toFile(outputPath);
         
-        // Return the public URL of the processed image
-        const imageUrl = `/uploads/${uniqueFilename}`;
+        const imageUrl = `/uploads/${filename}`; // URL path for the client
         res.json({ success: true, url: imageUrl });
 
     } catch (error) {
@@ -111,43 +114,28 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
 });
 
 
-// API لحفظ تصميم جديد مع التحقق والتنقية
-app.post(
-    '/api/save-design',
-    // --- إضافة التحقق والتنقية هنا ---
-    [
-        body('inputs.input-name').trim().customSanitizer(value => purify.sanitize(value)),
-        body('inputs.input-tagline').trim().customSanitizer(value => purify.sanitize(value)),
-        body('inputs.input-email').isEmail().normalizeEmail(),
-        body('dynamic.phones.*').isMobilePhone().withMessage('Invalid phone number'),
-    ],
-    async (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        if (!db) {
-            return res.status(500).json({ error: 'Database not connected' });
-        }
-        try {
-            const designData = req.body;
-            const shortId = nanoid(8); // <-- استخدام nanoid لإنشاء معرف آمن
-
-            const collection = db.collection(collectionName);
-            await collection.insertOne({
-                shortId: shortId,
-                data: designData,
-                createdAt: new Date()
-            });
-
-            res.json({ success: true, id: shortId });
-        } catch (error) {
-            console.error('Error saving design:', error);
-            res.status(500).json({ error: 'Failed to save design' });
-        }
+// API لحفظ تصميم جديد
+app.post('/api/save-design', async (req, res) => {
+    if (!db) {
+        return res.status(500).json({ error: 'Database not connected' });
     }
-);
+    try {
+        const designData = req.body;
+        const shortId = nanoid(8);
+
+        const collection = db.collection(collectionName);
+        await collection.insertOne({
+            shortId: shortId,
+            data: designData,
+            createdAt: new Date()
+        });
+
+        res.json({ success: true, id: shortId });
+    } catch (error) {
+        console.error('Error saving design:', error);
+        res.status(500).json({ error: 'Failed to save design' });
+    }
+});
 
 
 // API لجلب تصميم محفوظ
@@ -171,14 +159,14 @@ app.get('/api/get-design/:id', async (req, res) => {
     }
 });
 
-// --- NEW: API for fetching gallery cards ---
+// API endpoint to get gallery items
 app.get('/api/gallery', async (req, res) => {
     if (!db) {
         return res.status(500).json({ error: 'Database not connected' });
     }
     try {
         const collection = db.collection(collectionName);
-        // Fetch the 12 most recent designs
+        // Fetch latest 12 designs, projecting only necessary fields
         const designs = await collection.find({})
             .sort({ createdAt: -1 })
             .limit(12)
@@ -186,12 +174,11 @@ app.get('/api/gallery', async (req, res) => {
                 shortId: 1, 
                 'data.inputs.input-name': 1,
                 'data.inputs.input-tagline': 1,
-                'data.inputs.input-logo': 1 // We need the logo for the thumbnail
+                'data.inputs.input-logo': 1,
+                _id: 0 
             })
             .toArray();
-        
         res.json(designs);
-
     } catch (error) {
         console.error('Error fetching gallery designs:', error);
         res.status(500).json({ error: 'Failed to fetch gallery designs' });
@@ -199,41 +186,44 @@ app.get('/api/gallery', async (req, res) => {
 });
 
 
-// --- Page Routing (مع الوسوم الديناميكية و SEO المحسن) ---
+// --- Page Routing ---
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/gallery', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'gallery.html'));
+});
+
+
+// Dynamic card viewer route using EJS
 app.get('/card/:id', async (req, res) => {
+    if (!db) {
+        return res.status(503).send('Service unavailable');
+    }
     try {
-        if (!db) {
-            return res.status(503).sendFile(path.join(__dirname, 'public', '500.html'));
-        }
-        
         const { id } = req.params;
         const collection = db.collection(collectionName);
         const design = await collection.findOne({ shortId: id });
 
-        if (!design || !design.data) {
-            return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+        if (design && design.data) {
+            const cardData = design.data;
+            const renderData = {
+                cardName: cardData.inputs['input-name'] || 'بطاقة عمل رقمية',
+                cardTagline: cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية',
+                cardImage: cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/og-image.png',
+                pageUrl: `https://www.mcprim.com/nfc/card/${id}`,
+                cardData: cardData // Pass the full data object for the script
+            };
+            res.render('viewer', renderData);
+        } else {
+            res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }
-
-        const cardData = design.data;
-        const cardName = cardData.inputs['input-name'] || 'بطاقة عمل رقمية';
-        const cardTagline = cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
-        const cardImage = cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png';
-        const pageUrl = `https://mcprim.com/nfc/card/${id}`;
-
-        res.render('viewer', {
-            cardName,
-            cardTagline,
-            cardImage,
-            pageUrl,
-            cardData // Pass the full data object to the template
-        });
-
     } catch (error) {
         console.error('Error handling card request:', error);
         res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
     }
 });
-
 
 app.use((req, res, next) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
