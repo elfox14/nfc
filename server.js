@@ -113,18 +113,10 @@ apiRouter.get('/gallery', async (req, res) => {
     if (!db) return res.status(500).json({ error: 'Database not connected' });
     try {
         const collection = db.collection(collectionName);
+        // تم حذف .project() لإعادة كامل بيانات التصميم اللازمة للعرض
         const designs = await collection.find({})
             .sort({ createdAt: -1 })
             .limit(12)
-            .project({ 
-                shortId: 1, 
-                'data.inputs.input-name': 1, 
-                'data.inputs.input-tagline': 1, 
-                'data.inputs.input-logo': 1,
-                'data.imageUrls.front': 1,
-                'data.inputs.front-bg-start': 1,
-                'data.inputs.front-bg-end': 1,
-             })
             .toArray();
         res.json(designs);
     } catch (error) {
@@ -162,16 +154,12 @@ const frontendRouter = express.Router();
 // Static pages
 frontendRouter.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 frontendRouter.get('/gallery', (req, res) => res.sendFile(path.join(__dirname, 'public', 'gallery.html')));
-// Add other static HTML pages here if needed, e.g., about.html, contact.html etc.
-// frontendRouter.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'public', 'about.html')));
 
 
 // Dynamic card rendering for bots and direct access
-// IMPORTANT: This dynamic route must be placed carefully to not conflict with other routes
 frontendRouter.get('/:id', async (req, res, next) => {
     const { id } = req.params;
 
-    // A simple check to avoid treating file requests like 'style.css' as card IDs
     if (id.includes('.')) {
         return next();
     }
@@ -197,7 +185,6 @@ frontendRouter.get('/:id', async (req, res, next) => {
                 cardData
             });
         } else {
-            // If no design is found, pass to the next handler (which will be the 404)
             return next();
         }
     } catch (error) {
@@ -208,16 +195,12 @@ frontendRouter.get('/:id', async (req, res, next) => {
 
 
 // --- Main App Configuration ---
-// Redirect from root to /nfc/
 app.get('/', (req, res) => {
     res.redirect('/nfc/');
 });
 
-// Serve static files from 'public' but under the /nfc path
 app.use('/nfc', express.static(path.join(__dirname, 'public')));
-// Use the API router under /nfc/api
 app.use('/nfc/api', apiRouter);
-// Use the frontend router under /nfc
 app.use('/nfc', frontendRouter);
 
 
