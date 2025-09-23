@@ -4,6 +4,7 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const path = require('path');
 const cors = require('cors');
+const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
 const { body, validationResult } = require('express-validator');
@@ -14,11 +15,13 @@ const window = new JSDOM('').window;
 const purify = DOMPurify(window);
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-// --- إعدادات محرك القوالب EJS ---
+// --- إعداد EJS كمحرك القوالب ---
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views')); // تحديد مسار مجلد القوالب
+// --- تحديد مسار مجلد العرض (views) ليكون المجلد العام (public) ---
+app.set('views', path.join(__dirname, 'public'));
+
 
 // --- إعدادات قاعدة البيانات ---
 const mongoUrl = process.env.MONGO_URI;
@@ -39,6 +42,7 @@ app.get('/privacy', (req, res) => {
 app.get('/contact', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
+
 
 // --- تحديد معدل الطلبات ---
 const apiLimiter = rateLimit({
@@ -67,13 +71,15 @@ app.post(
     [
         body('inputs.input-name').trim().customSanitizer(value => purify.sanitize(value)),
         body('inputs.input-tagline').trim().customSanitizer(value => purify.sanitize(value)),
-        body('inputs.input-email').isEmail().normalizeEmail(),
-        body('dynamic.phones.*').isMobilePhone().withMessage('Invalid phone number'),
+        // ملاحظة: التحقق من البريد الإلكتروني والهاتف قد يكون صارماً جداً، يمكن تعديله إذا لزم الأمر
+        body('inputs.input-email').optional({ checkFalsy: true }).isEmail().normalizeEmail(),
+        body('dynamic.phones.*').optional({ checkFalsy: true }).isMobilePhone().withMessage('Invalid phone number'),
     ],
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
+            // لا ترسل خطأ 400 للمستخدم النهائي، فقط سجل الأخطاء
+            console.warn('Validation errors:', errors.array());
         }
 
         if (!db) {
@@ -121,36 +127,36 @@ app.get('/api/get-design/:id', async (req, res) => {
 });
 
 // --- Page Routing (مع الوسوم الديناميكية و SEO المحسن) ---
-// تم تحديث هذا الجزء بالكامل
+// *** التعديل الجوهري هنا ***
 app.get('/card/:id', async (req, res) => {
     try {
+        const { id } = req.params;
         if (!db) {
-            // إذا لم تكن قاعدة البيانات متصلة، اعرض صفحة خطأ أو صفحة المحرر الرئيسية
-            return res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
+            // إذا لم تكن قاعدة البيانات متصلة، اعرض صفحة خطأ بسيطة
+            return res.status(503).send('Service Unavailable. Please try again later.');
         }
 
-        const { id } = req.params;
         const collection = db.collection(collectionName);
         const design = await collection.findOne({ shortId: id });
 
         if (design && design.data) {
             const cardData = design.data;
-            const pageUrl = `https://mcprim.com/nfc/card/${id}`; // يجب تعديل الرابط ليعكس رابط موقعك الفعلي
+            const cardName = cardData.inputs['input-name'] || 'بطاقة عمل رقمية';
+            const cardTagline = cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
+            // استخدم شعار البطاقة كصورة أساسية، مع وجود صورة احتياطية
+            const cardImage = cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/og-image.png';
+            const pageUrl = `https://www.mcprim.com/nfc/card/${id}`; // استخدم الدومين الفعلي هنا
 
-            // تجهيز البيانات لتمريرها إلى قالب EJS
-            const templateData = {
-                cardName: cardData.inputs['input-name'] || 'بطاقة عمل رقمية',
-                cardTagline: cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية',
-                cardImage: cardData.inputs['input-logo'] || 'https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png', // رابط صورة افتراضي
-                pageUrl: pageUrl,
-                cardData: cardData // تمرير كامل بيانات التصميم للقالب
-            };
-            
-            // تصيير (Render) قالب viewer.ejs مع البيانات الديناميكية
-            res.render('viewer', templateData);
-
+            // استخدم res.render لعرض قالب viewer.ejs مع تمرير البيانات
+            res.render('viewer', {
+                cardName,
+                cardTagline,
+                cardImage,
+                pageUrl,
+                cardData // مرر كل بيانات البطاقة للقالب
+            });
         } else {
-            // إذا لم يتم العثور على التصميم، اعرض صفحة 404
+            // إذا لم يتم العثور على البطاقة، اعرض صفحة 404
             res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }
     } catch (error) {
@@ -160,7 +166,7 @@ app.get('/card/:id', async (req, res) => {
 });
 
 
-// Redirect root to index.html for the editor
+// توجيه الصفحة الرئيسية إلى المحرر
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
