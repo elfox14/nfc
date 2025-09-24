@@ -10,12 +10,19 @@ const { nanoid } = require('nanoid');
 const { body, validationResult } = require('express-validator');
 const { JSDOM } = require('jsdom');
 const DOMPurify = require('dompurify');
+const multer = require('multer');
+const sharp = require('sharp');
+const ejs = require('ejs');
 
 const window = new JSDOM('').window;
 const purify = DOMPurify(window);
 
 const app = express();
 const port = 3000;
+
+// --- EJS Setup ---
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'public'));
 
 // --- إعدادات قاعدة البيانات ---
 const mongoUrl = process.env.MONGO_URI;
@@ -27,6 +34,17 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+<<<<<<< Updated upstream
+=======
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploaded images statically
+
+// --- Create uploads directory if it doesn't exist ---
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+}
+
+>>>>>>> Stashed changes
 app.get('/about', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
@@ -45,6 +63,21 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
+// --- Multer Configuration for Image Uploads ---
+const storage = multer.memoryStorage(); // Store image in memory for processing
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Not an image! Please upload an image file.'), false);
+        }
+    }
+});
+
+
 // --- الاتصال بقاعدة البيانات ---
 MongoClient.connect(mongoUrl)
     .then(client => {
@@ -57,6 +90,36 @@ MongoClient.connect(mongoUrl)
     });
 
 // --- API Routes ---
+<<<<<<< Updated upstream
+=======
+
+// API Route for Image Uploading and Processing
+app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No image file uploaded.' });
+    }
+
+    try {
+        const filename = `${nanoid(10)}.webp`;
+        const outputPath = path.join(uploadDir, filename);
+
+        await sharp(req.file.buffer)
+            .resize({ width: 1280, height: 1280, fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: 80 })
+            .toFile(outputPath);
+
+        const imageUrl = `/uploads/${filename}`;
+        res.json({ success: true, url: imageUrl });
+
+    } catch (error) {
+        console.error('Error processing image:', error);
+        res.status(500).json({ error: 'Failed to process image.' });
+    }
+});
+
+
+// API لحفظ تصميم جديد مع التحقق والتنقية
+>>>>>>> Stashed changes
 app.post(
     '/api/save-design',
     [
@@ -93,6 +156,11 @@ app.post(
     }
 );
 
+<<<<<<< Updated upstream
+=======
+
+// API لجلب تصميم محفوظ
+>>>>>>> Stashed changes
 app.get('/api/get-design/:id', async (req, res) => {
     if (!db) {
         return res.status(500).json({ error: 'Database not connected' });
@@ -113,6 +181,7 @@ app.get('/api/get-design/:id', async (req, res) => {
     }
 });
 
+<<<<<<< Updated upstream
 app.get('/api/gallery', async (req, res) => {
     if (!db) {
         return res.status(500).json({ error: 'Database not connected' });
@@ -131,6 +200,9 @@ app.get('/api/gallery', async (req, res) => {
 });
 
 // --- Page Routing (SSR-First Approach) ---
+=======
+// --- Page Routing (مع الوسوم الديناميكية و SEO المحسن) ---
+>>>>>>> Stashed changes
 app.get('/card/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -138,6 +210,7 @@ app.get('/card/:id', async (req, res) => {
         const design = await collection.findOne({ shortId: id });
 
         if (design && design.data) {
+<<<<<<< Updated upstream
             // **FIX: Use viewer.html as the template, not index.html**
             const filePath = path.join(__dirname, 'public', 'viewer.html');
             let htmlData = fs.readFileSync(filePath, 'utf8');
@@ -208,6 +281,19 @@ app.get('/card/:id', async (req, res) => {
                 .replace('</head>', `${schemaGraph}</head>`);
             
             return res.send(htmlData);
+=======
+            const cardData = design.data;
+            const renderData = {
+                cardName: cardData.inputs['input-name'] || 'بطاقة عمل رقمية',
+                cardTagline: cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية',
+                cardImage: cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png',
+                pageUrl: `https://www.mcprim.com/nfc/card/${id}`,
+                cardData: cardData
+            };
+            res.render('viewer', renderData);
+        } else {
+            res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+>>>>>>> Stashed changes
         }
         
         return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
@@ -218,6 +304,10 @@ app.get('/card/:id', async (req, res) => {
     }
 });
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 app.use((req, res, next) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
@@ -229,4 +319,9 @@ app.use((err, req, res, next) => {
 
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
+<<<<<<< Updated upstream
 });
+=======
+});
+
+>>>>>>> Stashed changes
