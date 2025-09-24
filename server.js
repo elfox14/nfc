@@ -6,10 +6,10 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
-const { nanoid } = require('nanoid'); // <-- استخدام nanoid
-const { body, validationResult } = require('express-validator'); // <-- للتحقق من المدخلات
-const { JSDOM } = require('jsdom'); // <-- لمعالجة HTML وتنقيته
-const DOMPurify = require('dompurify'); // <-- لتنقية المدخلات من XSS
+const { nanoid } = require('nanoid');
+const { body, validationResult } = require('express-validator');
+const { JSDOM } = require('jsdom');
+const DOMPurify = require('dompurify');
 
 const window = new JSDOM('').window;
 const purify = DOMPurify(window);
@@ -57,11 +57,8 @@ MongoClient.connect(mongoUrl)
     });
 
 // --- API Routes ---
-
-// API لحفظ تصميم جديد مع التحقق والتنقية
 app.post(
     '/api/save-design',
-    // --- إضافة التحقق والتنقية هنا ---
     [
         body('inputs.input-name').trim().customSanitizer(value => purify.sanitize(value)),
         body('inputs.input-tagline').trim().customSanitizer(value => purify.sanitize(value)),
@@ -79,7 +76,7 @@ app.post(
         }
         try {
             const designData = req.body;
-            const shortId = nanoid(8); // <-- استخدام nanoid لإنشاء معرف آمن
+            const shortId = nanoid(8);
 
             const collection = db.collection(collectionName);
             await collection.insertOne({
@@ -96,8 +93,6 @@ app.post(
     }
 );
 
-
-// API لجلب تصميم محفوظ
 app.get('/api/get-design/:id', async (req, res) => {
     if (!db) {
         return res.status(500).json({ error: 'Database not connected' });
@@ -138,17 +133,54 @@ app.get('/card/:id', async (req, res) => {
                 const cardImage = design.data.inputs['input-logo'] || 'https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png';
                 const pageUrl = `https://mcprim.com/nfc/card/${id}`;
                 
-                // --- إضافة Schema ديناميكي لتحسين SEO ---
-                const personSchema = `<script type="application/ld+json">
+                // --- START: تعديل مخطط Schema ---
+                const schemaGraph = `<script type="application/ld+json">
                 {
                   "@context": "https://schema.org",
-                  "@type": "Person",
-                  "name": "${cardName.replace(/"/g, '\\"')}",
-                  "jobTitle": "${cardTagline.replace(/"/g, '\\"')}",
-                  "image": "${cardImage}",
-                  "url": "${pageUrl}"
+                  "@graph": [
+                    {
+                      "@type": "Person",
+                      "@id": "${pageUrl}",
+                      "name": "${cardName.replace(/"/g, '\\"')}",
+                      "jobTitle": "${cardTagline.replace(/"/g, '\\"')}",
+                      "image": {
+                        "@type": "ImageObject",
+                        "url": "${cardImage}"
+                      },
+                      "url": "${pageUrl}"
+                    },
+                    {
+                      "@type": "WebPage",
+                      "url": "${pageUrl}",
+                      "about": {
+                        "@id": "${pageUrl}"
+                      },
+                      "primaryImageOfPage": {
+                        "@type": "ImageObject",
+                        "url": "${cardImage}"
+                      },
+                      "breadcrumb": {
+                        "@id": "${pageUrl}#breadcrumb"
+                      }
+                    },
+                    {
+                      "@type": "BreadcrumbList",
+                      "@id": "${pageUrl}#breadcrumb",
+                      "itemListElement": [{
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "الرئيسية",
+                        "item": "https://www.mcprim.com/nfc/"
+                      },{
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "${cardName.replace(/"/g, '\\"')}"
+                      }]
+                    }
+                  ]
                 }
                 </script>`;
+                // --- END: تعديل مخطط Schema ---
 
                 htmlData = htmlData
                     .replace(/<title>.*?<\/title>/, `<title>${cardName}</title>`)
@@ -157,7 +189,7 @@ app.get('/card/:id', async (req, res) => {
                     .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardTagline}"/>`)
                     .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${cardImage}"/>`)
                     .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
-                    .replace('</head>', `${personSchema}</head>`); // حقن الـ Schema في نهاية ה-head
+                    .replace('</head>', `${schemaGraph}</head>`); // حقن المخطط الجديد
                 
                 return res.send(htmlData);
             }
