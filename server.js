@@ -138,6 +138,7 @@ app.get('/card/:id', async (req, res) => {
         const design = await collection.findOne({ shortId: id });
 
         if (design && design.data) {
+            // **FIX: Use viewer.html as the template, not index.html**
             const filePath = path.join(__dirname, 'public', 'viewer.html');
             let htmlData = fs.readFileSync(filePath, 'utf8');
 
@@ -148,10 +149,9 @@ app.get('/card/:id', async (req, res) => {
             const optimizedOgImageUrl = 'https://www.mcprim.com/nfc/og-image.png';
             const pageUrl = `https://mcprim.com/nfc/card/${id}`;
             
-            // --- START: Dynamic Title Generation ---
+            // **FIX: Generate dynamic titles**
             const pageTitle = `عرض وحفظ بطاقة ${cardName} الرقمية – MC PRIME`;
             const ogTitle = `بطاقة عمل ${cardName}`;
-            // --- END: Dynamic Title Generation ---
 
             const personSchema = {
                 "@type": "Person",
