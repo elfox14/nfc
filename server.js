@@ -6,10 +6,10 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
-const { nanoid } = require('nanoid');
-const { body, validationResult } = require('express-validator');
-const { JSDOM } = require('jsdom');
-const DOMPurify = require('dompurify');
+const { nanoid } = require('nanoid'); // <-- استخدام nanoid
+const { body, validationResult } = require('express-validator'); // <-- للتحقق من المدخلات
+const { JSDOM } = require('jsdom'); // <-- لمعالجة HTML وتنقيته
+const DOMPurify = require('dompurify'); // <-- لتنقية المدخلات من XSS
 
 const window = new JSDOM('').window;
 const purify = DOMPurify(window);
@@ -26,6 +26,16 @@ let db;
 // --- Middlewares ---
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/about', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'about.html'));
+});
+app.get('/privacy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
+app.get('/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+});
 
 // --- تحديد معدل الطلبات ---
 const apiLimiter = rateLimit({
@@ -33,6 +43,7 @@ const apiLimiter = rateLimit({
     max: 100,
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });
+app.use('/api/', apiLimiter);
 
 // --- الاتصال بقاعدة البيانات ---
 MongoClient.connect(mongoUrl)
@@ -45,82 +56,127 @@ MongoClient.connect(mongoUrl)
         process.exit(1);
     });
 
-// --- خدمة الملفات الثابتة (CSS, JS, Images) ---
-// MODIFICATION: Serve static files from the project root (/nfc) itself
-app.use('/nfc', express.static(__dirname));
-
 // --- API Routes ---
-// Apply rate limiter to API routes
-app.post('/nfc/api/save-design', apiLimiter, [
-    // Validation rules...
-], async (req, res) => {
-    // ... Save design logic (no changes)
-});
 
-app.get('/nfc/api/get-design/:id', async (req, res) => {
-    // ... Get design logic (no changes)
-});
-
-// --- Language-aware Page Routing ---
-const langRouter = express.Router();
-
-langRouter.get('/', (req, res) => {
-    // MODIFICATION: Removed 'public' from the path
-    res.sendFile(path.join(__dirname, `index-${req.params.lang}.html`));
-});
-
-// Add other static pages similarly
-langRouter.get('/blog', (req, res) => {
-    res.sendFile(path.join(__dirname, `blog-${req.params.lang}.html`));
-});
-langRouter.get('/gallery', (req, res) => {
-    res.sendFile(path.join(__dirname, `gallery-${req.params.lang}.html`));
-});
-// ... add about, contact, privacy if you create them
-
-// Route for dynamic card viewer
-langRouter.get('/card/:id', async (req, res) => {
-    try {
-        const userAgent = req.headers['user-agent'] || '';
-        const isBot = /facebookexternalhit|FacebookBot|Twitterbot|Pinterest|Discordbot/i.test(userAgent);
-        const lang = req.params.lang || 'ar';
-
-        if (isBot) {
-            // ... SEO logic for bots (no changes needed here) ...
-            // MODIFICATION: Removed 'public' from the path
-            const templatePath = path.join(__dirname, `viewer-${lang}.html`);
-            // ... rest of the bot logic
+// API لحفظ تصميم جديد مع التحقق والتنقية
+app.post(
+    '/api/save-design',
+    // --- إضافة التحقق والتنقية هنا ---
+    [
+        body('inputs.input-name').trim().customSanitizer(value => purify.sanitize(value)),
+        body('inputs.input-tagline').trim().customSanitizer(value => purify.sanitize(value)),
+        body('inputs.input-email').isEmail().normalizeEmail(),
+        body('dynamic.phones.*').isMobilePhone().withMessage('Invalid phone number'),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
-        
-        // MODIFICATION: Removed 'public' from the path
-        res.sendFile(path.join(__dirname, `viewer-${lang}.html`));
 
+        if (!db) {
+            return res.status(500).json({ error: 'Database not connected' });
+        }
+        try {
+            const designData = req.body;
+            const shortId = nanoid(8); // <-- استخدام nanoid لإنشاء معرف آمن
+
+            const collection = db.collection(collectionName);
+            await collection.insertOne({
+                shortId: shortId,
+                data: designData,
+                createdAt: new Date()
+            });
+
+            res.json({ success: true, id: shortId });
+        } catch (error) {
+            console.error('Error saving design:', error);
+            res.status(500).json({ error: 'Failed to save design' });
+        }
+    }
+);
+
+
+// API لجلب تصميم محفوظ
+app.get('/api/get-design/:id', async (req, res) => {
+    if (!db) {
+        return res.status(500).json({ error: 'Database not connected' });
+    }
+    try {
+        const { id } = req.params;
+        const collection = db.collection(collectionName);
+        const design = await collection.findOne({ shortId: id });
+
+        if (design) {
+            res.json(design.data);
+        } else {
+            res.status(404).json({ error: 'Design not found' });
+        }
     } catch (error) {
-        console.error('Error handling card request:', error);
-        // MODIFICATION: Removed 'public' from the path
-        res.sendFile(path.join(__dirname, `viewer-ar.html`));
+        console.error('Error fetching design:', error);
+        res.status(500).json({ error: 'Failed to fetch design' });
     }
 });
 
-// Use the language router under the /nfc path
-app.use('/nfc/:lang(ar|en)', langRouter);
+// --- Page Routing (مع الوسوم الديناميكية و SEO المحسن) ---
+app.get('/card/:id', async (req, res) => {
+    try {
+        const userAgent = req.headers['user-agent'] || '';
+        const isBot = /facebookexternalhit|FacebookBot|Twitterbot|Pinterest|Discordbot/i.test(userAgent);
 
+        if (isBot) {
+            const { id } = req.params;
+            const collection = db.collection(collectionName);
+            const design = await collection.findOne({ shortId: id });
 
-// --- Redirects ---
-app.get('/nfc/', (req, res) => res.redirect(301, '/nfc/ar/'));
-// ... other redirects remain the same
+            if (design && design.data) {
+                const filePath = path.join(__dirname, 'public', 'index.html');
+                let htmlData = fs.readFileSync(filePath, 'utf8');
 
+                const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
+                const cardTagline = design.data.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
+                const cardImage = design.data.inputs['input-logo'] || 'https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png';
+                const pageUrl = `https://mcprim.com/nfc/card/${id}`;
+                
+                // --- إضافة Schema ديناميكي لتحسين SEO ---
+                const personSchema = `<script type="application/ld+json">
+                {
+                  "@context": "https://schema.org",
+                  "@type": "Person",
+                  "name": "${cardName.replace(/"/g, '\\"')}",
+                  "jobTitle": "${cardTagline.replace(/"/g, '\\"')}",
+                  "image": "${cardImage}",
+                  "url": "${pageUrl}"
+                }
+                </script>`;
 
-// --- Error Handling ---
+                htmlData = htmlData
+                    .replace(/<title>.*?<\/title>/, `<title>${cardName}</title>`)
+                    .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${cardTagline}"/>`)
+                    .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${cardName}"/>`)
+                    .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardTagline}"/>`)
+                    .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${cardImage}"/>`)
+                    .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
+                    .replace('</head>', `${personSchema}</head>`); // حقن الـ Schema في نهاية ה-head
+                
+                return res.send(htmlData);
+            }
+        }
+
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    } catch (error) {
+        console.error('Error handling card request:', error);
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
+});
+
 app.use((req, res, next) => {
-  // MODIFICATION: Removed 'public' from the path
-  res.status(404).sendFile(path.join(__dirname, '404.html'));
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 app.use((err, req, res, next) => {
   console.error('Internal Server Error:', err);
-  // MODIFICATION: Removed 'public' from the path
-  res.status(500).sendFile(path.join(__dirname, '500.html'));
+  res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
 });
 
 app.listen(port, () => {
