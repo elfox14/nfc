@@ -130,10 +130,10 @@ app.get('/card/:id', async (req, res) => {
 
                 const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
                 const cardTagline = design.data.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
-                const cardImage = design.data.inputs['input-logo'] || 'https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png';
+                const cardLogoUrl = (design.data.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png').replace(/^http:\/\//i, 'https://');
+                const optimizedOgImageUrl = 'https://www.mcprim.com/nfc/og-image.png'; // صورة المشاركة المخصصة بالأبعاد الصحيحة
                 const pageUrl = `https://mcprim.com/nfc/card/${id}`;
                 
-                // --- START: تعديل مخطط Schema ---
                 const schemaGraph = `<script type="application/ld+json">
                 {
                   "@context": "https://schema.org",
@@ -145,7 +145,7 @@ app.get('/card/:id', async (req, res) => {
                       "jobTitle": "${cardTagline.replace(/"/g, '\\"')}",
                       "image": {
                         "@type": "ImageObject",
-                        "url": "${cardImage}"
+                        "url": "${cardLogoUrl}"
                       },
                       "url": "${pageUrl}"
                     },
@@ -157,7 +157,7 @@ app.get('/card/:id', async (req, res) => {
                       },
                       "primaryImageOfPage": {
                         "@type": "ImageObject",
-                        "url": "${cardImage}"
+                        "url": "${cardLogoUrl}"
                       },
                       "breadcrumb": {
                         "@id": "${pageUrl}#breadcrumb"
@@ -180,16 +180,15 @@ app.get('/card/:id', async (req, res) => {
                   ]
                 }
                 </script>`;
-                // --- END: تعديل مخطط Schema ---
 
                 htmlData = htmlData
                     .replace(/<title>.*?<\/title>/, `<title>${cardName}</title>`)
                     .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${cardTagline}"/>`)
                     .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${cardName}"/>`)
                     .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardTagline}"/>`)
-                    .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${cardImage}"/>`)
+                    .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${optimizedOgImageUrl}"/>`)
                     .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
-                    .replace('</head>', `${schemaGraph}</head>`); // حقن المخطط الجديد
+                    .replace('</head>', `${schemaGraph}</head>`);
                 
                 return res.send(htmlData);
             }
