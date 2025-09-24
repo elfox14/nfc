@@ -129,7 +129,7 @@ app.get('/card/:id', async (req, res) => {
                 let htmlData = fs.readFileSync(filePath, 'utf8');
 
                 const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
-                const cardTagline = design.data.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية';
+                const cardTagline = design.data.inputs['input-tagline'] || 'بطاقة عمل رقمية ذكية من MC PRIME. اعرض وشارك بيانات الاتصال الخاصة بك بلمسة واحدة.';
                 const cardLogoUrl = (design.data.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png').replace(/^http:\/\//i, 'https://');
                 const optimizedOgImageUrl = 'https://www.mcprim.com/nfc/og-image.png'; // صورة المشاركة المخصصة بالأبعاد الصحيحة
                 const pageUrl = `https://mcprim.com/nfc/card/${id}`;
@@ -183,9 +183,9 @@ app.get('/card/:id', async (req, res) => {
 
                 htmlData = htmlData
                     .replace(/<title>.*?<\/title>/, `<title>${cardName}</title>`)
-                    .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${cardTagline}"/>`)
-                    .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${cardName}"/>`)
-                    .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardTagline}"/>`)
+                    .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${cardTagline.replace(/"/g, '\\"')}"/>`)
+                    .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${cardName.replace(/"/g, '\\"')}"/>`)
+                    .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardTagline.replace(/"/g, '\\"')}"/>`)
                     .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${optimizedOgImageUrl}"/>`)
                     .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
                     .replace('</head>', `${schemaGraph}</head>`);
