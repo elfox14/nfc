@@ -10,12 +10,19 @@ const { nanoid } = require('nanoid');
 const { body, validationResult } = require('express-validator');
 const { JSDOM } = require('jsdom');
 const DOMPurify = require('dompurify');
+const multer = require('multer');
+const sharp = require('sharp');
+const ejs = require('ejs');
 
 const window = new JSDOM('').window;
 const purify = DOMPurify(window);
 
 const app = express();
 const port = 3000;
+
+// --- EJS Setup ---
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'public'));
 
 // --- إعدادات قاعدة البيانات ---
 const mongoUrl = process.env.MONGO_URI;
@@ -27,6 +34,14 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploaded images statically
+
+// --- Create uploads directory if it doesn't exist ---
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+}
+
 app.get('/about', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
@@ -45,6 +60,21 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
+// --- Multer Configuration for Image Uploads ---
+const storage = multer.memoryStorage(); // Store image in memory for processing
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Not an image! Please upload an image file.'), false);
+        }
+    }
+});
+
+
 // --- الاتصال بقاعدة البيانات ---
 MongoClient.connect(mongoUrl)
     .then(client => {
@@ -57,6 +87,33 @@ MongoClient.connect(mongoUrl)
     });
 
 // --- API Routes ---
+
+// API Route for Image Uploading and Processing
+app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No image file uploaded.' });
+    }
+
+    try {
+        const filename = `${nanoid(10)}.webp`;
+        const outputPath = path.join(uploadDir, filename);
+
+        await sharp(req.file.buffer)
+            .resize({ width: 1280, height: 1280, fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: 80 })
+            .toFile(outputPath);
+
+        const imageUrl = `/uploads/${filename}`;
+        res.json({ success: true, url: imageUrl });
+
+    } catch (error) {
+        console.error('Error processing image:', error);
+        res.status(500).json({ error: 'Failed to process image.' });
+    }
+});
+
+
+// API لحفظ تصميم جديد مع التحقق والتنقية
 app.post(
     '/api/save-design',
     [
@@ -93,6 +150,8 @@ app.post(
     }
 );
 
+
+// API لجلب تصميم محفوظ
 app.get('/api/get-design/:id', async (req, res) => {
     if (!db) {
         return res.status(500).json({ error: 'Database not connected' });
@@ -113,6 +172,7 @@ app.get('/api/get-design/:id', async (req, res) => {
     }
 });
 
+// API لجلب تصاميم المعرض (آخر 20 تصميم)
 app.get('/api/gallery', async (req, res) => {
     if (!db) {
         return res.status(500).json({ error: 'Database not connected' });
@@ -130,7 +190,8 @@ app.get('/api/gallery', async (req, res) => {
     }
 });
 
-// --- Page Routing (SSR-First Approach) ---
+
+// --- Page Routing (مع الوسوم الديناميكية و SEO المحسن) ---
 app.get('/card/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -138,85 +199,25 @@ app.get('/card/:id', async (req, res) => {
         const design = await collection.findOne({ shortId: id });
 
         if (design && design.data) {
-            // **FIX: Use viewer.html as the template, not index.html**
-            const filePath = path.join(__dirname, 'public', 'viewer.html');
-            let htmlData = fs.readFileSync(filePath, 'utf8');
-
-            const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
-            const cardTagline = design.data.inputs['input-tagline'];
-            const cardDescription = cardTagline || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.';
-            const cardLogoUrl = (design.data.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png').replace(/^http:\/\//i, 'https://');
-            const optimizedOgImageUrl = 'https://www.mcprim.com/nfc/og-image.png';
-            const pageUrl = `https://mcprim.com/nfc/card/${id}`;
-            
-            // **FIX: Generate dynamic titles**
-            const pageTitle = `عرض وحفظ بطاقة ${cardName} الرقمية – MC PRIME`;
-            const ogTitle = `بطاقة عمل ${cardName}`;
-
-            const personSchema = {
-                "@type": "Person",
-                "@id": pageUrl,
-                "name": cardName,
-                "image": { "@type": "ImageObject", "url": cardLogoUrl },
-                "url": pageUrl,
-                "sameAs": []
+            const cardData = design.data;
+            const renderData = {
+                cardName: cardData.inputs['input-name'] || 'بطاقة عمل رقمية',
+                cardTagline: cardData.inputs['input-tagline'] || 'تم إنشاؤها عبر محرر البطاقات الرقمية',
+                cardImage: cardData.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png',
+                pageUrl: `https://www.mcprim.com/nfc/card/${id}`,
+                cardData: cardData
             };
-            if (cardTagline) personSchema.jobTitle = cardTagline;
-            const socialLinks = design.data.dynamic?.social || [];
-            socialLinks.forEach(link => {
-                if (link.platform && link.value) {
-                    const prefix = `https://www.${link.platform}.com/`;
-                    const fullUrl = link.value.startsWith('http') ? link.value : prefix + link.value;
-                    personSchema.sameAs.push(fullUrl);
-                }
-            });
-            if (design.data.inputs['input-linkedin']) personSchema.sameAs.push(design.data.inputs['input-linkedin']);
-
-            const schemaGraph = `<script type="application/ld+json">
-            {
-              "@context": "https://schema.org",
-              "@graph": [
-                ${JSON.stringify(personSchema)},
-                {
-                  "@type": "WebPage",
-                  "url": "${pageUrl}",
-                  "name": "${pageTitle.replace(/"/g, '\\"')}",
-                  "about": { "@id": "${pageUrl}" },
-                  "primaryImageOfPage": { "@type": "ImageObject", "url": "${cardLogoUrl}" },
-                  "breadcrumb": { "@id": "${pageUrl}#breadcrumb" }
-                },
-                {
-                  "@type": "BreadcrumbList",
-                  "@id": "${pageUrl}#breadcrumb",
-                  "itemListElement": [{
-                    "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://www.mcprim.com/nfc/"
-                  },{
-                    "@type": "ListItem", "position": 2, "name": "${cardName.replace(/"/g, '\\"')}"
-                  }]
-                }
-              ]
-            }
-            </script>`;
-
-            htmlData = htmlData
-                .replace(/<title>.*?<\/title>/, `<title>${pageTitle.replace(/"/g, '\\"')}</title>`)
-                .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${cardDescription.replace(/"/g, '\\"')}"/>`)
-                .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${ogTitle.replace(/"/g, '\\"')}"/>`)
-                .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardDescription.replace(/"/g, '\\"')}"/>`)
-                .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${optimizedOgImageUrl}"/>`)
-                .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
-                .replace('</head>', `${schemaGraph}</head>`);
-            
-            return res.send(htmlData);
+            res.render('viewer', renderData);
+        } else {
+            res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
         }
-        
-        return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 
     } catch (error) {
         console.error('Error handling card request:', error);
         res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
     }
 });
+
 
 app.use((req, res, next) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
