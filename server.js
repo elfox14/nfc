@@ -113,6 +113,26 @@ app.get('/api/get-design/:id', async (req, res) => {
     }
 });
 
+// START: Added Gallery API Route
+app.get('/api/gallery', async (req, res) => {
+    if (!db) {
+        return res.status(500).json({ error: 'Database not connected' });
+    }
+    try {
+        const collection = db.collection(collectionName);
+        // Fetch the 20 most recent designs for the gallery
+        const designs = await collection.find({})
+                                      .sort({ createdAt: -1 })
+                                      .limit(20)
+                                      .toArray();
+        res.json(designs);
+    } catch (error) {
+        console.error('Error fetching gallery designs:', error);
+        res.status(500).json({ error: 'Failed to fetch gallery designs' });
+    }
+});
+// END: Added Gallery API Route
+
 // --- Page Routing (مع الوسوم الديناميكية و SEO المحسن) ---
 app.get('/card/:id', async (req, res) => {
     try {
@@ -129,9 +149,9 @@ app.get('/card/:id', async (req, res) => {
                 let htmlData = fs.readFileSync(filePath, 'utf8');
 
                 const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
-                const cardTagline = design.data.inputs['input-tagline'] || 'بطاقة عمل رقمية ذكية من MC PRIME. اعرض وشارك بيانات الاتصال الخاصة بك بلمسة واحدة.';
+                const cardTagline = design.data.inputs['input-tagline'] || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.';
                 const cardLogoUrl = (design.data.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png').replace(/^http:\/\//i, 'https://');
-                const optimizedOgImageUrl = 'https://www.mcprim.com/nfc/og-image.png'; // صورة المشاركة المخصصة بالأبعاد الصحيحة
+                const optimizedOgImageUrl = 'https://www.mcprim.com/nfc/og-image.png';
                 const pageUrl = `https://mcprim.com/nfc/card/${id}`;
                 
                 const schemaGraph = `<script type="application/ld+json">
