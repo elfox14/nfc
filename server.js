@@ -138,7 +138,7 @@ app.get('/card/:id', async (req, res) => {
         const design = await collection.findOne({ shortId: id });
 
         if (design && design.data) {
-            const filePath = path.join(__dirname, 'public', 'viewer.html'); // Use viewer.html as template
+            const filePath = path.join(__dirname, 'public', 'viewer.html');
             let htmlData = fs.readFileSync(filePath, 'utf8');
 
             const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
@@ -147,25 +147,21 @@ app.get('/card/:id', async (req, res) => {
             const cardLogoUrl = (design.data.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png').replace(/^http:\/\//i, 'https://');
             const optimizedOgImageUrl = 'https://www.mcprim.com/nfc/og-image.png';
             const pageUrl = `https://mcprim.com/nfc/card/${id}`;
+            
+            // --- START: Dynamic Title Generation ---
+            const pageTitle = `عرض وحفظ بطاقة ${cardName} الرقمية – MC PRIME`;
+            const ogTitle = `بطاقة عمل ${cardName}`;
+            // --- END: Dynamic Title Generation ---
 
-            // --- START: Enhanced Schema Generation ---
             const personSchema = {
                 "@type": "Person",
                 "@id": pageUrl,
                 "name": cardName,
-                "image": {
-                    "@type": "ImageObject",
-                    "url": cardLogoUrl
-                },
+                "image": { "@type": "ImageObject", "url": cardLogoUrl },
                 "url": pageUrl,
                 "sameAs": []
             };
-            
-            if (cardTagline) {
-                personSchema.jobTitle = cardTagline;
-            }
-
-            // Add sameAs links for social media
+            if (cardTagline) personSchema.jobTitle = cardTagline;
             const socialLinks = design.data.dynamic?.social || [];
             socialLinks.forEach(link => {
                 if (link.platform && link.value) {
@@ -184,6 +180,7 @@ app.get('/card/:id', async (req, res) => {
                 {
                   "@type": "WebPage",
                   "url": "${pageUrl}",
+                  "name": "${pageTitle.replace(/"/g, '\\"')}",
                   "about": { "@id": "${pageUrl}" },
                   "primaryImageOfPage": { "@type": "ImageObject", "url": "${cardLogoUrl}" },
                   "breadcrumb": { "@id": "${pageUrl}#breadcrumb" }
@@ -192,25 +189,19 @@ app.get('/card/:id', async (req, res) => {
                   "@type": "BreadcrumbList",
                   "@id": "${pageUrl}#breadcrumb",
                   "itemListElement": [{
-                    "@type": "ListItem",
-                    "position": 1,
-                    "name": "الرئيسية",
-                    "item": "https://www.mcprim.com/nfc/"
+                    "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://www.mcprim.com/nfc/"
                   },{
-                    "@type": "ListItem",
-                    "position": 2,
-                    "name": "${cardName.replace(/"/g, '\\"')}"
+                    "@type": "ListItem", "position": 2, "name": "${cardName.replace(/"/g, '\\"')}"
                   }]
                 }
               ]
             }
             </script>`;
-            // --- END: Enhanced Schema Generation ---
 
             htmlData = htmlData
-                .replace(/<title>.*?<\/title>/, `<title>${cardName}</title>`)
+                .replace(/<title>.*?<\/title>/, `<title>${pageTitle.replace(/"/g, '\\"')}</title>`)
                 .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${cardDescription.replace(/"/g, '\\"')}"/>`)
-                .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${cardName.replace(/"/g, '\\"')}"/>`)
+                .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${ogTitle.replace(/"/g, '\\"')}"/>`)
                 .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardDescription.replace(/"/g, '\\"')}"/>`)
                 .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${optimizedOgImageUrl}"/>`)
                 .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
@@ -219,7 +210,6 @@ app.get('/card/:id', async (req, res) => {
             return res.send(htmlData);
         }
         
-        // If design not found, fall back to a 404 page
         return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 
     } catch (error) {
