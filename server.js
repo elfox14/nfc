@@ -113,14 +113,12 @@ app.get('/api/get-design/:id', async (req, res) => {
     }
 });
 
-// START: Added Gallery API Route
 app.get('/api/gallery', async (req, res) => {
     if (!db) {
         return res.status(500).json({ error: 'Database not connected' });
     }
     try {
         const collection = db.collection(collectionName);
-        // Fetch the 20 most recent designs for the gallery
         const designs = await collection.find({})
                                       .sort({ createdAt: -1 })
                                       .limit(20)
@@ -131,93 +129,102 @@ app.get('/api/gallery', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch gallery designs' });
     }
 });
-// END: Added Gallery API Route
 
-// --- Page Routing (مع الوسوم الديناميكية و SEO المحسن) ---
+// --- Page Routing (SSR-First Approach) ---
 app.get('/card/:id', async (req, res) => {
     try {
-        const userAgent = req.headers['user-agent'] || '';
-        const isBot = /facebookexternalhit|FacebookBot|Twitterbot|Pinterest|Discordbot/i.test(userAgent);
+        const { id } = req.params;
+        const collection = db.collection(collectionName);
+        const design = await collection.findOne({ shortId: id });
 
-        if (isBot) {
-            const { id } = req.params;
-            const collection = db.collection(collectionName);
-            const design = await collection.findOne({ shortId: id });
+        if (design && design.data) {
+            const filePath = path.join(__dirname, 'public', 'viewer.html'); // Use viewer.html as template
+            let htmlData = fs.readFileSync(filePath, 'utf8');
 
-            if (design && design.data) {
-                const filePath = path.join(__dirname, 'public', 'index.html');
-                let htmlData = fs.readFileSync(filePath, 'utf8');
+            const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
+            const cardTagline = design.data.inputs['input-tagline'];
+            const cardDescription = cardTagline || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.';
+            const cardLogoUrl = (design.data.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png').replace(/^http:\/\//i, 'https://');
+            const optimizedOgImageUrl = 'https://www.mcprim.com/nfc/og-image.png';
+            const pageUrl = `https://mcprim.com/nfc/card/${id}`;
 
-                const cardName = design.data.inputs['input-name'] || 'بطاقة عمل رقمية';
-                const cardTagline = design.data.inputs['input-tagline'] || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.';
-                const cardLogoUrl = (design.data.inputs['input-logo'] || 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png').replace(/^http:\/\//i, 'https://');
-                const optimizedOgImageUrl = 'https://www.mcprim.com/nfc/og-image.png';
-                const pageUrl = `https://mcprim.com/nfc/card/${id}`;
-                
-                const schemaGraph = `<script type="application/ld+json">
-                {
-                  "@context": "https://schema.org",
-                  "@graph": [
-                    {
-                      "@type": "Person",
-                      "@id": "${pageUrl}",
-                      "name": "${cardName.replace(/"/g, '\\"')}",
-                      "jobTitle": "${cardTagline.replace(/"/g, '\\"')}",
-                      "image": {
-                        "@type": "ImageObject",
-                        "url": "${cardLogoUrl}"
-                      },
-                      "url": "${pageUrl}"
-                    },
-                    {
-                      "@type": "WebPage",
-                      "url": "${pageUrl}",
-                      "about": {
-                        "@id": "${pageUrl}"
-                      },
-                      "primaryImageOfPage": {
-                        "@type": "ImageObject",
-                        "url": "${cardLogoUrl}"
-                      },
-                      "breadcrumb": {
-                        "@id": "${pageUrl}#breadcrumb"
-                      }
-                    },
-                    {
-                      "@type": "BreadcrumbList",
-                      "@id": "${pageUrl}#breadcrumb",
-                      "itemListElement": [{
-                        "@type": "ListItem",
-                        "position": 1,
-                        "name": "الرئيسية",
-                        "item": "https://www.mcprim.com/nfc/"
-                      },{
-                        "@type": "ListItem",
-                        "position": 2,
-                        "name": "${cardName.replace(/"/g, '\\"')}"
-                      }]
-                    }
-                  ]
-                }
-                </script>`;
-
-                htmlData = htmlData
-                    .replace(/<title>.*?<\/title>/, `<title>${cardName}</title>`)
-                    .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${cardTagline.replace(/"/g, '\\"')}"/>`)
-                    .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${cardName.replace(/"/g, '\\"')}"/>`)
-                    .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardTagline.replace(/"/g, '\\"')}"/>`)
-                    .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${optimizedOgImageUrl}"/>`)
-                    .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
-                    .replace('</head>', `${schemaGraph}</head>`);
-                
-                return res.send(htmlData);
+            // --- START: Enhanced Schema Generation ---
+            const personSchema = {
+                "@type": "Person",
+                "@id": pageUrl,
+                "name": cardName,
+                "image": {
+                    "@type": "ImageObject",
+                    "url": cardLogoUrl
+                },
+                "url": pageUrl,
+                "sameAs": []
+            };
+            
+            if (cardTagline) {
+                personSchema.jobTitle = cardTagline;
             }
-        }
 
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+            // Add sameAs links for social media
+            const socialLinks = design.data.dynamic?.social || [];
+            socialLinks.forEach(link => {
+                if (link.platform && link.value) {
+                    const prefix = `https://www.${link.platform}.com/`;
+                    const fullUrl = link.value.startsWith('http') ? link.value : prefix + link.value;
+                    personSchema.sameAs.push(fullUrl);
+                }
+            });
+            if (design.data.inputs['input-linkedin']) personSchema.sameAs.push(design.data.inputs['input-linkedin']);
+
+            const schemaGraph = `<script type="application/ld+json">
+            {
+              "@context": "https://schema.org",
+              "@graph": [
+                ${JSON.stringify(personSchema)},
+                {
+                  "@type": "WebPage",
+                  "url": "${pageUrl}",
+                  "about": { "@id": "${pageUrl}" },
+                  "primaryImageOfPage": { "@type": "ImageObject", "url": "${cardLogoUrl}" },
+                  "breadcrumb": { "@id": "${pageUrl}#breadcrumb" }
+                },
+                {
+                  "@type": "BreadcrumbList",
+                  "@id": "${pageUrl}#breadcrumb",
+                  "itemListElement": [{
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "الرئيسية",
+                    "item": "https://www.mcprim.com/nfc/"
+                  },{
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "${cardName.replace(/"/g, '\\"')}"
+                  }]
+                }
+              ]
+            }
+            </script>`;
+            // --- END: Enhanced Schema Generation ---
+
+            htmlData = htmlData
+                .replace(/<title>.*?<\/title>/, `<title>${cardName}</title>`)
+                .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${cardDescription.replace(/"/g, '\\"')}"/>`)
+                .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${cardName.replace(/"/g, '\\"')}"/>`)
+                .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${cardDescription.replace(/"/g, '\\"')}"/>`)
+                .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${optimizedOgImageUrl}"/>`)
+                .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
+                .replace('</head>', `${schemaGraph}</head>`);
+            
+            return res.send(htmlData);
+        }
+        
+        // If design not found, fall back to a 404 page
+        return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+
     } catch (error) {
         console.error('Error handling card request:', error);
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
     }
 });
 
