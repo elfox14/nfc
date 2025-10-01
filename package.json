@@ -17,6 +17,7 @@
     "jsdom": "^26.1.0",
     "mongodb": "^6.19.0",
     "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "nanoid": "^3.3.11",
     "sharp": "^0.34.4"
   }
