@@ -19,6 +19,8 @@ const DOMPurify = DOMPurifyFactory(window);
 
 const app = express();
 const port = process.env.PORT || 3000;
+// --- إضافة جديدة: قراءة رابط الخادم الأساسي من متغيرات البيئة ---
+const serverBaseUrl = process.env.SERVER_BASE_URL || `http://localhost:${port}`;
 
 const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'nfc_db';
@@ -85,7 +87,11 @@ app.post('/api/upload-image', upload.single('image'), async (req,res) => {
     await sharp(req.file.buffer)
       .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 85 }).toFile(out);
-    return res.json({ success: true, url: '/uploads/' + filename });
+    
+    // --- تعديل: بناء الرابط الكامل للصورة ---
+    const fullUrl = new URL('/uploads/' + filename, serverBaseUrl).href;
+    return res.json({ success: true, url: fullUrl });
+
   } catch (e) {
     console.error(e); return res.status(500).json({ error: 'Upload failed' });
   }
@@ -153,9 +159,12 @@ app.post('/api/upload-background', upload.single('image'), async (req,res) => {
     await sharp(req.file.buffer)
       .resize({ width: 3840, height: 3840, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 88 }).toFile(out);
+    
+    // --- تعديل: بناء الرابط الكامل وحفظه في قاعدة البيانات ---
+    const imageUrlPath = '/uploads/' + filename;
     const payload = {
       shortId: nanoid(8),
-      url: '/uploads/' + filename,
+      url: new URL(imageUrlPath, serverBaseUrl).href, // بناء الرابط الكامل
       name: String(req.body.name || 'خلفية'),
       category: String(req.body.category || 'عام'),
       createdAt: new Date()
@@ -177,11 +186,19 @@ app.get('/api/gallery/backgrounds', async (req,res) => {
     const skip = (page-1)*limit;
     const q = (category && category!=='all') ? { category: String(category) } : {};
     const coll = db.collection(backgroundsCollectionName);
-    const [items, total] = await Promise.all([
-      coll.find(q).sort({createdAt:-1}).skip(skip).limit(limit).toArray(),
-      coll.countDocuments(q)
-    ]);
-    res.json({ success:true, items, page, limit, total, totalPages: Math.ceil(total/limit) });
+    const items = await coll.find(q).sort({createdAt:-1}).skip(skip).limit(limit).toArray();
+
+    // --- تعديل: التأكد من أن كل الروابط كاملة قبل إرسالها للواجهة ---
+    const itemsWithFullUrls = items.map(item => {
+      if (item.url && item.url.startsWith('/')) {
+        // إذا كان الرابط نسبيًا (قديم)، قم بتحويله إلى رابط كامل
+        item.url = new URL(item.url, serverBaseUrl).href;
+      }
+      return item;
+    });
+
+    const total = await coll.countDocuments(q);
+    res.json({ success:true, items: itemsWithFullUrls, page, limit, total, totalPages: Math.ceil(total/limit) });
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Fetch backgrounds failed' });
   }
@@ -196,7 +213,9 @@ app.delete('/api/backgrounds/:shortId', async (req,res) => {
     const coll = db.collection(backgroundsCollectionName);
     const doc = await coll.findOne({ shortId });
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    const filePath = path.join(uploadDir, path.basename(doc.url));
+    // Note: This deletion logic assumes the full URL is stored. It correctly extracts the filename.
+    const filename = path.basename(new URL(doc.url).pathname);
+    const filePath = path.join(uploadDir, filename);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     await coll.deleteOne({ shortId });
     res.json({ success:true });
@@ -216,11 +235,11 @@ app.get('/card/:id', async (req,res) => {
     let html = fs.readFileSync(filePath, 'utf8');
     const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
     const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
-    const pageUrl = `https://www.mcprim.com/nfc/card/${id}`;
+    const pageUrl = new URL(`/card/${id}`, serverBaseUrl).href;
     const og = {
       title: `بطاقة عمل ${cardName}`,
       desc: cardTagline || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.',
-      image: 'https://www.mcprim.com/nfc/og-image.png'
+      image: new URL('/nfc/og-image.png', 'https://www.mcprim.com').href // Assuming this is a static asset
     };
     html = html
       .replace(/<meta property="og:url" content=".*?"\s*\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
