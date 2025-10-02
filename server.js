@@ -13,6 +13,9 @@ const { JSDOM } = require('jsdom');
 const DOMPurifyFactory = require('dompurify');
 =======
 const DOMPurify = require('dompurify');
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 const multer = require('multer');
 const sharp = require('sharp');
@@ -25,7 +28,10 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 // --- EJS Setup ---
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public'));
@@ -39,6 +45,7 @@ const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgro
 let db;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -50,6 +57,8 @@ app.use((req, res, next) => {
   }
   next();
 =======
+=======
+>>>>>>> Stashed changes
 // --- Middlewares ---
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
@@ -109,6 +118,7 @@ const apiLimiter = rateLimit({
 app.use('/api/', apiLimiter);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -121,6 +131,8 @@ const upload = multer({
 
 // DB connect
 =======
+=======
+>>>>>>> Stashed changes
 // --- Multer Configuration for Image Uploads ---
 const storage = multer.memoryStorage(); // Store image in memory for processing
 const upload = multer({
@@ -311,6 +323,7 @@ app.get('/api/gallery', async (req,res) => {
 });
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 function assertAdmin(req,res) {
   const expected = process.env.ADMIN_TOKEN || '';
   const provided = req.headers['x-admin-token'] || '';
@@ -410,6 +423,8 @@ app.get('/card/:id', async (req,res) => {
 // معالج خطأ 404 في النهاية
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 app.use((req, res, next) => {
     res.status(404).send('Sorry, that page does not exist.');
 });
@@ -426,4 +441,7 @@ app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
