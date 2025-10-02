@@ -9,56 +9,60 @@ const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
 const { body, validationResult } = require('express-validator');
 const { JSDOM } = require('jsdom');
-<<<<<<< Updated upstream
-const DOMPurifyFactory = require('dompurify');
-=======
+<<<<<<< HEAD
 const DOMPurify = require('dompurify');
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
 =======
->>>>>>> Stashed changes
+const DOMPurifyFactory = require('dompurify');
+>>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
 
+<<<<<<< HEAD
+const window = new JSDOM('').window;
+const purify = DOMPurify(window);
+=======
+// --- بداية الكود التشخيصي ---
+// هذا الكود سيقوم بطباعة قائمة بالملفات في سجلات Render
+const currentDirectory = __dirname;
+fs.readdir(currentDirectory, (err, files) => {
+  if (err) {
+    console.error('Could not list the directory.', err);
+  } else {
+    console.log('--- DIAGNOSTIC: FILE LIST IN PROJECT ROOT ---');
+    files.forEach(file => {
+      console.log(file);
+    });
+    console.log('-------------------------------------------');
+  }
+});
+// --- نهاية الكود التشخيصي ---
+
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
+>>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
+<<<<<<< HEAD
 // --- EJS Setup ---
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public'));
 
 // --- إعدادات قاعدة البيانات ---
->>>>>>> Stashed changes
+=======
+// --- حل مشكلة ValidationError ---
+// يجب وضع هذا السطر مباشرة بعد تعريف app
+app.set('trust proxy', 1);
+
+>>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 const mongoUrl = process.env.MONGO_URI;
-const dbName = process.env.MONGO_DB || 'nfc_db';
-const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
-const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
+const dbName = 'nfc_db';
+const collectionName = 'designs';
 let db;
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-// Middleware
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-
-app.use((req, res, next) => {
-  if (req.path.endsWith('.html')) {
-    const newPath = req.path.slice(0, -5);
-    return res.redirect(301, newPath);
-  }
-  next();
-=======
-=======
->>>>>>> Stashed changes
+<<<<<<< HEAD
 // --- Middlewares ---
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
@@ -79,60 +83,52 @@ app.get('/privacy', (req, res) => {
 });
 app.get('/contact', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'contact.html'));
->>>>>>> Stashed changes
 });
 
-// --- بداية التعديل النهائي: استخدام المسار الصحيح للملفات ---
+// --- تحديد معدل الطلبات ---
+=======
+// Middleware
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
 
-// 1. إعادة توجيه المسار الجذري إلى /nfc/
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html')) {
+    const newPath = req.path.slice(0, -5);
+    return res.redirect(301, newPath);
+  }
+  next();
+});
+
+// تحديد المجلد الرئيسي للمشروع كمصدر للملفات
+const rootDir = __dirname;
+
+// إعادة توجيه المسار الجذري إلى /nfc/
 app.get('/', (req, res) => {
     res.redirect(301, '/nfc/');
 });
 
-// 2. تحديد المسار الصحيح إلى مجلد "nfc" وخدمة الملفات منه
-const nfcDir = path.join(__dirname, 'nfc'); // البحث عن مجلد "nfc" بجانب server.js
-if (fs.existsSync(nfcDir)) {
-    app.use('/nfc', express.static(nfcDir, { extensions: ['html'] }));
-} else {
-    console.error(`CRITICAL ERROR: The 'nfc' directory was not found at ${nfcDir}. Please ensure it exists.`);
-}
+// خدمة الملفات من المجلد الرئيسي تحت المسار '/nfc'
+app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
 
-// 3. خدمة مجلد uploads
+// خدمة مجلد uploads (إذا كان موجوداً في المجلد الرئيسي)
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir));
 
-// --- نهاية التعديل النهائي ---
-
 // Views (for viewer.ejs if needed)
 app.set('view engine', 'ejs');
-app.set('views', nfcDir); // التأكد من أن القوالب تُقرأ من المجلد الصحيح
+app.set('views', rootDir); // استخدام المجلد الرئيسي لعرض القوالب
 
 // Rate Limit and other middlewares...
+>>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api/', apiLimiter);
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype && file.mimetype.startsWith('image/')) cb(null, true);
-    else cb(new Error('Please upload an image'), false);
-  }
-});
-
-// DB connect
-=======
-=======
->>>>>>> Stashed changes
+<<<<<<< HEAD
 // --- Multer Configuration for Image Uploads ---
 const storage = multer.memoryStorage(); // Store image in memory for processing
 const upload = multer({
@@ -149,55 +145,29 @@ const upload = multer({
 
 
 // --- الاتصال بقاعدة البيانات ---
->>>>>>> Stashed changes
-MongoClient.connect(mongoUrl)
-  .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
-  .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
-
-// API and Dynamic Routes
-app.post('/api/upload-image', upload.single('image'), async (req,res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No image' });
-    const filename = nanoid(10) + '.webp';
-    const out = path.join(uploadDir, filename);
-    await sharp(req.file.buffer)
-      .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 85 }).toFile(out);
-    return res.json({ success: true, url: '/uploads/' + filename });
-  } catch (e) {
-    console.error(e); return res.status(500).json({ error: 'Upload failed' });
-  }
-});
-
-app.post('/api/save-design', async (req,res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const data = req.body || { };
-    const inputs = data.inputs || {};
-    ['input-name','input-tagline'].forEach(k => { if (inputs[k]) inputs[k] = DOMPurify.sanitize(String(inputs[k])); });
-    data.inputs = inputs;
-    const shortId = nanoid(8);
-    await db.collection(designsCollectionName).insertOne({
-      shortId, data, createdAt: new Date()
-    });
-<<<<<<< Updated upstream
-    res.json({ success:true, id: shortId });
-  } catch (e) {
-    console.error(e); res.status(500).json({ error: 'Save failed' });
-  }
-});
-
-app.get('/api/get-design/:id', async (req,res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const id = String(req.params.id);
-    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-    if (!doc) return res.status(404).json({ error: 'Design not found' });
-    res.json(doc.data);
-  } catch (e) {
-    console.error(e); res.status(500).json({ error: 'Fetch failed' });
-  }
 =======
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype && file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Please upload an image'), false);
+  }
+});
+
+// DB connect
+>>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
+MongoClient.connect(mongoUrl)
+    .then(client => {
+        console.log('Connected successfully to MongoDB server');
+        db = client.db(dbName);
+    })
+    .catch(err => {
+        console.error('Failed to connect to MongoDB', err);
+        process.exit(1);
+    });
+<<<<<<< HEAD
 
 // --- API Routes ---
 
@@ -309,21 +279,29 @@ app.get('/card/:id', async (req, res) => {
         console.error('Error handling card request:', error);
         res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
     }
->>>>>>> Stashed changes
-});
-
-app.get('/api/gallery', async (req,res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const docs = await db.collection(designsCollectionName).find({}).sort({createdAt:-1}).limit(20).toArray();
-    res.json(docs);
+=======
+    res.json({ success:true, id: shortId });
   } catch (e) {
-    console.error(e); res.status(500).json({ error: 'Fetch failed' });
+    console.error(e); res.status(500).json({ error: 'Save failed' });
   }
 });
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+app.get('/api/get-design/:id', async (req,res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const id = String(req.params.id);
+    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    if (!doc) return res.status(404).json({ error: 'Design not found' });
+    res.json(doc.data);
+  } catch (e) {
+    console.error(e); res.status(500).json({ error: 'Fetch failed' });
+  }
+>>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
+});
+
+
+<<<<<<< HEAD
+=======
 function assertAdmin(req,res) {
   const expected = process.env.ADMIN_TOKEN || '';
   const provided = req.headers['x-admin-token'] || '';
@@ -397,7 +375,7 @@ app.get('/card/:id', async (req,res) => {
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).send('Design not found');
-    const filePath = path.join(nfcDir, 'viewer.html'); // يقرأ القالب من المجلد الصحيح
+    const filePath = path.join(rootDir, 'viewer.html'); // يقرأ القالب من المجلد الرئيسي
     let html = fs.readFileSync(filePath, 'utf8');
     const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
     const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
@@ -421,27 +399,21 @@ app.get('/card/:id', async (req,res) => {
 });
 
 // معالج خطأ 404 في النهاية
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+>>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 app.use((req, res, next) => {
-    res.status(404).send('Sorry, that page does not exist.');
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 app.use((err, req, res, next) => {
   console.error('Internal Server Error:', err);
-  res.status(500).send('Internal Server Error');
+  res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
 });
 
-<<<<<<< Updated upstream
-app.listen(port, () => console.log('Server listening on port ' + port));
-=======
+<<<<<<< HEAD
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
 
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
 =======
->>>>>>> Stashed changes
+app.listen(port, () => console.log('Server listening on port ' + port));
+>>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
