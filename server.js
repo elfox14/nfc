@@ -38,26 +38,26 @@ app.use((req, res, next) => {
   next();
 });
 
-// Static
-const publicDir = path.join(__dirname, 'public');
+// --- بداية التعديل: إعادة هيكلة خدمة الملفات والروابط ---
 
-// --- بداية التعديل: تعديل مسار خدمة الملفات الثابتة ---
-if (fs.existsSync(publicDir)) {
-    // خدمة كل الملفات داخل public تحت المسار /nfc
-    app.use('/nfc', express.static(publicDir, { extensions: ['html'] }));
-}
-// --- نهاية التعديل ---
-
-// --- بداية التعديل: إعادة توجيه المسار الجذري ---
+// 1. إعادة توجيه المسار الجذري إلى /nfc/
 app.get('/', (req, res) => {
     res.redirect(301, '/nfc/');
 });
-// --- نهاية التعديل ---
 
-// uploads dir
+// 2. خدمة الملفات الثابتة من مجلد public تحت المسار /nfc
+const publicDir = path.join(__dirname, 'public');
+if (fs.existsSync(publicDir)) {
+    app.use('/nfc', express.static(publicDir, { extensions: ['html'] }));
+}
+
+// 3. خدمة مجلد uploads
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir));
+
+// --- نهاية التعديل ---
+
 
 // Views (for viewer.ejs if needed)
 app.set('view engine', 'ejs');
@@ -88,7 +88,8 @@ MongoClient.connect(mongoUrl)
   .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
-// Upload general image
+
+// API and Dynamic Routes
 app.post('/api/upload-image', upload.single('image'), async (req,res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -103,7 +104,6 @@ app.post('/api/upload-image', upload.single('image'), async (req,res) => {
   }
 });
 
-// Save design
 app.post('/api/save-design', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -121,7 +121,6 @@ app.post('/api/save-design', async (req,res) => {
   }
 });
 
-// Get design
 app.get('/api/get-design/:id', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -134,7 +133,6 @@ app.get('/api/get-design/:id', async (req,res) => {
   }
 });
 
-// Gallery of designs (recent)
 app.get('/api/gallery', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -145,7 +143,6 @@ app.get('/api/gallery', async (req,res) => {
   }
 });
 
-// Admin gate via header
 function assertAdmin(req,res) {
   const expected = process.env.ADMIN_TOKEN || '';
   const provided = req.headers['x-admin-token'] || '';
@@ -153,7 +150,6 @@ function assertAdmin(req,res) {
   return true;
 }
 
-// Upload background (admin)
 app.post('/api/upload-background', upload.single('image'), async (req,res) => {
   try {
     if (!assertAdmin(req,res)) return;
@@ -178,7 +174,6 @@ app.post('/api/upload-background', upload.single('image'), async (req,res) => {
   }
 });
 
-// Fetch backgrounds (public)
 app.get('/api/gallery/backgrounds', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -198,7 +193,6 @@ app.get('/api/gallery/backgrounds', async (req,res) => {
   }
 });
 
-// Delete background (admin)
 app.delete('/api/backgrounds/:shortId', async (req,res) => {
   try {
     if (!assertAdmin(req,res)) return;
@@ -216,7 +210,6 @@ app.delete('/api/backgrounds/:shortId', async (req,res) => {
   }
 });
 
-// SSR view of card using viewer.html as template and inject meta
 app.get('/card/:id', async (req,res) => {
   try {
     if (!db) return res.status(500).send('DB not connected');
@@ -245,6 +238,12 @@ app.get('/card/:id', async (req,res) => {
     console.error(e); res.status(500).send('Internal error');
   }
 });
+
+// --- بداية التعديل: إضافة معالج لخطأ 404 في النهاية ---
+app.use((req, res, next) => {
+    res.status(404).send('Sorry, that page does not exist.');
+});
+// --- نهاية التعديل ---
 
 app.use((err, req, res, next) => {
   console.error('Internal Server Error:', err);
