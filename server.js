@@ -30,20 +30,41 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Static
-const publicDir = path.join(__dirname, 'public');
-if (fs.existsSync(publicDir)) app.use(express.static(publicDir));
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html')) {
+    const newPath = req.path.slice(0, -5);
+    return res.redirect(301, newPath);
+  }
+  next();
+});
 
-// uploads dir
+// --- بداية التعديل النهائي: استخدام المسار الصحيح للملفات ---
+
+// 1. إعادة توجيه المسار الجذري إلى /nfc/
+app.get('/', (req, res) => {
+    res.redirect(301, '/nfc/');
+});
+
+// 2. تحديد المسار الصحيح إلى مجلد "nfc" وخدمة الملفات منه
+const nfcDir = path.join(__dirname, 'nfc'); // البحث عن مجلد "nfc" بجانب server.js
+if (fs.existsSync(nfcDir)) {
+    app.use('/nfc', express.static(nfcDir, { extensions: ['html'] }));
+} else {
+    console.error(`CRITICAL ERROR: The 'nfc' directory was not found at ${nfcDir}. Please ensure it exists.`);
+}
+
+// 3. خدمة مجلد uploads
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir));
 
+// --- نهاية التعديل النهائي ---
+
 // Views (for viewer.ejs if needed)
 app.set('view engine', 'ejs');
-app.set('views', publicDir);
+app.set('views', nfcDir); // التأكد من أن القوالب تُقرأ من المجلد الصحيح
 
-// Rate Limit
+// Rate Limit and other middlewares...
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -52,7 +73,6 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// Multer
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -68,15 +88,7 @@ MongoClient.connect(mongoUrl)
   .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
-// Basic pages if exist
-['about','privacy','contact'].forEach(name => {
-  app.get('/'+name, (req,res) => {
-    const p = path.join(publicDir, name + '.html');
-    if (fs.existsSync(p)) res.sendFile(p); else res.status(404).send('Not found');
-  });
-});
-
-// Upload general image
+// API and Dynamic Routes
 app.post('/api/upload-image', upload.single('image'), async (req,res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -91,12 +103,10 @@ app.post('/api/upload-image', upload.single('image'), async (req,res) => {
   }
 });
 
-// Save design
 app.post('/api/save-design', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const data = req.body || { };
-    // sanitize some fields
     const inputs = data.inputs || {};
     ['input-name','input-tagline'].forEach(k => { if (inputs[k]) inputs[k] = DOMPurify.sanitize(String(inputs[k])); });
     data.inputs = inputs;
@@ -110,7 +120,6 @@ app.post('/api/save-design', async (req,res) => {
   }
 });
 
-// Get design
 app.get('/api/get-design/:id', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -123,7 +132,6 @@ app.get('/api/get-design/:id', async (req,res) => {
   }
 });
 
-// Gallery of designs (recent)
 app.get('/api/gallery', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -134,7 +142,6 @@ app.get('/api/gallery', async (req,res) => {
   }
 });
 
-// Admin gate via header
 function assertAdmin(req,res) {
   const expected = process.env.ADMIN_TOKEN || '';
   const provided = req.headers['x-admin-token'] || '';
@@ -142,7 +149,6 @@ function assertAdmin(req,res) {
   return true;
 }
 
-// Upload background (admin)
 app.post('/api/upload-background', upload.single('image'), async (req,res) => {
   try {
     if (!assertAdmin(req,res)) return;
@@ -167,7 +173,6 @@ app.post('/api/upload-background', upload.single('image'), async (req,res) => {
   }
 });
 
-// Fetch backgrounds (public)
 app.get('/api/gallery/backgrounds', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -187,7 +192,6 @@ app.get('/api/gallery/backgrounds', async (req,res) => {
   }
 });
 
-// Delete background (admin)
 app.delete('/api/backgrounds/:shortId', async (req,res) => {
   try {
     if (!assertAdmin(req,res)) return;
@@ -205,18 +209,17 @@ app.delete('/api/backgrounds/:shortId', async (req,res) => {
   }
 });
 
-// SSR view of card using viewer.html as template and inject meta
 app.get('/card/:id', async (req,res) => {
   try {
     if (!db) return res.status(500).send('DB not connected');
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).send('Design not found');
-    const filePath = path.join(publicDir, 'viewer.html');
+    const filePath = path.join(nfcDir, 'viewer.html'); // يقرأ القالب من المجلد الصحيح
     let html = fs.readFileSync(filePath, 'utf8');
     const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
     const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
-    const pageUrl = `https://www.mcprim.com/nfc/card/${id}`;
+    const pageUrl = `https://www.mcprim.com/card/${id}`;
     const og = {
       title: `بطاقة عمل ${cardName}`,
       desc: cardTagline || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.',
@@ -233,6 +236,11 @@ app.get('/card/:id', async (req,res) => {
   } catch (e) {
     console.error(e); res.status(500).send('Internal error');
   }
+});
+
+// معالج خطأ 404 في النهاية
+app.use((req, res, next) => {
+    res.status(404).send('Sorry, that page does not exist.');
 });
 
 app.use((err, req, res, next) => {
