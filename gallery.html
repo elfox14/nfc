@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معرض الأعمال وقوالب كروت NFC | MC PRIME</title>
+    <meta name="description" content="تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة. شاهد أمثلة حقيقية لبطاقات عمل رقمية تم إنشاؤها باستخدام محرر MC PRIME المجاني.">
+    <link rel="canonical" href="https://www.mcprim.com/nfc/gallery" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Tajawal:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "CollectionPage",
+          "name": "معرض الأعمال وقوالب كروت NFC جاهزة | MC PRIME",
+          "description": "تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة.",
+          "url": "https://www.mcprim.com/nfc/gallery",
+          "mainEntity": {
+            "@type": "ItemList",
+            "name": "أمثلة بطاقات عمل رقمية",
+            "description": "قائمة من بطاقات العمل الرقمية التي تم تصميمها بواسطة مستخدمي MC PRIME.",
+            "itemListElement": []
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "الرئيسية",
+            "item": "https://www.mcprim.com/nfc/"
+          },{
+            "@type": "ListItem",
+            "position": 2,
+            "name": "معرض الأعمال"
+          }]
+        }
+      ]
+    }
+    </script>
+    
+    <link rel="stylesheet" href="/nfc/style.css">
+    <style>
+        body {
+            background-color: var(--page-bg);
+            color: var(--text-primary);
+        }
+        .gallery-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 15px;
+        }
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .gallery-header h1 {
+            font-size: 2.5rem;
+            color: var(--accent-primary);
+        }
+        .gallery-header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0.5rem auto 0 auto;
+        }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .gallery-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: var(--form-bg);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .gallery-card-link:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .card-info {
+            padding: 15px;
+        }
+        .card-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .card-info p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .loader-container {
+            text-align: center;
+            padding: 4rem 0;
+        }
+        .error-message {
+            text-align: center;
+            padding: 4rem 0;
+            color: var(--danger-color);
+        }
+        /* START: Thumbnail Preview Styles */
+        .card-thumbnail {
+            width: 100%;
+            aspect-ratio: 51 / 33;
+            position: relative;
+            overflow: hidden;
+            background: #1c2a3b;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+        .thumb-bg-layer {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+        }
+        .thumb-content-layer {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            padding: 8%; /* Adjust padding for smaller scale */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+        }
+        .thumb-logo {
+            object-fit: contain;
+        }
+        .thumb-identity h3, .thumb-identity p {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .thumb-identity h3 {
+            margin-bottom: 2px;
+        }
+        .thumb-layout-modern .thumb-content-layer {
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+        }
+         .thumb-layout-modern .thumb-identity {
+            text-align: right;
+        }
+        html.ltr .thumb-layout-modern .thumb-identity {
+            text-align: left;
+        }
+        .thumb-layout-vertical .thumb-content-layer {
+            justify-content: flex-start;
+            padding-top: 10%;
+            gap: 15px;
+        }
+        /* END: Thumbnail Preview Styles */
+    </style>
+</head>
+<body>
+
+    <div class="gallery-container">
+        <header class="gallery-header">
+            <h1>معرض الأعمال</h1>
+            <p>تصفح أحدث التصاميم التي أنشأها مستخدمونا. اضغط على أي بطاقة لعرضها مباشرة.</p>
+        </header>
+
+        <main>
+            <div id="loader" class="loader-container">
+                <div class="spinner" style="margin: 0 auto 1rem auto;"></div>
+                <p>جاري تحميل أحدث التصاميم...</p>
+            </div>
+            <div id="error-message" class="error-message" style="display: none;">
+                <h2>عفواً، حدث خطأ</h2>
+                <p>عفواً، حدث خطأ أثناء تحميل المعرض. يرجى المحاولة مرة أخرى لاحقاً.</p>
+            </div>
+            <div id="gallery-grid" class="gallery-grid">
+                </div>
+        </main>
+    </div>
+
+    <footer>
+      &copy; 2025 جميع الحقوق محفوظة. | 
+      <a href="/nfc/">الرئيسية</a> | 
+      <a href="/nfc/gallery">المعرض</a> |
+      <a href="/nfc/blog">المدونة</a> |
+      <a href="/nfc/about">من نحن</a> |
+      <a href="/nfc/contact">اتصل بنا</a> | 
+      <a href="/nfc/privacy">سياسة الخصوصية</a>
+      </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('gallery-grid');
+            const loader = document.getElementById('loader');
+            const errorMessage = document.getElementById('error-message');
+            const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
+
+            async function fetchGalleryCards() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/gallery`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const designs = await response.json();
+                    
+                    loader.style.display = 'none';
+
+                    if (designs.length === 0) {
+                        errorMessage.innerHTML = '<h2>المعرض فارغ حالياً</h2><p>كن أول من يصمم بطاقة لتظهر هنا!</p>';
+                        errorMessage.style.display = 'block';
+                        return;
+                    }
+                    
+                    const schemaScript = document.querySelector('script[type="application/ld+json"]');
+                    if (schemaScript) {
+                        try {
+                            const schema = JSON.parse(schemaScript.textContent);
+                            const collectionPageObject = schema['@graph'].find(item => item['@type'] === 'CollectionPage');
+                            if (collectionPageObject) {
+                                const itemList = collectionPageObject.mainEntity;
+                                
+                                designs.forEach((design, index) => {
+                                    if (!design.shortId || !design.data || !design.data.inputs) return;
+                                    
+                                    itemList.itemListElement.push({
+                                        "@type": "ListItem",
+                                        "position": index + 1,
+                                        "item": {
+                                            "@type": "CreativeWork",
+                                            "name": design.data.inputs['input-name'] || 'تصميم بطاقة عمل',
+                                            "description": design.data.inputs['input-tagline'] || 'أحد القوالب المتاحة في معرض أعمالنا.',
+                                            "url": `https://www.mcprim.com/card/${design.shortId}`
+                                        }
+                                    });
+                                });
+                                
+                                schemaScript.textContent = JSON.stringify(schema, null, 2);
+                            }
+                        } catch (e) {
+                            console.error("Failed to update schema:", e);
+                        }
+                    }
+
+                    designs.forEach(design => {
+                        if (!design.shortId || !design.data || !design.data.inputs) {
+                            console.warn('Skipping invalid design object:', design);
+                            return;
+                        }
+
+                        const inputs = design.data.inputs;
+                        const layout = inputs['layout-select'] || 'classic';
+                        
+                        const cardElement = document.createElement('div');
+                        cardElement.className = 'gallery-card-item';
+
+                        const cardLink = document.createElement('a');
+                        // --- بداية التعديل: إصلاح مسار الرابط ---
+                        cardLink.href = `/card/${design.shortId}`;
+                        // --- نهاية التعديل ---
+                        cardLink.className = 'gallery-card-link';
+                        cardLink.target = '_blank';
+                        cardLink.rel = 'noopener noreferrer';
+
+                        // --- Build Thumbnail ---
+                        const thumbnailContainer = document.createElement('div');
+                        thumbnailContainer.className = `card-thumbnail thumb-layout-${layout}`;
+                        
+                        const bgImageLayer = document.createElement('div');
+                        bgImageLayer.className = 'thumb-bg-layer';
+                        if (design.data.imageUrls && design.data.imageUrls.front) {
+                            bgImageLayer.style.backgroundImage = `url(${design.data.imageUrls.front})`;
+                        }
+
+                        const bgGradientLayer = document.createElement('div');
+                        bgGradientLayer.className = 'thumb-bg-layer';
+                        bgGradientLayer.style.backgroundImage = `linear-gradient(135deg, ${inputs['front-bg-start']}, ${inputs['front-bg-end']})`;
+                        bgGradientLayer.style.opacity = inputs['front-bg-opacity'];
+
+                        const contentLayer = document.createElement('div');
+                        contentLayer.className = 'thumb-content-layer';
+
+                        const logoImg = document.createElement('img');
+                        logoImg.className = 'thumb-logo';
+                        logoImg.src = inputs['input-logo'] || 'mcprime-logo-transparent.png';
+                        logoImg.style.maxWidth = `${inputs['logo-size']}%`;
+                        logoImg.style.opacity = inputs['logo-opacity'];
+
+                        const identityDiv = document.createElement('div');
+                        identityDiv.className = 'thumb-identity';
+                        
+                        const nameH3 = document.createElement('h3');
+                        nameH3.textContent = inputs['input-name'] || 'اسم';
+                        nameH3.style.color = inputs['name-color'];
+                        nameH3.style.fontFamily = inputs['name-font'];
+                        nameH3.style.fontSize = `${inputs['name-font-size'] * 0.6}px`; // Scale font size
+
+                        const taglineP = document.createElement('p');
+                        taglineP.textContent = inputs['input-tagline'] || 'وصف';
+                        taglineP.style.color = inputs['tagline-color'];
+                        taglineP.style.fontFamily = inputs['tagline-font'];
+                        taglineP.style.fontSize = `${inputs['tagline-font-size'] * 0.7}px`; // Scale font size
+
+                        identityDiv.append(nameH3, taglineP);
+                        contentLayer.append(logoImg, identityDiv);
+                        thumbnailContainer.append(bgImageLayer, bgGradientLayer, contentLayer);
+                        cardLink.appendChild(thumbnailContainer);
+                        
+                        // --- Build Info Section ---
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className = 'card-info';
+                        infoDiv.innerHTML = `<h3>${inputs['input-name'] || 'اسم غير محدد'}</h3><p>${inputs['input-tagline'] || 'وصف غير محدد'}</p>`;
+                        cardLink.appendChild(infoDiv);
+
+                        cardElement.appendChild(cardLink);
+                        grid.appendChild(cardElement);
+                    });
+
+                } catch (error) {
+                    console.error('Failed to fetch gallery cards:', error);
+                    loader.style.display = 'none';
+                    errorMessage.style.display = 'block';
+                }
+            }
+
+            fetchGalleryCards();
+        });
+    </script>
+</body>
+</html>
