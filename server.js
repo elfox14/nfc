@@ -38,18 +38,19 @@ app.use((req, res, next) => {
   next();
 });
 
-
-// --- بداية التعديل: طريقة جديدة لخدمة الملفات ---
+// --- بداية التعديل النهائي: استخدام المسار الصحيح للملفات ---
 
 // 1. إعادة توجيه المسار الجذري إلى /nfc/
 app.get('/', (req, res) => {
     res.redirect(301, '/nfc/');
 });
 
-// 2. خدمة محتويات مجلد 'public/nfc' بشكل مباشر تحت المسار '/nfc'
-const nfcDir = path.join(__dirname, 'public', 'nfc');
+// 2. تحديد المسار الصحيح إلى مجلد "nfc" وخدمة الملفات منه
+const nfcDir = path.join(__dirname, 'nfc'); // البحث عن مجلد "nfc" بجانب server.js
 if (fs.existsSync(nfcDir)) {
     app.use('/nfc', express.static(nfcDir, { extensions: ['html'] }));
+} else {
+    console.error(`CRITICAL ERROR: The 'nfc' directory was not found at ${nfcDir}. Please ensure it exists.`);
 }
 
 // 3. خدمة مجلد uploads
@@ -57,13 +58,13 @@ const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir));
 
-// --- نهاية التعديل ---
+// --- نهاية التعديل النهائي ---
 
 // Views (for viewer.ejs if needed)
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'public', 'nfc')); // التأكد من أن القوالب تُقرأ من المجلد الصحيح
+app.set('views', nfcDir); // التأكد من أن القوالب تُقرأ من المجلد الصحيح
 
-// Rate Limit
+// Rate Limit and other middlewares...
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -72,7 +73,6 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// Multer
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -87,7 +87,6 @@ const upload = multer({
 MongoClient.connect(mongoUrl)
   .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
-
 
 // API and Dynamic Routes
 app.post('/api/upload-image', upload.single('image'), async (req,res) => {
