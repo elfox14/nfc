@@ -1,4 +1,12 @@
+# السماح لعناكب البحث بالوصول إلى الموقع بالكامل
 User-agent: *
 Allow: /
 
-Sitemap: https://www.elfoxdm.com/elfox/nfc/sitemap.xml
+# حظر ملفات حساسة أو غير ضرورية
+Disallow: /admin/
+Disallow: /cgi-bin/
+Disallow: /tmp/
+Disallow: /private/
+
+# رابط الخريطة الصحيح
+Sitemap: https://www.mcprim.com/nfc/sitemap.xml

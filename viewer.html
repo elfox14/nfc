@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>عرض وحفظ بطاقتك الرقمية (PNG/PDF/VCF) – MC PRIME</title>
+    <meta name="description" content="اعرض بطاقتك الرقمية من MC PRIME واحفظها مباشرة. قم بتنزيل نسخة بصيغة صورة (PNG)، ملف (PDF)، أو كجهة اتصال (vCard) لهاتفك.">
+
+    <link rel="canonical" href="https://www.mcprim.com/nfc/" />
+    <meta property="og:title" content="عرض وحفظ بطاقتك الرقمية (PNG/PDF/VCF) – MC PRIME" />
+    <meta property="og:description" content="اعرض بطاقتك الرقمية من MC PRIME واحفظها مباشرة. قم بتنزيل نسخة بصيغة صورة (PNG)، ملف (PDF)، أو كجهة اتصال (vCard) لهاتفك." />
+    <meta property="og:image" content="https://www.mcprim.com/nfc/og-image.png" />
+    <meta property="og:url" content="https://www.mcprim.com/nfc/" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="robots" content="noindex, follow">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebPage",
+          "name": "عرض وحفظ بطاقتك الرقمية (PNG/PDF/VCF) – MC PRIME",
+          "description": "اعرض بطاقتك الرقمية من MC PRIME واحفظها مباشرة. قم بتنزيل نسخة بصيغة صورة (PNG)، ملف (PDF)، أو كجهة اتصال (vCard) لهاتفك.",
+          "url": "https://www.mcprim.com/nfc/"
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "الرئيسية",
+            "item": "https://www.mcprim.com/nfc/"
+          },{
+            "@type": "ListItem",
+            "position": 2,
+            "name": "عرض البطاقة"
+          }]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "كيف أحفظ جهة الاتصال؟",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "اضغط على زر 'حفظ جهة الاتصال (VCF)' وسيتم تنزيل ملف يمكن إضافته مباشرة إلى جهات اتصال هاتفك."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "كيف أحفظ البطاقة كصورة؟",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "استخدم أزرار 'حفظ الواجهة (PNG)' أو 'حفظ الخلفية (PNG)' لتنزيل صورة عالية الجودة لكل وجه من وجهي البطاقة."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Poppins:wght@400;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="/nfc/style.css">
+    <link rel="stylesheet" href="/nfc/viewer.css">
+    </head>
+<body>
+
+    <div id="loader" class="viewer-loader">
+        <div class="spinner"></div>
+        <p>جاري تحميل البطاقة...</p>
+    </div>
+
+    <div class="viewer-container" style="display: none;">
+        
+        <h1 id="card-viewer-title" class="visually-hidden">عرض بطاقة العمل الرقمية</h1>
+        
+        <div class="cta-section">
+            <h2>هل تريد بطاقة مثل هذه؟</h2>
+            <a href="https://www.mcprim.com/nfc" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">اصنع بطاقتك الخاصة الآن</a>
+        </div>
+
+        <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
+            </main>
+        
+        <div class="save-options">
+            <h2>حفظ ومشاركة البطاقة</h2>
+            <p style="font-size: 0.9rem; color: var(--secondary-text-color); margin-top: -10px; margin-bottom: 20px;">احفظ جهة الاتصال مباشرة أو قم بتنزيل نسخة من البطاقة.</p>
+            
+            <button id="save-vcf-btn" class="btn btn-success"><i class="fas fa-address-card"></i> حفظ جهة الاتصال (VCF)</button>
+            
+            <details class="fieldset-accordion" style="margin-top: 15px;">
+                <summary style="text-align: center; list-style: none; padding: 10px; font-size: 0.9rem;">خيارات تنزيل أخرى</summary>
+                <div class="fieldset-content" style="padding-top: 15px; border-top: 1px solid var(--accent-secondary);">
+                    <button id="save-front-png-btn" class="btn btn-primary"><i class="fas fa-image"></i> حفظ الواجهة (PNG)</button>
+                    <button id="save-back-png-btn" class="btn btn-primary"><i class="fas fa-image"></i> حفظ الخلفية (PNG)</button>
+                    <button id="save-pdf-btn" class="btn btn-primary"><i class="fas fa-file-pdf"></i> حفظ كملف PDF</button>
+                </div>
+            </details>
+        </div>
+
+        <section class="faq-section" style="background-color: #fff; padding: 25px; border-radius: 12px; width: 100%; box-sizing: border-box;">
+            <h2>أسئلة شائعة</h2>
+            <details class="fieldset-accordion">
+                <summary>كيف أحفظ جهة الاتصال؟</summary>
+                <div class="fieldset-content"><p>اضغط على زر "حفظ جهة الاتصال (VCF)" وسيتم تنزيل ملف يمكن إضافته مباشرة إلى جهات اتصال هاتفك.</p></div>
+            </details>
+            <details class="fieldset-accordion">
+                <summary>كيف أحفظ البطاقة كصورة؟</summary>
+                <div class="fieldset-content"><p>استخدم أزرار "حفظ الواجهة (PNG)" أو "حفظ الخلفية (PNG)" لتنزيل صورة عالية الجودة لكل وجه من وجهي البطاقة.</p></div>
+            </details>
+        </section>
+
+    </div>
+    
+    <div id="qrcode-container-temp" class="visually-hidden"></div>
+
+    <script src="/nfc/viewer.js"></script>
+    <footer>
+      &copy; 2025 جميع الحقوق محفوظة. | 
+      <a href="/nfc/">الرئيسية</a> | 
+      <a href="/nfc/blog">المدونة</a> |
+      <a href="/nfc/about">من نحن</a> |
+      <a href="/nfc/contact">اتصل بنا</a> | 
+      <a href="/nfc/privacy">سياسة الخصوصية</a>
+    </footer>
+    </body>
+</html>
