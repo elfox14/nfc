@@ -38,17 +38,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- بداية التعديل: إعادة هيكلة خدمة الملفات والروابط ---
+
+// --- بداية التعديل: طريقة جديدة لخدمة الملفات ---
 
 // 1. إعادة توجيه المسار الجذري إلى /nfc/
 app.get('/', (req, res) => {
     res.redirect(301, '/nfc/');
 });
 
-// 2. خدمة الملفات الثابتة من مجلد public تحت المسار /nfc
-const publicDir = path.join(__dirname, 'public');
-if (fs.existsSync(publicDir)) {
-    app.use('/nfc', express.static(publicDir, { extensions: ['html'] }));
+// 2. خدمة محتويات مجلد 'public/nfc' بشكل مباشر تحت المسار '/nfc'
+const nfcDir = path.join(__dirname, 'public', 'nfc');
+if (fs.existsSync(nfcDir)) {
+    app.use('/nfc', express.static(nfcDir, { extensions: ['html'] }));
 }
 
 // 3. خدمة مجلد uploads
@@ -58,10 +59,9 @@ app.use('/uploads', express.static(uploadDir));
 
 // --- نهاية التعديل ---
 
-
 // Views (for viewer.ejs if needed)
 app.set('view engine', 'ejs');
-app.set('views', publicDir);
+app.set('views', path.join(__dirname, 'public', 'nfc')); // التأكد من أن القوالب تُقرأ من المجلد الصحيح
 
 // Rate Limit
 const apiLimiter = rateLimit({
@@ -216,7 +216,7 @@ app.get('/card/:id', async (req,res) => {
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).send('Design not found');
-    const filePath = path.join(publicDir, 'viewer.html');
+    const filePath = path.join(nfcDir, 'viewer.html'); // يقرأ القالب من المجلد الصحيح
     let html = fs.readFileSync(filePath, 'utf8');
     const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
     const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
@@ -239,11 +239,10 @@ app.get('/card/:id', async (req,res) => {
   }
 });
 
-// --- بداية التعديل: إضافة معالج لخطأ 404 في النهاية ---
+// معالج خطأ 404 في النهاية
 app.use((req, res, next) => {
     res.status(404).send('Sorry, that page does not exist.');
 });
-// --- نهاية التعديل ---
 
 app.use((err, req, res, next) => {
   console.error('Internal Server Error:', err);
