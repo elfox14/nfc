@@ -14,28 +14,13 @@ const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
 
-// --- بداية الكود التشخيصي ---
-const currentDirectory = __dirname;
-fs.readdir(currentDirectory, (err, files) => {
-  if (err) {
-    console.error('Could not list the directory.', err);
-  } else {
-    console.log('--- DIAGNOSTIC: FILE LIST IN PROJECT ROOT ---');
-    files.forEach(file => {
-      console.log(file);
-    });
-    console.log('-------------------------------------------');
-  }
-});
-// --- نهاية الكود التشخيصي ---
-
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// حل مشكلة ValidationError
+// حل مشكلة ValidationError الخاصة بـ express-rate-limit
 app.set('trust proxy', 1);
 
 const mongoUrl = process.env.MONGO_URI;
@@ -56,17 +41,24 @@ app.use((req, res, next) => {
   next();
 });
 
-const rootDir = __dirname;
+// --- بداية الحل النهائي الصحيح ---
 
+// 1. إعادة توجيه المسار الجذري إلى /nfc/
 app.get('/', (req, res) => {
     res.redirect(301, '/nfc/');
 });
 
-app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
+// 2. خدمة المجلد الرئيسي للمشروع بأكمله
+// عند طلب /nfc/gallery، سيبحث تلقائياً عن مجلد nfc ثم ملف gallery.html
+const rootDir = __dirname;
+app.use(express.static(rootDir, { extensions: ['html'] }));
 
+// 3. خدمة مجلد uploads
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir));
+
+// --- نهاية الحل النهائي الصحيح ---
 
 app.set('view engine', 'ejs');
 app.set('views', rootDir); 
@@ -93,6 +85,7 @@ MongoClient.connect(mongoUrl)
   .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
+// API and Dynamic Routes
 app.post('/api/upload-image', upload.single('image'), async (req,res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -181,7 +174,7 @@ app.get('/api/gallery/backgrounds', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const category = req.query.category;
-    const page = Math.max(1, parseInt(req.query.page||'1',10));
+    const page = Math.max(1, parseInt(req.query.page||'I',10));
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit||'50',10)));
     const skip = (page-1)*limit;
     const q = (category && category!=='all') ? { category: String(category) } : {};
@@ -219,7 +212,7 @@ app.get('/card/:id', async (req,res) => {
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).send('Design not found');
-    const filePath = path.join(rootDir, 'viewer.html');
+    const filePath = path.join(__dirname, 'nfc', 'viewer.html'); // تعديل المسار هنا ليقرأ الملف من داخل مجلد nfc
     let html = fs.readFileSync(filePath, 'utf8');
     const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
     const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
