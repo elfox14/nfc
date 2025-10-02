@@ -7,41 +7,18 @@ const cors = require('cors');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
+const { body, validationResult } = require('express-validator');
 const { JSDOM } = require('jsdom');
 const DOMPurifyFactory = require('dompurify');
 const multer = require('multer');
+const sharp = require('sharp');
 const ejs = require('ejs');
-
-// --- إضافات Cloudinary ---
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
 
 const app = express();
 const port = process.env.PORT || 3000;
-
-// --- تكوين Cloudinary ---
-// يقوم بقراءة المتغيرات من إعدادات البيئة على Render
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// --- تكوين مساحة تخزين Cloudinary لـ Multer ---
-// هذا يخبر Multer برفع الملفات مباشرة إلى Cloudinary بدلاً من الخادم المحلي
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'nfc_backgrounds', // يمكنك تغيير اسم المجلد على Cloudinary
-    allowed_formats: ['jpeg', 'png', 'webp', 'jpg', 'gif'],
-    transformation: [{ width: 2500, height: 2500, crop: 'limit' }] // لتصغير الصور الكبيرة تلقائيًا
-  },
-});
-
-const upload = multer({ storage: storage });
 
 const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'nfc_db';
@@ -53,67 +30,106 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Static (للواجهة الأمامية وملفاتها مثل CSS و JS)
+// --- بداية التعديل: إعادة توجيه الروابط المنتهية بـ .html ---
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html')) {
+    const newPath = req.path.slice(0, -5); // إزالة .html
+    return res.redirect(301, newPath);
+  }
+  next();
+});
+// --- نهاية التعديل ---
+
+// Static
 const publicDir = path.join(__dirname, 'public');
-if (fs.existsSync(publicDir)) app.use(express.static(publicDir));
+if (fs.existsSync(publicDir)) {
+    // --- بداية التعديل: تفعيل خيار الامتدادات للروابط النظيفة ---
+    app.use(express.static(publicDir, { extensions: ['html'] }));
+    // --- نهاية التعديل ---
+}
 
-// (لم نعد بحاجة لخدمة مجلد "uploads" لأنه تم استبداله بـ Cloudinary)
 
+// uploads dir
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+app.use('/uploads', express.static(uploadDir));
+
+// Views (for viewer.ejs if needed)
 app.set('view engine', 'ejs');
 app.set('views', publicDir);
 
 // Rate Limit
-const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false });
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false
+});
 app.use('/api/', apiLimiter);
+
+// Multer
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype && file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Please upload an image'), false);
+  }
+});
 
 // DB connect
 MongoClient.connect(mongoUrl)
   .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
+// --- بداية التعديل: تم حذف هذا الجزء لأن express.static سيتعامل معه الآن ---
+/* ['about','privacy','contact'].forEach(name => {
+  app.get('/'+name, (req,res) => {
+    const p = path.join(publicDir, name + '.html');
+    if (fs.existsSync(p)) res.sendFile(p); else res.status(404).send('Not found');
+  });
+});
+*/
+// --- نهاية التعديل ---
 
-// --- ENDPOINTS ---
 
-// Admin gate via header
-function assertAdmin(req, res, next) {
-  const expected = process.env.ADMIN_TOKEN || '';
-  const provided = req.headers['x-admin-token'] || '';
-  if (!expected || expected !== provided) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  next(); // يسمح بالمرور إلى الدالة التالية إذا كان التوكن صحيحًا
-}
-
-// Upload general image (for logos, photos)
-app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+// Upload general image
+app.post('/api/upload-image', upload.single('image'), async (req,res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No image provided' });
-    // req.file.path يحتوي الآن على الرابط الدائم من Cloudinary
-    return res.json({ success: true, url: req.file.path });
+    if (!req.file) return res.status(400).json({ error: 'No image' });
+    const filename = nanoid(10) + '.webp';
+    const out = path.join(uploadDir, filename);
+    await sharp(req.file.buffer)
+      .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 85 }).toFile(out);
+    return res.json({ success: true, url: '/uploads/' + filename });
   } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Image upload failed' });
+    console.error(e); return res.status(500).json({ error: 'Upload failed' });
   }
 });
 
 // Save design
-app.post('/api/save-design', async (req, res) => {
+app.post('/api/save-design', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const data = req.body || {};
+    const data = req.body || { };
+    // sanitize some fields
     const inputs = data.inputs || {};
-    ['input-name', 'input-tagline'].forEach(k => { if (inputs[k]) inputs[k] = DOMPurify.sanitize(String(inputs[k])); });
+    ['input-name','input-tagline'].forEach(k => { if (inputs[k]) inputs[k] = DOMPurify.sanitize(String(inputs[k])); });
     data.inputs = inputs;
     const shortId = nanoid(8);
-    await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date() });
-    res.json({ success: true, id: shortId });
+    await db.collection(designsCollectionName).insertOne({
+      shortId, data, createdAt: new Date()
+    });
+    res.json({ success:true, id: shortId });
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Save failed' });
   }
 });
 
 // Get design
-app.get('/api/get-design/:id', async (req, res) => {
+app.get('/api/get-design/:id', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
@@ -125,74 +141,121 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
-// Upload background (Admin only)
-app.post('/api/upload-background', assertAdmin, upload.single('image'), async (req, res) => {
+// Gallery of designs (recent)
+app.get('/api/gallery', async (req,res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No image' });
     if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const docs = await db.collection(designsCollectionName).find({}).sort({createdAt:-1}).limit(20).toArray();
+    res.json(docs);
+  } catch (e) {
+    console.error(e); res.status(500).json({ error: 'Fetch failed' });
+  }
+});
 
+// Admin gate via header
+function assertAdmin(req,res) {
+  const expected = process.env.ADMIN_TOKEN || '';
+  const provided = req.headers['x-admin-token'] || '';
+  if (!expected || expected !== provided) { res.status(401).json({ error: 'Unauthorized' }); return false; }
+  return true;
+}
+
+// Upload background (admin)
+app.post('/api/upload-background', upload.single('image'), async (req,res) => {
+  try {
+    if (!assertAdmin(req,res)) return;
+    if (!req.file) return res.status(400).json({ error:'No image' });
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const filename = 'bg_' + nanoid(10) + '.webp';
+    const out = path.join(uploadDir, filename);
+    await sharp(req.file.buffer)
+      .resize({ width: 3840, height: 3840, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 88 }).toFile(out);
     const payload = {
       shortId: nanoid(8),
-      url: req.file.path, // الرابط الدائم من Cloudinary
-      public_id: req.file.filename, // المعرّف الفريد للصورة على Cloudinary (مهم للحذف)
+      url: '/uploads/' + filename,
       name: String(req.body.name || 'خلفية'),
       category: String(req.body.category || 'عام'),
       createdAt: new Date()
     };
     await db.collection(backgroundsCollectionName).insertOne(payload);
-    res.json({ success: true, background: payload });
+    res.json({ success:true, background: payload });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Upload background failed' });
+    console.error(e); res.status(500).json({ error: 'Upload background failed' });
   }
 });
 
-// Fetch backgrounds (Public)
-app.get('/api/gallery/backgrounds', async (req, res) => {
+// Fetch backgrounds (public)
+app.get('/api/gallery/backgrounds', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const category = req.query.category;
+    const page = Math.max(1, parseInt(req.query.page||'1',10));
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit||'50',10)));
+    const skip = (page-1)*limit;
+    const q = (category && category!=='all') ? { category: String(category) } : {};
     const coll = db.collection(backgroundsCollectionName);
-    const items = await coll.find({}).sort({ createdAt: -1 }).limit(100).toArray();
-    res.json({ success: true, items });
+    const [items, total] = await Promise.all([
+      coll.find(q).sort({createdAt:-1}).skip(skip).limit(limit).toArray(),
+      coll.countDocuments(q)
+    ]);
+    res.json({ success:true, items, page, limit, total, totalPages: Math.ceil(total/limit) });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Fetch backgrounds failed' });
+    console.error(e); res.status(500).json({ error: 'Fetch backgrounds failed' });
   }
 });
 
-// Delete background (Admin only)
-app.delete('/api/backgrounds/:shortId', assertAdmin, async (req, res) => {
+// Delete background (admin)
+app.delete('/api/backgrounds/:shortId', async (req,res) => {
   try {
+    if (!assertAdmin(req,res)) return;
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const shortId = String(req.params.shortId);
     const coll = db.collection(backgroundsCollectionName);
     const doc = await coll.findOne({ shortId });
-    if (!doc) return res.status(404).json({ error: 'Background not found in database' });
-
-    // 1. حذف الصورة من Cloudinary
-    if (doc.public_id) {
-      await cloudinary.uploader.destroy(doc.public_id);
-    }
-
-    // 2. حذف البيانات من قاعدة بيانات MongoDB
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+    const filePath = path.join(uploadDir, path.basename(doc.url));
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     await coll.deleteOne({ shortId });
-    res.json({ success: true });
+    res.json({ success:true });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Delete failed' });
+    console.error(e); res.status(500).json({ error: 'Delete failed' });
   }
 });
 
-// SSR view for cards (remains the same)
-app.get('/card/:id', async (req, res) => {
-    // ... no changes needed here
+// SSR view of card using viewer.html as template and inject meta
+app.get('/card/:id', async (req,res) => {
+  try {
+    if (!db) return res.status(500).send('DB not connected');
+    const id = String(req.params.id);
+    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    if (!doc) return res.status(404).send('Design not found');
+    const filePath = path.join(publicDir, 'viewer.html');
+    let html = fs.readFileSync(filePath, 'utf8');
+    const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
+    const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
+    const pageUrl = `https://www.mcprim.com/nfc/card/${id}`;
+    const og = {
+      title: `بطاقة عمل ${cardName}`,
+      desc: cardTagline || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.',
+      image: 'https://www.mcprim.com/nfc/og-image.png'
+    };
+    html = html
+      .replace(/<meta property="og:url" content=".*?"\s*\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
+      .replace(/<title>.*?<\/title>/, `<title>عرض وحفظ بطاقة ${cardName}</title>`)
+      .replace(/<meta name="description" content=".*?"\s*\/>/, `<meta name="description" content="${og.desc}"/>`)
+      .replace(/<meta property="og:title" content=".*?"\s*\/>/, `<meta property="og:title" content="${og.title}"/>`)
+      .replace(/<meta property="og:description" content=".*?"\s*\/>/, `<meta property="og:description" content="${og.desc}"/>`)
+      .replace(/<meta property="og:image" content=".*?"\s*\/>/, `<meta property="og:image" content="${og.image}"/>`);
+    res.send(html);
+  } catch (e) {
+    console.error(e); res.status(500).send('Internal error');
+  }
 });
 
-// Error handling
 app.use((err, req, res, next) => {
   console.error('Internal Server Error:', err);
   res.status(500).send('Internal Server Error');
 });
 
-// Start server
 app.listen(port, () => console.log('Server listening on port ' + port));
