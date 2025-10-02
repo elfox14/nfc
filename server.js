@@ -14,11 +14,31 @@ const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
 
+// --- بداية الكود التشخيصي ---
+// هذا الكود سيقوم بطباعة قائمة بالملفات في سجلات Render
+const currentDirectory = __dirname;
+fs.readdir(currentDirectory, (err, files) => {
+  if (err) {
+    console.error('Could not list the directory.', err);
+  } else {
+    console.log('--- DIAGNOSTIC: FILE LIST IN PROJECT ROOT ---');
+    files.forEach(file => {
+      console.log(file);
+    });
+    console.log('-------------------------------------------');
+  }
+});
+// --- نهاية الكود التشخيصي ---
+
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// --- حل مشكلة ValidationError ---
+// يجب وضع هذا السطر مباشرة بعد تعريف app
+app.set('trust proxy', 1);
 
 const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'nfc_db';
@@ -38,25 +58,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- بداية الحل النهائي ---
-
-// 1. تحديد المجلد الرئيسي للمشروع كمصدر للملفات
+// تحديد المجلد الرئيسي للمشروع كمصدر للملفات
 const rootDir = __dirname;
 
-// 2. إعادة توجيه المسار الجذري إلى /nfc/
+// إعادة توجيه المسار الجذري إلى /nfc/
 app.get('/', (req, res) => {
     res.redirect(301, '/nfc/');
 });
 
-// 3. خدمة الملفات من المجلد الرئيسي تحت المسار '/nfc'
+// خدمة الملفات من المجلد الرئيسي تحت المسار '/nfc'
 app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
 
-// 4. خدمة مجلد uploads (إذا كان موجوداً في المجلد الرئيسي)
+// خدمة مجلد uploads (إذا كان موجوداً في المجلد الرئيسي)
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir));
-
-// --- نهاية الحل النهائي ---
 
 // Views (for viewer.ejs if needed)
 app.set('view engine', 'ejs');
@@ -87,7 +103,6 @@ MongoClient.connect(mongoUrl)
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
 // API and Dynamic Routes
-// ... (بقية الكود الخاص بالـ API يبقى كما هو)
 app.post('/api/upload-image', upload.single('image'), async (req,res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
