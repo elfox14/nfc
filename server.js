@@ -30,24 +30,29 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// --- بداية التعديل: إعادة توجيه الروابط المنتهية بـ .html ---
 app.use((req, res, next) => {
   if (req.path.endsWith('.html')) {
-    const newPath = req.path.slice(0, -5); // إزالة .html
+    const newPath = req.path.slice(0, -5);
     return res.redirect(301, newPath);
   }
   next();
 });
-// --- نهاية التعديل ---
 
 // Static
 const publicDir = path.join(__dirname, 'public');
-if (fs.existsSync(publicDir)) {
-    // --- بداية التعديل: تفعيل خيار الامتدادات للروابط النظيفة ---
-    app.use(express.static(publicDir, { extensions: ['html'] }));
-    // --- نهاية التعديل ---
-}
 
+// --- بداية التعديل: تعديل مسار خدمة الملفات الثابتة ---
+if (fs.existsSync(publicDir)) {
+    // خدمة كل الملفات داخل public تحت المسار /nfc
+    app.use('/nfc', express.static(publicDir, { extensions: ['html'] }));
+}
+// --- نهاية التعديل ---
+
+// --- بداية التعديل: إعادة توجيه المسار الجذري ---
+app.get('/', (req, res) => {
+    res.redirect(301, '/nfc/');
+});
+// --- نهاية التعديل ---
 
 // uploads dir
 const uploadDir = path.join(__dirname, 'uploads');
@@ -83,17 +88,6 @@ MongoClient.connect(mongoUrl)
   .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
-// --- بداية التعديل: تم حذف هذا الجزء لأن express.static سيتعامل معه الآن ---
-/* ['about','privacy','contact'].forEach(name => {
-  app.get('/'+name, (req,res) => {
-    const p = path.join(publicDir, name + '.html');
-    if (fs.existsSync(p)) res.sendFile(p); else res.status(404).send('Not found');
-  });
-});
-*/
-// --- نهاية التعديل ---
-
-
 // Upload general image
 app.post('/api/upload-image', upload.single('image'), async (req,res) => {
   try {
@@ -114,7 +108,6 @@ app.post('/api/save-design', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const data = req.body || { };
-    // sanitize some fields
     const inputs = data.inputs || {};
     ['input-name','input-tagline'].forEach(k => { if (inputs[k]) inputs[k] = DOMPurify.sanitize(String(inputs[k])); });
     data.inputs = inputs;
@@ -234,7 +227,7 @@ app.get('/card/:id', async (req,res) => {
     let html = fs.readFileSync(filePath, 'utf8');
     const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
     const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
-    const pageUrl = `https://www.mcprim.com/nfc/card/${id}`;
+    const pageUrl = `https://www.mcprim.com/card/${id}`;
     const og = {
       title: `بطاقة عمل ${cardName}`,
       desc: cardTagline || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.',
