@@ -45,17 +45,16 @@ const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 app.set('view engine', 'ejs');
-app.set('views', rootDir);
+app.set('views', rootDir); 
 
-// --- بداية التعديل ---
-
-// 1. إعادة توجيه المسار الجذري
+// إعادة توجيه المسار الجذري
 app.get('/', (req, res) => {
     res.redirect(301, '/nfc/');
 });
 
-// 2. تعريف المسار الديناميكي لعرض البطاقة (تم نقله إلى هنا)
-app.get('/card/:id', async (req,res) => {
+// --- بداية التعديل: تعديل مسار عرض البطاقة ---
+// تعريف المسار الديناميكي لعرض البطاقة بالبنية الصحيحة
+app.get('/nfc/card/:id', async (req,res) => {
   try {
     if (!db) return res.status(500).send('DB not connected');
     const id = String(req.params.id);
@@ -65,7 +64,8 @@ app.get('/card/:id', async (req,res) => {
     let html = fs.readFileSync(filePath, 'utf8');
     const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
     const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
-    const pageUrl = `https://www.mcprim.com/card/${id}`;
+    // تصحيح الرابط الكامل للصفحة
+    const pageUrl = `https://www.mcprim.com/nfc/card/${id}`; 
     const og = {
       title: `بطاقة عمل ${cardName}`,
       desc: cardTagline || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.',
@@ -83,12 +83,11 @@ app.get('/card/:id', async (req,res) => {
     console.error(e); res.status(500).send('Internal error');
   }
 });
+// --- نهاية التعديل ---
 
-// 3. خدمة الملفات الثابتة (يجب أن تأتي بعد المسارات المحددة)
+// خدمة الملفات الثابتة
 app.use(express.static(rootDir, { extensions: ['html'] }));
 app.use('/uploads', express.static(uploadDir));
-
-// --- نهاية التعديل ---
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -232,6 +231,7 @@ app.delete('/api/backgrounds/:shortId', async (req,res) => {
     console.error(e); res.status(500).json({ error: 'Delete failed' });
   }
 });
+
 
 app.use((req, res, next) => {
     res.status(404).send('Sorry, that page does not exist.');
