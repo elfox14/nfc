@@ -33,32 +33,18 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-app.use((req, res, next) => {
-  if (req.path.endsWith('.html')) {
-    const newPath = req.path.slice(0, -5);
-    return res.redirect(301, newPath);
-  }
-  next();
-});
+// --- بداية التعديل للرجوع إلى روابط .html ---
 
-// --- بداية الحل النهائي الصحيح ---
-
-// 1. إعادة توجيه المسار الجذري إلى /nfc/
-app.get('/', (req, res) => {
-    res.redirect(301, '/nfc/');
-});
-
-// 2. خدمة المجلد الرئيسي للمشروع بأكمله
-// عند طلب /nfc/gallery، سيبحث تلقائياً عن مجلد nfc ثم ملف gallery.html
+// 1. تحديد المجلد الرئيسي للمشروع كمصدر للملفات
 const rootDir = __dirname;
-app.use(express.static(rootDir, { extensions: ['html'] }));
+app.use(express.static(rootDir)); // خدمة الملفات مباشرة
 
-// 3. خدمة مجلد uploads
+// 2. خدمة مجلد uploads
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir));
 
-// --- نهاية الحل النهائي الصحيح ---
+// --- نهاية التعديل ---
 
 app.set('view engine', 'ejs');
 app.set('views', rootDir); 
@@ -174,7 +160,7 @@ app.get('/api/gallery/backgrounds', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const category = req.query.category;
-    const page = Math.max(1, parseInt(req.query.page||'I',10));
+    const page = Math.max(1, parseInt(req.query.page||'1',10));
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit||'50',10)));
     const skip = (page-1)*limit;
     const q = (category && category!=='all') ? { category: String(category) } : {};
@@ -212,7 +198,7 @@ app.get('/card/:id', async (req,res) => {
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).send('Design not found');
-    const filePath = path.join(__dirname, 'nfc', 'viewer.html'); // تعديل المسار هنا ليقرأ الملف من داخل مجلد nfc
+    const filePath = path.join(rootDir, 'viewer.html'); 
     let html = fs.readFileSync(filePath, 'utf8');
     const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
     const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
