@@ -70,7 +70,7 @@ const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
-// عتاد الرفع/المعالجة (بدون تغيير)
+// عتاد الرفع/المعالجة
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -81,7 +81,7 @@ const upload = multer({
   }
 });
 
-// ريت-لميت للـ API (بدون تغيير)
+// ريت-لميت للـ API
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -90,7 +90,7 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// أدوات مساعدة (بدون تغيير)
+// أدوات مساعدة
 function absoluteBaseUrl(req) {
   const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
@@ -106,7 +106,7 @@ function assertAdmin(req, res) {
   return true;
 }
 
-// --- APIs (بدون تغيير) ---
+// --- API: رفع صورة ---
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -123,6 +123,7 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   }
 });
 
+// --- API: حفظ تصميم ---
 app.post('/api/save-design', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -138,6 +139,7 @@ app.post('/api/save-design', async (req, res) => {
   }
 });
 
+// --- API: جلب تصميم ---
 app.get('/api/get-design/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -150,6 +152,7 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
+// --- API: المعرض ---
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -160,7 +163,32 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 
-// --- API: خلفيات (إدارة) (بدون تغيير) ---
+// --- API: خلفيات (إدارة) ---
+app.post('/api/upload-background', upload.single('image'), async (req, res) => {
+  try {
+    if (!assertAdmin(req,res)) return;
+    if (!req.file) return res.status(400).json({ error:'No image' });
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const filename = 'bg_' + nanoid(10) + '.webp';
+    const out = path.join(uploadDir, filename);
+    await sharp(req.file.buffer)
+      .resize({ width: 3840, height: 3840, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 88 })
+      .toFile(out);
+    const payload = {
+      shortId: nanoid(8),
+      url: '/uploads/' + filename,
+      name: String(req.body.name || 'خلفية'),
+      category: String(req.body.category || 'عام'),
+      createdAt: new Date()
+    };
+    await db.collection(backgroundsCollectionName).insertOne(payload);
+    res.json({ success:true, background: payload });
+  } catch (e) {
+    console.error(e); res.status(500).json({ error: 'Upload background failed' });
+  }
+});
+
 app.get('/api/gallery/backgrounds', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -180,7 +208,24 @@ app.get('/api/gallery/backgrounds', async (req, res) => {
   }
 });
 
-// --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id (بدون تغيير) ---
+app.delete('/api/backgrounds/:shortId', async (req, res) => {
+  try {
+    if (!assertAdmin(req,res)) return;
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const shortId = String(req.params.shortId);
+    const coll = db.collection(backgroundsCollectionName);
+    const doc = await coll.findOne({ shortId });
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+    const filePath = path.join(uploadDir, path.basename(doc.url));
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    await coll.deleteOne({ shortId });
+    res.json({ success: true });
+  } catch (e) {
+    console.error(e); res.status(500).json({ error: 'Delete failed' });
+  }
+});
+
+// --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
 app.get('/nfc/view/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).send('DB not connected');
@@ -219,7 +264,7 @@ app.get('/nfc/view/:id', async (req, res) => {
   }
 });
 
-// --- sitemap.xml و robots.txt (بدون تغيير) ---
+// --- robots.txt ---
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
   const txt = [
@@ -231,6 +276,7 @@ app.get('/robots.txt', (req, res) => {
   res.type('text/plain').send(txt);
 });
 
+// --- sitemap.xml (ديناميكي) ---
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
