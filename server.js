@@ -20,7 +20,6 @@ const DOMPurify = DOMPurifyFactory(window);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// حل مشكلة ValidationError الخاصة بـ express-rate-limit
 app.set('trust proxy', 1);
 
 const mongoUrl = process.env.MONGO_URI;
@@ -33,21 +32,63 @@ let db;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// --- بداية التعديل للرجوع إلى روابط .html ---
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html')) {
+    const newPath = req.path.slice(0, -5);
+    return res.redirect(301, newPath);
+  }
+  next();
+});
 
-// 1. تحديد المجلد الرئيسي للمشروع كمصدر للملفات
 const rootDir = __dirname;
-app.use(express.static(rootDir)); // خدمة الملفات مباشرة
-
-// 2. خدمة مجلد uploads
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+app.set('view engine', 'ejs');
+app.set('views', rootDir);
+
+// --- بداية التعديل ---
+
+// 1. إعادة توجيه المسار الجذري
+app.get('/', (req, res) => {
+    res.redirect(301, '/nfc/');
+});
+
+// 2. تعريف المسار الديناميكي لعرض البطاقة (تم نقله إلى هنا)
+app.get('/card/:id', async (req,res) => {
+  try {
+    if (!db) return res.status(500).send('DB not connected');
+    const id = String(req.params.id);
+    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    if (!doc) return res.status(404).send('Design not found');
+    const filePath = path.join(__dirname, 'nfc', 'viewer.html');
+    let html = fs.readFileSync(filePath, 'utf8');
+    const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
+    const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
+    const pageUrl = `https://www.mcprim.com/card/${id}`;
+    const og = {
+      title: `بطاقة عمل ${cardName}`,
+      desc: cardTagline || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.',
+      image: 'https://www.mcprim.com/nfc/og-image.png'
+    };
+    html = html
+      .replace(/<meta property="og:url" content=".*?"\s*\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
+      .replace(/<title>.*?<\/title>/, `<title>عرض وحفظ بطاقة ${cardName}</title>`)
+      .replace(/<meta name="description" content=".*?"\s*\/>/, `<meta name="description" content="${og.desc}"/>`)
+      .replace(/<meta property="og:title" content=".*?"\s*\/>/, `<meta property="og:title" content="${og.title}"/>`)
+      .replace(/<meta property="og:description" content=".*?"\s*\/>/, `<meta property="og:description" content="${og.desc}"/>`)
+      .replace(/<meta property="og:image" content=".*?"\s*\/>/, `<meta property="og:image" content="${og.image}"/>`);
+    res.send(html);
+  } catch (e) {
+    console.error(e); res.status(500).send('Internal error');
+  }
+});
+
+// 3. خدمة الملفات الثابتة (يجب أن تأتي بعد المسارات المحددة)
+app.use(express.static(rootDir, { extensions: ['html'] }));
 app.use('/uploads', express.static(uploadDir));
 
 // --- نهاية التعديل ---
-
-app.set('view engine', 'ejs');
-app.set('views', rootDir); 
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -71,7 +112,7 @@ MongoClient.connect(mongoUrl)
   .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
-// API and Dynamic Routes
+// API Routes
 app.post('/api/upload-image', upload.single('image'), async (req,res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -160,7 +201,7 @@ app.get('/api/gallery/backgrounds', async (req,res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const category = req.query.category;
-    const page = Math.max(1, parseInt(req.query.page||'1',10));
+    const page = Math.max(1, parseInt(req.query.page||'I',10));
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit||'50',10)));
     const skip = (page-1)*limit;
     const q = (category && category!=='all') ? { category: String(category) } : {};
@@ -189,35 +230,6 @@ app.delete('/api/backgrounds/:shortId', async (req,res) => {
     res.json({ success:true });
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Delete failed' });
-  }
-});
-
-app.get('/card/:id', async (req,res) => {
-  try {
-    if (!db) return res.status(500).send('DB not connected');
-    const id = String(req.params.id);
-    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-    if (!doc) return res.status(404).send('Design not found');
-    const filePath = path.join(rootDir, 'viewer.html'); 
-    let html = fs.readFileSync(filePath, 'utf8');
-    const cardName = (doc.data.inputs['input-name']||'بطاقة عمل رقمية').replace(/</g,'&lt;');
-    const cardTagline = (doc.data.inputs['input-tagline']||'').replace(/</g,'&lt;');
-    const pageUrl = `https://www.mcprim.com/card/${id}`;
-    const og = {
-      title: `بطاقة عمل ${cardName}`,
-      desc: cardTagline || 'بطاقة عمل رقمية ذكية من MC PRIME. شارك بياناتك بلمسة واحدة.',
-      image: 'https://www.mcprim.com/nfc/og-image.png'
-    };
-    html = html
-      .replace(/<meta property="og:url" content=".*?"\s*\/>/, `<meta property="og:url" content="${pageUrl}"/>`)
-      .replace(/<title>.*?<\/title>/, `<title>عرض وحفظ بطاقة ${cardName}</title>`)
-      .replace(/<meta name="description" content=".*?"\s*\/>/, `<meta name="description" content="${og.desc}"/>`)
-      .replace(/<meta property="og:title" content=".*?"\s*\/>/, `<meta property="og:title" content="${og.title}"/>`)
-      .replace(/<meta property="og:description" content=".*?"\s*\/>/, `<meta property="og:description" content="${og.desc}"/>`)
-      .replace(/<meta property="og:image" content=".*?"\s*\/>/, `<meta property="og:image" content="${og.image}"/>`);
-    res.send(html);
-  } catch (e) {
-    console.error(e); res.status(500).send('Internal error');
   }
 });
 
