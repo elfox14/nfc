@@ -21,7 +21,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // --- إعدادات عامة ---
-app.set('trust proxy', 1); // لإصلاح بعض مشكلات الريت-لميت خلف البروكسي
+app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -44,7 +44,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// إزالة .html من الروابط القديمة
+// إزالة .html من الروابط القديمة (إعادة توجيه دائمة)
 app.use((req, res, next) => {
   if (req.path.endsWith('.html')) {
     const newPath = req.path.slice(0, -5);
@@ -58,7 +58,7 @@ app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
-// خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
+// خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'] للسماح بالوصول بدون .html)
 const rootDir = __dirname;
 app.use(express.static(rootDir, { extensions: ['html'] }));
 
@@ -89,7 +89,6 @@ app.use('/api/', apiLimiter);
 
 // أدوات مساعدة
 function absoluteBaseUrl(req) {
-  // السماح بتحديده من env أو استنتاجه من الطلب
   const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
   const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'https');
@@ -104,7 +103,7 @@ function assertAdmin(req, res) {
   return true;
 }
 
-// --- API: رفع صورة ---
+// --- APIs (بدون تغيير) ---
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -121,7 +120,6 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   }
 });
 
-// --- API: حفظ تصميم ---
 app.post('/api/save-design', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -137,7 +135,6 @@ app.post('/api/save-design', async (req, res) => {
   }
 });
 
-// --- API: جلب تصميم ---
 app.get('/api/get-design/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -150,7 +147,6 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
-// --- API: المعرض ---
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -161,7 +157,7 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 
-// --- API: خلفيات (إدارة) ---
+// --- API: خلفيات (إدارة) (بدون تغيير) ---
 app.post('/api/upload-background', upload.single('image'), async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
@@ -223,6 +219,7 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
   }
 });
 
+
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
 app.get('/nfc/view/:id', async (req, res) => {
   try {
@@ -232,8 +229,10 @@ app.get('/nfc/view/:id', async (req, res) => {
     if (!doc) return res.status(404).send('Design not found');
 
     const base = absoluteBaseUrl(req);
-    const pageUrl = `${base}/nfc/view/${id}`;
-    
+    // === بداية التعديل: توحيد الرابط لينتهي بـ / ===
+    const pageUrl = `${base}/nfc/view/${id}/`;
+    // === نهاية التعديل ===
+
     const inputs = doc.data?.inputs || {};
     const name = inputs['input-name'] || 'بطاقة عمل رقمية';
     const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
@@ -241,22 +240,20 @@ app.get('/nfc/view/:id', async (req, res) => {
       ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
       : `${base}/nfc/og-image.png`;
 
-    // --- بداية التعديل: إنشاء كلمات مفتاحية ديناميكية ---
     const keywords = [
         'NFC', 'بطاقة عمل ذكية', 'كارت شخصي', 
         name, 
-        ...tagline.split(/\s+/).filter(Boolean) // تقسيم المسمى الوظيفي إلى كلمات
+        ...tagline.split(/\s+/).filter(Boolean)
     ].filter(Boolean).join(', ');
-    // --- نهاية التعديل ---
 
     res.render(path.join(rootDir, 'viewer.ejs'), {
       pageUrl,
       name,
       tagline,
       ogImage,
-      keywords, // إرسال الكلمات المفتاحية إلى القالب
+      keywords,
       design: doc.data,
-      canonical: pageUrl
+      canonical: pageUrl // استخدام الرابط الموحد
     });
   } catch (e) {
     console.error(e);
@@ -280,20 +277,22 @@ app.get('/robots.txt', (req, res) => {
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
+    // === بداية التعديل: استخدام الروابط النظيفة المنتهية بـ / ===
     const staticPages = [
       '/nfc/',
-      '/nfc/gallery',
-      '/nfc/blog',
-      '/nfc/about',
-      '/nfc/contact',
-      '/nfc/privacy'
+      '/nfc/gallery/',
+      '/nfc/blog/',
+      '/nfc/about/',
+      '/nfc/contact/',
+      '/nfc/privacy/'
     ];
 
     const blogPosts = [
-      '/nfc/blog-nfc-at-events',
-      '/nfc/blog-digital-menus-for-restaurants',
-      '/nfc/blog-business-card-mistakes'
+      '/nfc/blog-nfc-at-events/',
+      '/nfc/blog-digital-menus-for-restaurants/',
+      '/nfc/blog-business-card-mistakes/'
     ];
+    // === نهاية التعديل ===
 
     let designUrls = [];
     if (db) {
@@ -305,7 +304,9 @@ app.get('/sitemap.xml', async (req, res) => {
         .toArray();
 
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/view/${d.shortId}`,
+        // === بداية التعديل: استخدام الروابط النظيفة للبطاقات ===
+        loc: `${base}/nfc/view/${d.shortId}/`,
+        // === نهاية التعديل ===
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
         changefreq: 'monthly',
         priority: '0.80'
