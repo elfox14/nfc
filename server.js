@@ -224,7 +224,6 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
 });
 
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
-// تعرض البطاقة ببيانات OG/Meta صالحة للأرشفة
 app.get('/nfc/view/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).send('DB not connected');
@@ -234,22 +233,29 @@ app.get('/nfc/view/:id', async (req, res) => {
 
     const base = absoluteBaseUrl(req);
     const pageUrl = `${base}/nfc/view/${id}`;
-
-    // بيانات أساسية للـ OG
+    
     const inputs = doc.data?.inputs || {};
     const name = inputs['input-name'] || 'بطاقة عمل رقمية';
     const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
-    // محاولة استخدام صورة أمامية إن توفرت
     const ogImage = doc.data?.imageUrls?.front
       ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
       : `${base}/nfc/og-image.png`;
+
+    // --- بداية التعديل: إنشاء كلمات مفتاحية ديناميكية ---
+    const keywords = [
+        'NFC', 'بطاقة عمل ذكية', 'كارت شخصي', 
+        name, 
+        ...tagline.split(/\s+/).filter(Boolean) // تقسيم المسمى الوظيفي إلى كلمات
+    ].filter(Boolean).join(', ');
+    // --- نهاية التعديل ---
 
     res.render(path.join(rootDir, 'viewer.ejs'), {
       pageUrl,
       name,
       tagline,
       ogImage,
-      design: doc.data, // لاستخدامها في الصفحة
+      keywords, // إرسال الكلمات المفتاحية إلى القالب
+      design: doc.data,
       canonical: pageUrl
     });
   } catch (e) {
@@ -261,11 +267,10 @@ app.get('/nfc/view/:id', async (req, res) => {
 // --- robots.txt ---
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
-  // نسمح بأرشفة /nfc/ و /nfc/gallery و /nfc/blog وصفحات العرض SEO، ونمنع viewer.html العام
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Disallow: /nfc/viewer',   // الملف العام غير المخصص للأرشفة
+    'Disallow: /nfc/viewer',
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
@@ -284,14 +289,12 @@ app.get('/sitemap.xml', async (req, res) => {
       '/nfc/privacy'
     ];
 
-    // روابط تدوينات معروفة (يمكنك استخراجها من DB/ملفات عند توفرها)
     const blogPosts = [
       '/nfc/blog-nfc-at-events',
       '/nfc/blog-digital-menus-for-restaurants',
       '/nfc/blog-business-card-mistakes'
     ];
 
-    // روابط التصاميم (صفحات قابلة للأرشفة عبر /nfc/view/:id)
     let designUrls = [];
     if (db) {
       const docs = await db.collection(designsCollectionName)
