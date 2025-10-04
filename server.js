@@ -21,7 +21,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // --- إعدادات عامة ---
-app.set('trust proxy', 1);
+app.set('trust proxy', 1); // لإصلاح بعض مشكلات الريت-لميت خلف البروكسي
 app.disable('x-powered-by');
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -58,12 +58,9 @@ app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
+// خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
 const rootDir = __dirname;
-
-// === بداية التعديل: إصلاح مسار خدمة الملفات الثابتة ===
-// ربط المسار /nfc بالمجلد الرئيسي للمشروع لخدمة الملفات بشكل صحيح
-app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
-// === نهاية التعديل ===
+app.use(express.static(rootDir, { extensions: ['html'] }));
 
 // مجلد uploads
 const uploadDir = path.join(__dirname, 'uploads');
@@ -92,6 +89,7 @@ app.use('/api/', apiLimiter);
 
 // أدوات مساعدة
 function absoluteBaseUrl(req) {
+  // السماح بتحديده من env أو استنتاجه من الطلب
   const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
   const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'https');
@@ -225,17 +223,28 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
   }
 });
 
-// --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
+// --- **بداية التعديل**: صفحة عرض SEO لكل بطاقة مع إضافة X-Robots-Tag ---
 app.get('/nfc/view/:id', async (req, res) => {
   try {
-    if (!db) return res.status(500).send('DB not connected');
+    if (!db) {
+        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+        return res.status(500).send('DB not connected');
+    }
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-    if (!doc) return res.status(404).send('Design not found');
+
+    if (!doc) {
+        // إذا لم يتم العثور على البطاقة، أرسل noindex
+        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+        return res.status(404).send('Design not found');
+    }
+
+    // إذا تم العثور على البطاقة، اسمح بالفهرسة
+    res.setHeader('X-Robots-Tag', 'index, follow');
 
     const base = absoluteBaseUrl(req);
-    const pageUrl = `${base}/nfc/view/${id}/`;
-
+    const pageUrl = `${base}/nfc/view/${id}`;
+    
     const inputs = doc.data?.inputs || {};
     const name = inputs['input-name'] || 'بطاقة عمل رقمية';
     const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
@@ -260,9 +269,12 @@ app.get('/nfc/view/:id', async (req, res) => {
     });
   } catch (e) {
     console.error(e);
+    // في حالة وجود خطأ في السيرفر
+    res.setHeader('X-Robots-Tag', 'noindex, noarchive');
     res.status(500).send('View failed');
   }
 });
+// --- **نهاية التعديل** ---
 
 // --- robots.txt ---
 app.get('/robots.txt', (req, res) => {
@@ -282,17 +294,17 @@ app.get('/sitemap.xml', async (req, res) => {
     const base = absoluteBaseUrl(req);
     const staticPages = [
       '/nfc/',
-      '/nfc/gallery/',
-      '/nfc/blog/',
-      '/nfc/about/',
-      '/nfc/contact/',
-      '/nfc/privacy/'
+      '/nfc/gallery',
+      '/nfc/blog',
+      '/nfc/about',
+      '/nfc/contact',
+      '/nfc/privacy'
     ];
 
     const blogPosts = [
-      '/nfc/blog-nfc-at-events/',
-      '/nfc/blog-digital-menus-for-restaurants/',
-      '/nfc/blog-business-card-mistakes/'
+      '/nfc/blog-nfc-at-events',
+      '/nfc/blog-digital-menus-for-restaurants',
+      '/nfc/blog-business-card-mistakes'
     ];
 
     let designUrls = [];
@@ -305,7 +317,7 @@ app.get('/sitemap.xml', async (req, res) => {
         .toArray();
 
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/view/${d.shortId}/`,
+        loc: `${base}/nfc/view/${d.shortId}`,
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
         changefreq: 'monthly',
         priority: '0.80'
