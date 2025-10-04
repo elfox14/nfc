@@ -121,7 +121,10 @@ app.get('/', (req, res) => {
 
 // خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
 // يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
-app.use(express.static(rootDir, { extensions: ['html'] }));
+app.use('/nfc', express.static(rootDir, {
+  extensions: ['html']
+  // ... (يمكن إضافة إعدادات الكاش هنا)
+}));
 
 // مجلد uploads
 const uploadDir = path.join(__dirname, 'uploads');
