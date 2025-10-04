@@ -9,4 +9,4 @@ Disallow: /tmp/
 Disallow: /private/
 
 # رابط الخريطة الصحيح
-Sitemap: https://www.mcprim.com/nfc/sitemap.xml
+Sitemap: https://www.mcprim.com/sitemap.xml
