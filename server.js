@@ -15,8 +15,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
 
-const window = new JSDOM('').window;
-const purify = DOMPurify(window);
+
 
 // --- بداية الكود التشخيصي ---
 // هذا الكود سيقوم بطباعة قائمة بالملفات في سجلات Render
