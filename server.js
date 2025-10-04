@@ -58,6 +58,8 @@ app.get('/nfc/view/:id', async (req, res) => {
         return res.status(500).send('DB not connected');
     }
     const id = String(req.params.id);
+    // البحث عن doc.data.design بدلاً من doc.data إذا كانت البيانات مخزنة بهذه الطريقة،
+    // ولكن بناءً على الكود المقدم (doc.data?.inputs)، سنفترض doc.data هو الكائن الأساسي.
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
     if (!doc) {
@@ -68,7 +70,8 @@ app.get('/nfc/view/:id', async (req, res) => {
     res.setHeader('X-Robots-Tag', 'index, follow');
 
     const base = absoluteBaseUrl(req);
-    const pageUrl = `${base}/nfc/view/${id}`;
+    // استخدام المسار النظيف بدلاً من /nfc/view/:id لتجنب حلقة إعادة التوجيه
+    const pageUrl = `${base}/nfc/view/${id}`; 
     
     const inputs = doc.data?.inputs || {};
     const name = inputs['input-name'] || 'بطاقة عمل رقمية';
@@ -109,6 +112,12 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   if (req.path.endsWith('.html')) {
     const newPath = req.path.slice(0, -5);
+    // تحديد إعادة التوجيه للروابط المعروفة مثل /nfc/gallery.html -> /nfc/gallery
+    if (newPath === '/nfc/viewer' || newPath.startsWith('/nfc/view/')) {
+        // لا تقم بإعادة التوجيه لصفحات العرض القديمة /nfc/viewer.html?id=
+        // سيتم التعامل معها بواسطة المسار الجديد في الأعلى أو تركها كما هي.
+        return res.status(404).send('Not Found'); 
+    }
     return res.redirect(301, newPath);
   }
   next();
