@@ -34,7 +34,7 @@ fs.readdir(currentDirectory, (err, files) => {
 // --- نهاية الكود التشخيصي ---
 
 const window = (new JSDOM('')).window;
-const DOMPurify = DOMPurifyFactory(window);
+
 
 const app = express();
 const port = process.env.PORT || 3000;
