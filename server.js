@@ -49,10 +49,8 @@ function absoluteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
-// --- **بداية التعديل الهام** ---
-// تم نقل المسار الديناميكي إلى هنا (قبل خدمة الملفات الثابتة)
-
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
+// تم نقل هذا المسار للأعلى ليتم تنفيذه قبل خدمة الملفات الثابتة
 app.get('/nfc/view/:id', async (req, res) => {
   try {
     if (!db) {
@@ -101,9 +99,6 @@ app.get('/nfc/view/:id', async (req, res) => {
   }
 });
 
-// --- **نهاية التعديل الهام** ---
-
-
 // هيدر كاش بسيط للملفات الثابتة
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'public, max-age=600');
@@ -125,6 +120,7 @@ app.get('/', (req, res) => {
 });
 
 // خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
+// يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
 app.use(express.static(rootDir, { extensions: ['html'] }));
 
 // مجلد uploads
@@ -132,8 +128,7 @@ const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
-// (بقية الكود الخاص بالـ API و sitemap و robots.txt يبقى كما هو)
-// ...
+// عتاد الرفع/المعالجة
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -144,6 +139,7 @@ const upload = multer({
   }
 });
 
+// ريت-لميت للـ API
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -159,6 +155,7 @@ function assertAdmin(req, res) {
   return true;
 }
 
+// --- API: رفع صورة ---
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -175,6 +172,7 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   }
 });
 
+// --- API: حفظ تصميم ---
 app.post('/api/save-design', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -190,6 +188,7 @@ app.post('/api/save-design', async (req, res) => {
   }
 });
 
+// --- API: جلب تصميم ---
 app.get('/api/get-design/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -202,6 +201,7 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
+// --- API: المعرض ---
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -212,6 +212,7 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 
+// --- API: خلفيات (إدارة) ---
 app.post('/api/upload-background', upload.single('image'), async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
@@ -273,6 +274,8 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
   }
 });
 
+
+// --- robots.txt ---
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
   const txt = [
@@ -284,6 +287,7 @@ app.get('/robots.txt', (req, res) => {
   res.type('text/plain').send(txt);
 });
 
+// --- sitemap.xml (ديناميكي) ---
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
@@ -295,11 +299,13 @@ app.get('/sitemap.xml', async (req, res) => {
       '/nfc/contact',
       '/nfc/privacy'
     ];
+
     const blogPosts = [
       '/nfc/blog-nfc-at-events',
       '/nfc/blog-digital-menus-for-restaurants',
       '/nfc/blog-business-card-mistakes'
     ];
+
     let designUrls = [];
     if (db) {
       const docs = await db.collection(designsCollectionName)
@@ -308,6 +314,7 @@ app.get('/sitemap.xml', async (req, res) => {
         .sort({ createdAt: -1 })
         .limit(2000)
         .toArray();
+
       designUrls = docs.map(d => ({
         loc: `${base}/nfc/view/${d.shortId}`,
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
@@ -315,6 +322,7 @@ app.get('/sitemap.xml', async (req, res) => {
         priority: '0.80'
       }));
     }
+
     function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
       return [
         '<url>',
@@ -325,6 +333,7 @@ app.get('/sitemap.xml', async (req, res) => {
         '</url>'
       ].join('');
     }
+
     const xml =
       [
         '<?xml version="1.0" encoding="UTF-8"?>',
@@ -334,6 +343,7 @@ app.get('/sitemap.xml', async (req, res) => {
         ...designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefreq, priority: u.priority })),
         '</urlset>'
       ].join('');
+
     res.type('application/xml').send(xml);
   } catch (e) {
     console.error(e);
@@ -341,8 +351,10 @@ app.get('/sitemap.xml', async (req, res) => {
   }
 });
 
+// صحّة
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 
+// الاستماع
 app.listen(port, () => {
   console.log(`Server running on :${port}`);
 });
