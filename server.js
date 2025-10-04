@@ -146,7 +146,6 @@ const upload = multer({
 });
 
 // DB connect
->>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 MongoClient.connect(mongoUrl)
     .then(client => {
         console.log('Connected successfully to MongoDB server');
