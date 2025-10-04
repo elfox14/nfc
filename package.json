@@ -22,7 +22,7 @@ HEAD
     "sharp": "^0.34.4"
   }
 }
-=======
+
 {
   "name": "digital-card-server",
   "version": "1.0.0",
