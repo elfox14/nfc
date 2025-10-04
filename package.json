@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+HEAD
 {
   "name": "digital-card-server",
   "version": "1.0.0",
@@ -47,4 +47,4 @@
     "sharp": "^0.34.4"
   }
 }
->>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
+f8b786bcb308a2f39a39990dbdc777e3c9b5841d
