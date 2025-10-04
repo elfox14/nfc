@@ -5,7 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معرض الأعمال وقوالب كروت NFC | MC PRIME</title>
     <meta name="description" content="تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة. شاهد أمثلة حقيقية لبطاقات عمل رقمية تم إنشاؤها باستخدام محرر MC PRIME المجاني.">
-    <link rel="canonical" href="https://www.mcprim.com/nfc/gallery" />
+    
+    <meta name="keywords" content="معرض أعمال, قوالب كروت NFC, تصميمات بطاقات, أمثلة كروت ذكية, بطاقات عمل رقمية, gallery, MC PRIME">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.mcprim.com/nfc/gallery.html">
+    <meta property="og:title" content="معرض الأعمال وقوالب كروت NFC | MC PRIME">
+    <meta property="og:description" content="تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة.">
+    <meta property="og:image" content="https://www.mcprim.com/nfc/og-image.png">
+    <meta property="og:image:alt" content="معرض أعمال وتصاميم بطاقات عمل رقمية ذكية من MC PRIME">
+    <meta property="og:site_name" content="MC PRIME">
+    <meta property="og:locale" content="ar_AR">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.mcprim.com/nfc/gallery.html">
+    <meta property="twitter:title" content="معرض الأعمال وقوالب كروت NFC | MC PRIME">
+    <meta property="twitter:description" content="تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة.">
+    <meta property="twitter:image" content="https://www.mcprim.com/nfc/og-image.png">
+    <meta property="twitter:image:alt" content="معرض أعمال وتصاميم بطاقات عمل رقمية ذكية من MC PRIME">
+    
+    <link rel="canonical" href="https://www.mcprim.com/nfc/gallery.html" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Tajawal:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
@@ -19,7 +38,7 @@
           "@type": "CollectionPage",
           "name": "معرض الأعمال وقوالب كروت NFC جاهزة | MC PRIME",
           "description": "تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة.",
-          "url": "https://www.mcprim.com/nfc/gallery",
+          "url": "https://www.mcprim.com/nfc/gallery.html",
           "mainEntity": {
             "@type": "ItemList",
             "name": "أمثلة بطاقات عمل رقمية",
@@ -116,7 +135,6 @@
             padding: 4rem 0;
             color: var(--danger-color);
         }
-        /* START: Thumbnail Preview Styles */
         .card-thumbnail {
             width: 100%;
             aspect-ratio: 51 / 33;
@@ -130,13 +148,18 @@
             inset: 0;
             background-size: cover;
             background-position: center;
+            transition: opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+        .thumb-bg-layer.loaded {
+            opacity: 1;
         }
         .thumb-content-layer {
             position: relative;
             z-index: 2;
             width: 100%;
             height: 100%;
-            padding: 8%; /* Adjust padding for smaller scale */
+            padding: 8%;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -172,7 +195,6 @@
             padding-top: 10%;
             gap: 15px;
         }
-        /* END: Thumbnail Preview Styles */
     </style>
 </head>
 <body>
@@ -199,12 +221,12 @@
 
     <footer>
       &copy; 2025 جميع الحقوق محفوظة. | 
-      <a href="/nfc/">الرئيسية</a> | 
-      <a href="/nfc/gallery">المعرض</a> |
-      <a href="/nfc/blog">المدونة</a> |
-      <a href="/nfc/about">من نحن</a> |
-      <a href="/nfc/contact">اتصل بنا</a> | 
-      <a href="/nfc/privacy">سياسة الخصوصية</a>
+      <a href="/nfc/index.html">الرئيسية</a> | 
+      <a href="/nfc/gallery.html">المعرض</a> |
+      <a href="/nfc/blog.html">المدونة</a> |
+      <a href="/nfc/about.html">من نحن</a> |
+      <a href="/nfc/contact.html">اتصل بنا</a> | 
+      <a href="/nfc/privacy.html">سياسة الخصوصية</a>
       </footer>
 
     <script>
@@ -213,6 +235,31 @@
             const loader = document.getElementById('loader');
             const errorMessage = document.getElementById('error-message');
             const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
+
+            const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const cardLink = entry.target;
+                        const bgLayer = cardLink.querySelector('.thumb-bg-layer[data-bg]');
+                        const logoImg = cardLink.querySelector('.thumb-logo[data-src]');
+
+                        if (bgLayer) {
+                            bgLayer.style.backgroundImage = `url('${bgLayer.dataset.bg}')`;
+                            bgLayer.classList.add('loaded');
+                            bgLayer.removeAttribute('data-bg');
+                        }
+
+                        if (logoImg) {
+                            logoImg.src = logoImg.dataset.src;
+                            logoImg.removeAttribute('data-src');
+                        }
+
+                        observer.unobserve(cardLink);
+                    }
+                });
+            }, {
+                rootMargin: '0px 0px 200px 0px'
+            });
 
             async function fetchGalleryCards() {
                 try {
@@ -248,7 +295,7 @@
                                             "@type": "CreativeWork",
                                             "name": design.data.inputs['input-name'] || 'تصميم بطاقة عمل',
                                             "description": design.data.inputs['input-tagline'] || 'أحد القوالب المتاحة في معرض أعمالنا.',
-                                            "url": `https://www.mcprim.com/card/${design.shortId}`
+                                            "url": `https://www.mcprim.com/nfc/view/${design.shortId}`
                                         }
                                     });
                                 });
@@ -273,25 +320,22 @@
                         cardElement.className = 'gallery-card-item';
 
                         const cardLink = document.createElement('a');
-                        // --- بداية التعديل: إصلاح مسار الرابط ---
-                        cardLink.href = `/card/${design.shortId}`;
-                        // --- نهاية التعديل ---
+                        cardLink.href = `/nfc/view/${design.shortId}`;
                         cardLink.className = 'gallery-card-link';
                         cardLink.target = '_blank';
                         cardLink.rel = 'noopener noreferrer';
 
-                        // --- Build Thumbnail ---
                         const thumbnailContainer = document.createElement('div');
                         thumbnailContainer.className = `card-thumbnail thumb-layout-${layout}`;
                         
                         const bgImageLayer = document.createElement('div');
                         bgImageLayer.className = 'thumb-bg-layer';
                         if (design.data.imageUrls && design.data.imageUrls.front) {
-                            bgImageLayer.style.backgroundImage = `url(${design.data.imageUrls.front})`;
+                            bgImageLayer.dataset.bg = design.data.imageUrls.front;
                         }
 
                         const bgGradientLayer = document.createElement('div');
-                        bgGradientLayer.className = 'thumb-bg-layer';
+                        bgGradientLayer.className = 'thumb-bg-layer loaded';
                         bgGradientLayer.style.backgroundImage = `linear-gradient(135deg, ${inputs['front-bg-start']}, ${inputs['front-bg-end']})`;
                         bgGradientLayer.style.opacity = inputs['front-bg-opacity'];
 
@@ -300,7 +344,9 @@
 
                         const logoImg = document.createElement('img');
                         logoImg.className = 'thumb-logo';
-                        logoImg.src = inputs['input-logo'] || 'mcprime-logo-transparent.png';
+                        logoImg.dataset.src = inputs['input-logo'] || '/nfc/mcprime-logo-transparent.png';
+                        logoImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+                        logoImg.alt = `شعار بطاقة ${inputs['input-name'] || 'غير محدد'}`;
                         logoImg.style.maxWidth = `${inputs['logo-size']}%`;
                         logoImg.style.opacity = inputs['logo-opacity'];
 
@@ -311,20 +357,19 @@
                         nameH3.textContent = inputs['input-name'] || 'اسم';
                         nameH3.style.color = inputs['name-color'];
                         nameH3.style.fontFamily = inputs['name-font'];
-                        nameH3.style.fontSize = `${inputs['name-font-size'] * 0.6}px`; // Scale font size
+                        nameH3.style.fontSize = `${inputs['name-font-size'] * 0.6}px`;
 
                         const taglineP = document.createElement('p');
                         taglineP.textContent = inputs['input-tagline'] || 'وصف';
                         taglineP.style.color = inputs['tagline-color'];
                         taglineP.style.fontFamily = inputs['tagline-font'];
-                        taglineP.style.fontSize = `${inputs['tagline-font-size'] * 0.7}px`; // Scale font size
+                        taglineP.style.fontSize = `${inputs['tagline-font-size'] * 0.7}px`;
 
                         identityDiv.append(nameH3, taglineP);
                         contentLayer.append(logoImg, identityDiv);
                         thumbnailContainer.append(bgImageLayer, bgGradientLayer, contentLayer);
                         cardLink.appendChild(thumbnailContainer);
                         
-                        // --- Build Info Section ---
                         const infoDiv = document.createElement('div');
                         infoDiv.className = 'card-info';
                         infoDiv.innerHTML = `<h3>${inputs['input-name'] || 'اسم غير محدد'}</h3><p>${inputs['input-tagline'] || 'وصف غير محدد'}</p>`;
@@ -332,6 +377,8 @@
 
                         cardElement.appendChild(cardLink);
                         grid.appendChild(cardElement);
+
+                        lazyLoadObserver.observe(cardLink);
                     });
 
                 } catch (error) {

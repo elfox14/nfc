@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cardsWrapper.setAttribute('data-layout', layout);
 
         // ALT TEXT: Improved alt text for the logo
-        const logoAltText = `شعار ${data.inputs['input-tagline'] || data.inputs['input-name']}`;
+        const logoAltText = `شعار ${data.inputs['input-tagline'] || data.inputs['input-name'] || 'الشركة'}`;
 
         
 const frontHtml = `
@@ -180,7 +180,7 @@ const backHtml = `
         // Logo
         const logoEl = document.createElement('img');
         logoEl.src = data.inputs['input-logo'];
-        logoEl.alt = `شعار ${data.inputs['input-tagline'] || data.inputs['input-name']}`;
+        logoEl.alt = logoAltText;
         logoEl.className = 'logo-front';
         logoEl.style.maxWidth = data.inputs['logo-size'] + '%';
         logoEl.style.opacity = data.inputs['logo-opacity'];
@@ -226,7 +226,7 @@ const backHtml = `
         let qrContentAdded = false;
 
         // ALT TEXT: Improved alt text for the QR code
-        const qrAltText = `رمز QR Code لبطاقة ${data.inputs['input-name']}`;
+        const qrAltText = `رمز QR Code لبطاقة عمل ${data.inputs['input-name'] || 'الرقمية'}`;
 
         if (qrSource === 'custom' || qrSource === 'upload') {
             const qrImageSrc = (qrSource === 'custom') ? data.inputs['input-qr-url'] : data.imageUrls.qrCode;

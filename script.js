@@ -1466,7 +1466,11 @@
             this.designs.forEach((design, index) => {
                 const item = document.createElement('div'); item.className = 'gallery-item';
                 const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.className = 'gallery-item-select'; checkbox.dataset.index = index; checkbox.onchange = () => this.updateSelectionState();
-                const thumbnail = document.createElement('img'); thumbnail.src = design.thumbnail; thumbnail.alt = design.name; thumbnail.className = 'gallery-thumbnail';
+                const thumbnail = document.createElement('img'); thumbnail.src = design.thumbnail;
+                // --- بداية التعديل: تحسين النص البديل ---
+                thumbnail.alt = `معاينة لتصميم '${design.name}' المحفوظ`;
+                // --- نهاية التعديل ---
+                thumbnail.className = 'gallery-thumbnail';
                 const nameDiv = document.createElement('div'); nameDiv.className = 'gallery-item-name';
                 const nameSpan = document.createElement('span'); nameSpan.className = 'gallery-item-name-span'; nameSpan.textContent = design.name;
                 const nameInput = document.createElement('input'); nameInput.type = 'text'; nameInput.className = 'gallery-item-name-input'; nameInput.style.display = 'none'; nameInput.onkeydown = (e) => { if (e.key === 'Enter') this.toggleRename(item, index); };

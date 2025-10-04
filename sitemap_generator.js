@@ -5,12 +5,24 @@ const fs = require('fs');
 const path = require('path');
 
 // --- إعدادات ---
-// تأكد من أن هذا الرابط هو الرابط الصحيح لموقعك
 const SITE_URL = 'https://www.mcprim.com/nfc'; 
 const MONGO_URI = process.env.MONGO_URI;
-const DB_NAME = 'nfc_db';
-const COLLECTION_NAME = 'designs';
+const DB_NAME = process.env.MONGO_DB || 'nfc_db';
+const COLLECTION_NAME = process.env.MONGO_DESIGNS_COLL || 'designs';
+// تم تعديل مسار الحفظ ليتوافق مع robots.txt
 const OUTPUT_PATH = path.join(__dirname, 'public', 'sitemap.xml');
+
+// قائمة بالصفحات الثابتة في الموقع مع إعداداتها (بدون .html)
+const STATIC_PAGES = [
+    { loc: '/', priority: '1.00', changefreq: 'weekly' }, // ينتج عنه https://www.mcprim.com/nfc/
+    { loc: '/gallery', priority: '0.90', changefreq: 'daily' },
+    { loc: '/about', priority: '0.70', changefreq: 'yearly' },
+    { loc: '/contact', priority: '0.70', changefreq: 'yearly' },
+    { loc: '/privacy', priority: '0.50', changefreq: 'yearly' },
+    { loc: '/blog', priority: '0.80', changefreq: 'weekly' }
+    // أضف أي صفحات ثابتة أخرى هنا
+];
+
 
 /**
  * دالة لتوليد محتوى ملف sitemap.xml
@@ -18,23 +30,30 @@ const OUTPUT_PATH = path.join(__dirname, 'public', 'sitemap.xml');
  * @returns {string} - محتوى XML لخريطة الموقع
  */
 function generateSitemapXml(ids) {
+    const today = new Date().toISOString().split('T')[0];
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
-    // 1. إضافة الصفحة الرئيسية
-    xml += `  <url>\n`;
-    xml += `    <loc>${SITE_URL}/</loc>\n`;
-    xml += `    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n`;
-    xml += `    <priority>1.00</priority>\n`;
-    xml += `  </url>\n`;
+    // 1. إضافة الصفحات الثابتة من المصفوفة
+    STATIC_PAGES.forEach(page => {
+        xml += `  <url>\n`;
+        // التأكد من عدم وجود شرطة مائلة مزدوجة
+        const pageLoc = page.loc === '/' ? SITE_URL : SITE_URL + page.loc;
+        xml += `    <loc>${pageLoc}</loc>\n`;
+        xml += `    <lastmod>${today}</lastmod>\n`;
+        xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
+        xml += `    <priority>${page.priority}</priority>\n`;
+        xml += `  </url>\n`;
+    });
     
-    // 2. إضافة صفحات البطاقات
+    // 2. إضافة صفحات البطاقات الديناميكية (تم تعديل المسار إلى /view/)
     ids.forEach(id => {
         xml += `  <url>\n`;
-        xml += `    <loc>${SITE_URL}/card/${id}</loc>\n`;
+        xml += `    <loc>${SITE_URL}/view/${id}</loc>\n`;
         // يمكنك إضافة تاريخ آخر تعديل للبطاقة هنا إذا كان متوفراً
         // <lastmod>YYYY-MM-DD</lastmod>
         xml += `    <priority>0.80</priority>\n`;
+        xml += `    <changefreq>monthly</changefreq>\n`;
         xml += `  </url>\n`;
     });
 
@@ -59,15 +78,20 @@ async function main() {
         const ids = designs.map(d => d.shortId).filter(id => id); // فلترة أي قيم فارغة
 
         if (ids.length === 0) {
-            console.warn('No card IDs found. Sitemap will only contain the homepage.');
+            console.warn('No card IDs found. Sitemap will only contain static pages.');
         } else {
-            console.log(`Found ${ids.length} card IDs.`);
+            console.log(`Found ${ids.length} card IDs to add to the sitemap.`);
         }
 
         console.log('Generating sitemap.xml content...');
         const sitemapContent = generateSitemapXml(ids);
 
         console.log(`Writing sitemap to: ${OUTPUT_PATH}`);
+        // التأكد من أن المجلد `public` موجود قبل الكتابة
+        const outputDir = path.dirname(OUTPUT_PATH);
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
         fs.writeFileSync(OUTPUT_PATH, sitemapContent, 'utf8');
 
         console.log('✅ Sitemap generated successfully!');
