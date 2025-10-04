@@ -10,17 +10,14 @@ const { nanoid } = require('nanoid');
 const { body, validationResult } = require('express-validator');
 const { JSDOM } = require('jsdom');
 const DOMPurify = require('dompurify');
-=======
 const DOMPurifyFactory = require('dompurify');
->>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
 
-<<<<<<< HEAD
 const window = new JSDOM('').window;
 const purify = DOMPurify(window);
-=======
+
 // --- بداية الكود التشخيصي ---
 // هذا الكود سيقوم بطباعة قائمة بالملفات في سجلات Render
 const currentDirectory = __dirname;
@@ -39,29 +36,25 @@ fs.readdir(currentDirectory, (err, files) => {
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
->>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-<<<<<<< HEAD
 // --- EJS Setup ---
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public'));
 
 // --- إعدادات قاعدة البيانات ---
-=======
+
 // --- حل مشكلة ValidationError ---
 // يجب وضع هذا السطر مباشرة بعد تعريف app
 app.set('trust proxy', 1);
 
->>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 const mongoUrl = process.env.MONGO_URI;
 const dbName = 'nfc_db';
 const collectionName = 'designs';
 let db;
 
-<<<<<<< HEAD
 // --- Middlewares ---
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
@@ -85,7 +78,6 @@ app.get('/contact', (req, res) => {
 });
 
 // --- تحديد معدل الطلبات ---
-=======
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -119,7 +111,6 @@ app.set('view engine', 'ejs');
 app.set('views', rootDir); // استخدام المجلد الرئيسي لعرض القوالب
 
 // Rate Limit and other middlewares...
->>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -127,7 +118,6 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-<<<<<<< HEAD
 // --- Multer Configuration for Image Uploads ---
 const storage = multer.memoryStorage(); // Store image in memory for processing
 const upload = multer({
@@ -144,7 +134,7 @@ const upload = multer({
 
 
 // --- الاتصال بقاعدة البيانات ---
-=======
+
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -166,7 +156,6 @@ MongoClient.connect(mongoUrl)
         console.error('Failed to connect to MongoDB', err);
         process.exit(1);
     });
-<<<<<<< HEAD
 
 // --- API Routes ---
 
@@ -278,7 +267,7 @@ app.get('/card/:id', async (req, res) => {
         console.error('Error handling card request:', error);
         res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
     }
-=======
+
     res.json({ success:true, id: shortId });
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Save failed' });
@@ -295,12 +284,8 @@ app.get('/api/get-design/:id', async (req,res) => {
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Fetch failed' });
   }
->>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
 });
 
-
-<<<<<<< HEAD
-=======
 function assertAdmin(req,res) {
   const expected = process.env.ADMIN_TOKEN || '';
   const provided = req.headers['x-admin-token'] || '';
@@ -398,7 +383,7 @@ app.get('/card/:id', async (req,res) => {
 });
 
 // معالج خطأ 404 في النهاية
->>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
+
 app.use((req, res, next) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
@@ -408,11 +393,8 @@ app.use((err, req, res, next) => {
   res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
 });
 
-<<<<<<< HEAD
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
 
-=======
 app.listen(port, () => console.log('Server listening on port ' + port));
->>>>>>> f8b786bcb308a2f39a39990dbdc777e3c9b5841d
