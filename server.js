@@ -9,7 +9,6 @@ const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
 const { body, validationResult } = require('express-validator');
 const { JSDOM } = require('jsdom');
-<<<<<<< HEAD
 const DOMPurify = require('dompurify');
 =======
 const DOMPurifyFactory = require('dompurify');
