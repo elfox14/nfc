@@ -64,6 +64,15 @@ app.get('/nfc/view/:id', async (req, res) => {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
         return res.status(404).send('Design not found');
     }
+    
+    // --- START: VIEW COUNTER IMPROVEMENT ---
+    // Increment the view count for the card in the background.
+    // This is done without 'await' to not slow down the response to the user.
+    db.collection(designsCollectionName).updateOne(
+      { shortId: id },
+      { $inc: { views: 1 } }
+    ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
+    // --- END: VIEW COUNTER IMPROVEMENT ---
 
     res.setHeader('X-Robots-Tag', 'index, follow');
 
@@ -181,7 +190,7 @@ app.post('/api/save-design', async (req, res) => {
     ['input-name','input-tagline'].forEach(k => { if (inputs[k]) inputs[k] = DOMPurify.sanitize(String(inputs[k])); });
     data.inputs = inputs;
     const shortId = nanoid(8);
-    await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date() });
+    await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
     res.json({ success: true, id: shortId });
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Save failed' });
