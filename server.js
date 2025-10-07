@@ -302,6 +302,7 @@ app.get('/sitemap.xml', async (req, res) => {
     const base = absoluteBaseUrl(req);
     const staticPages = [
       '/nfc/',
+      '/nfc/editor', // <--- هذا هو السطر الذي تم إضافته
       '/nfc/gallery',
       '/nfc/blog',
       '/nfc/about',
