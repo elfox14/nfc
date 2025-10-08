@@ -20,12 +20,14 @@ const DOMPurify = DOMPurifyFactory(window);
 const app = express();
 const port = process.env.PORT || 3000;
 
+// --- إعدادات عامة ---
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
 
+// قاعدة البيانات
 const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'nfc_db';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
@@ -38,6 +40,7 @@ MongoClient.connect(mongoUrl)
 
 const rootDir = __dirname;
 
+// أدوات مساعدة
 function absoluteBaseUrl(req) {
   const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
@@ -46,105 +49,93 @@ function absoluteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
-const renderViewerPage = async (req, res, id) => {
-    try {
-        if (!db) {
-            res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-            return res.status(500).send('DB not connected');
-        }
-        
-        const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-
-        if (!doc) {
-            res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-            return res.status(404).send('Design not found');
-        }
-
-        db.collection(designsCollectionName).updateOne({ shortId: id }, { $inc: { views: 1 } })
-            .catch(err => console.error(`Failed to increment view count for ${id}:`, err));
-
-        res.setHeader('X-Robots-Tag', 'index, follow');
-
-        const base = absoluteBaseUrl(req);
-        const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
-        
-        const inputs = doc.data?.inputs || {};
-        const name = inputs['input-name'] || 'بطاقة عمل رقمية';
-        const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
-        const ogImage = doc.data?.imageUrls?.front
-            ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
-            : `${base}/nfc/og-image.png`;
-
-        const keywords = ['NFC', 'بطاقة عمل ذكية', 'كارت شخصي', name, ...tagline.split(/\s+/).filter(Boolean)].filter(Boolean).join(', ');
-
-        // --- START: FINAL FIX ---
-        // إنشاء كائن البيانات المنظمة (Schema) الذي يتوقعه القالب
-        const finalSchema = {
-            "@context": "https://schema.org",
-            "@type": "ProfilePage",
-            "mainEntity": {
-                "@type": "Person",
-                "name": name,
-                "jobTitle": tagline,
-                "url": pageUrl,
-                "image": ogImage
-            }
-        };
-        // --- END: FINAL FIX ---
-
-        res.render(path.join(rootDir, 'viewer.ejs'), {
-            pageUrl,
-            name,
-            tagline,
-            ogImage,
-            keywords,
-            design: doc.data,
-            canonical: pageUrl,
-            shortId: id,
-            finalSchema: finalSchema // <-- تمرير الكائن إلى القالب
-        });
-    } catch (e) {
-        console.error(e);
+// --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
+app.get('/nfc/view/:id', async (req, res) => {
+  try {
+    if (!db) {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        res.status(500).send('View failed');
+        return res.status(500).send('DB not connected');
     }
-};
+    const id = String(req.params.id);
+    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
-app.get('/nfc/view/:id', (req, res) => {
-    renderViewerPage(req, res, String(req.params.id));
+    if (!doc) {
+        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+        return res.status(404).send('Design not found');
+    }
+    
+    // Increment the view count for the card in the background.
+    db.collection(designsCollectionName).updateOne(
+      { shortId: id },
+      { $inc: { views: 1 } }
+    ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
+
+    res.setHeader('X-Robots-Tag', 'index, follow');
+
+    const base = absoluteBaseUrl(req);
+    const pageUrl = `${base}/nfc/view/${id}`;
+    
+    const designData = doc.data || {};
+    const inputs = designData.inputs || {};
+    const name = inputs['input-name'] || 'بطاقة عمل رقمية';
+    const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
+    
+    // Determine ogImage, ensuring it's an absolute URL
+    let ogImage = `${base}/nfc/og-image.png`; // Default image
+    if (designData.imageUrls && designData.imageUrls.front) {
+        const frontImage = designData.imageUrls.front;
+        if (frontImage.startsWith('http')) {
+            ogImage = frontImage;
+        } else if (frontImage.startsWith('/')) {
+            ogImage = `${base}${frontImage}`;
+        }
+    }
+
+    res.render(path.join(rootDir, 'viewer.ejs'), {
+      pageUrl,
+      name,
+      tagline,
+      ogImage,
+      design: designData,
+      canonical: pageUrl
+    });
+  } catch (e) {
+    console.error(e);
+    res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+    res.status(500).send('View failed');
+  }
 });
 
-app.get('/nfc/viewer.html', (req, res) => {
-    const id = String(req.query.id);
-    if (!id) {
-        return res.status(400).send('Card ID is missing');
-    }
-    renderViewerPage(req, res, id);
-});
-
+// هيدر كاش بسيط للملفات الثابتة
 app.use((req, res, next) => {
-  res.setHeader('Cache-Control', 'public, max-age=600');
+  if (req.path.startsWith('/uploads/')) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  } else {
+    res.setHeader('Cache-Control', 'public, max-age=600');
+  }
   next();
 });
 
+// إزالة .html من الروابط القديمة
 app.use((req, res, next) => {
-  if (req.path.endsWith('.html') && !req.query.id) {
+  if (req.path.endsWith('.html')) {
     const newPath = req.path.slice(0, -5);
     return res.redirect(301, newPath);
   }
   next();
 });
 
+// إعادة توجيه الجذر إلى /nfc/
 app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
 app.use(express.static(rootDir, { extensions: ['html'] }));
 
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
+// عتاد الرفع/المعالجة
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -155,6 +146,7 @@ const upload = multer({
   }
 });
 
+// ريت-لميت للـ API
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -170,6 +162,7 @@ function assertAdmin(req, res) {
   return true;
 }
 
+// --- API: رفع صورة ---
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -186,6 +179,7 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   }
 });
 
+// --- API: حفظ تصميم ---
 app.post('/api/save-design', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -201,6 +195,7 @@ app.post('/api/save-design', async (req, res) => {
   }
 });
 
+// --- API: جلب تصميم ---
 app.get('/api/get-design/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -213,16 +208,32 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
+// --- API: المعرض (النسخة المعدلة) ---
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const docs = await db.collection(designsCollectionName).find({}).sort({ createdAt: -1 }).limit(20).toArray();
+
+    const sortBy = req.query.sortBy;
+    let sortOptions = { createdAt: -1 }; // Default sort: newest first
+
+    if (sortBy === 'views') {
+      sortOptions = { views: -1 }; // Sort by most viewed
+    }
+
+    const docs = await db.collection(designsCollectionName)
+      .find({})
+      .sort(sortOptions)
+      .limit(50) // Increased limit
+      .toArray();
+      
     res.json(docs);
   } catch (e) {
-    console.error(e); res.status(500).json({ error: 'Fetch failed' });
+    console.error(e); 
+    res.status(500).json({ error: 'Fetch failed' });
   }
 });
 
+// --- API: خلفيات (إدارة) ---
 app.post('/api/upload-background', upload.single('image'), async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
@@ -284,17 +295,20 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
   }
 });
 
+
+// --- robots.txt ---
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Disallow: /nfc/viewer',
+    'Disallow: /nfc/viewer.html',
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
 });
 
+// --- sitemap.xml (ديناميكي) ---
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
@@ -306,11 +320,13 @@ app.get('/sitemap.xml', async (req, res) => {
       '/nfc/contact',
       '/nfc/privacy'
     ];
+
     const blogPosts = [
       '/nfc/blog-nfc-at-events',
       '/nfc/blog-digital-menus-for-restaurants',
       '/nfc/blog-business-card-mistakes'
     ];
+
     let designUrls = [];
     if (db) {
       const docs = await db.collection(designsCollectionName)
@@ -319,17 +335,36 @@ app.get('/sitemap.xml', async (req, res) => {
         .sort({ createdAt: -1 })
         .limit(2000)
         .toArray();
+
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/viewer.html?id=${d.shortId}`,
+        loc: `${base}/nfc/view/${d.shortId}`,
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
         changefreq: 'monthly',
         priority: '0.80'
       }));
     }
+
     function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
-      return ['<url>', `<loc>${loc}</loc>`, lastmod ? `<lastmod>${lastmod}</lastmod>` : '', `<changefreq>${changefreq}</changefreq>`, `<priority>${priority}</priority>`, '</url>'].join('');
+      return [
+        '<url>',
+        `<loc>${loc}</loc>`,
+        lastmod ? `<lastmod>${lastmod}</lastmod>` : '',
+        `<changefreq>${changefreq}</changefreq>`,
+        `<priority>${priority}</priority>`,
+        '</url>'
+      ].join('');
     }
-    const xml = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">', ...staticPages.map(p => urlTag(`${base}${p}`, { changefreq: 'weekly', priority: '0.9' })), ...blogPosts.map(p => urlTag(`${base}${p}`, { changefreq: 'monthly', priority: '0.7' })), ...designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefreq, priority: u.priority })), '</urlset>'].join('');
+
+    const xml =
+      [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        ...staticPages.map(p => urlTag(`${base}${p}`, { changefreq: 'weekly', priority: '0.9' })),
+        ...blogPosts.map(p => urlTag(`${base}${p}`, { changefreq: 'monthly', priority: '0.7' })),
+        ...designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefreq, priority: u.priority })),
+        '</urlset>'
+      ].join('');
+
     res.type('application/xml').send(xml);
   } catch (e) {
     console.error(e);
@@ -337,8 +372,15 @@ app.get('/sitemap.xml', async (req, res) => {
   }
 });
 
+// صحّة
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 
+// 404 handler
+app.use(function(req, res, next) {
+    res.status(404).sendFile(path.join(__dirname, '404.html'));
+});
+
+// الاستماع
 app.listen(port, () => {
   console.log(`Server running on :${port}`);
 });
