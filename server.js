@@ -79,11 +79,12 @@ app.get('/nfc/view/:id', async (req, res) => {
     const base = absoluteBaseUrl(req);
     const pageUrl = `${base}/nfc/view/${id}`;
     
-    const inputs = doc.data?.inputs || {};
+    const design = doc.data;
+    const inputs = design?.inputs || {};
     const name = inputs['input-name'] || 'بطاقة عمل رقمية';
     const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
-    const ogImage = doc.data?.imageUrls?.front
-      ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
+    const ogImage = design?.imageUrls?.front
+      ? (design.imageUrls.front.startsWith('http') ? design.imageUrls.front : `${base}${design.imageUrls.front}`)
       : `${base}/nfc/og-image.png`;
 
     const keywords = [
@@ -91,6 +92,58 @@ app.get('/nfc/view/:id', async (req, res) => {
         name, 
         ...tagline.split(/\s+/).filter(Boolean)
     ].filter(Boolean).join(', ');
+    
+    // --- START: SEO IMPROVEMENT ---
+    // The schema logic is now expanded to include more contact details for richer search results.
+    const personEntity = {
+        "@type": "Person",
+        "name": name,
+        "jobTitle": tagline,
+        "url": pageUrl,
+        "image": ogImage
+    };
+    // Add contact details if they exist in the design data
+    if (design && design.dynamic) {
+        if (design.dynamic.staticSocial && design.dynamic.staticSocial.email && design.dynamic.staticSocial.email.value) {
+            personEntity.email = `mailto:${design.dynamic.staticSocial.email.value}`;
+        }
+        if (design.dynamic.staticSocial && design.dynamic.staticSocial.website && design.dynamic.staticSocial.website.value) {
+            // Ensure the URL has a scheme
+            let webUrl = design.dynamic.staticSocial.website.value;
+            if (!webUrl.startsWith('http')) {
+                webUrl = 'https://' + webUrl;
+            }
+            personEntity.url = webUrl; // Overwrite pageUrl with the personal website if available
+        }
+        if (design.dynamic.phones && design.dynamic.phones.length > 0 && design.dynamic.phones[0].value) {
+            personEntity.telephone = design.dynamic.phones[0].value;
+        }
+    }
+
+    const socialUrls = [];
+    const staticSocial = design.dynamic && design.dynamic.staticSocial ? design.dynamic.staticSocial : {};
+    const dynamicSocial = design.dynamic && design.dynamic.social ? design.dynamic.social : [];
+    
+    if (staticSocial.facebook && staticSocial.facebook.value) { socialUrls.push(staticSocial.facebook.value.startsWith('http') ? staticSocial.facebook.value : `https://www.facebook.com/${staticSocial.facebook.value}`); }
+    if (staticSocial.linkedin && staticSocial.linkedin.value) { socialUrls.push(staticSocial.linkedin.value.startsWith('http') ? staticSocial.linkedin.value : `https://www.linkedin.com/in/${staticSocial.linkedin.value}`); }
+    
+    dynamicSocial.forEach(link => {
+        if (link.platform === 'instagram' && link.value) { socialUrls.push(link.value.startsWith('http') ? link.value : `https://www.instagram.com/${link.value}`); }
+        if (link.platform === 'x' && link.value) { socialUrls.push(link.value.startsWith('http') ? link.value : `https://x.com/${link.value}`); }
+        if (link.platform === 'youtube' && link.value) { socialUrls.push(link.value.startsWith('http') ? link.value : `https://www.youtube.com/${link.value}`); }
+    });
+    
+    if (socialUrls.length > 0) {
+        personEntity.sameAs = socialUrls;
+    }
+
+    const finalSchema = {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "url": pageUrl,
+        "mainEntity": personEntity
+    };
+    // --- END: SEO IMPROVEMENT ---
 
     res.render(path.join(rootDir, 'viewer.ejs'), {
       pageUrl,
@@ -98,8 +151,9 @@ app.get('/nfc/view/:id', async (req, res) => {
       tagline,
       ogImage,
       keywords,
-      design: doc.data,
-      canonical: pageUrl
+      design,
+      canonical: pageUrl,
+      finalSchema: finalSchema // Pass the generated schema to the template
     });
   } catch (e) {
     console.error(e);
@@ -302,7 +356,6 @@ app.get('/sitemap.xml', async (req, res) => {
     const base = absoluteBaseUrl(req);
     const staticPages = [
       '/nfc/',
-      '/nfc/editor', // <--- هذا هو السطر الذي تم إضافته
       '/nfc/gallery',
       '/nfc/blog',
       '/nfc/about',
