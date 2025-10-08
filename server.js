@@ -50,7 +50,6 @@ function absoluteBaseUrl(req) {
 }
 
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
-// تم نقل هذا المسار للأعلى ليتم تنفيذه قبل خدمة الملفات الثابتة
 app.get('/nfc/view/:id', async (req, res) => {
   try {
     if (!db) {
@@ -65,14 +64,10 @@ app.get('/nfc/view/:id', async (req, res) => {
         return res.status(404).send('Design not found');
     }
     
-    // --- START: VIEW COUNTER IMPROVEMENT ---
-    // Increment the view count for the card in the background.
-    // This is done without 'await' to not slow down the response to the user.
     db.collection(designsCollectionName).updateOne(
       { shortId: id },
       { $inc: { views: 1 } }
     ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
-    // --- END: VIEW COUNTER IMPROVEMENT ---
 
     res.setHeader('X-Robots-Tag', 'index, follow');
 
@@ -99,8 +94,8 @@ app.get('/nfc/view/:id', async (req, res) => {
       ogImage,
       keywords,
       design: doc.data,
-      canonical: pageUrl,
-      shortId: id // <-- تمت إضافة هذا السطر
+      canonical: pageUrl.replace('/view/', '/viewer.html?id='), // تحديث الرابط الأساسي
+      shortId: id
     });
   } catch (e) {
     console.error(e);
@@ -108,6 +103,71 @@ app.get('/nfc/view/:id', async (req, res) => {
     res.status(500).send('View failed');
   }
 });
+
+
+// --- START: NEW ROUTE HANDLER for viewer.html?id=... ---
+// هذا المسار الجديد سيتعامل مع الروابط بالشكل المطلوب
+app.get('/nfc/viewer.html', async (req, res) => {
+    try {
+        if (!db) {
+            res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+            return res.status(500).send('DB not connected');
+        }
+        const id = String(req.query.id); // <-- الحصول على الـ ID من query parameter
+        if (!id) {
+            return res.status(400).send('Card ID is missing');
+        }
+
+        const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+
+        if (!doc) {
+            res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+            return res.status(404).send('Design not found');
+        }
+
+        db.collection(designsCollectionName).updateOne(
+            { shortId: id },
+            { $inc: { views: 1 } }
+        ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
+
+        res.setHeader('X-Robots-Tag', 'index, follow');
+
+        const base = absoluteBaseUrl(req);
+        // بناء الرابط لـ Open Graph و Canonical
+        const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
+        
+        const inputs = doc.data?.inputs || {};
+        const name = inputs['input-name'] || 'بطاقة عمل رقمية';
+        const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
+        const ogImage = doc.data?.imageUrls?.front
+            ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
+            : `${base}/nfc/og-image.png`;
+
+        const keywords = [
+            'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
+            name,
+            ...tagline.split(/\s+/).filter(Boolean)
+        ].filter(Boolean).join(', ');
+
+        // استخدام نفس القالب viewer.ejs
+        res.render(path.join(rootDir, 'viewer.ejs'), {
+            pageUrl,
+            name,
+            tagline,
+            ogImage,
+            keywords,
+            design: doc.data,
+            canonical: pageUrl,
+            shortId: id
+        });
+    } catch (e) {
+        console.error(e);
+        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+        res.status(500).send('View failed');
+    }
+});
+// --- END: NEW ROUTE HANDLER ---
+
 
 // هيدر كاش بسيط للملفات الثابتة
 app.use((req, res, next) => {
@@ -117,7 +177,7 @@ app.use((req, res, next) => {
 
 // إزالة .html من الروابط القديمة
 app.use((req, res, next) => {
-  if (req.path.endsWith('.html')) {
+  if (req.path.endsWith('.html') && !req.query.id) { // <-- تعديل الشرط ليتجاهل رابط العارض
     const newPath = req.path.slice(0, -5);
     return res.redirect(301, newPath);
   }
@@ -326,7 +386,7 @@ app.get('/sitemap.xml', async (req, res) => {
         .toArray();
 
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/view/${d.shortId}`,
+        loc: `${base}/nfc/viewer.html?id=${d.shortId}`, // <-- تحديث ليطابق الشكل الجديد
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
         changefreq: 'monthly',
         priority: '0.80'
