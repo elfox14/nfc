@@ -66,7 +66,8 @@ const renderViewerPage = async (req, res, id) => {
         res.setHeader('X-Robots-Tag', 'index, follow');
 
         const base = absoluteBaseUrl(req);
-        const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
+        // --- MODIFIED: Ensure pretty URL is used for canonical links ---
+        const pageUrl = `${base}/nfc/view/${id}`;
         
         const inputs = doc.data?.inputs || {};
         const name = inputs['input-name'] || 'بطاقة عمل رقمية';
@@ -77,20 +78,47 @@ const renderViewerPage = async (req, res, id) => {
 
         const keywords = ['NFC', 'بطاقة عمل ذكية', 'كارت شخصي', name, ...tagline.split(/\s+/).filter(Boolean)].filter(Boolean).join(', ');
 
-        // --- START: FINAL FIX ---
-        // إنشاء كائن البيانات المنظمة (Schema) الذي يتوقعه القالب
+        // --- START: ENHANCED SCHEMA GENERATION ---
+        const personEntity = {
+            "@type": "Person",
+            "name": name,
+            "jobTitle": tagline,
+            "url": pageUrl,
+            "image": ogImage
+        };
+
+        const socialUrls = [];
+        const staticSocial = doc.data?.dynamic?.staticSocial || {};
+        const dynamicSocial = doc.data?.dynamic?.social || [];
+
+        // Add URLs from static fields
+        if (staticSocial.facebook?.value) socialUrls.push(`https://www.facebook.com/${staticSocial.facebook.value}`);
+        if (staticSocial.linkedin?.value) socialUrls.push(`https://www.linkedin.com/in/${staticSocial.linkedin.value}`);
+        if (staticSocial.website?.value) {
+            const webUrl = staticSocial.website.value;
+            personEntity.mainEntityOfPage = webUrl.startsWith('http') ? webUrl : `https://${webUrl}`;
+        }
+
+        // Add URLs from dynamic fields
+        dynamicSocial.forEach(link => {
+            if (link.value) {
+                if (link.platform === 'instagram') socialUrls.push(`https://www.instagram.com/${link.value}`);
+                if (link.platform === 'x') socialUrls.push(`https://x.com/${link.value}`);
+                if (link.platform === 'youtube') socialUrls.push(link.value.startsWith('http') ? link.value : `https://www.youtube.com/${link.value}`);
+            }
+        });
+
+        if (socialUrls.length > 0) {
+            personEntity.sameAs = socialUrls;
+        }
+
         const finalSchema = {
             "@context": "https://schema.org",
             "@type": "ProfilePage",
-            "mainEntity": {
-                "@type": "Person",
-                "name": name,
-                "jobTitle": tagline,
-                "url": pageUrl,
-                "image": ogImage
-            }
+            "url": pageUrl,
+            "mainEntity": personEntity
         };
-        // --- END: FINAL FIX ---
+        // --- END: ENHANCED SCHEMA GENERATION ---
 
         res.render(path.join(rootDir, 'viewer.ejs'), {
             pageUrl,
@@ -99,9 +127,9 @@ const renderViewerPage = async (req, res, id) => {
             ogImage,
             keywords,
             design: doc.data,
-            canonical: pageUrl,
+            canonical: pageUrl, // Use the pretty URL for canonical
             shortId: id,
-            finalSchema: finalSchema // <-- تمرير الكائن إلى القالب
+            finalSchema: finalSchema 
         });
     } catch (e) {
         console.error(e);
@@ -119,8 +147,10 @@ app.get('/nfc/viewer.html', (req, res) => {
     if (!id) {
         return res.status(400).send('Card ID is missing');
     }
-    renderViewerPage(req, res, id);
+    // --- MODIFIED: Redirect old URL to the new pretty URL ---
+    res.redirect(301, `/nfc/view/${id}`);
 });
+
 
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'public, max-age=600');
@@ -213,10 +243,19 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
+// --- MODIFIED: Add sorting capability to the gallery API ---
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const docs = await db.collection(designsCollectionName).find({}).sort({ createdAt: -1 }).limit(20).toArray();
+    
+    const sortBy = req.query.sortBy === 'views' ? { views: -1 } : { createdAt: -1 };
+
+    const docs = await db.collection(designsCollectionName)
+      .find({})
+      .sort(sortBy)
+      .limit(20)
+      .toArray();
+      
     res.json(docs);
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Fetch failed' });
@@ -289,7 +328,7 @@ app.get('/robots.txt', (req, res) => {
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Disallow: /nfc/viewer',
+    'Disallow: /nfc/viewer.html', // Disallow the old URL structure
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
@@ -320,7 +359,8 @@ app.get('/sitemap.xml', async (req, res) => {
         .limit(2000)
         .toArray();
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/viewer.html?id=${d.shortId}`,
+        // --- MODIFIED: Use the new pretty URL in sitemap ---
+        loc: `${base}/nfc/view/${d.shortId}`,
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
         changefreq: 'monthly',
         priority: '0.80'
