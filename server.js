@@ -3,7 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const path = require('path');
-const cors = require('cors');
+const cors = require('cors'); // Keep cors
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
@@ -22,7 +22,16 @@ const port = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
-app.use(cors());
+
+// --- START: MODIFICATION FOR CORS FIX ---
+// Replace the simple app.use(cors()); with this more specific configuration.
+const corsOptions = {
+  origin: ['https://www.mcprim.com', 'https://mcprim.com'], // Add your frontend domain(s) here
+  optionsSuccessStatus: 200 
+};
+app.use(cors(corsOptions));
+// --- END: MODIFICATION FOR CORS FIX ---
+
 app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
 
@@ -66,7 +75,6 @@ const renderViewerPage = async (req, res, id) => {
         res.setHeader('X-Robots-Tag', 'index, follow');
 
         const base = absoluteBaseUrl(req);
-        // --- MODIFIED: Ensure pretty URL is used for canonical links ---
         const pageUrl = `${base}/nfc/view/${id}`;
         
         const inputs = doc.data?.inputs || {};
@@ -78,28 +86,19 @@ const renderViewerPage = async (req, res, id) => {
 
         const keywords = ['NFC', 'بطاقة عمل ذكية', 'كارت شخصي', name, ...tagline.split(/\s+/).filter(Boolean)].filter(Boolean).join(', ');
 
-        // --- START: ENHANCED SCHEMA GENERATION ---
         const personEntity = {
-            "@type": "Person",
-            "name": name,
-            "jobTitle": tagline,
-            "url": pageUrl,
-            "image": ogImage
+            "@type": "Person", "name": name, "jobTitle": tagline, "url": pageUrl, "image": ogImage
         };
 
         const socialUrls = [];
         const staticSocial = doc.data?.dynamic?.staticSocial || {};
         const dynamicSocial = doc.data?.dynamic?.social || [];
-
-        // Add URLs from static fields
         if (staticSocial.facebook?.value) socialUrls.push(`https://www.facebook.com/${staticSocial.facebook.value}`);
         if (staticSocial.linkedin?.value) socialUrls.push(`https://www.linkedin.com/in/${staticSocial.linkedin.value}`);
         if (staticSocial.website?.value) {
             const webUrl = staticSocial.website.value;
             personEntity.mainEntityOfPage = webUrl.startsWith('http') ? webUrl : `https://${webUrl}`;
         }
-
-        // Add URLs from dynamic fields
         dynamicSocial.forEach(link => {
             if (link.value) {
                 if (link.platform === 'instagram') socialUrls.push(`https://www.instagram.com/${link.value}`);
@@ -107,29 +106,14 @@ const renderViewerPage = async (req, res, id) => {
                 if (link.platform === 'youtube') socialUrls.push(link.value.startsWith('http') ? link.value : `https://www.youtube.com/${link.value}`);
             }
         });
-
-        if (socialUrls.length > 0) {
-            personEntity.sameAs = socialUrls;
-        }
+        if (socialUrls.length > 0) { personEntity.sameAs = socialUrls; }
 
         const finalSchema = {
-            "@context": "https://schema.org",
-            "@type": "ProfilePage",
-            "url": pageUrl,
-            "mainEntity": personEntity
+            "@context": "https://schema.org", "@type": "ProfilePage", "url": pageUrl, "mainEntity": personEntity
         };
-        // --- END: ENHANCED SCHEMA GENERATION ---
 
         res.render(path.join(rootDir, 'viewer.ejs'), {
-            pageUrl,
-            name,
-            tagline,
-            ogImage,
-            keywords,
-            design: doc.data,
-            canonical: pageUrl, // Use the pretty URL for canonical
-            shortId: id,
-            finalSchema: finalSchema 
+            pageUrl, name, tagline, ogImage, keywords, design: doc.data, canonical: pageUrl, shortId: id, finalSchema: finalSchema 
         });
     } catch (e) {
         console.error(e);
@@ -147,7 +131,6 @@ app.get('/nfc/viewer.html', (req, res) => {
     if (!id) {
         return res.status(400).send('Card ID is missing');
     }
-    // --- MODIFIED: Redirect old URL to the new pretty URL ---
     res.redirect(301, `/nfc/view/${id}`);
 });
 
@@ -243,19 +226,15 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
-// --- MODIFIED: Add sorting capability to the gallery API ---
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
-    
     const sortBy = req.query.sortBy === 'views' ? { views: -1 } : { createdAt: -1 };
-
     const docs = await db.collection(designsCollectionName)
       .find({})
       .sort(sortBy)
       .limit(20)
       .toArray();
-      
     res.json(docs);
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Fetch failed' });
@@ -274,11 +253,7 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
       .webp({ quality: 88 })
       .toFile(out);
     const payload = {
-      shortId: nanoid(8),
-      url: '/uploads/' + filename,
-      name: String(req.body.name || 'خلفية'),
-      category: String(req.body.category || 'عام'),
-      createdAt: new Date()
+      shortId: nanoid(8), url: '/uploads/' + filename, name: String(req.body.name || 'خلفية'), category: String(req.body.category || 'عام'), createdAt: new Date()
     };
     await db.collection(backgroundsCollectionName).insertOne(payload);
     res.json({ success:true, background: payload });
@@ -326,10 +301,7 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
   const txt = [
-    'User-agent: *',
-    'Allow: /nfc/',
-    'Disallow: /nfc/viewer.html', // Disallow the old URL structure
-    `Sitemap: ${base}/sitemap.xml`
+    'User-agent: *', 'Allow: /nfc/', 'Disallow: /nfc/viewer.html', `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
 });
@@ -338,32 +310,17 @@ app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
     const staticPages = [
-      '/nfc/',
-      '/nfc/gallery',
-      '/nfc/blog',
-      '/nfc/about',
-      '/nfc/contact',
-      '/nfc/privacy'
+      '/nfc/', '/nfc/gallery', '/nfc/blog', '/nfc/about', '/nfc/contact', '/nfc/privacy'
     ];
     const blogPosts = [
-      '/nfc/blog-nfc-at-events',
-      '/nfc/blog-digital-menus-for-restaurants',
-      '/nfc/blog-business-card-mistakes'
+      '/nfc/blog-nfc-at-events', '/nfc/blog-digital-menus-for-restaurants', '/nfc/blog-business-card-mistakes'
     ];
     let designUrls = [];
     if (db) {
       const docs = await db.collection(designsCollectionName)
-        .find({})
-        .project({ shortId: 1, createdAt: 1 })
-        .sort({ createdAt: -1 })
-        .limit(2000)
-        .toArray();
+        .find({}).project({ shortId: 1, createdAt: 1 }).sort({ createdAt: -1 }).limit(2000).toArray();
       designUrls = docs.map(d => ({
-        // --- MODIFIED: Use the new pretty URL in sitemap ---
-        loc: `${base}/nfc/view/${d.shortId}`,
-        lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
-        changefreq: 'monthly',
-        priority: '0.80'
+        loc: `${base}/nfc/view/${d.shortId}`, lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined, changefreq: 'monthly', priority: '0.80'
       }));
     }
     function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
