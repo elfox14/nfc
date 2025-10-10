@@ -42,15 +42,16 @@ const rootDir = __dirname;
 
 // أدوات مساعدة
 function absoluteBaseUrl(req) {
-  const envBase = process.env.SITE_BASE_URL;
+  const envBase = process.env.SITE_BASE_URL || `https://${req.get('host')}`;
   if (envBase) return envBase.replace(/\/+$/, '');
   const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'https');
   const host = req.get('host');
   return `${proto}://${host}`;
 }
 
-// --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
-app.get('/nfc/view/:id', async (req, res) => {
+// --- START: MODIFIED ROUTE FOR SHORTER URL ---
+// The route is now /view/:id instead of /nfc/view/:id
+app.get('/view/:id', async (req, res) => {
   try {
     if (!db) {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
@@ -72,17 +73,15 @@ app.get('/nfc/view/:id', async (req, res) => {
     res.setHeader('X-Robots-Tag', 'index, follow');
 
     const base = absoluteBaseUrl(req);
-    const pageUrl = `${base}/nfc/view/${id}`;
+    const pageUrl = `${base}/view/${id}`;
     
     const inputs = doc.data?.inputs || {};
     const name = inputs['input-name'] || 'بطاقة عمل رقمية';
     const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
 
-    // START: Hybrid Model - Prioritize card face image for OG image
     const ogImage = doc.data?.cardFaceUrls?.front
       ? (doc.data.cardFaceUrls.front.startsWith('http') ? doc.data.cardFaceUrls.front : `${base}${doc.data.cardFaceUrls.front}`)
       : `${base}/nfc/og-image.png`;
-    // END: Hybrid Model
 
     const keywords = [
         'NFC', 'بطاقة عمل ذكية', 'كارت شخصي', 
@@ -105,6 +104,7 @@ app.get('/nfc/view/:id', async (req, res) => {
     res.status(500).send('View failed');
   }
 });
+// --- END: MODIFIED ROUTE ---
 
 // هيدر كاش بسيط للملفات الثابتة
 app.use((req, res, next) => {
@@ -173,14 +173,12 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   }
 });
 
-// --- START: MODIFIED API ENDPOINT for Hybrid Model ---
 app.post('/api/save-design', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     
     const clientData = req.body || {};
     
-    // Sanitize user-generated text inputs
     if (clientData.inputs) {
       ['input-name', 'input-tagline'].forEach(k => {
         if (clientData.inputs[k]) {
@@ -188,15 +186,11 @@ app.post('/api/save-design', async (req, res) => {
         }
       });
     }
-
-    // This 'clientData' object now contains all fields sent from the editor,
-    // including the new 'cardFaceUrls'. The existing structure saves this whole
-    // object, which is exactly what we need for the hybrid model.
     
     const shortId = nanoid(8);
     await db.collection(designsCollectionName).insertOne({
       shortId,
-      data: clientData, // Save the entire payload
+      data: clientData,
       createdAt: new Date(),
       views: 0
     });
@@ -207,7 +201,6 @@ app.post('/api/save-design', async (req, res) => {
     res.status(500).json({ error: 'Save failed' });
   }
 });
-// --- END: MODIFIED API ENDPOINT ---
 
 app.get('/api/get-design/:id', async (req, res) => {
   try {
@@ -298,7 +291,8 @@ app.get('/robots.txt', (req, res) => {
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Disallow: /nfc/viewer',
+    'Allow: /view/', // Allow the new view path
+    'Disallow: /nfc/viewer', // Disallow the old one
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
@@ -332,7 +326,7 @@ app.get('/sitemap.xml', async (req, res) => {
         .toArray();
 
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/view/${d.shortId}`,
+        loc: `${base}/view/${d.shortId}`, // Use the new URL structure
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
         changefreq: 'monthly',
         priority: '0.80'
