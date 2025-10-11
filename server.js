@@ -49,8 +49,7 @@ function absoluteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
-// --- START: MODIFIED ROUTE FOR SHORTER URL ---
-// The route is now /view/:id instead of /nfc/view/:id
+// Route for the new shorter URL structure
 app.get('/view/:id', async (req, res) => {
   try {
     if (!db) {
@@ -104,15 +103,14 @@ app.get('/view/:id', async (req, res) => {
     res.status(500).send('View failed');
   }
 });
-// --- END: MODIFIED ROUTE ---
 
-// هيدر كاش بسيط للملفات الثابتة
+// Simple cache header for static files
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'public, max-age=600');
   next();
 });
 
-// إزالة .html من الروابط القديمة
+// Remove .html from old links
 app.use((req, res, next) => {
   if (req.path.endsWith('.html')) {
     const newPath = req.path.slice(0, -5);
@@ -121,7 +119,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// إعادة توجيه الجذر إلى /nfc/
+// Redirect root to /nfc/
 app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
@@ -291,8 +289,8 @@ app.get('/robots.txt', (req, res) => {
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Allow: /view/', // Allow the new view path
-    'Disallow: /nfc/viewer', // Disallow the old one
+    'Allow: /view/',
+    'Disallow: /nfc/viewer',
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
@@ -326,7 +324,7 @@ app.get('/sitemap.xml', async (req, res) => {
         .toArray();
 
       designUrls = docs.map(d => ({
-        loc: `${base}/view/${d.shortId}`, // Use the new URL structure
+        loc: `${base}/view/${d.shortId}`,
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
         changefreq: 'monthly',
         priority: '0.80'
