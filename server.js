@@ -42,15 +42,15 @@ const rootDir = __dirname;
 
 // أدوات مساعدة
 function absoluteBaseUrl(req) {
-  const envBase = process.env.SITE_BASE_URL || `https://${req.get('host')}`;
+  const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
   const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'https');
   const host = req.get('host');
   return `${proto}://${host}`;
 }
 
-// --- START: REVERTED ROUTE TO OLD STRUCTURE ---
-// The route is now back to /nfc/view/:id
+// --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
+// تم نقل هذا المسار للأعلى ليتم تنفيذه قبل خدمة الملفات الثابتة
 app.get('/nfc/view/:id', async (req, res) => {
   try {
     if (!db) {
@@ -65,23 +65,25 @@ app.get('/nfc/view/:id', async (req, res) => {
         return res.status(404).send('Design not found');
     }
     
+    // --- START: VIEW COUNTER IMPROVEMENT ---
+    // Increment the view count for the card in the background.
+    // This is done without 'await' to not slow down the response to the user.
     db.collection(designsCollectionName).updateOne(
       { shortId: id },
       { $inc: { views: 1 } }
     ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
+    // --- END: VIEW COUNTER IMPROVEMENT ---
 
     res.setHeader('X-Robots-Tag', 'index, follow');
 
     const base = absoluteBaseUrl(req);
-    // Note: The pageUrl construction for SEO/OG tags will be different now
-    const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
+    const pageUrl = `${base}/nfc/view/${id}`;
     
     const inputs = doc.data?.inputs || {};
     const name = inputs['input-name'] || 'بطاقة عمل رقمية';
     const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
-
-    const ogImage = doc.data?.cardFaceUrls?.front
-      ? (doc.data.cardFaceUrls.front.startsWith('http') ? doc.data.cardFaceUrls.front : `${base}${doc.data.cardFaceUrls.front}`)
+    const ogImage = doc.data?.imageUrls?.front
+      ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
       : `${base}/nfc/og-image.png`;
 
     const keywords = [
@@ -105,7 +107,6 @@ app.get('/nfc/view/:id', async (req, res) => {
     res.status(500).send('View failed');
   }
 });
-// --- END: REVERTED ROUTE ---
 
 // هيدر كاش بسيط للملفات الثابتة
 app.use((req, res, next) => {
@@ -127,12 +128,16 @@ app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
+// خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
+// يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
 app.use(express.static(rootDir, { extensions: ['html'] }));
 
+// مجلد uploads
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
+// عتاد الرفع/المعالجة
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -143,6 +148,7 @@ const upload = multer({
   }
 });
 
+// ريت-لميت للـ API
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -158,6 +164,7 @@ function assertAdmin(req, res) {
   return true;
 }
 
+// --- API: رفع صورة ---
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -174,35 +181,23 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   }
 });
 
+// --- API: حفظ تصميم ---
 app.post('/api/save-design', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
-    
-    const clientData = req.body || {};
-    
-    if (clientData.inputs) {
-      ['input-name', 'input-tagline'].forEach(k => {
-        if (clientData.inputs[k]) {
-          clientData.inputs[k] = DOMPurify.sanitize(String(clientData.inputs[k]));
-        }
-      });
-    }
-    
+    const data = req.body || {};
+    const inputs = data.inputs || {};
+    ['input-name','input-tagline'].forEach(k => { if (inputs[k]) inputs[k] = DOMPurify.sanitize(String(inputs[k])); });
+    data.inputs = inputs;
     const shortId = nanoid(8);
-    await db.collection(designsCollectionName).insertOne({
-      shortId,
-      data: clientData,
-      createdAt: new Date(),
-      views: 0
-    });
-
+    await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
     res.json({ success: true, id: shortId });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Save failed' });
+    console.error(e); res.status(500).json({ error: 'Save failed' });
   }
 });
 
+// --- API: جلب تصميم ---
 app.get('/api/get-design/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -215,6 +210,7 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
+// --- API: المعرض ---
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -225,6 +221,7 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 
+// --- API: خلفيات (إدارة) ---
 app.post('/api/upload-background', upload.single('image'), async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
@@ -287,18 +284,19 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
 });
 
 
+// --- robots.txt ---
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    // We don't need to explicitly allow /view/ anymore
-    'Disallow: /view/',
+    'Disallow: /nfc/viewer',
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
 });
 
+// --- sitemap.xml (ديناميكي) ---
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
@@ -326,9 +324,8 @@ app.get('/sitemap.xml', async (req, res) => {
         .limit(2000)
         .toArray();
 
-      // Revert sitemap to use the old URL structure
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/viewer.html?id=${d.shortId}`,
+        loc: `${base}/nfc/view/${d.shortId}`,
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
         changefreq: 'monthly',
         priority: '0.80'
@@ -363,8 +360,10 @@ app.get('/sitemap.xml', async (req, res) => {
   }
 });
 
+// صحّة
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 
+// الاستماع
 app.listen(port, () => {
   console.log(`Server running on :${port}`);
 });
