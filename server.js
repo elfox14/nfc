@@ -13,6 +13,7 @@ const DOMPurifyFactory = require('dompurify');
 const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
+const helmet = require('helmet'); // <--- NEW
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
@@ -23,6 +24,34 @@ const port = process.env.PORT || 3000;
 // --- إعدادات عامة ---
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
+
+// --- START: SECURITY HEADERS (HELMET) ---
+app.use(helmet.frameguard({ action: 'deny' })); // Clickjacking Protection
+app.use(helmet.xssFilter()); // Basic XSS protection
+app.use(helmet.noSniff()); // MIME-type sniffing prevention
+app.use(helmet.hsts({ 
+    maxAge: 31536000, 
+    includeSubDomains: true,
+    preload: true
+})); // Enforce HTTPS for a long time (Requires site to be fully HTTPS)
+
+// Custom CSP to allow necessary external resources (cdnjs, cdn.jsdelivr, YouTube, Giphy)
+app.use(helmet.contentSecurityPolicy({
+    directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com"],
+        mediaSrc: ["'self'", "data:"], // Allows base64 encoded audio
+        frameSrc: ["'self'", "https://www.youtube.com"],
+        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Allow API calls and external services
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [], // Automatically upgrade HTTP to HTTPS if possible
+    },
+}));
+// --- END: SECURITY HEADERS (HELMET) ---
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
@@ -49,6 +78,32 @@ function absoluteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
+// قائمة بالحقول النصية التي يجب تعقيمها من الـ HTML (للحماية من XSS بعد الحفظ)
+const FIELDS_TO_SANITIZE = [
+    'input-name', 'input-tagline', 
+    'input-email', 'input-website', 
+    'input-whatsapp', 'input-facebook', 'input-linkedin'
+];
+
+// دالة تعقيم لكائن الإدخالات (موجودة بالفعل)
+function sanitizeInputs(inputs) {
+    if (!inputs) return {};
+    const sanitized = { ...inputs };
+    FIELDS_TO_SANITIZE.forEach(k => { 
+        if (sanitized[k]) {
+            sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
+        }
+    });
+    // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
+    if (sanitized.dynamic && sanitized.dynamic.social) {
+        sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
+            ...link,
+            value: DOMPurify.sanitize(String(link.value))
+        }));
+    }
+    return sanitized;
+}
+
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
 // تم نقل هذا المسار للأعلى ليتم تنفيذه قبل خدمة الملفات الثابتة
 app.get('/nfc/view/:id', async (req, res) => {
@@ -65,14 +120,11 @@ app.get('/nfc/view/:id', async (req, res) => {
         return res.status(404).send('Design not found');
     }
     
-    // --- START: VIEW COUNTER IMPROVEMENT ---
     // Increment the view count for the card in the background.
-    // This is done without 'await' to not slow down the response to the user.
     db.collection(designsCollectionName).updateOne(
       { shortId: id },
       { $inc: { views: 1 } }
     ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
-    // --- END: VIEW COUNTER IMPROVEMENT ---
 
     res.setHeader('X-Robots-Tag', 'index, follow');
 
@@ -164,32 +216,6 @@ function assertAdmin(req, res) {
   return true;
 }
 
-// قائمة بالحقول النصية التي يجب تعقيمها من الـ HTML
-const FIELDS_TO_SANITIZE = [
-    'input-name', 'input-tagline', 
-    'input-email', 'input-website', 
-    'input-whatsapp', 'input-facebook', 'input-linkedin'
-];
-
-// دالة تعقيم لكائن الإدخالات
-function sanitizeInputs(inputs) {
-    if (!inputs) return {};
-    const sanitized = { ...inputs };
-    FIELDS_TO_SANITIZE.forEach(k => { 
-        if (sanitized[k]) {
-            sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
-        }
-    });
-    // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
-    if (sanitized.dynamic && sanitized.dynamic.social) {
-        sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
-            ...link,
-            value: DOMPurify.sanitize(String(link.value))
-        }));
-    }
-    return sanitized;
-}
-
 // --- API: رفع صورة ---
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
@@ -214,11 +240,9 @@ app.post('/api/save-design', async (req, res) => {
     
     let data = req.body || {};
     
-    // ********* NEW SANITIZATION STEP *********
     if (data.inputs) {
         data.inputs = sanitizeInputs(data.inputs);
     }
-    // *****************************************
     
     const shortId = nanoid(8);
     await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
@@ -235,8 +259,6 @@ app.get('/api/get-design/:id', async (req, res) => {
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).json({ error: 'Design not found' });
-    
-    // Note: Data retrieved here (doc.data) will be sanitized if saved after the fix.
     res.json(doc.data);
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Fetch failed' });
@@ -269,8 +291,8 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
     const payload = {
       shortId: nanoid(8),
       url: '/uploads/' + filename,
-      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')), // Sanitization added here
-      category: DOMPurify.sanitize(String(req.body.category || 'عام')), // Sanitization added here
+      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')), // Sanitization here
+      category: DOMPurify.sanitize(String(req.body.category || 'عام')), // Sanitization here
       createdAt: new Date()
     };
     await db.collection(backgroundsCollectionName).insertOne(payload);
@@ -287,8 +309,6 @@ app.get('/api/gallery/backgrounds', async (req, res) => {
     const page = Math.max(1, parseInt(req.query.page || '1', 10));
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit || '50', 10)));
     const skip = (page - 1) * limit;
-    // Note: Query parameters (category) should be validated/sanitized, 
-    // but MongoDB handles injection risk if used directly as values/fields.
     const q = (category && category !== 'all') ? { category: String(category) } : {};
     const coll = db.collection(backgroundsCollectionName);
     const [items, total] = await Promise.all([
