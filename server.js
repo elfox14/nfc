@@ -164,6 +164,32 @@ function assertAdmin(req, res) {
   return true;
 }
 
+// قائمة بالحقول النصية التي يجب تعقيمها من الـ HTML
+const FIELDS_TO_SANITIZE = [
+    'input-name', 'input-tagline', 
+    'input-email', 'input-website', 
+    'input-whatsapp', 'input-facebook', 'input-linkedin'
+];
+
+// دالة تعقيم لكائن الإدخالات
+function sanitizeInputs(inputs) {
+    if (!inputs) return {};
+    const sanitized = { ...inputs };
+    FIELDS_TO_SANITIZE.forEach(k => { 
+        if (sanitized[k]) {
+            sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
+        }
+    });
+    // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
+    if (sanitized.dynamic && sanitized.dynamic.social) {
+        sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
+            ...link,
+            value: DOMPurify.sanitize(String(link.value))
+        }));
+    }
+    return sanitized;
+}
+
 // --- API: رفع صورة ---
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
@@ -185,10 +211,15 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
 app.post('/api/save-design', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const data = req.body || {};
-    const inputs = data.inputs || {};
-    ['input-name','input-tagline'].forEach(k => { if (inputs[k]) inputs[k] = DOMPurify.sanitize(String(inputs[k])); });
-    data.inputs = inputs;
+    
+    let data = req.body || {};
+    
+    // ********* NEW SANITIZATION STEP *********
+    if (data.inputs) {
+        data.inputs = sanitizeInputs(data.inputs);
+    }
+    // *****************************************
+    
     const shortId = nanoid(8);
     await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
     res.json({ success: true, id: shortId });
@@ -204,6 +235,8 @@ app.get('/api/get-design/:id', async (req, res) => {
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).json({ error: 'Design not found' });
+    
+    // Note: Data retrieved here (doc.data) will be sanitized if saved after the fix.
     res.json(doc.data);
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Fetch failed' });
@@ -236,8 +269,8 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
     const payload = {
       shortId: nanoid(8),
       url: '/uploads/' + filename,
-      name: String(req.body.name || 'خلفية'),
-      category: String(req.body.category || 'عام'),
+      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')), // Sanitization added here
+      category: DOMPurify.sanitize(String(req.body.category || 'عام')), // Sanitization added here
       createdAt: new Date()
     };
     await db.collection(backgroundsCollectionName).insertOne(payload);
@@ -254,6 +287,8 @@ app.get('/api/gallery/backgrounds', async (req, res) => {
     const page = Math.max(1, parseInt(req.query.page || '1', 10));
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit || '50', 10)));
     const skip = (page - 1) * limit;
+    // Note: Query parameters (category) should be validated/sanitized, 
+    // but MongoDB handles injection risk if used directly as values/fields.
     const q = (category && category !== 'all') ? { category: String(category) } : {};
     const coll = db.collection(backgroundsCollectionName);
     const [items, total] = await Promise.all([
