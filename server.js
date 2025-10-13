@@ -132,14 +132,9 @@ app.get('/nfc/view/:id', async (req, res) => {
     const pageUrl = `${base}/nfc/view/${id}`;
     
     const inputs = doc.data?.inputs || {};
-    
-    // --- MODIFIED: Ensure Name/Tagline are handled gracefully if empty ---
-    const rawName = (inputs['input-name'] || '').trim();
-    const rawTagline = (inputs['input-tagline'] || '').trim();
-    
-    const name = rawName || 'بطاقة عمل رقمية';
-    const tagline = rawTagline || 'MC PRIME Digital Business Cards';
-    // --- END MODIFIED ---
+    // التعامل مع الحقول الفارغة للبطاقة الفارغة
+    const name = (inputs['input-name'] || 'بطاقة عمل رقمية').trim() || 'بطاقة عمل رقمية';
+    const tagline = (inputs['input-tagline'] || 'MC PRIME Digital Business Cards').trim() || 'MC PRIME Digital Business Cards';
     
     const ogImage = doc.data?.imageUrls?.front
       ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
@@ -147,8 +142,8 @@ app.get('/nfc/view/:id', async (req, res) => {
 
     const keywords = [
         'NFC', 'بطاقة عمل ذكية', 'كارت شخصي', 
-        rawName, 
-        ...rawTagline.split(/\s+/).filter(Boolean)
+        name, 
+        ...tagline.split(/\s+/).filter(Boolean)
     ].filter(Boolean).join(', ');
 
     res.render(path.join(rootDir, 'viewer.ejs'), {
@@ -253,7 +248,11 @@ app.post('/api/save-design', async (req, res) => {
     
     const shortId = nanoid(8);
     await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
-    res.json({ success: true, id: shortId });
+    
+    const base = absoluteBaseUrl(req);
+    const shareUrl = `${base}/nfc/view/${shortId}`;
+    
+    res.json({ success: true, id: shortId, shareUrl });
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Save failed' });
   }
@@ -266,7 +265,9 @@ app.get('/api/get-design/:id', async (req, res) => {
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).json({ error: 'Design not found' });
-    res.json(doc.data);
+    
+    // إرجاع الكائن الكامل للحالة وليس فقط حقل البيانات
+    res.json(doc);
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Fetch failed' });
   }
@@ -376,12 +377,11 @@ app.get('/sitemap.xml', async (req, res) => {
       '/nfc/blog-digital-menus-for-restaurants',
       '/nfc/blog-business-card-mistakes'
     ];
-    
-    // --- MODIFIED: Fetch more docs and include logic to avoid empty entries in sitemap if data is sparse ---
+
     let designUrls = [];
     if (db) {
       const docs = await db.collection(designsCollectionName)
-        .find({ "data.inputs.input-name": { $ne: "" } }) // Filter out designs with no name to prioritize better SEO links
+        .find({})
         .project({ shortId: 1, createdAt: 1 })
         .sort({ createdAt: -1 })
         .limit(2000)
@@ -392,9 +392,8 @@ app.get('/sitemap.xml', async (req, res) => {
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
         changefreq: 'monthly',
         priority: '0.80'
-      })).filter(u => u.loc.length > 0); // Final check to ensure URL is valid
+      }));
     }
-    // --- END MODIFIED ---
 
     function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
       return [
