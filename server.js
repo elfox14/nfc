@@ -132,10 +132,8 @@ app.get('/nfc/view/:id', async (req, res) => {
     const pageUrl = `${base}/nfc/view/${id}`;
     
     const inputs = doc.data?.inputs || {};
-    // التعامل مع الحقول الفارغة للبطاقة الفارغة
-    const name = (inputs['input-name'] || 'بطاقة عمل رقمية').trim() || 'بطاقة عمل رقمية';
-    const tagline = (inputs['input-tagline'] || 'MC PRIME Digital Business Cards').trim() || 'MC PRIME Digital Business Cards';
-    
+    const name = inputs['input-name'] || 'بطاقة عمل رقمية';
+    const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
     const ogImage = doc.data?.imageUrls?.front
       ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
       : `${base}/nfc/og-image.png`;
@@ -248,11 +246,7 @@ app.post('/api/save-design', async (req, res) => {
     
     const shortId = nanoid(8);
     await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
-    
-    const base = absoluteBaseUrl(req);
-    const shareUrl = `${base}/nfc/view/${shortId}`;
-    
-    res.json({ success: true, id: shortId, shareUrl });
+    res.json({ success: true, id: shortId });
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Save failed' });
   }
@@ -265,9 +259,7 @@ app.get('/api/get-design/:id', async (req, res) => {
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).json({ error: 'Design not found' });
-    
-    // إرجاع الكائن الكامل للحالة وليس فقط حقل البيانات
-    res.json(doc);
+    res.json(doc.data);
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Fetch failed' });
   }
