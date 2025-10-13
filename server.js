@@ -132,16 +132,23 @@ app.get('/nfc/view/:id', async (req, res) => {
     const pageUrl = `${base}/nfc/view/${id}`;
     
     const inputs = doc.data?.inputs || {};
-    const name = inputs['input-name'] || 'بطاقة عمل رقمية';
-    const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
+    
+    // --- MODIFIED: Ensure Name/Tagline are handled gracefully if empty ---
+    const rawName = (inputs['input-name'] || '').trim();
+    const rawTagline = (inputs['input-tagline'] || '').trim();
+    
+    const name = rawName || 'بطاقة عمل رقمية';
+    const tagline = rawTagline || 'MC PRIME Digital Business Cards';
+    // --- END MODIFIED ---
+    
     const ogImage = doc.data?.imageUrls?.front
       ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
       : `${base}/nfc/og-image.png`;
 
     const keywords = [
         'NFC', 'بطاقة عمل ذكية', 'كارت شخصي', 
-        name, 
-        ...tagline.split(/\s+/).filter(Boolean)
+        rawName, 
+        ...rawTagline.split(/\s+/).filter(Boolean)
     ].filter(Boolean).join(', ');
 
     res.render(path.join(rootDir, 'viewer.ejs'), {
@@ -369,11 +376,12 @@ app.get('/sitemap.xml', async (req, res) => {
       '/nfc/blog-digital-menus-for-restaurants',
       '/nfc/blog-business-card-mistakes'
     ];
-
+    
+    // --- MODIFIED: Fetch more docs and include logic to avoid empty entries in sitemap if data is sparse ---
     let designUrls = [];
     if (db) {
       const docs = await db.collection(designsCollectionName)
-        .find({})
+        .find({ "data.inputs.input-name": { $ne: "" } }) // Filter out designs with no name to prioritize better SEO links
         .project({ shortId: 1, createdAt: 1 })
         .sort({ createdAt: -1 })
         .limit(2000)
@@ -384,8 +392,9 @@ app.get('/sitemap.xml', async (req, res) => {
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
         changefreq: 'monthly',
         priority: '0.80'
-      }));
+      })).filter(u => u.loc.length > 0); // Final check to ensure URL is valid
     }
+    // --- END MODIFIED ---
 
     function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
       return [
