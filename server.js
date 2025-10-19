@@ -13,7 +13,7 @@ const DOMPurifyFactory = require('dompurify');
 const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
-const helmet = require('helmet');
+const helmet = require('helmet'); // <--- NEW
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
@@ -26,34 +26,33 @@ app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
 // --- START: SECURITY HEADERS (HELMET) ---
-app.use(helmet.frameguard({ action: 'deny' }));
-app.use(helmet.xssFilter());
-app.use(helmet.noSniff());
+app.use(helmet.frameguard({ action: 'deny' })); // Clickjacking Protection
+app.use(helmet.xssFilter()); // Basic XSS protection
+app.use(helmet.noSniff()); // MIME-type sniffing prevention
 app.use(helmet.hsts({ 
     maxAge: 31536000, 
     includeSubDomains: true,
     preload: true
-}));
+})); // Enforce HTTPS for a long time (Requires site to be fully HTTPS)
 
-// Custom CSP
+// Custom CSP to allow necessary external resources (cdnjs, cdn.jsdelivr, YouTube, Giphy)
 app.use(helmet.contentSecurityPolicy({
     directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
-        mediaSrc: ["'self'", "data:"],
+        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Added API URL for images
+        mediaSrc: ["'self'", "data:"], // Allows base64 encoded audio
         frameSrc: ["'self'", "https://www.youtube.com"],
-        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Allow API calls and external services
         objectSrc: ["'none'"],
-        upgradeInsecureRequests: [],
+        upgradeInsecureRequests: [], // Automatically upgrade HTTP to HTTPS if possible
     },
 }));
 // --- END: SECURITY HEADERS (HELMET) ---
 
 app.use(cors());
-// 👈 تأكيد الحد الأقصى لحجم JSON payload (مهم لصور Base64)
 app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
 
@@ -63,18 +62,10 @@ const dbName = process.env.MONGO_DB || 'nfc_db';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
 let db;
-let isDbConnected = false; 
 
 MongoClient.connect(mongoUrl)
-  .then(client => { 
-      db = client.db(dbName); 
-      isDbConnected = true; 
-      console.log('MongoDB connected'); 
-  })
-  .catch(err => { 
-      console.error('Mongo connect error', err); 
-      isDbConnected = false;
-  });
+  .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
+  .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
 const rootDir = __dirname;
 
@@ -94,7 +85,7 @@ const FIELDS_TO_SANITIZE = [
     'input-whatsapp', 'input-facebook', 'input-linkedin'
 ];
 
-// دالة تعقيم لكائن الإدخالات
+// دالة تعقيم لكائن الإدخالات (موجودة بالفعل)
 function sanitizeInputs(inputs) {
     if (!inputs) return {};
     const sanitized = { ...inputs };
@@ -114,11 +105,12 @@ function sanitizeInputs(inputs) {
 }
 
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
+// تم نقل هذا المسار للأعلى ليتم تنفيذه قبل خدمة الملفات الثابتة
 app.get('/nfc/view/:id', async (req, res) => {
   try {
-    if (!isDbConnected || !db) {
+    if (!db) {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        return res.status(503).send('Service Unavailable. Database connection failed.');
+        return res.status(500).send('DB not connected');
     }
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
@@ -142,9 +134,12 @@ app.get('/nfc/view/:id', async (req, res) => {
     const inputs = doc.data?.inputs || {};
     const name = inputs['input-name'] || 'بطاقة عمل رقمية';
     const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
-    const ogImage = doc.data?.imageUrls?.front
-      ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
-      : `${base}/nfc/og-image.png`;
+    
+    // START: CRITICAL CHANGE - Use the captured image if available
+    const ogImage = doc.data?.imageUrls?.capturedFront
+      ? (doc.data.imageUrls.capturedFront.startsWith('http') ? doc.data.imageUrls.capturedFront : `${base}${doc.data.imageUrls.capturedFront}`)
+      : (doc.data?.imageUrls?.front ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`) : `${base}/nfc/og-image.png`);
+    // END: CRITICAL CHANGE
 
     const keywords = [
         'NFC', 'بطاقة عمل ذكية', 'كارت شخصي', 
@@ -189,6 +184,7 @@ app.get('/', (req, res) => {
 });
 
 // خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
+// يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
 app.use(express.static(rootDir, { extensions: ['html'] }));
 
 // مجلد uploads
@@ -223,7 +219,7 @@ function assertAdmin(req, res) {
   return true;
 }
 
-// --- API: رفع صورة ---
+// --- API: رفع صورة (استخدام عام) ---
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -240,19 +236,88 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   }
 });
 
+// --- START: NEW API for Card Screenshot Upload and Update ---
+
+// 1. API لرفع صورة الكارت الملتقطة (PNG Base64)
+app.post('/api/upload-card-screenshot', async (req, res) => {
+    try {
+        if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+        const { dataURL, designId } = req.body;
+        if (!dataURL || !designId) {
+            return res.status(400).json({ error: 'Missing dataURL or designId' });
+        }
+        
+        // التحقق من أن dataURL هو Base64 لـ PNG
+        const matches = dataURL.match(/^data:image\/png;base64,(.+)$/);
+        if (!matches) {
+            return res.status(400).json({ error: 'Invalid PNG data URL format' });
+        }
+        
+        const base64Data = matches[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        // معالجة الصورة باستخدام Sharp لتصغيرها وحفظها كـ WEBP (أو PNG/JPEG حسب الحاجة)
+        const filename = 'scr_' + nanoid(10) + '.webp';
+        const out = path.join(uploadDir, filename);
+        
+        await sharp(buffer)
+            .resize({ width: 800, height: 800, fit: 'contain', withoutEnlargement: true }) // دقة مناسبة للعرض والمشاركة
+            .webp({ quality: 90 }) // استخدام WEBP للحجم والكفاءة
+            .toFile(out);
+
+        const screenshotUrl = '/uploads/' + filename;
+        const fullScreenshotUrl = `${absoluteBaseUrl(req)}${screenshotUrl}`;
+
+        // تحديث سجل التصميم في القاعدة بمسار الصورة الجديدة
+        const updateResult = await db.collection(designsCollectionName).updateOne(
+            { shortId: designId },
+            { $set: { 'data.imageUrls.capturedFront': screenshotUrl } }
+        );
+
+        if (updateResult.modifiedCount === 0 && updateResult.matchedCount === 0) {
+            // يمكن أن يكون designId غير موجود أو لم يتغير شيء
+            return res.status(404).json({ error: 'Design not found or no change' });
+        }
+
+        return res.json({ 
+            success: true, 
+            url: screenshotUrl,
+            fullUrl: fullScreenshotUrl
+        });
+        
+    } catch (e) {
+        console.error("Card screenshot upload failed:", e);
+        return res.status(500).json({ error: 'Card screenshot upload failed' });
+    }
+});
+
+// --- END: NEW API ---
+
 // --- API: حفظ تصميم ---
 app.post('/api/save-design', async (req, res) => {
   try {
-    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
     
     let data = req.body || {};
     
-    // 👈 تعقيم حقول الإدخالات النصية فقط
     if (data.inputs) {
         data.inputs = sanitizeInputs(data.inputs);
     }
-    // لا يتم تعقيم data.imageUrls لأنها تحتوي على Base64 وليس HTML
     
+    // إذا كان هناك تحديث لتصميم موجود
+    if (data.shortId) {
+        const updateResult = await db.collection(designsCollectionName).updateOne(
+            { shortId: data.shortId },
+            { $set: { data: data, updatedAt: new Date() } }
+        );
+        if (updateResult.matchedCount === 0) {
+            return res.status(404).json({ error: 'Design ID not found' });
+        }
+        return res.json({ success: true, id: data.shortId });
+    }
+    
+    // إذا كان تصميم جديد
     const shortId = nanoid(8);
     await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
     res.json({ success: true, id: shortId });
@@ -264,7 +329,7 @@ app.post('/api/save-design', async (req, res) => {
 // --- API: جلب تصميم ---
 app.get('/api/get-design/:id', async (req, res) => {
   try {
-    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).json({ error: 'Design not found' });
@@ -277,7 +342,7 @@ app.get('/api/get-design/:id', async (req, res) => {
 // --- API: المعرض ---
 app.get('/api/gallery', async (req, res) => {
   try {
-    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
     const docs = await db.collection(designsCollectionName).find({}).sort({ createdAt: -1 }).limit(20).toArray();
     res.json(docs);
   } catch (e) {
@@ -290,7 +355,7 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
     if (!req.file) return res.status(400).json({ error:'No image' });
-    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
     const filename = 'bg_' + nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
     await sharp(req.file.buffer)
@@ -300,8 +365,8 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
     const payload = {
       shortId: nanoid(8),
       url: '/uploads/' + filename,
-      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')),
-      category: DOMPurify.sanitize(String(req.body.category || 'عام')),
+      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')), // Sanitization here
+      category: DOMPurify.sanitize(String(req.body.category || 'عام')), // Sanitization here
       createdAt: new Date()
     };
     await db.collection(backgroundsCollectionName).insertOne(payload);
@@ -313,7 +378,7 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
 
 app.get('/api/gallery/backgrounds', async (req, res) => {
   try {
-    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
     const category = req.query.category;
     const page = Math.max(1, parseInt(req.query.page || '1', 10));
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit || '50', 10)));
@@ -333,7 +398,7 @@ app.get('/api/gallery/backgrounds', async (req, res) => {
 app.delete('/api/backgrounds/:shortId', async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
-    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
     const shortId = String(req.params.shortId);
     const coll = db.collection(backgroundsCollectionName);
     const doc = await coll.findOne({ shortId });
@@ -380,7 +445,7 @@ app.get('/sitemap.xml', async (req, res) => {
     ];
 
     let designUrls = [];
-    if (isDbConnected && db) {
+    if (db) {
       const docs = await db.collection(designsCollectionName)
         .find({})
         .project({ shortId: 1, createdAt: 1 })
