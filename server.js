@@ -26,33 +26,34 @@ app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
 // --- START: SECURITY HEADERS (HELMET) ---
-app.use(helmet.frameguard({ action: 'deny' })); // Clickjacking Protection
-app.use(helmet.xssFilter()); // Basic XSS protection
-app.use(helmet.noSniff()); // MIME-type sniffing prevention
+app.use(helmet.frameguard({ action: 'deny' }));
+app.use(helmet.xssFilter());
+app.use(helmet.noSniff());
 app.use(helmet.hsts({ 
     maxAge: 31536000, 
     includeSubDomains: true,
     preload: true
-})); // Enforce HTTPS for a long time
+}));
 
-// Custom CSP to allow necessary external resources (cdnjs, cdn.jsdelivr, YouTube, Giphy)
+// Custom CSP
 app.use(helmet.contentSecurityPolicy({
     directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Added API URL for images
-        mediaSrc: ["'self'", "data:"], // Allows base64 encoded audio
+        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+        mediaSrc: ["'self'", "data:"],
         frameSrc: ["'self'", "https://www.youtube.com"],
-        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Allow API calls and external services
+        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
         objectSrc: ["'none'"],
-        upgradeInsecureRequests: [], // Automatically upgrade HTTP to HTTPS if possible
+        upgradeInsecureRequests: [],
     },
 }));
 // --- END: SECURITY HEADERS (HELMET) ---
 
 app.use(cors());
+// 👈 تأكيد الحد الأقصى لحجم JSON payload (مهم لصور Base64)
 app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
 
@@ -62,7 +63,7 @@ const dbName = process.env.MONGO_DB || 'nfc_db';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
 let db;
-let isDbConnected = false; // متغير لتتبع حالة الاتصال بقاعدة البيانات
+let isDbConnected = false; 
 
 MongoClient.connect(mongoUrl)
   .then(client => { 
@@ -115,9 +116,9 @@ function sanitizeInputs(inputs) {
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
 app.get('/nfc/view/:id', async (req, res) => {
   try {
-    if (!isDbConnected || !db) { // التحقق من حالة الاتصال
+    if (!isDbConnected || !db) {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        return res.status(503).send('Service Unavailable. Database connection failed.'); // تغيير الحالة إلى 503
+        return res.status(503).send('Service Unavailable. Database connection failed.');
     }
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
@@ -188,7 +189,6 @@ app.get('/', (req, res) => {
 });
 
 // خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
-// يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
 app.use(express.static(rootDir, { extensions: ['html'] }));
 
 // مجلد uploads
@@ -247,9 +247,11 @@ app.post('/api/save-design', async (req, res) => {
     
     let data = req.body || {};
     
+    // 👈 تعقيم حقول الإدخالات النصية فقط
     if (data.inputs) {
         data.inputs = sanitizeInputs(data.inputs);
     }
+    // لا يتم تعقيم data.imageUrls لأنها تحتوي على Base64 وليس HTML
     
     const shortId = nanoid(8);
     await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
@@ -262,7 +264,7 @@ app.post('/api/save-design', async (req, res) => {
 // --- API: جلب تصميم ---
 app.get('/api/get-design/:id', async (req, res) => {
   try {
-    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' }); // تغيير الحالة إلى 503
+    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).json({ error: 'Design not found' });
@@ -298,8 +300,8 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
     const payload = {
       shortId: nanoid(8),
       url: '/uploads/' + filename,
-      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')), // Sanitization here
-      category: DOMPurify.sanitize(String(req.body.category || 'عام')), // Sanitization here
+      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')),
+      category: DOMPurify.sanitize(String(req.body.category || 'عام')),
       createdAt: new Date()
     };
     await db.collection(backgroundsCollectionName).insertOne(payload);
@@ -378,7 +380,7 @@ app.get('/sitemap.xml', async (req, res) => {
     ];
 
     let designUrls = [];
-    if (isDbConnected && db) { // التحقق من حالة الاتصال
+    if (isDbConnected && db) {
       const docs = await db.collection(designsCollectionName)
         .find({})
         .project({ shortId: 1, createdAt: 1 })
