@@ -13,126 +13,96 @@ const DOMPurifyFactory = require('dompurify');
 const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
-const helmet = require('helmet'); // لإضافة هيدرات أمان HTTP
+const helmet = require('helmet');
 
-// --- إعداد DOMPurify لتعقيم الإدخالات ---
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
 
 const app = express();
 const port = process.env.PORT || 3000;
-const rootDir = __dirname;
 
-// --- إعدادات Express الأساسية ---
-app.set('trust proxy', 1); // ضروري إذا كان التطبيق خلف بروكسي (مثل Render, Heroku)
-app.disable('x-powered-by'); // إخفاء نوع الخادم لتقليل البصمة الأمنية
-app.set('view engine', 'ejs');
-app.use(cors());
-app.use(express.json({ limit: '10mb' })); // تحديد حجم الـ payload
+// --- إعدادات عامة ---
+app.set('trust proxy', 1);
+app.disable('x-powered-by');
 
-// --- START: إعدادات الأمان (Helmet) ---
-app.use(helmet.frameguard({ action: 'deny' })); // الحماية من Clickjacking
-app.use(helmet.xssFilter()); // فلتر XSS أساسي (مضمن في المتصفحات الحديثة)
-app.use(helmet.noSniff()); // منع المتصفح من تخمين نوع المحتوى (MIME-type sniffing)
+// --- START: SECURITY HEADERS (HELMET) ---
+app.use(helmet.frameguard({ action: 'deny' })); // Clickjacking Protection
+app.use(helmet.xssFilter()); // Basic XSS protection
+app.use(helmet.noSniff()); // MIME-type sniffing prevention
 app.use(helmet.hsts({ 
-    maxAge: 31536000, // سنة واحدة
+    maxAge: 31536000, 
     includeSubDomains: true,
     preload: true
-})); // فرض استخدام HTTPS
+})); // Enforce HTTPS for a long time
 
-// سياسة أمان المحتوى (CSP)
+// Custom CSP to allow necessary external resources (cdnjs, cdn.jsdelivr, YouTube, Giphy)
 app.use(helmet.contentSecurityPolicy({
     directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: [
-            "'self'", 
-            "https://cdnjs.cloudflare.com", 
-            "https://cdn.jsdelivr.net", 
-            "https://www.youtube.com" // للسماح بجلب سكربتات يوتيوب (للشروحات)
-        ],
-        styleSrc: [
-            "'self'", 
-            "'unsafe-inline'", // مطلوب لبعض التنسيقات المضمنة
-            "https://cdnjs.cloudflare.com", 
-            "https://fonts.googleapis.com"
-        ],
+        scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: [
-            "'self'", 
-            "data:", 
-            "https:", 
-            "https://i.imgur.com", 
-            "https://www.mcprim.com", 
-            "https://media.giphy.com", 
-            process.env.SITE_BASE_URL || "https://nfc-vjy6.onrender.com" // السماح بالصور من الخادم نفسه
-        ],
-        mediaSrc: ["'self'", "data:"], // للسماح بالملفات الصوتية (base64)
-        frameSrc: ["'self'", "https://www.youtube.com"], // للسماح بتضمين فيديوهات يوتيوب
-        connectSrc: [
-            "'self'",
-            "https://cdnjs.cloudflare.com", 
-            "https://cdn.jsdelivr.net", 
-            "https://www.youtube.com", 
-            "https://www.mcprim.com", 
-            "https://media.giphy.com",
-            process.env.SITE_BASE_URL || "https://nfc-vjy6.onrender.com" // للسماح بطلبات API للخادم
-        ],
-        objectSrc: ["'none'"], // منع إضافات مثل Flash
-        upgradeInsecureRequests: [], // ترقية طلبات HTTP إلى HTTPS
+        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Added API URL for images
+        mediaSrc: ["'self'", "data:"], // Allows base64 encoded audio
+        frameSrc: ["'self'", "https://www.youtube.com"],
+        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Allow API calls and external services
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [], // Automatically upgrade HTTP to HTTPS if possible
     },
 }));
-// --- END: إعدادات الأمان ---
+// --- END: SECURITY HEADERS (HELMET) ---
 
-// --- إعداد قاعدة البيانات ---
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.set('view engine', 'ejs');
+
+// قاعدة البيانات
 const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'nfc_db';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
 let db;
+let isDbConnected = false; // متغير لتتبع حالة الاتصال بقاعدة البيانات
 
 MongoClient.connect(mongoUrl)
   .then(client => { 
-    db = client.db(dbName); 
-    console.log('MongoDB connected'); 
+      db = client.db(dbName); 
+      isDbConnected = true; 
+      console.log('MongoDB connected'); 
   })
   .catch(err => { 
-    console.error('Mongo connect error', err); 
-    process.exit(1); 
+      console.error('Mongo connect error', err); 
+      isDbConnected = false;
   });
 
-// --- مجلدات الرفع والملفات الثابتة ---
-const uploadDir = path.join(rootDir, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const rootDir = __dirname;
 
-// --- أدوات مساعدة ---
+// أدوات مساعدة
 function absoluteBaseUrl(req) {
   const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
-  
   const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'https');
   const host = req.get('host');
   return `${proto}://${host}`;
 }
 
-// قائمة بالحقول النصية التي يجب تعقيمها
+// قائمة بالحقول النصية التي يجب تعقيمها من الـ HTML (للحماية من XSS بعد الحفظ)
 const FIELDS_TO_SANITIZE = [
     'input-name', 'input-tagline', 
     'input-email', 'input-website', 
     'input-whatsapp', 'input-facebook', 'input-linkedin'
 ];
 
-// دالة تعقيم الإدخالات
+// دالة تعقيم لكائن الإدخالات
 function sanitizeInputs(inputs) {
     if (!inputs) return {};
     const sanitized = { ...inputs };
-    
     FIELDS_TO_SANITIZE.forEach(k => { 
         if (sanitized[k]) {
             sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
         }
     });
-    
-    // تعقيم الحقول الديناميكية (الروابط المضافة)
+    // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
     if (sanitized.dynamic && sanitized.dynamic.social) {
         sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
             ...link,
@@ -142,54 +112,13 @@ function sanitizeInputs(inputs) {
     return sanitized;
 }
 
-// دالة التحقق من صلاحيات الأدمن
-function assertAdmin(req, res) {
-  const expected = process.env.ADMIN_TOKEN || '';
-  const provided = req.headers['x-admin-token'] || '';
-  if (!expected || expected !== provided) { 
-    res.status(401).json({ error: 'Unauthorized' }); 
-    return false; 
-  }
-  return true;
-}
-
-// --- إعدادات Multer (رفع الملفات) ---
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype && file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Please upload an image'), false);
-    }
-  }
-});
-
-// --- محدد الطلبات (Rate Limiter) للـ API ---
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 دقيقة
-  max: 200, // 200 طلب لكل IP
-  standardHeaders: true,
-  legacyHeaders: false
-});
-app.use('/api/', apiLimiter);
-
-
-// =============================================
-// --- المسارات الديناميكية (Dynamic Routes) ---
-// =============================================
-
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
-// (يجب أن يكون هذا المسار قبل `express.static`)
 app.get('/nfc/view/:id', async (req, res) => {
   try {
-    if (!db) {
+    if (!isDbConnected || !db) { // التحقق من حالة الاتصال
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        return res.status(500).send('DB not connected');
+        return res.status(503).send('Service Unavailable. Database connection failed.'); // تغيير الحالة إلى 503
     }
-    
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
@@ -198,23 +127,20 @@ app.get('/nfc/view/:id', async (req, res) => {
         return res.status(404).send('Design not found');
     }
     
-    // زيادة عدد المشاهدات (بشكل غير متزامن في الخلفية)
+    // Increment the view count for the card in the background.
     db.collection(designsCollectionName).updateOne(
       { shortId: id },
       { $inc: { views: 1 } }
     ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
 
-    res.setHeader('X-Robots-Tag', 'index, follow'); // السماح بالأرشفة
+    res.setHeader('X-Robots-Tag', 'index, follow');
 
-    // إعداد متغيرات EJS لـ SEO
     const base = absoluteBaseUrl(req);
     const pageUrl = `${base}/nfc/view/${id}`;
     
     const inputs = doc.data?.inputs || {};
     const name = inputs['input-name'] || 'بطاقة عمل رقمية';
     const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
-    
-    // تحديد صورة OG
     const ogImage = doc.data?.imageUrls?.front
       ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
       : `${base}/nfc/og-image.png`;
@@ -225,17 +151,15 @@ app.get('/nfc/view/:id', async (req, res) => {
         ...tagline.split(/\s+/).filter(Boolean)
     ].filter(Boolean).join(', ');
 
-    // إرسال صفحة EJS
     res.render(path.join(rootDir, 'viewer.ejs'), {
       pageUrl,
       name,
       tagline,
       ogImage,
       keywords,
-      design: doc.data, // تمرير بيانات التصميم كاملة إلى السكربت المضمن
+      design: doc.data,
       canonical: pageUrl
     });
-    
   } catch (e) {
     console.error(e);
     res.setHeader('X-Robots-Tag', 'noindex, noarchive');
@@ -243,22 +167,13 @@ app.get('/nfc/view/:id', async (req, res) => {
   }
 });
 
-
-// ===========================================
-// --- خدمة الملفات الثابتة (Static Files) ---
-// ===========================================
-
 // هيدر كاش بسيط للملفات الثابتة
 app.use((req, res, next) => {
-  if (req.path.startsWith('/nfc/view/')) {
-    // لا تقم بالكاش للمسارات الديناميكية
-    return next();
-  }
-  res.setHeader('Cache-Control', 'public, max-age=600'); // 10 دقائق
+  res.setHeader('Cache-Control', 'public, max-age=600');
   next();
 });
 
-// إعادة توجيه الروابط القديمة التي تنتهي بـ .html
+// إزالة .html من الروابط القديمة
 app.use((req, res, next) => {
   if (req.path.endsWith('.html')) {
     const newPath = req.path.slice(0, -5);
@@ -267,36 +182,57 @@ app.use((req, res, next) => {
   next();
 });
 
-// إعادة توجيه الجذر
+// إعادة توجيه الجذر إلى /nfc/
 app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
-// خدمة مجلد 'uploads' مع كاش طويل الأمد
-app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
-
-// خدمة كل المشروع كملفات ثابتة (يأتي هذا بعد المسارات الديناميكية)
-// يدعم `extensions: ['html']` لخدمة `index.html` عند طلب `/nfc/`
+// خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
+// يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
 app.use(express.static(rootDir, { extensions: ['html'] }));
 
+// مجلد uploads
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
-// ============================
-// --- نقاط الـ API (Routes) ---
-// ============================
+// عتاد الرفع/المعالجة
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype && file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Please upload an image'), false);
+  }
+});
 
-// --- API: رفع صورة (عام) ---
+// ريت-لميت للـ API
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use('/api/', apiLimiter);
+
+function assertAdmin(req, res) {
+  const expected = process.env.ADMIN_TOKEN || '';
+  const provided = req.headers['x-admin-token'] || '';
+  if (!expected || expected !== provided) { res.status(401).json({ error: 'Unauthorized' }); return false; }
+  return true;
+}
+
+// --- API: رفع صورة ---
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
-    
     const filename = nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
-    
     await sharp(req.file.buffer)
       .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 85 })
       .toFile(out);
-      
     return res.json({ success: true, url: '/uploads/' + filename });
   } catch (e) {
     console.error(e);
@@ -307,152 +243,108 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
 // --- API: حفظ تصميم ---
 app.post('/api/save-design', async (req, res) => {
   try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
     
     let data = req.body || {};
     
-    // تعقيم الإدخالات النصية قبل الحفظ
     if (data.inputs) {
         data.inputs = sanitizeInputs(data.inputs);
     }
     
     const shortId = nanoid(8);
-    await db.collection(designsCollectionName).insertOne({ 
-      shortId, 
-      data, 
-      createdAt: new Date(), 
-      views: 0 
-    });
-    
+    await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
     res.json({ success: true, id: shortId });
   } catch (e) {
-    console.error(e); 
-    res.status(500).json({ error: 'Save failed' });
+    console.error(e); res.status(500).json({ error: 'Save failed' });
   }
 });
 
 // --- API: جلب تصميم ---
 app.get('/api/get-design/:id', async (req, res) => {
   try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-    
+    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' }); // تغيير الحالة إلى 503
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-    
     if (!doc) return res.status(404).json({ error: 'Design not found' });
-    
     res.json(doc.data);
   } catch (e) {
-    console.error(e); 
-    res.status(500).json({ error: 'Fetch failed' });
+    console.error(e); res.status(500).json({ error: 'Fetch failed' });
   }
 });
 
-// --- API: المعرض (لصفحة المعرض العام) ---
+// --- API: المعرض ---
 app.get('/api/gallery', async (req, res) => {
   try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-    
-    const docs = await db.collection(designsCollectionName)
-      .find({})
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .toArray();
-      
+    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
+    const docs = await db.collection(designsCollectionName).find({}).sort({ createdAt: -1 }).limit(20).toArray();
     res.json(docs);
   } catch (e) {
-    console.error(e); 
-    res.status(500).json({ error: 'Fetch failed' });
+    console.error(e); res.status(500).json({ error: 'Fetch failed' });
   }
 });
 
-// --- API: رفع خلفية (للأدمن) ---
+// --- API: خلفيات (إدارة) ---
 app.post('/api/upload-background', upload.single('image'), async (req, res) => {
   try {
-    if (!assertAdmin(req, res)) return;
+    if (!assertAdmin(req,res)) return;
     if (!req.file) return res.status(400).json({ error:'No image' });
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-    
+    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
     const filename = 'bg_' + nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
-    
     await sharp(req.file.buffer)
       .resize({ width: 3840, height: 3840, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 88 })
       .toFile(out);
-      
     const payload = {
       shortId: nanoid(8),
       url: '/uploads/' + filename,
-      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')),
-      category: DOMPurify.sanitize(String(req.body.category || 'عام')),
+      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')), // Sanitization here
+      category: DOMPurify.sanitize(String(req.body.category || 'عام')), // Sanitization here
       createdAt: new Date()
     };
-    
     await db.collection(backgroundsCollectionName).insertOne(payload);
     res.json({ success:true, background: payload });
-    
   } catch (e) {
-    console.error(e); 
-    res.status(500).json({ error: 'Upload background failed' });
+    console.error(e); res.status(500).json({ error: 'Upload background failed' });
   }
 });
 
-// --- API: جلب الخلفيات (عام) ---
 app.get('/api/gallery/backgrounds', async (req, res) => {
   try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-    
+    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
     const category = req.query.category;
     const page = Math.max(1, parseInt(req.query.page || '1', 10));
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit || '50', 10)));
     const skip = (page - 1) * limit;
-    
     const q = (category && category !== 'all') ? { category: String(category) } : {};
     const coll = db.collection(backgroundsCollectionName);
-    
     const [items, total] = await Promise.all([
       coll.find(q).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
       coll.countDocuments(q)
     ]);
-    
     res.json({ success: true, items, page, limit, total, totalPages: Math.ceil(total / limit) });
-    
   } catch (e) {
-    console.error(e); 
-    res.status(500).json({ error: 'Fetch backgrounds failed' });
+    console.error(e); res.status(500).json({ error: 'Fetch backgrounds failed' });
   }
 });
 
-// --- API: حذف خلفية (للأدمن) ---
 app.delete('/api/backgrounds/:shortId', async (req, res) => {
   try {
-    if (!assertAdmin(req, res)) return;
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-    
+    if (!assertAdmin(req,res)) return;
+    if (!isDbConnected || !db) return res.status(503).json({ error: 'DB not connected' });
     const shortId = String(req.params.shortId);
     const coll = db.collection(backgroundsCollectionName);
-    
     const doc = await coll.findOne({ shortId });
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    
-    // حذف الملف الفعلي
     const filePath = path.join(uploadDir, path.basename(doc.url));
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    
     await coll.deleteOne({ shortId });
     res.json({ success: true });
-    
   } catch (e) {
-    console.error(e); 
-    res.status(500).json({ error: 'Delete failed' });
+    console.error(e); res.status(500).json({ error: 'Delete failed' });
   }
 });
 
-
-// ==========================
-// --- ملفات SEO (Robots & Sitemap) ---
-// ==========================
 
 // --- robots.txt ---
 app.get('/robots.txt', (req, res) => {
@@ -460,7 +352,7 @@ app.get('/robots.txt', (req, res) => {
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Disallow: /nfc/editor', // منع أرشفة المحرر
+    'Disallow: /nfc/viewer',
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
@@ -470,8 +362,6 @@ app.get('/robots.txt', (req, res) => {
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
-    
-    // الصفحات الثابتة
     const staticPages = [
       '/nfc/',
       '/nfc/gallery',
@@ -480,22 +370,20 @@ app.get('/sitemap.xml', async (req, res) => {
       '/nfc/contact',
       '/nfc/privacy'
     ];
-    
-    // صفحات المدونة
+
     const blogPosts = [
       '/nfc/blog-nfc-at-events',
       '/nfc/blog-digital-menus-for-restaurants',
       '/nfc/blog-business-card-mistakes'
     ];
 
-    // جلب التصميمات المنشأة
     let designUrls = [];
-    if (db) {
+    if (isDbConnected && db) { // التحقق من حالة الاتصال
       const docs = await db.collection(designsCollectionName)
         .find({})
         .project({ shortId: 1, createdAt: 1 })
         .sort({ createdAt: -1 })
-        .limit(2000) // حد أقصى
+        .limit(2000)
         .toArray();
 
       designUrls = docs.map(d => ({
@@ -506,16 +394,15 @@ app.get('/sitemap.xml', async (req, res) => {
       }));
     }
 
-    // دالة لإنشاء وسم <url>
     function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
       return [
         '<url>',
-        `  <loc>${loc}</loc>`,
-        lastmod ? `  <lastmod>${lastmod}</lastmod>` : '',
-        `  <changefreq>${changefreq}</changefreq>`,
-        `  <priority>${priority}</priority>`,
+        `<loc>${loc}</loc>`,
+        lastmod ? `<lastmod>${lastmod}</lastmod>` : '',
+        `<changefreq>${changefreq}</changefreq>`,
+        `<priority>${priority}</priority>`,
         '</url>'
-      ].join('\n');
+      ].join('');
     }
 
     const xml =
@@ -526,20 +413,19 @@ app.get('/sitemap.xml', async (req, res) => {
         ...blogPosts.map(p => urlTag(`${base}${p}`, { changefreq: 'monthly', priority: '0.7' })),
         ...designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefreq, priority: u.priority })),
         '</urlset>'
-      ].join('\n');
+      ].join('');
 
     res.type('application/xml').send(xml);
-    
   } catch (e) {
     console.error(e);
     res.status(500).send('Sitemap failed');
   }
 });
 
-// --- Health Check ---
+// صحّة
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 
-// --- تشغيل الخادم ---
+// الاستماع
 app.listen(port, () => {
   console.log(`Server running on :${port}`);
 });
