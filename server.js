@@ -160,11 +160,22 @@ app.get('/nfc/view/:id', async (req, res) => {
   }
 });
 
-// هيدر كاش بسيط للملفات الثابتة
+// ===== بداية التعديل: هيدر الكاش =====
+// هيدر كاش للملفات الثابتة (مع منع كاش ملفات HTML)
 app.use((req, res, next) => {
-  res.setHeader('Cache-Control', 'public, max-age=600');
+  // تحقق إذا كان المسار ينتهي بـ .html أو هو الصفحة الرئيسية
+  if (req.path.endsWith('.html') || req.path.endsWith('/')) {
+    // لا تقم بحفظ الكاش لملفات HTML أبدًا
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  } else {
+    // قم بحفظ الكاش للملفات الأخرى (CSS, JS, images)
+    res.setHeader('Cache-Control', 'public, max-age=600');
+  }
   next();
 });
+// ===== نهاية التعديل: هيدر الكاش =====
 
 // إزالة .html من الروابط القديمة
 app.use((req, res, next) => {
