@@ -134,12 +134,9 @@ app.get('/nfc/view/:id', async (req, res) => {
     const inputs = doc.data?.inputs || {};
     const name = inputs['input-name'] || 'بطاقة عمل رقمية';
     const tagline = inputs['input-tagline'] || 'MC PRIME Digital Business Cards';
-    
-    // START: CRITICAL CHANGE - Use the captured image if available
-    const ogImage = doc.data?.imageUrls?.capturedFront
-      ? (doc.data.imageUrls.capturedFront.startsWith('http') ? doc.data.imageUrls.capturedFront : `${base}${doc.data.imageUrls.capturedFront}`)
-      : (doc.data?.imageUrls?.front ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`) : `${base}/nfc/og-image.png`);
-    // END: CRITICAL CHANGE
+    const ogImage = doc.data?.imageUrls?.front
+      ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
+      : `${base}/nfc/og-image.png`;
 
     const keywords = [
         'NFC', 'بطاقة عمل ذكية', 'كارت شخصي', 
@@ -183,14 +180,15 @@ app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
-// خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
-// يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
-app.use(express.static(rootDir, { extensions: ['html'] }));
-
-// مجلد uploads
+// مجلد uploads (يجب أن يأتي قبل المسار العام)
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
+
+// خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
+// يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
+// تم تعديل هذا المسار ليطابق /nfc/
+app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
 
 // عتاد الرفع/المعالجة
 const storage = multer.memoryStorage();
@@ -219,7 +217,7 @@ function assertAdmin(req, res) {
   return true;
 }
 
-// --- API: رفع صورة (استخدام عام) ---
+// --- API: رفع صورة ---
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -236,64 +234,6 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   }
 });
 
-// --- START: NEW API for Card Screenshot Upload and Update ---
-
-// 1. API لرفع صورة الكارت الملتقطة (PNG Base64)
-app.post('/api/upload-card-screenshot', async (req, res) => {
-    try {
-        if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-        const { dataURL, designId } = req.body;
-        if (!dataURL || !designId) {
-            return res.status(400).json({ error: 'Missing dataURL or designId' });
-        }
-        
-        // التحقق من أن dataURL هو Base64 لـ PNG
-        const matches = dataURL.match(/^data:image\/png;base64,(.+)$/);
-        if (!matches) {
-            return res.status(400).json({ error: 'Invalid PNG data URL format' });
-        }
-        
-        const base64Data = matches[1];
-        const buffer = Buffer.from(base64Data, 'base64');
-
-        // معالجة الصورة باستخدام Sharp لتصغيرها وحفظها كـ WEBP (أو PNG/JPEG حسب الحاجة)
-        const filename = 'scr_' + nanoid(10) + '.webp';
-        const out = path.join(uploadDir, filename);
-        
-        await sharp(buffer)
-            .resize({ width: 800, height: 800, fit: 'contain', withoutEnlargement: true }) // دقة مناسبة للعرض والمشاركة
-            .webp({ quality: 90 }) // استخدام WEBP للحجم والكفاءة
-            .toFile(out);
-
-        const screenshotUrl = '/uploads/' + filename;
-        const fullScreenshotUrl = `${absoluteBaseUrl(req)}${screenshotUrl}`;
-
-        // تحديث سجل التصميم في القاعدة بمسار الصورة الجديدة
-        const updateResult = await db.collection(designsCollectionName).updateOne(
-            { shortId: designId },
-            { $set: { 'data.imageUrls.capturedFront': screenshotUrl } }
-        );
-
-        if (updateResult.modifiedCount === 0 && updateResult.matchedCount === 0) {
-            // يمكن أن يكون designId غير موجود أو لم يتغير شيء
-            return res.status(404).json({ error: 'Design not found or no change' });
-        }
-
-        return res.json({ 
-            success: true, 
-            url: screenshotUrl,
-            fullUrl: fullScreenshotUrl
-        });
-        
-    } catch (e) {
-        console.error("Card screenshot upload failed:", e);
-        return res.status(500).json({ error: 'Card screenshot upload failed' });
-    }
-});
-
-// --- END: NEW API ---
-
 // --- API: حفظ تصميم ---
 app.post('/api/save-design', async (req, res) => {
   try {
@@ -305,19 +245,6 @@ app.post('/api/save-design', async (req, res) => {
         data.inputs = sanitizeInputs(data.inputs);
     }
     
-    // إذا كان هناك تحديث لتصميم موجود
-    if (data.shortId) {
-        const updateResult = await db.collection(designsCollectionName).updateOne(
-            { shortId: data.shortId },
-            { $set: { data: data, updatedAt: new Date() } }
-        );
-        if (updateResult.matchedCount === 0) {
-            return res.status(404).json({ error: 'Design ID not found' });
-        }
-        return res.json({ success: true, id: data.shortId });
-    }
-    
-    // إذا كان تصميم جديد
     const shortId = nanoid(8);
     await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
     res.json({ success: true, id: shortId });
