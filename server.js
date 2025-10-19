@@ -180,15 +180,14 @@ app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
-// مجلد uploads (يجب أن يأتي قبل المسار العام)
+// خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
+// يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
+app.use(express.static(rootDir, { extensions: ['html'] }));
+
+// مجلد uploads
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
-
-// خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
-// يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
-// تم تعديل هذا المسار ليطابق /nfc/
-app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
 
 // عتاد الرفع/المعالجة
 const storage = multer.memoryStorage();
@@ -227,7 +226,10 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
       .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 85 })
       .toFile(out);
-    return res.json({ success: true, url: '/uploads/' + filename });
+    
+    const base = absoluteBaseUrl(req); // <-- تم التعديل هنا
+    return res.json({ success: true, url: `${base}/uploads/${filename}` }); // <-- تم التعديل هنا
+
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'Upload failed' });
@@ -289,9 +291,12 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
       .resize({ width: 3840, height: 3840, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 88 })
       .toFile(out);
+    
+    const base = absoluteBaseUrl(req); // <-- تم التعديل هنا
+
     const payload = {
       shortId: nanoid(8),
-      url: '/uploads/' + filename,
+      url: `${base}/uploads/${filename}`, // <-- تم التعديل هنا
       name: DOMPurify.sanitize(String(req.body.name || 'خلفية')), // Sanitization here
       category: DOMPurify.sanitize(String(req.body.category || 'عام')), // Sanitization here
       createdAt: new Date()
