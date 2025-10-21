@@ -13,7 +13,7 @@ const DOMPurifyFactory = require('dompurify');
 const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
-const helmet = require('helmet'); // <--- NEW
+const helmet = require('helmet');
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
@@ -26,28 +26,28 @@ app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
 // --- START: SECURITY HEADERS (HELMET) ---
-app.use(helmet.frameguard({ action: 'deny' })); // Clickjacking Protection
-app.use(helmet.xssFilter()); // Basic XSS protection
-app.use(helmet.noSniff()); // MIME-type sniffing prevention
+app.use(helmet.frameguard({ action: 'deny' }));
+app.use(helmet.xssFilter());
+app.use(helmet.noSniff());
 app.use(helmet.hsts({ 
     maxAge: 31536000, 
     includeSubDomains: true,
     preload: true
-})); // Enforce HTTPS for a long time (Requires site to be fully HTTPS)
+}));
 
-// Custom CSP to allow necessary external resources (cdnjs, cdn.jsdelivr, YouTube, Giphy)
+// Custom CSP to allow necessary external resources
 app.use(helmet.contentSecurityPolicy({
     directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Added API URL for images
-        mediaSrc: ["'self'", "data:"], // Allows base64 encoded audio
+        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+        mediaSrc: ["'self'", "data:"],
         frameSrc: ["'self'", "https://www.youtube.com"],
-        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Allow API calls and external services
+        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
         objectSrc: ["'none'"],
-        upgradeInsecureRequests: [], // Automatically upgrade HTTP to HTTPS if possible
+        upgradeInsecureRequests: [],
     },
 }));
 // --- END: SECURITY HEADERS (HELMET) ---
@@ -78,14 +78,14 @@ function absoluteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
-// قائمة بالحقول النصية التي يجب تعقيمها من الـ HTML (للحماية من XSS بعد الحفظ)
+// قائمة بالحقول النصية التي يجب تعقيمها
 const FIELDS_TO_SANITIZE = [
     'input-name', 'input-tagline', 
     'input-email', 'input-website', 
     'input-whatsapp', 'input-facebook', 'input-linkedin'
 ];
 
-// دالة تعقيم لكائن الإدخالات (موجودة بالفعل)
+// دالة تعقيم لكائن الإدخالات
 function sanitizeInputs(inputs) {
     if (!inputs) return {};
     const sanitized = { ...inputs };
@@ -94,7 +94,6 @@ function sanitizeInputs(inputs) {
             sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
         }
     });
-    // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
     if (sanitized.dynamic && sanitized.dynamic.social) {
         sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
             ...link,
@@ -105,7 +104,6 @@ function sanitizeInputs(inputs) {
 }
 
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
-// تم نقل هذا المسار للأعلى ليتم تنفيذه قبل خدمة الملفات الثابتة
 app.get('/nfc/view/:id', async (req, res) => {
   try {
     if (!db) {
@@ -120,7 +118,7 @@ app.get('/nfc/view/:id', async (req, res) => {
         return res.status(404).send('Design not found');
     }
     
-    // Increment the view count for the card in the background.
+    // Increment the view count
     db.collection(designsCollectionName).updateOne(
       { shortId: id },
       { $inc: { views: 1 } }
@@ -131,11 +129,12 @@ app.get('/nfc/view/:id', async (req, res) => {
     const base = absoluteBaseUrl(req);
     const pageUrl = `${base}/nfc/view/${id}`;
     
-    const inputs = doc.data?.inputs || {};
-    // const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية');
+    // === بداية التصحيح: إزالة ?. ===
+    const inputs = (doc.data && doc.data.inputs) ? doc.data.inputs : {};
+    const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية');
     const tagline = DOMPurify.sanitize(inputs['input-tagline'] || 'MC PRIME Digital Business Cards');
     
-    // // (هذا الكود يحاكي دالة renderContactLinks من viewer.js)
+    // كود توليد HTML للروابط
     let contactLinksHtml = '';
     const platforms = {
         whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
@@ -153,12 +152,13 @@ app.get('/nfc/view/:id', async (req, res) => {
     };
     
     const linksHTML = [];
-    const staticSocial = doc.data?.dynamic?.staticSocial || {};
+    // === التصحيح: إزالة ?. ===
+    const staticSocial = (doc.data && doc.data.dynamic && doc.data.dynamic.staticSocial) ? doc.data.dynamic.staticSocial : {};
     
     Object.entries(staticSocial).forEach(([key, linkData]) => {
-        if (linkData?.value && platforms[key]) {
+        if (linkData && linkData.value && platforms[key]) {
             const platform = platforms[key];
-            const value = DOMPurify.sanitize(linkData.value); // تعقيم
+            const value = DOMPurify.sanitize(linkData.value);
             let displayValue = value;
             let fullUrl = value;
             if (key === 'email') { fullUrl = `${platform.prefix}${value}`; }
@@ -169,20 +169,22 @@ app.get('/nfc/view/:id', async (req, res) => {
         }
     });
 
-    if (doc.data?.dynamic?.phones) {
+    // === التصحيح: إزالة ?. ===
+    if (doc.data && doc.data.dynamic && doc.data.dynamic.phones) {
         doc.data.dynamic.phones.forEach(phone => {
-            if (phone?.value) {
-                const cleanNumber = DOMPurify.sanitize(phone.value).replace(/\D/g, ''); // تعقيم
+            if (phone && phone.value) {
+                const cleanNumber = DOMPurify.sanitize(phone.value).replace(/\D/g, '');
                 linksHTML.push(`<a href="tel:${cleanNumber}" class="contact-link"><i class="fas fa-phone"></i><span>${DOMPurify.sanitize(phone.value)}</span></a>`);
             }
         });
     }
 
-    if (doc.data?.dynamic?.social) {
+    // === التصحيح: إزالة ?. ===
+    if (doc.data && doc.data.dynamic && doc.data.dynamic.social) {
         doc.data.dynamic.social.forEach(link => {
-            if (link?.value && link?.platform && platforms[link.platform]) {
+            if (link && link.value && link.platform && platforms[link.platform]) {
                 const platform = platforms[link.platform];
-                const value = DOMPurify.sanitize(link.value); // تعقيم
+                const value = DOMPurify.sanitize(link.value);
                 let displayValue = value;
                 let fullUrl = value;
                 fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
@@ -197,9 +199,15 @@ app.get('/nfc/view/:id', async (req, res) => {
     } else {
       contactLinksHtml = '<p style="text-align: center; color: #999;">لا توجد روابط متاحة</p>';
     }
-    // const ogImage = doc.data?.imageUrls?.front
-      ? (doc.data.imageUrls.front.startsWith('http') ? doc.data.imageUrls.front : `${base}${doc.data.imageUrls.front}`)
-      : `${base}/nfc/og-image.png`;
+
+    // === التصحيح: إزالة ?. (هذا هو السطر الذي سبب الخطأ) ===
+    let ogImage = `${base}/nfc/og-image.png`; // Default
+    if (doc.data && doc.data.imageUrls && doc.data.imageUrls.front) {
+        ogImage = doc.data.imageUrls.front.startsWith('http') 
+          ? doc.data.imageUrls.front 
+          : `${base}${doc.data.imageUrls.front}`;
+    }
+    // === نهاية التصحيح ===
 
     const keywords = [
         'NFC', 'بطاقة عمل ذكية', 'كارت شخصي', 
@@ -215,7 +223,8 @@ app.get('/nfc/view/:id', async (req, res) => {
       keywords,
       design: doc.data,
       canonical: pageUrl,
-      contactLinksHtml: contactLinksHtml // });
+      contactLinksHtml: contactLinksHtml
+    });
   } catch (e) {
     console.error(e);
     res.setHeader('X-Robots-Tag', 'noindex, noarchive');
@@ -223,21 +232,18 @@ app.get('/nfc/view/:id', async (req, res) => {
   }
 });
 
-// ===== بداية التعديل: هيدر الكاش =====
-// هيدر كاش للملفات الثابتة (مع منع كاش ملفات HTML)
+// هيدر كاش للملفات الثابتة
 app.use((req, res, next) => {
-  // تحقق إذا كان المسار ينتهي بـ .html أو هو الصفحة الرئيسية
   if (req.path.endsWith('.html') || req.path.endsWith('/')) {
-    // لا تقم بحفظ الكاش لملفات HTML أبدًا
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
   } else {
-    // res.setHeader('Cache-Control', 'public, max-age=604800');
+    // (تم التعديل مسبقاً) مدة كاش 7 أيام
+    res.setHeader('Cache-Control', 'public, max-age=604800');
   }
   next();
 });
-// ===== نهاية التعديل: هيدر الكاش =====
 
 // إزالة .html من الروابط القديمة
 app.use((req, res, next) => {
@@ -253,8 +259,7 @@ app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
-// خدمة كل المشروع كملفات ثابتة (مع دعم extensions: ['html'])
-// يأتي هذا الأمر الآن بعد المسارات الديناميكية المهمة
+// خدمة كل المشروع كملفات ثابتة
 app.use(express.static(rootDir, { extensions: ['html'] }));
 
 // مجلد uploads
@@ -300,8 +305,8 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
       .webp({ quality: 85 })
       .toFile(out);
     
-    const base = absoluteBaseUrl(req); // <-- تم التعديل هنا
-    return res.json({ success: true, url: `${base}/uploads/${filename}` }); // <-- تم التعديل هنا
+    const base = absoluteBaseUrl(req);
+    return res.json({ success: true, url: `${base}/uploads/${filename}` });
 
   } catch (e) {
     console.error(e);
@@ -365,13 +370,13 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
       .webp({ quality: 88 })
       .toFile(out);
     
-    const base = absoluteBaseUrl(req); // <-- تم التعديل هنا
+    const base = absoluteBaseUrl(req);
 
     const payload = {
       shortId: nanoid(8),
-      url: `${base}/uploads/${filename}`, // <-- تم التعديل هنا
-      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')), // Sanitization here
-      category: DOMPurify.sanitize(String(req.body.category || 'عام')), // Sanitization here
+      url: `${base}/uploads/${filename}`,
+      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')),
+      category: DOMPurify.sanitize(String(req.body.category || 'عام')),
       createdAt: new Date()
     };
     await db.collection(backgroundsCollectionName).insertOne(payload);
@@ -418,21 +423,22 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
 });
 
 
-// // --- robots.txt ---
+// (تم التعديل مسبقاً) robots.txt
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Allow: /nfc/view/', // السماح بصفحات العرض
-    'Disallow: /nfc/editor', // منع أرشفة المحرر
-    'Disallow: /nfc/editor.html', // منع أرشفة المحرر
-    'Disallow: /nfc/viewer.html', // منع أرشفة الصفحة القديمة
+    'Allow: /nfc/view/',
+    'Disallow: /nfc/editor',
+    'Disallow: /nfc/editor.html',
+    'Disallow: /nfc/viewer.html',
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
 });
-// // --- sitemap.xml (ديناميكي) ---
+
+// --- sitemap.xml (ديناميكي) ---
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
@@ -454,52 +460,3 @@ app.get('/sitemap.xml', async (req, res) => {
     let designUrls = [];
     if (db) {
       const docs = await db.collection(designsCollectionName)
-        .find({})
-        .project({ shortId: 1, createdAt: 1 })
-        .sort({ createdAt: -1 })
-        .limit(2000)
-        .toArray();
-
-      designUrls = docs.map(d => ({
-        loc: `${base}/nfc/view/${d.shortId}`,
-        lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
-        changefreq: 'monthly',
-        priority: '0.80'
-      }));
-    }
-
-    function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
-      return [
-        '<url>',
-        `<loc>${loc}</loc>`,
-        lastmod ? `<lastmod>${lastmod}</lastmod>` : '',
-        `<changefreq>${changefreq}</changefreq>`,
-        `<priority>${priority}</priority>`,
-        '</url>'
-      ].join('');
-    }
-
-    const xml =
-      [
-        '<?xml version="1.0" encoding="UTF-8"?>',
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-        ...staticPages.map(p => urlTag(`${base}${p}`, { changefreq: 'weekly', priority: '0.9' })),
-        ...blogPosts.map(p => urlTag(`${base}${p}`, { changefreq: 'monthly', priority: '0.7' })),
-        ...designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefreq, priority: u.priority })),
-        '</urlset>'
-      ].join('');
-
-    res.type('application/xml').send(xml);
-  } catch (e) {
-    console.error(e);
-    res.status(500).send('Sitemap failed');
-  }
-});
-
-// صحّة
-app.get('/healthz', (req, res) => res.json({ ok: true }));
-
-// الاستماع
-app.listen(port, () => {
-  console.log(`Server running on :${port}`);
-});
