@@ -200,7 +200,7 @@ app.get('/nfc/view/:id', async (req, res) => {
       contactLinksHtml = '<p style="text-align: center; color: #999;">لا توجد روابط متاحة</p>';
     }
 
-    // === التصحيح: إزالة ?. (هذا هو السطر الذي سبب الخطأ) ===
+    // === التصحيح: إزالة ?. ===
     let ogImage = `${base}/nfc/og-image.png`; // Default
     if (doc.data && doc.data.imageUrls && doc.data.imageUrls.front) {
         ogImage = doc.data.imageUrls.front.startsWith('http') 
@@ -460,3 +460,52 @@ app.get('/sitemap.xml', async (req, res) => {
     let designUrls = [];
     if (db) {
       const docs = await db.collection(designsCollectionName)
+        .find({})
+        .project({ shortId: 1, createdAt: 1 })
+        .sort({ createdAt: -1 })
+        .limit(2000)
+        .toArray();
+
+      designUrls = docs.map(d => ({
+        loc: `${base}/nfc/view/${d.shortId}`,
+        lastmod: d.createdAt ? new Date(d.createdAt).toISOString() : undefined,
+        changefreq: 'monthly',
+        priority: '0.80'
+      }));
+    }
+
+    function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
+      return [
+        '<url>',
+        `<loc>${loc}</loc>`,
+        lastmod ? `<lastmod>${lastmod}</lastmod>` : '',
+        `<changefreq>${changefreq}</changefreq>`,
+        `<priority>${priority}</priority>`,
+        '</url>'
+      ].join('');
+    }
+
+    const xml =
+      [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        ...staticPages.map(p => urlTag(`${base}${p}`, { changefreq: 'weekly', priority: '0.9' })),
+        ...blogPosts.map(p => urlTag(`${base}${p}`, { changefreq: 'monthly', priority: '0.7' })),
+        ...designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefreq, priority: u.priority })),
+        '</urlset>'
+      ].join('');
+
+    res.type('application/xml').send(xml);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send('Sitemap failed');
+  }
+});
+
+// صحّة
+app.get('/healthz', (req, res) => res.json({ ok: true }));
+
+// الاستماع
+app.listen(port, () => {
+  console.log(`Server running on :${port}`);
+});
