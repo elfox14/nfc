@@ -13,7 +13,7 @@ const DOMPurifyFactory = require('dompurify');
 const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
-const helmet = require('helmet'); // <--- NEW
+const helmet = require('helmet'); 
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
@@ -26,14 +26,14 @@ app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
 // --- START: SECURITY HEADERS (HELMET) ---
-app.use(helmet.frameguard({ action: 'deny' })); // Clickjacking Protection
-app.use(helmet.xssFilter()); // Basic XSS protection
-app.use(helmet.noSniff()); // MIME-type sniffing prevention
+app.use(helmet.frameguard({ action: 'deny' })); 
+app.use(helmet.xssFilter()); 
+app.use(helmet.noSniff()); 
 app.use(helmet.hsts({ 
     maxAge: 31536000, 
     includeSubDomains: true,
     preload: true
-})); // Enforce HTTPS for a long time (Requires site to be fully HTTPS)
+})); 
 
 // Custom CSP to allow necessary external resources (cdnjs, cdn.jsdelivr, YouTube, Giphy)
 app.use(helmet.contentSecurityPolicy({
@@ -42,12 +42,12 @@ app.use(helmet.contentSecurityPolicy({
         scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Added API URL for images
-        mediaSrc: ["'self'", "data:"], // Allows base64 encoded audio
+        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], 
+        mediaSrc: ["'self'", "data:"], 
         frameSrc: ["'self'", "https://www.youtube.com"],
-        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], // Allow API calls and external services
+        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"], 
         objectSrc: ["'none'"],
-        upgradeInsecureRequests: [], // Automatically upgrade HTTP to HTTPS if possible
+        upgradeInsecureRequests: [], 
     },
 }));
 // --- END: SECURITY HEADERS (HELMET) ---
@@ -289,11 +289,10 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
       .webp({ quality: 88 })
       .toFile(out);
     
-    // *** تعديل: إضافة الرابط الأساسي ***
-    const base = absoluteBaseUrl(req); 
+    // *** تعديل: العودة إلى حفظ المسار النسبي ***
     const payload = {
       shortId: nanoid(8),
-      url: `${base}/uploads/${filename}`, // *** تعديل: حفظ الرابط الكامل ***
+      url: `/uploads/${filename}`, // *** تم التعديل: الرجوع إلى المسار النسبي ***
       name: DOMPurify.sanitize(String(req.body.name || 'خلفية')), // Sanitization here
       category: DOMPurify.sanitize(String(req.body.category || 'عام')), // Sanitization here
       createdAt: new Date()
@@ -315,19 +314,23 @@ app.get('/api/gallery/backgrounds', async (req, res) => {
     const q = (category && category !== 'all') ? { category: String(category) } : {};
     const coll = db.collection(backgroundsCollectionName);
     
-    // *** تعديل: إضافة الرابط الأساسي ***
     const base = absoluteBaseUrl(req); 
     const [items, total] = await Promise.all([
       coll.find(q).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
       coll.countDocuments(q)
     ]);
     
-    // --- *** تعديل: إصلاح الروابط النسبية *** ---
+    // --- *** تعديل: إصلاح ذكي لجميع الروابط *** ---
     const fixedItems = items.map(item => {
-        // إذا كان الرابط موجوداً ويبدأ بـ /uploads/ (مسار نسبي)
-        if (item.url && item.url.startsWith('/uploads/')) {
-            // قم بدمجه مع الرابط الأساسي للخادم
-            item.url = `${base}${item.url}`;
+        // استخراج اسم الملف فقط من الرابط، بغض النظر عن ما قبله
+        const filename = item.url ? path.basename(item.url) : null;
+        
+        if (filename) {
+            // بناء الرابط الكامل والصحيح *دائماً*
+            item.url = `${base}/uploads/${filename}`;
+        } else {
+            // إذا كان الرابط تالفاً أو فارغاً، ضع رابطاً احتياطياً
+            item.url = `${base}/nfc/og-image.png`; 
         }
         return item;
     });
@@ -398,13 +401,6 @@ app.post('/api/subscribe', [
             subscribedAt: new Date()
         });
         
-        // (اختياري متقدم)
-        // يمكنك هنا إرسال إيميل إشعار إلى صاحب البطاقة
-        // const ownerEmail = cardOwner.data?.inputs?.['input-email'];
-        // if (ownerEmail) {
-        //   // sendNotificationEmail(ownerEmail, email); // يتطلب خدمة إرسال
-        // }
-
         res.status(201).json({ success: true, message: 'Subscribed successfully' });
 
     } catch (e) {
