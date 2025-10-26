@@ -288,9 +288,12 @@ app.post('/api/upload-background', upload.single('image'), async (req, res) => {
       .resize({ width: 3840, height: 3840, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 88 })
       .toFile(out);
+    
+    // *** تعديل: إضافة الرابط الأساسي ***
+    const base = absoluteBaseUrl(req); 
     const payload = {
       shortId: nanoid(8),
-      url: '/uploads/' + filename,
+      url: `${base}/uploads/${filename}`, // *** تعديل: حفظ الرابط الكامل ***
       name: DOMPurify.sanitize(String(req.body.name || 'خلفية')), // Sanitization here
       category: DOMPurify.sanitize(String(req.body.category || 'عام')), // Sanitization here
       createdAt: new Date()
@@ -311,11 +314,26 @@ app.get('/api/gallery/backgrounds', async (req, res) => {
     const skip = (page - 1) * limit;
     const q = (category && category !== 'all') ? { category: String(category) } : {};
     const coll = db.collection(backgroundsCollectionName);
+    
+    // *** تعديل: إضافة الرابط الأساسي ***
+    const base = absoluteBaseUrl(req); 
     const [items, total] = await Promise.all([
       coll.find(q).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
       coll.countDocuments(q)
     ]);
-    res.json({ success: true, items, page, limit, total, totalPages: Math.ceil(total / limit) });
+    
+    // --- *** تعديل: إصلاح الروابط النسبية *** ---
+    const fixedItems = items.map(item => {
+        // إذا كان الرابط موجوداً ويبدأ بـ /uploads/ (مسار نسبي)
+        if (item.url && item.url.startsWith('/uploads/')) {
+            // قم بدمجه مع الرابط الأساسي للخادم
+            item.url = `${base}${item.url}`;
+        }
+        return item;
+    });
+    // --- نهاية التعديل ---
+
+    res.json({ success: true, items: fixedItems, page, limit, total, totalPages: Math.ceil(total / limit) });
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Fetch backgrounds failed' });
   }
@@ -336,6 +354,106 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Delete failed' });
   }
+});
+
+// --- API: تسجيل بريد إلكتروني (جديد) ---
+app.post('/api/subscribe', [
+    body('email').isEmail().normalizeEmail(),
+    body('cardId').isString().isLength({ min: 6, max: 20 }) // التحقق من المدخلات
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        if (!db) return res.status(500).json({ error: 'DB not connected' });
+        
+        const { email, cardId } = req.body;
+
+        // 1. ابحث عن صاحب البطاقة للتأكد من وجوده
+        const cardOwner = await db.collection(designsCollectionName).findOne({ shortId: cardId });
+        if (!cardOwner) {
+            return res.status(404).json({ error: 'Card owner not found' });
+        }
+
+        // 2. احفظ الاشتراك في collection جديد
+        const subscriptionCollection = db.collection('subscriptions'); // اسم الـ collection الجديد
+        
+        // 3. منع التكرار (نفس الإيميل لنفس صاحب البطاقة)
+        const existingSubscription = await subscriptionCollection.findOne({ 
+            email: email, 
+            cardOwnerId: cardId 
+        });
+        
+        if (existingSubscription) {
+            return res.status(400).json({ error: 'Email already subscribed to this card' });
+        }
+
+        // 4. إضافة الاشتراك الجديد
+        await subscriptionCollection.insertOne({
+            email: email,
+            cardOwnerId: cardId, // معرّف صاحب البطاقة
+            cardOwnerName: cardOwner.data?.inputs?.['input-name'] || 'N/A', // (اختياري) لسهولة البحث
+            subscribedAt: new Date()
+        });
+        
+        // (اختياري متقدم)
+        // يمكنك هنا إرسال إيميل إشعار إلى صاحب البطاقة
+        // const ownerEmail = cardOwner.data?.inputs?.['input-email'];
+        // if (ownerEmail) {
+        //   // sendNotificationEmail(ownerEmail, email); // يتطلب خدمة إرسال
+        // }
+
+        res.status(201).json({ success: true, message: 'Subscribed successfully' });
+
+    } catch (e) {
+        console.error('Subscription save failed:', e);
+        res.status(500).json({ error: 'Subscription failed' });
+    }
+});
+
+// --- API: تسجيل مشترك جديد من الصفحة الرئيسية (جديد) ---
+app.post('/api/homepage-subscribe', [
+    body('name').notEmpty().trim().escape(),
+    body('email').isEmail().normalizeEmail(),
+    body('phone').optional().trim().escape() // الهاتف اختياري
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        if (!db) return res.status(500).json({ error: 'DB not connected' });
+        
+        const { name, email, phone } = req.body;
+        
+        // استخدم collection جديد للمشتركين من الصفحة الرئيسية
+        const leadsCollection = db.collection('homepage_leads'); 
+        
+        // 1. التحقق من وجود الإيميل مسبقاً
+        const existingLead = await leadsCollection.findOne({ email: email });
+        if (existingLead) {
+            // لا نعتبره خطأ فادح، فقط نبلغ بأن الإيميل موجود
+            return res.status(400).json({ error: 'Email already exists' });
+        }
+
+        // 2. إضافة المشترك الجديد
+        await leadsCollection.insertOne({
+            name: name,
+            email: email,
+            phone: phone,
+            subscribedAt: new Date(),
+            source: 'homepage-form' // لتحديد مصدر التسجيل
+        });
+
+        res.status(201).json({ success: true, message: 'Subscribed successfully' });
+
+    } catch (e) {
+        console.error('Homepage subscription failed:', e);
+        res.status(500).json({ error: 'Subscription failed' });
+    }
 });
 
 
