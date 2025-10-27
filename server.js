@@ -204,11 +204,26 @@ app.get('/nfc/view/:id', async (req, res) => {
         });
     }
 
+    // ==========================================================
+    // --- البداية: هذا هو التعديل المطلوب ---
+    // ==========================================================
     if(linksHTML.length > 0) {
       contactLinksHtml = `<div class="links-group">${linksHTML.join('')}</div>`;
     } else {
-      contactLinksHtml = '<p style="text-align: center; color: #999;">لا توجد روابط متاحة</p>';
+      // قمنا باستبدال السطر القديم بهذا الكود المنسق
+      contactLinksHtml = `
+        <div style="text-align: center; padding: 25px 15px; opacity: 0.8;">
+            <i class="fas fa-info-circle" style="font-size: 2.2rem; color: var(--accent-primary); margin-bottom: 15px; display: block;"></i>
+            <p style="margin: 0; font-size: 0.95rem; color: var(--secondary-text-color); line-height: 1.6;">
+                لم يقم صاحب البطاقة بإضافة أي معلومات اتصال إضافية.
+            </p>
+        </div>
+      `;
     }
+    // ==========================================================
+    // --- النهاية: هذا هو التعديل المطلوب ---
+    // ==========================================================
+
 
     // تحديد الصورة OG مع التحقق من وجود imageUrls
     const imageUrls = doc.data.imageUrls || {};
