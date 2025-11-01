@@ -314,15 +314,23 @@ app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
-// --- START MODIFICATION (Add redirect for conflicting viewer.html) ---
-// هذا المسار سيعترض محاولات فتح viewer.html كملف ثابت
-app.get('/nfc/viewer.html', (req, res) => {
-  // أعد توجيههم إلى الصفحة الرئيسية أو المحرر
-  res.redirect(301, '/nfc/');
-});
-app.get('/nfc/viewer', (req, res) => {
-  // هذا يعترض /nfc/viewer (بدون .html)
-  res.redirect(301, '/nfc/');
+// --- START MODIFICATION (Smarter redirect for /viewer and /viewer.html) ---
+// هذا الكود سيعترض أي طلب لـ /nfc/viewer أو /nfc/viewer.html
+// قبل أن يصل إلى express.static
+app.use((req, res, next) => {
+  if (req.path === '/nfc/viewer' || req.path === '/nfc/viewer.html') {
+    const cardId = req.query.id; // استخراج الـ ID من الرابط (مثل ?id=lnSQnu0R)
+    
+    if (cardId) {
+      // إذا وجدنا ID، قم بإعادة التوجيه إلى المسار الصحيح
+      return res.redirect(301, `/nfc/view/${cardId}`);
+    } else {
+      // إذا لم يوجد ID، أعد التوجيه إلى الصفحة الرئيسية
+      return res.redirect(301, '/nfc/');
+    }
+  }
+  // إذا لم يكن الطلب مطابقاً، اسمح له بالمرور إلى الخطوة التالية
+  next();
 });
 // --- END MODIFICATION ---
 
