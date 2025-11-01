@@ -54,7 +54,15 @@ app.use(helmet.contentSecurityPolicy({
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+const rootDir = __dirname; // <-- تعريف rootDir هنا
+
+// ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+// *** هذا هو التعديل الأول ***
+// نخبر Express أن ملفات القوالب موجودة في المجلد الرئيسي
+app.set('views', rootDir);
 app.set('view engine', 'ejs');
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 // قاعدة البيانات
 const mongoUrl = process.env.MONGO_URI;
@@ -67,7 +75,7 @@ MongoClient.connect(mongoUrl)
   .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
-const rootDir = __dirname;
+// const rootDir = __dirname; // <-- تم نقل هذا السطر للأعلى
 
 // أدوات مساعدة
 function absoluteBaseUrl(req) {
@@ -265,7 +273,11 @@ app.get('/nfc/view/:id', async (req, res) => {
         ...(tagline ? tagline.split(/\s+/).filter(Boolean) : []) // Check if tagline exists before splitting
     ].filter(Boolean).join(', ');
 
-    res.render(path.join(rootDir, 'viewer.ejs'), {
+    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+    // *** هذا هو التعديل الثاني ***
+    // تم تغيير المسار الكامل إلى اسم القالب 'viewer'
+    // سيبحث Express الآن عن 'viewer.ejs' في المجلد المحدد في app.set('views', ...)
+    res.render('viewer', {
       pageUrl,
       name: name, // <-- تمرير name
       tagline: tagline, // <-- تمرير tagline
@@ -275,6 +287,7 @@ app.get('/nfc/view/:id', async (req, res) => {
       canonical: pageUrl,
       contactLinksHtml: contactLinksHtml // <-- تمرير HTML المٌنشأ
     });
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
   } catch (e) {
     console.error('Error in /nfc/view/:id route:', e);
     res.setHeader('X-Robots-Tag', 'noindex, noarchive');
