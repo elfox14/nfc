@@ -254,7 +254,6 @@ app.get('/nfc/view/:id', async (req, res) => {
     const imageUrls = doc.data.imageUrls || {};
     let ogImage = `${base}/nfc/og-image.png`; // Default
     
-    // --- START MODIFICATION (Prioritize capturedFront) ---
     if (imageUrls.capturedFront) {
         ogImage = imageUrls.capturedFront.startsWith('http') 
           ? imageUrls.capturedFront
@@ -264,7 +263,6 @@ app.get('/nfc/view/:id', async (req, res) => {
           ? imageUrls.front
           : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`;
     }
-    // --- END MODIFICATION ---
 
     const keywords = [
         'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
@@ -315,6 +313,18 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
+
+// --- START MODIFICATION (Add redirect for conflicting viewer.html) ---
+// هذا المسار سيعترض محاولات فتح viewer.html كملف ثابت
+app.get('/nfc/viewer.html', (req, res) => {
+  // أعد توجيههم إلى الصفحة الرئيسية أو المحرر
+  res.redirect(301, '/nfc/');
+});
+app.get('/nfc/viewer', (req, res) => {
+  // هذا يعترض /nfc/viewer (بدون .html)
+  res.redirect(301, '/nfc/');
+});
+// --- END MODIFICATION ---
 
 // خدمة كل المشروع كملفات ثابتة
 app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
