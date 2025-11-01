@@ -311,7 +311,7 @@ app.get('/nfc/view/:id', async (req, res) => {
 app.use((req, res, next) => {
   // هذا الكود لا يؤثر على المسارات (routes)، هو فقط يضيف هيدرز
   if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/view/')) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-validate, proxy-revalidate');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
   } else {
