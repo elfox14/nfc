@@ -113,15 +113,23 @@ function sanitizeInputs(inputs) {
     return sanitized;
 }
 
-// --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
-app.get('/nfc/view/:id', async (req, res) => {
+// --- صفحة عرض SEO الجديدة (صيغة Query) ---
+app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   try {
     if (!db) {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
         return res.status(500).send('DB not connected');
     }
-    const id = String(req.params.id);
-    // جلب الوثيقة مع التأكد من وجود البيانات
+    
+    // *** التغيير الرئيسي: جلب الـ ID من الـ Query String ***
+    const id = String(req.query.id); 
+
+    if (!id || id === 'undefined') { // التحقق من عدم وجود ID
+         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+         return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
+    }
+
+    // --- باقي الكود منسوخ من المسار القديم ---
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
     if (!doc || !doc.data) { // التحقق من وجود doc.data
@@ -138,14 +146,15 @@ app.get('/nfc/view/:id', async (req, res) => {
     res.setHeader('X-Robots-Tag', 'index, follow');
 
     const base = absoluteBaseUrl(req);
-    const pageUrl = `${base}/nfc/view/${id}`;
+    // *** التغيير الرئيسي: تحديث الرابط الأساسي ***
+    const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
 
     // استخدام البيانات بعد التأكد من وجودها
     const inputs = doc.data.inputs || {}; // التأكد من وجود inputs
     const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية'); // استرجاع الاسم
     const tagline = DOMPurify.sanitize(inputs['input-tagline'] || ''); // استرجاع المسمى (يمكن أن يكون فارغاً)
 
-    // كود توليد HTML للروابط
+    // كود توليد HTML للروابط (منسوخ بالكامل)
     let contactLinksHtml = '';
     const platforms = {
         whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
@@ -154,7 +163,7 @@ app.get('/nfc/view/:id', async (req, res) => {
         facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
         linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
         instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
-        x: { icon: 'fab fa-xing', prefix: 'https://x.com/' }, // Changed from 'fab fa-twitter'
+        x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
         telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
         tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
         snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
@@ -177,7 +186,6 @@ app.get('/nfc/view/:id', async (req, res) => {
             else if (key === 'website') { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
             else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
 
-             // Wrap link in a div with copy button
              linksHTML.push(`
                 <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                     <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
@@ -198,7 +206,6 @@ app.get('/nfc/view/:id', async (req, res) => {
                 const sanitizedValue = DOMPurify.sanitize(phone.value);
                 const cleanNumber = sanitizedValue.replace(/\D/g, '');
                 const fullUrl = `tel:${cleanNumber}`;
-                // Wrap link in a div with copy button
                 linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${cleanNumber}">
                         <a href="${fullUrl}" class="contact-link">
@@ -223,7 +230,6 @@ app.get('/nfc/view/:id', async (req, res) => {
                 let fullUrl = value;
                 fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
                 displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
-                // Wrap link in a div with copy button
                 linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                         <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
@@ -276,9 +282,26 @@ app.get('/nfc/view/:id', async (req, res) => {
       contactLinksHtml: contactLinksHtml // <-- تمرير HTML المٌنشأ
     });
   } catch (e) {
-    console.error('Error in /nfc/view/:id route:', e);
+    console.error('Error in /nfc/viewer route:', e);
     res.setHeader('X-Robots-Tag', 'noindex, noarchive');
     res.status(500).send('View failed due to an internal server error.');
+  }
+});
+
+
+// --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
+// *** تم التعديل: هذا المسار الآن يعيد التوجيه إلى الصيغة الجديدة ?id= ***
+app.get('/nfc/view/:id', async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    if (!id) {
+         return res.status(404).send('Not found');
+    }
+    // إعادة توجيه دائمة (301) إلى الصيغة المفضلة
+    res.redirect(301, `/nfc/viewer.html?id=${id}`);
+  } catch (e) {
+    console.error('Error in /nfc/view/:id redirect route:', e);
+    res.status(500).send('Redirect failed.');
   }
 });
 
@@ -297,7 +320,7 @@ app.use((req, res, next) => {
 
 // إزالة .html من الروابط القديمة
 app.use((req, res, next) => {
-  if (req.path.endsWith('.html')) {
+  if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) { // استثناء المسار الجديد
     const newPath = req.path.slice(0, -5);
     return res.redirect(301, newPath);
   }
@@ -591,10 +614,11 @@ app.get('/robots.txt', (req, res) => {
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Allow: /nfc/view/',
+    'Allow: /nfc/viewer.html', // السماح بالمسار الجديد
+    'Disallow: /nfc/view/', // حظر المسار القديم
     'Disallow: /nfc/editor',
     'Disallow: /nfc/editor.html',
-    'Disallow: /nfc/viewer.html',
+    'Disallow: /nfc/viewer.ejs', // حظر ملف القالب نفسه
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
@@ -622,7 +646,7 @@ app.get('/sitemap.xml', async (req, res) => {
         .toArray();
 
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/view/${d.shortId}`,
+        loc: `${base}/nfc/viewer.html?id=${d.shortId}`, // *** تحديث الرابط هنا ***
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : undefined,
         changefreq: 'monthly',
         priority: '0.8'
