@@ -27,7 +27,6 @@ app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
 // --- 2. إعدادات محرك القوالب (EJS) ---
-// *** هذا هو التعديل الأول: تعريف صريح للمحرك ***
 app.engine('ejs', ejs.renderFile); 
 app.set('views', rootDir);
 app.set('view engine', 'ejs');
@@ -60,7 +59,8 @@ app.use(express.json({ limit: '10mb' }));
 
 // Middleware للكاش (يجب أن يكون هنا)
 app.use((req, res, next) => {
-  if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/view/')) {
+  // *** تعديل: إضافة /nfc/viewer للمنع من الكاش ***
+  if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/viewer')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
@@ -73,6 +73,10 @@ app.use((req, res, next) => {
 // Middleware لإزالة .html
 app.use((req, res, next) => {
   if (req.path.endsWith('.html')) {
+    // *** تعديل: استثناء viewer.html من الإزالة ***
+    if (req.path.includes('viewer.html')) {
+        return res.redirect(301, req.path.slice(0, -5) + (req.search || ''));
+    }
     const newPath = req.path.slice(0, -5);
     return res.redirect(301, newPath);
   }
@@ -184,14 +188,22 @@ app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
-// المسار الديناميكي لـ EJS
-app.get('/nfc/view/:id', async (req, res) => {
+// ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+// *** هذا هو التعديل الجوهري ***
+// 1. المسار تم تغييره إلى /nfc/viewer
+// 2. الـ ID يُقرأ من req.query.id
+app.get('/nfc/viewer', async (req, res) => {
   try {
     if (!db) {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
         return res.status(500).send('DB not connected');
     }
-    const id = String(req.params.id);
+    // 2. قراءة الـ ID من req.query.id
+    const id = String(req.query.id);
+    if (!id) {
+        return res.status(400).send('Missing card ID');
+    }
+
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
     if (!doc || !doc.data) {
@@ -207,7 +219,8 @@ app.get('/nfc/view/:id', async (req, res) => {
     res.setHeader('X-Robots-Tag', 'index, follow');
 
     const base = absoluteBaseUrl(req);
-    const pageUrl = `${base}/nfc/view/${id}`;
+    // 3. بناء الرابط الأساسي (canonical) بشكل صحيح
+    const pageUrl = `${base}/nfc/viewer?id=${id}`; 
 
     const inputs = doc.data.inputs || {};
     const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية');
@@ -340,11 +353,12 @@ app.get('/nfc/view/:id', async (req, res) => {
       contactLinksHtml: contactLinksHtml
     });
   } catch (e) {
-    console.error('Error in /nfc/view/:id route:', e);
+    console.error('Error in /nfc/viewer route:', e);
     res.setHeader('X-Robots-Tag', 'noindex, noarchive');
     res.status(500).send('View failed due to an internal server error.');
   }
 });
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 // --- 7. مسارات API (Dynamic Routes) ---
 app.use('/api/', apiLimiter);
@@ -546,10 +560,11 @@ app.get('/robots.txt', (req, res) => {
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Allow: /nfc/view/',
+    // *** تعديل: السماح بـ /nfc/viewer (لأنه لم يعد .html) ***
+    'Allow: /nfc/viewer', 
     'Disallow: /nfc/editor',
     'Disallow: /nfc/editor.html',
-    'Disallow: /nfc/viewer.html',
+    'Disallow: /nfc/viewer.html', // (يبقى المنع للملف القديم)
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
@@ -574,7 +589,8 @@ app.get('/sitemap.xml', async (req, res) => {
         .limit(5000)
         .toArray();
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/view/${d.shortId}`,
+        // *** تعديل: استخدام المسار الصحيح ?id= ***
+        loc: `${base}/nfc/viewer?id=${d.shortId}`, 
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : undefined,
         changefreq: 'monthly',
         priority: '0.8'
@@ -618,6 +634,8 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
 // هذا هو المسار الرئيسي لخدمة ملفات HTML, JS, CSS
+// ** ملاحظة: سيقوم هذا المسار بخدمة viewer.js و viewer.css بشكل ثابت
+// ولكنه لن يخدم /nfc/viewer (لأنه تم تعريفه كمسار ديناميكي أعلاه)
 app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
 
 // --- 10. معالج الأخطاء العام ---
