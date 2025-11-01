@@ -178,6 +178,7 @@ app.get('/nfc/view/:id', async (req, res) => {
             else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
 
              // Wrap link in a div with copy button
+             // --- START MODIFICATION (Added data-copy-value) ---
              linksHTML.push(`
                 <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                     <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
@@ -189,6 +190,7 @@ app.get('/nfc/view/:id', async (req, res) => {
                     </button>
                 </div>
             `);
+             // --- END MODIFICATION ---
         }
     });
 
@@ -199,6 +201,7 @@ app.get('/nfc/view/:id', async (req, res) => {
                 const cleanNumber = sanitizedValue.replace(/\D/g, '');
                 const fullUrl = `tel:${cleanNumber}`;
                 // Wrap link in a div with copy button
+                // --- START MODIFICATION (Added data-copy-value with cleanNumber) ---
                 linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${cleanNumber}">
                         <a href="${fullUrl}" class="contact-link">
@@ -210,6 +213,7 @@ app.get('/nfc/view/:id', async (req, res) => {
                         </button>
                     </div>
                 `);
+                // --- END MODIFICATION ---
             }
         });
     }
@@ -224,6 +228,7 @@ app.get('/nfc/view/:id', async (req, res) => {
                 fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
                 displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
                 // Wrap link in a div with copy button
+                // --- START MODIFICATION (Added data-copy-value) ---
                 linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                         <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
@@ -235,6 +240,7 @@ app.get('/nfc/view/:id', async (req, res) => {
                         </button>
                     </div>
                 `);
+                // --- END MODIFICATION ---
             }
         });
     }
@@ -303,20 +309,6 @@ app.use((req, res, next) => {
   }
   next();
 });
-
-// --- START: FIX ---
-// إعادة توجيه /nfc/viewer?id=... إلى /nfc/view/:id
-// هذا يعالج مشكلة فتح ملف القالب الثابت مباشرة
-app.get('/nfc/viewer', (req, res) => {
-    const id = req.query.id;
-    if (id) {
-        // 301 redirect to the correct dynamic route
-        return res.redirect(301, `/nfc/view/${id}`);
-    }
-    // If no ID, send them to the editor
-    return res.redirect(301, '/nfc/editor');
-});
-// --- END: FIX ---
 
 // إعادة توجيه الجذر إلى /nfc/
 app.get('/', (req, res) => {
@@ -692,34 +684,3 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
-// ... (الكود السابق)
-
-// إزالة .html من الروابط القديمة
-app.use((req, res, next) => {
-  if (req.path.endsWith('.html')) {
-    const newPath = req.path.slice(0, -5);
-    return res.redirect(301, newPath);
-  }
-  next();
-});
-
-// --- هذا هو الكود الأهم لحل مشكلتك ---
-// إعادة توجيه /nfc/viewer?id=... إلى /nfc/view/:id
-// هذا يعالج مشكلة فتح ملف القالب الثابت مباشرة
-app.get('/nfc/viewer', (req, res) => {
-    const id = req.query.id;
-    if (id) {
-        // 301 redirect to the correct dynamic route
-        return res.redirect(301, `/nfc/view/${id}`);
-    }
-    // If no ID, send them to the editor
-    return res.redirect(301, '/nfc/editor');
-});
-// --- نهاية الكود المهم ---
-
-// إعادة توجيه الجذر إلى /nfc/
-app.get('/', (req, res) => {
-  res.redirect(301, '/nfc/');
-});
-
-// ... (باقي الكود)
