@@ -178,7 +178,6 @@ app.get('/nfc/view/:id', async (req, res) => {
             else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
 
              // Wrap link in a div with copy button
-             // --- START MODIFICATION (Added data-copy-value) ---
              linksHTML.push(`
                 <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                     <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
@@ -190,7 +189,6 @@ app.get('/nfc/view/:id', async (req, res) => {
                     </button>
                 </div>
             `);
-             // --- END MODIFICATION ---
         }
     });
 
@@ -201,7 +199,6 @@ app.get('/nfc/view/:id', async (req, res) => {
                 const cleanNumber = sanitizedValue.replace(/\D/g, '');
                 const fullUrl = `tel:${cleanNumber}`;
                 // Wrap link in a div with copy button
-                // --- START MODIFICATION (Added data-copy-value with cleanNumber) ---
                 linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${cleanNumber}">
                         <a href="${fullUrl}" class="contact-link">
@@ -213,7 +210,6 @@ app.get('/nfc/view/:id', async (req, res) => {
                         </button>
                     </div>
                 `);
-                // --- END MODIFICATION ---
             }
         });
     }
@@ -228,7 +224,6 @@ app.get('/nfc/view/:id', async (req, res) => {
                 fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
                 displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
                 // Wrap link in a div with copy button
-                // --- START MODIFICATION (Added data-copy-value) ---
                 linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                         <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
@@ -240,7 +235,6 @@ app.get('/nfc/view/:id', async (req, res) => {
                         </button>
                     </div>
                 `);
-                // --- END MODIFICATION ---
             }
         });
     }
@@ -259,11 +253,18 @@ app.get('/nfc/view/:id', async (req, res) => {
     // تحديد الصورة OG مع التحقق من وجود imageUrls
     const imageUrls = doc.data.imageUrls || {};
     let ogImage = `${base}/nfc/og-image.png`; // Default
-    if (imageUrls.front) {
+    
+    // --- START MODIFICATION (Prioritize capturedFront) ---
+    if (imageUrls.capturedFront) {
+        ogImage = imageUrls.capturedFront.startsWith('http') 
+          ? imageUrls.capturedFront
+          : `${base}${imageUrls.capturedFront.startsWith('/') ? '' : '/'}${imageUrls.capturedFront}`;
+    } else if (imageUrls.front) { // Fallback to background image
         ogImage = imageUrls.front.startsWith('http')
           ? imageUrls.front
-          : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`; // التأكد من وجود /
+          : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`;
     }
+    // --- END MODIFICATION ---
 
     const keywords = [
         'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
