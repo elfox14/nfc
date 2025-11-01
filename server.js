@@ -114,6 +114,7 @@ function sanitizeInputs(inputs) {
 }
 
 // --- صفحة عرض SEO الجديدة (صيغة Query) ---
+// *** تم وضع هذا المسار قبل معالج الملفات الثابتة لضمان تنفيذه ***
 app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   try {
     if (!db) {
@@ -308,8 +309,9 @@ app.get('/nfc/view/:id', async (req, res) => {
 
 // هيدر كاش للملفات الثابتة
 app.use((req, res, next) => {
+  // هذا الكود لا يؤثر على المسارات (routes)، هو فقط يضيف هيدرز
   if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/view/')) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-validate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
   } else {
@@ -320,7 +322,8 @@ app.use((req, res, next) => {
 
 // إزالة .html من الروابط القديمة
 app.use((req, res, next) => {
-  if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) { // استثناء المسار الجديد
+  // تم إضافة استثناء للمسار الجديد لضمان عدم إزالة .html منه
+  if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) { 
     const newPath = req.path.slice(0, -5);
     return res.redirect(301, newPath);
   }
@@ -332,13 +335,23 @@ app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
-// خدمة كل المشروع كملفات ثابتة
-app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
-
-// مجلد uploads
+// مجلد uploads (يجب أن يكون قبل معالج الملفات الثابتة الرئيسي)
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
+
+// --- واجهة برمجة التطبيقات (API) ---
+// (يجب أن تكون قبل معالج الملفات الثابتة)
+
+// ريت-لميت للـ API
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api/', apiLimiter);
 
 // عتاد الرفع/المعالجة
 const storage = multer.memoryStorage();
@@ -359,17 +372,6 @@ const upload = multer({
   }
 });
 
-
-// ريت-لميت للـ API
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Too many requests from this IP, please try again after 15 minutes'
-});
-app.use('/api/', apiLimiter);
-
 // Middleware لمعالجة أخطاء Multer بشكل أفضل
 function handleMulterErrors(err, req, res, next) {
   if (err instanceof multer.MulterError) {
@@ -382,7 +384,6 @@ function handleMulterErrors(err, req, res, next) {
   }
   next();
 }
-
 
 function assertAdmin(req, res) {
   const expected = process.env.ADMIN_TOKEN || '';
@@ -422,7 +423,6 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
   }
 });
 
-
 // --- API: حفظ تصميم ---
 app.post('/api/save-design', async (req, res) => {
   try {
@@ -434,7 +434,6 @@ app.post('/api/save-design', async (req, res) => {
     if (data.inputs) {
         data.inputs = sanitizeInputs(data.inputs); // تعقيم المدخلات الرئيسية (تشمل الاسم والمسمى)
     }
-    // ... (باقي كود التعقيم للحقول الديناميكية) ...
      if (data.dynamic) {
          if(data.dynamic.phones) {
              data.dynamic.phones = data.dynamic.phones.map(phone => ({
@@ -477,7 +476,6 @@ app.get('/api/get-design/:id', async (req, res) => {
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc || !doc.data) return res.status(404).json({ error: 'Design not found or data missing' });
 
-    // لا حاجة للتعقيم هنا، التعقيم يتم عند العرض أو الحفظ
     res.json(doc.data);
   } catch (e) {
     console.error('Get design error:', e);
@@ -505,7 +503,6 @@ app.get('/api/gallery', async (req, res) => {
     }
   }
 });
-
 
 // --- API: خلفيات (إدارة) ---
 app.post('/api/upload-background', upload.single('image'), handleMulterErrors, async (req, res) => {
@@ -686,6 +683,12 @@ app.get('/healthz', (req, res) => {
          res.status(500).json({ ok: false, db_status: 'disconnected' });
     }
 });
+
+// --- معالج الملفات الثابتة (يأتي أخيراً) ---
+// هذا السطر يخدم الملفات مثل index.html, editor.html, style.css
+// لأنه يأتي *بعد* مسار /nfc/viewer.html، فإنه لن يتداخل معه
+app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
+
 
 // --- معالج الأخطاء العام ---
 app.use((err, req, res, next) => {
