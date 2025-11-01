@@ -692,3 +692,34 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
+// ... (الكود السابق)
+
+// إزالة .html من الروابط القديمة
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html')) {
+    const newPath = req.path.slice(0, -5);
+    return res.redirect(301, newPath);
+  }
+  next();
+});
+
+// --- هذا هو الكود الأهم لحل مشكلتك ---
+// إعادة توجيه /nfc/viewer?id=... إلى /nfc/view/:id
+// هذا يعالج مشكلة فتح ملف القالب الثابت مباشرة
+app.get('/nfc/viewer', (req, res) => {
+    const id = req.query.id;
+    if (id) {
+        // 301 redirect to the correct dynamic route
+        return res.redirect(301, `/nfc/view/${id}`);
+    }
+    // If no ID, send them to the editor
+    return res.redirect(301, '/nfc/editor');
+});
+// --- نهاية الكود المهم ---
+
+// إعادة توجيه الجذر إلى /nfc/
+app.get('/', (req, res) => {
+  res.redirect(301, '/nfc/');
+});
+
+// ... (باقي الكود)
