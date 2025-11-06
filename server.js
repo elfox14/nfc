@@ -14,6 +14,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
 const helmet = require('helmet');
+const compression = require('compression'); // <-- إضافة الضغط لتحسين الأداء
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
@@ -55,6 +56,9 @@ app.use(helmet.contentSecurityPolicy({
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
+
+// --- PERFORMANCE: تمكين الضغط (gzip / brotli عبر proxy إذا متاح) ---
+app.use(compression());
 
 // قاعدة البيانات
 const mongoUrl = process.env.MONGO_URI;
@@ -677,7 +681,7 @@ ${designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefr
 
 // --- نقطة نهاية بسيطة للتحقق من صحة الخدمة ---
 app.get('/healthz', (req, res) => {
-    if (db && db.client.topology && db.client.topology.isConnected()) {
+    if (db && db.client && db.client.topology && db.client.topology.isConnected && db.client.topology.isConnected()) {
         res.json({ ok: true, db_status: 'connected' });
     } else {
          res.status(500).json({ ok: false, db_status: 'disconnected' });
@@ -687,7 +691,28 @@ app.get('/healthz', (req, res) => {
 // --- معالج الملفات الثابتة (يأتي أخيراً) ---
 // هذا السطر يخدم الملفات مثل index.html, editor.html, style.css
 // لأنه يأتي *بعد* مسار /nfc/viewer.html، فإنه لن يتداخل معه
-app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
+
+// تحسين إعدادات الملفات الثابتة: cache headers و etag و maxAge
+const staticOptions = {
+  extensions: ['html'],
+  etag: true,
+  maxAge: '30d',
+  setHeaders: function(res, filePath) {
+    // Security headers for static files
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
+
+    // For HTML (dynamic) pages, prefer no-store to avoid stale content
+    if (/\.(html|ejs)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    } else {
+      // static assets can be cached aggressively
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable'); // 30 days
+    }
+  }
+};
+
+app.use('/nfc', express.static(rootDir, staticOptions));
 
 
 // --- معالج الأخطاء العام ---
