@@ -1,7 +1,7 @@
 // server.js
 require('dotenv').config();
 const express = require('express');
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient } = require('mongodb');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
@@ -14,7 +14,6 @@ const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
 const helmet = require('helmet');
-const compression = require('compression');
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
@@ -22,102 +21,55 @@ const DOMPurify = DOMPurifyFactory(window);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// --- Basic app settings ---
+// --- إعدادات عامة ---
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
-app.set('view engine', 'ejs');
 
-// --- Security middlewares (Helmet) ---
+// --- START: SECURITY HEADERS (HELMET) ---
 app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
 app.use(helmet.hsts({
-  maxAge: 31536000,
-  includeSubDomains: true,
-  preload: true
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
 }));
 
-// Minimal CSP tailored for the app (adjust as needed)
+// Custom CSP to allow necessary external resources
 app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
-    styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
-    fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://nfc-vjy6.onrender.com"],
-    frameSrc: ["'self'", "https://www.youtube.com"],
-    objectSrc: ["'none'"],
-    upgradeInsecureRequests: [],
-  }
+    directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+        mediaSrc: ["'self'", "data:"],
+        frameSrc: ["'self'", "https://www.youtube.com"],
+        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+    },
 }));
+// --- END: SECURITY HEADERS (HELMET) ---
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.set('view engine', 'ejs');
 
-// --- Performance: compression ---
-app.use(compression());
-
-// --- Static files with cache / security headers ---
-const staticOptions = {
-  maxAge: '30d',
-  etag: true,
-  setHeaders: (res, filePath) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
-
-    if (/\.(html|ejs)$/i.test(filePath)) {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    } else if (/\.(css|js|jpg|jpeg|png|svg|webp|gif|woff2|woff|ttf)$/i.test(filePath)) {
-      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
-    }
-  }
-};
-
-// Serve `public/nfc` if exists, otherwise serve project root (fallback)
-const publicNfcPath = path.join(__dirname, 'public', 'nfc');
-if (fs.existsSync(publicNfcPath)) {
-  app.use('/nfc', express.static(publicNfcPath, staticOptions));
-}
-app.use(express.static(path.join(__dirname), staticOptions));
-
-// --- Rate limiting: basic global and API-specific ---
-const globalLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 150,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Too many requests, please slow down.'
-});
-app.use(globalLimiter);
-
-const apiLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Too many API requests, please try again later.'
-});
-
-// --- Database setup (MongoDB) ---
-const mongoUrl = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017';
+// قاعدة البيانات
+const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'nfc_db';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
 let db;
 
-MongoClient.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(client => {
-    db = client.db(dbName);
-    console.log('MongoDB connected to', dbName);
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    // Do not exit so the server can still serve static assets if needed
-  });
+MongoClient.connect(mongoUrl)
+  .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
+  .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
-// --- Utilities ---
+const rootDir = __dirname;
+
+// أدوات مساعدة
 function absoluteBaseUrl(req) {
   const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
@@ -126,272 +78,630 @@ function absoluteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
+// قائمة بالحقول النصية التي يجب تعقيمها
 const FIELDS_TO_SANITIZE = [
-  'input-name', 'input-tagline',
-  'input-email', 'input-website',
-  'input-whatsapp', 'input-facebook', 'input-linkedin'
+    'input-name', 'input-tagline',
+    'input-email', 'input-website',
+    'input-whatsapp', 'input-facebook', 'input-linkedin'
 ];
 
+// دالة تعقيم لكائن الإدخالات
 function sanitizeInputs(inputs) {
-  if (!inputs) return {};
-  const sanitized = { ...inputs };
-  FIELDS_TO_SANITIZE.forEach(k => {
-    if (sanitized[k]) sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
-  });
-
-  if (sanitized.dynamic && Array.isArray(sanitized.dynamic.social)) {
-    sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
-      ...link,
-      value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
-    }));
-  }
-  if (sanitized.dynamic && Array.isArray(sanitized.dynamic.phones)) {
-    sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
-      ...phone,
-      value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
-    }));
-  }
-  return sanitized;
+    if (!inputs) return {};
+    const sanitized = { ...inputs };
+    FIELDS_TO_SANITIZE.forEach(k => {
+        if (sanitized[k]) {
+            sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
+        }
+    });
+    // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
+    if (sanitized.dynamic && sanitized.dynamic.social) {
+        sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
+            ...link,
+            // التأكد من أن القيمة موجودة قبل التعقيم
+            value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
+        }));
+    }
+    // تعقيم أرقام الهواتف الديناميكية
+    if (sanitized.dynamic && sanitized.dynamic.phones) {
+         sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
+            ...phone,
+             // التأكد من أن القيمة موجودة قبل التعقيم
+            value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
+        }));
+    }
+    return sanitized;
 }
 
-// --- Multer for uploads (images) ---
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}-${nanoid(8)}${ext}`);
-  }
-});
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|webp/;
-    const mimeOK = allowed.test(file.mimetype);
-    const extOK = allowed.test(path.extname(file.originalname).toLowerCase());
-    if (mimeOK && extOK) return cb(null, true);
-    cb(new Error('Only images are allowed (jpg, jpeg, png, webp)'));
-  }
-});
-
-// --- Routes ---
-
-// Home or index route (serves index.html under /nfc or root)
-app.get(['/nfc', '/nfc/', '/'], (req, res) => {
-  const indexPath = path.join(__dirname, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    return res.sendFile(indexPath);
-  }
-  res.send('MC PRIME NFC - home');
-});
-
-// Viewer route (server-side rendered SEO-friendly)
+// --- صفحة عرض SEO الجديدة (صيغة Query) ---
+// *** تم وضع هذا المسار قبل معالج الملفات الثابتة لضمان تنفيذه ***
 app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   try {
     if (!db) {
-      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-      return res.status(500).send('DB not connected');
+        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+        return res.status(500).send('DB not connected');
+    }
+    
+    // *** التغيير الرئيسي: جلب الـ ID من الـ Query String ***
+    const id = String(req.query.id); 
+
+    if (!id || id === 'undefined') { // التحقق من عدم وجود ID
+         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+         return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
     }
 
-    const id = String(req.query.id || '').trim();
-    if (!id || id === 'undefined') {
-      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-      return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
-    }
-
+    // --- باقي الكود منسوخ من المسار القديم ---
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-    if (!doc || !doc.data) {
-      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-      return res.status(404).send('Design not found or data is missing');
+
+    if (!doc || !doc.data) { // التحقق من وجود doc.data
+        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+        return res.status(404).send('Design not found or data is missing');
     }
 
-    // Increment views (non-blocking)
-    db.collection(designsCollectionName).updateOne({ shortId: id }, { $inc: { views: 1 } }).catch(err => {
-      console.error('Failed to increment views for', id, err);
-    });
+    // Increment the view count
+    db.collection(designsCollectionName).updateOne(
+      { shortId: id },
+      { $inc: { views: 1 } }
+    ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
 
     res.setHeader('X-Robots-Tag', 'index, follow');
 
     const base = absoluteBaseUrl(req);
-    const pageUrl = `${base}/nfc/viewer.html?id=${encodeURIComponent(id)}`;
+    // *** التغيير الرئيسي: تحديث الرابط الأساسي ***
+    const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
 
-    const inputs = doc.data.inputs || {};
-    const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية');
-    const tagline = DOMPurify.sanitize(inputs['input-tagline'] || '');
-    const ogImage = (doc.data.imageUrls && doc.data.imageUrls.front) ? doc.data.imageUrls.front : `${base}/nfc/og-image.png`;
-    const canonical = pageUrl;
+    // استخدام البيانات بعد التأكد من وجودها
+    const inputs = doc.data.inputs || {}; // التأكد من وجود inputs
+    const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية'); // استرجاع الاسم
+    const tagline = DOMPurify.sanitize(inputs['input-tagline'] || ''); // استرجاع المسمى (يمكن أن يكون فارغاً)
 
-    // render viewer.ejs if present; else fallback to viewer.html
-    const viewerEjsPath = path.join(__dirname, 'viewer.ejs');
-    if (fs.existsSync(viewerEjsPath)) {
-      return res.render(viewerEjsPath, {
-        name, tagline, pageUrl, ogImage, canonical, doc
-      });
-    }
-
-    const viewerHtmlPath = path.join(__dirname, 'viewer.html');
-    if (fs.existsSync(viewerHtmlPath)) {
-      return res.sendFile(viewerHtmlPath);
-    }
-
-    // fallback
-    res.send(`
-      <html><head><title>${name}</title><meta name="robots" content="index, follow"></head>
-      <body><h1>${name}</h1><p>${tagline}</p><img src="${ogImage}" alt="og"></body></html>
-    `);
-  } catch (err) {
-    console.error('Error in /nfc/viewer:', err);
-    res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-    res.status(500).send('Internal server error');
-  }
-});
-
-// API: get design JSON (used by viewer.js fallback)
-app.get('/api/design/:id', apiLimiter, async (req, res) => {
-  try {
-    const id = String(req.params.id || '').trim();
-    if (!id) return res.status(400).json({ error: 'Missing id' });
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-    if (!doc) return res.status(404).json({ error: 'Not found' });
-    // hide internal fields if any
-    const sanitizedDoc = { ...doc };
-    delete sanitizedDoc._id;
-    res.json(sanitizedDoc);
-  } catch (err) {
-    console.error('/api/design/:id error', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// API: create a new design (example endpoint)
-app.post('/api/design', apiLimiter, [
-  body('inputs').isObject().optional(),
-  body('dynamic').isObject().optional()
-], async (req, res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
-    const payload = req.body || {};
-    const inputs = sanitizeInputs(payload.inputs || {});
-    const dynamic = payload.dynamic || {};
-    const shortId = nanoid(8);
-
-    const doc = {
-      shortId,
-      data: {
-        inputs,
-        dynamic,
-        imageUrls: payload.imageUrls || {}
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      views: 0
+    // كود توليد HTML للروابط (منسوخ بالكامل)
+    let contactLinksHtml = '';
+    const platforms = {
+        whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+        email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
+        website: { icon: 'fas fa-globe', prefix: 'https://' },
+        facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
+        linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
+        instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
+        x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
+        telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
+        tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
+        snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
+        youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
+        pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
     };
 
-    const result = await db.collection(designsCollectionName).insertOne(doc);
-    return res.status(201).json({ ok: true, shortId });
-  } catch (err) {
-    console.error('POST /api/design error', err);
-    res.status(500).json({ error: 'Internal server error' });
+    const linksHTML = [];
+    const dynamicData = doc.data.dynamic || {}; // التأكد من وجود dynamic
+    const staticSocial = dynamicData.staticSocial || {};
+
+    Object.entries(staticSocial).forEach(([key, linkData]) => {
+        if (linkData && linkData.value && platforms[key]) {
+            const platform = platforms[key];
+            const value = DOMPurify.sanitize(linkData.value);
+            let displayValue = value;
+            let fullUrl = value;
+            if (key === 'email') { fullUrl = `${platform.prefix}${value}`; }
+            else if (key === 'whatsapp') { fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`; }
+            else if (key === 'website') { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
+            else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
+
+             linksHTML.push(`
+                <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
+                    <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
+                        <i class="${platform.icon}"></i>
+                        <span>${displayValue}</span>
+                    </a>
+                    <button class="copy-link-btn" aria-label="نسخ الرابط">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            `);
+        }
+    });
+
+    if (dynamicData.phones) {
+        dynamicData.phones.forEach(phone => {
+            if (phone && phone.value) {
+                const sanitizedValue = DOMPurify.sanitize(phone.value);
+                const cleanNumber = sanitizedValue.replace(/\D/g, '');
+                const fullUrl = `tel:${cleanNumber}`;
+                linksHTML.push(`
+                    <div class="contact-link-wrapper" data-copy-value="${cleanNumber}">
+                        <a href="${fullUrl}" class="contact-link">
+                            <i class="fas fa-phone"></i>
+                            <span>${sanitizedValue}</span>
+                        </a>
+                        <button class="copy-link-btn" aria-label="نسخ الرقم">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                `);
+            }
+        });
+    }
+
+    if (dynamicData.social) {
+        dynamicData.social.forEach(link => {
+            if (link && link.value && link.platform && platforms[link.platform]) {
+                const platform = platforms[link.platform];
+                const value = DOMPurify.sanitize(link.value);
+                let displayValue = value;
+                let fullUrl = value;
+                fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
+                displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
+                linksHTML.push(`
+                    <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
+                        <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
+                            <i class="${platform.icon}"></i>
+                            <span>${displayValue}</span>
+                        </a>
+                        <button class="copy-link-btn" aria-label="نسخ الرابط">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                `);
+            }
+        });
+    }
+
+    if(linksHTML.length > 0) {
+      contactLinksHtml = `<div class="links-group">${linksHTML.join('')}</div>`;
+    } else {
+      contactLinksHtml = `
+          <div class="no-links-message">
+              <i class="fas fa-info-circle"></i>
+              <p>لم يقم صاحب البطاقة بإضافة أي معلومات اتصال إضافية.</p>
+          </div>
+      `;
+    }
+
+    // تحديد الصورة OG مع التحقق من وجود imageUrls
+    const imageUrls = doc.data.imageUrls || {};
+    let ogImage = `${base}/nfc/og-image.png`; // Default
+    if (imageUrls.front) {
+        ogImage = imageUrls.front.startsWith('http')
+          ? imageUrls.front
+          : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`; // التأكد من وجود /
+    }
+
+    const keywords = [
+        'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
+        name,
+        ...(tagline ? tagline.split(/\s+/).filter(Boolean) : []) // Check if tagline exists before splitting
+    ].filter(Boolean).join(', ');
+
+    res.render(path.join(rootDir, 'viewer.ejs'), {
+      pageUrl,
+      name: name, // <-- تمرير name
+      tagline: tagline, // <-- تمرير tagline
+      ogImage,
+      keywords,
+      design: doc.data,
+      canonical: pageUrl,
+      contactLinksHtml: contactLinksHtml // <-- تمرير HTML المٌنشأ
+    });
+  } catch (e) {
+    console.error('Error in /nfc/viewer route:', e);
+    res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+    res.status(500).send('View failed due to an internal server error.');
   }
 });
 
-// API: upload image (logo/background/photo) and optionally produce optimized versions
-app.post('/api/upload-image', apiLimiter, upload.single('image'), async (req, res) => {
+
+// --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
+// *** تم التعديل: هذا المسار الآن يعيد التوجيه إلى الصيغة الجديدة ?id= ***
+app.get('/nfc/view/:id', async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
-    const filePath = req.file.path;
-    const optimizedFilename = `opt-${path.basename(filePath, path.extname(filePath))}.webp`;
-    const optimizedPath = path.join(uploadsDir, optimizedFilename);
-
-    // Use sharp to resize/convert to webp for web delivery
-    await sharp(filePath)
-      .resize({ width: 1600, withoutEnlargement: true })
-      .webp({ quality: 80 })
-      .toFile(optimizedPath);
-
-    // Optionally remove original to save space (commented out by default)
-    // fs.unlinkSync(filePath);
-
-    const publicUrl = `${absoluteBaseUrl(req)}/uploads/${optimizedFilename}`;
-
-    return res.json({ ok: true, url: publicUrl, filename: optimizedFilename });
-  } catch (err) {
-    console.error('/api/upload-image error', err);
-    return res.status(500).json({ error: 'Upload failed' });
+    const id = String(req.params.id);
+    if (!id) {
+         return res.status(404).send('Not found');
+    }
+    // إعادة توجيه دائمة (301) إلى الصيغة المفضلة
+    res.redirect(301, `/nfc/viewer.html?id=${id}`);
+  } catch (e) {
+    console.error('Error in /nfc/view/:id redirect route:', e);
+    res.status(500).send('Redirect failed.');
   }
 });
 
-// Serve uploaded files (with caching)
-app.use('/uploads', express.static(uploadsDir, {
-  maxAge: '30d',
-  etag: true,
-  setHeaders: (res, filePath) => {
-    res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+
+// هيدر كاش للملفات الثابتة
+app.use((req, res, next) => {
+  // هذا الكود لا يؤثر على المسارات (routes)، هو فقط يضيف هيدرز
+  if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/view/')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  } else {
+    res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
   }
-}));
+  next();
+});
 
-// API: simple healthcheck
-app.get('/healthz', (req, res) => res.json({ ok: true, timestamp: Date.now() }));
+// إزالة .html من الروابط القديمة
+app.use((req, res, next) => {
+  // تم إضافة استثناء للمسار الجديد لضمان عدم إزالة .html منه
+  if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) { 
+    const newPath = req.path.slice(0, -5);
+    return res.redirect(301, newPath);
+  }
+  next();
+});
 
-// Sitemap route (basic dynamic sitemap for designs)
-// NOTE: For large collections, generate sitemap periodically and serve static file
+// إعادة توجيه الجذر إلى /nfc/
+app.get('/', (req, res) => {
+  res.redirect(301, '/nfc/');
+});
+
+// مجلد uploads (يجب أن يكون قبل معالج الملفات الثابتة الرئيسي)
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
+
+// --- واجهة برمجة التطبيقات (API) ---
+// (يجب أن تكون قبل معالج الملفات الثابتة)
+
+// ريت-لميت للـ API
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api/', apiLimiter);
+
+// عتاد الرفع/المعالجة
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype && file.mimetype.startsWith('image/')) {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('نوع الصورة غير مدعوم.'), false);
+        }
+    } else {
+        cb(new Error('الرجاء رفع ملف صورة.'), false);
+    }
+  }
+});
+
+// Middleware لمعالجة أخطاء Multer بشكل أفضل
+function handleMulterErrors(err, req, res, next) {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: `حجم الملف كبير جدًا. الحد الأقصى ${err.field ? err.field : '10'} ميجابايت.` });
+    }
+    return res.status(400).json({ error: `خطأ في رفع الملف: ${err.message}` });
+  } else if (err) {
+     return res.status(400).json({ error: err.message || 'خطأ غير معروف أثناء الرفع.' });
+  }
+  next();
+}
+
+function assertAdmin(req, res) {
+  const expected = process.env.ADMIN_TOKEN || '';
+  const provided = req.headers['x-admin-token'] || '';
+  if (!expected || expected !== provided) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return false;
+  }
+  return true;
+}
+
+// --- API: رفع صورة ---
+app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
+  try {
+    if (!req.file) {
+        if (!res.headersSent) {
+           return res.status(400).json({ error: 'لم يتم تقديم أي ملف صورة.' });
+        }
+        return;
+    }
+
+    const filename = nanoid(10) + '.webp';
+    const out = path.join(uploadDir, filename);
+    await sharp(req.file.buffer)
+      .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 85 })
+      .toFile(out);
+
+    const base = absoluteBaseUrl(req);
+    return res.json({ success: true, url: `${base}/uploads/${filename}` });
+
+  } catch (e) {
+    console.error('Image upload processing error:', e);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'فشل معالجة الصورة بعد الرفع.' });
+    }
+  }
+});
+
+// --- API: حفظ تصميم ---
+app.post('/api/save-design', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    let data = req.body || {};
+
+    // تطبيق التعقيم هنا قبل الحفظ
+    if (data.inputs) {
+        data.inputs = sanitizeInputs(data.inputs); // تعقيم المدخلات الرئيسية (تشمل الاسم والمسمى)
+    }
+     if (data.dynamic) {
+         if(data.dynamic.phones) {
+             data.dynamic.phones = data.dynamic.phones.map(phone => ({
+                ...phone,
+                value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
+            }));
+         }
+         if(data.dynamic.social) {
+             data.dynamic.social = data.dynamic.social.map(link => ({
+                ...link,
+                value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
+            }));
+         }
+         if(data.dynamic.staticSocial) {
+             for (const key in data.dynamic.staticSocial) {
+                 if (data.dynamic.staticSocial[key] && data.dynamic.staticSocial[key].value) {
+                      data.dynamic.staticSocial[key].value = DOMPurify.sanitize(String(data.dynamic.staticSocial[key].value));
+                 }
+             }
+         }
+     }
+
+
+    const shortId = nanoid(8);
+    await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
+    res.json({ success: true, id: shortId });
+  } catch (e) {
+    console.error('Save design error:', e);
+     if (!res.headersSent) {
+       res.status(500).json({ error: 'Save failed' });
+     }
+  }
+});
+
+// --- API: جلب تصميم ---
+app.get('/api/get-design/:id', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const id = String(req.params.id);
+    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    if (!doc || !doc.data) return res.status(404).json({ error: 'Design not found or data missing' });
+
+    res.json(doc.data);
+  } catch (e) {
+    console.error('Get design error:', e);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Fetch failed' });
+    }
+  }
+});
+
+// --- API: المعرض (أحدث التصاميم) ---
+app.get('/api/gallery', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const docs = await db.collection(designsCollectionName)
+        .find({})
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .project({ shortId: 1, 'data.inputs.input-name': 1, 'data.imageUrls.thumbnail': 1, createdAt: 1 })
+        .toArray();
+    res.json(docs);
+  } catch (e) {
+    console.error('Fetch gallery error:', e);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Fetch failed' });
+    }
+  }
+});
+
+// --- API: خلفيات (إدارة) ---
+app.post('/api/upload-background', upload.single('image'), handleMulterErrors, async (req, res) => {
+  try {
+    if (!assertAdmin(req,res)) return;
+    if (!req.file) {
+        if (!res.headersSent) {
+             return res.status(400).json({ error:'لم يتم تقديم أي ملف صورة.' });
+        }
+        return;
+    }
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const filename = 'bg_' + nanoid(10) + '.webp';
+    const out = path.join(uploadDir, filename);
+    await sharp(req.file.buffer)
+      .resize({ width: 3840, height: 3840, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 88 })
+      .toFile(out);
+
+    const base = absoluteBaseUrl(req);
+
+    const payload = {
+      shortId: nanoid(8),
+      url: `${base}/uploads/${filename}`,
+      name: DOMPurify.sanitize(String(req.body.name || 'خلفية')),
+      category: DOMPurify.sanitize(String(req.body.category || 'عام')),
+      createdAt: new Date()
+    };
+    await db.collection(backgroundsCollectionName).insertOne(payload);
+    res.json({ success:true, background: payload });
+  } catch (e) {
+    console.error('Upload background error:', e);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Upload background failed' });
+    }
+  }
+});
+
+// --- API: جلب الخلفيات ---
+app.get('/api/gallery/backgrounds', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const category = req.query.category;
+    const page = Math.max(1, parseInt(req.query.page || '1', 10));
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit || '50', 10)));
+    const skip = (page - 1) * limit;
+    const q = (category && category !== 'all') ? { category: String(category) } : {};
+    const coll = db.collection(backgroundsCollectionName);
+    const [items, total] = await Promise.all([
+      coll.find(q).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+      coll.countDocuments(q)
+    ]);
+    res.json({ success: true, items, page, limit, total, totalPages: Math.ceil(total / limit) });
+  } catch (e) {
+    console.error('Fetch backgrounds error:', e);
+     if (!res.headersSent) {
+       res.status(500).json({ error: 'Fetch backgrounds failed' });
+     }
+  }
+});
+
+// --- API: حذف خلفية ---
+app.delete('/api/backgrounds/:shortId', async (req, res) => {
+  try {
+    if (!assertAdmin(req,res)) return;
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const shortId = String(req.params.shortId);
+    const coll = db.collection(backgroundsCollectionName);
+    const doc = await coll.findOne({ shortId });
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+
+    // حذف الملف المرتبط إذا كان موجودًا
+    if (doc.url) {
+        try {
+            const urlParts = doc.url.split('/');
+            const filename = urlParts[urlParts.length - 1];
+            if (filename) {
+                const filePath = path.join(uploadDir, filename);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                    console.log(`Deleted file: ${filePath}`);
+                } else {
+                     console.warn(`File not found for deletion: ${filePath}`);
+                }
+            }
+        } catch (fileError) {
+             console.error(`Error deleting file for background ${shortId}:`, fileError);
+        }
+    }
+
+    await coll.deleteOne({ shortId });
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Delete background error:', e);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Delete failed' });
+    }
+  }
+});
+
+
+// robots.txt
+app.get('/robots.txt', (req, res) => {
+  const base = absoluteBaseUrl(req);
+  const txt = [
+    'User-agent: *',
+    'Allow: /nfc/',
+    'Allow: /nfc/viewer.html', // السماح بالمسار الجديد
+    'Disallow: /nfc/view/', // حظر المسار القديم
+    'Disallow: /nfc/editor',
+    'Disallow: /nfc/editor.html',
+    'Disallow: /nfc/viewer.ejs', // حظر ملف القالب نفسه
+    `Sitemap: ${base}/sitemap.xml`
+  ].join('\n');
+  res.type('text/plain').send(txt);
+});
+
+// --- sitemap.xml (ديناميكي) ---
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
-    let urls = [
-      `${base}/nfc/`,
-      `${base}/nfc/editor`,
-      `${base}/nfc/gallery`
+    const staticPages = [
+      '/nfc/',
+      '/nfc/gallery',
+      '/nfc/blog',
+      '/nfc/privacy'
     ];
+    const blogPosts = [];
 
+    let designUrls = [];
     if (db) {
       const docs = await db.collection(designsCollectionName)
-        .find({}, { projection: { shortId: 1 } })
+        .find({})
+        .project({ shortId: 1, createdAt: 1 })
         .sort({ createdAt: -1 })
         .limit(5000)
         .toArray();
-      docs.forEach(d => {
-        if (d && d.shortId) urls.push(`${base}/nfc/viewer.html?id=${d.shortId}`);
-      });
+
+      designUrls = docs.map(d => ({
+        loc: `${base}/nfc/viewer.html?id=${d.shortId}`, // *** تحديث الرابط هنا ***
+        lastmod: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : undefined,
+        changefreq: 'monthly',
+        priority: '0.8'
+      }));
+    }
+
+    function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
+        if (!loc) return '';
+        const lastmodTag = lastmod ? `<lastmod>${lastmod}</lastmod>` : '';
+        const changefreqTag = changefreq ? `<changefreq>${changefreq}</changefreq>` : '';
+        const priorityTag = priority ? `<priority>${priority}</priority>` : '';
+        return `
+  <url>
+    <loc>${loc}</loc>${lastmodTag}${changefreqTag}${priorityTag}
+  </url>`;
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-      ${urls.map(u => `<url><loc>${u}</loc></url>`).join('\n')}
-    </urlset>`;
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${staticPages.map(p => urlTag(`${base}${p}`, { priority: '0.9', changefreq: 'weekly' })).join('')}
+${blogPosts.map(p => urlTag(`${base}${p}`, { priority: '0.7', changefreq: 'monthly' })).join('')}
+${designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefreq, priority: u.priority })).join('')}
+</urlset>`;
 
-    res.header('Content-Type', 'application/xml');
-    res.send(xml);
-  } catch (err) {
-    console.error('sitemap.xml error', err);
-    res.status(500).send('Failed to generate sitemap');
+    res.type('application/xml').send(xml);
+  } catch (e) {
+    console.error('Sitemap generation error:', e);
+    res.status(500).send('Sitemap failed');
   }
 });
 
-// Fallback 404 for unknown routes
-app.use((req, res) => {
-  // Prefer serving 404 page if exists under /nfc/404.html
-  const custom404 = path.join(__dirname, '404.html');
-  if (fs.existsSync(custom404)) return res.status(404).sendFile(custom404);
-  res.status(404).send('Not Found');
+// --- نقطة نهاية بسيطة للتحقق من صحة الخدمة ---
+app.get('/healthz', (req, res) => {
+    if (db && db.client.topology && db.client.topology.isConnected()) {
+        res.json({ ok: true, db_status: 'connected' });
+    } else {
+         res.status(500).json({ ok: false, db_status: 'disconnected' });
+    }
 });
 
-// Generic error handler (do not leak stack in production)
+// --- معالج الملفات الثابتة (يأتي أخيراً) ---
+// هذا السطر يخدم الملفات مثل index.html, editor.html, style.css
+// لأنه يأتي *بعد* مسار /nfc/viewer.html، فإنه لن يتداخل معه
+app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
+
+
+// --- معالج الأخطاء العام ---
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err && err.stack ? err.stack : err);
-  if (res.headersSent) return next(err);
-  res.status(500).send('Internal Server Error');
+  console.error("Unhandled error:", err.stack || err);
+  const statusCode = err.status || 500;
+  const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message;
+   if (!res.headersSent) {
+     res.status(statusCode).json({ error: message });
+   }
 });
 
+
+// الاستماع
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+  console.log(`Server running on port: ${port}`);
 });
