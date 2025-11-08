@@ -78,23 +78,7 @@ app.use((req, res, next) => {
 
 // --- END: SECURITY HEADERS (HELMET) ---
 
-
-// CORS: restrict allowed origins via env ALLOWED_ORIGINS (comma-separated). Defaults to main site.
-const allowedOrigins = (process.env.ALLOWED_ORIGINS && process.env.ALLOWED_ORIGINS.split(',')) || ['https://www.mcprim.com'];
-app.use(cors({
-  origin: function(origin, callback) {
-    // allow requests with no origin (e.g. mobile apps, curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      return callback(null, true);
-    } else {
-      return callback(new Error('CORS policy: Origin not allowed'), false);
-    }
-  },
-  methods: ['GET','POST','OPTIONS'],
-  optionsSuccessStatus: 204
-}));
-
+app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
 
@@ -393,12 +377,6 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
-
-// Per-route stricter rate limiters
-const uploadLimiter = rateLimit({ windowMs: 15*60*1000, max: 20, standardHeaders: true, legacyHeaders: false }); // 20 uploads per 15 minutes
-const saveLimiter = rateLimit({ windowMs: 60*60*1000, max: 100, standardHeaders: true, legacyHeaders: false }); // 100 saves per hour
-
-
 app.use('/api/', apiLimiter);
 
 // عتاد الرفع/المعالجة
@@ -463,7 +441,7 @@ function assertAdmin(req, res) {
 }
 
 // --- API: رفع صورة ---
-app.post('/api/upload-image', uploadLimiter, upload.single('image'), handleMulterErrors, async (req, res) => {
+app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
         if (!res.headersSent) {
@@ -498,7 +476,7 @@ await sharp(req.file.buffer)
 });
 
 // --- API: حفظ تصميم ---
-app.post('/api/save-design', saveLimiter, async (req, res) => {
+app.post('/api/save-design', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
@@ -579,7 +557,7 @@ app.get('/api/gallery', async (req, res) => {
 });
 
 // --- API: خلفيات (إدارة) ---
-app.post('/api/upload-background', uploadLimiter, upload.single('image'), handleMulterErrors, async (req, res) => {
+app.post('/api/upload-background', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
     if (!req.file) {
