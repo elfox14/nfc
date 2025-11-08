@@ -14,9 +14,6 @@ const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
 const helmet = require('helmet');
-const compression = require('compression');
-const cookieParser = require('cookie-parser');
-const csrf = require('csurf');
 const crypto = require('crypto');
 
 const window = (new JSDOM('')).window;
@@ -81,40 +78,9 @@ app.use((req, res, next) => {
 
 // --- END: SECURITY HEADERS (HELMET) ---
 
-
-// CORS: restrict allowed origins via env ALLOWED_ORIGINS (comma-separated). Defaults to main site.
-const allowedOrigins = (process.env.ALLOWED_ORIGINS && process.env.ALLOWED_ORIGINS.split(',')) || ['https://www.mcprim.com'];
-app.use(cors({
-  origin: function(origin, callback) {
-    // allow requests with no origin (e.g. mobile apps, curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      return callback(null, true);
-    } else {
-      return callback(new Error('CORS policy: Origin not allowed'), false);
-    }
-  },
-  methods: ['GET','POST','OPTIONS'],
-  optionsSuccessStatus: 204
-}));
-
+app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(cookieParser());
-app.use(compression());
-
 app.set('view engine', 'ejs');
-
-// CSRF protection for non-API routes (uses cookie-based tokens). Skips /api and /uploads paths.
-const csrfProtection = csrf({ cookie: true });
-app.use((req, res, next) => {
-  if (req.path && (req.path.startsWith('/api/') || req.path.startsWith('/uploads'))) return next();
-  csrfProtection(req, res, (err) => {
-    if (err) return next(err);
-    try { res.locals.csrfToken = req.csrfToken(); } catch (e) { /* ignore */ }
-    next();
-  });
-});
-
 
 // قاعدة البيانات
 const mongoUrl = process.env.MONGO_URI;
@@ -398,7 +364,7 @@ app.get('/', (req, res) => {
 // مجلد uploads (يجب أن يكون قبل معالج الملفات الثابتة الرئيسي)
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-app.use('/uploads', express.static(uploadDir, { maxAge: '365d', immutable: true, setHeaders: (res, path) => { res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); } }));
+app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
 // --- واجهة برمجة التطبيقات (API) ---
 // (يجب أن تكون قبل معالج الملفات الثابتة)
@@ -411,12 +377,6 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
-
-// Per-route stricter rate limiters
-const uploadLimiter = rateLimit({ windowMs: 15*60*1000, max: 20, standardHeaders: true, legacyHeaders: false }); // 20 uploads per 15 minutes
-const saveLimiter = rateLimit({ windowMs: 60*60*1000, max: 100, standardHeaders: true, legacyHeaders: false }); // 100 saves per hour
-
-
 app.use('/api/', apiLimiter);
 
 // عتاد الرفع/المعالجة
@@ -481,7 +441,7 @@ function assertAdmin(req, res) {
 }
 
 // --- API: رفع صورة ---
-app.post('/api/upload-image', uploadLimiter, upload.single('image'), handleMulterErrors, async (req, res) => {
+app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
         if (!res.headersSent) {
@@ -516,7 +476,7 @@ await sharp(req.file.buffer)
 });
 
 // --- API: حفظ تصميم ---
-app.post('/api/save-design', saveLimiter, async (req, res) => {
+app.post('/api/save-design', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
@@ -597,7 +557,7 @@ app.get('/api/gallery', async (req, res) => {
 });
 
 // --- API: خلفيات (إدارة) ---
-app.post('/api/upload-background', uploadLimiter, upload.single('image'), handleMulterErrors, async (req, res) => {
+app.post('/api/upload-background', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
     if (!req.file) {
