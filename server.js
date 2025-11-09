@@ -486,14 +486,34 @@ app.get('/api/get-design/:id', async (req, res) => {
 });
 
 // --- API: المعرض (أحدث التصاميم) ---
+// ===== (هذا هو الجزء الذي تم تعديله) =====
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    // 1. إضافة منطق الفرز الديناميكي
+    const sortBy = String(req.query.sortBy || 'createdAt');
+    const sortQuery = {};
+    if (sortBy === 'views') {
+        sortQuery.views = -1; // فرز حسب المشاهدات (الأكثر أولاً)
+    } else {
+        sortQuery.createdAt = -1; // الافتراضي: فرز حسب تاريخ الإنشاء (الأحدث أولاً)
+    }
+
     const docs = await db.collection(designsCollectionName)
         .find({})
-        .sort({ createdAt: -1 })
+        .sort(sortQuery) // 2. تطبيق الفرز الديناميكي
         .limit(20)
-        .project({ shortId: 1, 'data.inputs.input-name': 1, 'data.imageUrls.thumbnail': 1, createdAt: 1 })
+        // 3. تعديل .project لإرسال البيانات الجديدة المطلوبة
+        .project({ 
+            shortId: 1, 
+            'data.inputs.input-name': 1, 
+            'data.inputs.input-tagline': 1,
+            'data.imageUrls.capturedFront': 1, // الصورة المصغرة الحقيقية
+            'data.imageUrls.front': 1, // صورة احتياطية
+            createdAt: 1,
+            views: 1 
+        })
         .toArray();
     res.json(docs);
   } catch (e) {
@@ -503,6 +523,7 @@ app.get('/api/gallery', async (req, res) => {
     }
   }
 });
+// ===== (نهاية الجزء المعدل) =====
 
 // --- API: خلفيات (إدارة) ---
 app.post('/api/upload-background', upload.single('image'), handleMulterErrors, async (req, res) => {
