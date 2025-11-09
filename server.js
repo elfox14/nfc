@@ -14,7 +14,6 @@ const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
 const helmet = require('helmet');
-const crypto = require('crypto');
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
@@ -51,31 +50,6 @@ app.use(helmet.contentSecurityPolicy({
         upgradeInsecureRequests: [],
     },
 }));
-
-// Middleware: generate a per-request CSP nonce and set a stricter CSP header that includes the nonce
-app.use((req, res, next) => {
-  try {
-    res.locals.nonce = crypto.randomBytes(16).toString('hex');
-    const nonce = res.locals.nonce;
-    const csp = [
-      "default-src 'self'",
-      "script-src 'self' 'nonce-" + nonce + "' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
-      "style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
-      "img-src 'self' data: https:",
-      "connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
-      "frame-src 'self' https://www.youtube.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "frame-ancestors 'none'"
-    ].join('; ');
-    res.setHeader('Content-Security-Policy', csp);
-  } catch (e) {
-    // If nonce generation fails, proceed without nonce but log
-    console.error('CSP nonce generation failed', e);
-  }
-  next();
-});
-
 // --- END: SECURITY HEADERS (HELMET) ---
 
 app.use(cors());
@@ -398,25 +372,6 @@ const upload = multer({
   }
 });
 
-// Utility: Check image magic bytes to reduce spoofed MIME uploads
-function isValidImageBuffer(buf) {
-  if (!buf || buf.length < 12) return false;
-  // JPEG: FF D8 FF
-  if (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF) return true;
-  // PNG: 89 50 4E 47 0D 0A 1A 0A
-  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) return true;
-  // GIF: 47 49 46 38
-  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38) return true;
-  // WEBP: RIFF....WEBP
-  if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
-      buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50) return true;
-  // SVG starts with '<' and 'svg' within first bytes (text)
-  const start = buf.toString('utf8', 0, Math.min(buf.length, 64)).toLowerCase();
-  if (start.indexOf('<svg') !== -1 || start.indexOf('<?xml') !== -1) return true;
-  return false;
-}
-
-
 // Middleware لمعالجة أخطاء Multer بشكل أفضل
 function handleMulterErrors(err, req, res, next) {
   if (err instanceof multer.MulterError) {
@@ -452,14 +407,7 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
 
     const filename = nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
-    
-    // Validate buffer magic bytes to prevent spoofed uploads
-    if (!isValidImageBuffer(req.file.buffer)) {
-        console.warn('Rejected upload: invalid image magic bytes for file', req.file.originalname || '');
-        if (!res.headersSent) return res.status(400).json({ error: 'ملف الصورة غير صالح.' });
-        return;
-    }
-await sharp(req.file.buffer)
+    await sharp(req.file.buffer)
       .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 85 })
       .toFile(out);
@@ -570,14 +518,7 @@ app.post('/api/upload-background', upload.single('image'), handleMulterErrors, a
 
     const filename = 'bg_' + nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
-    
-    // Validate buffer magic bytes to prevent spoofed uploads
-    if (!isValidImageBuffer(req.file.buffer)) {
-        console.warn('Rejected upload: invalid image magic bytes for file', req.file.originalname || '');
-        if (!res.headersSent) return res.status(400).json({ error: 'ملف الصورة غير صالح.' });
-        return;
-    }
-await sharp(req.file.buffer)
+    await sharp(req.file.buffer)
       .resize({ width: 3840, height: 3840, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 88 })
       .toFile(out);
