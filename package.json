@@ -15,22 +15,33 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "csurf": "^1.11.0",
-    "dompurify": "^3.2.6",
-    "dotenv": "^17.2.2",
+    "dompurify": "^3.3.0",
+    "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
-    "express": "^4.19.2",
-    "express-rate-limit": "^8.1.0",
-    "express-validator": "^7.2.1",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.0",
     "helmet": "^8.1.0",
     "jsdom": "^26.1.0",
-    "mongodb": "^6.19.0",
+    "mongodb": "^6.20.0",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "nanoid": "^3.3.11",
-    "sharp": "^0.34.4"
+    "sharp": "^0.34.5",
+    "shepherd.js": "^14.5.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elfox14/nfc.git"
+  },
+  "keywords": [],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/elfox14/nfc/issues"
+  },
+  "homepage": "https://github.com/elfox14/nfc#readme"
 }
