@@ -491,7 +491,12 @@ app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
-    // 1. إضافة منطق الفرز الديناميكي
+    // 1. Pagination (الاقتراح 1)
+    const page = parseInt(req.query.page || '1', 10);
+    const limit = 12; // 12 تصميم في الصفحة (يناسب 4 أعمدة)
+    const skip = (page - 1) * limit;
+
+    // 2. Sorting
     const sortBy = String(req.query.sortBy || 'createdAt');
     const sortQuery = {};
     if (sortBy === 'views') {
@@ -500,30 +505,61 @@ app.get('/api/gallery', async (req, res) => {
         sortQuery.createdAt = -1; // الافتراضي: فرز حسب تاريخ الإنشاء (الأحدث أولاً)
     }
 
+    // 3. Filtering (الاقتراح 3) & Search (الاقتراح 4)
+    const findQuery = {
+        // (الاقتراح 3) ضمان وجود صورة مصغرة
+        'data.imageUrls.capturedFront': { $exists: true, $ne: null } 
+    };
+
+    // (الاقتراح 4) إضافة منطق البحث
+    const searchQuery = req.query.search;
+    if (searchQuery) {
+        findQuery.$or = [
+            { 'data.inputs.input-name': { $regex: searchQuery, $options: 'i' } },
+            { 'data.inputs.input-tagline': { $regex: searchQuery, $options: 'i' } }
+        ];
+    }
+
+    // جلب العدد الإجمالي للمستندات المطابقة للفلترة (مهم لـ Pagination)
+    const totalDocs = await db.collection(designsCollectionName).countDocuments(findQuery);
+    const totalPages = Math.ceil(totalDocs / limit);
+
     const docs = await db.collection(designsCollectionName)
-        .find({})
-        .sort(sortQuery) // 2. تطبيق الفرز الديناميكي
-        .limit(20)
-        // 3. تعديل .project لإرسال البيانات الجديدة المطلوبة
-        .project({ 
+        .find(findQuery) // تطبيق الفلترة والبحث
+        .sort(sortQuery) // تطبيق الفرز
+        .skip(skip)   // تطبيق Pagination
+        .limit(limit) // تطبيق Pagination
+        .project({ // إرسال البيانات المطلوبة فقط
             shortId: 1, 
             'data.inputs.input-name': 1, 
             'data.inputs.input-tagline': 1,
             'data.imageUrls.capturedFront': 1, // الصورة المصغرة الحقيقية
             'data.imageUrls.front': 1, // صورة احتياطية
             createdAt: 1,
-            views: 1 
+            views: 1 // (الاقتراح 2) إرسال عدد المشاهدات
         })
         .toArray();
-    res.json(docs);
+
+    // إرسال الرد مع بيانات الـ Pagination
+    res.json({
+        success: true,
+        designs: docs,
+        pagination: {
+            page,
+            limit,
+            totalDocs,
+            totalPages
+        }
+    });
   } catch (e) {
     console.error('Fetch gallery error:', e);
     if (!res.headersSent) {
-      res.status(500).json({ error: 'Fetch failed' });
+      res.status(500).json({ error: 'Fetch failed', success: false });
     }
   }
 });
 // ===== (نهاية الجزء المعدل) =====
+
 
 // --- API: خلفيات (إدارة) ---
 app.post('/api/upload-background', upload.single('image'), handleMulterErrors, async (req, res) => {
