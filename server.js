@@ -4,7 +4,6 @@ const express = require('express');
 const compression = require('compression');
 const { MongoClient } = require('mongodb');
 const path = require('path');
-const fs = require('fs');
 const cors = require('cors');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
@@ -764,42 +763,4 @@ app.use((err, req, res, next) => {
 // الاستماع
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
-});
-
-// Site settings API (simple JSON file)
-const SITE_SETTINGS_FILE = path.join(__dirname, 'site-settings.json');
-
-app.get('/api/site-settings', (req, res) => {
-  try {
-    if (fs.existsSync(SITE_SETTINGS_FILE)) {
-      const txt = fs.readFileSync(SITE_SETTINGS_FILE, 'utf8');
-      return res.json(JSON.parse(txt));
-    }
-    return res.json({}); // empty
-  } catch (e) {
-    console.error('site-settings read error', e);
-    return res.status(500).json({ error: 'read_failed' });
-  }
-});
-
-app.post('/api/site-settings', express.json(), (req, res) => {
-  try {
-    const body = req.body || {};
-    // only accept known keys (whitelist)
-    const allowed = {};
-    if (body.socialDisplayMode && (body.socialDisplayMode === 'text' || body.socialDisplayMode === 'buttons')) {
-      allowed.socialDisplayMode = body.socialDisplayMode;
-    }
-    // read existing
-    let cur = {};
-    if (fs.existsSync(SITE_SETTINGS_FILE)) {
-      try { cur = JSON.parse(fs.readFileSync(SITE_SETTINGS_FILE,'utf8')) } catch(e){ cur = {}; }
-    }
-    const merged = Object.assign({}, cur, allowed);
-    fs.writeFileSync(SITE_SETTINGS_FILE, JSON.stringify(merged, null, 2), 'utf8');
-    return res.json({ ok: true, settings: merged });
-  } catch (e) {
-    console.error('site-settings write error', e);
-    return res.status(500).json({ error: 'write_failed' });
-  }
 });
