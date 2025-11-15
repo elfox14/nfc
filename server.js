@@ -157,45 +157,83 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
     const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية'); // استرجاع الاسم
     const tagline = DOMPurify.sanitize(inputs['input-tagline'] || ''); // استرجاع المسمى (يمكن أن يكون فارغاً)
 
-    // كود توليد HTML للروابط
+    // كود توليد HTML للروابط (منسوخ بالكامل)
     let contactLinksHtml = '';
+    const platforms = {
+        whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+        email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
+        website: { icon: 'fas fa-globe', prefix: 'https://' },
+        facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
+        linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
+        instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
+        x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
+        telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
+        tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
+        snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
+        youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
+        pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
+    };
+
     const linksHTML = [];
+    const dynamicData = doc.data.dynamic || {}; // التأكد من وجود dynamic
+    const staticSocial = dynamicData.staticSocial || {};
 
-    // ===== التعديل: التحقق من مفتاح إظهار التواصل =====
-    // الافتراضي هو true إذا كان المفتاح غير موجود (للبطاقات القديمة) أو true
-    const showSocialLinks = (inputs['toggle-master-social'] === undefined || inputs['toggle-master-social'] === true);
+    Object.entries(staticSocial).forEach(([key, linkData]) => {
+        if (linkData && linkData.value && platforms[key]) {
+            const platform = platforms[key];
+            const value = DOMPurify.sanitize(linkData.value);
+            let displayValue = value;
+            let fullUrl = value;
+            if (key === 'email') { fullUrl = `${platform.prefix}${value}`; }
+            else if (key === 'whatsapp') { fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`; }
+            else if (key === 'website') { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
+            else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
 
-    if (showSocialLinks) {
-        const platforms = {
-            whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
-            email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
-            website: { icon: 'fas fa-globe', prefix: 'https://' },
-            facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
-            linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
-            instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
-            x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
-            telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
-            tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
-            snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
-            youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
-            pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
-        };
+             linksHTML.push(`
+                <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
+                    <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
+                        <i class="${platform.icon}"></i>
+                        <span>${displayValue}</span>
+                    </a>
+                    <button class="copy-link-btn" aria-label="نسخ الرابط">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            `);
+        }
+    });
 
-        const dynamicData = doc.data.dynamic || {}; // التأكد من وجود dynamic
-        const staticSocial = dynamicData.staticSocial || {};
+    if (dynamicData.phones) {
+        dynamicData.phones.forEach(phone => {
+            if (phone && phone.value) {
+                const sanitizedValue = DOMPurify.sanitize(phone.value);
+                const cleanNumber = sanitizedValue.replace(/\D/g, '');
+                const fullUrl = `tel:${cleanNumber}`;
+                linksHTML.push(`
+                    <div class="contact-link-wrapper" data-copy-value="${cleanNumber}">
+                        <a href="${fullUrl}" class="contact-link">
+                            <i class="fas fa-phone"></i>
+                            <span>${sanitizedValue}</span>
+                        </a>
+                        <button class="copy-link-btn" aria-label="نسخ الرقم">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                `);
+            }
+        });
+    }
 
-        Object.entries(staticSocial).forEach(([key, linkData]) => {
-            if (linkData && linkData.value && platforms[key]) {
-                const platform = platforms[key];
-                const value = DOMPurify.sanitize(linkData.value);
+    if (dynamicData.social) {
+        dynamicData.social.forEach(link => {
+            if (link && link.value && link.platform && platforms[link.platform]) {
+                const platform = platforms[link.platform];
+                const value = DOMPurify.sanitize(link.value);
                 let displayValue = value;
                 let fullUrl = value;
-                if (key === 'email') { fullUrl = `${platform.prefix}${value}`; }
-                else if (key === 'whatsapp') { fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`; }
-                else if (key === 'website') { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
-                else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
-
-                 linksHTML.push(`
+                fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
+                displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
+                linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                         <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
                             <i class="${platform.icon}"></i>
@@ -208,54 +246,7 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
                 `);
             }
         });
-
-        if (dynamicData.phones) {
-            dynamicData.phones.forEach(phone => {
-                if (phone && phone.value) {
-                    const sanitizedValue = DOMPurify.sanitize(phone.value);
-                    const cleanNumber = sanitizedValue.replace(/\D/g, '');
-                    const fullUrl = `tel:${cleanNumber}`;
-                    linksHTML.push(`
-                        <div class="contact-link-wrapper" data-copy-value="${cleanNumber}">
-                            <a href="${fullUrl}" class="contact-link">
-                                <i class="fas fa-phone"></i>
-                                <span>${sanitizedValue}</span>
-                            </a>
-                            <button class="copy-link-btn" aria-label="نسخ الرقم">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </div>
-                    `);
-                }
-            });
-        }
-
-        if (dynamicData.social) {
-            dynamicData.social.forEach(link => {
-                if (link && link.value && link.platform && platforms[link.platform]) {
-                    const platform = platforms[link.platform];
-                    const value = DOMPurify.sanitize(link.value);
-                    let displayValue = value;
-                    let fullUrl = value;
-                    fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
-                    displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
-                    linksHTML.push(`
-                        <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
-                            <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
-                                <i class="${platform.icon}"></i>
-                                <span>${displayValue}</span>
-                            </a>
-                            <button class="copy-link-btn" aria-label="نسخ الرابط">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </div>
-                    `);
-                }
-            });
-        }
     }
-    // ===== نهاية التحقق =====
-
 
     if(linksHTML.length > 0) {
       contactLinksHtml = `<div class="links-group">${linksHTML.join('')}</div>`;
@@ -570,6 +561,37 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 // ===== (نهاية الجزء المعدل) =====
+
+
+// ===== هذا هو الكود الجديد الذي تم إضافته =====
+// --- API: جلب القوالب الجاهزة ---
+app.get('/api/templates', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const templates = await db.collection(designsCollectionName)
+        .find({ 
+            "isTemplate": true, // جلب القوالب فقط
+            "data.imageUrls.capturedFront": { $exists: true } // التأكد من وجود صورة مصغرة
+        })
+        .sort({ createdAt: -1 }) // يمكن فرزها لاحقاً
+        .limit(20) // جلب 20 قالب كحد أقصى
+        .project({ // إرسال البيانات المطلوبة فقط
+            shortId: 1, 
+            data: 1, // <--- **مهم جداً: إرسال كائن الحالة بالكامل**
+            name: "$data.inputs.input-name" // اسم القالب (اختياري)
+        })
+        .toArray();
+
+    res.json({ success: true, templates: templates });
+  } catch (e) {
+    console.error('Fetch templates error:', e);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Fetch templates failed', success: false });
+    }
+  }
+});
+// ===== نهاية الكود الجديد =====
 
 
 // --- API: خلفيات (إدارة) ---
