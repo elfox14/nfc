@@ -1,3 +1,4 @@
+// server.js
 require('dotenv').config();
 const express = require('express');
 const compression = require('compression');
@@ -7,6 +8,8 @@ const cors = require('cors');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
+// --- (تم التعديل) ---
+// تأكد من استيراد body و validationResult
 const { body, validationResult } = require('express-validator');
 const { JSDOM } = require('jsdom');
 const DOMPurifyFactory = require('dompurify');
@@ -36,7 +39,7 @@ app.use(helmet.hsts({
     preload: true
 }));
 
-// Custom CSP
+// Custom CSP to allow necessary external resources
 app.use(helmet.contentSecurityPolicy({
     directives: {
         defaultSrc: ["'self'"],
@@ -68,37 +71,6 @@ MongoClient.connect(mongoUrl)
   .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
-// --- تحسين الأداء: مخزن مؤقت للمشاهدات (View Batching) ---
-const viewsBuffer = new Map(); // لتخزين: { shortId: count }
-
-// دالة لحفظ المشاهدات في قاعدة البيانات كل 60 ثانية
-setInterval(async () => {
-    if (viewsBuffer.size === 0 || !db) return;
-
-    const bulkOps = [];
-    // تحويل الـ Map إلى عمليات تحديث مجمعة
-    for (const [id, count] of viewsBuffer.entries()) {
-        bulkOps.push({
-            updateOne: {
-                filter: { shortId: id },
-                update: { $inc: { views: count } }
-            }
-        });
-    }
-
-    // تفريغ المخزن المؤقت فوراً لمنع التكرار
-    viewsBuffer.clear();
-
-    if (bulkOps.length > 0) {
-        try {
-            await db.collection(designsCollectionName).bulkWrite(bulkOps);
-            console.log(`Saved views for ${bulkOps.length} cards.`);
-        } catch (e) {
-            console.error('Error saving batched views:', e);
-        }
-    }
-}, 60 * 1000); // تنفيذ كل دقيقة
-
 const rootDir = __dirname;
 
 // أدوات مساعدة
@@ -110,12 +82,14 @@ function absoluteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
+// قائمة بالحقول النصية التي يجب تعقيمها
 const FIELDS_TO_SANITIZE = [
     'input-name', 'input-tagline',
     'input-email', 'input-website',
     'input-whatsapp', 'input-facebook', 'input-linkedin'
 ];
 
+// دالة تعقيم لكائن الإدخالات
 function sanitizeInputs(inputs) {
     if (!inputs) return {};
     const sanitized = { ...inputs };
@@ -124,22 +98,27 @@ function sanitizeInputs(inputs) {
             sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
         }
     });
+    // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
     if (sanitized.dynamic && sanitized.dynamic.social) {
         sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
             ...link,
+            // التأكد من أن القيمة موجودة قبل التعقيم
             value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
         }));
     }
+    // تعقيم أرقام الهواتف الديناميكية
     if (sanitized.dynamic && sanitized.dynamic.phones) {
          sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
             ...phone,
+             // التأكد من أن القيمة موجودة قبل التعقيم
             value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
         }));
     }
     return sanitized;
 }
 
-// --- صفحة عرض SEO الجديدة ---
+// --- صفحة عرض SEO الجديدة (صيغة Query) ---
+// *** تم وضع هذا المسار قبل معالج الملفات الثابتة لضمان تنفيذه ***
 app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   try {
     if (!db) {
@@ -147,34 +126,40 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
         return res.status(500).send('DB not connected');
     }
     
+    // *** التغيير الرئيسي: جلب الـ ID من الـ Query String ***
     const id = String(req.query.id); 
 
-    if (!id || id === 'undefined') { 
+    if (!id || id === 'undefined') { // التحقق من عدم وجود ID
          res.setHeader('X-Robots-Tag', 'noindex, noarchive');
          return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
     }
 
+    // --- باقي الكود منسوخ من المسار القديم ---
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
-    if (!doc || !doc.data) {
+    if (!doc || !doc.data) { // التحقق من وجود doc.data
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
         return res.status(404).send('Design not found or data is missing');
     }
 
-    // --- تعديل الأداء: زيادة العداد في الذاكرة بدلاً من القاعدة مباشرة ---
-    const currentCount = viewsBuffer.get(id) || 0;
-    viewsBuffer.set(id, currentCount + 1);
-    // ---------------------------------------------------------------
+    // Increment the view count
+    db.collection(designsCollectionName).updateOne(
+      { shortId: id },
+      { $inc: { views: 1 } }
+    ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
 
     res.setHeader('X-Robots-Tag', 'index, follow');
 
     const base = absoluteBaseUrl(req);
+    // *** التغيير الرئيسي: تحديث الرابط الأساسي ***
     const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
 
-    const inputs = doc.data.inputs || {};
-    const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية');
-    const tagline = DOMPurify.sanitize(inputs['input-tagline'] || '');
+    // استخدام البيانات بعد التأكد من وجودها
+    const inputs = doc.data.inputs || {}; // التأكد من وجود inputs
+    const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية'); // استرجاع الاسم
+    const tagline = DOMPurify.sanitize(inputs['input-tagline'] || ''); // استرجاع المسمى (يمكن أن يكون فارغاً)
 
+    // كود توليد HTML للروابط (منسوخ بالكامل)
     let contactLinksHtml = '';
     const platforms = {
         whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
@@ -192,7 +177,7 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
     };
 
     const linksHTML = [];
-    const dynamicData = doc.data.dynamic || {};
+    const dynamicData = doc.data.dynamic || {}; // التأكد من وجود dynamic
     const staticSocial = dynamicData.staticSocial || {};
 
     Object.entries(staticSocial).forEach(([key, linkData]) => {
@@ -276,29 +261,30 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
       `;
     }
 
+    // تحديد الصورة OG مع التحقق من وجود imageUrls
     const imageUrls = doc.data.imageUrls || {};
-    let ogImage = `${base}/nfc/og-image.png`; 
+    let ogImage = `${base}/nfc/og-image.png`; // Default
     if (imageUrls.front) {
         ogImage = imageUrls.front.startsWith('http')
           ? imageUrls.front
-          : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`; 
+          : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`; // التأكد من وجود /
     }
 
     const keywords = [
         'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
         name,
-        ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])
+        ...(tagline ? tagline.split(/\s+/).filter(Boolean) : []) // Check if tagline exists before splitting
     ].filter(Boolean).join(', ');
 
     res.render(path.join(rootDir, 'viewer.ejs'), {
       pageUrl,
-      name: name,
-      tagline: tagline,
+      name: name, // <-- تمرير name
+      tagline: tagline, // <-- تمرير tagline
       ogImage,
       keywords,
       design: doc.data,
       canonical: pageUrl,
-      contactLinksHtml: contactLinksHtml
+      contactLinksHtml: contactLinksHtml // <-- تمرير HTML المٌنشأ
     });
   } catch (e) {
     console.error('Error in /nfc/viewer route:', e);
@@ -307,13 +293,16 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   }
 });
 
+
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
+// *** تم التعديل: هذا المسار الآن يعيد التوجيه إلى الصيغة الجديدة ?id= ***
 app.get('/nfc/view/:id', async (req, res) => {
   try {
     const id = String(req.params.id);
     if (!id) {
          return res.status(404).send('Not found');
     }
+    // إعادة توجيه دائمة (301) إلى الصيغة المفضلة
     res.redirect(301, `/nfc/viewer.html?id=${id}`);
   } catch (e) {
     console.error('Error in /nfc/view/:id redirect route:', e);
@@ -321,7 +310,10 @@ app.get('/nfc/view/:id', async (req, res) => {
   }
 });
 
+
+// هيدر كاش للملفات الثابتة
 app.use((req, res, next) => {
+  // هذا الكود لا يؤثر على المسارات (routes)، هو فقط يضيف هيدرز
   if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/view/')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -332,7 +324,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// إزالة .html من الروابط القديمة
 app.use((req, res, next) => {
+  // تم إضافة استثناء للمسار الجديد لضمان عدم إزالة .html منه
   if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) { 
     const newPath = req.path.slice(0, -5);
     return res.redirect(301, newPath);
@@ -340,14 +334,20 @@ app.use((req, res, next) => {
   next();
 });
 
+// إعادة توجيه الجذر إلى /nfc/
 app.get('/', (req, res) => {
   res.redirect(301, '/nfc/');
 });
 
+// مجلد uploads (يجب أن يكون قبل معالج الملفات الثابتة الرئيسي)
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
+// --- واجهة برمجة التطبيقات (API) ---
+// (يجب أن تكون قبل معالج الملفات الثابتة)
+
+// ريت-لميت للـ API
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -357,10 +357,11 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
+// عتاد الرفع/المعالجة
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
     if (file.mimetype && file.mimetype.startsWith('image/')) {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
@@ -375,6 +376,7 @@ const upload = multer({
   }
 });
 
+// Middleware لمعالجة أخطاء Multer بشكل أفضل
 function handleMulterErrors(err, req, res, next) {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
@@ -426,39 +428,55 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
 });
 
 // --- API: حفظ تصميم ---
+// --- (تم التعديل) ---
+// 1. إضافة مصفوفة التحقق
 app.post('/api/save-design', [
+    // التحقق من أن الاسم موجود وليس فارغاً
     body('data.inputs.input-name')
-        .trim()
+        .trim() // إزالة المسافات
         .notEmpty()
         .withMessage('input-name is required.')
         .isLength({ min: 2, max: 150 })
         .withMessage('input-name must be between 2 and 150 characters'),
     
+    // التحقق من أن المسمى الوظيفي (اختياري) لا يتجاوز الحد
     body('data.inputs.input-tagline')
         .optional()
         .trim()
         .isLength({ max: 200 })
         .withMessage('input-tagline cannot exceed 200 characters'),
 
+    // التحقق من أن الإيميل (اختياري) هو إيميل صالح
     body('data.dynamic.staticSocial.email.value')
-        .optional({ checkFalsy: true })
+        .optional({ checkFalsy: true }) // جعله اختيارياً (إذا كان فارغاً أو null)
         .trim()
         .isEmail()
         .withMessage('Invalid email format provided.')
+
+    // يمكنك إضافة المزيد من قواعد التحقق هنا للروابط أو غيرها
+    
 ], async (req, res) => {
+  // --- (نهاية التعديل 1) ---
 
   try {
+    // --- (تم التعديل) ---
+    // 2. التحقق من نتائج الـ Validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+        // إرجاع خطأ 400 (Bad Request) إذا كانت هناك أخطاء
+        // هذا هو ما كان يتوقعه تقرير TestSprite!
         return res.status(400).json({ error: 'Validation Failed', details: errors.array() });
     }
+    // --- (نهاية التعديل 2) ---
+
 
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
     let data = req.body || {};
 
+    // 3. المتابعة بالتعقيم (Sanitization) بعد التأكد من صحة البيانات
     if (data.inputs) {
-        data.inputs = sanitizeInputs(data.inputs);
+        data.inputs = sanitizeInputs(data.inputs); // تعقيم المدخلات الرئيسية (تشمل الاسم والمسمى)
     }
      if (data.dynamic) {
          if(data.dynamic.phones) {
@@ -481,6 +499,8 @@ app.post('/api/save-design', [
              }
          }
      }
+    // --- (نهاية التعديل 3) ---
+
 
     const shortId = nanoid(8);
     await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
@@ -493,6 +513,7 @@ app.post('/api/save-design', [
   }
 });
 
+// --- API: جلب تصميم ---
 app.get('/api/get-design/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -509,26 +530,33 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
+// --- API: المعرض (أحدث التصاميم) ---
+// ===== (هذا هو الجزء الذي تم تعديله) =====
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
+    // 1. Pagination (الاقتراح 1)
     const page = parseInt(req.query.page || '1', 10);
-    const limit = 12;
+    const limit = 12; // 12 تصميم في الصفحة (يناسب 4 أعمدة)
     const skip = (page - 1) * limit;
 
+    // 2. Sorting
     const sortBy = String(req.query.sortBy || 'createdAt');
     const sortQuery = {};
     if (sortBy === 'views') {
-        sortQuery.views = -1; 
+        sortQuery.views = -1; // فرز حسب المشاهدات (الأكثر أولاً)
     } else {
-        sortQuery.createdAt = -1;
+        sortQuery.createdAt = -1; // الافتراضي: فرز حسب تاريخ الإنشاء (الأحدث أولاً)
     }
 
+    // 3. Filtering (الاقتراح 3) & Search (الاقتراح 4)
     const findQuery = {
+        // (الاقتراح 3) ضمان وجود صورة مصغرة
         'data.imageUrls.capturedFront': { $exists: true, $ne: null } 
     };
 
+    // (الاقتراح 4) إضافة منطق البحث
     const searchQuery = req.query.search;
     if (searchQuery) {
         findQuery.$or = [
@@ -537,25 +565,27 @@ app.get('/api/gallery', async (req, res) => {
         ];
     }
 
+    // جلب العدد الإجمالي للمستندات المطابقة للفلترة (مهم لـ Pagination)
     const totalDocs = await db.collection(designsCollectionName).countDocuments(findQuery);
     const totalPages = Math.ceil(totalDocs / limit);
 
     const docs = await db.collection(designsCollectionName)
-        .find(findQuery)
-        .sort(sortQuery)
-        .skip(skip)
-        .limit(limit)
-        .project({
+        .find(findQuery) // تطبيق الفلترة والبحث
+        .sort(sortQuery) // تطبيق الفرز
+        .skip(skip)   // تطبيق Pagination
+        .limit(limit) // تطبيق Pagination
+        .project({ // إرسال البيانات المطلوبة فقط
             shortId: 1, 
             'data.inputs.input-name': 1, 
             'data.inputs.input-tagline': 1,
-            'data.imageUrls.capturedFront': 1,
-            'data.imageUrls.front': 1,
+            'data.imageUrls.capturedFront': 1, // الصورة المصغرة الحقيقية
+            'data.imageUrls.front': 1, // صورة احتياطية
             createdAt: 1,
-            views: 1
+            views: 1 // (الاقتراح 2) إرسال عدد المشاهدات
         })
         .toArray();
 
+    // إرسال الرد مع بيانات الـ Pagination
     res.json({
         success: true,
         designs: docs,
@@ -573,22 +603,26 @@ app.get('/api/gallery', async (req, res) => {
     }
   }
 });
+// ===== (نهاية الجزء المعدل) =====
 
+
+// ===== هذا هو الكود الجديد الذي تم إضافته =====
+// --- API: جلب القوالب الجاهزة ---
 app.get('/api/templates', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
     const templates = await db.collection(designsCollectionName)
         .find({ 
-            "isTemplate": true,
-            "data.imageUrls.capturedFront": { $exists: true }
+            "isTemplate": true, // جلب القوالب فقط
+            "data.imageUrls.capturedFront": { $exists: true } // التأكد من وجود صورة مصغرة
         })
-        .sort({ createdAt: -1 })
-        .limit(20)
-        .project({
+        .sort({ createdAt: -1 }) // يمكن فرزها لاحقاً
+        .limit(20) // جلب 20 قالب كحد أقصى
+        .project({ // إرسال البيانات المطلوبة فقط
             shortId: 1, 
-            data: 1,
-            name: "$data.inputs.input-name"
+            data: 1, // <--- **مهم جداً: إرسال كائن الحالة بالكامل**
+            name: "$data.inputs.input-name" // اسم القالب (اختياري)
         })
         .toArray();
 
@@ -600,7 +634,10 @@ app.get('/api/templates', async (req, res) => {
     }
   }
 });
+// ===== نهاية الكود الجديد =====
 
+
+// --- API: خلفيات (إدارة) ---
 app.post('/api/upload-background', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
@@ -638,6 +675,7 @@ app.post('/api/upload-background', upload.single('image'), handleMulterErrors, a
   }
 });
 
+// --- API: جلب الخلفيات ---
 app.get('/api/gallery/backgrounds', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
@@ -660,6 +698,7 @@ app.get('/api/gallery/backgrounds', async (req, res) => {
   }
 });
 
+// --- API: حذف خلفية ---
 app.delete('/api/backgrounds/:shortId', async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
@@ -669,6 +708,7 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
     const doc = await coll.findOne({ shortId });
     if (!doc) return res.status(404).json({ error: 'Not found' });
 
+    // حذف الملف المرتبط إذا كان موجودًا
     if (doc.url) {
         try {
             const urlParts = doc.url.split('/');
@@ -697,21 +737,24 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
   }
 });
 
+
+// robots.txt
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Allow: /nfc/viewer.html',
-    'Disallow: /nfc/view/',
+    'Allow: /nfc/viewer.html', // السماح بالمسار الجديد
+    'Disallow: /nfc/view/', // حظر المسار القديم
     'Disallow: /nfc/editor',
     'Disallow: /nfc/editor.html',
-    'Disallow: /nfc/viewer.ejs',
+    'Disallow: /nfc/viewer.ejs', // حظر ملف القالب نفسه
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
 });
 
+// --- sitemap.xml (ديناميكي) ---
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
@@ -733,7 +776,7 @@ app.get('/sitemap.xml', async (req, res) => {
         .toArray();
 
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/viewer.html?id=${d.shortId}`,
+        loc: `${base}/nfc/viewer.html?id=${d.shortId}`, // *** تحديث الرابط هنا ***
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : undefined,
         changefreq: 'monthly',
         priority: '0.8'
@@ -765,6 +808,7 @@ ${designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefr
   }
 });
 
+// --- نقطة نهاية بسيطة للتحقق من صحة الخدمة ---
 app.get('/healthz', (req, res) => {
     if (db && db.client.topology && db.client.topology.isConnected()) {
         res.json({ ok: true, db_status: 'connected' });
@@ -773,8 +817,13 @@ app.get('/healthz', (req, res) => {
     }
 });
 
+// --- معالج الملفات الثابتة (يأتي أخيراً) ---
+// هذا السطر يخدم الملفات مثل index.html, editor.html, style.css
+// لأنه يأتي *بعد* مسار /nfc/viewer.html، فإنه لن يتداخل معه
 app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
 
+
+// --- معالج الأخطاء العام ---
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.stack || err);
   const statusCode = err.status || 500;
@@ -784,6 +833,8 @@ app.use((err, req, res, next) => {
    }
 });
 
+
+// الاستماع
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
