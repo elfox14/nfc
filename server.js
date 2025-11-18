@@ -1,5 +1,3 @@
-// --- START OF FILE server.js ---
-
 require('dotenv').config();
 const express = require('express');
 const compression = require('compression');
@@ -789,5 +787,3 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
-
---- END OF FILE server.js ---
