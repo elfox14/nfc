@@ -8,8 +8,6 @@ const cors = require('cors');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
-// --- (تم التعديل) ---
-// تأكد من استيراد body و validationResult
 const { body, validationResult } = require('express-validator');
 const { JSDOM } = require('jsdom');
 const DOMPurifyFactory = require('dompurify');
@@ -428,53 +426,13 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
 });
 
 // --- API: حفظ تصميم ---
-// --- (تم التعديل) ---
-// 1. إضافة مصفوفة التحقق
-app.post('/api/save-design', [
-    // التحقق من أن الاسم موجود وليس فارغاً
-    body('data.inputs.input-name')
-        .trim() // إزالة المسافات
-        .notEmpty()
-        .withMessage('input-name is required.')
-        .isLength({ min: 2, max: 150 })
-        .withMessage('input-name must be between 2 and 150 characters'),
-    
-    // التحقق من أن المسمى الوظيفي (اختياري) لا يتجاوز الحد
-    body('data.inputs.input-tagline')
-        .optional()
-        .trim()
-        .isLength({ max: 200 })
-        .withMessage('input-tagline cannot exceed 200 characters'),
-
-    // التحقق من أن الإيميل (اختياري) هو إيميل صالح
-    body('data.dynamic.staticSocial.email.value')
-        .optional({ checkFalsy: true }) // جعله اختيارياً (إذا كان فارغاً أو null)
-        .trim()
-        .isEmail()
-        .withMessage('Invalid email format provided.')
-
-    // يمكنك إضافة المزيد من قواعد التحقق هنا للروابط أو غيرها
-    
-], async (req, res) => {
-  // --- (نهاية التعديل 1) ---
-
+app.post('/api/save-design', async (req, res) => {
   try {
-    // --- (تم التعديل) ---
-    // 2. التحقق من نتائج الـ Validation
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        // إرجاع خطأ 400 (Bad Request) إذا كانت هناك أخطاء
-        // هذا هو ما كان يتوقعه تقرير TestSprite!
-        return res.status(400).json({ error: 'Validation Failed', details: errors.array() });
-    }
-    // --- (نهاية التعديل 2) ---
-
-
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
     let data = req.body || {};
 
-    // 3. المتابعة بالتعقيم (Sanitization) بعد التأكد من صحة البيانات
+    // تطبيق التعقيم هنا قبل الحفظ
     if (data.inputs) {
         data.inputs = sanitizeInputs(data.inputs); // تعقيم المدخلات الرئيسية (تشمل الاسم والمسمى)
     }
@@ -499,7 +457,6 @@ app.post('/api/save-design', [
              }
          }
      }
-    // --- (نهاية التعديل 3) ---
 
 
     const shortId = nanoid(8);
