@@ -23,6 +23,7 @@ const app = express();
 app.use(compression());
 const port = process.env.PORT || 3000;
 
+// --- إعدادات عامة ---
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
@@ -45,7 +46,7 @@ app.use(helmet.contentSecurityPolicy({
         imgSrc: ["'self'", "data:", "https:", "blob:"], 
         mediaSrc: ["'self'", "data:"],
         frameSrc: ["'self'", "https://www.youtube.com"],
-        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://nfc-vjy6.onrender.com"], // تأكد من إضافة نطاقك هنا
+        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://nfc-vjy6.onrender.com"], 
         objectSrc: ["'none'"],
         upgradeInsecureRequests: [],
     },
@@ -56,10 +57,11 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
 
+// قاعدة البيانات
 const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'nfc_db';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
-const leadsCollectionName = 'leads'; // مجموعة جديدة لبيانات العملاء المحتملين
+const leadsCollectionName = 'leads'; 
 const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
 let db;
 
@@ -69,6 +71,7 @@ MongoClient.connect(mongoUrl)
 
 const rootDir = __dirname;
 
+// أدوات مساعدة
 function absoluteBaseUrl(req) {
   const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
@@ -118,16 +121,8 @@ app.get('/manifest.json', (req, res) => {
         "theme_color": "#4da6ff",
         "description": "أنشئ وشارك بطاقات العمل الذكية بسهولة.",
         "icons": [
-            {
-                "src": `${base}/nfc/mcprime-logo-transparent.png`, // تأكد من وجود أيقونة 192x192
-                "sizes": "192x192",
-                "type": "image/png"
-            },
-            {
-                "src": `${base}/nfc/mcprime-logo-transparent.png`, // تأكد من وجود أيقونة 512x512
-                "sizes": "512x512",
-                "type": "image/png"
-            }
+            { "src": `${base}/nfc/mcprime-logo-transparent.png`, "sizes": "192x192", "type": "image/png" },
+            { "src": `${base}/nfc/mcprime-logo-transparent.png`, "sizes": "512x512", "type": "image/png" }
         ]
     };
     res.json(manifest);
@@ -138,33 +133,19 @@ app.get('/service-worker.js', (req, res) => {
     res.sendFile(path.join(rootDir, 'service-worker.js'));
 });
 
-
 // --- صفحة عرض SEO الجديدة ---
 app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   try {
-    if (!db) {
-        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        return res.status(500).send('DB not connected');
-    }
+    if (!db) { res.setHeader('X-Robots-Tag', 'noindex, noarchive'); return res.status(500).send('DB not connected'); }
     
     const id = String(req.query.id); 
-
-    if (!id || id === 'undefined') { 
-         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-         return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
-    }
+    if (!id || id === 'undefined') { res.setHeader('X-Robots-Tag', 'noindex, noarchive'); return res.status(400).send('Card ID is missing.'); }
 
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
-    if (!doc || !doc.data) { 
-        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        return res.status(404).send('Design not found or data is missing');
-    }
+    if (!doc || !doc.data) { res.setHeader('X-Robots-Tag', 'noindex, noarchive'); return res.status(404).send('Design not found'); }
 
-    db.collection(designsCollectionName).updateOne(
-      { shortId: id },
-      { $inc: { views: 1 } }
-    ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
+    db.collection(designsCollectionName).updateOne({ shortId: id }, { $inc: { views: 1 } }).catch(err => console.error(err));
 
     res.setHeader('X-Robots-Tag', 'index, follow');
 
@@ -174,38 +155,20 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
     const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية'); 
     const tagline = DOMPurify.sanitize(inputs['input-tagline'] || ''); 
 
-    // تحضير المتغيرات للقالب
     const imageUrls = doc.data.imageUrls || {};
     let ogImage = `${base}/nfc/og-image.png`; 
     if (imageUrls.front) {
-        ogImage = imageUrls.front.startsWith('http')
-          ? imageUrls.front
-          : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`;
+        ogImage = imageUrls.front.startsWith('http') ? imageUrls.front : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`;
     }
 
-    const keywords = [
-        'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
-        name,
-        ...(tagline ? tagline.split(/\s+/).filter(Boolean) : []) 
-    ].filter(Boolean).join(', ');
+    const keywords = ['NFC', 'بطاقة عمل ذكية', name, ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])].join(', ');
 
-    // (ملاحظة: contactLinksHtml سيتم توليده في الـ Client-side عبر viewer.js للحفاظ على المرونة)
-    // نحن فقط نمرر البيانات الخام للقالب
-    
     res.render(path.join(rootDir, 'viewer.ejs'), {
-      pageUrl,
-      name,
-      tagline,
-      ogImage,
-      keywords,
-      design: doc.data,
-      canonical: pageUrl,
-      contactLinksHtml: '' // سيتم ملؤها بالـ JS
+      pageUrl, name, tagline, ogImage, keywords, design: doc.data, canonical: pageUrl, contactLinksHtml: '' 
     });
   } catch (e) {
     console.error('Error in /nfc/viewer route:', e);
-    res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-    res.status(500).send('View failed due to an internal server error.');
+    res.setHeader('X-Robots-Tag', 'noindex, noarchive'); res.status(500).send('Internal Server Error');
   }
 });
 
@@ -214,150 +177,100 @@ app.get('/nfc/view/:id', async (req, res) => {
     const id = String(req.params.id);
     if (!id) return res.status(404).send('Not found');
     res.redirect(301, `/nfc/viewer.html?id=${id}`);
-  } catch (e) {
-    res.status(500).send('Redirect failed.');
-  }
+  } catch (e) { res.status(500).send('Redirect failed.'); }
 });
 
+// هيدر كاش للملفات الثابتة
 app.use((req, res, next) => {
   if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/view/')) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-  } else {
-    res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
-  }
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate'); res.setHeader('Pragma', 'no-cache'); res.setHeader('Expires', '0');
+  } else { res.setHeader('Cache-Control', 'public, max-age=604800, immutable'); }
   next();
 });
 
+// إزالة .html
 app.use((req, res, next) => {
   if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) { 
-    const newPath = req.path.slice(0, -5);
-    return res.redirect(301, newPath);
+    return res.redirect(301, req.path.slice(0, -5));
   }
   next();
 });
 
-app.get('/', (req, res) => {
-  res.redirect(301, '/nfc/');
-});
+app.get('/', (req, res) => { res.redirect(301, '/nfc/'); });
 
+// مجلد uploads
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
 // --- API ---
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Too many requests'
-});
+const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false, message: 'Too many requests' });
 app.use('/api/', apiLimiter);
 
 const storage = multer.memoryStorage();
 const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  storage, limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype && file.mimetype.startsWith('image/')) {
-        cb(null, true);
-    } else {
-        cb(new Error('الرجاء رفع ملف صورة.'), false);
-    }
+    if (file.mimetype && file.mimetype.startsWith('image/')) { cb(null, true); } else { cb(new Error('الرجاء رفع ملف صورة.'), false); }
   }
 });
 
 function handleMulterErrors(err, req, res, next) {
-  if (err instanceof multer.MulterError) {
-    return res.status(400).json({ error: `خطأ رفع: ${err.message}` });
-  } else if (err) {
-     return res.status(400).json({ error: err.message });
-  }
+  if (err instanceof multer.MulterError) { return res.status(400).json({ error: `خطأ رفع: ${err.message}` }); } 
+  else if (err) { return res.status(400).json({ error: err.message }); }
   next();
 }
 
 function assertAdmin(req, res) {
-  const expected = process.env.ADMIN_TOKEN || '';
-  const provided = req.headers['x-admin-token'] || '';
-  if (!expected || expected !== provided) {
-      res.status(401).json({ error: 'Unauthorized' });
-      return false;
-  }
+  const expected = process.env.ADMIN_TOKEN || ''; const provided = req.headers['x-admin-token'] || '';
+  if (!expected || expected !== provided) { res.status(401).json({ error: 'Unauthorized' }); return false; }
   return true;
 }
 
+// --- API: رفع صورة ---
 app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file provided.' });
-
-    const filename = nanoid(10) + '.webp';
-    const out = path.join(uploadDir, filename);
-    await sharp(req.file.buffer)
-      .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 85 })
-      .toFile(out);
-
+    const filename = nanoid(10) + '.webp'; const out = path.join(uploadDir, filename);
+    await sharp(req.file.buffer).resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true }).webp({ quality: 85 }).toFile(out);
     const base = absoluteBaseUrl(req);
     return res.json({ success: true, url: `${base}/uploads/${filename}` });
-  } catch (e) {
-    console.error('Image upload error:', e);
-    return res.status(500).json({ error: 'Image processing failed.' });
-  }
+  } catch (e) { console.error('Image upload error:', e); return res.status(500).json({ error: 'Image processing failed.' }); }
 });
 
-// --- NEW: Contact Exchange API ---
+// --- API: تبادل جهات الاتصال ---
 app.post('/api/exchange-contact', [
-    body('cardId').notEmpty(),
-    body('name').trim().notEmpty().escape(),
-    body('email').trim().isEmail().normalizeEmail(),
-    body('phone').trim().optional().escape(),
-    body('message').trim().optional().escape()
+    body('cardId').notEmpty(), body('name').trim().notEmpty().escape(), body('email').trim().isEmail().normalizeEmail(), body('phone').trim().optional().escape(), body('message').trim().optional().escape()
 ], async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ success: false, errors: errors.array() });
-    }
-
+    if (!errors.isEmpty()) { return res.status(400).json({ success: false, errors: errors.array() }); }
     try {
         if (!db) return res.status(500).json({ error: 'DB not connected' });
-        
         const { cardId, name, email, phone, message } = req.body;
-        
-        // حفظ البيانات في مجموعة "leads"
-        await db.collection(leadsCollectionName).insertOne({
-            cardId,
-            name,
-            email,
-            phone,
-            message,
-            createdAt: new Date()
-        });
-
-        // TODO: هنا يمكنك إضافة كود لإرسال بريد إلكتروني لصاحب البطاقة
-        // باستخدام Nodemailer مثلاً لإعلامه بوجود عميل جديد.
-
+        await db.collection(leadsCollectionName).insertOne({ cardId, name, email, phone, message, createdAt: new Date() });
         res.json({ success: true, message: 'تم إرسال بياناتك بنجاح!' });
-    } catch (e) {
-        console.error('Contact exchange error:', e);
-        res.status(500).json({ success: false, error: 'Server error' });
-    }
+    } catch (e) { console.error('Contact exchange error:', e); res.status(500).json({ success: false, error: 'Server error' }); }
 });
 
-
+// --- API: حفظ التصميم (تم الإصلاح: إزالة data. من التحقق) ---
 app.post('/api/save-design', [
-    body('data.inputs.input-name').trim().notEmpty().isLength({ min: 2, max: 150 }),
-    body('data.inputs.input-tagline').optional().trim().isLength({ max: 200 }),
-    body('data.dynamic.staticSocial.email.value').optional({ checkFalsy: true }).trim().isEmail()
+    // FIX: Use inputs.input-name directly, not data.inputs.input-name
+    body('inputs.input-name').trim().notEmpty().isLength({ min: 2, max: 150 }).withMessage('Name is required'), 
+    body('inputs.input-tagline').optional().trim().isLength({ max: 200 }), 
+    body('dynamic.staticSocial.email.value').optional({ checkFalsy: true }).trim().isEmail() 
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ error: 'Validation Failed', details: errors.array() });
+    if (!errors.isEmpty()) {
+        console.error("Validation Errors:", JSON.stringify(errors.array()));
+        return res.status(400).json({ error: 'Validation Failed', details: errors.array() });
+    }
 
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
+    // The body *is* the data object now
     let data = req.body || {};
+    
     if (data.inputs) data.inputs = sanitizeInputs(data.inputs);
      if (data.dynamic) {
          if(data.dynamic.phones) data.dynamic.phones = data.dynamic.phones.map(phone => ({...phone, value: DOMPurify.sanitize(String(phone.value || ''))}));
@@ -378,98 +291,64 @@ app.post('/api/save-design', [
   }
 });
 
+// --- API: جلب تصميم ---
 app.get('/api/get-design/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc || !doc.data) return res.status(404).json({ error: 'Design not found' });
-
     res.json(doc.data);
-  } catch (e) {
-    res.status(500).json({ error: 'Fetch failed' });
-  }
+  } catch (e) { res.status(500).json({ error: 'Fetch failed' }); }
 });
 
-// --- API: Dashboard Analytics (Mock for now, connects to real 'views') ---
+// --- API: التحليلات ---
 app.get('/api/analytics/:id', async (req, res) => {
     try {
         if (!db) return res.status(500).json({ error: 'DB not connected' });
         const id = String(req.params.id);
-        
-        // جلب بيانات المشاهدات الحقيقية
         const doc = await db.collection(designsCollectionName).findOne({ shortId: id }, { projection: { views: 1, createdAt: 1 } });
-        
-        // جلب عدد العملاء المحتملين (Leads)
         const leadsCount = await db.collection(leadsCollectionName).countDocuments({ cardId: id });
-
         if (!doc) return res.status(404).json({ error: 'Not found' });
-
-        res.json({
-            success: true,
-            views: doc.views || 0,
-            leads: leadsCount || 0,
-            clicks: Math.floor((doc.views || 0) * 0.4), // محاكاة للنقرات
-            saves: Math.floor((doc.views || 0) * 0.15) // محاكاة للحفظ
-        });
-    } catch (e) {
-        res.status(500).json({ error: 'Analytics error' });
-    }
+        res.json({ success: true, views: doc.views || 0, leads: leadsCount || 0, clicks: Math.floor((doc.views || 0) * 0.4), saves: Math.floor((doc.views || 0) * 0.15) });
+    } catch (e) { res.status(500).json({ error: 'Analytics error' }); }
 });
 
-
+// --- API: المعرض ---
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const page = parseInt(req.query.page || '1', 10);
-    const limit = 12; 
-    const skip = (page - 1) * limit;
+    const limit = 12; const skip = (page - 1) * limit;
     const findQuery = { 'data.imageUrls.capturedFront': { $exists: true, $ne: null } };
-
     const totalDocs = await db.collection(designsCollectionName).countDocuments(findQuery);
-    const docs = await db.collection(designsCollectionName)
-        .find(findQuery)
-        .sort({ createdAt: -1 })
-        .skip(skip).limit(limit)
-        .project({ shortId: 1, 'data.inputs.input-name': 1, 'data.inputs.input-tagline': 1, 'data.imageUrls.capturedFront': 1, views: 1 })
-        .toArray();
-
+    const docs = await db.collection(designsCollectionName).find(findQuery).sort({ createdAt: -1 }).skip(skip).limit(limit).project({ shortId: 1, 'data.inputs.input-name': 1, 'data.inputs.input-tagline': 1, 'data.imageUrls.capturedFront': 1, views: 1 }).toArray();
     res.json({ success: true, designs: docs, pagination: { page, limit, totalDocs, totalPages: Math.ceil(totalDocs / limit) } });
-  } catch (e) {
-    res.status(500).json({ error: 'Fetch failed' });
-  }
+  } catch (e) { res.status(500).json({ error: 'Fetch failed' }); }
 });
 
+// --- API: القوالب ---
 app.get('/api/templates', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const templates = await db.collection(designsCollectionName)
-        .find({ "isTemplate": true, "data.imageUrls.capturedFront": { $exists: true } })
-        .limit(20)
-        .project({ shortId: 1, data: 1, name: "$data.inputs.input-name" })
-        .toArray();
+    const templates = await db.collection(designsCollectionName).find({ "isTemplate": true, "data.imageUrls.capturedFront": { $exists: true } }).limit(20).project({ shortId: 1, data: 1, name: "$data.inputs.input-name" }).toArray();
     res.json({ success: true, templates: templates });
-  } catch (e) {
-    res.status(500).json({ error: 'Fetch templates failed' });
-  }
+  } catch (e) { res.status(500).json({ error: 'Fetch templates failed' }); }
 });
 
+// --- API: الخلفيات ---
 app.post('/api/upload-background', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!assertAdmin(req,res)) return;
     if (!req.file) return res.status(400).json({ error:'No file.' });
     if (!db) return res.status(500).json({ error: 'DB error' });
-
-    const filename = 'bg_' + nanoid(10) + '.webp';
-    const out = path.join(uploadDir, filename);
+    const filename = 'bg_' + nanoid(10) + '.webp'; const out = path.join(uploadDir, filename);
     await sharp(req.file.buffer).resize({ width: 3840 }).webp({ quality: 88 }).toFile(out);
     const base = absoluteBaseUrl(req);
     const payload = { shortId: nanoid(8), url: `${base}/uploads/${filename}`, name: req.body.name || 'خلفية', category: req.body.category || 'عام', createdAt: new Date() };
     await db.collection(backgroundsCollectionName).insertOne(payload);
     res.json({ success:true, background: payload });
-  } catch (e) {
-    res.status(500).json({ error: 'Upload failed' });
-  }
+  } catch (e) { res.status(500).json({ error: 'Upload failed' }); }
 });
 
 app.get('/api/gallery/backgrounds', async (req, res) => {
@@ -478,17 +357,17 @@ app.get('/api/gallery/backgrounds', async (req, res) => {
     const coll = db.collection(backgroundsCollectionName);
     const items = await coll.find({}).sort({ createdAt: -1 }).limit(100).toArray();
     res.json({ success: true, items });
-  } catch (e) {
-    res.status(500).json({ error: 'Fetch failed' });
-  }
+  } catch (e) { res.status(500).json({ error: 'Fetch failed' }); }
 });
 
+// robots.txt
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
   const txt = `User-agent: *\nAllow: /nfc/\nAllow: /nfc/viewer.html\nDisallow: /nfc/editor\nSitemap: ${base}/sitemap.xml`;
   res.type('text/plain').send(txt);
 });
 
+// sitemap.xml
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
@@ -504,18 +383,20 @@ ${staticPages.map(p => `<url><loc>${base}${p}</loc><priority>0.9</priority></url
 ${designUrls.map(u => `<url><loc>${u.loc}</loc><priority>${u.priority}</priority></url>`).join('')}
 </urlset>`;
     res.type('application/xml').send(xml);
-  } catch (e) {
-    res.status(500).send('Sitemap failed');
-  }
+  } catch (e) { res.status(500).send('Sitemap failed'); }
 });
 
+// --- معالج الملفات الثابتة ---
 app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
 
+// --- معالج الأخطاء العام ---
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
-  res.status(500).json({ error: 'Internal Server Error' });
+  const statusCode = err.status || 500;
+  res.status(statusCode).json({ error: 'Internal Server Error' });
 });
 
+// الاستماع
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
