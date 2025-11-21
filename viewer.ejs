@@ -3,144 +3,489 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>عرض بطاقة عمل <%= name %> الرقمية</title>
-    <meta name="description" content="اعرض بطاقة عمل <%= name %> الرقمية - <%= tagline %>. واحفظها مباشرة بصيغة PNG، PDF، أو VCF.">
-    <link rel="canonical" href="<%= canonical %>" />
-
-    <meta property="og:type" content="profile">
-    <meta property="og:url" content="<%= pageUrl %>">
-    <meta property="og:title" content="بطاقة عمل <%= name %> الرقمية">
-    <meta property="og:description" content="<%= tagline %> - شاهد واحفظ البطاقة الرقمية.">
-    <meta property="og:image" content="<%= ogImage %>">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="<%= pageUrl %>">
-    <meta property="twitter:title" content="بطاقة عمل <%= name %> الرقمية">
-    <meta property="twitter:description" content="<%= tagline %> - شاهد واحفظ البطاقة الرقمية.">
-    <meta property="twitter:image" content="<%= ogImage %>">
+    <title><%= name %> - بطاقة عمل رقمية</title>
     
-    <meta name="robots" content="index, follow">
-
+    <!-- Meta Tags for SEO & Sharing -->
+    <meta name="description" content="<%= tagline || 'بطاقة عمل رقمية ذكية' %>">
+    <meta property="og:title" content="<%= name %>">
+    <meta property="og:description" content="<%= tagline %>">
+    <meta property="og:image" content="<%= ogImage %>">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<%= pageUrl %>">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Poppins:wght@400;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-   
-    <link rel="stylesheet" href="/nfc/style.css">
-    <link rel="stylesheet" href="/nfc/viewer.css">
-    
-    <%
-      // --- بداية المنطق البرمجي لإنشاء مخطط JSON-LD متقدم ---
-    
-      // 1. تعريف الكيان الرئيسي (الشخص)
-      const personEntity = {
-        "@type": "Person",
-        "name": name,
-        "jobTitle": tagline,
-        "url": pageUrl,
-        "image": ogImage
-      };
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&family=Poppins:wght@400;600&family=Tajawal:wght@400;700&family=Lalezar&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-      // 2. بناء مصفوفة روابط "sameAs" من بيانات البطاقة
-      const socialUrls = [];
-      const staticSocial = design.dynamic && design.dynamic.staticSocial ? design.dynamic.staticSocial : {};
-      const dynamicSocial = design.dynamic && design.dynamic.social ? design.dynamic.social : [];
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
 
-      // إضافة الروابط من الحقول الثابتة
-      if (staticSocial.facebook && staticSocial.facebook.value) { socialUrls.push(`https://www.facebook.com/${staticSocial.facebook.value}`); }
-      if (staticSocial.linkedin && staticSocial.linkedin.value) { socialUrls.push(`https://www.linkedin.com/in/${staticSocial.linkedin.value}`); }
-      
-      // إضافة الروابط من الحقول الديناميكية (يمكن التوسع فيها لتشمل المزيد)
-      dynamicSocial.forEach(link => {
-        if (link.platform === 'instagram' && link.value) { socialUrls.push(`https://www.instagram.com/${link.value}`); }
-        if (link.platform === 'x' && link.value) { socialUrls.push(`https://x.com/${link.value}`); }
-        if (link.platform === 'youtube' && link.value) { socialUrls.push(link.value.startsWith('http') ? link.value : `https://www.youtube.com/${link.value}`); }
-      });
-      
-      // 3. إضافة مصفوفة "sameAs" فقط إذا كانت تحتوي على روابط
-      if (socialUrls.length > 0) {
-        personEntity.sameAs = socialUrls;
-      }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Tajawal', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 20px;
+            color: #fff;
+        }
 
-      // 4. بناء المخطط النهائي للصفحة من نوع "ProfilePage"
-      const finalSchema = {
-        "@context": "https://schema.org",
-        "@type": "ProfilePage",
-        "url": pageUrl,
-        "mainEntity": personEntity
-      };
-    %>
-    
-    <script type="application/ld+json">
-      <%- JSON.stringify(finalSchema, null, 2) %>
-    </script>
+        /* --- حاوية الكارت (الأساسية) --- */
+        .cards-container {
+            perspective: 1000px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .cards-wrapper {
+            position: relative;
+            width: 100%;
+            /* الأبعاد الافتراضية (كلاسيك / عرضي) */
+            max-width: 510px;
+            aspect-ratio: 51 / 33;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        /* --- التعديل الخاص بالوضع الطولي (Vertical) --- */
+        .cards-wrapper[data-layout="vertical"] {
+            max-width: 330px; /* عرض أقل للهاتف */
+            aspect-ratio: 33 / 51; /* عكس النسبة لتصبح طولية */
+        }
+
+        .cards-wrapper.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* --- وجه الكارت (عام) --- */
+        .business-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            box-shadow: var(--card-shadow);
+            background-color: #000; /* Fallback */
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* --- الطبقات الداخلية --- */
+        .card-background-layer, .card-gradient-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+        .card-gradient-layer { z-index: 2; }
+
+        .card-content {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            height: 100%;
+            padding: 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* هام: لضمان عمل الإحداثيات المطلقة */
+            /* لكن العناصر المحفوظة تستخدم translate، لذا لا نحتاج position:relative للعناصر الأبناء بالضرورة */
+        }
+
+        /* --- العناصر المتحركة (المحفوظة بالإحداثيات) --- */
+        .draggable-element {
+            position: absolute;
+            top: 0; 
+            left: 0;
+            /* يتم تطبيق translate عبر inline-style */
+            touch-action: none; /* لمنع التفاعل الخاطئ */
+        }
+
+        /* تنسيقات خاصة للعناصر */
+        #card-logo { object-fit: contain; }
+        #card-photo { background-size: cover; background-position: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        #card-name, #card-tagline { white-space: pre-wrap; text-align: center; margin: 0; line-height: 1.4; }
+        
+        /* أزرار الهاتف */
+        .phone-btn {
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: transform 0.2s;
+        }
+        .phone-btn:active { transform: scale(0.95); }
+        .phone-btn i { margin-inline-end: 8px; }
+
+        /* أيقونات التواصل */
+        .social-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: transform 0.2s;
+        }
+        .social-btn:active { transform: scale(0.95); }
+        .social-btn i { margin-inline-end: 5px; }
+
+        /* QR Code */
+        .qr-wrapper img { width: 100%; height: 100%; object-fit: contain; border-radius: 4px; background: #fff; padding: 2px; }
+
+        /* --- أزرار التحكم أسفل الكارت --- */
+        .actions-bar {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .action-btn {
+            background: #243447;
+            color: #fff;
+            border: 1px solid #364f6b;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .action-btn:hover {
+            background: #4da6ff;
+            border-color: #4da6ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(77, 166, 255, 0.3);
+        }
+        .action-btn.primary {
+            background: #4da6ff;
+            border-color: #4da6ff;
+        }
+        .action-btn.primary:hover {
+            background: #3a8ecc;
+        }
+
+        /* تلميح للتقليب */
+        .flip-hint {
+            margin-top: 15px;
+            color: #888;
+            font-size: 0.9rem;
+            animation: bounce 2s infinite;
+            display: flex; align-items: center; gap: 5px;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-5px);}
+            60% {transform: translateY(-3px);}
+        }
+
+        /* إخفاء الروابط المباشرة لمحركات البحث في العرض البصري (موجودة في السيرفر للـ SEO) */
+        .seo-links { display: none; }
+    </style>
 </head>
 <body>
 
-    <div id="loader" class="viewer-loader">
-        <div class="spinner"></div>
-        <p>جاري تحميل البطاقة...</p>
-    </div>
+    <!-- استخراج البيانات من كائن design -->
+    <% 
+       const inputs = design.inputs || {};
+       const dynamic = design.dynamic || {};
+       const images = design.imageUrls || {};
+       const positions = design.positions || {};
+       const placements = design.placements || {};
+       
+       // استخراج نوع التخطيط (افتراضي: classic)
+       const layout = inputs['layout-select-visual'] || inputs['layout-select'] || 'classic';
 
-    <div class="viewer-container" style="display: none;">
-        
-        <h1 id="card-viewer-title" class="visually-hidden">عرض بطاقة عمل <%= name %> الرقمية</h1>
-        
-        <div class="cta-section">
-            <h2>هل تريد بطاقة مثل هذه؟</h2>
-            <a href="https://www.mcprim.com/nfc" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">اصنع بطاقتك الخاصة الآن</a>
-        </div>
+       // دالة مساعدة لتوليد ستايل الموقع (Position)
+       function getStyle(id) {
+           const pos = positions[id] || {x:0, y:0};
+           return `transform: translate(${pos.x}px, ${pos.y}px);`;
+       }
+       
+       // دالة مساعدة لتحديد مكان العنصر (أمامي/خلفي)
+       function isFront(elementName) {
+           const place = placements[elementName];
+           // الافتراضيات حسب التصميم
+           if (!place) {
+               if (elementName === 'logo') return true;
+               if (elementName === 'photo') return true;
+               if (elementName === 'name') return true;
+               if (elementName === 'tagline') return true;
+               if (elementName === 'qr') return false;
+               return true;
+           }
+           return place === 'front';
+       }
+    %>
 
-        <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
-            </main>
-        
-        <div class="save-options">
-            <h2>حفظ ومشاركة البطاقة</h2>
-            <p style="font-size: 0.9rem; color: var(--secondary-text-color); margin-top: -10px; margin-bottom: 20px;">احفظ جهة الاتصال مباشرة أو قم بتنزيل نسخة من البطاقة.</p>
+    <div class="cards-container">
+        <!-- تطبيق data-layout لتفعيل CSS الوضع الطولي -->
+        <div class="cards-wrapper" id="card" onclick="this.classList.toggle('is-flipped')" data-layout="<%= layout %>">
             
-            <button id="save-vcf-btn" class="btn btn-success"><i class="fas fa-address-card"></i> حفظ جهة الاتصال (VCF)</button>
-            
-            <details class="fieldset-accordion" style="margin-top: 15px;">
-                <summary style="text-align: center; list-style: none; padding: 10px; font-size: 0.9rem;">خيارات تنزيل أخرى</summary>
-                <div class="fieldset-content" style="padding-top: 15px; border-top: 1px solid var(--accent-secondary);">
-                    <button id="save-front-png-btn" class="btn btn-primary"><i class="fas fa-image"></i> حفظ الواجهة (PNG)</button>
-                    <button id="save-back-png-btn" class="btn btn-primary"><i class="fas fa-image"></i> حفظ الخلفية (PNG)</button>
-                    <button id="save-pdf-btn" class="btn btn-primary"><i class="fas fa-file-pdf"></i> حفظ كملف PDF</button>
+            <!-- === الوجه الأمامي === -->
+            <div class="business-card card-front">
+                <!-- الخلفية -->
+                <div class="card-background-layer" style="background-image: url('<%= images.front || '' %>'); display: <%= images.front ? 'block' : 'none' %>;"></div>
+                <div class="card-gradient-layer" style="background: linear-gradient(135deg, <%= inputs['front-bg-start'] || '#2a3d54' %>, <%= inputs['front-bg-end'] || '#223246' %>); opacity: <%= images.front ? (inputs['front-bg-opacity'] || 0.3) : 1 %>;"></div>
+                
+                <div class="card-content">
+                    <!-- العناصر الأساسية (إذا كانت في الأمام) -->
+                    <% if (isFront('logo')) { %>
+                        <img id="card-logo" src="<%= inputs['input-logo'] %>" class="draggable-element" style="<%= getStyle('card-logo') %>; max-width: <%= inputs['logo-size'] %>%; opacity: <%= inputs['logo-opacity'] %>;">
+                    <% } %>
+
+                    <% if (isFront('photo') && images.photo) { %>
+                        <div id="card-photo" class="draggable-element" style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; aspect-ratio: 1/1; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; background-image: url('<%= images.photo %>');"></div>
+                    <% } %>
+
+                    <% if (isFront('name')) { %>
+                        <h1 id="card-name" class="draggable-element" style="<%= getStyle('card-name') %>; color: <%= inputs['name-color'] %>; font-size: <%= inputs['name-font-size'] %>px; font-family: <%= inputs['name-font'] %>;"><%= inputs['input-name'] %></h1>
+                    <% } %>
+
+                    <% if (isFront('tagline')) { %>
+                        <h2 id="card-tagline" class="draggable-element" style="<%= getStyle('card-tagline') %>; color: <%= inputs['tagline-color'] %>; font-size: <%= inputs['tagline-font-size'] %>px; font-family: <%= inputs['tagline-font'] %>;"><%= inputs['input-tagline'] %></h2>
+                    <% } %>
+
+                    <% if (isFront('qr') && inputs['qr-source'] !== 'none') { %>
+                        <div class="draggable-element qr-wrapper" style="<%= getStyle('qr-code-wrapper') %>; width: <%= inputs['qr-size'] %>%;">
+                            <img src="<%= images.qrCode || 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' + encodeURIComponent(pageUrl) %>">
+                        </div>
+                    <% } %>
+
+                    <!-- الهواتف (ديناميكي) -->
+                    <% if (dynamic.phones) { dynamic.phones.forEach(phone => { 
+                        if (phone.placement === 'front' && phone.value) { %>
+                        <div class="draggable-element" style="transform: translate(<%= phone.position.x %>px, <%= phone.position.y %>px);">
+                            <a href="tel:<%= phone.value %>" class="phone-btn" style="
+                                background-color: <%= inputs['phone-btn-bg-color'] %>;
+                                color: <%= inputs['phone-btn-text-color'] %>;
+                                font-size: <%= inputs['phone-btn-font-size'] %>px;
+                                font-family: <%= inputs['phone-btn-font'] %>;
+                                padding: <%= inputs['phone-btn-padding'] %>px <%= inputs['phone-btn-padding']*2 %>px;
+                                border-radius: 50px;
+                                <% if(inputs['toggle-phone-buttons'] === false) { %> background: transparent; padding: 2px; <% } %>
+                            ">
+                                <i class="fas fa-phone-alt"></i>
+                                <span><%= phone.value %></span>
+                            </a>
+                        </div>
+                    <% }}); } %>
                 </div>
-            </details>
+            </div>
+
+            <!-- === الوجه الخلفي === -->
+            <div class="business-card card-back">
+                <!-- الخلفية -->
+                <div class="card-background-layer" style="background-image: url('<%= images.back || '' %>'); display: <%= images.back ? 'block' : 'none' %>;"></div>
+                <div class="card-gradient-layer" style="background: linear-gradient(135deg, <%= inputs['back-bg-start'] || '#2a3d54' %>, <%= inputs['back-bg-end'] || '#223246' %>); opacity: <%= images.back ? (inputs['back-bg-opacity'] || 0.3) : 1 %>;"></div>
+
+                <div class="card-content">
+                    <!-- العناصر الأساسية (إذا كانت في الخلف) -->
+                    <% if (!isFront('logo')) { %>
+                        <img id="card-logo" src="<%= inputs['input-logo'] %>" class="draggable-element" style="<%= getStyle('card-logo') %>; max-width: <%= inputs['logo-size'] %>%; opacity: <%= inputs['logo-opacity'] %>;">
+                    <% } %>
+
+                    <% if (!isFront('photo') && images.photo) { %>
+                        <div id="card-photo" class="draggable-element" style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; aspect-ratio: 1/1; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; background-image: url('<%= images.photo %>');"></div>
+                    <% } %>
+
+                    <% if (!isFront('name')) { %>
+                        <h1 id="card-name" class="draggable-element" style="<%= getStyle('card-name') %>; color: <%= inputs['name-color'] %>; font-size: <%= inputs['name-font-size'] %>px; font-family: <%= inputs['name-font'] %>;"><%= inputs['input-name'] %></h1>
+                    <% } %>
+
+                    <% if (!isFront('tagline')) { %>
+                        <h2 id="card-tagline" class="draggable-element" style="<%= getStyle('card-tagline') %>; color: <%= inputs['tagline-color'] %>; font-size: <%= inputs['tagline-font-size'] %>px; font-family: <%= inputs['tagline-font'] %>;"><%= inputs['input-tagline'] %></h2>
+                    <% } %>
+
+                    <% if (!isFront('qr') && inputs['qr-source'] !== 'none') { %>
+                        <div class="draggable-element qr-wrapper" style="<%= getStyle('qr-code-wrapper') %>; width: <%= inputs['qr-size'] %>%;">
+                            <img src="<%= images.qrCode || 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' + encodeURIComponent(pageUrl) %>">
+                        </div>
+                    <% } %>
+
+                    <!-- الهواتف (إذا كانت في الخلف) -->
+                    <% if (dynamic.phones) { dynamic.phones.forEach(phone => { 
+                        if (phone.placement === 'back' && phone.value) { %>
+                        <div class="draggable-element" style="transform: translate(<%= phone.position.x %>px, <%= phone.position.y %>px);">
+                            <a href="tel:<%= phone.value %>" class="phone-btn" style="
+                                background-color: <%= inputs['phone-btn-bg-color'] %>;
+                                color: <%= inputs['phone-btn-text-color'] %>;
+                                font-size: <%= inputs['phone-btn-font-size'] %>px;
+                                font-family: <%= inputs['phone-btn-font'] %>;
+                                padding: <%= inputs['phone-btn-padding'] %>px <%= inputs['phone-btn-padding']*2 %>px;
+                                border-radius: 50px;
+                            ">
+                                <i class="fas fa-phone-alt"></i>
+                                <span><%= phone.value %></span>
+                            </a>
+                        </div>
+                    <% }}); } %>
+
+                    <!-- روابط التواصل الاجتماعي (Static & Dynamic) -->
+                    <% 
+                    const platforms = {
+                        whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+                        email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
+                        website: { icon: 'fas fa-globe', prefix: '' },
+                        facebook: { icon: 'fab fa-facebook-f', prefix: '' },
+                        linkedin: { icon: 'fab fa-linkedin-in', prefix: '' },
+                        instagram: { icon: 'fab fa-instagram', prefix: '' },
+                        x: { icon: 'fab fa-xing', prefix: '' },
+                        telegram: { icon: 'fab fa-telegram', prefix: '' },
+                        tiktok: { icon: 'fab fa-tiktok', prefix: '' },
+                        snapchat: { icon: 'fab fa-snapchat', prefix: '' },
+                        youtube: { icon: 'fab fa-youtube', prefix: '' },
+                        pinterest: { icon: 'fab fa-pinterest', prefix: '' }
+                    };
+
+                    // دمج القوائم (Static + Dynamic)
+                    const allSocials = [];
+                    
+                    // إضافة الروابط الثابتة
+                    if(dynamic.staticSocial) {
+                        Object.entries(dynamic.staticSocial).forEach(([key, data]) => {
+                            if(data && data.value) {
+                                allSocials.push({ ...data, type: key, isStatic: true });
+                            }
+                        });
+                    }
+                    // إضافة الروابط الديناميكية
+                    if(dynamic.social) {
+                        dynamic.social.forEach(item => {
+                            if(item && item.value) {
+                                allSocials.push({ ...item, type: item.platform, isStatic: false });
+                            }
+                        });
+                    }
+                    %>
+
+                    <% allSocials.forEach(item => { 
+                        const platform = platforms[item.type] || { icon: 'fas fa-link', prefix: '' };
+                        const btnBg = inputs['back-buttons-bg-color'];
+                        const btnColor = inputs['back-buttons-text-color'];
+                        // التحقق مما إذا كان هناك ألوان مخصصة
+                        const customColor = item.color || inputs[`input-static-${item.type}-color`] || btnColor;
+                        const customSize = item.size || inputs[`input-static-${item.type}-size`] || inputs['social-text-size'];
+                        
+                        let url = item.value;
+                        if (item.type === 'email' && !url.startsWith('mailto:')) url = 'mailto:' + url;
+                        else if (item.type === 'whatsapp') url = 'https://wa.me/' + url.replace(/\D/g,'');
+                        else if (!url.startsWith('http')) url = 'https://' + url;
+
+                        // التحقق من مكان العنصر (الافتراضي خلفي)
+                        const itemPlacement = item.placement || 'back';
+                        
+                        // عرض العنصر فقط إذا كان في الوجه الخلفي (أو الأمامي إذا أردت دعم ذلك للروابط)
+                        if (itemPlacement === 'back') {
+                    %>
+                        <div class="draggable-element" style="transform: translate(<%= item.position.x %>px, <%= item.position.y %>px);">
+                            <a href="<%= url %>" target="_blank" class="social-btn" style="
+                                background-color: <%= inputs['toggle-social-buttons'] ? btnBg : 'transparent' %>;
+                                color: <%= inputs['toggle-social-buttons'] ? btnColor : (customColor !== btnColor ? customColor : inputs['social-text-color']) %>;
+                                font-size: <%= inputs['back-buttons-size'] %>px;
+                                padding: <%= inputs['back-buttons-size']*0.5 %>px <%= inputs['back-buttons-size'] %>px;
+                                font-family: <%= inputs['back-buttons-font'] %>;
+                            ">
+                                <i class="<%= platform.icon %>" style="font-size: <%= inputs['toggle-social-buttons'] ? '' : (customSize+'px') %>;"></i>
+                                <span style="font-size: <%= inputs['toggle-social-buttons'] ? '' : (customSize+'px') %>; font-family: <%= inputs['toggle-social-buttons'] ? '' : inputs['social-text-font'] %>">
+                                    <%= inputs['toggle-social-buttons'] ? item.value : item.value %>
+                                </span>
+                            </a>
+                        </div>
+                    <% } }); %>
+
+                </div>
+            </div>
         </div>
 
-        <section class="faq-section" style="background-color: #fff; padding: 25px; border-radius: 12px; width: 100%; box-sizing: border-box;">
-            <h2>أسئلة شائعة</h2>
-            <details class="fieldset-accordion">
-                <summary>كيف أحفظ جهة الاتصال؟</summary>
-                <div class="fieldset-content"><p>اضغط على زر "حفظ جهة الاتصال (VCF)" وسيتم تنزيل ملف يمكن إضافته مباشرة إلى جهات اتصال هاتفك.</p></div>
-            </details>
-            <details class="fieldset-accordion">
-                <summary>كيف أحفظ البطاقة كصورة؟</summary>
-                <div class="fieldset-content"><p>استخدم أزرار "حفظ الواجهة (PNG)" أو "حفظ الخلفية (PNG)" لتنزيل صورة عالية الجودة لكل وجه من وجهي البطاقة.</p></div>
-            </details>
-        </section>
+        <div class="flip-hint">
+            <i class="fas fa-hand-pointer"></i> اضغط على البطاقة لقلبها
+        </div>
 
+        <div class="actions-bar">
+            <button class="action-btn primary" onclick="saveContact()">
+                <i class="fas fa-user-plus"></i> حفظ جهة الاتصال
+            </button>
+            <a href="tel:<%= (dynamic.phones && dynamic.phones[0]) ? dynamic.phones[0].value : '' %>" class="action-btn">
+                <i class="fas fa-phone"></i> اتصال
+            </a>
+            <button class="action-btn" onclick="shareCard()">
+                <i class="fas fa-share-alt"></i> مشاركة
+            </button>
+        </div>
     </div>
-    
-    <div id="qrcode-container-temp" class="visually-hidden"></div>
-   
+
+    <div class="seo-links">
+        <%- contactLinksHtml %>
+    </div>
+
     <script>
-        window.cardData = <%- JSON.stringify(design) %>;
+        // VCF Generation Logic
+        function saveContact() {
+            const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:<%= inputs['input-name'] %>
+TITLE:<%= inputs['input-tagline'] %>
+<% if (dynamic.phones) { dynamic.phones.forEach(p => { %>TEL;TYPE=CELL:<%= p.value %>
+<% }) } %>
+<% if (dynamic.staticSocial && dynamic.staticSocial.email) { %>EMAIL:<%= dynamic.staticSocial.email.value %>
+<% } %>
+<% if (dynamic.staticSocial && dynamic.staticSocial.website) { %>URL:<%= dynamic.staticSocial.website.value %>
+<% } %>
+END:VCARD`;
+            
+            const blob = new Blob([vcard], { type: 'text/vcard' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'contact.vcf';
+            a.click();
+        }
+
+        async function shareCard() {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: '<%= name %>',
+                        text: 'تفضل بطاقة عملي الرقمية',
+                        url: window.location.href
+                    });
+                } catch (err) {
+                    console.log('Share failed', err);
+                }
+            } else {
+                // Fallback: Copy to clipboard
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('تم نسخ رابط البطاقة!');
+                });
+            }
+        }
     </script>
-    
-    <script src="/nfc/viewer.js"></script>
-    
-    <footer>
-      &copy; 2025 جميع الحقوق محفوظة. | 
-      <a href="/nfc/">الرئيسية</a> | 
-      <a href="/nfc/blog">المدونة</a> |
-      <a href="/nfc/about">من نحن</a> |
-      <a href="/nfc/contact">اتصل بنا</a> | 
-      <a href="/nfc/privacy">سياسة الخصوصية</a>
-    </footer>
 </body>
 </html>

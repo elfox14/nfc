@@ -1,0 +1,765 @@
+/* --- جديد: متغيرات CSS للوضع الليلي والفاتح --- */
+:root {
+    --page-bg: #e9ecef;
+    --card-bg: #ffffff;
+    --nav-bg: rgba(255, 255, 255, 0.9);
+    --text-primary: #343a40;
+    --text-primary-inverted: #e6f0f7;
+    --text-secondary: #6c757d;
+    --border-color: #dee2e6;
+    --border-color-light: #e9ecef;
+    --card-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    --button-secondary-bg: #f8f9fa;
+    --button-secondary-hover: #e9ecef;
+    
+    --accent-color: #007bff;
+    --accent-hover-color: #0056b3;
+    --success-color: #2ecc71;
+    --success-hover-color: #27ae60;
+    --accent-primary: #4da6ff;
+    --accent-secondary: #364f6b;
+    --accent-secondary-hover: #4a6a8a;
+    
+    --c-green: #28a745;
+    --c-blue: #007bff;
+    --c-yellow: #ffc107;
+}
+
+html.dark-mode {
+    --page-bg: #1c2a3b;
+    --card-bg: #243447;
+    --nav-bg: rgba(36, 52, 71, 0.9);
+    --text-primary: #e6f0f7;
+    --text-primary-inverted: #343a40;
+    --text-secondary: #bcc9d4;
+    --border-color: #364f6b;
+    --border-color-light: #4a6a8a;
+    --card-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    --button-secondary-bg: #364f6b;
+    --button-secondary-hover: #4a6a8a;
+}
+/* --- نهاية المتغيرات --- */
+
+
+body {
+    background-color: var(--page-bg);
+    color: var(--text-primary); /* لون النص الافتراضي */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding-top: 80px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    font-family: 'Tajawal', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Navigation Bar */
+.viewer-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: var(--nav-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.viewer-nav .nav-logo img { 
+    height: 40px; 
+}
+
+.viewer-nav .nav-links { 
+    display: flex; 
+    gap: 20px; 
+}
+
+.viewer-nav .nav-links a { 
+    text-decoration: none; 
+    color: var(--text-primary); 
+    font-weight: 600; 
+    transition: color 0.2s ease; 
+}
+
+.viewer-nav .nav-links a:hover { 
+    color: var(--accent-color); 
+}
+
+/* --- جديد: حاوية أزرار الناف بار (للمفتاح والزر) --- */
+.viewer-nav .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.viewer-nav .nav-cta { 
+    padding: 8px 16px; 
+    font-size: 0.9rem; 
+    margin: 0; 
+    width: auto; 
+    background-color: var(--accent-primary); 
+    color: white; 
+    border-radius: 6px; 
+    text-decoration: none; 
+    font-weight: 600; 
+}
+/* --- نهاية التعديل --- */
+
+
+/* --- جديد: مفتاح الوضع الليلي --- */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+}
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 28px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.slider .sun-icon, .slider .moon-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #f0c400;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.slider .sun-icon {
+    left: 7px;
+    opacity: 1; /* مرئي في الوضع الفاتح */
+}
+.slider .moon-icon {
+    right: 7px;
+    color: #fff;
+}
+input:checked + .slider {
+    background-color: var(--accent-primary);
+}
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+input:checked + .slider .sun-icon {
+    opacity: 0;
+}
+input:checked + .slider .moon-icon {
+    opacity: 1; /* مرئي في الوضع الليلي */
+}
+/* --- نهاية مفتاح الوضع الليلي --- */
+
+
+/* Loader */
+.viewer-loader { 
+    text-align: center; 
+    color: var(--text-primary); 
+}
+
+.viewer-loader .spinner { 
+    border: 4px solid var(--border-color-light); 
+    border-top: 4px solid var(--accent-color); 
+    border-radius: 50%; 
+    width: 50px; 
+    height: 50px; 
+    animation: spin 1s linear infinite; 
+    margin: 0 auto 15px auto; 
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Main Container */
+.viewer-container {
+    width: 100%;
+    max-width: 1400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* --- تعديل: هذا الآن هو الوضع الافتراضي (ديسكتوب) --- */
+.viewer-layout {
+    display: grid;
+    grid-template-columns: minmax(250px, 280px) minmax(400px, 600px) minmax(250px, 280px);
+    gap: 25px;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+.center-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    /* --- !! تعديل !!: تحديد العرض الأقصى للبطاقة هنا (في الديسكتوب) --- */
+    max-width: 510px;
+    margin: 0 auto; /* للتأكد من التوسيط داخل عمود الجريد */
+    width: 100%; /* ليأخذ 100% من عمود الجريد */
+}
+/* --- نهاية التعديل --- */
+
+
+/* --- أنماط التقليب التفاعلي --- */
+.cards-wrapper-viewer {
+    display: block;
+    position: relative;
+    width: 100%;
+    /* --- !! تعديل !!: تم إزالة max-width: 510px من هنا --- */
+    aspect-ratio: 51 / 33;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    cursor: pointer;
+    margin: 0 auto;
+}
+.cards-wrapper-viewer.is-flipped {
+    transform: rotateY(180deg);
+}
+
+.business-card-viewer {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    background-color: var(--card-bg); /* لون احتياطي */
+    transform-style: preserve-3d; /* <--- !! هذا هو السطر المضاف !! --- */
+}
+
+.business-card-viewer img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover; /* يغطي المساحة بالكامل */
+}
+
+#viewer-flip-btn {
+    gap: 8px;
+    background-color: var(--accent-secondary);
+    color: var(--text-primary-inverted);
+}
+#viewer-flip-btn:hover {
+    background-color: var(--accent-secondary-hover);
+}
+/* --- نهاية أنماط التقليب --- */
+
+
+/* --- معدل: استخدام المتغيرات --- */
+.side-column {
+    background-color: var(--card-bg);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    width: 100%;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.side-column h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    text-align: center;
+    font-size: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Contact Links (Left Column) */
+#contact-links-container {
+    min-height: 100px;
+}
+
+#contact-links-container .links-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#contact-links-container .links-group:not(:empty) {
+    margin-bottom: 20px;
+}
+
+#contact-links-container .contact-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    background-color: var(--page-bg); /* استخدام لون خلفية الصفحة */
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    border: 1px solid var(--border-color);
+}
+
+#contact-links-container .contact-link:hover {
+    background-color: var(--button-secondary-hover);
+    transform: translateX(-3px);
+    border-color: var(--accent-primary);
+}
+
+#contact-links-container .contact-link i {
+    font-size: 1.3rem;
+    color: var(--accent-primary);
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+#contact-links-container .contact-link span {
+    word-break: break-all;
+    flex: 1;
+}
+
+/* Styles for rendering area (hidden but with fixed dimensions) */
+.business-card-render-wrapper {
+    width: 510px;
+    height: 330px;
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    overflow: hidden;
+}
+
+.business-card { 
+    width: 100%; 
+    height: 100%; 
+    aspect-ratio: unset; 
+    overflow: hidden; 
+    position: relative;
+    background: var(--card-bg);
+}
+
+/* --- STYLES SYNCED FROM EDITOR (EXACT MATCH) --- */
+.card-content-layer {
+    width: 100%; 
+    height: 100%; 
+    padding: 8% 5%; 
+    display: flex; 
+    flex-direction: column;
+    justify-content: flex-start; 
+    gap: 10px; 
+    align-items: center; 
+    text-align: center;
+    position: relative; 
+    z-index: 2; 
+    box-sizing: border-box;
+}
+
+.card-background-layer { 
+    position: absolute; 
+    inset: 0; 
+    background-size: cover; 
+    background-position: center; 
+    z-index: 1; 
+}
+#card-name, #card-tagline { 
+    white-space: pre-wrap; 
+    word-break: break-word; 
+    margin: 2px 0; 
+}
+#card-name { 
+    font-weight: 700; 
+}
+.phone-button { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border: 2px solid transparent; 
+    padding: 6px 12px; 
+    border-radius: 50px; 
+    text-decoration: none; 
+    font-weight: 600; 
+    direction: ltr; 
+    font-size: 0.8rem; 
+}
+.phone-button i { 
+    margin-inline-end: 8px; 
+}
+.phone-button-draggable-wrapper[data-layout="row"] { 
+    display: flex; 
+    flex-direction: row; 
+    align-items: center; 
+    gap: 15px; 
+}
+.phone-button-draggable-wrapper[data-layout="column"] { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 5px; 
+}
+.phone-button-draggable-wrapper.text-only-mode .phone-button { 
+    background-color: transparent !important; 
+    border: none !important; 
+    padding: 2px !important; 
+    border-radius: 0 !important; 
+    font-weight: 400; 
+}
+.phone-button-draggable-wrapper.text-only-mode .phone-button i { 
+    display: none; 
+}
+.draggable-social-link a { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 8px; 
+    text-decoration: none; 
+    border-radius: 50px; 
+    max-width: 100%; 
+}
+.draggable-social-link a i { 
+    font-size: 1.1em; 
+}
+.draggable-social-link a span { 
+    direction: ltr; 
+    word-break: break-all; 
+}
+.draggable-social-link.text-only-mode a { 
+    background-color: transparent !important; 
+    border: none !important; 
+    padding: 2px !important; 
+    border-radius: 0 !important; 
+    box-shadow: none !important; 
+    font-weight: 400; 
+}
+.draggable-social-link.text-only-mode a i { 
+    font-size: 1.2em; 
+}
+
+/* Save Options (Right Column) */
+.save-options { 
+    padding: 25px; /* إعادة البادينج */
+    box-shadow: var(--card-shadow); 
+    background: var(--card-bg); 
+}
+
+.btn { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    padding: 10px 20px; 
+    border: none; 
+    border-radius: 8px; 
+    font-size: 1rem; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: all 0.2s ease; 
+    text-decoration: none; 
+    background-color: var(--accent-primary); 
+    color: white; 
+    justify-content: center; 
+}
+
+.btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn.btn-primary {
+    background-color: var(--success-color);
+    color: white;
+}
+.btn.btn-primary:hover {
+    background-color: var(--success-hover-color);
+}
+.btn.btn-secondary {
+    background-color: var(--accent-secondary);
+    color: var(--text-primary-inverted);
+}
+.btn.btn-secondary:hover {
+    background-color: var(--accent-secondary-hover);
+}
+
+
+#save-vcf-btn { 
+    width: 100%; 
+    padding: 14px 20px; 
+    font-size: 1.1rem; 
+    font-weight: 700; 
+    margin-bottom: 10px; 
+}
+
+.save-options .fieldset-accordion { 
+    border: 1px solid var(--border-color); 
+    margin: 0; 
+    border-radius: 8px;
+    background-color: var(--button-secondary-bg);
+}
+
+summary.secondary-actions-summary { 
+    text-align: center; 
+    list-style: none; 
+    padding: 10px; 
+    font-size: 0.9rem; 
+    cursor: pointer; 
+    border-radius: 6px; 
+    background-color: transparent; 
+    border: none; 
+    color: var(--text-secondary); 
+    transition: background-color 0.2s ease; 
+}
+summary.secondary-actions-summary:hover { 
+    background-color: var(--button-secondary-hover); 
+}
+details[open] summary.secondary-actions-summary {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.fieldset-content.secondary-actions-content { 
+    padding: 15px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+}
+
+.secondary-actions-content .btn { 
+    width: 100%; 
+    margin: 0; 
+}
+
+/* --- جديد: أنماط صندوق المعلومات المدمج --- */
+.info-box {
+    margin-top: 30px;
+    padding: 20px;
+    background: var(--button-secondary-bg);
+    border-radius: 10px;
+}
+.info-box-title {
+    font-size: 1rem;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.info-box-title i {
+    color: var(--c-blue);
+}
+.info-box-text {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+.info-box-subtitle {
+    font-size: 0.9rem;
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.info-box-subtitle i {
+    color: var(--c-yellow);
+}
+.info-box-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 2;
+}
+.info-box-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.info-box-list li i {
+    width: 16px;
+}
+.c-green { color: var(--c-green); }
+.c-blue { color: var(--c-blue); }
+.c-yellow { color: var(--c-yellow); }
+/* --- نهاية أنماط الصندوق --- */
+
+
+/* --- جديد: أنماط تبويبات الموبايل --- */
+.mobile-viewer-tabs {
+    display: none; /* مخفي افتراضيًا على الديسكتوب */
+    width: 100%;
+    background-color: var(--card-bg);
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+html.dark-mode .mobile-viewer-tabs {
+     box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+}
+
+.mobile-tab-btn {
+    flex: 1;
+    padding: 15px 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.mobile-tab-btn:hover {
+    background-color: var(--button-secondary-hover);
+}
+.mobile-tab-btn.active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+}
+/* --- نهاية أنماط التبويبات --- */
+
+
+/* --- تعديل: الميديا كويري للموبايل --- */
+@media (max-width: 1200px) {
+    .viewer-layout {
+        /* تحويل التخطيط إلى عمود واحد */
+        display: flex;
+        flex-direction: column; 
+        gap: 20px; /* المسافة بين البطاقة والتبويبات */
+        grid-template-columns: 1fr; /* إلغاء الجريد */
+        width: 100%; /* اجعله يملأ الحاوية */
+    }
+    
+    /* 1. إظهار البطاقة أولاً */
+    .center-column {
+        order: 1; 
+        max-width: none; /* !! تعديل: إلغاء العرض الأقصى للموبايل !! */
+    }
+
+    /* 2. إظهار أزرار التبويبات ثانياً */
+    .mobile-viewer-tabs {
+        display: flex; /* إظهار التبويبات */
+        order: 2;
+        width: 100%;
+    }
+    
+    /* 3. إخفاء الأعمدة الجانبية افتراضيًا */
+    .side-column {
+        display: none; 
+        order: 3; /* إظهار اللوحات بعد التبويبات */
+        border-radius: 0 0 12px 12px; /* تعديل الحواف لتناسب التبويب */
+        box-shadow: var(--card-shadow); /* إضافة ظل ليتناسق */
+        margin-top: -20px; /* لصق اللوحة بالتبويبات */
+    }
+
+    /* 4. إظهار اللوحة "النشطة" فقط */
+    .side-column.active {
+        display: block;
+    }
+    
+    /* 5. إخفاء H2 داخل الأعمدة (لأن العنوان في الزر) */
+    .side-column h2 {
+        display: none;
+    }
+    
+    /* 6. إظهار هيدر الاسم والمسمى في الموبايل (داخل التبويب) */
+    .side-column#left-column .profile-header {
+        display: block !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .viewer-nav .nav-links { 
+        display: none; 
+    }
+    
+    .viewer-nav { 
+        padding: 10px 15px; 
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding-top: 70px;
+    }
+    
+    /* --- تعديل: تقليل الهوامش لتكبير البطاقة --- */
+    .viewer-container {
+        padding: 10px; /* تقليل الهامش */
+    }
+    
+    .side-column, .save-options {
+        padding: 15px; /* تقليل الهامش الداخلي للتبويبات */
+    }
+    /* --- نهاية التعديل --- */
+
+    .viewer-nav .nav-cta {
+        display: none;
+    }
+    
+    .mobile-tab-btn {
+        font-size: 0.9rem; /* تصغير الخط قليلاً في الموبايل */
+    }
+}

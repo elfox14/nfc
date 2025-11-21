@@ -1,48 +1,21 @@
+// viewer.js
 document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     const viewerContainer = document.querySelector('.viewer-container');
-    const cardsWrapper = document.getElementById('cards-wrapper');
-    const mobileFlipBtn = document.getElementById('mobile-flip-btn');
-    
-    // --- بداية التعديل ---
-    // تم تعطيل هذه الشيفرة لإظهار جميع أقسام الصفحة (CTA, Save Options, Footer) بشكل دائم
-    /*
-    const isPresentationMode = window.location.pathname.includes('viewer.html');
-    if (isPresentationMode) {
-        const ctaSection = document.querySelector('.cta-section');
-        const saveOptions = document.querySelector('.save-options');
-        const footer = document.querySelector('footer');
-
-        // إخفاء الأقسام غير المرغوب فيها
-        if (ctaSection) ctaSection.style.display = 'none';
-        if (saveOptions) saveOptions.style.display = 'none';
-        if (footer) footer.style.display = 'none';
-
-        // تعديل التنسيق لتوسيط الكارت في الصفحة
-        if (viewerContainer) {
-            viewerContainer.style.justifyContent = 'center';
-            viewerContainer.style.minHeight = 'calc(100vh - 40px)'; 
-        }
-    }
-    */
-    // --- نهاية التعديل ---
-
     const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
-    
     let cardData = null;
+    let cardId = null; // لتخزين معرف البطاقة للتتبع
 
-    // --- START: On-Demand Script Loading Logic ---
-    const loadedScripts = new Set();
     const SCRIPT_URLS = {
         html2canvas: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
         jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
         qrcode: 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
     };
 
+    const loadedScripts = new Set();
+
     function loadScript(url) {
-        if (loadedScripts.has(url)) {
-            return Promise.resolve(); // Script is already loaded
-        }
+        if (loadedScripts.has(url)) return Promise.resolve();
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = url;
@@ -54,353 +27,814 @@ document.addEventListener('DOMContentLoaded', () => {
             document.head.appendChild(script);
         });
     }
-    // --- END: On-Demand Script Loading Logic ---
 
-    const captureAndDownload = async (element, filename, scale = 2) => {
-        try {
-            // html2canvas is now loaded on-demand via the event listener
-            const canvas = await html2canvas(element, { backgroundColor: '#FFFFFF', scale, useCORS: true });
-            const link = document.createElement('a');
-            link.download = filename;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        } catch (error) {
-            console.error('Failed to capture element:', error);
-            alert('حدث خطأ أثناء حفظ الصورة.');
-        }
+    // --- دالة تتبع النقرات (Analytics) ---
+    const trackClick = (platform) => {
+        if (!cardId) return;
+        // إرسال الطلب بشكل صامت (Fire & Forget)
+        fetch(`${API_BASE_URL}/api/track-event`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                cardId: cardId,
+                eventType: 'click',
+                platform: platform
+            })
+        }).catch(err => console.warn("Tracking failed", err));
     };
 
-    const saveAsPdf = async () => {
-        const front = document.getElementById('card-front-preview');
-        const back = document.getElementById('card-back-preview');
-        if (!front || !back) return;
+    // --- دالة نسخ توقيع الإيميل ---
+    const generateEmailSignature = () => {
+        if (!cardData) return;
+        const inputs = cardData.inputs || {};
+        const name = inputs['input-name'] || 'الاسم';
+        const tagline = inputs['input-tagline'] || '';
+        const photoUrl = cardData.imageUrls.photo || 'https://via.placeholder.com/80';
+        const cardUrl = window.location.href;
+
+        // استخدام Table Layout لضمان التوافقية
+        const signatureHTML = `
+            <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+                <table cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td style="padding-right: 15px; vertical-align: middle;">
+                            <img src="${photoUrl}" alt="${name}" width="80" height="80" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: block;">
+                        </td>
+                        <td style="border-left: 2px solid #4da6ff; padding-left: 15px; vertical-align: middle;">
+                            <h3 style="margin: 0; font-size: 18px; color: #2a3d54; font-weight: bold;">${name}</h3>
+                            <p style="margin: 4px 0; font-size: 14px; color: #666;">${tagline}</p>
+                            <p style="margin: 8px 0 0 0;">
+                                <a href="${cardUrl}" style="background-color: #4da6ff; color: #ffffff; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; display: inline-block;">عرض بطاقة العمل &rarr;</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        `;
+
+        const blob = new Blob([signatureHTML], { type: "text/html" });
+        const clipboardItem = new ClipboardItem({ "text/html": blob });
         
-        try {
-            // jspdf and html2canvas are now loaded on-demand
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'landscape', unit: 'px', format: [510, 330] });
-            const frontCanvas = await html2canvas(front, { scale: 2, useCORS: true, backgroundColor: null });
-            doc.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 510, 330);
-            doc.addPage();
-            const backCanvas = await html2canvas(back, { scale: 2, useCORS: true, backgroundColor: null });
-            doc.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 510, 330);
-            doc.save('business-card.pdf');
-        } catch(e) {
-            console.error('PDF export failed:', e);
-            alert('فشل تصدير PDF.');
-        }
+        navigator.clipboard.write([clipboardItem]).then(() => {
+            alert("✅ تم نسخ التوقيع!\n\nيمكنك الآن الذهاب إلى إعدادات بريدك الإلكتروني (Outlook, Gmail) ولصق التوقيع هناك.");
+            trackClick('save_email_signature');
+        }).catch(err => {
+            console.error("Copy failed:", err);
+            alert("تعذر النسخ التلقائي. يرجى المحاولة من متصفح آخر.");
+        });
     };
-    
+
+    // --- VCARD GENERATION ---
     const getVCardString = () => {
         if (!cardData) return '';
         const data = cardData;
-        const name = (data.inputs['input-name'] || '').replace(/\n/g, ' ').split(' ');
-        const firstName = name.slice(0, -1).join(' ');
-        const lastName = name.slice(-1).join(' ');
-        
-        let vCard = `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${data.inputs['input-name']}\n`;
-        if (data.inputs['input-tagline']) vCard += `TITLE:${data.inputs['input-tagline'].replace(/\n/g, ' ')}\nORG:${data.inputs['input-tagline'].replace(/\n/g, ' ')}\n`;
-        if (data.inputs['input-email']) vCard += `EMAIL;TYPE=PREF,INTERNET:${data.inputs['input-email']}\n`;
-        if (data.inputs['input-website']) vCard += `URL:${data.inputs['input-website']}\n`;
-        
-        if (data.dynamic && data.dynamic.phones) {
-            data.dynamic.phones.forEach((phone, index) => {
-                if(phone) vCard += `TEL;TYPE=CELL${index === 0 ? ',PREF' : ''}:${phone}\n`;
+        const inputs = data.inputs || {};
+        const nameParts = (inputs['input-name'] || '').replace(/\\n/g, ' ').split(' ');
+        const firstName = nameParts.slice(0, -1).join(' ');
+        const lastName = nameParts.slice(-1).join(' ');
+
+        let vCard = `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${inputs['input-name'] || ''}\n`;
+
+        if (inputs['input-tagline']) {
+            vCard += `TITLE:${inputs['input-tagline'].replace(/\\n/g, ' ')}\n`;
+            vCard += `ORG:${inputs['input-tagline'].replace(/\\n/g, ' ')}\n`;
+        }
+
+        const dynamicData = data.dynamic || {};
+        const staticSocial = dynamicData.staticSocial || {};
+
+        if (staticSocial.email && staticSocial.email.value) {
+            vCard += `EMAIL;TYPE=PREF,INTERNET:${staticSocial.email.value}\n`;
+        }
+        if (staticSocial.website && staticSocial.website.value) {
+            let webUrl = staticSocial.website.value;
+            if (!/^(https?:\/\/)/i.test(webUrl)) webUrl = 'https://' + webUrl;
+            vCard += `URL:${webUrl}\n`;
+        }
+        if (staticSocial.whatsapp && staticSocial.whatsapp.value) {
+            vCard += `TEL;TYPE=CELL,VOICE;PREF=1:${staticSocial.whatsapp.value.replace(/\D/g, '')}\n`;
+        }
+        if (dynamicData.phones) {
+            const whatsappNumberClean = (staticSocial.whatsapp && staticSocial.whatsapp.value)
+                ? staticSocial.whatsapp.value.replace(/\D/g, '') : '';
+            dynamicData.phones.forEach((phone, index) => {
+                if (phone && phone.value) {
+                    const phoneValueClean = phone.value.replace(/\D/g, '');
+                    if (phoneValueClean !== whatsappNumberClean) {
+                        const pref = (index === 0 && !whatsappNumberClean) ? ';PREF=1' : '';
+                        vCard += `TEL;TYPE=CELL,VOICE${pref}:${phoneValueClean}\n`;
+                    }
+                }
             });
         }
+        vCard += `END:VCARD\n`;
+        return vCard;
+    };
+
+    const renderContactLinks = (data) => {
+        const container = document.getElementById('contact-links-container');
+        const profileHeader = document.getElementById('profile-header');
+        const profileName = document.getElementById('profile-name');
+        const profileTagline = document.getElementById('profile-tagline');
+
+        if (!container || !profileHeader || !profileName || !profileTagline) return;
+
+        const inputs = data.inputs || {};
+        const name = inputs['input-name'] || 'اسم البطاقة';
+        const tagline = inputs['input-tagline'] || '';
+
+        profileName.textContent = name;
+        if (tagline && tagline.trim() !== '') {
+            profileTagline.textContent = tagline;
+            profileTagline.style.display = 'block';
+        } else {
+            profileTagline.style.display = 'none';
+        }
+        profileHeader.style.display = 'block';
+
+        container.innerHTML = '';
         
-        if (data.dynamic && data.dynamic.social) {
-            data.dynamic.social.forEach(linkEl => {
-                const platformKey = linkEl.platform;
-                const value = linkEl.value;
-                const platform = { prefix: `https://${platformKey}.com/` }; 
-                if(platformKey && value) {
-                    let fullUrl = !/^(https?:\/\/)/i.test(value) ? platform.prefix + value : value;
-                    vCard += `URL;TYPE=${platformKey}:${fullUrl}\n`;
+        const showSocial = (inputs['toggle-master-social'] === undefined || inputs['toggle-master-social'] === true);
+        if (!showSocial) {
+            container.innerHTML = `
+                <div class="no-links-message" style="margin-top: 20px; text-align: center; color: var(--text-secondary);">
+                    <i class="fas fa-eye-slash" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
+                    <p>صاحب البطاقة اختار عدم إظهار معلومات الاتصال هنا.</p>
+                </div>
+            `;
+            const h2 = container.previousElementSibling;
+            if (h2 && h2.tagName === 'H2') h2.style.display = 'none';
+            return;
+        }
+
+        const linksHTML = [];
+        const dynamicData = data.dynamic || {};
+        const staticSocial = dynamicData.staticSocial || {};
+
+        const platforms = {
+            whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+            email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
+            website: { icon: 'fas fa-globe', prefix: 'https://' },
+            facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
+            linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
+            instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
+            x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
+            telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
+            tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
+            snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
+            youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
+            pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
+        };
+
+        const createLinkElement = (key, value) => {
+            const platform = platforms[key];
+            if (!platform || !value) return null;
+
+            let displayValue = value;
+            let fullUrl = value;
+
+            if (key === 'email') {
+                fullUrl = `${platform.prefix}${value}`;
+            } else if (key === 'whatsapp') {
+                fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`;
+            } else {
+                 fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
+                 displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
+            }
+            displayValue = displayValue.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            const a = document.createElement('a');
+            a.href = encodeURI(fullUrl);
+            a.className = 'contact-link';
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.innerHTML = `<i class="${platform.icon}"></i><span>${displayValue}</span>`;
+            
+            // *** إضافة حدث التتبع ***
+            a.addEventListener('click', () => trackClick(key));
+            
+            return a;
+        };
+
+        Object.entries(staticSocial).forEach(([key, linkData]) => {
+            if (linkData && linkData.value && platforms[key]) {
+                const el = createLinkElement(key, linkData.value);
+                if (el) container.appendChild(el);
+            }
+        });
+
+        if (dynamicData.phones) {
+             const whatsappNumberClean = (staticSocial.whatsapp && staticSocial.whatsapp.value)
+                ? staticSocial.whatsapp.value.replace(/\D/g, '') : '';
+            dynamicData.phones.forEach(phone => {
+                if (phone && phone.value) {
+                    const phoneValueClean = phone.value.replace(/\D/g, '');
+                    if (phoneValueClean !== whatsappNumberClean) {
+                         const sanitizedValue = phone.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                         const a = document.createElement('a');
+                         a.href = `tel:${phoneValueClean}`;
+                         a.className = 'contact-link';
+                         a.innerHTML = `<i class="fas fa-phone"></i><span>${sanitizedValue}</span>`;
+                         a.addEventListener('click', () => trackClick('phone_call'));
+                         container.appendChild(a);
+                    }
                 }
             });
         }
 
-        vCard += `END:VCARD`;
-        return vCard;
-    };
-
-    const saveAsVcf = () => {
-        const vcfData = getVCardString();
-        if (!vcfData) {
-            alert('لا توجد بيانات كافية لحفظ جهة الاتصال.');
-            return;
+        if (dynamicData.social) {
+            dynamicData.social.forEach(link => {
+                if (link && link.value && link.platform && platforms[link.platform]) {
+                    const el = createLinkElement(link.platform, link.value);
+                    if (el) container.appendChild(el);
+                }
+            });
         }
-        const blob = new Blob([vcfData], { type: 'text/vcard' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'contact.vcf';
-        link.click();
-        URL.revokeObjectURL(url);
+
+        if (container.children.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">لا توجد روابط متاحة</p>';
+        }
     };
 
-    const buildCard = (data) => {
-        cardData = data;
-        
-        const layout = data.inputs['layout-select'] || 'classic';
-        cardsWrapper.setAttribute('data-layout', layout);
+    const buildCardForRender = async (data) => {
+        if (!cardData) cardData = data;
+        const state = data;
+        const inputs = state.inputs || {}; 
+        const dynamicData = state.dynamic || {}; 
+        const positions = state.positions || {};
+        const placements = state.placements || {};
+        const imageUrls = state.imageUrls || {};
 
-        // ALT TEXT: Improved alt text for the logo
-        const logoAltText = `شعار ${data.inputs['input-tagline'] || data.inputs['input-name'] || 'الشركة'}`;
+        const frontCardContainer = document.getElementById('front-card');
+        const backCardContainer = document.getElementById('back-card');
 
-        
-const frontHtml = `
-            <div class="business-card" id="card-front-preview">
-                <div class="card-background-layer" style="background-image: url(${data.imageUrls.front || ''});"></div>
-                <div class="card-background-layer" style="background-image: linear-gradient(135deg, ${data.inputs['front-bg-start']}, ${data.inputs['front-bg-end']}); opacity: ${data.inputs['front-bg-opacity']};"></div>
-                <div class="card-content-layer card-front">
-                    <div id="front-dyn"></div>
-                </div>
-            </div>`;
+        if (!frontCardContainer || !backCardContainer) {
+            console.error("Card rendering containers not found!");
+            throw new Error("Card rendering containers not found");
+        }
 
+        const fontAwesomeLink = document.createElement('link');
+        fontAwesomeLink.rel = 'stylesheet';
+        fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+        if (!document.querySelector('link[href*="font-awesome"]')) {
+            document.head.appendChild(fontAwesomeLink);
+        }
 
-        
-const backHtml = `
-            <div class="business-card" id="card-back-preview">
-                <div class="card-background-layer" style="background-image: url(${data.imageUrls.back || ''});"></div>
-                <div class="card-background-layer" style="background-image: linear-gradient(135deg, ${data.inputs['back-bg-start']}, ${data.inputs['back-bg-end']}); opacity: ${data.inputs['back-bg-opacity']};"></div>
-                <div class="card-content-layer card-back" id="card-back-content"></div>
-            </div>`;
+        try { await document.fonts.ready; } catch (e) { console.warn("Font loading error:", e); }
+        await new Promise(resolve => setTimeout(resolve, 300));
 
+        const getPositionStyle = (key) => {
+            const pos = positions[key] || { x: 0, y: 0 };
+            return `transform: translate(${pos.x}px, ${pos.y}px) !important;`;
+        };
 
-        cardsWrapper.innerHTML = frontHtml + backHtml;
-        const frontDyn = document.getElementById('front-dyn');
-        const backContent = document.getElementById('card-back-content');
-        const pLogo = data.inputs['place-logo']||'front';
-        const pIdentity = data.inputs['place-identity']||'front';
-        const pPhones = data.inputs['place-phones']||'front';
+        const getPlacement = (key, defaultPlacement = 'front') => placements[key] || defaultPlacement;
 
-        
-        // Logo
-        const logoEl = document.createElement('img');
-        logoEl.src = data.inputs['input-logo'];
-        logoEl.alt = logoAltText;
-        logoEl.className = 'logo-front';
-        logoEl.style.maxWidth = data.inputs['logo-size'] + '%';
-        logoEl.style.opacity = data.inputs['logo-opacity'];
-        (pLogo==='back'? backContent: frontDyn).appendChild(logoEl);
-
-        // Identity
-        const idWrap = document.createElement('div');
-        idWrap.className = 'identity-front';
-        idWrap.innerHTML = `<h1 id="card-name" style="font-size:${data.inputs['name-font-size']}px;color:${data.inputs['name-color']};font-family:${data.inputs['name-font']};">${data.inputs['input-name']}</h1>
-                            <h2 class="tagline" id="card-tagline" style="font-size:${data.inputs['tagline-font-size']}px;color:${data.inputs['tagline-color']};font-family:${data.inputs['tagline-font']};">${data.inputs['input-tagline']}</h2>`;
-        (pIdentity==='back'? backContent: frontDyn).appendChild(idWrap);
-
-        // Phones
-        const phoneWrap = document.createElement('div');
-        phoneWrap.className = 'phone-buttons-wrapper';
-        phoneWrap.innerHTML = (data.dynamic.phones || []).map(phone => {
-            const bgColor = data.inputs['phone-btn-bg-color'];
-            const textColor = data.inputs['phone-btn-text-color'];
-            return `<a href="tel:${phone}" class="phone-button" style="background-color:${bgColor};color:${textColor};border-color:${bgColor === 'transparent' ? textColor : 'transparent'};font-size:${data.inputs['phone-btn-font-size']}px;padding:${data.inputs['phone-btn-padding']}px ${data.inputs['phone-btn-padding'] * 2}px;font-family:${data.inputs['phone-btn-font']};">${phone}</a>`
-        }).join('');
-        (pPhones==='back'? backContent: frontDyn).appendChild(phoneWrap);
-
-        buildBackCardContent(data);
-
-    };
-
-    const buildBackCardContent = (data) => {
-        const cardBackContent = (data.inputs['place-qr']==='front' || data.inputs['place-contacts']==='front') ? document.getElementById('front-dyn') : document.getElementById('card-back-content');
-        if (!cardBackContent) return;
-        
-        const qrSource = data.inputs['qr-source'];
-        const qrWrapper = document.createElement('div');
-        
-        qrWrapper.style.backgroundColor = 'white';
-        qrWrapper.style.padding = '5px';
-        qrWrapper.style.borderRadius = '8px';
-        qrWrapper.style.width = `${data.inputs['qr-size']}%`;
-        qrWrapper.style.aspectRatio = '1 / 1';
-        qrWrapper.style.display = 'flex';
-        qrWrapper.style.justifyContent = 'center';
-        qrWrapper.style.alignItems = 'center';
-        
-        let qrContentAdded = false;
-
-        // ALT TEXT: Improved alt text for the QR code
-        const qrAltText = `رمز QR Code لبطاقة عمل ${data.inputs['input-name'] || 'الرقمية'}`;
-
-        if (qrSource === 'custom' || qrSource === 'upload') {
-            const qrImageSrc = (qrSource === 'custom') ? data.inputs['input-qr-url'] : data.imageUrls.qrCode;
-            if (qrImageSrc) {
-                const qrImage = document.createElement('img');
-                qrImage.src = qrImageSrc;
-                qrImage.alt = qrAltText;
-                qrImage.style.width = '100%';
-                qrImage.style.height = '100%';
-                qrImage.style.borderRadius = '4px';
-                qrWrapper.appendChild(qrImage);
-                qrContentAdded = true;
+        const renderElement = (elementHTML, placement, containerCollection) => {
+             if (containerCollection[placement]) {
+                containerCollection[placement].insertAdjacentHTML('beforeend', elementHTML);
+            } else {
+                containerCollection.front.insertAdjacentHTML('beforeend', elementHTML);
             }
-        } else {
-            // Defer loading qrcode.js
-            loadScript(SCRIPT_URLS.qrcode)
-                .then(() => {
-                    if (qrSource === 'auto-vcard') {
-                        const vCardData = getVCardString();
-                        if (vCardData.length > 30) { 
-                            new QRCode(qrWrapper, { text: vCardData, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.H });
+        };
+
+        const frontStartColor = inputs['front-bg-start'] || '#2a3d54';
+        const frontEndColor = inputs['front-bg-end'] || '#223246';
+        const backStartColor = inputs['back-bg-start'] || '#2a3d54';
+        const backEndColor = inputs['back-bg-end'] || '#223246';
+        const frontOpacity = inputs['front-bg-opacity'] !== undefined ? inputs['front-bg-opacity'] : 1;
+        const backOpacity = inputs['back-bg-opacity'] !== undefined ? inputs['back-bg-opacity'] : 1;
+
+        const frontBgImage = imageUrls.front ? `url(${imageUrls.front})` : 'none';
+        const backBgImage = imageUrls.back ? `url(${imageUrls.back})` : 'none';
+
+        frontCardContainer.innerHTML = `
+            <div class="card-background-layer" style="background-image: ${frontBgImage} !important; background-size: cover; background-position: center;"></div>
+            <div class="card-background-layer" style="background: linear-gradient(135deg, ${frontStartColor}, ${frontEndColor}) !important; opacity: ${frontOpacity} !important;"></div>
+            <div class="card-content-layer" id="card-front-content-render"></div>
+        `;
+
+        backCardContainer.innerHTML = `
+            <div class="card-background-layer" style="background-image: ${backBgImage} !important; background-size: cover; background-position: center;"></div>
+            <div class="card-background-layer" style="background: linear-gradient(135deg, ${backStartColor}, ${backEndColor}) !important; opacity: ${backOpacity} !important;"></div>
+            <div class="card-content-layer" id="card-back-content-render"></div>
+        `;
+
+        const containers = {
+            front: document.getElementById('card-front-content-render'),
+            back: document.getElementById('card-back-content-render')
+        };
+
+        if (!containers.front || !containers.back) throw new Error("Card content layers could not be found");
+
+        if (inputs['input-logo']) {
+            const logoSize = inputs['logo-size'] || 25;
+            const logoOpacity = inputs['logo-opacity'] !== undefined ? inputs['logo-opacity'] : 1;
+            const logoPos = getPositionStyle('card-logo');
+            const logoPlacement = getPlacement('logo');
+            const logoHTML = `<img src="${inputs['input-logo']}" alt="Logo" style="max-width: ${logoSize}% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; opacity: ${logoOpacity} !important; position: absolute !important; ${logoPos}">`;
+            renderElement(logoHTML, logoPlacement, containers);
+        }
+
+        if (inputs['input-photo-url']) {
+            const photoSize = inputs['photo-size'] || 25;
+            const photoShape = inputs['photo-shape'] === 'circle' ? '50%' : '8px';
+            const photoBorderWidth = inputs['photo-border-width'] !== undefined ? inputs['photo-border-width'] : 2;
+            const photoBorderColor = inputs['photo-border-color'] || '#ffffff';
+            const photoBorder = `${photoBorderWidth}px solid ${photoBorderColor}`;
+            const photoPos = getPositionStyle('card-personal-photo-wrapper');
+            const photoPlacement = getPlacement('photo');
+            const photoHTML = `<div style="width: ${photoSize}% !important; padding-top: ${photoSize}%; height: 0; background-image: url(${inputs['input-photo-url']}) !important; background-size: cover !important; background-position: center !important; border-radius: ${photoShape} !important; border: ${photoBorder} !important; position: absolute !important; overflow: hidden; ${photoPos}"></div>`;
+            renderElement(photoHTML, photoPlacement, containers);
+        }
+
+        if (inputs['input-name']) {
+            const nameSize = inputs['name-font-size'] || 22;
+            const nameColor = inputs['name-color'] || '#e6f0f7';
+            const nameFont = inputs['name-font'] || 'Tajawal, sans-serif';
+            const namePos = getPositionStyle('card-name');
+            const namePlacement = getPlacement('name');
+            const displayName = (inputs['input-name'] || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const nameHTML = `<div id="card-name" style="font-size: ${nameSize}px !important; color: ${nameColor} !important; font-family: ${nameFont} !important; position: absolute !important; white-space: pre-wrap; word-break: break-word; ${namePos}">${displayName}</div>`;
+            renderElement(nameHTML, namePlacement, containers);
+        }
+
+        if (inputs['input-tagline']) {
+            const taglineSize = inputs['tagline-font-size'] || 14;
+            const taglineColor = inputs['tagline-color'] || '#4da6ff';
+            const taglineFont = inputs['tagline-font'] || 'Tajawal, sans-serif';
+            const taglinePos = getPositionStyle('card-tagline');
+            const taglinePlacement = getPlacement('tagline');
+            const displayTagline = (inputs['input-tagline'] || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const taglineHTML = `<div id="card-tagline" style="font-size: ${taglineSize}px !important; color: ${taglineColor} !important; font-family: ${taglineFont} !important; position: absolute !important; white-space: pre-wrap; word-break: break-word; ${taglinePos}">${displayTagline}</div>`;
+            renderElement(taglineHTML, taglinePlacement, containers);
+        }
+
+        if (dynamicData.phones && dynamicData.phones.length > 0) {
+            const showAsButtons = inputs['toggle-phone-buttons'] !== undefined ? inputs['toggle-phone-buttons'] : true; 
+            const phoneBtnBg = inputs['phone-btn-bg-color'] || '#4da6ff';
+            const phoneBtnText = inputs['phone-btn-text-color'] || '#ffffff';
+            const phoneBtnSize = inputs['phone-btn-font-size'] || 12;
+            const phoneBtnFont = inputs['phone-btn-font'] || 'Poppins, sans-serif';
+            const phoneBtnPadding = inputs['phone-btn-padding'] !== undefined ? inputs['phone-btn-padding'] : 6;
+            const phoneTextLayout = inputs['phone-text-layout'] || 'row';
+            const phoneTextSize = inputs['phone-text-size'] || 14;
+            const phoneTextColor = inputs['phone-text-color'] || '#e6f0f7';
+            const phoneTextFont = inputs['phone-text-font'] || 'Tajawal, sans-serif';
+
+            dynamicData.phones.forEach(phone => {
+                if (!phone || !phone.value) return;
+                const pos = phone.position || { x: 0, y: 0 };
+                const placement = phone.placement || 'front';
+                const wrapperPos = `transform: translate(${pos.x}px, ${pos.y}px) !important;`;
+                const sanitizedValue = phone.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const telLink = `tel:${phone.value.replace(/\D/g, '')}`;
+                let phoneHTML = '';
+
+                if (showAsButtons) {
+                    phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: ${phoneBtnBg} !important; color: ${phoneBtnText} !important; border: 2px solid ${phoneBtnBg === 'transparent' || phoneBtnBg.includes('rgba(0,0,0,0)') ? phoneBtnText : 'transparent'} !important; font-size: ${phoneBtnSize}px !important; font-family: ${phoneBtnFont} !important; padding: ${phoneBtnPadding}px ${phoneBtnPadding * 2}px !important; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="fas fa-phone-alt"></i><span>${sanitizedValue}</span></a></div>`;
+                } else {
+                     phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: transparent !important; border: none !important; font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-phone-alt" style="display:none;"></i> <span>${sanitizedValue}</span></a></div>`;
+                }
+                renderElement(phoneHTML, placement, containers);
+            });
+        }
+
+        const showSocial = (inputs['toggle-master-social'] === undefined || inputs['toggle-master-social'] === true);
+        if (showSocial) {
+            const allSocialLinks = [];
+            const staticSocial = dynamicData.staticSocial || {};
+            const dynamicSocial = dynamicData.social || [];
+
+            const platforms = {
+                 whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+                email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
+                website: { icon: 'fas fa-globe', prefix: 'https://' },
+                facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
+                linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
+                instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
+                x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
+                telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
+                tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
+                snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
+                youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
+                pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
+            };
+
+            Object.entries(staticSocial).forEach(([key, linkData]) => {
+                if (linkData && linkData.value && platforms[key]) {
+                    allSocialLinks.push({ id: `static-${key}`, value: linkData.value, placement: linkData.placement || 'back', position: linkData.position || {x:0, y:0}, platformKey: key });
+                }
+            });
+            dynamicSocial.forEach(linkData => {
+                if (linkData && linkData.value && linkData.platform && platforms[linkData.platform]) {
+                     allSocialLinks.push({ id: linkData.id || `dynamic-${linkData.platform}-${Date.now()}`, value: linkData.value, placement: linkData.placement || 'back', position: linkData.position || {x:0, y:0}, platformKey: linkData.platform });
+                }
+            });
+
+            if (allSocialLinks.length > 0) {
+                const showSocialButtons = inputs['toggle-social-buttons'] !== undefined ? inputs['toggle-social-buttons'] : true;
+                const socialBtnBg = inputs['back-buttons-bg-color'] || '#364f6b';
+                const socialBtnText = inputs['back-buttons-text-color'] || '#aab8c2';
+                const socialBtnSize = inputs['back-buttons-size'] || 10;
+                const socialBtnFont = inputs['back-buttons-font'] || 'Poppins, sans-serif';
+                const socialTextSize = inputs['social-text-size'] || 12;
+                const socialTextColor = inputs['social-text-color'] || '#e6f0f7';
+                const socialTextFont = inputs['social-text-font'] || 'Tajawal, sans-serif';
+
+                allSocialLinks.forEach(link => {
+                    const platform = platforms[link.platformKey];
+                    if (!platform) return;
+                    const pos = link.position || { x: 0, y: 0 };
+                    const placement = link.placement || 'back';
+                    const wrapperPos = `transform: translate(${pos.x}px, ${pos.y}px) !important;`;
+                    let value = link.value;
+                    let displayValue = value;
+                    let fullUrl = value;
+                    let prefix = platform.prefix || 'https://';
+
+                    if (link.platformKey === 'email') { fullUrl = `${prefix}${value}`; }
+                    else if (link.platformKey === 'whatsapp') { fullUrl = `${prefix}${value.replace(/\D/g, '')}`; }
+                    else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${prefix}${value}` : value; }
+
+                    if (link.platformKey !== 'email') {
+                        displayValue = displayValue.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '');
+                    }
+                    displayValue = displayValue.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    let socialHTML = '';
+                    if (showSocialButtons) {
+                        socialHTML = `<div class="draggable-social-link" style="position: absolute !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="background-color: ${socialBtnBg} !important; color: ${socialBtnText} !important; font-family: ${socialBtnFont} !important; font-size: ${socialBtnSize}px !important; padding: ${socialBtnSize * 0.5}px ${socialBtnSize}px !important; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="${platform.icon}"></i><span>${displayValue}</span></a></div>`;
+                    } else {
+                        socialHTML = `<div class="draggable-social-link text-only-mode" style="position: absolute !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="background-color: transparent !important; border: none !important; font-family: ${socialTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"><i class="${platform.icon}" style="color: ${socialTextColor} !important; font-size: 1.2em;"></i><span style="font-size: ${socialTextSize}px !important; color: ${socialTextColor} !important;">${displayValue}</span></a></div>`;
+                    }
+                    renderElement(socialHTML, placement, containers);
+                });
+            }
+        }
+
+        let qrDataString = null;
+        const qrSource = inputs['qr-source'] || 'auto-vcard';
+
+        if (qrSource === 'custom') { qrDataString = inputs['input-qr-url']; } 
+        else if (qrSource === 'upload') { qrDataString = imageUrls.qrCode; } 
+        else if (qrSource === 'auto-vcard' || qrSource === 'auto-card') { qrDataString = getVCardString(); }
+
+        if (qrDataString) {
+            const qrSize = inputs['qr-size'] || 25;
+            const qrPos = getPositionStyle('qr-code-wrapper');
+            const qrPlacement = getPlacement('qr', 'back');
+            let qrHTML = '';
+
+            if (qrSource === 'custom' || qrSource === 'upload') {
+                 qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}% !important; padding-top: ${qrSize}%; height: 0; position: absolute !important; ${qrPos}"><img src="${qrDataString}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;"></div>`;
+                 renderElement(qrHTML, qrPlacement, containers);
+            } else if (qrDataString.length > 20) {
+                try {
+                    await loadScript(SCRIPT_URLS.qrcode);
+                    const tempQrDiv = document.createElement('div');
+                    tempQrDiv.style.position = 'absolute';
+                    tempQrDiv.style.left = '-9999px';
+                    document.body.appendChild(tempQrDiv);
+
+                    new QRCode(tempQrDiv, {
+                        text: qrDataString, width: 256, height: 256, colorDark : "#000000", colorLight : "#ffffff", correctLevel: QRCode.CorrectLevel.H
+                    });
+
+                    await new Promise(resolve => setTimeout(() => {
+                        const qrImgElement = tempQrDiv.querySelector('img');
+                        const qrCanvasElement = tempQrDiv.querySelector('canvas');
+                        let dataUrl = null;
+                        if (qrImgElement && qrImgElement.src) { dataUrl = qrImgElement.src; } 
+                        else if (qrCanvasElement) { dataUrl = qrCanvasElement.toDataURL(); }
+
+                        if (dataUrl) {
+                            qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}% !important; padding-top: ${qrSize}%; height: 0; position: absolute !important; ${qrPos}"><img src="${dataUrl}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;"></div>`;
+                            renderElement(qrHTML, qrPlacement, containers);
                         }
-                    } else if (qrSource === 'auto-card') {
-                        const cardUrl = window.location.href;
-                        new QRCode(qrWrapper, { text: cardUrl, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.H });
-                    }
-                    // Add alt text if the library generates an img tag
-                    const generatedImg = qrWrapper.querySelector('img');
-                    if (generatedImg) {
-                        generatedImg.alt = qrAltText;
-                    }
-                })
-                .catch(error => console.error('Failed to load QRCode.js', error));
-            qrContentAdded = true;
-        }
-
-        if (qrContentAdded) {
-            if (cardBackContent && cardBackContent.id==='card-back-content') { const wrap=document.createElement('div'); wrap.className='back-section'; wrap.appendChild(qrWrapper); cardBackContent.appendChild(wrap);} else { cardBackContent.appendChild(qrWrapper);}
-        }
-        
-        const contactsWrapper = document.createElement('div');
-        contactsWrapper.className = 'contact-icons-wrapper';
-
-        const socialPlatforms = {
-            email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
-            website: { icon: 'fas fa-globe', prefix: ''},
-            whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
-            facebook: { icon: 'fab fa-facebook-f', prefix: ''},
-            linkedin: { icon: 'fab fa-linkedin-in', prefix: ''},
-            instagram: { icon: 'fab fa-instagram', prefix: ''},
-            x: { icon: 'fab fa-xing', prefix: '' },
-            telegram: { icon: 'fab fa-telegram', prefix: '' },
-            tiktok: { icon: 'fab fa-tiktok', prefix: '' },
-            snapchat: { icon: 'fab fa-snapchat', prefix: '' },
-            youtube: { icon: 'fab fa-youtube', prefix: '' },
-            pinterest: { icon: 'fab fa-pinterest', prefix: '' },
-        };
-
-        const renderLink = (value, platform) => {
-            let fullUrl = value.startsWith('http') || value.startsWith('mailto:') ? value : (platform.prefix || 'https://') + value;
-            return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" style="background-color: ${data.inputs['back-buttons-bg-color']}; color: ${data.inputs['back-buttons-text-color']}; font-size: ${data.inputs['back-buttons-size']}px; font-family: ${data.inputs['back-buttons-font']};">
-                        <i class="${platform.icon}"></i>
-                    </a>`;
-        };
-        
-        let linksHtml = '';
-        if (data.inputs['input-email']) linksHtml += renderLink(data.inputs['input-email'], socialPlatforms.email);
-        if (data.inputs['input-website']) linksHtml += renderLink(data.inputs['input-website'], socialPlatforms.website);
-        if (data.inputs['input-whatsapp']) linksHtml += renderLink(data.inputs['input-whatsapp'], socialPlatforms.whatsapp);
-        if (data.inputs['input-facebook']) linksHtml += renderLink(data.inputs['input-facebook'], socialPlatforms.facebook);
-        if (data.inputs['input-linkedin']) linksHtml += renderLink(data.inputs['input-linkedin'], socialPlatforms.linkedin);
-        
-        (data.dynamic.social || []).forEach(social => {
-            const platform = socialPlatforms[social.platform];
-            if (platform) {
-                linksHtml += renderLink(social.value, platform);
+                        document.body.removeChild(tempQrDiv);
+                        resolve();
+                    }, 300));
+                } catch (error) {
+                     qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}%; aspect-ratio: 1; position: absolute; ${qrPos} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: red; text-align: center; border-radius: 4px; padding: 5px;">QR Error</div>`;
+                     renderElement(qrHTML, qrPlacement, containers);
+                }
             }
-        });
-        
-        contactsWrapper.innerHTML = linksHtml;
-        if (cardBackContent && cardBackContent.id==='card-back-content') { const wrap=document.createElement('div'); wrap.className='back-section'; wrap.appendChild(contactsWrapper); cardBackContent.appendChild(wrap);} else { cardBackContent.appendChild(contactsWrapper);}
+        }
+
+        const allRenderedImages = [...containers.front.querySelectorAll('img'), ...containers.back.querySelectorAll('img')];
+        await Promise.all(allRenderedImages.map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => {
+                img.onload = resolve;
+                img.onerror = () => resolve();
+                setTimeout(() => { if (!img.complete) resolve(); }, 5000);
+            });
+        }));
+        await new Promise(resolve => setTimeout(resolve, 500));
     };
 
-    const loadCardData = async () => {
-        const params = new URLSearchParams(window.location.search);
-        const cardId = params.get('id');
+    const captureAndDisplayCards = async () => {
+        try {
+            await loadScript(SCRIPT_URLS.html2canvas);
+        } catch (error) {
+            throw new Error('فشل تحميل مكتبة التقاط الصور');
+        }
 
-        if (!cardId) {
-            loader.innerHTML = '<h1>لم يتم العثور على البطاقة</h1><p>الرابط غير صحيح أو ناقص.</p>';
+        const frontCardRenderArea = document.getElementById('front-card');
+        const backCardRenderArea = document.getElementById('back-card');
+        const frontDisplay = document.getElementById('card-front-display');
+        const backDisplay = document.getElementById('card-back-display');
+        const flipWrapper = document.getElementById('cards-wrapper-viewer');
+        const flipBtn = document.getElementById('viewer-flip-btn');
+
+        if (!frontCardRenderArea || !backCardRenderArea || !frontDisplay || !backDisplay || !flipWrapper || !flipBtn) {
+            throw new Error('لم يتم العثور على عناصر البطاقة أو حاوية العرض');
+        }
+
+        frontCardRenderArea.style.visibility = 'visible';
+        backCardRenderArea.style.visibility = 'visible';
+
+        const captureOptions = { scale: 2, useCORS: true, allowTaint: true, backgroundColor: null, logging: false, imageTimeout: 15000 };
+
+        try {
+            const frontCanvas = await html2canvas(frontCardRenderArea, captureOptions);
+            const backCanvas = await html2canvas(backCardRenderArea, captureOptions);
+
+            frontCardRenderArea.style.visibility = 'hidden';
+            backCardRenderArea.style.visibility = 'hidden';
+
+            const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
+            const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
+
+            frontDisplay.innerHTML = `<img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="الوجه الأمامي للبطاقة">`;
+            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="الوجه الخلفي للبطاقة" ${backImageStyle}>`;
+
+            const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
+            flipWrapper.addEventListener('click', flipFn);
+            flipBtn.addEventListener('click', flipFn);
+            flipBtn.style.display = 'inline-flex';
+
+        } catch (error) {
+            frontCardRenderArea.style.visibility = 'hidden';
+            backCardRenderArea.style.visibility = 'hidden';
+            throw new Error('فشل التقاط صور البطاقة');
+        }
+    };
+
+    const showLoadingError = (message) => {
+        if (loader) {
+            loader.innerHTML = `<p style="color: #dc3545; font-weight: bold;">خطأ في التحميل:</p><p>${message || 'حدث خطأ غير متوقع.'}</p>`;
+            loader.style.display = 'flex'; loader.style.flexDirection = 'column'; loader.style.alignItems = 'center'; loader.style.justifyContent = 'center';
+        }
+        if (viewerContainer) viewerContainer.style.display = 'none';
+    };
+    
+    const setupThemeToggle = () => {
+        const toggle = document.getElementById('theme-toggle');
+        if (!toggle) return;
+        const applyTheme = (theme) => {
+            if (theme === 'dark') { document.documentElement.classList.add('dark-mode'); toggle.checked = true; } 
+            else { document.documentElement.classList.remove('dark-mode'); toggle.checked = false; }
+        };
+        let savedTheme = localStorage.getItem('theme');
+        if (!savedTheme) savedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        applyTheme(savedTheme);
+        toggle.addEventListener('change', () => {
+            const newTheme = toggle.checked ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+    };
+
+    const processCardData = async (data) => {
+        if (!data || !data.inputs) {
+            showLoadingError('لم نتمكن من تحميل بيانات البطاقة أو أن البيانات غير صالحة.');
             return;
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/get-design/${cardId}`);
-            if (!response.ok) {
-                throw new Error('Card not found');
-            }
-            const data = await response.json();
-            buildCard(data);
+            cardData = data; 
             
-            loader.style.display = 'none';
-            viewerContainer.style.display = 'flex';
+            renderContactLinks(data);
 
-            // --- START: Modified Event Listeners for On-Demand Loading ---
-            const saveFrontBtn = document.getElementById('save-front-png-btn');
-            if (saveFrontBtn) {
-                saveFrontBtn.addEventListener('click', async (e) => {
-                    e.currentTarget.disabled = true;
-                    try {
-                        await loadScript(SCRIPT_URLS.html2canvas);
-                        await captureAndDownload(document.getElementById('card-front-preview'), 'card-front.png');
-                    } catch (error) {
-                        console.error('Failed to prepare for PNG export:', error);
-                        alert('فشل تحميل أداة الحفظ. يرجى المحاولة مرة أخرى.');
-                    } finally {
-                        e.currentTarget.disabled = false;
-                    }
-                });
+            const inputs = data.inputs || {};
+            const name = inputs['input-name'] || '';
+            const tagline = inputs['input-tagline'] || '';
+
+            // --- [ADDED] CHECK FOR VERTICAL LAYOUT ---
+            const layout = inputs['layout-select-visual'] || 'classic';
+            const isVertical = layout === 'vertical';
+            const wrapper = document.getElementById('cards-wrapper-viewer');
+            const frontRenderWrapper = document.getElementById('front-card');
+            const backRenderWrapper = document.getElementById('back-card');
+
+            if (isVertical) {
+                if(wrapper) wrapper.classList.add('is-vertical');
+                if(frontRenderWrapper) frontRenderWrapper.classList.add('is-vertical');
+                if(backRenderWrapper) backRenderWrapper.classList.add('is-vertical');
+            } else {
+                if(wrapper) wrapper.classList.remove('is-vertical');
+                if(frontRenderWrapper) frontRenderWrapper.classList.remove('is-vertical');
+                if(backRenderWrapper) backRenderWrapper.classList.remove('is-vertical');
+            }
+            // --- [END] ---
+
+            if (name && tagline) document.title = `عرض بطاقة: ${name} - ${tagline}`;
+            else if (name) document.title = `عرض بطاقة: ${name}`;
+
+            const frontDisplay = document.getElementById('card-front-display');
+            const backDisplay = document.getElementById('card-back-display');
+            const flipWrapper = document.getElementById('cards-wrapper-viewer');
+            const flipBtn = document.getElementById('viewer-flip-btn');
+
+            if (!frontDisplay || !backDisplay || !flipWrapper || !flipBtn) throw new Error("حاوية عرض صور البطاقة غير موجودة!");
+
+            const imageUrls = data.imageUrls || {};
+            const capturedFront = imageUrls.capturedFront;
+            const capturedBack = imageUrls.capturedBack;
+
+            if (capturedFront && capturedBack) {
+                const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
+                const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
+
+                frontDisplay.innerHTML = `<img src="${capturedFront}" alt="الوجه الأمامي للبطاقة" loading="lazy">`;
+                backDisplay.innerHTML = `<img src="${capturedBack}" alt="الوجه الخلفي للبطاقة" loading="lazy" ${backImageStyle}>`;
+                
+                const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
+                flipWrapper.addEventListener('click', flipFn);
+                flipBtn.addEventListener('click', flipFn);
+                flipBtn.style.display = 'inline-flex';
+
+                const renderWrapper = document.querySelector('.visually-hidden');
+                if(renderWrapper) renderWrapper.remove();
+
+            } else {
+                console.log("Building card for capture...");
+                await buildCardForRender(data);
+                console.log("Capturing card images...");
+                await captureAndDisplayCards();
             }
 
-            const saveBackBtn = document.getElementById('save-back-png-btn');
-            if (saveBackBtn) {
-                saveBackBtn.addEventListener('click', async (e) => {
-                    e.currentTarget.disabled = true;
-                    try {
-                        await loadScript(SCRIPT_URLS.html2canvas);
-                        await captureAndDownload(document.getElementById('card-back-preview'), 'card-back.png');
-                    } catch (error) {
-                        console.error('Failed to prepare for PNG export:', error);
-                        alert('فشل تحميل أداة الحفظ. يرجى المحاولة مرة أخرى.');
-                    } finally {
-                        e.currentTarget.disabled = false;
-                    }
-                });
-            }
+            addSaveButtonListeners(); 
 
-            const savePdfBtn = document.getElementById('save-pdf-btn');
-            if(savePdfBtn) {
-                savePdfBtn.addEventListener('click', async (e) => {
-                    e.currentTarget.disabled = true;
-                    try {
-                        await Promise.all([
-                            loadScript(SCRIPT_URLS.html2canvas),
-                            loadScript(SCRIPT_URLS.jspdf)
-                        ]);
-                        await saveAsPdf();
-                    } catch (error) {
-                        console.error('Failed to prepare for PDF export:', error);
-                        alert('فشل تحميل أداة تصدير PDF. يرجى المحاولة مرة أخرى.');
-                    } finally {
-                        e.currentTarget.disabled = false;
-                    }
-                });
-            }
-            // --- END: Modified Event Listeners ---
-            
-            const saveVcfBtn = document.getElementById('save-vcf-btn');
-            if(saveVcfBtn) {
-                saveVcfBtn.addEventListener('click', saveAsVcf);
-            }
-
-
-            if (mobileFlipBtn) {
-                mobileFlipBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    cardsWrapper.classList.toggle('is-flipped');
-                });
-            }
+            if (loader) loader.style.display = 'none';
+            if (viewerContainer) viewerContainer.style.display = 'block';
 
         } catch (error) {
-            console.error(error);
-            loader.innerHTML = '<h1>خطأ</h1><p>لم نتمكن من تحميل بيانات البطاقة.</p>';
+            showLoadingError(error.message || 'حدث خطأ أثناء معالجة البطاقة.');
         }
     };
 
-    loadCardData();
+    const addSaveButtonListeners = () => {
+        const saveVcfBtn = document.getElementById('save-vcf-btn');
+        const saveFrontPngBtn = document.getElementById('save-front-png-btn');
+        const saveBackPngBtn = document.getElementById('save-back-png-btn');
+        const savePdfBtn = document.getElementById('save-pdf-btn');
+        // *** زر توقيع الإيميل ***
+        const saveEmailSigBtn = document.getElementById('save-email-sig-btn');
+
+        if (saveVcfBtn) {
+            saveVcfBtn.onclick = () => {
+                try {
+                    const vcfData = getVCardString();
+                    if (!vcfData || vcfData.length < 20) { alert("لا توجد بيانات كافية لحفظ جهة الاتصال."); return; }
+                    const blob = new Blob([vcfData], { type: 'text/vcard;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    const filenameBase = (cardData && cardData.inputs && cardData.inputs['input-name'] ? cardData.inputs['input-name'] : 'contact').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    link.download = `${filenameBase}.vcf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    trackClick('save_vcf'); // تتبع
+                } catch (e) { alert("حدث خطأ أثناء تجهيز ملف جهة الاتصال."); }
+            };
+        }
+
+        // *** حدث زر توقيع الإيميل ***
+        if (saveEmailSigBtn) {
+            saveEmailSigBtn.onclick = generateEmailSignature;
+        }
+
+        const downloadCapturedImage = (cardFace) => {
+             const imageContainer = cardFace === 'front' ? document.getElementById('card-front-display') : document.getElementById('card-back-display');
+             if (!imageContainer) return;
+            const imgElement = imageContainer.querySelector('img');
+
+             if (imgElement && imgElement.src && (imgElement.src.startsWith('data:image/png') || imgElement.src.startsWith('http'))) {
+                 try {
+                     const link = document.createElement('a');
+                     link.href = imgElement.src;
+                     link.setAttribute('download', ''); 
+                     const filenameBase = (cardData && cardData.inputs && cardData.inputs['input-name'] ? cardData.inputs['input-name'] : 'card').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                     link.download = `${filenameBase}_${cardFace}.png`;
+                     document.body.appendChild(link);
+                     link.click();
+                     document.body.removeChild(link);
+                     trackClick(`save_${cardFace}_png`); // تتبع
+                 } catch (e) { alert(`حدث خطأ أثناء تجهيز صورة الواجهة.`); }
+             } else { alert(`لم يتم العثور على صورة البطاقة.`); }
+        };
+
+        if (saveFrontPngBtn) saveFrontPngBtn.onclick = () => downloadCapturedImage('front');
+        if (saveBackPngBtn) saveBackPngBtn.onclick = () => downloadCapturedImage('back');
+
+        if (savePdfBtn) {
+            savePdfBtn.onclick = async () => {
+                const frontImgElement = document.getElementById('card-front-display')?.querySelector('img');
+                const backImgElement = document.getElementById('card-back-display')?.querySelector('img');
+                
+                if (!frontImgElement || !frontImgElement.src || !backImgElement || !backImgElement.src ) {
+                    alert("لم يتم العثور على صور البطاقة.");
+                    return;
+                }
+
+                savePdfBtn.disabled = true;
+                savePdfBtn.textContent = 'جاري الإنشاء...';
+
+                try {
+                    await loadScript(SCRIPT_URLS.jspdf);
+                    const { jsPDF } = window.jspdf;
+                    const frontImg = frontImgElement;
+                    const backImg = backImgElement;
+                    if (!frontImg.complete) await new Promise(resolve => frontImg.onload = resolve);
+                    if (!backImg.complete) await new Promise(resolve => backImg.onload = resolve);
+
+                    const imgWidth = frontImg.naturalWidth || 510*2; 
+                    const imgHeight = frontImg.naturalHeight || 330*2;
+                    const pdfWidth = imgWidth * 0.75; 
+                    const pdfHeight = imgHeight * 0.75;
+                    const orientation = pdfWidth > pdfHeight ? 'l' : 'p';
+
+                    const doc = new jsPDF({ orientation: orientation, unit: 'pt', format: [pdfWidth, pdfHeight] });
+                    doc.addImage(frontImg.src, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+                    doc.addPage([pdfWidth, pdfHeight], orientation);
+                    doc.addImage(backImg.src, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+
+                    const filenameBase = (cardData && cardData.inputs && cardData.inputs['input-name'] ? cardData.inputs['input-name'] : 'card').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    doc.save(`${filenameBase}.pdf`);
+                    trackClick('save_pdf'); // تتبع
+                } catch (error) { alert("حدث خطأ أثناء إنشاء ملف PDF."); } finally {
+                    savePdfBtn.disabled = false;
+                    savePdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> حفظ كـ PDF'; 
+                }
+            };
+        }
+    };
+    
+    const setupMobileTabs = () => {
+        const tabContainer = document.querySelector('.mobile-viewer-tabs');
+        if (!tabContainer) return; 
+        const tabButtons = tabContainer.querySelectorAll('.mobile-tab-btn');
+        const tabPanes = document.querySelectorAll('.viewer-layout > .side-column');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                const targetPane = document.querySelector(button.dataset.tabTarget);
+                if (targetPane) targetPane.classList.add('active');
+            });
+        });
+    };
+
+    const initializeViewer = async () => {
+        setupThemeToggle();
+        setupMobileTabs();
+
+        try {
+            let data = null;
+            if (window.cardData && typeof window.cardData === 'object' && Object.keys(window.cardData).length > 0 && window.cardData.inputs) {
+                data = window.cardData;
+            } else {
+                const pathSegments = window.location.pathname.split('/');
+                let relevantSegments = pathSegments.filter(p => p.toLowerCase() !== 'viewer.html');
+                
+                if (relevantSegments.length >= 3 && relevantSegments[relevantSegments.length - 2].toLowerCase() === 'view' && relevantSegments[relevantSegments.length - 1]) {
+                    cardId = relevantSegments[relevantSegments.length - 1];
+                } else {
+                    cardId = new URLSearchParams(window.location.search).get('id');
+                }
+
+                if (!cardId) throw new Error('لم يتم العثور على معرف البطاقة.');
+
+                const apiUrl = `${API_BASE_URL}/api/get-design/${cardId}`;
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) throw new Error(`فشل تحميل بيانات البطاقة`);
+                data = await response.json();
+            }
+
+            if (!data || typeof data !== 'object' || !data.inputs) throw new Error("البيانات المستلمة غير صالحة.");
+
+            await processCardData(data);
+
+        } catch (error) {
+            showLoadingError(error.message || 'حدث خطأ غير متوقع.');
+        }
+    };
+
+    initializeViewer();
 });
