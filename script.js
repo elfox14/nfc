@@ -2,11 +2,10 @@
 
 (function() {
     'use strict';
-    
+    const focusTrapListeners = new Map(); // <--- أضف هذا السطر هنا
     const Config = {
-        API_BASE_URL: 'https://nfc-vjy6.onrender.com',
+        API_BASE_URL: 'https://nfc-vjy6.onrender.com', // تأكد من أن هذا هو الرابط الصحيح
         LOCAL_STORAGE_KEY: 'digitalCardEditorState_v19',
-        DND_HINT_SHOWN_KEY: 'dndHintShown_v1',
         GALLERY_STORAGE_KEY: 'digitalCardGallery_v1',
         MAX_LOGO_SIZE_MB: 10, MAX_BG_SIZE_MB: 10,
         SCRIPT_URLS: {
@@ -15,84 +14,116 @@
             qrcode: 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
             jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.0/jszip.min.js'
         },
+        
+        // --- ========================================= ---
+        // --- === MODIFICATION START (Default State) === ---
+        // --- ========================================= ---
         defaultState: {
-            inputs: {
-                "layout-select": "classic",
-                "input-logo": "https://www.mcprim.com/nfc/mcprime-logo-transparent.png",
-                "logo-size": "25",
-                "logo-opacity": "1",
-                "input-photo-url": "",
-                "photo-size": "25",
-                "photo-shape": "circle",
-                "photo-border-color": "#ffffff",
-                "photo-border-width": "2",
-                "input-name": "اسمك الكامل هنا",
-                "name-font-size": "22",
-                "name-color": "#e6f0f7",
-                "name-font": "'Tajawal', sans-serif",
-                "input-tagline": "شركتك / نشاطك التجاري",
-                "tagline-font-size": "14",
-                "tagline-color": "#4da6ff",
-                "tagline-font": "'Tajawal', sans-serif",
-                "toggle-phone-buttons": true,
-                "phone-text-layout": "row",
-                "phone-text-size": "14",
-                "phone-text-color": "#e6f0f7",
-                "phone-text-font": "'Tajawal', sans-serif",
-                "phone-btn-bg-color": "#4da6ff",
-                "phone-btn-text-color": "#ffffff",
-                "phone-btn-font-size": "12",
-                "phone-btn-padding": "6",
-                "phone-btn-font": "'Poppins', sans-serif",
-                "front-bg-start": "#2a3d54",
-                "front-bg-end": "#223246",
-                "front-bg-opacity": "1",
-                "qr-source": "auto-vcard",
-                "input-qr-url": "https://www.mcprim.com/nfc/mcprime_qr.png",
-                "qr-size": "30",
-                "back-bg-start": "#2a3d54",
-                "back-bg-end": "#223246",
-                "back-bg-opacity": "1",
-                "back-buttons-size": "10",
-                "back-buttons-bg-color": "#364f6b",
-                "back-buttons-text-color": "#aab8c2",
-                "back-buttons-font": "'Poppins', sans-serif",
-                "theme-select-input": "deep-sea",
-                "toggle-social-buttons": true,
-                "social-text-size": "12",
-                "social-text-color": "#e6f0f7",
-                "social-text-font": "'Tajawal', sans-serif",
-            },
-            dynamic: {
-                phones: [
-                    { id: `phone_${Date.now()}_0`, value: "01000000000", placement: "front" },
-                    { id: `phone_${Date.now()}_1`, value: "01200000000", placement: "front" }
-                ],
-                social: [],
-                staticSocial: {
-                    email: { value: "your-email@example.com", placement: "back" },
-                    website: { value: "your-website.com", placement: "back" },
-                    whatsapp: { value: "201000000000", placement: "back" },
-                    facebook: { value: "yourprofile", placement: "back" },
-                    linkedin: { value: "yourprofile", placement: "back" }
-                }
-            },
-            imageUrls: { front: null, back: null, qrCode: null, photo: null },
-            positions: {
-                "card-logo": { x: 0, y: 0 },
-                "card-personal-photo-wrapper": { x: 0, y: 0 },
-                "card-name": { x: 0, y: 0 },
-                "card-tagline": { x: 0, y: 0 },
-                "qr-code-wrapper": { x: 0, y: 0 }
-            },
-            placements: {
-                logo: 'front',
-                photo: 'front',
-                name: 'front',
-                tagline: 'front',
-                qr: 'back'
-            }
+    inputs: {
+        'layout-select': 'classic',
+        'input-logo': 'https://www.mcprim.com/nfc/mcprime-logo-transparent.png',
+        'logo-size': 25,
+        'logo-opacity': 1,
+        'input-photo-url': '',
+        'photo-size': 25,
+        'photo-shape': 'circle',
+        'photo-border-color': '#ffffff',
+        'photo-border-width': 2,
+        'input-name': 'اسمك الكامل هنا',
+        'name-font-size': 22,
+        'name-color': '#e6f0f7',
+        'name-font': 'Tajawal, sans-serif',
+        'input-tagline': 'شركتك / نشاطك التجاري',
+        'tagline-font-size': 14,
+        'tagline-color': '#4da6ff',
+        'tagline-font': 'Tajawal, sans-serif',
+        'toggle-phone-buttons': true,
+        'phone-text-layout': 'row',
+        'phone-text-size': 14,
+        'phone-text-color': '#e6f0f7',
+        'phone-text-font': 'Tajawal, sans-serif',
+        'phone-btn-bg-color': '#4da6ff',
+        'phone-btn-text-color': '#ffffff',
+        'phone-btn-font-size': 12,
+        'phone-btn-padding': 6,
+        'phone-btn-font': 'Poppins, sans-serif',
+        'front-bg-start': '#2a3d54',
+        'front-bg-end': '#223246',
+        'front-bg-opacity': 1,
+        'qr-source': 'auto-vcard',
+        'input-qr-url': 'https://www.mcprim.com/nfc/mcprime_qr.png',
+        'qr-size': 25,
+        'back-bg-start': '#2a3d54',
+        'back-bg-end': '#223246',
+        'back-bg-opacity': 1,
+        'back-buttons-size': 10,
+        'back-buttons-bg-color': '#364f6b',
+        'back-buttons-text-color': '#aab8c2',
+        'back-buttons-font': 'Poppins, sans-serif',
+        'theme-select-input': 'deep-sea',
+        'toggle-master-social': true,
+        'toggle-social-buttons': true,
+        'social-text-size': 12,
+        'social-text-color': '#e6f0f7',
+        'social-text-font': 'Tajawal, sans-serif',
+        'input-static-email-color': '#e6f0f7',
+        'input-static-email-size': 12,
+        'input-static-website-color': '#e6f0f7',
+        'input-static-website-size': 12,
+        'input-static-whatsapp-color': '#e6f0f7',
+        'input-static-whatsapp-size': 12,
+        'input-static-facebook-color': '#e6f0f7',
+        'input-static-facebook-size': 12,
+        'input-static-linkedin-color': '#e6f0f7',
+        'input-static-linkedin-size': 12
+    },
+    dynamic: {
+        phones: [
+            // تم التعديل: الإبقاء على رقم هاتف واحد فقط
+            { id: `phone${Date.now()}_0`, value: '01000000000', placement: 'front' }
+        ],
+        social: [],
+        staticSocial: {
+            // تم التعديل: الإبقاء على الايميل وفيسبوك فقط
+            email: { value: 'your-email@example.com', placement: 'back' },
+            website: { value: '', placement: 'back' }, // تم الإفراغ
+            whatsapp: { value: '', placement: 'back' }, // تم الإفراغ
+            facebook: { value: 'yourprofile', placement: 'back' },
+            linkedin: { value: '', placement: 'back' } // تم الإفراغ
         },
+        qr: { enabled: true }
+    },
+    imageUrls: {
+        front: null,
+        back: null,
+        qrCode: null,
+        photo: null
+    },
+   positions: {
+    "card-logo": { x: 0, y: 0 },
+    "card-personal-photo-wrapper": { x: 0, y: 0 },
+    "card-name": { x: 0, y: 0 },
+    "card-tagline": { x: 0, y: 0 },
+    "card-phones-wrapper": { x: 0, y: 0 },
+    "qr-code-wrapper": { x: 0, y: 0 },
+    "social-link-static-email": { x: 0, y: 0 },
+    "social-link-static-website": { x: 0, y: 0 },
+    "social-link-static-whatsapp": { x: 0, y: 0 },
+    "social-link-static-facebook": { x: 0, y: 0 },
+    "social-link-static-linkedin": { x: 0, y: 0 }
+    },
+    placements: {
+        logo: 'front',
+        photo: 'front', // (هذا مخفي افتراضياً لأن input-photo-url فارغ)
+        name: 'front',
+        tagline: 'front',
+        qr: 'back'
+    }
+},
+        // --- ========================================= ---
+        // --- === MODIFICATION END (Default State) === ---
+        // --- ========================================= ---
+
         THEMES: {
             'deep-sea': { name: 'بحر عميق', gradient: ['#2a3d54', '#223246'], values: { textPrimary: '#e6f0f7', taglineColor: '#4da6ff', backButtonBg: '#364f6b', backButtonText: '#aab8c2', phoneBtnBg: '#4da6ff', phoneBtnText: '#ffffff'}},
             'modern-light': { name: 'أبيض حديث', gradient: ['#e9e9e9', '#ffffff'], values: { textPrimary: '#121212', taglineColor: '#007BFF', backButtonBg: '#f0f2f5', backButtonText: '#343a40', phoneBtnBg: '#007BFF', phoneBtnText: '#ffffff'}},
@@ -101,7 +132,7 @@
             'corporate-elegance': { name: 'أناقة الشركات', gradient: ['#f8f9fa', '#e9ecef'], values: { textPrimary: '#212529', taglineColor: '#0056b3', backButtonBg: '#343a40', backButtonText: '#ffffff', phoneBtnBg: '#0056b3', phoneBtnText: '#ffffff'}},
             'night-neon': { name: 'النيون الليلي', gradient: ['#0d0d0d', '#1a1a1a'], values: { textPrimary: '#f0f0f0', taglineColor: '#39ff14', backButtonBg: '#222222', backButtonText: '#00ffdd', phoneBtnBg: 'transparent', phoneBtnText: '#39ff14'}},
         },
-        BACKGROUNDS: [], // تم حذف مصفوفة الخلفيات الثابتة من هنا. سيتم الآن تحميلها من قاعدة البيانات
+        BACKGROUNDS: [],
         SOCIAL_PLATFORMS: { instagram: { name: 'انستغرام', icon: 'fab fa-instagram', prefix: 'https://instagram.com/' }, x: { name: 'X (تويتر)', icon: 'fab fa-xing', prefix: 'https://x.com/' }, telegram: { name: 'تيليجرام', icon: 'fab fa-telegram', prefix: 'https://t.me/' }, tiktok: { name: 'تيك توك', icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' }, snapchat: { name: 'سناب شات', icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' }, youtube: { name: 'يوتيوب', icon: 'fab fa-youtube', prefix: 'https://youtube.com/' }, pinterest: { name: 'بينترست', icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' } },
         STATIC_CONTACT_METHODS: [ { id: 'whatsapp', icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' }, { id: 'email', icon: 'fas fa-envelope', prefix: 'mailto:' }, { id: 'website', icon: 'fas fa-globe' }, { id: 'facebook', icon: 'fab fa-facebook-f' }, { id: 'linkedin', icon: 'fab fa-linkedin-in' } ]
     };
@@ -130,8 +161,6 @@
             });
         }
     };
-
-    let hintTimeout;
 
     const HistoryManager = {
         history: [],
@@ -232,42 +261,62 @@
                 }
             });
 
+            // الخطوات المعدلة لتبدأ باختيار التصميم/الخلفية
             const steps = [
                 {
                     id: 'welcome',
                     title: 'مرحباً بك في MC PRIME!',
-                    text: 'أهلاً بك في محرر بطاقات الأعمال الذكية. دعنا نأخذك في جولة سريعة لتتعرف على أهم الميزات.',
+                    text: 'أهلاً بك في محرر بطاقات الأعمال الذكية. لنبدأ بوضع اللمسات الجمالية لبطاقتك.',
                     buttons: [{ text: 'لنبدأ!', action() { return this.next(); } }]
                 },
                 {
-                    id: 'controls',
-                    title: '1. لوحة التحكم',
-                    text: 'من هنا يمكنك تعديل كل شيء في بطاقتك. استخدم هذه القوائم لتغيير النصوص، الشعار، الألوان، والخلفيات.',
-                    attachTo: { element: '.actions-column', on: 'right' }
+                    id: 'design_theme',
+                    title: '1. اختر التصميم أو الخلفية',
+                    text: 'من هنا يمكنك اختيار قالب جاهز أو تحديد صورة خلفية للوجه الأمامي والخلفي لبطاقتك.',
+                    attachTo: { element: '#designs-fieldset-source', on: 'right' },
+                    buttons: [
+                        { text: 'السابق', action() { return this.back(); } },
+                        {
+                            text: 'التالي (عناصر الواجهة)',
+                            action() { 
+                             
+                                UIManager.navigateToAndHighlight('tab-front'); // التبديل إلى تبويب عناصر الواجهة الأمامية
+                                return this.next(); 
+                            }
+                        }
+                    ]
                 },
                 {
-                    id: 'preview',
-                    title: '2. المعاينة الحية والتفاعلية',
-                    text: 'شاهد تعديلاتك تظهر هنا فوراً. <b>الأهم:</b> يمكنك الضغط على الشعار أو النصوص وسحبها لتغيير مكانها مباشرة على البطاقة!',
-                    attachTo: { element: '.cards-wrapper', on: 'top' }
+                    id: 'card_elements',
+                    title: '2. إضافة العناصر وتحديد موضعها',
+                    text: 'أدخل اسمك، وأضف شعارك/صورتك. *مهم:* استخدم أزرار "أمامي/خلفي" لتحديد الوجه الذي سيظهر عليه العنصر. ',
+                    attachTo: { element: '#name-tagline-accordion', on: 'right' }
                 },
                 {
-                    id: 'actions',
-                    title: '3. الحفظ والمشاركة',
-                    text: 'عندما يصبح تصميمك جاهزاً، استخدم هذه الخيارات لحفظه كصورة، ملف PDF، أو مشاركة رابط فريد لبطاقتك مع الآخرين.',
+                    id: 'element_placement',
+                    title: '3. نقل العناصر (اختياري)',
+                    text: 'يمكنك تغيير موضع أي عنصر عن طريق سحبه وإفلاته مباشرة على البطاقة، أو باستخدام أدوات "التحريك الدقيق" في لوحة التحكم.',
+                    attachTo: { element: '#card-name', on: 'top' }
+                },
+                {
+                    id: 'saving_sharing',
+                    title: '4. الحفظ والمشاركة',
+                    text: 'عندما يصبح تصميمك جاهزاً، استخدم خيارات "تنزيل" و "مشاركة الكارت" للحفظ والاستخدام.',
                     attachTo: { element: '#export-fieldset-source', on: 'left' }
                 },
                 {
                     id: 'finish',
                     title: 'أنت الآن جاهز!',
-                    text: 'هذه هي الأساسيات. استمتع بتصميم بطاقتك الاحترافية. يمكنك إعادة هذه الجولة في أي وقت بالضغط على زر "جولة إرشادية".',
+                    text: 'هذه هي الأساسيات. استمتع بتصميم بطاقتك الاحترافية.',
                     buttons: [{ text: 'إنهاء', action() { return this.complete(); } }]
                 }
             ];
             
+            // تعديلات الموبايل
             if (window.innerWidth <= 1200) {
-                steps[1].attachTo = { element: '.controls-column', on: 'top' };
-                steps[3].attachTo = { element: '#export-fieldset-source', on: 'top' };
+                steps[1].attachTo = { element: '#designs-fieldset-source', on: 'top' };
+                steps[2].attachTo = { element: '#name-tagline-accordion', on: 'top' };
+                steps[4].attachTo = { element: '#export-fieldset-source', on: 'top' };
             }
 
             steps.forEach(step => this.tour.addStep(step));
@@ -441,7 +490,15 @@
             }, 500);
         },
         updateFavicon(url) { if(url) document.getElementById('favicon').href = url; },
-        highlightElement(targetId, state) { const el = document.getElementById(targetId); if(el) el.classList.toggle('highlighted', state); },
+        highlightElement(targetId, state) { 
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.classList.toggle('highlighted', state);
+                if (targetElement.classList.contains('phone-button-draggable-wrapper') || targetElement.classList.contains('draggable-social-link')) {
+                    targetElement.querySelector('a').classList.toggle('highlighted', state);
+                }
+            }
+        },
         
         navigateToAndHighlight(elementId) {
             const targetElement = document.getElementById(elementId);
@@ -455,9 +512,10 @@
                 const paneId = parentPane.id;
                 const isMobile = window.innerWidth <= 1200;
                 
+                // --- MODIFICATION: Updated selector to find the correct tab button ---
                 const buttonSelector = isMobile 
-                    ? `.mobile-tab-btn[data-tab-target="${paneId}"]` 
-                    : `.desktop-tab-btn[data-tab-target="${paneId}"]`;
+                    ? `.mobile-tab-btn[data-tab-target="#${paneId}"]` // Added #
+                    : `.desktop-tab-btn[data-tab-target="#${paneId}"]`; // Added #
                 
                 const buttonToClick = document.querySelector(buttonSelector);
 
@@ -465,7 +523,8 @@
                     const allButtonsSelector = isMobile ? '.mobile-tab-btn' : '.desktop-tab-btn';
                     const allButtons = document.querySelectorAll(allButtonsSelector);
                     const allPanes = document.querySelectorAll('.tab-pane');
-                    TabManager.switchTab(paneId, buttonToClick, allButtons, allPanes);
+                    // --- MODIFICATION: Pass the target ID with a # ---
+                    TabManager.switchTab(`#${paneId}`, buttonToClick, allButtons, allPanes);
                 }
             }
             
@@ -476,7 +535,31 @@
             
             setTimeout(() => {
                 const highlightTarget = targetElement.closest('.fieldset') || targetElement.closest('.form-group') || targetElement.closest('.dynamic-input-group') || targetElement;
-                highlightTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // --- MODIFICATION: Check if target is inside a scrollable column ---
+                const scrollContainer = window.innerWidth <= 1200 
+                    ? highlightTarget.closest('.controls-column') 
+                    : highlightTarget.closest('.controls-column') || highlightTarget.closest('.actions-column');
+
+                if (scrollContainer) {
+                    // Scroll within the column
+                    const targetTop = highlightTarget.offsetTop;
+                    const containerTop = scrollContainer.scrollTop;
+                    const containerHeight = scrollContainer.clientHeight;
+                    
+                    // Check if element is out of view
+                    if (targetTop < containerTop || targetTop + highlightTarget.clientHeight > containerTop + containerHeight) {
+                         scrollContainer.scrollTo({ 
+                             top: targetTop - (scrollContainer.offsetTop + 20), // Adjust for container's own offset and padding
+                             behavior: 'smooth' 
+                         });
+                    }
+                } else {
+                    // Fallback to scrolling the whole window (for mobile)
+                    highlightTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                // --- END MODIFICATION ---
+
                 highlightTarget.classList.add('form-element-highlighted');
                 setTimeout(() => {
                     highlightTarget.classList.remove('form-element-highlighted');
@@ -503,8 +586,8 @@
             if (triggerElement) {
                 triggerElement.setAttribute('aria-expanded', 'true');
             }
-            const eventListener = this.trapFocus(modalOverlay);
-            modalOverlay.dataset.focusTrapListener = eventListener;
+            const eventListener = this.trapFocus(modalOverlay); // بافتراض أن trapFocus تُرجع المستمع
+focusTrapListeners.set(modalOverlay, eventListener); // خزّن في الـ Map
         },
         hideModal(modalOverlay) {
             modalOverlay.classList.remove('visible');
@@ -514,46 +597,92 @@
                 triggerElement.setAttribute('aria-expanded', 'false');
                 triggerElement.focus();
             }
-            const eventListener = modalOverlay.dataset.focusTrapListener;
-            if (eventListener) { modalOverlay.removeEventListener('keydown', eventListener); }
-        },
-        toggleDirection() {
-            const html = document.documentElement; const btn = DOMElements.buttons.directionToggle; const span = btn.querySelector('span');
-            if (html.dir === 'rtl') { html.dir = 'ltr'; html.classList.add('ltr'); span.textContent = 'AR'; }
-            else { html.dir = 'rtl'; html.classList.remove('ltr'); span.textContent = 'EN'; }
+           const eventListener = focusTrapListeners.get(modalOverlay); // استرد من الـ Map
+if (eventListener) {
+    modalOverlay.removeEventListener('keydown', eventListener);
+    focusTrapListeners.delete(modalOverlay); // أزل من الـ Map
+}
         },
         setupDragDrop(dropZoneId, fileInputId) { const dropZone = document.getElementById(dropZoneId); const fileInput = document.getElementById(fileInputId); if (!dropZone || !fileInput) return; ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }); }); ['dragenter', 'dragover'].forEach(eventName => { dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over')); }); ['dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over')); }); dropZone.addEventListener('drop', e => { if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; fileInput.dispatchEvent(new Event('change', { bubbles: true })); } }); },
         setButtonLoadingState(button, isLoading, text = 'جاري التحميل...') { if (!button) return; const span = button.querySelector('span'); const originalText = button.dataset.originalText || (span ? span.textContent : ''); if(!button.dataset.originalText && span) button.dataset.originalText = originalText; if (isLoading) { button.disabled = true; button.classList.add('loading'); if(span) span.textContent = text; } else { button.disabled = false; button.classList.remove('loading'); if(span) span.textContent = originalText; }},
-        showDragAndDropHints() {
-            const elementsToShowHint = ['#card-logo', '#card-personal-photo-wrapper', '#card-name', '#card-tagline', '#qr-code-wrapper', '.phone-button-draggable-wrapper', '.draggable-social-link'];
-            elementsToShowHint.forEach(selector => {
-                document.querySelectorAll(selector).forEach(el => {
-                    const hint = document.createElement('div');
-                    hint.className = 'dnd-hint';
-                    hint.innerHTML = `<i class="fas fa-arrows-alt" aria-hidden="true"></i>`;
-                    el.appendChild(hint);
-                });
-            });
-            hintTimeout = setTimeout(this.hideDragAndDropHints, 7000);
-        },
-        hideDragAndDropHints() {
-            clearTimeout(hintTimeout);
-            document.querySelectorAll('.dnd-hint').forEach(hint => {
-                hint.classList.add('is-hidden');
-                setTimeout(() => { hint.remove(); }, 500);
-            });
-        },
     };
 
     const DragManager = {
         init() {
             const draggableSelectors = ['#card-logo', '#card-personal-photo-wrapper', '#card-name', '#card-tagline', '#qr-code-wrapper'];
             draggableSelectors.forEach(selector => this.makeDraggable(selector));
+            this.setupDropzones();
         },
         makeDraggable(selector) {
-            interact(selector).draggable({ inertia: true, modifiers: [interact.modifiers.restrictRect({ restriction: 'parent', endOnly: true })], autoScroll: false, listeners: { start: this.dragStartListener, move: this.dragMoveListener, end: this.dragEndListener } });
+            interact(selector).draggable({ 
+                inertia: true, 
+                modifiers: [interact.modifiers.restrictRect({ restriction: 'parent', endOnly: true })], 
+                autoScroll: false, 
+                listeners: { 
+                    start: this.dragStartListener, 
+                    move: this.dragMoveListener, 
+                    end: this.dragEndListener 
+                } 
+            });
         },
-        dragStartListener(event) { UIManager.hideDragAndDropHints(); event.target.classList.add('dragging'); },
+        setupDropzones() {
+            interact('.card-content-layer').dropzone({
+                accept: '.draggable-on-card',
+                overlap: 0.5,
+                ondrop: (event) => {
+                    // --- MODIFICATION: This drop logic is now only relevant in desktop view ---
+                    if (window.innerWidth <= 1200) return;
+
+                    const droppedElement = event.relatedTarget;
+                    const dropzone = event.target;
+                    const newPlacement = dropzone.id === 'card-front-content' ? 'front' : 'back';
+
+                    const placementMap = {
+                        'card-logo': 'logo',
+                        'card-personal-photo-wrapper': 'photo',
+                        'card-name': 'name',
+                        'card-tagline': 'tagline',
+                        'qr-code-wrapper': 'qr'
+                    };
+
+                    let controlName = placementMap[droppedElement.id];
+                    let radioToSelect;
+
+                    if (controlName) {
+                        radioToSelect = document.querySelector(`input[name="placement-${controlName}"][value="${newPlacement}"]`);
+                    } else if (droppedElement.classList.contains('phone-button-draggable-wrapper')) {
+                        const phoneId = droppedElement.id;
+                        radioToSelect = document.querySelector(`#phone-control-${phoneId} input[name="placement-${phoneId}"][value="${newPlacement}"]`);
+                    } else if (droppedElement.classList.contains('draggable-social-link')) {
+                         const controlId = droppedElement.dataset.controlId;
+                         const controlElement = document.getElementById(controlId);
+                         if(controlElement) {
+                            const radioName = controlElement.querySelector('input[type="radio"]')?.name;
+                            if(radioName) {
+                                radioToSelect = controlElement.querySelector(`input[name="${radioName}"][value="${newPlacement}"]`);
+                            }
+                         }
+                    }
+
+                    if (radioToSelect && !radioToSelect.checked) {
+                        radioToSelect.checked = true;
+                        
+                        droppedElement.style.transform = 'translate(0px, 0px)';
+                        droppedElement.setAttribute('data-x', '0');
+                        droppedElement.setAttribute('data-y', '0');
+                        
+                        CardManager.renderCardContent();
+                        StateManager.saveDebounced();
+                    }
+                },
+                ondragenter: (event) => { if (window.innerWidth > 1200) event.target.classList.add('drop-target-active'); },
+                ondragleave: (event) => event.target.classList.remove('drop-target-active'),
+                ondropdeactivate: (event) => event.target.classList.remove('drop-target-active')
+            });
+        },
+        dragStartListener(event) {
+            event.target.classList.add('dragging'); 
+        },
         dragMoveListener(event) {
             const target = event.target;
             const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
@@ -636,10 +765,11 @@
         
                 const wrapper = document.createElement('div');
                 wrapper.id = phoneId;
-                wrapper.className = 'phone-button-draggable-wrapper';
+                wrapper.className = 'phone-button-draggable-wrapper draggable-on-card';
                 wrapper.dataset.controlId = group.id;
         
                 const pos = phoneData.position || { x: 0, y: 0 };
+                wrapper.style.position = 'absolute'; // تأكيد position: absolute
                 wrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
                 wrapper.setAttribute('data-x', pos.x);
                 wrapper.setAttribute('data-y', pos.y);
@@ -648,18 +778,44 @@
                 phoneLink.href = `tel:${phoneData.value.replace(/[^0-9+]/g, '')}`;
                 phoneLink.className = 'phone-button';
         
-                phoneLink.innerHTML = `
-                    <i class="fas fa-phone-alt" aria-hidden="true"></i>
-                    <span>${phoneData.value}</span>
-                    <button class="copy-btn no-export" title="نسخ الرقم" aria-label="نسخ الرقم ${phoneData.value}">
-                        <i class="fas fa-copy" aria-hidden="true"></i>
-                    </button>
-                `;
+                const icon = createElement('i', { 
+    className: 'fas fa-phone-alt', 
+    'aria-hidden': 'true' 
+});
+
+const span = createElement('span', { 
+    textContent: phoneData.value 
+});
+
+const copyBtn = createElement('button', {
+    className: 'copy-btn no-export',
+    title: 'نسخ الرقم',
+    'aria-label': `نسخ الرقم ${phoneData.value}`,
+    onclick: (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        Utils.copyTextToClipboard(phoneData.value)
+            .then(success => {
+                if (success) showToast('تم نسخ الرقم!', 'success');
+            });
+    }
+}, [
+    createElement('i', { className: 'fas fa-copy', 'aria-hidden': 'true' })
+]);
+
+phoneLink.appendChild(icon);
+phoneLink.appendChild(span);
+phoneLink.appendChild(copyBtn);
         
                 phoneLink.querySelector('.copy-btn').onclick = (e) => { e.preventDefault(); e.stopPropagation(); Utils.copyTextToClipboard(phoneData.value).then(success => { if (success) UIManager.announce('تم نسخ الرقم!'); }); };
                 phoneLink.addEventListener('click', (e) => { e.preventDefault(); UIManager.navigateToAndHighlight(wrapper.dataset.controlId); });
         
                 wrapper.appendChild(phoneLink);
+                
+                const hint = document.createElement('i');
+                hint.className = 'fas fa-arrows-alt dnd-hover-hint';
+                wrapper.appendChild(hint);
+
                 parentContainer.appendChild(wrapper);
                 DragManager.makeDraggable(`#${phoneId}`);
             });
@@ -709,14 +865,35 @@
                     <label><input type="radio" name="placement-${id}" value="back" ${placement === 'back' ? 'checked' : ''}> خلفي</label>
                 </div>
             `;
+            
+            const positionControl = document.createElement('div');
+            positionControl.className = 'form-group';
+            positionControl.innerHTML = `
+                <label>تحريك دقيق (بالبكسل)</label>
+                <div class="position-controls-grid" data-target-id="${id}"> 
+                    <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                    <div class="controls-row">
+                        <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                        <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                    </div>
+                    <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                </div>
+            `;
         
-            mainContent.append(inputWrapper, placementControl);
+            mainContent.append(inputWrapper, placementControl, positionControl);
             inputGroup.appendChild(mainContent);
         
             const handleUpdate = () => { this.renderPhoneButtons(); StateManager.saveDebounced(); };
             removeBtn.onclick = () => { inputGroup.remove(); handleUpdate(); };
             newPhoneInput.addEventListener('input', () => { handleUpdate(); CardManager.generateVCardQrDebounced(); });
             placementControl.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', handleUpdate));
+            
+            positionControl.querySelectorAll('.move-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    EventManager.moveElement(id, button.dataset.direction);
+                });
+            });
         
             DOMElements.phoneNumbersContainer.appendChild(inputGroup);
         },
@@ -761,11 +938,13 @@
 
             for (const [key, side] of Object.entries(state.placements)) {
                 if (elements[key] && containers[side]) {
+                    elements[key].style.position = 'absolute';
                     containers[side].appendChild(elements[key]);
                 }
             }
             
             this.updatePersonalPhotoStyles();
+            
             this.renderPhoneButtons();
             this.updateSocialLinks();
         },
@@ -792,8 +971,26 @@
                 qrWrapper.innerHTML = `<img src="${qrImage}" alt="QR Code" style="width: 100%; height: 100%; border-radius: 4px; object-fit: contain;">`;
             }
 
+            const hint = document.createElement('i');
+            hint.className = 'fas fa-arrows-alt dnd-hover-hint';
+            qrWrapper.appendChild(hint);
+
             qrWrapper.style.width = `${DOMElements.qrSizeSlider.value}%`;
         },
+
+        // ===== دالة جديدة مضافة =====
+        handleMasterSocialToggle() {
+            const isEnabled = DOMElements.buttons.toggleMasterSocial ? DOMElements.buttons.toggleMasterSocial.checked : true;
+            
+            // 1. إخفاء/إظهار لوحة التحكم الفرعية
+            if (DOMElements.socialControlsWrapper) {
+                DOMElements.socialControlsWrapper.style.display = isEnabled ? 'block' : 'none';
+            }
+            
+            // 2. إعادة رسم الروابط (ستكون فارغة إذا كان المفتاح مطفأ)
+            this.updateSocialLinks();
+        },
+        // ===== نهاية الدالة الجديدة =====
 
         updateSocialLinksVisibility() {
             const isVisibleAsButtons = DOMElements.buttons.toggleSocial.checked;
@@ -803,39 +1000,105 @@
             });
         },
 
+        // ============================================
+        //  بداية التعديل: إصلاح تداخل الألوان
+        // ============================================
         updateSocialButtonStyles() {
             const backButtonBgColor = DOMElements.backButtonsBgColor.value;
             const backButtonTextColor = DOMElements.backButtonsTextColor.value;
             const backButtonFont = DOMElements.backButtonsFont.value;
             const backButtonSize = DOMElements.backButtonsSize.value;
-
-            document.querySelectorAll('.draggable-social-link a').forEach(link => {
+        
+            document.querySelectorAll('.draggable-social-link:not(.text-only-mode) a').forEach(link => {
                 Object.assign(link.style, {
-                    backgroundColor: backButtonBgColor, color: backButtonTextColor, fontFamily: backButtonFont,
-                    fontSize: `${backButtonSize}px`, padding: `${backButtonSize * 0.5}px ${backButtonSize}px`,
+                    backgroundColor: backButtonBgColor,
+                    color: backButtonTextColor,
+                    fontFamily: backButtonFont,
+                    fontSize: `${backButtonSize}px`,
+                    padding: `${backButtonSize * 0.5}px ${backButtonSize}px`,
                 });
-            });
-        },
-
-        updateSocialTextStyles() {
-            const size = DOMElements.socialTextControls.size.value;
-            const color = DOMElements.socialTextControls.color.value;
-            const font = DOMElements.socialTextControls.font.value;
-            
-            document.querySelectorAll('.draggable-social-link.text-only-mode a').forEach(link => {
+        
+                // إعادة تعيين أنماط النص
                 const icon = link.querySelector('i');
                 const span = link.querySelector('span');
-                if (icon) icon.style.color = color;
+                if (icon) icon.style.color = ''; 
                 if (span) {
-                    span.style.fontSize = `${size}px`;
-                    span.style.color = color;
-                    span.style.fontFamily = font;
+                    span.style.color = ''; 
+                    span.style.fontSize = '';
+                    span.style.fontFamily = '';
                 }
             });
         },
+        
+        updateSocialTextStyles() {
+            // جلب الإعدادات العامة
+            const generalSize = DOMElements.socialTextControls.size.value;
+            const generalColor = DOMElements.socialTextControls.color.value;
+            const generalFont = DOMElements.socialTextControls.font.value;
+            
+            document.querySelectorAll('.draggable-social-link.text-only-mode').forEach(wrapper => {
+                const link = wrapper.querySelector('a');
+                if (!link) return;
+
+                const icon = link.querySelector('i');
+                const span = link.querySelector('span');
+                const controlId = wrapper.dataset.controlId; // مثل "form-group-email" أو "social-control-dynsocial_123"
+
+                let specificColor = null;
+                let specificSize = null;
+
+                // جلب الإعدادات الخاصة إذا وجدت
+                if (controlId && controlId.startsWith('form-group-static-')) {
+                    const type = controlId.replace('form-group-static-', '');
+                    specificColor = document.getElementById(`input-static-${type}-color`)?.value;
+                    specificSize = document.getElementById(`input-static-${type}-size`)?.value;
+                } else if (controlId && controlId.startsWith('social-control-dynsocial_')) {
+                    const id = controlId.replace('social-control-', '');
+                    specificColor = document.getElementById(`input-${id}-color`)?.value;
+                    specificSize = document.getElementById(`input-${id}-size`)?.value;
+                }
+
+                // تحديد اللون والحجم النهائي (الخاص أولاً، ثم العام)
+                const finalColor = (specificColor && specificColor !== '#e6f0f7') ? specificColor : generalColor;
+                const finalSize = (specificSize && specificSize !== '12') ? specificSize : generalSize;
+
+                // تطبيق الأنماط على الرابط لإلغاء أنماط الزر
+                Object.assign(link.style, {
+                    color: finalColor, // تطبيق اللون النهائي على الرابط
+                    backgroundColor: 'transparent',
+                    padding: '2px',
+                    fontSize: '', // إزالة أي حجم خط سابق
+                    fontFamily: '', // إزالة أي خط سابق
+                });
+        
+                // تطبيق الأنماط على الأيقونة والنص
+                if (icon) icon.style.color = finalColor;
+                if (span) {
+                    span.style.fontSize = `${finalSize}px`;
+                    span.style.color = finalColor;
+                    span.style.fontFamily = generalFont; // الخط العام يطبق دائماً
+                }
+            });
+        },
+        // ============================================
+        //  نهاية التعديل
+        // ============================================
 
         updateSocialLinks() {
             document.querySelectorAll('.draggable-social-link').forEach(el => el.remove());
+
+            // ============================================
+            //  الإضافة الحاسمة هنا:
+            // ============================================
+            const isMasterEnabled = DOMElements.buttons.toggleMasterSocial ? DOMElements.buttons.toggleMasterSocial.checked : true;
+            if (!isMasterEnabled) {
+                // إذا كان المفتاح الرئيسي مطفأ، لا تكمل الدالة.
+                // (تم حذف الروابط في السطر الأول، لذا ستختفي البطاقة)
+                return;
+            }
+            // ============================================
+            //  نهاية الإضافة
+            // ============================================
 
             const state = StateManager.getStateObject();
             if (!state) return;
@@ -845,14 +1108,15 @@
                 if (!value) return;
 
                 const parentContainer = placement === 'front' ? DOMElements.cardFrontContent : DOMElements.cardBackContent;
-                const elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`;
+                const elementId = id.startsWith('static-') ? `social-link-${id}` : `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`;
 
                 const linkWrapper = document.createElement('div');
                 linkWrapper.id = elementId;
-                linkWrapper.className = 'draggable-social-link';
-                linkWrapper.dataset.controlId = controlId;
+                linkWrapper.className = 'draggable-social-link draggable-on-card';
+                linkWrapper.dataset.controlId = controlId; // الربط بعنصر التحكم
 
                 const pos = position || { x: 0, y: 0 };
+                linkWrapper.style.position = 'absolute'; 
                 linkWrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
                 linkWrapper.setAttribute('data-x', pos.x);
                 linkWrapper.setAttribute('data-y', pos.y);
@@ -881,6 +1145,10 @@
                     </a>
                 `;
                 
+                const hint = document.createElement('i');
+                hint.className = 'fas fa-arrows-alt dnd-hover-hint';
+                linkWrapper.appendChild(hint);
+
                 linkWrapper.querySelector('.copy-btn').onclick = (e) => { e.preventDefault(); e.stopPropagation(); Utils.copyTextToClipboard(fullUrl).then(success => { if (success) UIManager.announce('تم نسخ الرابط!'); }); };
                 linkWrapper.querySelector('a').addEventListener('click', (e) => { if (!e.metaKey && !e.ctrlKey) { e.preventDefault(); UIManager.navigateToAndHighlight(controlId); } });
 
@@ -898,7 +1166,7 @@
                             placement: socialState.placement,
                             position: socialState.position,
                             platform: method,
-                            controlId: `form-group-${method.id}`
+                            controlId: `form-group-static-${method.id}` // <-- تم تعديل المعرف
                         });
                     }
                 });
@@ -913,7 +1181,7 @@
                             placement: link.placement,
                             position: link.position,
                             platform: Config.SOCIAL_PLATFORMS[link.platform],
-                            controlId: link.id ? `social-control-${link.id}` : `social-media-input`
+                            controlId: link.id ? `social-control-${link.id}` : `social-media-input` // الربط بالمعرف الصحيح
                         });
                     }
                 });
@@ -968,7 +1236,7 @@
             UIManager.setButtonLoadingState(button, true, 'جاري الحفظ...');
             try {
                 await Utils.loadScript(Config.SCRIPT_URLS.qrcode);
-                const designId = await ShareManager.saveDesign();
+                const designId = await ShareManager.saveDesign(); // يستخدم الدالة المعدلة
                 if (!designId) {
                     alert('فشل حفظ التصميم اللازم لإنشاء الرابط.');
                     return;
@@ -1051,7 +1319,7 @@
             const id = `dynsocial_${Date.now()}`;
         
             const linkEl = document.createElement('div');
-            linkEl.className = 'dynamic-social-link';
+            linkEl.className = 'dynamic-input-group dynamic-social-link';
             linkEl.id = `social-control-${id}`;
             linkEl.dataset.socialId = id;
             linkEl.dataset.platform = platformKey;
@@ -1067,9 +1335,11 @@
             infoWrapper.innerHTML = `
                 <i class="fas fa-grip-vertical drag-handle"></i>
                 <i class="${platform.icon}" aria-hidden="true"></i>
-                <span style="flex-grow: 1;">${value}</span>
+                <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${platform.name}: ${value}</span>
                 <button class="remove-btn" aria-label="حذف رابط ${platform.name}">×</button>
             `;
+            
+            const elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`; // تعديل لضمان معرف صالح
         
             const placementControl = document.createElement('div');
             placementControl.className = 'placement-control';
@@ -1079,14 +1349,69 @@
                     <label><input type="radio" name="placement-${id}" value="back" checked> خلفي</label>
                 </div>
             `;
-        
-            mainContent.append(infoWrapper, placementControl);
+            
+            const positionControl = document.createElement('div');
+            positionControl.className = 'form-group';
+            positionControl.innerHTML = `
+                <label>تحريك دقيق (بالبكسل)</label>
+                <div class="position-controls-grid" data-target-id="${elementId}"> 
+                    <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                    <div class="controls-row">
+                        <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                        <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                    </div>
+                    <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                </div>
+            `;
+            
+            // ===== إضافة خانات التحكم الخاصة =====
+            const formattingControl = document.createElement('details');
+            formattingControl.className = 'fieldset-accordion';
+            formattingControl.style.backgroundColor = 'var(--page-bg)';
+            formattingControl.innerHTML = `
+                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
+                <div class="fieldset-content" style="padding: 10px;">
+                    <div class="control-grid">
+                        <div class="form-group">
+                            <label for="input-${id}-color">لون الخط</label>
+                            <input type="color" id="input-${id}-color" value="#e6f0f7">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-${id}-size">حجم الخط</label>
+                            <input type="range" id="input-${id}-size" min="10" max="24" value="12">
+                        </div>
+                    </div>
+                </div>
+            `;
+            // ===== نهاية الإضافة =====
+
+            mainContent.append(infoWrapper, placementControl, positionControl, formattingControl); // إضافة formattingControl
             linkEl.appendChild(mainContent);
         
-            const handleUpdate = () => { this.updateSocialLinks(); StateManager.saveDebounced(); };
+            const handleUpdate = () => { 
+                this.updateSocialLinks(); 
+                StateManager.saveDebounced();
+                this.generateVCardQrDebounced();
+            };
             infoWrapper.querySelector('.remove-btn').addEventListener('click', () => { linkEl.remove(); handleUpdate(); });
             placementControl.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', handleUpdate));
-        
+            
+            positionControl.querySelectorAll('.move-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    EventManager.moveElement(elementId, button.dataset.direction);
+                });
+            });
+
+            // ===== ربط أحداث التنسيق الخاص =====
+            formattingControl.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => {
+                    this.updateSocialTextStyles();
+                    StateManager.saveDebounced();
+                });
+            });
+            // ===== نهاية الربط =====
+
             DOMElements.social.container.appendChild(linkEl);
             DOMElements.social.input.value = '';
             handleUpdate();
@@ -1154,21 +1479,28 @@
             DOMElements.social.container.querySelectorAll('.dynamic-social-link').forEach(group => {
                 const socialId = group.dataset.socialId;
                 const placementInput = group.querySelector(`input[name="placement-${socialId}"]:checked`);
-                const cardElement = document.getElementById(`social-link-${socialId}`);
-        
+                const cardElement = document.getElementById(`social-link-${socialId.replace(/[^a-zA-Z0-9-]/g, '-')}`); // تعديل المعرف
+                
+                // ===== حفظ الإعدادات الخاصة =====
+                const colorInput = group.querySelector(`#input-${socialId}-color`);
+                const sizeInput = group.querySelector(`#input-${socialId}-size`);
+                // ===== نهاية الحفظ =====
+
                 if (socialId) {
                     state.dynamic.social.push({
                         id: socialId,
                         platform: group.dataset.platform,
                         value: group.dataset.value,
                         placement: placementInput ? placementInput.value : 'back',
-                        position: cardElement ? { x: parseFloat(cardElement.getAttribute('data-x')) || 0, y: parseFloat(cardElement.getAttribute('data-y')) || 0 } : { x: 0, y: 0 }
+                        position: cardElement ? { x: parseFloat(cardElement.getAttribute('data-x')) || 0, y: parseFloat(cardElement.getAttribute('data-y')) || 0 } : { x: 0, y: 0 },
+                        color: colorInput ? colorInput.value : '#e6f0f7', // <-- حفظ اللون
+                        size: sizeInput ? sizeInput.value : 12 // <-- حفظ الحجم
                     });
                 }
             });
         
             Config.STATIC_CONTACT_METHODS.forEach(method => {
-                const controlGroup = document.getElementById(`form-group-${method.id}`);
+                const controlGroup = document.getElementById(`form-group-static-${method.id}`); // <-- تعديل المعرف
                 const input = document.getElementById(`input-${method.id}`);
                 const placementInput = controlGroup ? controlGroup.querySelector(`input[name="placement-static-${method.id}"]:checked`) : null;
                 const cardElement = document.getElementById(`social-link-static-${method.id}`);
@@ -1186,6 +1518,8 @@
             state.imageUrls.back = CardManager.backBgImageUrl;
             state.imageUrls.qrCode = CardManager.qrCodeImageUrl;
             state.imageUrls.photo = CardManager.personalPhotoUrl;
+            
+            // ملاحظة: لا نحفظ الصور الملتقطة هنا، هي تحفظ فقط عند الضغط على "مشاركة"
         
             const coreElements = ['card-logo', 'card-personal-photo-wrapper', 'card-name', 'card-tagline', 'qr-code-wrapper'];
             coreElements.forEach(id => {
@@ -1236,11 +1570,20 @@
                 state.dynamic.social.forEach(socialData => {
                     DOMElements.social.typeSelect.value = socialData.platform;
                     DOMElements.social.input.value = socialData.value;
-                    CardManager.addSocialLink();
+                    CardManager.addSocialLink(); // ستنشئ هذه الدالة عنصراً جديداً
+                    
+                    // الآن، ابحث عن العنصر الجديد وقم بتعبئة بياناته
                     const newControl = document.getElementById(`social-control-${socialData.id}`);
                     if(newControl) {
                         const placementRadio = newControl.querySelector(`input[value="${socialData.placement}"]`);
                         if (placementRadio) placementRadio.checked = true;
+
+                        // ===== تطبيق الإعدادات الخاصة المحفوظة =====
+                        const colorInput = newControl.querySelector(`#input-${socialData.id}-color`);
+                        const sizeInput = newControl.querySelector(`#input-${socialData.id}-size`);
+                        if (colorInput && socialData.color) colorInput.value = socialData.color;
+                        if (sizeInput && socialData.size) sizeInput.value = socialData.size;
+                        // ===== نهاية التطبيق =====
                     }
                 });
             }
@@ -1280,11 +1623,21 @@
         
             if (state.positions) {
                 for (const [id, pos] of Object.entries(state.positions)) {
-                    const el = document.getElementById(id);
-                    if (el && pos) { 
-                        el.style.transform = `translate(${pos.x}px, ${pos.y}px)`; 
-                        el.setAttribute('data-x', pos.x); 
-                        el.setAttribute('data-y', pos.y); 
+                    let elementId = id;
+                    // تعديل المعرفات لتطابق
+                    if (id.startsWith('form-group-static-') && !document.getElementById(id)) {
+                        elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
+                    }
+                    if (id.startsWith('dynsocial_') && !document.getElementById(id)) {
+                        elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`;
+                    }
+                    
+                    const targetEl = document.getElementById(elementId);
+                    
+                    if (targetEl && pos) { 
+                        targetEl.style.transform = `translate(${pos.x}px, ${pos.y}px)`; 
+                        targetEl.setAttribute('data-x', pos.x); 
+                        targetEl.setAttribute('data-y', pos.y); 
                     }
                 }
             } else { 
@@ -1304,6 +1657,10 @@
                 CardManager.autoGeneratedQrDataUrl = null;
                 CardManager.updateQrCodeDisplay();
             }
+
+            // ===== استدعاء الدالة الجديدة عند التحميل =====
+            CardManager.handleMasterSocialToggle(); 
+            // =========================================
         
             if (triggerSave) {
                 StateManager.saveDebounced();
@@ -1467,9 +1824,7 @@
                 const item = document.createElement('div'); item.className = 'gallery-item';
                 const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.className = 'gallery-item-select'; checkbox.dataset.index = index; checkbox.onchange = () => this.updateSelectionState();
                 const thumbnail = document.createElement('img'); thumbnail.src = design.thumbnail;
-                // --- بداية التعديل: تحسين النص البديل ---
                 thumbnail.alt = `معاينة لتصميم '${design.name}' المحفوظ`;
-                // --- نهاية التعديل ---
                 thumbnail.className = 'gallery-thumbnail';
                 const nameDiv = document.createElement('div'); nameDiv.className = 'gallery-item-name';
                 const nameSpan = document.createElement('span'); nameSpan.className = 'gallery-item-name-span'; nameSpan.textContent = design.name;
@@ -1534,13 +1889,48 @@
     };
     
     const ShareManager = {
-        async saveDesign() {
-            const state = StateManager.getStateObject();
+        
+        /**
+         * دالة مساعدة لالتقاط عنصر وتحويله إلى صورة ورفعها
+         * @param {HTMLElement} element - العنصر المراد التقاطه (مثل DOMElements.cardFront)
+         * @returns {Promise<string>} - رابط URL للصورة المرفوعة
+         */
+        async captureAndUploadCard(element) {
+            // 1. التأكد من تحميل مكتبة الالتقاط
+            await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
+            
+            // 2. استخدام دالة الالتقاط الموجودة لديكم بجودة عالية
+            const canvas = await ExportManager.captureElement(element, 2); // scale = 2
+            
+            return new Promise((resolve, reject) => {
+                // 3. تحويل الكانفاس إلى Blob
+                canvas.toBlob(async (blob) => {
+                    if (!blob) {
+                        return reject(new Error("فشل تحويل canvas إلى blob"));
+                    }
+                    try {
+                        // 4. تحويل الـ Blob إلى File ليتوافق مع دالة الرفع
+                        const file = new File([blob], "card-capture.png", { type: "image/png" });
+                        
+                        // 5. استخدام دالة الرفع الموجودة لديكم
+                        const imageUrl = await UIManager.uploadImageToServer(file);
+                        
+                        resolve(imageUrl);
+                    } catch (e) {
+                        reject(e);
+                    }
+                }, 'image/png', 0.95); // استخدام جودة 95%
+            });
+        },
+        
+        async saveDesign(stateToSave = null) {
+            // إذا لم يتم تمرير كائن، احصل عليه بالطريقة التقليدية
+            const state = stateToSave || StateManager.getStateObject();
             try {
                 const response = await fetch(`${Config.API_BASE_URL}/api/save-design`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(state),
+                    body: JSON.stringify(state), // إرسال الكائن
                 });
                 if (!response.ok) throw new Error('Server responded with an error');
                 
@@ -1572,11 +1962,42 @@
         },
         
         async shareCard() {
-            UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true);
-            const designId = await this.saveDesign();
+            UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, 'جاري الالتقاط...');
+            
+            let frontImageUrl, backImageUrl, state;
+            
+            try {
+                // 1. احصل على الحالة الحالية أولاً
+                state = StateManager.getStateObject();
+    
+                // 2. التقاط ورفع الواجهة الأمامية
+                frontImageUrl = await this.captureAndUploadCard(DOMElements.cardFront);
+                
+                // 3. التقاط ورفع الواجهة الخلفية
+                UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, 'جاري رفع الصور...');
+                backImageUrl = await this.captureAndUploadCard(DOMElements.cardBack);
+    
+            } catch (error) {
+                console.error("Card capture/upload failed:", error);
+                alert("فشل التقاط أو رفع صورة البطاقة. يرجى المحاولة مرة أخرى.");
+                UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
+                return;
+            }
+    
+            // 4. إضافة روابط الصور الملتقطة إلى كائن الحالة
+            if (!state.imageUrls) state.imageUrls = {};
+            state.imageUrls.capturedFront = frontImageUrl;
+            state.imageUrls.capturedBack = backImageUrl;
+    
+            // 5. حفظ التصميم (نمرر له كائن state المعدل)
+            UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, 'جاري الحفظ...');
+            
+            const designId = await this.saveDesign(state); 
+            
             UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
             if (!designId) return;
-
+    
+            // 6. إنشاء رابط المشاركة
             const viewerUrl = new URL('viewer.html', window.location.href);
             viewerUrl.searchParams.set('id', designId);
             
@@ -1585,7 +2006,8 @@
 
         async shareEditor() {
             UIManager.setButtonLoadingState(DOMElements.buttons.shareEditor, true);
-            const designId = await this.saveDesign();
+            // عند مشاركة المحرر، نستخدم دالة الحفظ التقليدية بدون التقاط صور
+            const designId = await this.saveDesign(); 
             UIManager.setButtonLoadingState(DOMElements.buttons.shareEditor, false);
             if (!designId) return;
             
@@ -1640,6 +2062,28 @@
             container.addEventListener('dragover', e => { e.preventDefault(); const afterElement = [...container.children].reduce((closest, child) => { const box = child.getBoundingClientRect(); const offset = e.clientY - box.top - box.height / 2; if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; } else { return closest; } }, { offset: Number.NEGATIVE_INFINITY }).element; if (afterElement == null) { container.appendChild(draggedItem); } else { container.insertBefore(draggedItem, afterElement); } });
             container.addEventListener('drop', () => { if (onSortCallback) onSortCallback(); StateManager.saveDebounced(); });
         },
+        
+        moveElement(elementId, direction, step = 5) {
+            const target = document.getElementById(elementId);
+            if (!target) return;
+
+            let x = parseFloat(target.getAttribute('data-x')) || 0;
+            let y = parseFloat(target.getAttribute('data-y')) || 0;
+
+            switch (direction) {
+                case 'up': y -= step; break;
+                case 'down': y += step; break;
+                case 'left': x -= step; break;
+                case 'right': x += step; break;
+            }
+
+            target.style.transform = `translate(${x}px, ${y}px)`;
+            target.setAttribute('data-x', x);
+            target.setAttribute('data-y', y);
+            
+            StateManager.saveDebounced();
+        },
+
         bindEvents() {
             document.querySelectorAll('input, select, textarea').forEach(input => { 
                 const eventType = (input.type === 'range' || input.type === 'color' || input.type === 'checkbox') ? 'change' : 'input';
@@ -1652,9 +2096,23 @@
                     CardManager.updateElementFromInput(input);
                     if (input.id.includes('photo-')) CardManager.updatePersonalPhotoStyles();
                     if (input.id.includes('phone-btn')) CardManager.updatePhoneButtonStyles();
-                    if (input.id.startsWith('back-buttons')) CardManager.updateSocialButtonStyles();
-                    if (input.id.startsWith('social-text')) CardManager.updateSocialTextStyles();
-                    if (input.id.startsWith('input-')) CardManager.updateSocialLinks();
+                    
+                    // ============================================
+                    //  بداية التعديل: فصل منطق الاستدعاء
+                    // ============================================
+                    // التنسيقات الخاصة بالأزرار
+                    if (input.id.startsWith('back-buttons')) {
+                        CardManager.updateSocialButtonStyles();
+                    }
+                    // التنسيقات الخاصة بالنص (العامة أو الخاصة)
+                    if (input.id.startsWith('social-text') || input.id.includes('-static-') || input.id.includes('-dynsocial_')) {
+                        CardManager.updateSocialTextStyles();
+                    }
+                    // ============================================
+                    //  نهاية التعديل
+                    // ============================================
+
+                    if (input.id.startsWith('input-') && !input.id.includes('-static-') && !input.id.includes('-dynsocial_')) CardManager.updateSocialLinks(); // منع الاستدعاء المزدوج
                     if (input.id.startsWith('front-bg-') || input.id.startsWith('back-bg-')) CardManager.updateCardBackgrounds();
                     if (input.id === 'qr-size') CardManager.updateQrCodeDisplay();
                     
@@ -1667,10 +2125,48 @@
                         CardManager.updateSocialLinks();
                     }
                 });
-                input.addEventListener('focus', () => UIManager.highlightElement(input.dataset.updateTarget, true)); 
-                input.addEventListener('blur', () => UIManager.highlightElement(input.dataset.updateTarget, false)); 
+                input.addEventListener('focus', () => {
+                    let draggableId = input.dataset.updateTarget;
+                    const parentGroup = input.closest('.form-group');
+                    // تعديل المعرف
+                    if (parentGroup && parentGroup.id.startsWith('form-group-static-')) {
+                        draggableId = `social-link-static-${parentGroup.id.replace('form-group-static-', '')}`;
+                    }
+                    if (draggableId) UIManager.highlightElement(draggableId, true);
+                    
+                }); 
+                input.addEventListener('blur', () => {
+                    let draggableId = input.dataset.updateTarget;
+                    const parentGroup = input.closest('.form-group');
+                    // تعديل المعرف
+                    if (parentGroup && parentGroup.id.startsWith('form-group-static-')) {
+                        draggableId = `social-link-static-${parentGroup.id.replace('form-group-static-', '')}`;
+                    }
+                    if (draggableId) UIManager.highlightElement(draggableId, false);
+                }); 
             });
             
+            document.querySelectorAll('.position-controls-grid').forEach(grid => {
+                grid.querySelectorAll('.move-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const direction = button.dataset.direction;
+                        let targetId = grid.dataset.targetId;
+                        
+                        // تعديل المعرف
+                        if (targetId && targetId.startsWith('form-group-static-')) {
+                             targetId = `social-link-static-${targetId.replace('form-group-static-', '')}`;
+                        }
+                        
+                        if (targetId) {
+                            EventManager.moveElement(targetId, direction);
+                        } else {
+                            console.error("Missing targetId for move button.");
+                        }
+                    });
+                });
+            });
+
             DOMElements.qrSourceRadios.forEach(radio => {
                 radio.addEventListener('change', () => {
                     const selectedValue = radio.value;
@@ -1693,14 +2189,24 @@
             document.querySelectorAll('input[name^="placement-"]').forEach(radio => {
                 radio.addEventListener('change', () => {
                     const elementName = radio.name.replace('placement-', '');
-                    const elementsMap = {
-                        logo: DOMElements.draggable.logo,
-                        photo: DOMElements.draggable.photo,
-                        name: DOMElements.draggable.name,
-                        tagline: DOMElements.draggable.tagline,
-                        qr: DOMElements.draggable.qr
-                    };
-                    const elementToReset = elementsMap[elementName];
+                    let elementToReset;
+                    
+                    const staticMatch = elementName.match(/static-(.*)/);
+                    if (staticMatch) {
+                        elementToReset = document.getElementById(`social-link-static-${staticMatch[1]}`);
+                    } else if (elementName.startsWith('dynsocial_')) {
+                        elementToReset = document.getElementById(`social-link-${elementName.replace(/[^a-zA-Z0-9-]/g, '-')}`); // تعديل المعرف
+                    } else {
+                        const elementsMap = {
+                            logo: DOMElements.draggable.logo,
+                            photo: DOMElements.draggable.photo,
+                            name: DOMElements.draggable.name,
+                            tagline: DOMElements.draggable.tagline,
+                            qr: DOMElements.draggable.qr
+                        };
+                        elementToReset = elementsMap[elementName];
+                    }
+
                     if (elementToReset) {
                         elementToReset.style.transform = 'translate(0px, 0px)';
                         elementToReset.setAttribute('data-x', '0');
@@ -1772,8 +2278,6 @@
             DOMElements.buttons.addSocial.addEventListener('click', () => CardManager.addSocialLink());
             DOMElements.buttons.reset.addEventListener('click', () => StateManager.reset());
             DOMElements.layoutSelect.addEventListener('change', e => CardManager.applyLayout(e.target.value));
-            DOMElements.buttons.directionToggle.addEventListener('click', UIManager.toggleDirection);
-            DOMElements.buttons.startTour.addEventListener('click', () => TourManager.start());
             
             DOMElements.buttons.shareCard.addEventListener('click', () => {
                 if (typeof gtag === 'function') { gtag('event', 'share_card', { 'share_type': 'viewer_link' }); }
@@ -1793,12 +2297,35 @@
             
             const flipCard = () => { DOMElements.cardsWrapper.classList.toggle('is-flipped'); }
             DOMElements.buttons.mobileFlip.addEventListener('click', (e) => { e.stopPropagation(); flipCard(); });
+
+            // --- START: MODIFICATION ---
+            // تم إلغاء تفعيل هذا الكود ليعمل زر الموبايل فقط
+            /*
+            DOMElements.cardsWrapper.addEventListener('click', (e) => {
+                if (e.target.closest('a') || e.target.closest('button')) {
+                    return;
+                }
+                flipCard();
+            });
+            */
+            // --- END: MODIFICATION ---
+
             DOMElements.buttons.togglePhone.addEventListener('input', () => { CardManager.updatePhoneButtonsVisibility(); });
+            
+            // ===== تعديل/إضافة ربط الأحداث =====
             DOMElements.buttons.toggleSocial.addEventListener('input', () => { 
                 CardManager.updateSocialLinksVisibility();
                 CardManager.updateSocialButtonStyles();
                 CardManager.updateSocialTextStyles();
             });
+
+            if (DOMElements.buttons.toggleMasterSocial) {
+                DOMElements.buttons.toggleMasterSocial.addEventListener('input', () => {
+                    CardManager.handleMasterSocialToggle();
+                    StateManager.saveDebounced();
+                });
+            }
+            // ===== نهاية التعديل =====
 
             const phoneTextControlsList = [...DOMElements.phoneTextControls.layoutRadios, DOMElements.phoneTextControls.size, DOMElements.phoneTextControls.color, DOMElements.phoneTextControls.font];
             phoneTextControlsList.forEach(control => {
@@ -1808,6 +2335,17 @@
             DOMElements.buttons.removeFrontBg.addEventListener('click', () => { CardManager.frontBgImageUrl = null; DOMElements.fileInputs.frontBg.value = ''; DOMElements.frontBgOpacity.value = 1; DOMElements.frontBgOpacity.dispatchEvent(new Event('input')); DOMElements.buttons.removeFrontBg.style.display = 'none'; CardManager.updateCardBackgrounds(); StateManager.saveDebounced(); });
             DOMElements.buttons.removeBackBg.addEventListener('click', () => { CardManager.backBgImageUrl = null; DOMElements.fileInputs.backBg.value = ''; DOMElements.backBgOpacity.value = 1; DOMElements.backBgOpacity.dispatchEvent(new Event('input')); DOMElements.buttons.removeBackBg.style.display = 'none'; CardManager.updateCardBackgrounds(); StateManager.saveDebounced(); });
             
+            DOMElements.buttons.downloadOptions.addEventListener('click', (e) => {
+                e.stopPropagation();
+                DOMElements.downloadMenu.classList.toggle('show');
+            });
+
+            window.addEventListener('click', (e) => {
+                if (!DOMElements.downloadContainer.contains(e.target)) {
+                    DOMElements.downloadMenu.classList.remove('show');
+                }
+            });
+
             DOMElements.buttons.downloadPngFront.addEventListener('click', (e) => {
                 if (typeof gtag === 'function') { gtag('event', 'save_card', { 'file_type': 'png_front' }); }
                 ExportManager.pendingExportTarget = 'front'; UIManager.showModal(DOMElements.exportModal.overlay, e.currentTarget);
@@ -1884,10 +2422,6 @@
             DOMElements.buttons.undoBtn.addEventListener('click', () => HistoryManager.undo());
             DOMElements.buttons.redoBtn.addEventListener('click', () => HistoryManager.redo());
             
-            // ===== بداية الكود المضاف لمركز المساعدة =====
-            DOMElements.buttons.showHelp.addEventListener('click', (e) => {
-                UIManager.showModal(DOMElements.helpModal.overlay, e.currentTarget);
-            });
             DOMElements.helpModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.helpModal.overlay));
             DOMElements.helpModal.overlay.addEventListener('click', e => { 
                 if(e.target === DOMElements.helpModal.overlay) UIManager.hideModal(DOMElements.helpModal.overlay); 
@@ -1897,64 +2431,122 @@
                 const button = e.target.closest('.help-tab-btn');
                 if (!button) return;
 
-                // إزالة active من كل الأزرار والصفحات
                 DOMElements.helpModal.nav.querySelectorAll('.help-tab-btn').forEach(btn => btn.classList.remove('active'));
                 DOMElements.helpModal.panes.forEach(pane => pane.classList.remove('active'));
 
-                // إضافة active للزر والصفحة المستهدفة
                 button.classList.add('active');
                 const targetPane = document.getElementById(button.dataset.tabTarget);
                 if (targetPane) {
                     targetPane.classList.add('active');
                 }
             });
-            // ===== نهاية الكود المضاف لمركز المساعدة =====
         }
     };
     const App = {
+        
+        // --- ========================================= ---
+        // --- === MODIFICATION START (JS) === ---
+        // --- ========================================= ---
         initResponsiveLayout() {
             const isMobile = window.innerWidth <= 1200;
             const sourceContainer = document.getElementById('ui-elements-source');
+            
+            // حاويات الموبايل
             const mobileControlsContainer = document.querySelector('.controls-column');
-            const desktopControlsContainer = document.querySelector('.actions-column .desktop-controls-wrapper .tabs-content');
-            const desktopActionsContainer = document.querySelector('.controls-column');
+            
+            // حاويات الديسكتوب
+            const desktopLeftContainer = document.querySelector('.actions-column .desktop-controls-wrapper');
+            const desktopRightContainer = document.querySelector('.controls-column');
+
 
             if (isMobile) {
+                // --- منطق الموبايل (معدل) ---
                 if (!mobileControlsContainer.querySelector('.mobile-tabs-nav')) {
                     const mobileNav = document.createElement('div');
                     mobileNav.className = 'mobile-tabs-nav';
-                    mobileNav.innerHTML = `<button class="mobile-tab-btn active" data-tab-target="tab-front">الواجهة الأمامية</button><button class="mobile-tab-btn" data-tab-target="tab-back">الواجهة الخلفية</button><button class="mobile-tab-btn" data-tab-target="tab-actions">التصاميم والحفظ</button>`;
+                    // تم تعديل أسماء التبويبات لتكون أوضح
+                    mobileNav.innerHTML = `
+                        <button class="mobile-tab-btn active" data-tab-target="#tab-elements">🎨 العناصر</button>
+                        <button class="mobile-tab-btn" data-tab-target="#tab-design">🖌️ التصميم</button>
+                        <button class="mobile-tab-btn" data-tab-target="#tab-actions">💾 حفظ</button>
+                    `;
+                    
                     const mobileTabsContent = document.createElement('div');
                     mobileTabsContent.className = 'tabs-content';
-                    mobileTabsContent.innerHTML = `<div id="tab-front" class="tab-pane active"></div><div id="tab-back" class="tab-pane"></div><div id="tab-actions" class="tab-pane"></div>`;
-                    mobileControlsContainer.innerHTML = '';
+                    mobileTabsContent.innerHTML = `
+                        <div id="tab-elements" class="tab-pane active"></div>
+                        <div id="tab-design" class="tab-pane"></div>
+                        <div id="tab-actions" class="tab-pane"></div>
+                    `;
+                    mobileControlsContainer.innerHTML = ''; // تنظيف الحاوية
                     mobileControlsContainer.appendChild(mobileNav);
                     mobileControlsContainer.appendChild(mobileTabsContent);
                 }
-                document.querySelectorAll('#ui-elements-source [data-tab-destination]').forEach(group => {
-                    const destinationId = group.dataset.tabDestination;
+                
+                // البحث عن وجهة الموبايل
+                document.querySelectorAll('#ui-elements-source [data-mobile-destination]').forEach(group => {
+                    let destinationId = '';
+                    
+                    // دمج "الأمامي" و "الخلفي" في تبويب "العناصر"
+                    if (group.dataset.mobileDestination === 'tab-front' || group.dataset.mobileDestination === 'tab-back') {
+                        destinationId = 'tab-elements';
+                    } 
+                    // فصل "التصميم" عن "الحفظ"
+                    else if (group.dataset.mobileDestination === 'tab-actions') {
+                        // العناصر التي تذهب لليسار في الديسكتوب هي "تصميم"
+                        if (group.dataset.desktopDestination === 'desktop-left') {
+                             destinationId = 'tab-design';
+                        } else {
+                             // العناصر المتبقية (مثل الحفظ) تذهب لـ "حفظ"
+                             destinationId = 'tab-actions';
+                        }
+                    }
+
                     const destinationPane = document.getElementById(destinationId);
-                    if (destinationPane) Array.from(group.children).forEach(child => destinationPane.appendChild(child));
+                    if (destinationPane) {
+                        Array.from(group.children).forEach(child => destinationPane.appendChild(child));
+                    }
                 });
+
+                // إعادة تفعيل التبويب الأول (العناصر)
+                TabManager.init('.mobile-tabs-nav', '.mobile-tab-btn');
+                const firstButton = mobileControlsContainer.querySelector('.mobile-tab-btn[data-tab-target="#tab-elements"]');
+                const firstPane = document.getElementById('tab-elements');
+                if (firstButton && firstPane) {
+                    mobileControlsContainer.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
+                    mobileControlsContainer.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    firstButton.classList.add('active');
+                    firstPane.classList.add('active');
+                }
+
+
             } else {
-                mobileControlsContainer.innerHTML = '';
-                const frontControls = sourceContainer.querySelector('[data-tab-destination="tab-front"]');
-                const backControls = sourceContainer.querySelector('[data-tab-destination="tab-back"]');
-                const desktopFrontPane = document.createElement('div');
-                desktopFrontPane.id = 'tab-front';
-                desktopFrontPane.className = 'tab-pane active';
-                const desktopBackPane = document.createElement('div');
-                desktopBackPane.id = 'tab-back';
-                desktopBackPane.className = 'tab-pane';
-                if (frontControls) Array.from(frontControls.children).forEach(child => desktopFrontPane.appendChild(child));
-                if (backControls) Array.from(backControls.children).forEach(child => desktopBackPane.appendChild(child));
-                desktopControlsContainer.innerHTML = '';
-                desktopControlsContainer.appendChild(desktopFrontPane);
-                desktopControlsContainer.appendChild(desktopBackPane);
-                const actionsControls = sourceContainer.querySelector('[data-tab-destination="tab-actions"]');
-                if(actionsControls) Array.from(actionsControls.children).forEach(child => desktopActionsContainer.appendChild(child));
+                // --- منطق الديسكتوب (المعدل) ---
+                
+                // 1. تنظيف الحاويات
+                desktopLeftContainer.innerHTML = '<h3 style="text-align:center; margin-top:0; color: var(--accent-primary);">أدوات عامة</h3>'; // إعادة العنوان
+                desktopRightContainer.innerHTML = '<h3 style="text-align:center; margin-top:0; color: var(--accent-primary);">تعديل العناصر</h3>'; // إضافة عنوان
+
+                // 2. توزيع العناصر بناءً على وجهة الديسكتوب
+                document.querySelectorAll('#ui-elements-source [data-desktop-destination]').forEach(group => {
+                    let destinationContainer = null;
+                    
+                    if (group.dataset.desktopDestination === 'desktop-left') {
+                        destinationContainer = desktopLeftContainer;
+                    } else if (group.dataset.desktopDestination === 'desktop-right') {
+                        destinationContainer = desktopRightContainer;
+                    }
+
+                    if (destinationContainer) {
+                        Array.from(group.children).forEach(child => destinationContainer.appendChild(child));
+                    }
+                });
             }
         },
+        // --- ========================================= ---
+        // --- === MODIFICATION END (JS) === ---
+        // --- ========================================= ---
+
 
         async init() {
             Object.assign(DOMElements, {
@@ -2003,29 +2595,31 @@
                 sounds: { success: document.getElementById('audio-success'), error: document.getElementById('audio-error') },
                 phoneTextControls: { container: document.getElementById('phone-text-controls'), layoutRadios: document.querySelectorAll('input[name="phone-text-layout"]'), size: document.getElementById('phone-text-size'), color: document.getElementById('phone-text-color'), font: document.getElementById('phone-text-font'), },
                 socialTextControls: { container: document.getElementById('social-text-controls'), size: document.getElementById('social-text-size'), color: document.getElementById('social-text-color'), font: document.getElementById('social-text-font'), },
+                socialControlsWrapper: document.getElementById('social-controls-wrapper'), // <-- إضافة جديدة
                 exportLoadingOverlay: document.getElementById('export-loading-overlay'),
                 exportModal: { overlay: document.getElementById('export-modal-overlay'), closeBtn: document.getElementById('export-modal-close'), confirmBtn: document.getElementById('confirm-export-btn'), format: document.getElementById('export-format'), qualityGroup: document.getElementById('export-quality-group'), quality: document.getElementById('export-quality'), qualityValue: document.getElementById('export-quality-value'), scaleContainer: document.querySelector('.scale-buttons') },
                 galleryModal: { overlay: document.getElementById('gallery-modal-overlay'), closeBtn: document.getElementById('gallery-modal-close'), grid: document.getElementById('gallery-grid'), selectAllBtn: document.getElementById('gallery-select-all'), deselectAllBtn: document.getElementById('gallery-deselect-all'), downloadZipBtn: document.getElementById('gallery-download-zip') },
                 shareModal: { overlay: document.getElementById('share-fallback-modal-overlay'), closeBtn: document.getElementById('share-fallback-modal-close'), email: document.getElementById('share-email'), whatsapp: document.getElementById('share-whatsapp'), twitter: document.getElementById('share-twitter'), copyLink: document.getElementById('share-copy-link') },
-                // ===== بداية الإضافة لمركز المساعدة =====
+                downloadContainer: document.querySelector('.download-container'),
+                downloadMenu: document.getElementById('download-menu'),
                 helpModal: {
                     overlay: document.getElementById('help-modal-overlay'),
                     closeBtn: document.getElementById('help-modal-close'),
                     nav: document.querySelector('.help-tabs-nav'),
                     panes: document.querySelectorAll('.help-tab-pane')
                 },
-                // ===== نهاية الإضافة لمركز المساعدة =====
+                
                 buttons: { 
                     addPhone: document.getElementById('add-phone-btn'), addSocial: document.getElementById('add-social-btn'), 
-                    directionToggle: document.getElementById('direction-toggle-btn'), 
-                    startTour: document.getElementById('start-wizard-btn'),
                     removeFrontBg: document.getElementById('remove-front-bg-btn'), removeBackBg: document.getElementById('remove-back-bg-btn'),
                     backToTop: document.getElementById('back-to-top-btn'), mobileFlip: document.getElementById('mobile-flip-btn'), togglePhone: document.getElementById('toggle-phone-buttons'),
                     toggleSocial: document.getElementById('toggle-social-buttons'),
+                    toggleMasterSocial: document.getElementById('toggle-master-social'), // <-- إضافة جديدة
                     saveToGallery: document.getElementById('save-to-gallery-btn'),
                     showGallery: document.getElementById('show-gallery-btn'),
                     shareCard: document.getElementById('share-card-btn'),
                     shareEditor: document.getElementById('share-editor-btn'),
+                    downloadOptions: document.getElementById('download-options-btn'),
                     downloadPngFront: document.getElementById('download-png-front'),
                     downloadPngBack: document.getElementById('download-png-back'),
                     downloadPdf: document.getElementById('download-pdf'),
@@ -2035,10 +2629,18 @@
                     undoBtn: document.getElementById('undo-btn'),
                     redoBtn: document.getElementById('redo-btn'),
                     generateAutoQr: document.getElementById('generate-auto-qr-btn'),
-                    showHelp: document.getElementById('show-help-btn'),
                 }
             });
             
+            Object.values(DOMElements.draggable).forEach(el => {
+                if (el) {
+                    el.classList.add('draggable-on-card');
+                    const hint = document.createElement('i');
+                    hint.className = 'fas fa-arrows-alt dnd-hover-hint';
+                    el.appendChild(hint);
+                }
+            });
+
             this.initResponsiveLayout();
             window.addEventListener('resize', Utils.debounce(() => this.initResponsiveLayout(), 150));
             
@@ -2074,17 +2676,13 @@
             DragManager.init();
             
             TabManager.init('.mobile-tabs-nav', '.mobile-tab-btn');
-            TabManager.init('.desktop-tabs-nav', '.desktop-tab-btn');
+            // تم إلغاء تفعيل هذا السطر لأنه لم يعد لدينا تبويبات ديسكتوب
+            // TabManager.init('.desktop-tabs-nav', '.desktop-tab-btn');
 
             UIManager.announce("محرر بطاقة الأعمال جاهز للاستخدام.");
             
-            if (!localStorage.getItem(Config.DND_HINT_SHOWN_KEY)) {
-                setTimeout(() => UIManager.showDragAndDropHints(), 1000);
-                localStorage.setItem(Config.DND_HINT_SHOWN_KEY, 'true');
-            }
-
             TourManager.init();
-            if (!localStorage.getItem(TourManager.TOUR_SHOWN_KEY)) {
+            if (!localStorage.getItem(TourManager.TOUR_SHOWN_KEY) || !loadedFromStorage) {
                 setTimeout(() => {
                     TourManager.start();
                 }, 1500);
@@ -2092,4 +2690,119 @@
         }
     };
     document.addEventListener('DOMContentLoaded', () => App.init());
+})();
+/* =======================================================================
+   كل الكود السابق كما هو (عمليات المحرر، واجهة المستخدم، التفاعلات ...)
+   ======================================================================= */
+
+/* === Thumbnail generation and upload helpers ===
+   - generateThumbnailFromDesign(design): يبني بطاقة مصغرة من بيانات التصميم ويلتقطها بـ html2canvas
+   - uploadThumbnail(designId, dataUrl): يرفع الصورة المصغرة إلى الخادم لتخزينها في قاعدة البيانات
+   - يمكن استدعاؤهما من أي صفحة (مثل gallery.html)
+*/
+(function(){
+  async function loadHtml2CanvasOnce(){
+    if (window._html2canvasPromise) return window._html2canvasPromise;
+    window._html2canvasPromise = new Promise((resolve, reject) => {
+      if (window.html2canvas) return resolve(window.html2canvas);
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload = () => resolve(window.html2canvas);
+      s.onerror = () => reject(new Error('Failed to load html2canvas'));
+      document.head.appendChild(s);
+    });
+    return window._html2canvasPromise;
+  }
+
+  function escapeHtml(str){
+    if(!str) return '';
+    return String(str).replace(/[&<>"']/g, function (s) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s];
+    });
+  }
+
+  // === إنشاء مصغرة من بيانات التصميم ===
+  window.generateThumbnailFromDesign = async function generateThumbnailFromDesign(design, width=800, height=520){
+    try {
+      await loadHtml2CanvasOnce();
+    } catch(e){
+      console.error('html2canvas load failed', e);
+      return null;
+    }
+    const inputs = (design && design.data && design.data.inputs) ? design.data.inputs : {};
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = '-9999px';
+    wrapper.style.top = '0';
+    wrapper.style.width = width + 'px';
+    wrapper.style.height = height + 'px';
+    wrapper.style.zIndex = '-9999';
+    wrapper.style.opacity = '0';
+    wrapper.setAttribute('aria-hidden','true');
+
+    const name = escapeHtml(inputs['input-name'] || 'الاسم هنا');
+    const tagline = escapeHtml(inputs['input-tagline'] || '');
+    const logo = inputs['input-logo'] || '/nfc/mcprime-logo-transparent.png';
+    const nameColor = inputs['name-color'] || '#e6f0f7';
+    const tagColor = inputs['tagline-color'] || '#4da6ff';
+    const start = inputs['front-bg-start'] || '#2a3d54';
+    const end = inputs['front-bg-end'] || '#223246';
+    const logoSize = inputs['logo-size'] || 25;
+    const nameSize = inputs['name-font-size'] || 22;
+    const tagSize = inputs['tagline-font-size'] || 14;
+    const font = inputs['name-font'] || 'Tajawal, sans-serif';
+
+    wrapper.innerHTML = `
+      <div style="box-sizing:border-box;width:${width}px;height:${height}px;display:flex;align-items:center;justify-content:center;font-family:${font};background: linear-gradient(135deg, ${start}, ${end});color:${nameColor};padding:20px;">
+        <div style="width:92%;height:86%;border-radius:12px;overflow:hidden;display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:20px;box-shadow:0 6px 18px rgba(0,0,0,0.25);background: rgba(255,255,255,0.02);">
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px;justify-content:center;align-items:flex-end;text-align:right;">
+            <div style="font-weight:700;font-size:${nameSize}px;line-height:1;">${name}</div>
+            <div style="font-size:${tagSize}px;color:${tagColor};opacity:0.95;">${tagline}</div>
+          </div>
+          <div style="width:120px;display:flex;align-items:center;justify-content:center;">
+            <img src="${logo}" alt="logo" style="max-width:${logoSize}%;opacity:1;object-fit:contain;"/>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(wrapper);
+    try {
+      const canvas = await window.html2canvas(wrapper, {
+        scale: Math.min(window.devicePixelRatio || 1, 2),
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      return dataUrl;
+    } catch (err) {
+      console.error('html2canvas capture failed', err);
+      return null;
+    } finally {
+      wrapper.remove();
+    }
+  };
+
+  // === رفع المصغرة للخادم ===
+  window.uploadThumbnail = async function uploadThumbnail(designId, dataUrl){
+    try {
+      const base = (typeof Config !== 'undefined' && Config.API_BASE_URL !== undefined) ? Config.API_BASE_URL : '';
+      const url = (base ? base.replace(/\/+$/, '') : '') + `/api/designs/${encodeURIComponent(designId)}/thumbnail`;
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ thumbnail: dataUrl })
+      });
+      if (!resp.ok) {
+        const txt = await resp.text();
+        console.warn('uploadThumbnail failed', resp.status, txt);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('uploadThumbnail error', e);
+      return false;
+    }
+  };
 })();
