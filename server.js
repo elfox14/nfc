@@ -44,32 +44,19 @@ app.use(helmet.contentSecurityPolicy({
     scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
     styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
-    mediaSrc: ["'self'", "data:"],
-    frameSrc: ["'self'", "https://www.youtube.com"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
-    objectSrc: ["'none'"],
-    upgradeInsecureRequests: [],
-  },
-}));
-function absoluteBaseUrl(req) {
-  const envBase = process.env.SITE_BASE_URL;
-  if (envBase) return envBase.replace(/\/+$/, '');
-  const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'https');
-  const host = req.get('host');
-  return `${proto}://${host}`;
-}
+    return `${proto}://${host}`;
+  }
 
 // قائمة بالحقول النصية التي يجب تعقيمها
 const FIELDS_TO_SANITIZE = [
-  'input-name', 'input-tagline',
-  'input-email', 'input-website',
-  'input-whatsapp', 'input-facebook', 'input-linkedin'
-];
+    'input-name', 'input-tagline',
+    'input-email', 'input-website',
+    'input-whatsapp', 'input-facebook', 'input-linkedin'
+  ];
 
-// دالة تعقيم لكائن الإدخالات
-function sanitizeInputs(inputs) {
-  if (!inputs) return {};
+  // دالة تعقيم لكائن الإدخالات
+  function sanitizeInputs(inputs) {
+  if(!inputs) return {};
   const sanitized = { ...inputs };
   FIELDS_TO_SANITIZE.forEach(k => {
     if (sanitized[k]) {
@@ -77,22 +64,22 @@ function sanitizeInputs(inputs) {
     }
   });
   // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
-  if (sanitized.dynamic && sanitized.dynamic.social) {
-    sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
-      ...link,
-      // التأكد من أن القيمة موجودة قبل التعقيم
-      value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
-    }));
-  }
+  if(sanitized.dynamic && sanitized.dynamic.social) {
+  sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
+    ...link,
+    // التأكد من أن القيمة موجودة قبل التعقيم
+    value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
+  }));
+}
   // تعقيم أرقام الهواتف الديناميكية
   if (sanitized.dynamic && sanitized.dynamic.phones) {
-    sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
-      ...phone,
-      // التأكد من أن القيمة موجودة قبل التعقيم
-      value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
-    }));
-  }
-  return sanitized;
+  sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
+    ...phone,
+    // التأكد من أن القيمة موجودة قبل التعقيم
+    value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
+  }));
+}
+return sanitized;
 }
 
 // --- صفحة عرض SEO الجديدة (صيغة Query) ---
