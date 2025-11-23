@@ -22,7 +22,7 @@ const DOMPurify = DOMPurifyFactory(window);
 const app = express();
 app.use(compression());
 const port = process.env.PORT || 3000;
-
+const rootDir = __dirname;
 // --- إعدادات عامة ---
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
@@ -31,6 +31,7 @@ app.disable('x-powered-by');
 app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
+<<<<<<< HEAD
 try {
   if (!db) {
     res.setHeader('X-Robots-Tag', 'noindex, noarchive');
@@ -44,6 +45,58 @@ try {
     res.setHeader('X-Robots-Tag', 'noindex, noarchive');
     return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
   }
+=======
+app.use(helmet.hsts({
+  maxAge: 31536000,
+  includeSubDomains: true,
+  preload: true
+}));
+
+// Custom CSP to allow necessary external resources
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
+    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+    fontSrc: ["'self'", "https://fonts.gstatic.com"],
+    return `${proto}://${host}`;
+  }
+
+// قائمة بالحقول النصية التي يجب تعقيمها
+const FIELDS_TO_SANITIZE = [
+    'input-name', 'input-tagline',
+    'input-email', 'input-website',
+    'input-whatsapp', 'input-facebook', 'input-linkedin'
+  ];
+
+  // دالة تعقيم لكائن الإدخالات
+  function sanitizeInputs(inputs) {
+  if(!inputs) return {};
+  const sanitized = { ...inputs };
+  FIELDS_TO_SANITIZE.forEach(k => {
+    if (sanitized[k]) {
+      sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
+    }
+  });
+  // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
+  if(sanitized.dynamic && sanitized.dynamic.social) {
+  sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
+    ...link,
+    // التأكد من أن القيمة موجودة قبل التعقيم
+    value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
+  }));
+}
+  // تعقيم أرقام الهواتف الديناميكية
+  if (sanitized.dynamic && sanitized.dynamic.phones) {
+  sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
+    ...phone,
+    // التأكد من أن القيمة موجودة قبل التعقيم
+    value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
+  }));
+}
+return sanitized;
+}
+>>>>>>> 04de2f7a56d50957f3532159857349e32898afd1
 
   // --- باقي الكود منسوخ من المسار القديم ---
   const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
