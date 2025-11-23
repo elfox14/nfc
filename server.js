@@ -32,46 +32,26 @@ app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
 app.use(helmet.hsts({
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
+  maxAge: 31536000,
+  includeSubDomains: true,
+  preload: true
 }));
 
 // Custom CSP to allow necessary external resources
 app.use(helmet.contentSecurityPolicy({
-    directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
-        mediaSrc: ["'self'", "data:"],
-        frameSrc: ["'self'", "https://www.youtube.com"],
-        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
-        objectSrc: ["'none'"],
-        upgradeInsecureRequests: [],
-    },
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
+    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+    fontSrc: ["'self'", "https://fonts.gstatic.com"],
+    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+    mediaSrc: ["'self'", "data:"],
+    frameSrc: ["'self'", "https://www.youtube.com"],
+    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+    objectSrc: ["'none'"],
+    upgradeInsecureRequests: [],
+  },
 }));
-// --- END: SECURITY HEADERS (HELMET) ---
-
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.set('view engine', 'ejs');
-
-// قاعدة البيانات
-const mongoUrl = process.env.MONGO_URI;
-const dbName = process.env.MONGO_DB || 'nfc_db';
-const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
-const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
-let db;
-
-MongoClient.connect(mongoUrl)
-  .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
-  .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
-
-const rootDir = __dirname;
-
-// أدوات مساعدة
 function absoluteBaseUrl(req) {
   const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
@@ -82,37 +62,37 @@ function absoluteBaseUrl(req) {
 
 // قائمة بالحقول النصية التي يجب تعقيمها
 const FIELDS_TO_SANITIZE = [
-    'input-name', 'input-tagline',
-    'input-email', 'input-website',
-    'input-whatsapp', 'input-facebook', 'input-linkedin'
+  'input-name', 'input-tagline',
+  'input-email', 'input-website',
+  'input-whatsapp', 'input-facebook', 'input-linkedin'
 ];
 
 // دالة تعقيم لكائن الإدخالات
 function sanitizeInputs(inputs) {
-    if (!inputs) return {};
-    const sanitized = { ...inputs };
-    FIELDS_TO_SANITIZE.forEach(k => {
-        if (sanitized[k]) {
-            sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
-        }
-    });
-    // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
-    if (sanitized.dynamic && sanitized.dynamic.social) {
-        sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
-            ...link,
-            // التأكد من أن القيمة موجودة قبل التعقيم
-            value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
-        }));
+  if (!inputs) return {};
+  const sanitized = { ...inputs };
+  FIELDS_TO_SANITIZE.forEach(k => {
+    if (sanitized[k]) {
+      sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
     }
-    // تعقيم أرقام الهواتف الديناميكية
-    if (sanitized.dynamic && sanitized.dynamic.phones) {
-         sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
-            ...phone,
-             // التأكد من أن القيمة موجودة قبل التعقيم
-            value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
-        }));
-    }
-    return sanitized;
+  });
+  // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
+  if (sanitized.dynamic && sanitized.dynamic.social) {
+    sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
+      ...link,
+      // التأكد من أن القيمة موجودة قبل التعقيم
+      value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
+    }));
+  }
+  // تعقيم أرقام الهواتف الديناميكية
+  if (sanitized.dynamic && sanitized.dynamic.phones) {
+    sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
+      ...phone,
+      // التأكد من أن القيمة موجودة قبل التعقيم
+      value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
+    }));
+  }
+  return sanitized;
 }
 
 // --- صفحة عرض SEO الجديدة (صيغة Query) ---
@@ -120,24 +100,24 @@ function sanitizeInputs(inputs) {
 app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   try {
     if (!db) {
-        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        return res.status(500).send('DB not connected');
+      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+      return res.status(500).send('DB not connected');
     }
-    
+
     // *** التغيير الرئيسي: جلب الـ ID من الـ Query String ***
-    const id = String(req.query.id); 
+    const id = String(req.query.id);
 
     if (!id || id === 'undefined') { // التحقق من عدم وجود ID
-         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-         return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
+      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+      return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
     }
 
     // --- باقي الكود منسوخ من المسار القديم ---
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
     if (!doc || !doc.data) { // التحقق من وجود doc.data
-        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        return res.status(404).send('Design not found or data is missing');
+      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+      return res.status(404).send('Design not found or data is missing');
     }
 
     // Increment the view count
@@ -160,18 +140,18 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
     // كود توليد HTML للروابط (منسوخ بالكامل)
     let contactLinksHtml = '';
     const platforms = {
-        whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
-        email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
-        website: { icon: 'fas fa-globe', prefix: 'https://' },
-        facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
-        linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
-        instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
-        x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
-        telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
-        tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
-        snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
-        youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
-        pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
+      whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+      email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
+      website: { icon: 'fas fa-globe', prefix: 'https://' },
+      facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
+      linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
+      instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
+      x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
+      telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
+      tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
+      snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
+      youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
+      pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
     };
 
     const linksHTML = [];
@@ -179,17 +159,17 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
     const staticSocial = dynamicData.staticSocial || {};
 
     Object.entries(staticSocial).forEach(([key, linkData]) => {
-        if (linkData && linkData.value && platforms[key]) {
-            const platform = platforms[key];
-            const value = DOMPurify.sanitize(linkData.value);
-            let displayValue = value;
-            let fullUrl = value;
-            if (key === 'email') { fullUrl = `${platform.prefix}${value}`; }
-            else if (key === 'whatsapp') { fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`; }
-            else if (key === 'website') { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
-            else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
+      if (linkData && linkData.value && platforms[key]) {
+        const platform = platforms[key];
+        const value = DOMPurify.sanitize(linkData.value);
+        let displayValue = value;
+        let fullUrl = value;
+        if (key === 'email') { fullUrl = `${platform.prefix}${value}`; }
+        else if (key === 'whatsapp') { fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`; }
+        else if (key === 'website') { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
+        else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
 
-             linksHTML.push(`
+        linksHTML.push(`
                 <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                     <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
                         <i class="${platform.icon}"></i>
@@ -200,16 +180,16 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
                     </button>
                 </div>
             `);
-        }
+      }
     });
 
     if (dynamicData.phones) {
-        dynamicData.phones.forEach(phone => {
-            if (phone && phone.value) {
-                const sanitizedValue = DOMPurify.sanitize(phone.value);
-                const cleanNumber = sanitizedValue.replace(/\D/g, '');
-                const fullUrl = `tel:${cleanNumber}`;
-                linksHTML.push(`
+      dynamicData.phones.forEach(phone => {
+        if (phone && phone.value) {
+          const sanitizedValue = DOMPurify.sanitize(phone.value);
+          const cleanNumber = sanitizedValue.replace(/\D/g, '');
+          const fullUrl = `tel:${cleanNumber}`;
+          linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${cleanNumber}">
                         <a href="${fullUrl}" class="contact-link">
                             <i class="fas fa-phone"></i>
@@ -220,20 +200,20 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
                         </button>
                     </div>
                 `);
-            }
-        });
+        }
+      });
     }
 
     if (dynamicData.social) {
-        dynamicData.social.forEach(link => {
-            if (link && link.value && link.platform && platforms[link.platform]) {
-                const platform = platforms[link.platform];
-                const value = DOMPurify.sanitize(link.value);
-                let displayValue = value;
-                let fullUrl = value;
-                fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
-                displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
-                linksHTML.push(`
+      dynamicData.social.forEach(link => {
+        if (link && link.value && link.platform && platforms[link.platform]) {
+          const platform = platforms[link.platform];
+          const value = DOMPurify.sanitize(link.value);
+          let displayValue = value;
+          let fullUrl = value;
+          fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
+          displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
+          linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                         <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
                             <i class="${platform.icon}"></i>
@@ -244,11 +224,11 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
                         </button>
                     </div>
                 `);
-            }
-        });
+        }
+      });
     }
 
-    if(linksHTML.length > 0) {
+    if (linksHTML.length > 0) {
       contactLinksHtml = `<div class="links-group">${linksHTML.join('')}</div>`;
     } else {
       contactLinksHtml = `
@@ -263,15 +243,15 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
     const imageUrls = doc.data.imageUrls || {};
     let ogImage = `${base}/nfc/og-image.png`; // Default
     if (imageUrls.front) {
-        ogImage = imageUrls.front.startsWith('http')
-          ? imageUrls.front
-          : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`; // التأكد من وجود /
+      ogImage = imageUrls.front.startsWith('http')
+        ? imageUrls.front
+        : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`; // التأكد من وجود /
     }
 
     const keywords = [
-        'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
-        name,
-        ...(tagline ? tagline.split(/\s+/).filter(Boolean) : []) // Check if tagline exists before splitting
+      'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
+      name,
+      ...(tagline ? tagline.split(/\s+/).filter(Boolean) : []) // Check if tagline exists before splitting
     ].filter(Boolean).join(', ');
 
     res.render(path.join(rootDir, 'viewer.ejs'), {
@@ -298,7 +278,7 @@ app.get('/nfc/view/:id', async (req, res) => {
   try {
     const id = String(req.params.id);
     if (!id) {
-         return res.status(404).send('Not found');
+      return res.status(404).send('Not found');
     }
     // إعادة توجيه دائمة (301) إلى الصيغة المفضلة
     res.redirect(301, `/nfc/viewer.html?id=${id}`);
@@ -325,7 +305,7 @@ app.use((req, res, next) => {
 // إزالة .html من الروابط القديمة
 app.use((req, res, next) => {
   // تم إضافة استثناء للمسار الجديد لضمان عدم إزالة .html منه
-  if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) { 
+  if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) {
     const newPath = req.path.slice(0, -5);
     return res.redirect(301, newPath);
   }
@@ -362,14 +342,14 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
     if (file.mimetype && file.mimetype.startsWith('image/')) {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('نوع الصورة غير مدعوم.'), false);
-        }
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('نوع الصورة غير مدعوم.'), false);
+      }
     } else {
-        cb(new Error('الرجاء رفع ملف صورة.'), false);
+      cb(new Error('الرجاء رفع ملف صورة.'), false);
     }
   }
 });
@@ -382,7 +362,7 @@ function handleMulterErrors(err, req, res, next) {
     }
     return res.status(400).json({ error: `خطأ في رفع الملف: ${err.message}` });
   } else if (err) {
-     return res.status(400).json({ error: err.message || 'خطأ غير معروف أثناء الرفع.' });
+    return res.status(400).json({ error: err.message || 'خطأ غير معروف أثناء الرفع.' });
   }
   next();
 }
@@ -391,8 +371,8 @@ function assertAdmin(req, res) {
   const expected = process.env.ADMIN_TOKEN || '';
   const provided = req.headers['x-admin-token'] || '';
   if (!expected || expected !== provided) {
-      res.status(401).json({ error: 'Unauthorized' });
-      return false;
+    res.status(401).json({ error: 'Unauthorized' });
+    return false;
   }
   return true;
 }
@@ -401,10 +381,10 @@ function assertAdmin(req, res) {
 app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
-        if (!res.headersSent) {
-           return res.status(400).json({ error: 'لم يتم تقديم أي ملف صورة.' });
-        }
-        return;
+      if (!res.headersSent) {
+        return res.status(400).json({ error: 'لم يتم تقديم أي ملف صورة.' });
+      }
+      return;
     }
 
     const filename = nanoid(10) + '.webp';
@@ -434,29 +414,29 @@ app.post('/api/save-design', async (req, res) => {
 
     // تطبيق التعقيم هنا قبل الحفظ
     if (data.inputs) {
-        data.inputs = sanitizeInputs(data.inputs); // تعقيم المدخلات الرئيسية (تشمل الاسم والمسمى)
+      data.inputs = sanitizeInputs(data.inputs); // تعقيم المدخلات الرئيسية (تشمل الاسم والمسمى)
     }
-     if (data.dynamic) {
-         if(data.dynamic.phones) {
-             data.dynamic.phones = data.dynamic.phones.map(phone => ({
-                ...phone,
-                value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
-            }));
-         }
-         if(data.dynamic.social) {
-             data.dynamic.social = data.dynamic.social.map(link => ({
-                ...link,
-                value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
-            }));
-         }
-         if(data.dynamic.staticSocial) {
-             for (const key in data.dynamic.staticSocial) {
-                 if (data.dynamic.staticSocial[key] && data.dynamic.staticSocial[key].value) {
-                      data.dynamic.staticSocial[key].value = DOMPurify.sanitize(String(data.dynamic.staticSocial[key].value));
-                 }
-             }
-         }
-     }
+    if (data.dynamic) {
+      if (data.dynamic.phones) {
+        data.dynamic.phones = data.dynamic.phones.map(phone => ({
+          ...phone,
+          value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
+        }));
+      }
+      if (data.dynamic.social) {
+        data.dynamic.social = data.dynamic.social.map(link => ({
+          ...link,
+          value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
+        }));
+      }
+      if (data.dynamic.staticSocial) {
+        for (const key in data.dynamic.staticSocial) {
+          if (data.dynamic.staticSocial[key] && data.dynamic.staticSocial[key].value) {
+            data.dynamic.staticSocial[key].value = DOMPurify.sanitize(String(data.dynamic.staticSocial[key].value));
+          }
+        }
+      }
+    }
 
 
     const shortId = nanoid(8);
@@ -464,9 +444,9 @@ app.post('/api/save-design', async (req, res) => {
     res.json({ success: true, id: shortId });
   } catch (e) {
     console.error('Save design error:', e);
-     if (!res.headersSent) {
-       res.status(500).json({ error: 'Save failed' });
-     }
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Save failed' });
+    }
   }
 });
 
@@ -502,24 +482,24 @@ app.get('/api/gallery', async (req, res) => {
     const sortBy = String(req.query.sortBy || 'createdAt');
     const sortQuery = {};
     if (sortBy === 'views') {
-        sortQuery.views = -1; // فرز حسب المشاهدات (الأكثر أولاً)
+      sortQuery.views = -1; // فرز حسب المشاهدات (الأكثر أولاً)
     } else {
-        sortQuery.createdAt = -1; // الافتراضي: فرز حسب تاريخ الإنشاء (الأحدث أولاً)
+      sortQuery.createdAt = -1; // الافتراضي: فرز حسب تاريخ الإنشاء (الأحدث أولاً)
     }
 
     // 3. Filtering (الاقتراح 3) & Search (الاقتراح 4)
     const findQuery = {
-        // (الاقتراح 3) ضمان وجود صورة مصغرة
-        'data.imageUrls.capturedFront': { $exists: true, $ne: null } 
+      // (الاقتراح 3) ضمان وجود صورة مصغرة
+      'data.imageUrls.capturedFront': { $exists: true, $ne: null }
     };
 
     // (الاقتراح 4) إضافة منطق البحث
     const searchQuery = req.query.search;
     if (searchQuery) {
-        findQuery.$or = [
-            { 'data.inputs.input-name': { $regex: searchQuery, $options: 'i' } },
-            { 'data.inputs.input-tagline': { $regex: searchQuery, $options: 'i' } }
-        ];
+      findQuery.$or = [
+        { 'data.inputs.input-name': { $regex: searchQuery, $options: 'i' } },
+        { 'data.inputs.input-tagline': { $regex: searchQuery, $options: 'i' } }
+      ];
     }
 
     // جلب العدد الإجمالي للمستندات المطابقة للفلترة (مهم لـ Pagination)
@@ -527,31 +507,31 @@ app.get('/api/gallery', async (req, res) => {
     const totalPages = Math.ceil(totalDocs / limit);
 
     const docs = await db.collection(designsCollectionName)
-        .find(findQuery) // تطبيق الفلترة والبحث
-        .sort(sortQuery) // تطبيق الفرز
-        .skip(skip)   // تطبيق Pagination
-        .limit(limit) // تطبيق Pagination
-        .project({ // إرسال البيانات المطلوبة فقط
-            shortId: 1, 
-            'data.inputs.input-name': 1, 
-            'data.inputs.input-tagline': 1,
-            'data.imageUrls.capturedFront': 1, // الصورة المصغرة الحقيقية
-            'data.imageUrls.front': 1, // صورة احتياطية
-            createdAt: 1,
-            views: 1 // (الاقتراح 2) إرسال عدد المشاهدات
-        })
-        .toArray();
+      .find(findQuery) // تطبيق الفلترة والبحث
+      .sort(sortQuery) // تطبيق الفرز
+      .skip(skip)   // تطبيق Pagination
+      .limit(limit) // تطبيق Pagination
+      .project({ // إرسال البيانات المطلوبة فقط
+        shortId: 1,
+        'data.inputs.input-name': 1,
+        'data.inputs.input-tagline': 1,
+        'data.imageUrls.capturedFront': 1, // الصورة المصغرة الحقيقية
+        'data.imageUrls.front': 1, // صورة احتياطية
+        createdAt: 1,
+        views: 1 // (الاقتراح 2) إرسال عدد المشاهدات
+      })
+      .toArray();
 
     // إرسال الرد مع بيانات الـ Pagination
     res.json({
-        success: true,
-        designs: docs,
-        pagination: {
-            page,
-            limit,
-            totalDocs,
-            totalPages
-        }
+      success: true,
+      designs: docs,
+      pagination: {
+        page,
+        limit,
+        totalDocs,
+        totalPages
+      }
     });
   } catch (e) {
     console.error('Fetch gallery error:', e);
@@ -566,12 +546,12 @@ app.get('/api/gallery', async (req, res) => {
 // --- API: خلفيات (إدارة) ---
 app.post('/api/upload-background', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
-    if (!assertAdmin(req,res)) return;
+    if (!assertAdmin(req, res)) return;
     if (!req.file) {
-        if (!res.headersSent) {
-             return res.status(400).json({ error:'لم يتم تقديم أي ملف صورة.' });
-        }
-        return;
+      if (!res.headersSent) {
+        return res.status(400).json({ error: 'لم يتم تقديم أي ملف صورة.' });
+      }
+      return;
     }
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
@@ -592,7 +572,7 @@ app.post('/api/upload-background', upload.single('image'), handleMulterErrors, a
       createdAt: new Date()
     };
     await db.collection(backgroundsCollectionName).insertOne(payload);
-    res.json({ success:true, background: payload });
+    res.json({ success: true, background: payload });
   } catch (e) {
     console.error('Upload background error:', e);
     if (!res.headersSent) {
@@ -618,16 +598,16 @@ app.get('/api/gallery/backgrounds', async (req, res) => {
     res.json({ success: true, items, page, limit, total, totalPages: Math.ceil(total / limit) });
   } catch (e) {
     console.error('Fetch backgrounds error:', e);
-     if (!res.headersSent) {
-       res.status(500).json({ error: 'Fetch backgrounds failed' });
-     }
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Fetch backgrounds failed' });
+    }
   }
 });
 
 // --- API: حذف خلفية ---
 app.delete('/api/backgrounds/:shortId', async (req, res) => {
   try {
-    if (!assertAdmin(req,res)) return;
+    if (!assertAdmin(req, res)) return;
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const shortId = String(req.params.shortId);
     const coll = db.collection(backgroundsCollectionName);
@@ -636,21 +616,21 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
 
     // حذف الملف المرتبط إذا كان موجودًا
     if (doc.url) {
-        try {
-            const urlParts = doc.url.split('/');
-            const filename = urlParts[urlParts.length - 1];
-            if (filename) {
-                const filePath = path.join(uploadDir, filename);
-                if (fs.existsSync(filePath)) {
-                    fs.unlinkSync(filePath);
-                    console.log(`Deleted file: ${filePath}`);
-                } else {
-                     console.warn(`File not found for deletion: ${filePath}`);
-                }
-            }
-        } catch (fileError) {
-             console.error(`Error deleting file for background ${shortId}:`, fileError);
+      try {
+        const urlParts = doc.url.split('/');
+        const filename = urlParts[urlParts.length - 1];
+        if (filename) {
+          const filePath = path.join(uploadDir, filename);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`Deleted file: ${filePath}`);
+          } else {
+            console.warn(`File not found for deletion: ${filePath}`);
+          }
         }
+      } catch (fileError) {
+        console.error(`Error deleting file for background ${shortId}:`, fileError);
+      }
     }
 
     await coll.deleteOne({ shortId });
@@ -710,11 +690,11 @@ app.get('/sitemap.xml', async (req, res) => {
     }
 
     function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
-        if (!loc) return '';
-        const lastmodTag = lastmod ? `<lastmod>${lastmod}</lastmod>` : '';
-        const changefreqTag = changefreq ? `<changefreq>${changefreq}</changefreq>` : '';
-        const priorityTag = priority ? `<priority>${priority}</priority>` : '';
-        return `
+      if (!loc) return '';
+      const lastmodTag = lastmod ? `<lastmod>${lastmod}</lastmod>` : '';
+      const changefreqTag = changefreq ? `<changefreq>${changefreq}</changefreq>` : '';
+      const priorityTag = priority ? `<priority>${priority}</priority>` : '';
+      return `
   <url>
     <loc>${loc}</loc>${lastmodTag}${changefreqTag}${priorityTag}
   </url>`;
@@ -736,11 +716,11 @@ ${designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefr
 
 // --- نقطة نهاية بسيطة للتحقق من صحة الخدمة ---
 app.get('/healthz', (req, res) => {
-    if (db && db.client.topology && db.client.topology.isConnected()) {
-        res.json({ ok: true, db_status: 'connected' });
-    } else {
-         res.status(500).json({ ok: false, db_status: 'disconnected' });
-    }
+  if (db && db.client.topology && db.client.topology.isConnected()) {
+    res.json({ ok: true, db_status: 'connected' });
+  } else {
+    res.status(500).json({ ok: false, db_status: 'disconnected' });
+  }
 });
 
 // --- معالج الملفات الثابتة (يأتي أخيراً) ---
@@ -754,9 +734,9 @@ app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.stack || err);
   const statusCode = err.status || 500;
   const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message;
-   if (!res.headersSent) {
-     res.status(statusCode).json({ error: message });
-   }
+  if (!res.headersSent) {
+    res.status(statusCode).json({ error: message });
+  }
 });
 
 
