@@ -31,7 +31,7 @@ app.disable('x-powered-by');
 app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
-<<<<<<< HEAD
+HEAD
 try {
   if (!db) {
     res.setHeader('X-Robots-Tag', 'noindex, noarchive');
@@ -45,7 +45,6 @@ try {
     res.setHeader('X-Robots-Tag', 'noindex, noarchive');
     return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
   }
-=======
 app.use(helmet.hsts({
   maxAge: 31536000,
   includeSubDomains: true,
@@ -96,7 +95,7 @@ const FIELDS_TO_SANITIZE = [
 }
 return sanitized;
 }
->>>>>>> 04de2f7a56d50957f3532159857349e32898afd1
+04de2f7a56d50957f3532159857349e32898afd1
 
   // --- باقي الكود منسوخ من المسار القديم ---
   const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
