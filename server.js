@@ -31,132 +31,78 @@ app.disable('x-powered-by');
 app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
-app.use(helmet.hsts({
-  maxAge: 31536000,
-  includeSubDomains: true,
-  preload: true
-}));
-
-// Custom CSP to allow necessary external resources
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
-    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-    fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    return `${proto}://${host}`;
+try {
+  if (!db) {
+    res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+    return res.status(500).send('DB not connected');
   }
 
-// قائمة بالحقول النصية التي يجب تعقيمها
-const FIELDS_TO_SANITIZE = [
-    'input-name', 'input-tagline',
-    'input-email', 'input-website',
-    'input-whatsapp', 'input-facebook', 'input-linkedin'
-  ];
+  // *** التغيير الرئيسي: جلب الـ ID من الـ Query String ***
+  const id = String(req.query.id);
 
-  // دالة تعقيم لكائن الإدخالات
-  function sanitizeInputs(inputs) {
-  if(!inputs) return {};
-  const sanitized = { ...inputs };
-  FIELDS_TO_SANITIZE.forEach(k => {
-    if (sanitized[k]) {
-      sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
-    }
-  });
-  // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
-  if(sanitized.dynamic && sanitized.dynamic.social) {
-  sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
-    ...link,
-    // التأكد من أن القيمة موجودة قبل التعقيم
-    value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
-  }));
-}
-  // تعقيم أرقام الهواتف الديناميكية
-  if (sanitized.dynamic && sanitized.dynamic.phones) {
-  sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
-    ...phone,
-    // التأكد من أن القيمة موجودة قبل التعقيم
-    value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
-  }));
-}
-return sanitized;
-}
+  if (!id || id === 'undefined') { // التحقق من عدم وجود ID
+    res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+    return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
+  }
 
-// --- صفحة عرض SEO الجديدة (صيغة Query) ---
-// *** تم وضع هذا المسار قبل معالج الملفات الثابتة لضمان تنفيذه ***
-app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
-  try {
-    if (!db) {
-      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-      return res.status(500).send('DB not connected');
-    }
+  // --- باقي الكود منسوخ من المسار القديم ---
+  const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
-    // *** التغيير الرئيسي: جلب الـ ID من الـ Query String ***
-    const id = String(req.query.id);
+  if (!doc || !doc.data) { // التحقق من وجود doc.data
+    res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+    return res.status(404).send('Design not found or data is missing');
+  }
 
-    if (!id || id === 'undefined') { // التحقق من عدم وجود ID
-      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-      return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
-    }
+  // Increment the view count
+  db.collection(designsCollectionName).updateOne(
+    { shortId: id },
+    { $inc: { views: 1 } }
+  ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
 
-    // --- باقي الكود منسوخ من المسار القديم ---
-    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+  res.setHeader('X-Robots-Tag', 'index, follow');
 
-    if (!doc || !doc.data) { // التحقق من وجود doc.data
-      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-      return res.status(404).send('Design not found or data is missing');
-    }
+  const base = absoluteBaseUrl(req);
+  // *** التغيير الرئيسي: تحديث الرابط الأساسي ***
+  const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
 
-    // Increment the view count
-    db.collection(designsCollectionName).updateOne(
-      { shortId: id },
-      { $inc: { views: 1 } }
-    ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
+  // استخدام البيانات بعد التأكد من وجودها
+  const inputs = doc.data.inputs || {}; // التأكد من وجود inputs
+  const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية'); // استرجاع الاسم
+  const tagline = DOMPurify.sanitize(inputs['input-tagline'] || ''); // استرجاع المسمى (يمكن أن يكون فارغاً)
 
-    res.setHeader('X-Robots-Tag', 'index, follow');
+  // كود توليد HTML للروابط (منسوخ بالكامل)
+  let contactLinksHtml = '';
+  const platforms = {
+    whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+    email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
+    website: { icon: 'fas fa-globe', prefix: 'https://' },
+    facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
+    linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
+    instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
+    x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
+    telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
+    tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
+    snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
+    youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
+    pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
+  };
 
-    const base = absoluteBaseUrl(req);
-    // *** التغيير الرئيسي: تحديث الرابط الأساسي ***
-    const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
+  const linksHTML = [];
+  const dynamicData = doc.data.dynamic || {}; // التأكد من وجود dynamic
+  const staticSocial = dynamicData.staticSocial || {};
 
-    // استخدام البيانات بعد التأكد من وجودها
-    const inputs = doc.data.inputs || {}; // التأكد من وجود inputs
-    const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية'); // استرجاع الاسم
-    const tagline = DOMPurify.sanitize(inputs['input-tagline'] || ''); // استرجاع المسمى (يمكن أن يكون فارغاً)
+  Object.entries(staticSocial).forEach(([key, linkData]) => {
+    if (linkData && linkData.value && platforms[key]) {
+      const platform = platforms[key];
+      const value = DOMPurify.sanitize(linkData.value);
+      let displayValue = value;
+      let fullUrl = value;
+      if (key === 'email') { fullUrl = `${platform.prefix}${value}`; }
+      else if (key === 'whatsapp') { fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`; }
+      else if (key === 'website') { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
+      else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
 
-    // كود توليد HTML للروابط (منسوخ بالكامل)
-    let contactLinksHtml = '';
-    const platforms = {
-      whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
-      email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
-      website: { icon: 'fas fa-globe', prefix: 'https://' },
-      facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
-      linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
-      instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
-      x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
-      telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
-      tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
-      snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
-      youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
-      pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
-    };
-
-    const linksHTML = [];
-    const dynamicData = doc.data.dynamic || {}; // التأكد من وجود dynamic
-    const staticSocial = dynamicData.staticSocial || {};
-
-    Object.entries(staticSocial).forEach(([key, linkData]) => {
-      if (linkData && linkData.value && platforms[key]) {
-        const platform = platforms[key];
-        const value = DOMPurify.sanitize(linkData.value);
-        let displayValue = value;
-        let fullUrl = value;
-        if (key === 'email') { fullUrl = `${platform.prefix}${value}`; }
-        else if (key === 'whatsapp') { fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`; }
-        else if (key === 'website') { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
-        else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
-
-        linksHTML.push(`
+      linksHTML.push(`
                 <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                     <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
                         <i class="${platform.icon}"></i>
@@ -167,16 +113,16 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
                     </button>
                 </div>
             `);
-      }
-    });
+    }
+  });
 
-    if (dynamicData.phones) {
-      dynamicData.phones.forEach(phone => {
-        if (phone && phone.value) {
-          const sanitizedValue = DOMPurify.sanitize(phone.value);
-          const cleanNumber = sanitizedValue.replace(/\D/g, '');
-          const fullUrl = `tel:${cleanNumber}`;
-          linksHTML.push(`
+  if (dynamicData.phones) {
+    dynamicData.phones.forEach(phone => {
+      if (phone && phone.value) {
+        const sanitizedValue = DOMPurify.sanitize(phone.value);
+        const cleanNumber = sanitizedValue.replace(/\D/g, '');
+        const fullUrl = `tel:${cleanNumber}`;
+        linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${cleanNumber}">
                         <a href="${fullUrl}" class="contact-link">
                             <i class="fas fa-phone"></i>
@@ -187,20 +133,20 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
                         </button>
                     </div>
                 `);
-        }
-      });
-    }
+      }
+    });
+  }
 
-    if (dynamicData.social) {
-      dynamicData.social.forEach(link => {
-        if (link && link.value && link.platform && platforms[link.platform]) {
-          const platform = platforms[link.platform];
-          const value = DOMPurify.sanitize(link.value);
-          let displayValue = value;
-          let fullUrl = value;
-          fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
-          displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
-          linksHTML.push(`
+  if (dynamicData.social) {
+    dynamicData.social.forEach(link => {
+      if (link && link.value && link.platform && platforms[link.platform]) {
+        const platform = platforms[link.platform];
+        const value = DOMPurify.sanitize(link.value);
+        let displayValue = value;
+        let fullUrl = value;
+        fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
+        displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
+        linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                         <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
                             <i class="${platform.icon}"></i>
@@ -211,51 +157,51 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
                         </button>
                     </div>
                 `);
-        }
-      });
-    }
+      }
+    });
+  }
 
-    if (linksHTML.length > 0) {
-      contactLinksHtml = `<div class="links-group">${linksHTML.join('')}</div>`;
-    } else {
-      contactLinksHtml = `
+  if (linksHTML.length > 0) {
+    contactLinksHtml = `<div class="links-group">${linksHTML.join('')}</div>`;
+  } else {
+    contactLinksHtml = `
           <div class="no-links-message">
               <i class="fas fa-info-circle"></i>
               <p>لم يقم صاحب البطاقة بإضافة أي معلومات اتصال إضافية.</p>
           </div>
       `;
-    }
-
-    // تحديد الصورة OG مع التحقق من وجود imageUrls
-    const imageUrls = doc.data.imageUrls || {};
-    let ogImage = `${base}/nfc/og-image.png`; // Default
-    if (imageUrls.front) {
-      ogImage = imageUrls.front.startsWith('http')
-        ? imageUrls.front
-        : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`; // التأكد من وجود /
-    }
-
-    const keywords = [
-      'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
-      name,
-      ...(tagline ? tagline.split(/\s+/).filter(Boolean) : []) // Check if tagline exists before splitting
-    ].filter(Boolean).join(', ');
-
-    res.render(path.join(rootDir, 'viewer.ejs'), {
-      pageUrl,
-      name: name, // <-- تمرير name
-      tagline: tagline, // <-- تمرير tagline
-      ogImage,
-      keywords,
-      design: doc.data,
-      canonical: pageUrl,
-      contactLinksHtml: contactLinksHtml // <-- تمرير HTML المٌنشأ
-    });
-  } catch (e) {
-    console.error('Error in /nfc/viewer route:', e);
-    res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-    res.status(500).send('View failed due to an internal server error.');
   }
+
+  // تحديد الصورة OG مع التحقق من وجود imageUrls
+  const imageUrls = doc.data.imageUrls || {};
+  let ogImage = `${base}/nfc/og-image.png`; // Default
+  if (imageUrls.front) {
+    ogImage = imageUrls.front.startsWith('http')
+      ? imageUrls.front
+      : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`; // التأكد من وجود /
+  }
+
+  const keywords = [
+    'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
+    name,
+    ...(tagline ? tagline.split(/\s+/).filter(Boolean) : []) // Check if tagline exists before splitting
+  ].filter(Boolean).join(', ');
+
+  res.render(path.join(rootDir, 'viewer.ejs'), {
+    pageUrl,
+    name: name, // <-- تمرير name
+    tagline: tagline, // <-- تمرير tagline
+    ogImage,
+    keywords,
+    design: doc.data,
+    canonical: pageUrl,
+    contactLinksHtml: contactLinksHtml // <-- تمرير HTML المٌنشأ
+  });
+} catch (e) {
+  console.error('Error in /nfc/viewer route:', e);
+  res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+  res.status(500).send('View failed due to an internal server error.');
+}
 });
 
 
