@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E7G4KFZKYG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-E7G4KFZKYG');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{CARD_NAME}}</title>
+    
+    <meta property="og:title" content="{{CARD_NAME}}">
+    <meta property="og:description" content="{{TAGLINE}}">
+    <meta property="og:image" content="{{LOGO_URL}}">
+    <meta property="og:type" content="profile">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="/card-page.css">
+</head>
+<body>
+    <div class="card-container">
+        <header class="card-header">
+            <div class="profile-picture">
+                <img src="{{LOGO_URL}}" alt="Profile Picture">
+            </div>
+            <h1>{{CARD_NAME}}</h1>
+            <p>{{TAGLINE}}</p>
+        </header>
+
+        <main class="card-body">
+            <div class="contact-buttons">
+                {{CONTACT_BUTTONS}}
+            </div>
+            
+            <a href="{{VCARD_URL}}" class="action-button save-contact-btn">
+                <i class="fas fa-address-card"></i>
+                حفظ جهة الاتصال
+            </a>
+
+            <div class="social-links">
+                {{SOCIAL_LINKS}}
+            </div>
+            
+            <div class="qr-code-section">
+                <h3>شارك بطاقتي</h3>
+                <div class="qr-code">
+                    <img src="{{QR_CODE_URL}}" alt="QR Code">
+                </div>
+            </div>
+        </main>
+
+        <footer class="card-footer">
+            <p>&copy; 2025 {{CARD_NAME}}</p>
+        </footer>
+    </div>
+</body>
+</html>

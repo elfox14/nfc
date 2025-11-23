@@ -1,0 +1,81 @@
+/* css/main.css */
+
+/* --- Buttons --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 15px;
+    font-family: inherit;
+    font-weight: 600;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    will-change: transform, box-shadow;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+.btn.loading .fas { animation: fa-spin 1s infinite linear; }
+
+.btn-primary { background-color: var(--accent-primary); color: var(--button-text); }
+.btn-primary:hover:not(:disabled) { background-color: #62b5ff; }
+.btn-secondary { background-color: var(--accent-secondary); color: var(--text-primary); }
+.btn-secondary:hover:not(:disabled) { background-color: #4a6a8a; }
+.btn-danger { background-color: var(--danger-color); color: var(--button-text); }
+.btn-danger:hover:not(:disabled) { background-color: #c0392b; }
+.btn-success { background-color: var(--success-color); color: var(--button-text); }
+.btn-success:hover:not(:disabled) { background-color: #27ae60; }
+.btn-icon {
+    background-color: var(--accent-secondary);
+    color: var(--text-primary);
+    border: none;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-icon:hover:not(:disabled) { background-color: var(--accent-primary); transform: scale(1.1); }
+
+/* --- Forms --- */
+.form-group { margin-bottom: 15px; position: relative; }
+.form-group label { display: inline-flex; align-items: center; gap: 5px; margin-bottom: 5px; font-weight: 600; color: var(--text-secondary); }
+.form-group input, .form-group select, .form-group textarea { 
+    width: 100%; padding: 10px; background-color: var(--page-bg); 
+    border: 1px solid var(--accent-secondary); border-radius: 6px; 
+    color: var(--text-primary); font-family: inherit; 
+    transition: border-color 0.3s, box-shadow 0.3s; resize: vertical; 
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
+    border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.2); outline: none; 
+}
+
+/* --- Utilities --- */
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+.spinner { border: 3px solid rgba(255, 255, 255, 0.2); border-radius: 50%; border-top-color: var(--accent-primary); width: 20px; height: 20px; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+img { max-width: 100%; height: auto; display: block; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+
+/* --- Modals --- */
+.modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+.modal-overlay.visible { opacity: 1; pointer-events: all; }
+.modal-content { background-color: var(--form-bg); padding: 25px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); width: 90%; max-width: 400px; position: relative; transform: scale(0.9); transition: transform 0.3s ease; }
+.modal-overlay.visible .modal-content { transform: scale(1); }
+.modal-close { position: absolute; top: 10px; inset-inline-start: 10px; background: none; border: none; font-size: 24px; color: var(--text-secondary); cursor: pointer; }
+.modal-footer { margin-top: 20px; text-align: left; display: flex; gap: 10px; flex-wrap: wrap; }
+html.ltr .modal-footer { text-align: right; }
+.modal-confirm { background-color: var(--success-color) !important; width: 100%; }
+
+/* --- Common Navbar/Footer (Index/Blog) --- */
+.site-footer { background: var(--surface-color); padding: 40px 0; border-top: 1px solid var(--accent-secondary); text-align: center; margin-top: auto; }
+.footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; }
+.footer-section h3 { color: var(--accent-primary); margin-bottom: 1rem; }
+.footer-section ul { list-style: none; }
+.footer-section a { color: var(--text-secondary); text-decoration: none; }
+.social-links { display: flex; gap: 1rem; justify-content: center; }
+.social-links a { font-size: 1.5rem; color: var(--text-primary); }
+.footer-bottom { text-align: center; margin-top: 2rem; border-top: 1px solid var(--accent-secondary); padding-top: 1rem; }

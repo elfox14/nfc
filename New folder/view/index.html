@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض البطاقة</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Poppins:wght@400;700&family=Tajawal:wght@400;700&family=Lalezar&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="viewer.css">
+    
+    <meta name="color-scheme" content="light dark">
+</head>
+<body>
+
+    <nav class="viewer-nav">
+        <a href="index.html" class="nav-logo" title="العودة إلى الرئيسية">
+           <img src="https://mcprim.com/nfc/mcprime-logo-transparent.png" alt="MC PRIME Logo">
+        </a>
+        <div class="nav-links">
+            <a href="index.html">الرئيسية</a>
+            <a href="gallery.html">المعرض</a>
+            <a href="blog.html">المدونة</a>
+            <a href="editor.html">إنشاء بطاقة</a>
+
+        </div>
+        
+        <div class="nav-actions">
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch" for="theme-toggle">
+                    <input type="checkbox" id="theme-toggle" />
+                    <span class="slider round">
+                        <i class="fas fa-sun sun-icon"></i>
+                        <i class="fas fa-moon moon-icon"></i>
+                    </span>
+                </label>
+            </div>
+            <a href="editor.html" class="btn nav-cta">اصنع بطاقتك مجانًا</a>
+        </div>
+    </nav>
+    
+    <div id="loader" class="viewer-loader">
+        <div class="spinner"></div>
+        <p>جاري تحميل البطاقة...</p>
+    </div>
+
+    <div class="viewer-container" style="display: none;">
+
+        <div class="viewer-layout">
+            
+            <aside class="side-column active" id="left-column">
+                
+                <div class="profile-header" id="profile-header" style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; display: none;">
+                    <h1 id="profile-name" style="font-size: 1.5rem; margin: 0; color: var(--text-primary);"></h1>
+                    <p id="profile-tagline" style="font-size: 1rem; color: var(--text-secondary); margin: 5px 0 0 0;"></p>
+                </div>
+
+                <h2><i class="fas fa-address-book"></i> معلومات الاتصال</h2>
+                <div id="contact-links-container">
+                    </div>
+            </aside>
+
+            <main class="center-column">
+                <div class="cards-wrapper-viewer" id="cards-wrapper-viewer" title="انقر لتقليب البطاقة">
+                    <div class="business-card-viewer" id="card-front-display">
+                        </div>
+                    <div class="business-card-viewer" id="card-back-display" style="transform: rotateY(180deg);">
+                        </div>
+                </div>
+                <button id="viewer-flip-btn" class="btn" aria-label="تقليب البطاقة" style="display:none; position:relative; margin-top: 15px;">
+                    <i class="fas fa-sync-alt"></i> <span>تقليب البطاقة</span>
+                </button>
+            </main>
+
+            <aside class="side-column save-options" id="right-column">
+                <h2><i class="fas fa-download"></i> حفظ ومشاركة</h2>
+
+                <button id="save-vcf-btn" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    حفظ جهة الاتصال (VCF)
+                </button>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-top: 5px; margin-bottom: 15px;">
+                    (ملف لإضافة جهة الاتصال لهاتفك مباشرة)
+                </p>
+
+                <details class="fieldset-accordion">
+                    <summary class="secondary-actions-summary">
+                        <i class="fas fa-cog"></i> خيارات إضافية (PNG, PDF)
+                    </summary>
+                    <div class="fieldset-content secondary-actions-content">
+                        <button id="save-front-png-btn" class="btn btn-secondary">
+                            <i class="fas fa-image"></i>
+                            حفظ الواجهة (PNG)
+                        </button>
+                        <button id="save-back-png-btn" class="btn btn-secondary">
+                            <i class="fas fa-image"></i>
+                            حفظ الخلفية (PNG)
+                        </button>
+                        <button id="save-pdf-btn" class="btn btn-secondary">
+                            <i class="fas fa-file-pdf"></i>
+                            حفظ كـ PDF
+                        </button>
+                    </div>
+                </details>
+
+                <div class="info-box">
+                    <h3 class="info-box-title">
+                        <i class="fas fa-info-circle"></i>
+                        دليل الزائر
+                    </h3>
+                    <p class="info-box-text">
+                        <strong>للحفظ:</strong> اضغط على <strong>"حفظ جهة الاتصال"</strong> لإضافة الملف لهاتفك.
+                    </p>
+                    <p class="info-box-text">
+                        <strong>للمشاركة:</strong> استخدم "خيارات إضافية" لحفظ البطاقة كصورة (PNG).
+                    </p>
+                    
+                    <h4 class="info-box-subtitle">
+                         <i class="fas fa-lightbulb"></i> ميزات البطاقة الرقمية
+                    </h4>
+                    <ul class="info-box-list">
+                        <li><i class="fas fa-check-circle c-green"></i> احفظ جهة الاتصال مباشرة</li>
+                        <li><i class="fas fa-leaf c-green"></i> تحد من استهلاك الورق</li>
+                        <li><i class="fas fa-edit c-blue"></i> يمكن تعديلها في أي وقت</li>
+                        <li><i class="fas fa-star c-yellow"></i> انطباع عصري لا يُنسى</li>
+                    </ul>
+                </div>
+
+                 <a href="editor.html" class="btn btn-secondary" style="margin-top: 25px; text-align: center; width: 100%;">
+                    <i class="fas fa-magic"></i> أنشئ بطاقتك المجانية
+                 </a>
+            </aside>
+            
+            <nav class="mobile-viewer-tabs">
+                <button class="mobile-tab-btn active" data-tab-target="#left-column">
+                    <i class="fas fa-address-book"></i> معلومات الاتصال
+                </button>
+                <button class="mobile-tab-btn" data-tab-target="#right-column">
+                    <i class="fas fa-download"></i> حفظ ومشاركة
+                </button>
+            </nav>
+
+        </div>
+    </div>
+
+    <div class="visually-hidden">
+        <div class="business-card-render-wrapper" id="front-card">
+            </div>
+        <div class="business-card-render-wrapper" id="back-card">
+       </div>
+    </div>
+
+    <script>
+        window.cardData = {};
+    </script>
+
+    <script src="viewer.js"></script>
+
+</body>
+</html>
