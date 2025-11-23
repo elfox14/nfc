@@ -5,12 +5,20 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "create-indexes": "node scripts/create-indexes.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f app"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cloudinary": "^2.8.0",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
@@ -24,22 +32,45 @@
     "express-validator": "^7.3.0",
     "helmet": "^8.1.0",
     "jsdom": "^26.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.20.0",
     "multer": "^2.0.2",
     "nanoid": "^3.3.11",
+    "redis": "^4.6.12",
     "sharp": "^0.34.5",
     "shepherd.js": "^14.5.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/tests/"
+    ],
+    "setupFilesAfterEnv": [
+      "./tests/setup.js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
   },
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/elfox14/nfc.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "nfc",
+    "business-card",
+    "digital",
+    "qr-code",
+    "arabic"
+  ],
+  "author": "MC PRIME",
   "bugs": {
     "url": "https://github.com/elfox14/nfc/issues"
   },
