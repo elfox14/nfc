@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بطاقة عمل NFC الذكية - صمم بطاقتك الرقمية مجانًا | MC PRIME</title>
+    <meta name="description" content="صمم بطاقة عمل NFC الذكية مجاناً مع MC PRIME. إنشاء كروت رقمية احترافية بلمسة واحدة. بطاقات عمل ذكية قابلة للتحديث مع دعم QR code وتصاميم جاهزة.">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.mcprim.com/nfc/">
+    <meta property="og:title" content="بطاقة عمل NFC الذكية - صمم بطاقتك الرقمية مجانًا | MC PRIME">
+    <meta property="og:description" content="صمم بطاقة عمل NFC الذكية مجاناً مع MC PRIME. إنشاء كروت رقمية احترافية بلمسة واحدة. بطاقات عمل ذكية قابلة للتحديث.">
+    <meta property="og:image" content="https://www.mcprim.com/nfc/og-image.png">
+    <meta property="og:image:alt" content="بطاقة عمل NFC الذكية من MC PRIME">
+    <meta property="og:site_name" content="MC PRIME">
+    <meta property="og:locale" content="ar_AR">
+    
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.mcprim.com/nfc/">
+    <meta property="twitter:title" content="بطاقة عمل NFC الذكية - صمم بطاقتك الرقمية مجانًا | MC PRIME">
+    <meta property="twitter:description" content="صمم بطاقة عمل NFC الذكية مجاناً مع MC PRIME. إنشاء كروت رقمية احترافية بلمسة واحدة. بطاقات عمل ذكية قابلة للتحديث.">
+    <meta property="twitter:image" content="https://www.mcprim.com/nfc/og-image.png">
+    <meta property="twitter:image:alt" content="بطاقة عمل NFC الذكية من MC PRIME">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebPage",
+                "name": "بطاقة عمل NFC الذكية - صمم بطاقتك الرقمية مجانًا",
+                "description": "صمم بطاقة عمل NFC الذكية مجاناً مع MC PRIME",
+                "url": "https://www.mcprim.com/nfc/",
+                "inLanguage": "ar"
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "الرئيسية",
+                        "item": "https://www.mcprim.com/nfc/"
+                    }
+                ]
+            },
+            {
+                "@type": "Organization",
+                "name": "MC PRIME",
+                "url": "https://www.mcprim.com",
+                "logo": "https://www.mcprim.com/nfc/mcprime-logo-transparent.png"
+            }
+        ]
+    }
+    </script>
+    
+    <link rel="canonical" href="https://www.mcprim.com/nfc/">
+    <link rel="icon" id="favicon" href="mcprime-logo-transparent.png" type="image/png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #4da6ff;
+            --secondary-color: #364f6b;
+            --background-color: #1c2a3b;
+            --surface-color: #243447;
+            --text-primary-color: #e6f0f7;
+            --text-secondary-color: #bcc9d4;
+            --font-main: 'Tajawal', sans-serif;
+            --font-headings: 'Cairo', sans-serif;
+        }
+
+        /* Global Reset & Box Sizing */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden; /* Failsafe to prevent horizontal scroll */
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-primary-color);
+            font-family: var(--font-main);
+            line-height: 1.7;
+            width: 100%; /* Failsafe */
+            overflow-x: hidden; /* Failsafe */
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(28, 42, 59, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; transition: opacity 0.5s ease;
+        }
+        #loading-overlay.hidden {
+            opacity: 0; pointer-events: none; visibility: hidden;
+        }
+        .loading-spinner {
+            width: 50px; height: 50px; border: 4px solid rgba(77, 166, 255, 0.3); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            color: var(--text-primary-color); margin-top: 20px; font-size: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: inline-block;
+            border: 2px solid transparent;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #62b5ff;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-primary-color);
+        }
+        .btn-secondary:hover {
+            background-color: #4a6a8a;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section (No Header) */
+        .hero-section {
+            padding: 100px 0 80px 0; /* Adjusted top padding */
+            text-align: center;
+        }
+        .hero-content h1 {
+            font-family: var(--font-headings);
+            font-size: 2.5rem; /* Mobile-first font size */
+            margin-bottom: 1rem;
+            color: white;
+        }
+        .hero-subtitle {
+            font-size: 1.2rem; /* Mobile-first font size */
+            color: var(--text-secondary-color);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        /* General Section Styling */
+        section {
+            padding: 80px 0;
+        }
+        section:nth-of-type(odd) {
+            background-color: var(--surface-color);
+        }
+        section h2 {
+            text-align: center;
+            font-family: var(--font-headings);
+            font-size: 2rem; /* Mobile-first font size */
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        /* Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Mobile-first: 1 column */
+            gap: 2rem;
+        }
+        .feature-card {
+            background: var(--surface-color);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--secondary-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-family: var(--font-headings);
+        }
+
+        /* How It Works Section */
+        .steps-container {
+            display: flex;
+            flex-direction: column; /* Mobile-first */
+            align-items: center; /* Mobile-first */
+            gap: 2rem;
+            text-align: center;
+        }
+        .step {
+            max-width: 300px;
+        }
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        /* Generator CTA Section */
+        .generator-cta-section {
+            text-align: center;
+        }
+        .generator-preview-img {
+            /* max-width: 100% is set globally */
+            width: 800px; /* will be capped by max-width */
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+        }
+
+        /* Use Cases Section */
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Mobile-first: 1 column */
+            gap: 2rem;
+        }
+        .use-cases-grid a {
+            text-decoration: none;
+            color: inherit;
+        }
+        .use-case-card {
+            background-color: var(--surface-color);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--secondary-color);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .country-links {
+            display: flex; justify-content: center; gap: 10px; margin-top: 1rem;
+        }
+        .country-links a {
+            text-decoration: none; color: var(--text-secondary-color); font-size: 0.9rem; font-weight: 600; padding: 4px 10px; border: 1px solid var(--secondary-color); border-radius: 4px; transition: all 0.2s ease-in-out;
+        }
+        .country-links a:hover {
+            color: #fff; background-color: var(--primary-color); border-color: var(--primary-color);
+        }
+
+        /* Testimonials */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Mobile-first: 1 column */
+            gap: 2rem;
+        }
+        .testimonial-card {
+            background: var(--surface-color);
+            padding: 2rem;
+            border-radius: 12px;
+            border-right: 5px solid var(--primary-color);
+        }
+        .testimonial-card blockquote p {
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+        .testimonial-card footer {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        /* FAQ */
+        .faq-list { max-width: 800px; margin: 0 auto; }
+        .faq-item details {
+            background: var(--surface-color);
+            border: 1px solid var(--secondary-color);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .faq-question {
+            padding: 1.5rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            list-style: none; /* Hide default marker */
+        }
+        .faq-question::-webkit-details-marker { display: none; }
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            border-top: 1px solid var(--secondary-color);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+        }
+        .cta-section .btn-lg {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+        }
+
+        /* Footer */
+        .site-footer {
+            background: var(--surface-color);
+            padding: 40px 0;
+            border-top: 1px solid var(--secondary-color);
+        }
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr; /* Mobile-first: 1 column */
+            gap: 2rem;
+        }
+        .footer-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        .footer-section ul { list-style: none; }
+        .footer-section a { color: var(--text-secondary-color); text-decoration: none; }
+        .social-links { display: flex; gap: 1rem; }
+        .social-links a { font-size: 1.5rem; }
+        .footer-bottom { text-align: center; margin-top: 2rem; border-top: 1px solid var(--secondary-color); padding-top: 1rem; }
+
+
+        /* ========================================= */
+        /* --- Desktop Styles (Mobile-First) --- */
+        /* ========================================= */
+        @media (min-width: 769px) {
+            
+            /* Restore larger fonts */
+            .hero-content h1 { font-size: 3.5rem; }
+            .hero-subtitle { font-size: 1.5rem; }
+            section h2 { font-size: 2.5rem; }
+
+            /* Restore multi-column layouts */
+            .steps-container {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+
+            .use-cases-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+
+            .testimonials-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+    </style>
+<link rel="preload" href="/nfc/mcprime-logo-transparent.png" as="image">
+</head>
+<body>
+    
+    <div id="loading-overlay" aria-live="polite" aria-busy="true" role="status">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <p class="loading-text">جارٍ التحميل...</p>
+    </div>
+
+    <main id="main-content" role="main">
+        <section id="hero" class="hero-section" aria-labelledby="hero-title">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 id="hero-title">صمم بطاقتك الذكية في دقائق</h1>
+                    <p class="hero-subtitle">أنشئ وشارك بطاقة عمل احترافية تدعم NFC و QR Code بسهولة ومجاناً.</p>
+                    <div class="hero-buttons">
+                        <a href="/nfc/editor.html" class="btn btn-primary">ابدأ التصميم الآن مجاناً</a>
+                        <a href="#how-it-works" class="btn btn-secondary">كيف يعمل؟</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section" aria-labelledby="features-title">
+            <div class="container">
+                <h2 id="features-title">لماذا تختار بطاقاتنا الذكية؟</h2>
+                <div class="features-grid">
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">💡</div>
+                        <h3>انطباع عصري</h3>
+                        <p>اترك انطباعاً عصرياً لا يُنسى بلمسة واحدة لمشاركة بياناتك.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🌿</div>
+                        <h3>صديقة للبيئة</h3>
+                        <p>وفر تكاليف الطباعة المتكررة وساهم في الحفاظ على البيئة.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🔄</div>
+                        <h3>تحديث فوري</h3>
+                        <p>حدّث بياناتك في أي وقت دون الحاجة لإعادة طباعة البطاقة.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">💰</div>
+                        <h3>توفير التكاليف</h3>
+                        <p>وفر تكاليف الطباعة المتكررة واستثمر في حل دائم وعملي.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🎨</div>
+                        <h3>تصاميم احترافية</h3>
+                        <p>اختر من بين عشرات القوالب الجاهزة أو صمم بطاقتك الخاصة.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🔗</div>
+                        <h3>مشاركة سهلة</h3>
+                        <p>شارك بطاقتك عبر NFC، رمز QR، أو رابط مباشر بكل سهولة.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="how-it-works-section" aria-labelledby="how-it-works-title">
+            <div class="container">
+                <h2 id="how-it-works-title">ثلاث خطوات بسيطة</h2>
+                <div class="steps-container">
+                    <article class="step">
+                        <div class="step-number" aria-hidden="true">1</div>
+                        <h3>صمم بطاقتك</h3>
+                        <p>استخدم محررنا السهل لإضافة شعارك، معلوماتك، وألوانك الخاصة.</p>
+                    </article>
+                    <article class="step">
+                        <div class="step-number" aria-hidden="true">2</div>
+                        <h3>احفظ وشارك</h3>
+                        <p>احفظ تصميمك وشاركه فوراً عبر رابط أو QR Code فريد لبطاقتك.</p>
+                    </article>
+                    <article class="step">
+                        <div class="step-number" aria-hidden="true">3</div>
+                        <h3>اطلب بطاقة NFC</h3>
+                        <p>اطلب بطاقة NFC فعلية من MC PRIME لتصلك وتستخدمها للمشاركة بلمسة.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="generator-cta" class="generator-cta-section" aria-labelledby="generator-title">
+            <div class="container">
+                <h2 id="generator-title">جرّب المحرر بنفسك</h2>
+                <p>شاهد مدى سهولة تصميم بطاقتك الاحترافية. انقر أدناه للانتقال إلى المحرر والبدء فوراً.</p>
+                <a href="/nfc/editor.html" title="الانتقال إلى محرر تصميم البطاقات">
+                    <img src="https://i.imgur.com/example.png" alt="لقطة شاشة لمحرر تصميم بطاقات MC PRIME" class="generator-preview-img" style="border: 2px solid var(--primary-color);" loading="lazy">
+                </a>
+                <a href="/nfc/editor.html" class="btn btn-primary btn-lg" style="margin-top: 2rem;">انتقل إلى محرر التصميم</a>
+            </div>
+        </section>
+
+        <section id="use-cases" class="use-cases-section" aria-labelledby="use-cases-title">
+            <div class="container">
+                <h2 id="use-cases-title">حلول مخصصة لكل مجال</h2>
+                <div class="use-cases-grid">
+                    <a href="/nfc/nfc-for-freelancers">
+                        <article class="use-case-card">
+                            <div class="feature-icon" aria-hidden="true">💼</div>
+                            <h3>للمستقلين</h3>
+                            <p>اعرض أعمالك ومهاراتك بطريقة مبتكرة.</p>
+                        </article>
+                    </a>
+                    <article class="use-case-card">
+                        <div class="feature-icon" aria-hidden="true">🏢</div>
+                        <h3>للشركات</h3>
+                        <p>حلول موحدة ومخصصة حسب الدولة.</p>
+                         <div class="country-links">
+                            <a href="/nfc/nfc-for-companies-egypt">مصر</a>
+                            <a href="/nfc/nfc-for-companies-saudi">السعودية</a>
+                            <a href="/nfc/nfc-for-companies-uae">الإمارات</a>
+                        </div>
+                    </article>
+                    <a href="/nfc/blog-digital-menus-for-restaurants">
+                        <article class="use-case-card">
+                            <div class="feature-icon" aria-hidden="true">🍴</div>
+                            <h3>للمطاعم</h3>
+                            <p>حوّل بطاقتك إلى منيو رقمي فعال.</p>
+                        </article>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials" class="testimonials-section" aria-labelledby="testimonials-title">
+            <div class="container">
+                <h2 id="testimonials-title">ماذا يقول عملاؤنا؟</h2>
+                <div class="testimonials-grid">
+                    <article class="testimonial-card">
+                        <blockquote>
+                            <p>"أداة تصميم رائعة وسهلة الاستخدام! تمكنت من إنشاء بطاقتي الرقمية في دقائق. الآن أشارك معلوماتي بلمسة واحدة، والعملاء معجبون جداً."</p>
+                            <footer>
+                                <cite>— أحمد خالد، مطور ويب مستقل</cite>
+                            </footer>
+                        </blockquote>
+                    </article>
+                    <article class="testimonial-card">
+                        <blockquote>
+                            <p>"وفرت عليّ الكثير من تكاليف طباعة البطاقات الورقية، والأهم أنني أستطيع تحديث بياناتي فوراً إذا تغير رقم هاتفي. خدمة ممتازة وأنصح بها بشدة."</p>
+                            <footer>
+                                <cite>— فاطمة علي، مديرة تسويق</cite>
+                            </footer>
+                        </blockquote>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="faq-section" aria-labelledby="faq-title">
+            <div class="container">
+                <h2 id="faq-title">أسئلة شائعة</h2>
+                <div class="faq-list">
+                    <article class="faq-item">
+                        <details>
+                            <summary class="faq-question" role="button" aria-expanded="false">
+                                <h3>ما هي القيمة الحقيقية لهذه البطاقة؟</h3>
+                            </summary>
+                            <div class="faq-answer">
+                                <p>هي أكثر من مجرد بطاقة، إنها أداة تسويق حديثة. توفر عليك تكاليف الطباعة، صديقة للبيئة، وتسمح لك بتحديث بياناتك فوراً، مما يضمن أن معلوماتك دقيقة دائمًا لدى عملائك.</p>
+                            </div>
+                        </details>
+                    </article>
+                    <article class="faq-item">
+                        <details>
+                            <summary class="faq-question" role="button" aria-expanded="false">
+                                <h3>كيف يتم تأمين بياناتي وخصوصيتي؟</h3>
+                            </summary>
+                            <div class="faq-answer">
+                                <p>نحن نأخذ الخصوصية على محمل الجد. بياناتك تستخدم فقط لعرض بطاقتك ولا نشاركها أو نبيعها لأي طرف ثالث. يمكنك الاطلاع على سياسة الخصوصية الكاملة لمزيد من التفاصيل.</p>
+                            </div>
+                        </details>
+                    </article>
+                    <article class="faq-item">
+                        <details>
+                            <summary class="faq-question" role="button" aria-expanded="false">
+                                <h3>هل تقدمون دعمًا فنيًا؟</h3>
+                            </summary>
+                            <div class="faq-answer">
+                                <p>بالتأكيد. نقدم دعمًا كاملاً لمساعدتك في أي خطوة. إذا واجهت أي مشكلة أثناء تصميم بطاقتك أو كان لديك أي استفسار، يمكنك التواصل معنا مباشرة عبر صفحة اتصل بنا.</p>
+                            </div>
+                        </details>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="cta" class="cta-section" aria-labelledby="cta-title">
+            <div class="container">
+                <h2 id="cta-title">هل أنت جاهز لترك انطباع لا يُنسى؟</h2>
+                <p>انضم لآلاف المحترفين الذين اختاروا الحل الذكي والمستدام.</p>
+                <a href="/nfc/editor.html" class="btn btn-primary btn-lg">صمم بطاقتك الآن مجاناً</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>MC PRIME</h3>
+                    <p>نقدم حلول بطاقات العمل الذكية NFC للأفراد والشركات.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <ul role="list">
+                        <li><a href="#features">المميزات</a></li>
+                        <li><a href="/nfc/gallery">المعرض</a></li>
+                        <li><a href="/nfc/blog">المدونة</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الدعم</h3>
+                    <ul role="list">
+                        <li><a href="#faq">الأسئلة الشائعة</a></li>
+                        <li><a href="/nfc/privacy">سياسة الخصوصية</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>تابعنا</h3>
+                    <div class="social-links">
+                        <a href="#" aria-label="فيسبوك" title="زر صفحتنا على فيسبوك"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="إنستغرام" title="تابعنا على إنستغرام"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="لينكد إن" title="تواصل معنا على لينكد إن"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 MC PRIME. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Hide loading overlay
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
+            } else {
+                console.error('Loading overlay element not found!');
+            }
+        });
+        
+        // Smooth scrolling for anchor links (still useful for hero button)
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href && href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        // Set focus to the target section for accessibility
+                        target.setAttribute('tabindex', '-1');
+                        target.focus({ preventScroll: true });
+                    }
+                }
+            });
+        });
+
+        // Accessibility for FAQ
+        document.querySelectorAll('.faq-item details').forEach((detail) => {
+            const summary = detail.querySelector('summary');
+            if(summary) {
+                summary.addEventListener('click', () => {
+                    const isExpanded = detail.open;
+                    // The 'open' attribute toggles *after* the click, so we check the inverse
+                    summary.setAttribute('aria-expanded', !isExpanded);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# السماح لعناكب البحث بالوصول إلى الموقع بالكامل
+User-agent: *
+Allow: /
+
+# حظر ملفات حساسة أو غير ضرورية
+Disallow: /admin/
+Disallow: /cgi-bin/
+Disallow: /tmp/
+Disallow: /private/
+
+# رابط الخريطة الصحيح
+Sitemap: https://www.mcprim.com/sitemap.xml

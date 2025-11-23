@@ -1,0 +1,200 @@
+:root {
+    --bg-color: #f4f7f6;
+    --card-bg-color: #ffffff;
+    --primary-text-color: #333;
+    --secondary-text-color: #777;
+    --accent-color: #007bff;
+    --accent-hover-color: #0056b3;
+}
+
+body {
+    background-color: #e9ecef;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.viewer-loader {
+    text-align: center;
+    color: #343a40;
+}
+
+.viewer-loader .spinner {
+    border-top-color: #007bff;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 15px auto;
+}
+
+.viewer-container {
+    width: 100%;
+    max-width: 510px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    position: relative;
+}
+
+.cards-wrapper {
+    width: 100%;
+}
+
+.business-card {
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.save-options {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.save-options h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #343a40;
+}
+
+.save-options .btn {
+    width: 100%;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin-top: 25px;
+    padding: 20px 0;
+    border-top: 1px solid #e9ecef;
+}
+
+.social-links a {
+    color: var(--secondary-text-color);
+    font-size: 48px;
+    transition: all 0.2s ease-in-out;
+}
+
+.social-links a:hover {
+    color: var(--accent-color);
+    transform: scale(1.2);
+}
+
+.qr-code-section {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px solid #e9ecef;
+}
+
+.qr-code-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    color: var(--primary-text-color);
+}
+
+.qr-code {
+    max-width: 180px;
+    margin: 0 auto;
+    padding: 10px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.qr-code img {
+    width: 100%;
+    display: block;
+    border-radius: 4px;
+}
+
+.card-footer {
+    background-color: #f8f9fa;
+    padding: 15px;
+    font-size: 12px;
+    color: var(--secondary-text-color);
+}
+
+.visually-hidden {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.cta-section {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.cta-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--primary-text-color);
+    font-size: 1.2rem;
+}
+
+.cta-section .btn {
+    display: inline-flex;
+    width: auto;
+    padding: 12px 24px;
+    font-size: 1rem;
+}
+
+/* --- START: أنماط التقليب للموبايل --- */
+@media (max-width: 768px) {
+    .cards-wrapper {
+        position: relative;
+        width: 95vw;
+        min-height: calc(95vw * (33 / 51));
+        transform-style: preserve-3d;
+        transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    .cards-wrapper.is-flipped {
+        transform: rotateY(180deg);
+    }
+    
+    .cards-wrapper .business-card {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    #card-back-preview {
+        transform: rotateY(180deg);
+    }
+
+    .mobile-flip-btn {
+        display: flex !important; /* Important to override inline style */
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 100;
+    }
+}
+/* --- END: أنماط التقليب للموبايل --- */
