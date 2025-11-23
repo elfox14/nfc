@@ -1,69 +1,77 @@
 // service-worker.js
 
-// اسم الكاش الحالي. عند تغيير هذا الاسم (مثلاً إلى v2)، سيعتبره المتصفح
-// إصدارًا جديدًا من الـ Service Worker ويقوم بتشغيل عملية التحديث.
-const CACHE_NAME = 'digital-card-editor-cache-v2';
-
-// قائمة بالملفات الأساسية بعد تصحيح المسارات
-const urlsToCache = [
-  './', // <-- يشير إلى المجلد الحالي للتطبيق
-  'index.html',
-  'style.css',
-  'script.js',
-  'manifest.json', // <-- إضافة ملف المانيفست مهم أيضًا
-  // استخدام الرابط الكامل والمؤكد للصورة
-  'https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png'
+const CACHE_NAME = 'mcprime-nfc-v2';
+const ASSETS_TO_CACHE = [
+  '/nfc/',
+  '/nfc/index.html',
+  '/nfc/editor.html',
+  '/nfc/viewer.html',
+  '/nfc/style.css',
+  '/nfc/viewer.css',
+  '/nfc/script-core.js',
+  '/nfc/script-ui.js',
+  '/nfc/script-card.js',
+  '/nfc/script-main.js',
+  '/nfc/viewer.js',
+  '/nfc/mcprime-logo-transparent.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
+  'https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Poppins:wght@400;700&family=Tajawal:wght@400;700&family=Lalezar&display=swap'
 ];
 
-// --- مرحلة التثبيت (Install) ---
-// يتم تشغيل هذا الحدث عند تثبيت الـ Service Worker لأول مرة أو عند تحديثه.
-self.addEventListener('install', event => {
-  // انتظر حتى تكتمل عملية التخزين المؤقت للملفات الأساسية.
+// Install Event: Cache core assets
+self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Installing Service Worker ...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Cache opened');
-        // قم بتخزين جميع الملفات المحددة فيurlsToCache.
-        return cache.addAll(urlsToCache);
-      })
-  );
-});
-
-// --- مرحلة التفعيل (Activate) ---
-// يتم تشغيل هذا الحدث بعد تثبيت الـ Service Worker بنجاح وتفعيله.
-// هذا هو المكان المثالي لتنظيف الكاشات القديمة.
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      // انتظر حتى تكتمل جميع عمليات الحذف.
-      return Promise.all(
-        // قم بالمرور على جميع أسماء الكاشات الموجودة.
-        cacheNames.map(cacheName => {
-          // إذا كان اسم الكاش لا يطابق اسم الكاش الحالي (CACHE_NAME)،
-          // فهذا يعني أنه إصدار قديم ويجب حذفه.
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[Service Worker] Caching App Shell');
+      return cache.addAll(ASSETS_TO_CACHE);
     })
   );
+  self.skipWaiting(); // Activate immediately
 });
 
-// --- مرحلة جلب البيانات (Fetch) ---
-// يعترض هذا الحدث جميع طلبات الشبكة (مثل الصور، الصفحات، إلخ).
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    // ابحث عن الطلب في الكاش أولاً (استراتيجية Cache First).
-    caches.match(event.request)
-      .then(response => {
-        // إذا كان الرد موجودًا في الكاش، قم بإرجاعه مباشرة.
-        if (response) {
-          return response;
+// Activate Event: Cleanup old caches
+self.addEventListener('activate', (event) => {
+  console.log('[Service Worker] Activating Service Worker ...');
+  event.waitUntil(
+    caches.keys().then((keyList) => {
+      return Promise.all(keyList.map((key) => {
+        if (key !== CACHE_NAME) {
+          console.log('[Service Worker] Removing old cache', key);
+          return caches.delete(key);
         }
-        // إذا لم يكن موجودًا، اطلبه من الشبكة كالمعتاد.
-        return fetch(event.request);
-      })
+      }));
+    })
+  );
+  return self.clients.claim();
+});
+
+// Fetch Event: Stale-While-Revalidate Strategy
+self.addEventListener('fetch', (event) => {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
+  
+  // Skip API requests (always network first)
+  if (event.request.url.includes('/api/')) return;
+
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        // Update cache with new version if successful
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseToCache);
+            });
+        }
+        return networkResponse;
+      }).catch(() => {
+          // Network failed, return offline fallback if needed
+          // For now, just rely on cache or failure
+      });
+
+      // Return cached response immediately if available, else wait for network
+      return cachedResponse || fetchPromise;
+    })
   );
 });
