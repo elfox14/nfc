@@ -1,6 +1,6 @@
 :root {
     --text-primary: #e6f0f7;
-    --text-secondary: #bcc9d4; /* ACCESSIBILITY: Color updated for better contrast (was #aab8c2) */
+    --text-secondary: #bcc9d4;
     --accent-primary: #4da6ff;
     --accent-secondary: #364f6b;
     --button-text: #ffffff;
@@ -8,8 +8,8 @@
     --form-bg: #243447;
     --danger-color: #e74c3c;
     --success-color: #2ecc71;
-    --toolbar-height: 60px; /* متغير جديد لارتفاع الشريط العلوي */
-    --mobile-nav-height: 60px; /* متغير جديد لارتفاع شريط الموبايل */
+    --toolbar-height: 60px;
+    --mobile-nav-height: 60px;
 }
 
 html {
@@ -27,7 +27,6 @@ body {
     line-height: 1.6;
     transition: background-color 0.5s ease, color 0.5s ease; 
     overflow-x: hidden;
-    /* إضافة هامة: إفساح المجال للشريط العلوي */
     padding-top: var(--toolbar-height);
 }
 
@@ -39,7 +38,6 @@ html.ltr body {
 /* === 1. الهيكل الاحترافي الجديد (Pro Layout) === */
 /* ========================================= */
 
-/* --- أ. الشريط العلوي --- */
 .pro-toolbar {
     display: flex;
     align-items: center;
@@ -61,8 +59,8 @@ html.ltr body {
     gap: 12px;
 }
 .toolbar-group .btn {
-    margin-top: 0; /* إزالة الهامش العلوي من الأزرار */
-    width: auto; /* جعل الأزرار بعرض محتواها */
+    margin-top: 0;
+    width: auto;
     padding: 8px 12px;
     font-size: 0.9rem;
 }
@@ -71,56 +69,47 @@ html.ltr body {
     gap: 10px;
 }
 .toolbar-title-desktop {
-    display: none; /* مخفي افتراضياً */
+    display: none;
 }
 
-/* إخفاء الأزرار الإضافية في الموبايل */
 .toolbar-btn-mobile-hidden {
     display: none;
 }
 
-
-/* --- ب. الهيكل ثلاثي الأعمدة (سطح المكتب) --- */
 .pro-layout {
     display: grid;
-    /* Mobile-first: عمود واحد للمعاينة */
     grid-template-columns: 1fr; 
     height: calc(100vh - var(--toolbar-height));
     position: relative;
-    /* إفساح المجال لشريط الموبايل */
     padding-bottom: var(--mobile-nav-height); 
 }
 
 .pro-canvas {
-    grid-column: 1 / -1; /* دائماً في المنتصف */
+    grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* تغيير من center إلى flex-start */
+    justify-content: flex-start;
     align-items: center;
     padding: 20px 10px;
     overflow-y: auto;
     position: relative;
-    background-color: var(--page-bg); /* لون خلفية منطقة العمل */
+    background-color: var(--page-bg);
 }
 
 .pro-sidebar {
     background-color: var(--form-bg);
     overflow-y: auto;
     padding: 20px;
-    /* مخفية في الموبايل */
     display: none;
 }
 .pro-sidebar.active {
-    display: block; /* إظهار اللوحة النشطة فقط */
+    display: block;
 }
 
-/* تنسيق التمرير للوحات الجانبية */
 .pro-sidebar::-webkit-scrollbar { width: 8px; }
 .pro-sidebar::-webkit-scrollbar-track { background: var(--accent-secondary); }
 .pro-sidebar::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 4px; }
 
-
-/* --- ج. شريط تنقل الموبايل --- */
 .pro-mobile-nav {
     display: flex;
     position: fixed;
@@ -160,78 +149,62 @@ html.ltr body {
     border-top-color: var(--accent-primary);
 }
 
-
-/* --- د. تعديلات سطح المكتب (Desktop overrides) --- */
 @media (min-width: 1201px) {
     body {
-        /* إزالة الحشو السفلي في الديسكتوب */
         padding-bottom: 0; 
     }
     
     .toolbar-title-desktop {
-        display: inline; /* إظهار عنوان المحرر */
+        display: inline;
         font-weight: bold;
         color: var(--text-primary);
     }
 
-    /* إظهار الأزرار الإضافية في الديسكتوب */
     .toolbar-btn-mobile-hidden {
         display: inline-flex;
     }
 
     .pro-layout {
-        /* تطبيق الهيكل ثلاثي الأعمدة */
         grid-template-columns: 320px 1fr 350px;
         height: calc(100vh - var(--toolbar-height));
-        padding-bottom: 0; /* إزالة الحشو السفلي */
+        padding-bottom: 0;
     }
     
     .pro-sidebar {
-        display: block !important; /* إظهار اللوحتين دائماً */
-        height: 100%; /* ملء الارتفاع */
+        display: block !important;
+        height: 100%;
     }
 
     .pro-sidebar-left {
-        grid-column: 3 / 4; /* اللوحة اليسرى (تصميم) تصبح في اليمين بسبب RTL */
+        grid-column: 3 / 4;
         grid-row: 1;
         border-left: 1px solid var(--accent-secondary);
     }
     .pro-canvas {
         grid-column: 2 / 3;
         grid-row: 1;
-        padding: 40px; /* زيادة الحشو في الوسط */
+        padding: 40px;
     }
     .pro-sidebar-right {
-        grid-column: 1 / 2; /* اللوحة اليمنى (عناصر) تصبح في اليسار بسبب RTL */
+        grid-column: 1 / 2;
         grid-row: 1;
         border-right: 1px solid var(--accent-secondary);
     }
     
     .pro-mobile-nav {
-        display: none; /* إخفاء شريط الموبايل */
+        display: none;
     }
 
-    /* تعديل حجم زر المشاركة في الديسكتوب */
     .pro-toolbar .btn-success {
         padding: 10px 20px;
         font-size: 1rem;
     }
 }
 
-
 /* ========================================= */
-/* === 2. (تم حذف) الهيكل القديم (.generator-layout) === */
-/* ========================================= */
-/* تم حذف .generator-layout, .actions-column, .controls-column */
-/* تم حذف .desktop-controls-wrapper */
-/* تم حذف .mobile-tabs-nav (القديم) و .desktop-tabs-nav */
-
-
-/* ========================================= */
-/* === 3. تنسيقات العناصر (كما هي مع تعديلات بسيطة) === */
+/* === 3. تنسيقات العناصر === */
 /* ========================================= */
 
-/* --- 1. تحسين اختيار التخطيط (Visual Layout Selector) --- */
 .layout-selector-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -274,7 +247,6 @@ html.ltr body {
     color: var(--text-secondary);
 }
 
-/* حالة الاختيار */
 .layout-option input:checked + .layout-preview-box {
     border-color: var(--accent-primary);
     background-color: rgba(77, 166, 255, 0.1);
@@ -286,10 +258,8 @@ html.ltr body {
     color: var(--accent-primary);
 }
 
-
-/* --- 2. أدوات مساعدة بصرية (Alignment Guides) --- */
 .cards-wrapper {
-    position: relative; /* مهم للتموضع */
+    position: relative;
 }
 
 .cards-wrapper::after {
@@ -299,23 +269,22 @@ html.ltr body {
     left: 50%;
     width: 0;
     border-left: 1px dashed var(--accent-primary);
-    display: none; /* مخفي افتراضياً */
+    display: none;
     pointer-events: none;
     z-index: 100;
     opacity: 0.6;
 }
 
 .cards-wrapper.show-guides::after {
-    display: block; /* يظهر عند السحب */
+    display: block;
 }
 
-
-/* --- 3. تحسين تجربة الموبايل (Split Screen Fixed Preview) --- */
+/* --- تحسين تجربة الموبايل (حجم كبير مع تقليب) --- */
 @media (max-width: 1200px) {
     body {
-        overflow: hidden; /* منع تمرير الصفحة بالكامل */
-        height: 100vh; /* تثبيت الارتفاع */
-        position: fixed; /* تثبيت لمنع السحب المطاطي في iOS */
+        overflow: hidden;
+        height: 100vh;
+        position: fixed;
         width: 100%;
     }
 
@@ -323,52 +292,91 @@ html.ltr body {
         display: flex;
         flex-direction: column;
         height: 100%;
-        padding-bottom: 0; /* إزالة الحشو السفلي القديم */
+        padding-bottom: 0;
     }
 
-    /* منطقة المعاينة (الجزء العلوي الثابت) */
     .pro-canvas {
-        flex: 0 0 38%; /* تخصيص 38% من الشاشة للبطاقة */
-        background: #15202b; /* لون مختلف قليلاً للتمييز */
+        flex: 0 0 50%; /* مساحة مناسبة للكارت */
+        background: #15202b;
         overflow: hidden;
-        padding: 10px;
+        padding: 20px 5px;
         display: flex;
-        align-items: center;
-        justify-content: center;
+        align-items: center; /* توسيط عمودي */
+        justify-content: center; /* توسيط أفقي */
         z-index: 5;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         border-bottom: 1px solid var(--accent-secondary);
     }
 
-    /* تصغير البطاقة لتناسب المساحة العلوية */
     .cards-wrapper {
-        transform: scale(0.65); /* تصغير مناسب */
-        transform-origin: center center;
-        width: auto; /* إلغاء العرض الكامل */
-        margin: 0;
+        display: block; /* استعادة وضع البلوك للتقليب */
+        position: relative;
+        width: 100%; /* استخدام كامل العرض المتاح */
+        max-width: 510px;
+        aspect-ratio: 51 / 33; /* الحفاظ على النسبة */
+        margin: 0 auto;
+        
+        /* تفعيل ميكانيكية القلب */
+        transform-style: preserve-3d; 
+        transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
+        transform: rotateY(0deg); /* البداية */
+        
+        gap: 0; /* إزالة الفراغات */
+    }
+    
+    .cards-wrapper.is-flipped {
+        transform: rotateY(180deg); /* التدوير عند التفعيل */
+    }
+    
+    .cards-wrapper[data-layout="vertical"] { 
+        width: 70%; 
+        max-width: 330px; 
+        aspect-ratio: 33 / 51;
+    }
+    
+    .business-card { 
+        position: absolute; /* تموضع مطلق لتطابق الوجهين */
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        aspect-ratio: unset; /* الاعتماد على الأب */
+        backface-visibility: hidden; /* إخفاء الظهر */
+        -webkit-backface-visibility: hidden;
+        transform: none; /* إزالة أي تحويل فردي */
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
 
-    /* شريط التبويبات (فاصل في المنتصف) */
+    #card-back-preview { 
+        transform: rotateY(180deg); /* تدوير الوجه الخلفي */
+    }
+    
+    /* إظهار زر التقليب */
+    .mobile-flip-btn {
+        display: flex !important;
+        margin-top: 20px;
+    }
+
     .pro-mobile-nav {
         position: relative;
-        flex: 0 0 55px;
+        flex: 0 0 60px;
         order: 2;
         background-color: var(--form-bg);
         border-top: none;
         border-bottom: 1px solid var(--accent-secondary);
         box-shadow: none;
+        z-index: 10;
     }
 
-    /* منطقة الأدوات (الجزء السفلي القابل للتمرير) */
     .pro-sidebar {
-        display: none; /* مخفي افتراضياً */
+        display: none;
         order: 3;
-        flex: 1; /* يأخذ باقي المساحة */
-        overflow-y: auto; /* التمرير هنا فقط */
+        flex: 1; /* ملء المساحة المتبقية */
+        overflow-y: auto;
         padding: 20px;
-        padding-bottom: 100px; /* مساحة إضافية في الأسفل */
+        padding-bottom: 100px;
         background-color: var(--page-bg);
-        overscroll-behavior: contain; /* منع تمرير الصفحة الأم */
+        overscroll-behavior: contain;
     }
 
     .pro-sidebar.active {
@@ -378,8 +386,8 @@ html.ltr body {
 
 /* تعديل للأجهزة الصغيرة جداً */
 @media (max-width: 380px) {
-    .pro-canvas { flex: 0 0 35%; }
-    .cards-wrapper { transform: scale(0.55); }
+    .pro-canvas { flex: 0 0 45%; }
+    .cards-wrapper { width: 100%; }
 }
 
 
@@ -404,13 +412,12 @@ html.ltr body {
     margin: 0.5rem auto 1.5rem auto;
 }
 
-/* Accordion Styles */
 .fieldset-accordion {
     border: 1px solid var(--accent-secondary);
     border-radius: 8px;
     margin-bottom: 15px;
     transition: all 0.3s ease;
-    background-color: var(--form-bg); /* التأكد من وجود خلفية */
+    background-color: var(--form-bg);
 }
 .fieldset-accordion[open] {
     border-color: var(--accent-primary);
@@ -456,7 +463,6 @@ html.ltr body {
 .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 .btn.loading .fas { animation: fa-spin 1s infinite linear; }
 
-/* --- Start: New Success State for Buttons --- */
 .btn.success-state {
     background-color: var(--success-color) !important;
     border-color: var(--success-color) !important;
@@ -464,7 +470,6 @@ html.ltr body {
     transform: none;
     box-shadow: none;
 }
-/* --- End: New Success State for Buttons --- */
 
 .undo-redo-container {
     display: flex;
@@ -476,13 +481,13 @@ html.ltr body {
     background-color: var(--accent-secondary);
     color: var(--text-primary);
     border: none;
-    width: 36px; /* تصغير طفيف ليناسب الشريط */
-    height: 36px; /* تصغير طفيف ليناسب الشريط */
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px; /* تصغير طفيف */
+    font-size: 15px;
     cursor: pointer;
     transition: all 0.2s ease;
     margin: 0;
@@ -518,12 +523,10 @@ html.ltr body {
 .form-group input[type="range"] { padding: 0; }
 .form-group input[type="file"] { padding: 8px; font-size: 12px;}
 
-/* --- Start: Live Font Previews --- */
 #name-font option[value*="Tajawal"], #tagline-font option[value*="Tajawal"], #phone-text-font option[value*="Tajawal"], #back-buttons-font option[value*="Tajawal"], #social-text-font option[value*="Tajawal"] { font-family: 'Tajawal', sans-serif; }
 #name-font option[value*="Cairo"], #tagline-font option[value*="Cairo"], #phone-text-font option[value*="Cairo"], #back-buttons-font option[value*="Cairo"], #social-text-font option[value*="Cairo"] { font-family: 'Cairo', sans-serif; }
 #name-font option[value*="Lalezar"], #tagline-font option[value*="Lalezar"], #phone-text-font option[value*="Lalezar"], #social-text-font option[value*="Lalezar"] { font-family: 'Lalezar', cursive; font-size: 1.2rem; }
 #phone-btn-font option[value*="Poppins"], #back-buttons-font option[value*="Poppins"], #social-text-font option[value*="Poppins"] { font-family: 'Poppins', sans-serif; }
-/* --- End: Live Font Previews --- */
 
 .form-group.with-tooltip {
     display: flex;
@@ -565,14 +568,13 @@ html.ltr body {
 .file-input-group input[type="file"] { flex-grow: 1; }
 .remove-image-btn { flex-shrink: 0; width: 38px; height: 38px; padding: 0; background-color: var(--danger-color); border-radius: 6px; cursor: pointer; border: none; font-size: 16px; margin-top: 0 !important; }
 
-.fieldset { border: 1px solid var(--accent-secondary); border-radius: 8px; padding: 15px; margin-top: 0; margin-bottom: 15px; /* تعديل الهوامش */ transition: border-color 0.3s ease; position: relative; }
+.fieldset { border: 1px solid var(--accent-secondary); border-radius: 8px; padding: 15px; margin-top: 0; margin-bottom: 15px; transition: border-color 0.3s ease; position: relative; }
 .fieldset legend { padding: 0 10px; color: var(--accent-primary); font-weight: 600; }
 .fieldset h4 { color: var(--text-secondary); margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--accent-secondary); padding-bottom: 5px; font-weight: 400; }
 
 .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: center;}
 .export-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-/* --- NEW: Positioning Controls for Move Buttons --- */
 .position-controls-grid {
     display: flex;
     flex-direction: column;
@@ -582,7 +584,7 @@ html.ltr body {
     border: 1px dashed var(--accent-secondary);
     border-radius: 6px;
     max-width: 150px;
-    margin: 10px auto 0 auto; /* تم تعديل الهامش ليلائم form-group */
+    margin: 10px auto 0 auto;
 }
 
 .position-controls-grid .controls-row {
@@ -604,20 +606,17 @@ html.ltr body {
     background-color: var(--accent-primary);
     transform: none; 
 }
-/* --- END NEW --- */
 
-/* --- Start: Download Dropdown Styles --- */
 .download-container {
     position: relative;
-    /* margin-top: 10px; (تم الإلغاء) */
 }
 .dropdown-menu {
     display: none;
     position: absolute;
-    top: 110%; /* تعديل ليناسب الشريط العلوي */
+    top: 110%;
     left: 0;
-    right: auto; /* تعديل ليناسب الشريط العلوي */
-    width: 250px; /* تحديد عرض */
+    right: auto;
+    width: 250px;
     z-index: 100;
     background-color: var(--form-bg);
     border: 1px solid var(--accent-primary);
@@ -653,15 +652,13 @@ html.ltr .dropdown-menu li button {
 .dropdown-menu li button:hover {
     background-color: var(--accent-secondary);
     color: #fff;
-    transform: none; /* Override default button hover */
-    box-shadow: none; /* Override default button hover */
+    transform: none;
+    box-shadow: none;
 }
 .dropdown-menu li button i {
     width: 20px;
     margin-inline-end: 10px;
 }
-/* --- End: Download Dropdown Styles --- */
-
 
 .dynamic-input-group {
     background-color: var(--page-bg);
@@ -726,7 +723,7 @@ html.ltr .dynamic-social-link span { text-align: right; }
     align-items: center; 
     gap: 20px; 
     width: 100%; 
-    max-width: 510px; /* تحديد عرض أقصى */
+    max-width: 510px; 
     flex-shrink: 0; 
     border-radius: 15px; 
 }
@@ -739,7 +736,6 @@ html.ltr .dynamic-social-link span { text-align: right; }
 
 .business-card {
     width: 100%;
-    /* max-width: 510px; (تم النقل للأب) */
     aspect-ratio: 51 / 33; 
     border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
@@ -750,16 +746,11 @@ html.ltr .dynamic-social-link span { text-align: right; }
     transition: width 0.5s ease, height 0.5s ease, box-shadow 0.3s ease;
 }
 
-/* إزالة التقليب من الوضع الأساسي (سطح المكتب) */
-/* #card-back-preview { transform: rotateY(180deg); } (Rule removed) */
-
-
 #card-name, #card-tagline {
     white-space: pre-wrap;
     word-break: break-word;
 }
 
-/* Base style for draggable elements when in DOM, but positioned off-card */
 #card-logo,
 #card-personal-photo-wrapper,
 #card-name,
@@ -774,11 +765,10 @@ html.ltr .dynamic-social-link span { text-align: right; }
 .cards-wrapper[data-layout="vertical"] .business-card {
     aspect-ratio: 33 / 51; 
 }
-/* This rule needs to be separate for vertical layout */
+
 .cards-wrapper[data-layout="vertical"] { 
     width: 70%; 
     max-width: 330px; 
-    /* aspect-ratio: 33 / 51; (تم الإلغاء، العرض كافٍ) */
 }
 
 .card-background-layer { position: absolute; inset: 0; background-size: cover; background-position: center; transition: background-image 0.5s ease; z-index: 1; }
@@ -795,8 +785,8 @@ html.ltr .dynamic-social-link span { text-align: right; }
     align-items: center; 
     text-align: center; 
     position: relative; 
-    z-index: 2; /* Content layer above background */
-    box-sizing: border-box; /* Added for consistency */
+    z-index: 2;
+    box-sizing: border-box;
 }
 
 
@@ -805,39 +795,33 @@ html.ltr .dynamic-social-link span { text-align: right; }
     outline: 2px dashed var(--accent-primary);
 }
 
-
-/* Z-INDEX CONTROL FOR DRAGGABLE ELEMENTS */
-
-/* Core Static Elements */
 .card-content-layer #card-logo,
 .card-content-layer #card-personal-photo-wrapper,
 .card-content-layer #card-name,
 .card-content-layer #card-tagline {
     cursor: grab;
-    position: relative; /* Overridden by script/drag logic, but good as a fallback */
+    position: relative;
     top: auto;
     left: auto;
     touch-action: none;
-    z-index: 3; /* Base layer for core elements */
+    z-index: 3;
     transition: opacity 0.2s ease, box-shadow 0.3s ease;
     width: auto;
     margin: 5px 0;
 }
 
-/* QR Code (Lowered slightly so dynamic buttons appear above it) */
 #qr-code-wrapper {
     z-index: 4; 
-    position: relative; /* Overridden by script/drag logic, but good as a fallback */
+    position: relative;
     top: auto;
     left: auto;
     touch-action: none;
 }
 
-/* Dynamic Elements (Highest Z-Index on the card for visibility) */
 .phone-button-draggable-wrapper,
 .draggable-social-link {
     position: absolute;
-    z-index: 5; /* HIGHEST Z-INDEX to appear above QR (4) and core elements (3) */
+    z-index: 5;
     cursor: grab;
     touch-action: none;
     transition: opacity 0.2s ease, box-shadow 0.3s ease;
@@ -852,10 +836,9 @@ html.ltr .dynamic-social-link span { text-align: right; }
 .draggable-social-link.dragging {
     cursor: grabbing;
     opacity: 0.8;
-    z-index: 99; /* Max Z-index during drag to be visible */
+    z-index: 99;
 }
 
-/* --- Start: Drag & Drop Hover Hint --- */
 .dnd-hover-hint {
     position: absolute;
     top: -5px;
@@ -887,7 +870,6 @@ html.ltr .dynamic-social-link span { text-align: right; }
     opacity: 1;
     transform: scale(1);
 }
-/* --- End: Drag & Drop Hover Hint --- */
 
 .logo-front {
     max-width: 25%;
@@ -900,7 +882,7 @@ html.ltr .dynamic-social-link span { text-align: right; }
     background-size: cover;
     background-position: center;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    display: none; /* Hidden by default */
+    display: none;
 }
 
 #card-name, #card-tagline {
@@ -912,7 +894,6 @@ html.ltr .dynamic-social-link span { text-align: right; }
 #card-tagline { font-size: 1rem; }
 
 .phone-button-draggable-wrapper {
-    /* position: absolute; Z-index: 5 */
     top: 0;
     left: 0;
     touch-action: none;
@@ -985,12 +966,10 @@ html.ltr .cards-wrapper[data-layout="modern"] #card-tagline { text-align: left; 
     justify-content: center; 
     align-items: center; 
     transition: width 0.3s ease;
-    /* ز-اندكس 4 */
 }
 .card-back-qr-image-wrapper img, .card-back-qr-image-wrapper canvas { width: 100% !important; height: 100% !important; display: block; border-radius: 4px; object-fit: contain; }
 
 .draggable-social-link {
-    /* position: absolute; Z-index: 5 */
     top: 0;
     left: 0;
     touch-action: none;
@@ -1042,7 +1021,6 @@ html.ltr .cards-wrapper[data-layout="modern"] #card-tagline { text-align: left; 
 
 .highlighted { outline: 2px dashed var(--accent-primary); box-shadow: 0 0 15px var(--accent-primary); transition: all 0.3s ease; border-radius: 5px; }
 
-/* --- Start: New Pulsating Highlight Animation --- */
 @keyframes pulsate {
     0% { box-shadow: 0 0 10px 3px rgba(77, 166, 255, 0); }
     50% { box-shadow: 0 0 10px 3px rgba(77, 166, 255, 0.6); }
@@ -1053,7 +1031,6 @@ html.ltr .cards-wrapper[data-layout="modern"] #card-tagline { text-align: left; 
     animation: pulsate 1.5s ease-in-out;
     border-radius: 8px;
 }
-/* --- End: New Pulsating Highlight Animation --- */
 
 .visually-hidden { 
     position: absolute; 
@@ -1171,24 +1148,24 @@ body {
 }
 
 .mobile-flip-btn {
-    display: flex; /* إظهاره دائماً في الهيكل الجديد */
+    display: flex;
     align-items: center;
     justify-content: center;
-    position: relative; /* تغيير ليكون ضمن التدفق */
+    position: relative;
     bottom: auto;
     right: auto;
     width: 150px;
     height: 40px;
     background-color: var(--accent-primary);
     color: white;
-    border-radius: 20px; /* مستطيل بدلاً من دائرة */
+    border-radius: 20px;
     border: none;
     font-size: 1rem;
     cursor: pointer;
     z-index: 100;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     transition: transform 0.2s ease-in-out, background-color 0.2s ease;
-    margin-top: 15px; /* هامش علوي ليفصله عن البطاقة */
+    margin-top: 15px;
     gap: 8px;
 }
 
@@ -1196,9 +1173,6 @@ body {
     transform: scale(1.05);
     background-color: #62b5ff;
 }
-
-/* (تم حذف .mobile-tabs-nav القديم) */
-/* (تم حذف .desktop-tabs-nav) */
 
 .tab-pane {
     display: none;
@@ -1383,25 +1357,54 @@ html.ltr .testimonial-card {
 }
 
 /* ========================================= */
-/* === 5. تعديلات تقليب البطاقة للموبايل === */
+/* === 5. تعديلات الموبايل (حجم كبير + تقليب) === */
 /* ========================================= */
 @media (max-width: 1200px) {
-    .pro-canvas {
-        padding: 20px 10px; /* حشو أقل للموبايل */
+    body {
+        overflow: hidden;
+        height: 100vh;
+        position: fixed;
+        width: 100%;
     }
 
-    /* إعادة تفعيل خصائص التقليب */
-    .cards-wrapper { 
-        display: block; 
-        position: relative; 
-        width: 100%; 
-        max-width: 510px; 
+    .pro-layout {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding-bottom: 0;
+    }
+
+    .pro-canvas {
+        flex: 0 0 50%; /* تخصيص مساحة كافية للكارت */
+        background: #15202b;
+        overflow: hidden;
+        padding: 20px 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        border-bottom: 1px solid var(--accent-secondary);
+    }
+
+    .cards-wrapper {
+        display: block; /* هام للتقليب */
+        position: relative;
+        width: 100%;
+        max-width: 510px;
         aspect-ratio: 51 / 33;
+        margin: 0 auto;
+        
+        /* تفعيل ميكانيكا القلب */
         transform-style: preserve-3d; 
         transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
-        cursor: default;
-        gap: 0; 
-        margin: 0 auto;
+        transform: rotateY(0deg); /* الوضع الافتراضي بدون تدوير */
+        
+        gap: 0;
+    }
+    
+    .cards-wrapper.is-flipped {
+        transform: rotateY(180deg); /* تدوير عند الضغط */
     }
     
     .cards-wrapper[data-layout="vertical"] { 
@@ -1411,33 +1414,59 @@ html.ltr .testimonial-card {
     }
     
     .business-card { 
-        aspect-ratio: unset; 
-        height: 100%; 
-        width: 100%; 
-        position: absolute; 
+        position: absolute; /* وضع مطلق لتطابق الوجوه */
         top: 0; 
         left: 0; 
+        width: 100%; 
+        height: 100%; 
+        aspect-ratio: unset; 
         backface-visibility: hidden; 
         -webkit-backface-visibility: hidden;
-        pointer-events: auto;
-        will-change: transform;
-        max-width: none;
+        transform: none; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
 
     #card-back-preview { 
-        transform: rotateY(180deg); 
+        transform: rotateY(180deg); /* تدوير الوجه الخلفي */
     }
     
-    .cards-wrapper.is-flipped {
-        transform: rotateY(180deg);
+    /* إظهار زر التقليب */
+    .mobile-flip-btn {
+        display: flex !important;
+        margin-top: 20px;
     }
-    
-    /* (تم نقل تنسيقات mobile-flip-btn للأعلى) */
+
+    .pro-mobile-nav {
+        position: relative;
+        flex: 0 0 60px;
+        order: 2;
+        background-color: var(--form-bg);
+        border-top: none;
+        border-bottom: 1px solid var(--accent-secondary);
+        box-shadow: none;
+        z-index: 10;
+    }
+
+    .pro-sidebar {
+        display: none;
+        order: 3;
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        padding-bottom: 100px;
+        background-color: var(--page-bg);
+        overscroll-behavior: contain;
+        border-top: 1px solid var(--accent-secondary);
+    }
+
+    .pro-sidebar.active {
+        display: block;
+    }
 }
 
 @media (max-width: 768px) {
     .pro-sidebar {
-        padding: 10px; /* تقليل الحشو في اللوحات الجانبية للموبايل */
+        padding: 10px;
     }
 
     .form-group label {
@@ -1490,7 +1519,6 @@ html.ltr .testimonial-card {
   }
 }
 
-/* Shepherd Tour Theme Overrides */
 .shepherd-element {
     background-color: var(--form-bg);
     border: 1px solid var(--accent-primary);
@@ -1544,7 +1572,6 @@ html.ltr .testimonial-card {
     background-color: var(--form-bg);
 }
 
-/* ===== بداية تنسيقات مركز المساعدة ===== */
 .help-tabs-nav {
     display: flex;
     border-bottom: 1px solid var(--accent-secondary);
@@ -1583,7 +1610,7 @@ html.ltr .testimonial-card {
 .video-container {
     position: relative;
     width: 100%;
-    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    padding-bottom: 56.25%;
     height: 0;
     margin: 15px 0;
     border-radius: 8px;
@@ -1622,16 +1649,7 @@ html.ltr .testimonial-card {
     position: relative !important;
     transform: true !important;
 }
-/* ===== نهاية تنسيقات مركز المساعدة ===== */
-/* ... (الكود السابق بالكامل كما هو في الرسالة السابقة الخاصة بـ style.css) ... */
 
-/* أضف هذا الجزء الجديد في نهاية الملف */
-
-/* ========================================= */
-/* === 6. الميزات المتقدمة (Advanced Features) === */
-/* ========================================= */
-
-/* تأثير الزجاج (Glassmorphism) */
 .glass-card {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
@@ -1640,7 +1658,6 @@ html.ltr .testimonial-card {
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
 
-/* زر تثبيت PWA */
 #pwa-install-btn {
     background: linear-gradient(45deg, #FF512F, #DD2476);
     color: white;
@@ -1653,7 +1670,6 @@ html.ltr .testimonial-card {
     100% { box-shadow: 0 0 0 0 rgba(221, 36, 118, 0); }
 }
 
-/* تحسينات عامة للأزرار الجديدة */
 #add-to-wallet-btn {
     transition: transform 0.2s ease, background-color 0.2s ease;
     border: 1px solid #333;
@@ -1671,7 +1687,6 @@ html.ltr .testimonial-card {
     box-shadow: 0 6px 20px rgba(118, 75, 162, 0.6);
 }
 
-/* تحسينات لعرض الإحصائيات */
 #owner-analytics {
     background: rgba(77, 166, 255, 0.1);
     border-color: var(--accent-primary);
@@ -1679,4 +1694,183 @@ html.ltr .testimonial-card {
 #owner-analytics strong {
     color: var(--accent-primary);
     font-size: 1.5rem;
+}
+/* ============================================
+   MOBILE UX ENHANCEMENTS
+   ============================================ */
+/* Mobile Tab Navigation */
+.mobile-tab-nav {
+    display: none; /* Hidden on desktop */
+    background: var(--sidebar-bg, #1a2332);
+    border-bottom: 2px solid var(--accent-primary, #4da6ff);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.mobile-tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary, #aab8c2);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 44px; /* Touch-friendly */
+    border-bottom: 3px solid transparent;
+}
+.mobile-tab-btn i {
+    font-size: 20px;
+}
+.mobile-tab-btn.active {
+    color: var(--accent-primary, #4da6ff);
+    background: rgba(77, 166, 255, 0.1);
+    border-bottom-color: var(--accent-primary, #4da6ff);
+}
+/* Mobile FAB Menu */
+.mobile-fab-menu {
+    display: none; /* Hidden on desktop */
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    z-index: 1000;
+}
+.mobile-fab-trigger {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-primary, #4da6ff);
+    color: white;
+    border: none;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.mobile-fab-trigger:hover,
+.mobile-fab-trigger:active {
+    background: var(--accent-secondary, #3d96ef);
+    transform: scale(1.1);
+}
+.mobile-fab-trigger.active i {
+    transform: rotate(45deg);
+}
+.mobile-fab-actions {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+.mobile-fab-menu.active .mobile-fab-actions {
+    opacity: 1;
+    pointer-events: all;
+}
+.mobile-fab-action {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--sidebar-bg, #2a3d54);
+    color: white;
+    border: 2px solid var(--accent-primary, #4da6ff);
+    font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0);
+}
+.mobile-fab-menu.active .mobile-fab-action {
+    transform: scale(1);
+}
+.mobile-fab-menu.active .mobile-fab-action:nth-child(1) {
+    transition-delay: 0.05s;
+}
+.mobile-fab-menu.active .mobile-fab-action:nth-child(2) {
+    transition-delay: 0.1s;
+}
+.mobile-fab-menu.active .mobile-fab-action:nth-child(3) {
+    transition-delay: 0.15s;
+}
+/* Mobile Responsive Layout */
+@media (max-width: 1200px) {
+    /* Show mobile components */
+    .mobile-tab-nav {
+        display: flex;
+    }
+    
+    .mobile-fab-menu {
+        display: block;
+    }
+    /* Sticky Card Preview - 40% of screen */
+    .cards-wrapper {
+        position: sticky !important;
+        top: 10px;
+        height: 40vh !important;
+        max-height: 400px;
+        margin-bottom: 20px;
+        overflow: visible;
+    }
+    /* Control panels - 60% of screen, scrollable */
+    .pro-sidebar {
+        height: auto;
+        max-height: 60vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    /* Tab-based panel visibility */
+    .pro-sidebar.tab-pane {
+        display: none;
+    }
+    
+    .pro-sidebar.tab-pane.active {
+        display: block;
+    }
+    /* Touch-friendly controls - minimum 44px */
+    button,
+    input[type="button"],
+    input[type="submit"],
+    .btn,
+    .btn-icon {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 16px;
+    }
+    /* Improved accordion spacing */
+    .fieldset-accordion summary {
+        padding: 14px 16px;
+        font-size: 16px;
+    }
+    /* Better form spacing */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    label {
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+    /* Larger inputs */
+    input[type="text"],
+    input[type="url"],
+    input[type="email"],
+    input[type="number"],
+    textarea,
+    select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px;
+        min-height: 44px;
+    }
 }

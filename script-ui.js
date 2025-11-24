@@ -535,3 +535,65 @@ const UIManager = {
     }
   },
 };
+// ============================================
+// MOBILE UX ENHANCEMENTS
+// ============================================
+(function initializeMobileUX() {
+    'use strict';
+    // Mobile Tab Navigation
+    const tabButtons = document.querySelectorAll('.mobile-tab-btn');
+    const designPanel = document.getElementById('panel-design');
+    const contentPanel = document.getElementById('panel-elements');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTab = btn.dataset.tab;
+            // Update active button
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            // Show/hide panels
+            if (targetTab === 'design') {
+                designPanel?.classList.add('active');
+                contentPanel?.classList.remove('active');
+            } else if (targetTab === 'content') {
+                contentPanel?.classList.add('active');
+                designPanel?.classList.remove('active');
+            }
+        });
+    });
+    // Mobile FAB Menu
+    const fabMenu = document.querySelector('.mobile-fab-menu');
+    const fabTrigger = document.querySelector('.mobile-fab-trigger');
+    const fabActions = document.querySelectorAll('.mobile-fab-action');
+    fabTrigger?.addEventListener('click', () => {
+        fabMenu?.classList.toggle('active');
+        fabTrigger?.classList.toggle('active');
+    });
+    // FAB Action Handlers
+    fabActions.forEach(action => {
+        action.addEventListener('click', () => {
+            const actionType = action.dataset.action;
+            switch (actionType) {
+                case 'save':
+                    document.getElementById('save-to-gallery-btn')?.click();
+                    break;
+                case 'share':
+                    document.getElementById('share-card-btn')?.click();
+                    break;
+                case 'download':
+                    document.getElementById('download-options-btn')?.click();
+                    break;
+            }
+            // Close FAB menu after action
+            fabMenu?.classList.remove('active');
+            fabTrigger?.classList.remove('active');
+        });
+    });
+    // Close FAB menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (fabMenu?.classList.contains('active') && 
+            !fabMenu.contains(e.target)) {
+            fabMenu.classList.remove('active');
+            fabTrigger?.classList.remove('active');
+        }
+    });
+})();
