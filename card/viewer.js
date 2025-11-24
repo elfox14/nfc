@@ -158,13 +158,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     <div class="phone-buttons-wrapper" id="phone-buttons-wrapper" style="transform: translate(${data.positions["phone-buttons-wrapper"]?.x || 0}px, ${data.positions["phone-buttons-wrapper"]?.y || 0}px);">
                         ${(data.dynamic.phones || [])
-                          .map((phone) => {
-                            const bgColor = data.inputs["phone-btn-bg-color"];
-                            const textColor =
-                              data.inputs["phone-btn-text-color"];
-                            return `<a href="tel:${phone}" class="phone-button" style="background-color: ${bgColor}; color: ${textColor}; border-color: ${bgColor === "transparent" || bgColor.includes("rgba(0,0,0,0)") ? textColor : "transparent"}; font-size: ${data.inputs["phone-btn-font-size"]}px; padding: ${data.inputs["phone-btn-padding"]}px ${data.inputs["phone-btn-padding"] * 2}px; font-family: ${data.inputs["phone-btn-font"]};"><i class="fas fa-phone-alt"></i><span>${phone}</span></a>`;
-                          })
-                          .join("")}
+        .map((phone) => {
+          const bgColor = data.inputs["phone-btn-bg-color"];
+          const textColor =
+            data.inputs["phone-btn-text-color"];
+          return `<a href="tel:${phone}" class="phone-button" style="background-color: ${bgColor}; color: ${textColor}; border-color: ${bgColor === "transparent" || bgColor.includes("rgba(0,0,0,0)") ? textColor : "transparent"}; font-size: ${data.inputs["phone-btn-font-size"]}px; padding: ${data.inputs["phone-btn-padding"]}px ${data.inputs["phone-btn-padding"] * 2}px; font-family: ${data.inputs["phone-btn-font"]};"><i class="fas fa-phone-alt"></i><span>${phone}</span></a>`;
+        })
+        .join("")}
                     </div>
                 </div>
             </div>`;
@@ -274,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- المسار الاحتياطي: جلب البيانات من API إذا لم تكن محقونة ---
     console.log("No SSR data. Fetching from API.");
     const params = new URLSearchParams(window.location.search);
-    const cardId = params.get("id");
+    let cardId = params.get("id"); // تغيير من const إلى let للسماح بإعادة التعيين
 
     if (!cardId) {
       // استخلاص الـ ID من المسار النظيف مثل /card/xxxxxxx

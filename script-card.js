@@ -363,26 +363,66 @@ const CardManager = {
 
     const placementControl = document.createElement("div");
     placementControl.className = "placement-control";
-    placementControl.innerHTML = `
-            <div class="radio-group">
-                <label><input type="radio" name="placement-${id}" value="front" ${placement === "front" ? "checked" : ""}> أمامي</label>
-                <label><input type="radio" name="placement-${id}" value="back" ${placement === "back" ? "checked" : ""}> خلفي</label>
-            </div>
-        `;
+    const radioGroup = createElement("div", { className: "radio-group" });
+
+    const labelFront = createElement("label");
+    const inputFront = createElement("input", {
+      type: "radio",
+      name: `placement-${id}`,
+      value: "front",
+      checked: placement === "front"
+    });
+    labelFront.appendChild(inputFront);
+    labelFront.appendChild(document.createTextNode(" أمامي"));
+
+    const labelBack = createElement("label");
+    const inputBack = createElement("input", {
+      type: "radio",
+      name: `placement-${id}`,
+      value: "back",
+      checked: placement === "back"
+    });
+    labelBack.appendChild(inputBack);
+    labelBack.appendChild(document.createTextNode(" خلفي"));
+
+    radioGroup.appendChild(labelFront);
+    radioGroup.appendChild(labelBack);
+    placementControl.appendChild(radioGroup);
 
     const positionControl = document.createElement("div");
     positionControl.className = "form-group";
-    positionControl.innerHTML = `
-            <label>تحريك دقيق (بالبكسل)</label>
-            <div class="position-controls-grid" data-target-id="${id}"> 
-                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                <div class="controls-row">
-                    <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                    <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                </div>
-                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-            </div>
-        `;
+    const posLabel = createElement("label", { textContent: "تحريك دقيق (بالبكسل)" });
+
+    const posGrid = createElement("div", {
+      className: "position-controls-grid",
+      "data-target-id": id
+    });
+
+    const createMoveBtn = (direction, iconClass, title) => {
+      const btn = createElement("button", {
+        type: "button",
+        className: "btn-icon move-btn",
+        "data-direction": direction,
+        title: title
+      });
+      btn.appendChild(createElement("i", { className: iconClass }));
+      return btn;
+    };
+
+    const btnUp = createMoveBtn("up", "fas fa-arrow-up", "للأعلى");
+
+    const controlsRow = createElement("div", { className: "controls-row" });
+    controlsRow.appendChild(createMoveBtn("left", "fas fa-arrow-left", "لليسار"));
+    controlsRow.appendChild(createMoveBtn("right", "fas fa-arrow-right", "لليمين"));
+
+    const btnDown = createMoveBtn("down", "fas fa-arrow-down", "للأسفل");
+
+    posGrid.appendChild(btnUp);
+    posGrid.appendChild(controlsRow);
+    posGrid.appendChild(btnDown);
+
+    positionControl.appendChild(posLabel);
+    positionControl.appendChild(posGrid);
 
     mainContent.append(inputWrapper, placementControl, positionControl);
     inputGroup.appendChild(mainContent);
@@ -1015,56 +1055,139 @@ const CardManager = {
     // استخدام createElement للأمان (يمكن استبدال innerHTML هنا)
     // لكن بما أن هذا الجزء في المحرر (Editor UI) وليس في المعاينة،
     // فالخطورة أقل، لكن للأفضل:
-    infoWrapper.innerHTML = `
-            <i class="fas fa-grip-vertical drag-handle"></i>
-            <i class="${platform.icon}" aria-hidden="true"></i>
-            <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${platform.name}: ${value.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>
-            <button class="remove-btn" aria-label="حذف رابط ${platform.name}">×</button>
-        `;
+    const dragHandle = createElement("i", { className: "fas fa-grip-vertical drag-handle" });
+    const platformIcon = createElement("i", { className: platform.icon, "aria-hidden": "true" });
+
+    const textSpan = createElement("span", {
+      style: {
+        flexGrow: "1",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      },
+      textContent: `${platform.name}: ${value}` // textContent handles escaping automatically
+    });
+
+    const removeBtn = createElement("button", {
+      className: "remove-btn",
+      "aria-label": `حذف رابط ${platform.name}`,
+      textContent: "×"
+    });
+
+    infoWrapper.appendChild(dragHandle);
+    infoWrapper.appendChild(platformIcon);
+    infoWrapper.appendChild(textSpan);
+    infoWrapper.appendChild(removeBtn);
 
     const elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, "-")}`;
 
     const placementControl = document.createElement("div");
     placementControl.className = "placement-control";
-    placementControl.innerHTML = `
-            <div class="radio-group">
-                <label><input type="radio" name="placement-${id}" value="front"> أمامي</label>
-                <label><input type="radio" name="placement-${id}" value="back" checked> خلفي</label>
-            </div>
-        `;
+    const radioGroup = createElement("div", { className: "radio-group" });
+
+    const labelFront = createElement("label");
+    const inputFront = createElement("input", {
+      type: "radio",
+      name: `placement-${id}`,
+      value: "front"
+    });
+    labelFront.appendChild(inputFront);
+    labelFront.appendChild(document.createTextNode(" أمامي"));
+
+    const labelBack = createElement("label");
+    const inputBack = createElement("input", {
+      type: "radio",
+      name: `placement-${id}`,
+      value: "back",
+      checked: true
+    });
+    labelBack.appendChild(inputBack);
+    labelBack.appendChild(document.createTextNode(" خلفي"));
+
+    radioGroup.appendChild(labelFront);
+    radioGroup.appendChild(labelBack);
+    placementControl.appendChild(radioGroup);
 
     const positionControl = document.createElement("div");
     positionControl.className = "form-group";
-    positionControl.innerHTML = `
-            <label>تحريك دقيق (بالبكسل)</label>
-            <div class="position-controls-grid" data-target-id="${elementId}"> 
-                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                <div class="controls-row">
-                    <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                    <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                </div>
-                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-            </div>
-        `;
+    const posLabel = createElement("label", { textContent: "تحريك دقيق (بالبكسل)" });
+
+    const posGrid = createElement("div", {
+      className: "position-controls-grid",
+      "data-target-id": elementId
+    });
+
+    const createMoveBtn = (direction, iconClass, title) => {
+      const btn = createElement("button", {
+        type: "button",
+        className: "btn-icon move-btn",
+        "data-direction": direction,
+        title: title
+      });
+      btn.appendChild(createElement("i", { className: iconClass }));
+      return btn;
+    };
+
+    const btnUp = createMoveBtn("up", "fas fa-arrow-up", "للأعلى");
+
+    const controlsRow = createElement("div", { className: "controls-row" });
+    controlsRow.appendChild(createMoveBtn("left", "fas fa-arrow-left", "لليسار"));
+    controlsRow.appendChild(createMoveBtn("right", "fas fa-arrow-right", "لليمين"));
+
+    const btnDown = createMoveBtn("down", "fas fa-arrow-down", "للأسفل");
+
+    posGrid.appendChild(btnUp);
+    posGrid.appendChild(controlsRow);
+    posGrid.appendChild(btnDown);
+
+    positionControl.appendChild(posLabel);
+    positionControl.appendChild(posGrid);
 
     const formattingControl = document.createElement("details");
     formattingControl.className = "fieldset-accordion";
     formattingControl.style.backgroundColor = "var(--page-bg)";
-    formattingControl.innerHTML = `
-            <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-            <div class="fieldset-content" style="padding: 10px;">
-                <div class="control-grid">
-                    <div class="form-group">
-                        <label for="input-${id}-color">لون الخط</label>
-                        <input type="color" id="input-${id}-color" value="#e6f0f7">
-                    </div>
-                    <div class="form-group">
-                        <label for="input-${id}-size">حجم الخط</label>
-                        <input type="range" id="input-${id}-size" min="10" max="24" value="12">
-                    </div>
-                </div>
-            </div>
-        `;
+    const summary = createElement("summary", {
+      style: { padding: "8px 12px", fontSize: "0.9rem" },
+      textContent: "تنسيقات خاصة (للنص)"
+    });
+
+    const fieldsetContent = createElement("div", {
+      className: "fieldset-content",
+      style: { padding: "10px" }
+    });
+
+    const controlGrid = createElement("div", { className: "control-grid" });
+
+    const createColorInput = (label, inputId, defaultValue) => {
+      const group = createElement("div", { className: "form-group" });
+      group.appendChild(createElement("label", { htmlFor: inputId, textContent: label }));
+      group.appendChild(createElement("input", {
+        type: "color",
+        id: inputId,
+        value: defaultValue
+      }));
+      return group;
+    };
+
+    const createSizeInput = (label, inputId, min, max, defaultValue) => {
+      const group = createElement("div", { className: "form-group" });
+      group.appendChild(createElement("label", { htmlFor: inputId, textContent: label }));
+      group.appendChild(createElement("input", {
+        type: "range",
+        id: inputId,
+        min: min,
+        max: max,
+        value: defaultValue
+      }));
+      return group;
+    };
+
+    controlGrid.appendChild(createColorInput("لون الخط", `input-${id}-color`, "#e6f0f7"));
+    controlGrid.appendChild(createSizeInput("حجم الخط", `input-${id}-size`, "10", "24", "12"));
+
+    fieldsetContent.appendChild(controlGrid);
+    formattingControl.appendChild(summary);
+    formattingControl.appendChild(fieldsetContent);
 
     mainContent.append(
       infoWrapper,
@@ -1175,9 +1298,9 @@ const StateManager = {
             placement: placementInput ? placementInput.value : "front",
             position: cardElement
               ? {
-                  x: parseFloat(cardElement.getAttribute("data-x")) || 0,
-                  y: parseFloat(cardElement.getAttribute("data-y")) || 0,
-                }
+                x: parseFloat(cardElement.getAttribute("data-x")) || 0,
+                y: parseFloat(cardElement.getAttribute("data-y")) || 0,
+              }
               : { x: 0, y: 0 },
           });
         }
@@ -1205,9 +1328,9 @@ const StateManager = {
             placement: placementInput ? placementInput.value : "back",
             position: cardElement
               ? {
-                  x: parseFloat(cardElement.getAttribute("data-x")) || 0,
-                  y: parseFloat(cardElement.getAttribute("data-y")) || 0,
-                }
+                x: parseFloat(cardElement.getAttribute("data-x")) || 0,
+                y: parseFloat(cardElement.getAttribute("data-y")) || 0,
+              }
               : { x: 0, y: 0 },
             color: colorInput ? colorInput.value : "#e6f0f7",
             size: sizeInput ? sizeInput.value : 12,
@@ -1222,8 +1345,8 @@ const StateManager = {
       const input = document.getElementById(`input-${method.id}`);
       const placementInput = controlGroup
         ? controlGroup.querySelector(
-            `input[name="placement-static-${method.id}"]:checked`,
-          )
+          `input[name="placement-static-${method.id}"]:checked`,
+        )
         : null;
       const cardElement = document.getElementById(
         `social-link-static-${method.id}`,
@@ -1235,9 +1358,9 @@ const StateManager = {
           placement: placementInput ? placementInput.value : "back",
           position: cardElement
             ? {
-                x: parseFloat(cardElement.getAttribute("data-x")) || 0,
-                y: parseFloat(cardElement.getAttribute("data-y")) || 0,
-              }
+              x: parseFloat(cardElement.getAttribute("data-x")) || 0,
+              y: parseFloat(cardElement.getAttribute("data-y")) || 0,
+            }
             : { x: 0, y: 0 },
         };
       }

@@ -150,7 +150,7 @@
     messagesEl.innerHTML = "";
     STEPS.forEach((s, idx) => {
       bot(
-        `<div style=\"font-weight:700;margin-bottom:6px;\">${idx + 1}. ${s.title}</div><div style=\"font-size:13px;opacity:0.95\">${s.content.substring(0, 200)}...</div><div style=\"margin-top:8px;\"><button data-step="${idx}" class=\"mc-step-btn\" style=\"padding:8px 10px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:inherit;cursor:pointer\">عرض التفاصيل</button></div>`,
+        `<div style="font-weight:700;margin-bottom:6px;">${idx + 1}. ${s.title}</div><div style="font-size:13px;opacity:0.95">${s.content.substring(0, 200)}...</div><div style="margin-top:8px;"><button data-step="${idx}" class="mc-step-btn" style="padding:8px 10px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:inherit;cursor:pointer">عرض التفاصيل</button></div>`,
       );
     });
     // bind buttons
@@ -168,7 +168,7 @@
     messagesEl.innerHTML = "";
     const s = STEPS[idx];
     bot(
-      `<div style=\"font-size:14px;font-weight:800;margin-bottom:6px\">${idx + 1}. ${s.title}</div>${s.content}<div style=\"margin-top:12px;display:flex;gap:8px\"><button id=\"mc-go-to-section\" class=\"mc-quick\">اذهب إلى هذه الأدوات</button><button id=\"mc-back-to-list\" class=\"mc-quick\">عودة للقائمة</button></div>`,
+      `<div style="font-size:14px;font-weight:800;margin-bottom:6px">${idx + 1}. ${s.title}</div>${s.content}<div style="margin-top:12px;display:flex;gap:8px"><button id="mc-go-to-section" class="mc-quick">اذهب إلى هذه الأدوات</button><button id="mc-back-to-list" class="mc-quick">عودة للقائمة</button></div>`,
     );
     // style quick buttons
     setTimeout(() => {
@@ -254,14 +254,14 @@
     const s = STEPS[idx];
     messagesEl.innerHTML = "";
     bot(
-      `<div style=\"font-weight:800;margin-bottom:8px\">خطوة ${idx} من ${STEPS.length - 1}: ${s.title}</div>${s.content}`,
+      `<div style="font-weight:800;margin-bottom:8px">خطوة ${idx} من ${STEPS.length - 1}: ${s.title}</div>${s.content}`,
     );
     // controls
     const controlsHtml = `
-      <div style=\"display:flex;gap:8px;margin-top:10px\"> 
-        <button id=\"mc-prev\" class=\"mc-btn-neutral\">السابق</button>
-        <button id=\"mc-next\" class=\"mc-btn-primary\">التالي</button>
-        <button id=\"mc-stop\" class=\"mc-btn-neutral\">توقف</button>
+      <div style="display:flex;gap:8px;margin-top:10px"> 
+        <button id="mc-prev" class="mc-btn-neutral">السابق</button>
+        <button id="mc-next" class="mc-btn-primary">التالي</button>
+        <button id="mc-stop" class="mc-btn-neutral">توقف</button>
       </div>
     `;
     bot(controlsHtml);
