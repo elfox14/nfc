@@ -1826,10 +1826,11 @@ html.ltr .testimonial-card {
     }
     /* Control panels - 60% of screen, scrollable */
     .pro-sidebar {
-        height: auto;
-        max-height: 60vh;
-        overflow-y: auto;
-        overflow-x: hidden;
+        height: auto !important;
+        max-height: calc(100vh - 250px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
     }
     /* Tab-based panel visibility */
     .pro-sidebar.tab-pane {
@@ -1872,5 +1873,20 @@ html.ltr .testimonial-card {
         font-size: 16px; /* Prevents zoom on iOS */
         padding: 12px;
         min-height: 44px;
+    }
+}
+.mobile-tab-nav {
+        display: flex;
+    }
+    
+    .mobile-tab-btn {
+        gap: 2px !important;
+        padding: 6px 4px !important;
+        font-size: 9px !important;
+        min-height: 40px !important;
+    }
+    
+    .mobile-tab-btn i {
+        font-size: 14px !important;
     }
 }
