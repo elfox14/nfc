@@ -61,6 +61,104 @@ function createElement(tag, attributes = {}, children = null) {
 }
 
 /**
+ * إنشاء عنصر بشكل آمن مع ميزات محسنة (Enhanced Safe Element Creator)
+ * @param {string} tag - اسم العنصر (div, span, a, img, etc.)
+ * @param {Object} options - خيارات العنصر
+ * @param {string} options.className - اسم الـ class
+ * @param {string} options.textContent - محتوى نصي آمن
+ * @param {string} options.src - مصدر الصورة (يتم تعقيمه)
+ * @param {string} options.href - رابط URL (يتم تعقيمه)
+ * @param {string} options.alt - نص بديل للصور
+ * @param {string} options.title - عنوان العنصر
+ * @param {string} options.id - معرف العنصر
+ * @param {Object} options.style - أنماط CSS كـ object
+ * @param {Object} options.dataset - data attributes
+ * @param {Array<Node|string>} options.children - العناصر الأبناء
+ * @param {Object} options.attributes - أي attributes إضافية
+ * @returns {HTMLElement}
+ */
+function createElementSafe(tag, options = {}) {
+  const element = document.createElement(tag);
+
+  // Class name
+  if (options.className) {
+    element.className = String(options.className);
+  }
+
+  // ID
+  if (options.id) {
+    element.id = String(options.id);
+  }
+
+  // Text content (XSS-safe)
+  if (options.textContent) {
+    element.textContent = String(options.textContent);
+  }
+
+  // Source for images/videos (sanitized)
+  if (options.src) {
+    const sanitized = sanitizeURL(options.src);
+    if (sanitized) {
+      element.src = sanitized;
+    }
+  }
+
+  // Href for links (sanitized)
+  if (options.href) {
+    const sanitized = sanitizeURL(options.href);
+    if (sanitized) {
+      element.href = sanitized;
+    }
+  }
+
+  // Alt text
+  if (options.alt) {
+    element.alt = String(options.alt);
+  }
+
+  // Title
+  if (options.title) {
+    element.title = String(options.title);
+  }
+
+  // Inline styles
+  if (options.style && typeof options.style === 'object') {
+    Object.entries(options.style).forEach(([property, value]) => {
+      element.style[property] = String(value);
+    });
+  }
+
+  // Data attributes
+  if (options.dataset && typeof options.dataset === 'object') {
+    Object.entries(options.dataset).forEach(([key, value]) => {
+      element.dataset[key] = String(value);
+    });
+  }
+
+  // Additional attributes
+  if (options.attributes && typeof options.attributes === 'object') {
+    Object.entries(options.attributes).forEach(([key, value]) => {
+      element.setAttribute(key, String(value));
+    });
+  }
+
+  // Children (can be strings or Nodes)
+  if (options.children) {
+    const childArray = Array.isArray(options.children) ? options.children : [options.children];
+    childArray.forEach(child => {
+      if (child instanceof Node) {
+        element.appendChild(child);
+      } else if (typeof child === 'string') {
+        element.appendChild(document.createTextNode(child));
+      }
+    });
+  }
+
+  return element;
+}
+
+
+/**
  * التحقق من صحة URL
  * @param {string} url - الرابط
  * @returns {boolean}

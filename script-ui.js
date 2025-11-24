@@ -165,10 +165,18 @@ const UIManager = {
       thumb.setAttribute("role", "button");
       thumb.setAttribute("tabindex", "0");
       thumb.setAttribute("aria-label", `اختيار تصميم ${theme.name}`);
-      thumb.innerHTML = `
-                <div class="theme-preview" style="background: linear-gradient(135deg, ${theme.gradient[0]}, ${theme.gradient[1]});"></div>
-                <span class="theme-name">${theme.name}</span>
-            `;
+
+      // ✅ FIXED: استخدام safe DOM manipulation
+      const previewDiv = document.createElement("div");
+      previewDiv.className = "theme-preview";
+      previewDiv.style.background = `linear-gradient(135deg, ${theme.gradient[0]}, ${theme.gradient[1]})`;
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "theme-name";
+      nameSpan.textContent = theme.name; // آمن - textContent
+
+      thumb.appendChild(previewDiv);
+      thumb.appendChild(nameSpan);
       thumb.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
@@ -213,10 +221,18 @@ const UIManager = {
       thumb.title = bg.name;
       thumb.setAttribute("role", "button");
       thumb.setAttribute("tabindex", "0");
-      thumb.innerHTML = `
-                <div class="background-preview" style="background-image: url('${bg.url}');"></div>
-                <span class="background-name">${bg.name}</span>
-            `;
+
+      // ✅ FIXED: استخدام safe DOM manipulation
+      const previewDiv = document.createElement("div");
+      previewDiv.className = "background-preview";
+      previewDiv.style.backgroundImage = `url('${bg.url}')`; // bg.url من server - يجب أن يكون آمن
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "background-name";
+      nameSpan.textContent = bg.name; // آمن - textContent
+
+      thumb.appendChild(previewDiv);
+      thumb.appendChild(nameSpan);
       thumb.addEventListener("click", () =>
         CardManager.applyBackground(bg.url),
       );
