@@ -231,7 +231,16 @@ document.addEventListener("DOMContentLoaded", () => {
       a.className = "contact-link";
       a.target = "_blank";
       a.rel = "noopener noreferrer";
-      a.innerHTML = `<i class="${platform.icon}"></i><span>${displayValue}</span>`;
+
+      // ✅ FIXED: استخدام createElementSafe بدلاً من innerHTML
+      const icon = document.createElement("i");
+      icon.className = platform.icon; // آمن - className يقوم بالتعقيم تلقائياً
+
+      const span = document.createElement("span");
+      span.textContent = displayValue; // آمن - textContent لا يسمح بـ HTML
+
+      a.appendChild(icon);
+      a.appendChild(span);
 
       // *** إضافة حدث التتبع ***
       a.addEventListener("click", () => trackClick(key));
@@ -261,7 +270,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const a = document.createElement("a");
             a.href = `tel:${phoneValueClean}`;
             a.className = "contact-link";
-            a.innerHTML = `<i class="fas fa-phone"></i><span>${sanitizedValue}</span>`;
+
+            // ✅ FIXED: استخدام safe DOM manipulation
+            const icon = document.createElement("i");
+            icon.className = "fas fa-phone";
+
+            const span = document.createElement("span");
+            span.textContent = sanitizedValue; // آمن
+
+            a.appendChild(icon);
+            a.appendChild(span);
+
             a.addEventListener("click", () => trackClick("phone_call"));
             container.appendChild(a);
           }
@@ -1062,7 +1081,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (
           relevantSegments.length >= 3 &&
           relevantSegments[relevantSegments.length - 2].toLowerCase() ===
-            "view" &&
+          "view" &&
           relevantSegments[relevantSegments.length - 1]
         ) {
           cardId = relevantSegments[relevantSegments.length - 1];
