@@ -364,6 +364,31 @@ app.get(["/nfc/viewer", "/nfc/viewer.html"], async (req, res) => {
   }
 });
 
+// --- API: Get Backgrounds ---
+app.get("/api/gallery/backgrounds", (req, res) => {
+  const backgroundsDir = path.join(__dirname, "backgrounds");
+  fs.readdir(backgroundsDir, (err, files) => {
+    if (err) {
+      console.error("Error reading backgrounds directory:", err);
+      return res.status(500).json({ success: false, error: "Failed to list backgrounds" });
+    }
+
+    const validExtensions = [".png", ".jpg", ".jpeg", ".webp"];
+    const items = files
+      .filter((file) => validExtensions.includes(path.extname(file).toLowerCase()))
+      .map((file) => ({
+        name: path.basename(file, path.extname(file)).replace(/_/g, " "),
+        url: `/nfc/backgrounds/${file}`,
+      }));
+
+    res.json({ success: true, items });
+  });
+});
+
+// --- Static Files ---
+app.use("/nfc/backgrounds", express.static(path.join(__dirname, "backgrounds")));
+
+
 // --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id ---
 // *** تم التعديل: هذا المسار الآن يعيد التوجيه إلى الصيغة الجديدة ?id= ***
 app.get("/nfc/view/:id", async (req, res) => {

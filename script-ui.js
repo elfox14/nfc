@@ -534,4 +534,14 @@ const UIManager = {
       if (span) span.textContent = originalText;
     }
   },
+
+  setupLayoutListeners() {
+    const layoutInputs = document.querySelectorAll('input[name="layout-select-visual"]');
+    layoutInputs.forEach(input => {
+      input.addEventListener('change', (e) => {
+        CardManager.applyLayout(e.target.value);
+        StateManager.save();
+      });
+    });
+  },
 };
