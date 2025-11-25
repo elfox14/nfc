@@ -1,6 +1,41 @@
 // script-ui.js
 "use strict";
 
+const TabManager = {
+  init(navSelector, btnSelector) {
+    const nav = document.querySelector(navSelector);
+    if (!nav) return;
+
+    const buttons = nav.querySelectorAll(btnSelector);
+    const panes = document.querySelectorAll(".tab-pane");
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const targetId = btn.dataset.tabTarget;
+        this.switchTab(targetId, btn, buttons, panes);
+      });
+    });
+  },
+
+  switchTab(targetId, activeBtn, allButtons, allPanes) {
+    // Update buttons
+    allButtons.forEach((b) => b.classList.remove("active"));
+    activeBtn.classList.add("active");
+
+    // Update panes
+    allPanes.forEach((pane) => {
+      if (`#${pane.id}` === targetId) {
+        pane.classList.add("active");
+        pane.style.display = "block";
+      } else {
+        pane.classList.remove("active");
+        pane.style.display = "none";
+      }
+    });
+  },
+};
+
 const TourManager = {
   TOUR_SHOWN_KEY: "digitalCardTourShown_v5", // تم تغيير الإصدار
   tour: null,
