@@ -2,9 +2,8 @@
 // Chatbot tour widget for editor.html (Arabic)
 // Drop this file into your /nfc/ folder and include <script src="/nfc/chatbot-guide.js" defer></script> in editor.html
 
-(function () {
-  if (window.__mcprime_chatbot_loaded) return;
-  window.__mcprime_chatbot_loaded = true;
+(function(){
+  if (window.__mcprime_chatbot_loaded) return; window.__mcprime_chatbot_loaded = true;
 
   const CSS = `
   /* Chatbot styles injected by chatbot-guide.js */
@@ -27,13 +26,10 @@
   `;
 
   // inject styles
-  const style = document.createElement("style");
-  style.textContent = CSS;
-  document.head.appendChild(style);
+  const style = document.createElement('style'); style.textContent = CSS; document.head.appendChild(style);
 
   // chat DOM
-  const container = document.createElement("div");
-  container.className = "mc-chatbot";
+  const container = document.createElement('div'); container.className = 'mc-chatbot';
   container.innerHTML = `
     <div class="mc-toggle" id="mc-chat-toggle" title="مساعد التصميم">💬</div>
     <div class="mc-chatbot-panel" id="mc-chat-panel" style="display:none">
@@ -54,281 +50,145 @@
   `;
   document.body.appendChild(container);
 
-  const panel = document.getElementById("mc-chat-panel");
-  const toggle = document.getElementById("mc-chat-toggle");
-  const closeBtn = document.getElementById("mc-chat-close");
-  const messagesEl = document.getElementById("mc-chat-messages");
-  const btnStart = document.getElementById("mc-btn-start");
-  const btnSteps = document.getElementById("mc-btn-steps");
+  const panel = document.getElementById('mc-chat-panel');
+  const toggle = document.getElementById('mc-chat-toggle');
+  const closeBtn = document.getElementById('mc-chat-close');
+  const messagesEl = document.getElementById('mc-chat-messages');
+  const btnStart = document.getElementById('mc-btn-start');
+  const btnSteps = document.getElementById('mc-btn-steps');
 
-  toggle.addEventListener("click", () => {
-    panel.style.display = panel.style.display === "none" ? "flex" : "none";
-    scrollBottom();
-  });
-  closeBtn.addEventListener("click", () => (panel.style.display = "none"));
+  toggle.addEventListener('click', () => { panel.style.display = panel.style.display === 'none' ? 'flex' : 'none'; scrollBottom(); });
+  closeBtn.addEventListener('click', () => panel.style.display = 'none');
 
   // message helper
-  function bot(msgHtml) {
-    const el = document.createElement("div");
-    el.className = "mc-msg bot";
-    el.innerHTML = msgHtml;
-    messagesEl.appendChild(el);
-    scrollBottom();
-  }
-  function user(msgText) {
-    const el = document.createElement("div");
-    el.className = "mc-msg user";
-    el.textContent = msgText;
-    messagesEl.appendChild(el);
-    scrollBottom();
-  }
-  function scrollBottom() {
-    setTimeout(() => {
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }, 50);
-  }
+  function bot(msgHtml){ const el = document.createElement('div'); el.className='mc-msg bot'; el.innerHTML = msgHtml; messagesEl.appendChild(el); scrollBottom(); }
+  function user(msgText){ const el = document.createElement('div'); el.className='mc-msg user'; el.textContent = msgText; messagesEl.appendChild(el); scrollBottom(); }
+  function scrollBottom(){ setTimeout(()=>{ messagesEl.scrollTop = messagesEl.scrollHeight; },50); }
 
   // steps data (Arabic, detailed)
   const STEPS = [
     {
-      id: "intro",
-      title: "مقدمة سريعة",
-      content: `مرحبًا! سأرشدك خطوة بخطوة لتصميم بطاقة احترافية. يمكنك الضغط على "ابدأ الجولة" لبدء تجربة تفاعلية أو "عرض الخطوات التفصيلية" لقراءة كل خطوة الآن.`,
+      id: 'intro', title: 'مقدمة سريعة', content: `مرحبًا! سأرشدك خطوة بخطوة لتصميم بطاقة احترافية. يمكنك الضغط على "ابدأ الجولة" لبدء تجربة تفاعلية أو "عرض الخطوات التفصيلية" لقراءة كل خطوة الآن.`
     },
     {
-      id: "theme",
-      title: "اختيار التصميم (Theme)",
-      content: `<div class="mc-step-title">الهدف</div>اختر نغمة لونية متناسقة تناسب علامتك التجارية.<br><div class="mc-step-title">طريقة العمل</div>اذهب إلى معرض التصاميم واضغط على أي تصميم. سيُطبق التدرج والألوان على معاينة البطاقة تلقائياً.<br><div class="mc-step-title">نصيحة</div>اختر تصميمًا يمنح تبايناً كافياً لقراءة النص بسهولة.`,
+      id: 'theme', title: 'اختيار التصميم (Theme)', content: `<div class="mc-step-title">الهدف</div>اختر نغمة لونية متناسقة تناسب علامتك التجارية.<br><div class="mc-step-title">طريقة العمل</div>اذهب إلى معرض التصاميم واضغط على أي تصميم. سيُطبق التدرج والألوان على معاينة البطاقة تلقائياً.<br><div class="mc-step-title">نصيحة</div>اختر تصميمًا يمنح تبايناً كافياً لقراءة النص بسهولة.`
     },
     {
-      id: "logo",
-      title: "الشعار (Logo)",
-      content: `<div class="mc-step-title">الهدف</div>عرض شعار واضح ومقروء دون إخفاء المعلومات الأساسية.<br><div class="mc-step-title">طريقة العمل</div>في قسم الشعار، يمكنك: إدخال رابط الصورة أو رفع ملف. ثم عدّل حجم الشعار والشفافية وموقعه عبر عناصر التحكم أو أزرار التحريك الدقيق.`,
+      id: 'logo', title: 'الشعار (Logo)', content: `<div class="mc-step-title">الهدف</div>عرض شعار واضح ومقروء دون إخفاء المعلومات الأساسية.<br><div class="mc-step-title">طريقة العمل</div>في قسم الشعار، يمكنك: إدخال رابط الصورة أو رفع ملف. ثم عدّل حجم الشعار والشفافية وموقعه عبر عناصر التحكم أو أزرار التحريك الدقيق.`
     },
     {
-      id: "photo",
-      title: "الصورة الشخصية",
-      content: `<div class="mc-step-title">الهدف</div>إضافة صورة شخصية احترافية إن أردت — مفيدة للمديرين التنفيذيين والفعّاليات.<br><div class="mc-step-title">طريقة العمل</div>ارفع صورة أو ألصق رابطها، استخدم أداة القص لتقليمها، اختر شكلها (دائري/مربع) وحجمها.`,
+      id: 'photo', title: 'الصورة الشخصية', content: `<div class="mc-step-title">الهدف</div>إضافة صورة شخصية احترافية إن أردت — مفيدة للمديرين التنفيذيين والفعّاليات.<br><div class="mc-step-title">طريقة العمل</div>ارفع صورة أو ألصق رابطها، استخدم أداة القص لتقليمها، اختر شكلها (دائري/مربع) وحجمها.`
     },
     {
-      id: "name",
-      title: "الاسم والمسمى الوظيفي",
-      content: `<div class="mc-step-title">الهدف</div>عرض الاسم بخط واضح والمسمى الوظيفي بطريقة مختصرة.<br><div class="mc-step-title">طريقة العمل</div>اكتب الاسم والمسمى، عدّل حجم الخط، اللون، ونوع الخط. ضع الاسم في المكان المناسب باستخدام أدوات التحريك.`,
+      id: 'name', title: 'الاسم والمسمى الوظيفي', content: `<div class="mc-step-title">الهدف</div>عرض الاسم بخط واضح والمسمى الوظيفي بطريقة مختصرة.<br><div class="mc-step-title">طريقة العمل</div>اكتب الاسم والمسمى، عدّل حجم الخط، اللون، ونوع الخط. ضع الاسم في المكان المناسب باستخدام أدوات التحريك.`
     },
     {
-      id: "phones",
-      title: "أرقام الهواتف",
-      content: `<div class="mc-step-title">الهدف</div>تقديم وسيلة تواصل فورية (اتصال/واتساب).<br><div class="mc-step-title">طريقة العمل</div>أضف أرقام الهاتف من قسم أرقام الهواتف. إذا أردت، فعّل "أزرار" ليظهر الرقم كزر قابل للضغط للاتصال مباشرة.`,
+      id: 'phones', title: 'أرقام الهواتف', content: `<div class="mc-step-title">الهدف</div>تقديم وسيلة تواصل فورية (اتصال/واتساب).<br><div class="mc-step-title">طريقة العمل</div>أضف أرقام الهاتف من قسم أرقام الهواتف. إذا أردت، فعّل "أزرار" ليظهر الرقم كزر قابل للضغط للاتصال مباشرة.`
     },
     {
-      id: "social",
-      title: "الروابط الاجتماعية",
-      content: `<div class="mc-step-title">الهدف</div>ربط حساباتك الاجتماعية الأساسية (لينكدإن، انستغرام... ).<br><div class="mc-step-title">طريقة العمل</div>استخدم قسم "بيانات التواصل" لإضافة الروابط الثابتة والديناميكية وقم بترتيبها حسب الأهمية.`,
+      id: 'social', title: 'الروابط الاجتماعية', content: `<div class="mc-step-title">الهدف</div>ربط حساباتك الاجتماعية الأساسية (لينكدإن، انستغرام... ).<br><div class="mc-step-title">طريقة العمل</div>استخدم قسم "بيانات التواصل" لإضافة الروابط الثابتة والديناميكية وقم بترتيبها حسب الأهمية.`
     },
     {
-      id: "qr",
-      title: "إنشاء رمز QR",
-      content: `<div class="mc-step-title">الهدف</div>تسهيل الوصول إلى بطاقتك عبر المسح أو مشاركة الرابط.<br><div class="mc-step-title">طريقة العمل</div>في قسم QR اختر مصدر الكود (رابط البطاقة أو vCard أو رابط مخصص)، ثم اضغط "إنشاء/تحديث QR Code". ضَبّط الحجم والموقع.`,
+      id: 'qr', title: 'إنشاء رمز QR', content: `<div class="mc-step-title">الهدف</div>تسهيل الوصول إلى بطاقتك عبر المسح أو مشاركة الرابط.<br><div class="mc-step-title">طريقة العمل</div>في قسم QR اختر مصدر الكود (رابط البطاقة أو vCard أو رابط مخصص)، ثم اضغط "إنشاء/تحديث QR Code". ضَبّط الحجم والموقع.`
     },
     {
-      id: "backgrounds",
-      title: "الخلفيات والتدرجات",
-      content: `<div class="mc-step-title">الهدف</div>اختيار خلفية لا تُشتت انتباه المتلقي.<br><div class="mc-step-title">طريقة العمل</div>يمكنك اختيار لونين لتدرّج أو رفع صورة. اضبط شفافية اللون فوق الصورة للحصول على توازن مناسب.`,
+      id: 'backgrounds', title: 'الخلفيات والتدرجات', content: `<div class="mc-step-title">الهدف</div>اختيار خلفية لا تُشتت انتباه المتلقي.<br><div class="mc-step-title">طريقة العمل</div>يمكنك اختيار لونين لتدرّج أو رفع صورة. اضبط شفافية اللون فوق الصورة للحصول على توازن مناسب.`
     },
     {
-      id: "export",
-      title: "الحفظ والمشاركة",
-      content: `<div class="mc-step-title">الهدف</div>تصدير ومشاركة بطاقتك بعد الانتهاء.<br><div class="mc-step-title">طريقة العمل</div>استخدم "حفظ في المعرض" للتخزين المحلي أو "مشاركة الكارت" لإنشاء رابط ثابت. يمكنك تنزيل PNG، PDF، أو ملف VCF لإضافة جهة الاتصال مباشرة لهاتفك.`,
-    },
+      id: 'export', title: 'الحفظ والمشاركة', content: `<div class="mc-step-title">الهدف</div>تصدير ومشاركة بطاقتك بعد الانتهاء.<br><div class="mc-step-title">طريقة العمل</div>استخدم "حفظ في المعرض" للتخزين المحلي أو "مشاركة الكارت" لإنشاء رابط ثابت. يمكنك تنزيل PNG، PDF، أو ملف VCF لإضافة جهة الاتصال مباشرة لهاتفك.`
+    }
   ];
 
   // quick flow state
   let currentStepIndex = 0;
   let runningTour = false;
 
-  function renderStepsList() {
-    messagesEl.innerHTML = "";
+  function renderStepsList(){
+    messagesEl.innerHTML = '';
     STEPS.forEach((s, idx) => {
-      bot(
-        `<div style="font-weight:700;margin-bottom:6px;">${idx + 1}. ${s.title}</div><div style="font-size:13px;opacity:0.95">${s.content.substring(0, 200)}...</div><div style="margin-top:8px;"><button data-step="${idx}" class="mc-step-btn" style="padding:8px 10px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:inherit;cursor:pointer">عرض التفاصيل</button></div>`,
-      );
+      bot(`<div style=\"font-weight:700;margin-bottom:6px;\">${idx+1}. ${s.title}</div><div style=\"font-size:13px;opacity:0.95\">${s.content.substring(0,200)}...</div><div style=\"margin-top:8px;\"><button data-step="${idx}" class=\"mc-step-btn\" style=\"padding:8px 10px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:inherit;cursor:pointer\">عرض التفاصيل</button></div>`);
     });
     // bind buttons
-    setTimeout(() => {
-      document.querySelectorAll(".mc-step-btn").forEach((btn) =>
-        btn.addEventListener("click", (e) => {
-          const idx = Number(btn.dataset.step);
-          showStepDetail(idx);
-        }),
-      );
-    }, 50);
+    setTimeout(()=>{
+      document.querySelectorAll('.mc-step-btn').forEach(btn=>btn.addEventListener('click', (e)=>{
+        const idx = Number(btn.dataset.step); showStepDetail(idx);
+      }));
+    },50);
   }
 
-  function showStepDetail(idx) {
-    messagesEl.innerHTML = "";
+  function showStepDetail(idx){
+    messagesEl.innerHTML = '';
     const s = STEPS[idx];
-    bot(
-      `<div style="font-size:14px;font-weight:800;margin-bottom:6px">${idx + 1}. ${s.title}</div>${s.content}<div style="margin-top:12px;display:flex;gap:8px"><button id="mc-go-to-section" class="mc-quick">اذهب إلى هذه الأدوات</button><button id="mc-back-to-list" class="mc-quick">عودة للقائمة</button></div>`,
-    );
+    bot(`<div style=\"font-size:14px;font-weight:800;margin-bottom:6px\">${idx+1}. ${s.title}</div>${s.content}<div style=\"margin-top:12px;display:flex;gap:8px\"><button id=\"mc-go-to-section\" class=\"mc-quick\">اذهب إلى هذه الأدوات</button><button id=\"mc-back-to-list\" class=\"mc-quick\">عودة للقائمة</button></div>`);
     // style quick buttons
-    setTimeout(() => {
-      const go = document.getElementById("mc-go-to-section");
-      const back = document.getElementById("mc-back-to-list");
-      if (go) {
-        go.style.padding = "8px 10px";
-        go.style.borderRadius = "8px";
-        go.style.border = "none";
-        go.style.background = "linear-gradient(90deg,#4da6ff,#2d86ff)";
-        go.style.color = "#fff";
-      }
-      if (back) {
-        back.style.padding = "8px 10px";
-        back.style.borderRadius = "8px";
-        back.style.border = "none";
-        back.style.background = "rgba(255,255,255,0.03)";
-        back.style.color = "inherit";
-      }
-      if (go)
-        go.addEventListener("click", () => {
-          navigateToSection(STEPS[idx].id);
-        });
-      if (back)
-        back.addEventListener("click", () => {
-          renderStepsList();
-        });
-    }, 50);
+    setTimeout(()=>{
+      const go = document.getElementById('mc-go-to-section');
+      const back = document.getElementById('mc-back-to-list');
+      if(go){ go.style.padding='8px 10px'; go.style.borderRadius='8px'; go.style.border='none'; go.style.background='linear-gradient(90deg,#4da6ff,#2d86ff)'; go.style.color='#fff'; }
+      if(back){ back.style.padding='8px 10px'; back.style.borderRadius='8px'; back.style.border='none'; back.style.background='rgba(255,255,255,0.03)'; back.style.color='inherit'; }
+      if(go) go.addEventListener('click', ()=>{ navigateToSection(STEPS[idx].id); });
+      if(back) back.addEventListener('click', ()=>{ renderStepsList(); });
+    },50);
   }
 
-  function navigateToSection(sectionId) {
+  function navigateToSection(sectionId){
     // best-effort: use UIManager.navigateToAndHighlight if available, else try to focus element ids
     const map = {
-      theme: "theme-gallery",
-      logo: "logo-drop-zone",
-      photo: "photo-controls-fieldset",
-      name: "name-tagline-accordion",
-      phones: "phones-accordion",
-      social: "contact-info-accordion",
-      qr: "qr-code-accordion",
-      backgrounds: "background-gallery",
-      export: "export-fieldset-source",
+      theme: 'theme-gallery', logo: 'logo-drop-zone', photo: 'photo-controls-fieldset', name: 'name-tagline-accordion', phones: 'phones-accordion', social: 'contact-info-accordion', qr: 'qr-code-accordion', backgrounds: 'background-gallery', export: 'export-fieldset-source'
     };
     const targetId = map[sectionId];
-    if (window.UIManager && UIManager.navigateToAndHighlight) {
-      UIManager.navigateToAndHighlight(targetId);
-    } else if (targetId) {
-      const el = document.getElementById(targetId);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.animate(
-          [
-            { boxShadow: "0 0 0 8px rgba(77,166,255,0.12)" },
-            { boxShadow: "none" },
-          ],
-          { duration: 700 },
-        );
-        el.focus && el.focus();
-      }
-    }
-    bot(
-      "تم توجيهك إلى القسم — يمكنك الآن متابعة التعليمات الموجودة داخل اللوحة.",
-    );
+    if(window.UIManager && UIManager.navigateToAndHighlight){ UIManager.navigateToAndHighlight(targetId); }
+    else if(targetId){ const el = document.getElementById(targetId); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.animate([{ boxShadow: '0 0 0 8px rgba(77,166,255,0.12)' }, { boxShadow: 'none' }], { duration: 700 }); el.focus && el.focus(); }}
+    bot('تم توجيهك إلى القسم — يمكنك الآن متابعة التعليمات الموجودة داخل اللوحة.');
   }
 
   // tour flow: step-by-step interactive
-  async function startTour() {
-    runningTour = true;
-    currentStepIndex = 1; // skip intro
-    messagesEl.innerHTML = "";
-    bot(
-      'حسنًا! سنبدأ الجولة التفاعلية. يمكنك الضغط "التالي" للانتقال أو "توقف" لإيقاف الجولة.',
-    );
+  async function startTour(){
+    runningTour = true; currentStepIndex = 1; // skip intro
+    messagesEl.innerHTML = '';
+    bot('حسنًا! سنبدأ الجولة التفاعلية. يمكنك الضغط "التالي" للانتقال أو "توقف" لإيقاف الجولة.');
     renderTourStep(currentStepIndex);
   }
 
-  function renderTourStep(idx) {
-    if (idx < 1 || idx >= STEPS.length) {
-      bot("انتهت الجولة. يمكنك إعادة البدء في أي وقت.");
-      runningTour = false;
-      return;
-    }
+  function renderTourStep(idx){
+    if(idx < 1 || idx >= STEPS.length) { bot('انتهت الجولة. يمكنك إعادة البدء في أي وقت.'); runningTour=false; return; }
     const s = STEPS[idx];
-    messagesEl.innerHTML = "";
-    bot(
-      `<div style="font-weight:800;margin-bottom:8px">خطوة ${idx} من ${STEPS.length - 1}: ${s.title}</div>${s.content}`,
-    );
+    messagesEl.innerHTML = '';
+    bot(`<div style=\"font-weight:800;margin-bottom:8px\">خطوة ${idx} من ${STEPS.length-1}: ${s.title}</div>${s.content}`);
     // controls
     const controlsHtml = `
-      <div style="display:flex;gap:8px;margin-top:10px"> 
-        <button id="mc-prev" class="mc-btn-neutral">السابق</button>
-        <button id="mc-next" class="mc-btn-primary">التالي</button>
-        <button id="mc-stop" class="mc-btn-neutral">توقف</button>
+      <div style=\"display:flex;gap:8px;margin-top:10px\"> 
+        <button id=\"mc-prev\" class=\"mc-btn-neutral\">السابق</button>
+        <button id=\"mc-next\" class=\"mc-btn-primary\">التالي</button>
+        <button id=\"mc-stop\" class=\"mc-btn-neutral\">توقف</button>
       </div>
     `;
     bot(controlsHtml);
-    setTimeout(() => {
-      const prev = document.getElementById("mc-prev");
-      const next = document.getElementById("mc-next");
-      const stop = document.getElementById("mc-stop");
-      if (prev)
-        prev.addEventListener("click", () => {
-          if (currentStepIndex > 1) {
-            currentStepIndex--;
-            renderTourStep(currentStepIndex);
-          }
-        });
-      if (next)
-        next.addEventListener("click", () => {
-          if (currentStepIndex < STEPS.length - 1) {
-            currentStepIndex++;
-            renderTourStep(currentStepIndex);
-          } else {
-            bot("انتهت الجولة.");
-            runningTour = false;
-          }
-        });
-      if (stop)
-        stop.addEventListener("click", () => {
-          runningTour = false;
-          bot("تم إيقاف الجولة. يمكنك استئنافها لاحقاً.");
-        });
-    }, 60);
+    setTimeout(()=>{
+      const prev = document.getElementById('mc-prev');
+      const next = document.getElementById('mc-next');
+      const stop = document.getElementById('mc-stop');
+      if(prev) prev.addEventListener('click', ()=>{ if(currentStepIndex>1){ currentStepIndex--; renderTourStep(currentStepIndex); } });
+      if(next) next.addEventListener('click', ()=>{ if(currentStepIndex < STEPS.length-1){ currentStepIndex++; renderTourStep(currentStepIndex); } else { bot('انتهت الجولة.'); runningTour=false; } });
+      if(stop) stop.addEventListener('click', ()=>{ runningTour=false; bot('تم إيقاف الجولة. يمكنك استئنافها لاحقاً.'); });
+    },60);
 
     // attempt to highlight section
     navigateToSection(s.id);
   }
 
   // initial greeting
-  bot(
-    '<strong>مرحبًا! 👋</strong><br>أنا مساعد تصميم البطاقة. اضغط "ابدأ الجولة" لتجربة خطوة بخطوة أو "عرض الخطوات التفصيلية" لقراءة كل التعليمات الآن.',
-  );
+  bot('<strong>مرحبًا! 👋</strong><br>أنا مساعد تصميم البطاقة. اضغط "ابدأ الجولة" لتجربة خطوة بخطوة أو "عرض الخطوات التفصيلية" لقراءة كل التعليمات الآن.');
 
   // event bindings
-  btnStart.addEventListener("click", () => {
-    if (runningTour) {
-      bot("الجولة تعمل بالفعل.");
-    } else {
-      startTour();
-      panel.style.display = "flex";
-    }
-  });
-  btnSteps.addEventListener("click", () => {
-    renderStepsList();
-    panel.style.display = "flex";
-  });
+  btnStart.addEventListener('click', ()=>{ if(runningTour){ bot('الجولة تعمل بالفعل.'); } else { startTour(); panel.style.display='flex'; }});
+  btnSteps.addEventListener('click', ()=>{ renderStepsList(); panel.style.display='flex'; });
 
   // expose API for devs
   window.MCChatbotGuide = {
-    open() {
-      panel.style.display = "flex";
-      toggle.style.display = "none";
-    },
-    close() {
-      panel.style.display = "none";
-      toggle.style.display = "flex";
-    },
-    startTour() {
-      startTour();
-      panel.style.display = "flex";
-    },
+    open(){ panel.style.display='flex'; toggle.style.display='none'; },
+    close(){ panel.style.display='none'; toggle.style.display='flex'; },
+    startTour(){ startTour(); panel.style.display='flex'; }
   };
+
 })();
