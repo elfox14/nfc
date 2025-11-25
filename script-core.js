@@ -2,7 +2,7 @@
 "use strict";
 
 const Config = {
-  API_BASE_URL: "https://nfc-vjy6.onrender.com",
+  API_BASE_URL: window.location.origin,
   LOCAL_STORAGE_KEY: "digitalCardEditorState_v20",
   GALLERY_STORAGE_KEY: "digitalCardGallery_v2",
   MAX_LOGO_SIZE_MB: 10,

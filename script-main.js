@@ -4,6 +4,15 @@
 const ExportManager = {
   pendingExportTarget: null,
 
+  async loadDependencies() {
+    await Promise.all([
+      Utils.loadScript(Config.SCRIPT_URLS.html2canvas),
+      Utils.loadScript(Config.SCRIPT_URLS.jspdf),
+      Utils.loadScript(Config.SCRIPT_URLS.qrcode),
+      Utils.loadScript(Config.SCRIPT_URLS.jszip)
+    ]);
+  },
+
   async captureElement(element, scale = 2) {
     await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
     const style = document.createElement("style");
@@ -56,10 +65,7 @@ const ExportManager = {
   },
 
   async downloadPdf() {
-    await Promise.all([
-      Utils.loadScript(Config.SCRIPT_URLS.html2canvas),
-      Utils.loadScript(Config.SCRIPT_URLS.jspdf),
-    ]);
+    await this.loadDependencies();
     try {
       const { jsPDF } = window.jspdf;
 
@@ -367,10 +373,7 @@ const GalleryManager = {
     if (selectedIndices.length === 0) return;
 
     try {
-      await Promise.all([
-        Utils.loadScript(Config.SCRIPT_URLS.html2canvas),
-        Utils.loadScript(Config.SCRIPT_URLS.jszip),
-      ]);
+      await this.loadDependencies();
 
       const originalState = StateManager.getStateObject();
       const zip = new JSZip();
@@ -744,6 +747,7 @@ const EventManager = {
           CardManager.applyLayout(e.target.value);
           const hiddenInput = document.getElementById("layout-select");
           if (hiddenInput) hiddenInput.value = e.target.value;
+          StateManager.save();
         });
       });
 
