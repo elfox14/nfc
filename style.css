@@ -2495,33 +2495,224 @@ html.ltr .testimonial-card {
     input[type="number"],
     textarea,
     select {
+    background: var(--sidebar-bg, #1a2332);
+    border-bottom: 2px solid var(--accent-primary, #4da6ff);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.mobile-tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary, #aab8c2);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 44px;
+    /* Touch-friendly */
+    border-bottom: 3px solid transparent;
+}
+
+.mobile-tab-btn i {
+    font-size: 20px;
+}
+
+.mobile-tab-btn.active {
+    color: var(--accent-primary, #4da6ff);
+    background: rgba(77, 166, 255, 0.1);
+    border-bottom-color: var(--accent-primary, #4da6ff);
+}
+
+/* Mobile FAB Menu */
+.mobile-fab-menu {
+    display: none;
+    /* Hidden on desktop */
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.mobile-fab-trigger {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-primary, #4da6ff);
+    color: white;
+    border: none;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-fab-trigger:hover,
+.mobile-fab-trigger:active {
+    background: var(--accent-secondary, #3d96ef);
+    transform: scale(1.1);
+}
+
+.mobile-fab-trigger.active i {
+    transform: rotate(45deg);
+}
+
+.mobile-fab-actions {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.mobile-fab-menu.active .mobile-fab-actions {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.mobile-fab-action {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--sidebar-bg, #2a3d54);
+    color: white;
+    border: 2px solid var(--accent-primary, #4da6ff);
+    font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0);
+}
+
+.mobile-fab-menu.active .mobile-fab-action {
+    transform: scale(1);
+}
+
+.mobile-fab-menu.active .mobile-fab-action:nth-child(1) {
+    transition-delay: 0.05s;
+}
+
+.mobile-fab-menu.active .mobile-fab-action:nth-child(2) {
+    transition-delay: 0.1s;
+}
+
+.mobile-fab-menu.active .mobile-fab-action:nth-child(3) {
+    transition-delay: 0.15s;
+}
+
+/* Mobile Responsive Layout */
+@media (max-width: 1200px) {
+
+    /* Show mobile components */
+    .mobile-tab-nav {
+        display: flex;
+    }
+
+    .mobile-fab-menu {
+        display: block;
+    }
+
+    /* Sticky Card Preview - 40% of screen */
+    .cards-wrapper {
+        position: sticky !important;
+        top: 10px;
+        height: 40vh !important;
+        max-height: 400px;
+        margin-bottom: 20px;
+        overflow: visible;
+    }
+
+    /* Control panels - 60% of screen, scrollable */
+    .pro-sidebar {
+        height: auto !important;
+        max-height: calc(100vh - 250px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* Tab-based panel visibility */
+    .pro-sidebar.tab-pane {
+        display: none;
+    }
+
+    .pro-sidebar.tab-pane.active {
+        display: block;
+    }
+
+    /* Touch-friendly controls - minimum 44px */
+    button,
+    input[type="button"],
+    input[type="submit"],
+    .btn,
+    .btn-icon {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 16px;
+    }
+
+    /* Improved accordion spacing */
+    .fieldset-accordion summary {
+        padding: 14px 16px;
+        font-size: 16px;
+    }
+
+    /* Better form spacing */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+
+    /* Larger inputs */
+    input[type="text"],
+    input[type="url"],
+    input[type="email"],
+    input[type="number"],
+    textarea,
+    select {
         font-size: 16px;
         /* Prevents zoom on iOS */
         padding: 12px;
         min-height: 44px;
     }
-}
+    .mobile-tab-nav {
+        display: flex;
+    }
 
-.mobile-tab-nav {
-    display: flex;
-}
+    .mobile-tab-btn {
+        gap: 2px !important;
+        padding: 6px 4px !important;
+        font-size: 9px !important;
+        min-height: 40px !important;
+    }
 
-.mobile-tab-btn {
-    gap: 2px !important;
-    padding: 6px 4px !important;
-    font-size: 9px !important;
-    min-height: 40px !important;
-}
+    .mobile-tab-btn i {
+        font-size: 14px !important;
+    }
 
-.mobile-tab-btn i {
-    font-size: 14px !important;
-}
-
-/* ========================================= */
-/* === CRITICAL FIX: Card Flip Interactions (Mobile Only) === */
-/* ========================================= */
-
-@media (max-width: 1200px) {
+    /* ========================================= */
+    /* === CRITICAL FIX: Card Flip Interactions (Mobile Only) === */
+    /* ========================================= */
     .cards-wrapper.is-flipped {
         transform: rotateY(180deg);
     }
@@ -2572,4 +2763,9 @@ html.ltr .testimonial-card {
         /* Also hide it to be safe */
         pointer-events: none;
     }
+}
+
+/* Classic Layout (Default) */
+.layout-classic {
+    /* Default styles */
 }
