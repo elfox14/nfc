@@ -532,6 +532,24 @@ const CardManager = {
     this.updatePersonalPhotoStyles();
     this.renderPhoneButtons();
     this.updateSocialLinks();
+    this.applyLayout(state.inputs["layout-select-visual"] || "classic");
+  },
+
+  applyLayout(layoutName) {
+    const frontCard = document.getElementById("card-front-preview");
+    const backCard = document.getElementById("card-back-preview");
+
+    [frontCard, backCard].forEach(card => {
+      if (!card) return;
+      card.classList.remove("layout-classic", "layout-modern", "layout-vertical");
+      card.classList.add(`layout-${layoutName}`);
+    });
+
+    // Update state if needed, or trigger specific layout adjustments
+    const state = StateManager.getStateObject();
+    if (state && state.inputs) {
+      state.inputs["layout-select-visual"] = layoutName;
+    }
   },
 
   // --- (Safe Refactor) عرض QR Code الآمن ---

@@ -665,8 +665,8 @@ const EventManager = {
     document.querySelectorAll("input, select, textarea").forEach((input) => {
       const eventType =
         input.type === "range" ||
-        input.type === "color" ||
-        input.type === "checkbox"
+          input.type === "color" ||
+          input.type === "checkbox"
           ? "change"
           : "input";
 
@@ -1410,6 +1410,8 @@ const App = {
     });
 
     UIManager.init();
+    UIManager.setupLayoutListeners(); // Added layout listeners
+    DragManager.init();
     UIManager.fetchAndPopulateBackgrounds();
     GalleryManager.init();
     EventManager.bindEvents();
