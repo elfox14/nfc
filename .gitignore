@@ -12,14 +12,6 @@ dist
 dist-ssr
 *.local
 
-# Environment variables (IMPORTANT: contains sensitive data)
-.env
-.env.local
-.env.*.local
-
-# Uploads directory (user-generated content)
-uploads/
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
