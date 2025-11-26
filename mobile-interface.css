@@ -570,145 +570,386 @@ html[dir="rtl"] .preview-exit-btn {
         /* Canvas adjustments */
         .pro-canvas {
             grid-column: 1;
-            padding: 20px 15px 80px 15px;
-            height: 60vh;
-            min-height: 400px;
+            font-size: 1.2rem;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--accent-secondary);
         }
 
-        /* Show mobile interface elements */
-        .mobile-context-bar,
-        .mobile-control-palette,
-        .fab-menu-button {
-            display: block !important;
-        }
-
-        /* Card wrapper adjustments for Flip Effect */
-        .cards-wrapper {
-            max-width: none;
-            /* Remove max-width constraint to allow fixed desktop size */
-            width: 510px;
-            /* Fixed desktop width */
-            height: 330px;
-            /* Fixed desktop height (based on aspect ratio) */
-            padding: 0;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin: 0 auto;
-            /* Scale will be applied via JS */
-            transform-origin: top center;
-        }
-
-        .cards-wrapper.flipped {
-            transform: rotateY(180deg);
-        }
-
-        .business-card {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .fab-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
             width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            margin: 0;
+            text-align: right;
+            margin-bottom: 5px;
         }
 
-        #card-front-preview {
-            z-index: 2;
-            transform: rotateY(0deg);
+        html:not([dir="rtl"]) .fab-menu-item {
+            text-align: left;
         }
 
-        #card-back-preview {
-            transform: rotateY(180deg);
+        .fab-menu-item:active {
+            background-color: rgba(77, 166, 255, 0.2);
         }
 
-        /* Vertical Layout Adjustments */
-        .cards-wrapper[data-layout="vertical"] {
-            width: 330px;
-            height: 510px;
+        .fab-menu-item i {
+            font-size: 1.2rem;
+            color: var(--accent-primary);
+            min-width: 24px;
         }
 
-        /* Toolbar adjustments for mobile */
-        .toolbar-btn-mobile-hidden {
-            display: none !important;
+        .fab-menu-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            background-color: var(--danger-color);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background-color 0.2s ease;
         }
 
-        .toolbar-title-desktop {
-            display: none;
+        .fab-menu-close:active {
+            background-color: #c0392b;
         }
 
-        .pro-toolbar {
-            padding: 0 10px;
+        /* Selected Element Highlight */
+        .mobile-selected {
+            outline: 3px solid var(--accent-primary) !important;
+            outline-offset: 4px;
+            box-shadow: 0 0 15px var(--accent-primary) !important;
+            animation: pulse-glow 2s infinite;
         }
 
-        .toolbar-group {
-            gap: 8px;
+        /* Quick Actions Menu (Long Press) */
+        .quick-actions-menu {
+            position: fixed;
+            background-color: var(--form-bg);
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            padding: 8px;
+            z-index: 1000;
+            animation: popIn 0.2s ease;
         }
 
-        .toolbar-group .btn {
-            padding: 6px 10px;
-            font-size: 0.85rem;
-        }
-
-        /* Adjust form controls in palette */
-        .palette-content .form-group {
-            margin-bottom: 15px;
-        }
-
-        .palette-content .form-group label {
+        .quick-actions-menu button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            text-align: right;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
             font-size: 0.9rem;
         }
 
-        .palette-content input[type="range"] {
-            width: 100%;
+        html:not([dir="rtl"]) .quick-actions-menu button {
+            text-align: left;
         }
 
-        .palette-content .control-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-    }
-
-    /* Extra small devices */
-    @media (max-width: 480px) {
-        .mobile-control-palette {
-            height: 40vh;
+        .quick-actions-menu button:active {
+            background-color: rgba(77, 166, 255, 0.2);
         }
 
-        .fab-menu-button {
-            width: 50px;
-            height: 50px;
-            font-size: 1.1rem;
-            bottom: calc(40vh + 15px);
+        /* Preview Mode Exit Button */
+        .preview-exit-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            transition: all 0.2s ease;
         }
 
-        .pro-canvas {
-            height: 55vh;
-            padding: 15px 10px 60px 10px;
+        html[dir="rtl"] .preview-exit-btn {
+            right: auto;
+            left: 20px;
         }
 
-        body {
-            padding-bottom: 40vh;
-        }
-    }
-
-    /* Landscape mode adjustments */
-    @media (max-width: 768px) and (orientation: landscape) {
-        .mobile-control-palette {
-            height: 50vh;
+        .preview-exit-btn:active {
+            transform: scale(0.95);
         }
 
-        .pro-canvas {
-            height: 45vh;
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
-        .mobile-context-bar {
-            bottom: 50vh;
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate Y(0);
+                opacity: 1;
+            }
         }
 
-        .fab-menu-button {
-            bottom: calc(50vh + 15px);
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
-    }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 15px var(--accent-primary);
+            }
+
+            50% {
+                box-shadow: 0 0 25px var(--accent-primary);
+            }
+        }
+
+        /* Mobile-specific overrides */
+        @media (max-width: 768px) {
+
+            /* Adjust bodypadding for mobile interface */
+            body {
+                padding-bottom: 35vh;
+            }
+
+            /* Hide desktop sidebar panels */
+            .pro-sidebar {
+                display: none !important;
+            }
+
+            /* Adjust layout for mobile */
+            .pro-layout {
+                grid-template-columns: 1fr !important;
+                height: auto;
+            }
+
+            /* Canvas adjustments */
+            .pro-canvas {
+                grid-column: 1;
+                padding: 10px 5px 60px 5px;
+                /* Reduced padding */
+                height: auto;
+                /* Allow height to grow */
+                min-height: 400px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 15px;
+            }
+
+            /* Show mobile interface elements */
+            .mobile-context-bar,
+            .mobile-control-palette,
+            .fab-menu-button {
+                display: block !important;
+            }
+
+            /* Card wrapper adjustments for Flip Effect */
+            .cards-wrapper {
+                max-width: none;
+                /* Remove max-width constraint to allow fixed desktop size */
+                width: 510px;
+                /* Fixed desktop width */
+                height: 330px;
+                /* Fixed desktop height (based on aspect ratio) */
+                padding: 0;
+                position: relative;
+                transform-style: preserve-3d;
+                transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                margin: 0 auto;
+                /* Scale will be applied via JS */
+                transform-origin: top center;
+                flex-shrink: 0;
+            }
+
+            .cards-wrapper.flipped {
+                transform: rotateY(180deg);
+            }
+
+            .business-card {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                backface-visibility: hidden;
+                -webkit-backface-visibility: hidden;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+                margin: 0;
+            }
+
+            #card-front-preview {
+                z-index: 2;
+                transform: rotateY(0deg);
+            }
+
+            #card-back-preview {
+                transform: rotateY(180deg);
+            }
+
+            /* Vertical Layout Adjustments */
+            .cards-wrapper[data-layout="vertical"] {
+                width: 330px;
+                height: 510px;
+            }
+
+            /* Toolbar adjustments for mobile */
+            .toolbar-btn-mobile-hidden {
+                display: none !important;
+            }
+
+            .toolbar-title-desktop {
+                display: none;
+            }
+
+            .pro-toolbar {
+                padding: 0 10px;
+            }
+
+            .toolbar-group {
+                gap: 8px;
+            }
+
+            .toolbar-group .btn {
+                padding: 6px 10px;
+                font-size: 0.85rem;
+            }
+
+            /* Adjust form controls in palette */
+            .palette-content .form-group {
+                margin-bottom: 15px;
+            }
+
+            .palette-content .form-group label {
+                font-size: 0.9rem;
+            }
+
+            .palette-content input[type="range"] {
+                width: 100%;
+            }
+
+            .palette-content .control-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            .mobile-control-palette {
+                height: 40vh;
+            }
+
+            .fab-menu-button {
+                width: 50px;
+                height: 50px;
+                font-size: 1.1rem;
+                bottom: calc(40vh + 15px);
+            }
+
+            .pro-canvas {
+                height: 55vh;
+                padding: 15px 10px 60px 10px;
+            }
+
+            body {
+                padding-bottom: 40vh;
+            }
+        }
+
+        /* Landscape mode adjustments */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .mobile-control-palette {
+                height: 50vh;
+            }
+
+            .pro-canvas {
+                height: 45vh;
+            }
+
+            .mobile-context-bar {
+                bottom: 50vh;
+            }
+
+            .fab-menu-button {
+                bottom: calc(50vh + 15px);
+            }
+        }
+
+        /* Flip Button Style */
+        .mobile-flip-btn {
+            position: relative;
+            /* Changed from fixed */
+            background-color: var(--form-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--accent-primary);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 20px;
+            /* Space from card */
+            align-self: center;
+        }
+
+        html[dir="rtl"] .mobile-flip-btn {
+            right: auto;
+            left: auto;
+        }
+
+        .mobile-flip-btn:active {
+            transform: scale(0.95);
+            background-color: var(--accent-primary);
+            color: white;
+        }
+
+        .mobile-flip-btn i {
+            font-size: 1rem;
+        }
