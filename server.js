@@ -1,5 +1,3 @@
---- START OF FILE server.js ---
-
 // server.js
 require('dotenv').config();
 const express = require('express');
@@ -490,26 +488,32 @@ app.get('/api/get-design/:id', async (req, res) => {
 });
 
 // --- API: المعرض (أحدث التصاميم) ---
+// ===== (هذا هو الجزء الذي تم تعديله) =====
 app.get('/api/gallery', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
+    // 1. Pagination (الاقتراح 1)
     const page = parseInt(req.query.page || '1', 10);
-    const limit = 12;
+    const limit = 12; // 12 تصميم في الصفحة (يناسب 4 أعمدة)
     const skip = (page - 1) * limit;
 
+    // 2. Sorting
     const sortBy = String(req.query.sortBy || 'createdAt');
     const sortQuery = {};
     if (sortBy === 'views') {
-        sortQuery.views = -1;
+        sortQuery.views = -1; // فرز حسب المشاهدات (الأكثر أولاً)
     } else {
-        sortQuery.createdAt = -1;
+        sortQuery.createdAt = -1; // الافتراضي: فرز حسب تاريخ الإنشاء (الأحدث أولاً)
     }
 
+    // 3. Filtering (الاقتراح 3) & Search (الاقتراح 4)
     const findQuery = {
+        // (الاقتراح 3) ضمان وجود صورة مصغرة
         'data.imageUrls.capturedFront': { $exists: true, $ne: null } 
     };
 
+    // (الاقتراح 4) إضافة منطق البحث
     const searchQuery = req.query.search;
     if (searchQuery) {
         findQuery.$or = [
@@ -518,25 +522,27 @@ app.get('/api/gallery', async (req, res) => {
         ];
     }
 
+    // جلب العدد الإجمالي للمستندات المطابقة للفلترة (مهم لـ Pagination)
     const totalDocs = await db.collection(designsCollectionName).countDocuments(findQuery);
     const totalPages = Math.ceil(totalDocs / limit);
 
     const docs = await db.collection(designsCollectionName)
-        .find(findQuery)
-        .sort(sortQuery)
-        .skip(skip)
-        .limit(limit)
-        .project({
+        .find(findQuery) // تطبيق الفلترة والبحث
+        .sort(sortQuery) // تطبيق الفرز
+        .skip(skip)   // تطبيق Pagination
+        .limit(limit) // تطبيق Pagination
+        .project({ // إرسال البيانات المطلوبة فقط
             shortId: 1, 
             'data.inputs.input-name': 1, 
             'data.inputs.input-tagline': 1,
-            'data.imageUrls.capturedFront': 1,
-            'data.imageUrls.front': 1,
+            'data.imageUrls.capturedFront': 1, // الصورة المصغرة الحقيقية
+            'data.imageUrls.front': 1, // صورة احتياطية
             createdAt: 1,
-            views: 1
+            views: 1 // (الاقتراح 2) إرسال عدد المشاهدات
         })
         .toArray();
 
+    // إرسال الرد مع بيانات الـ Pagination
     res.json({
         success: true,
         designs: docs,
@@ -554,6 +560,8 @@ app.get('/api/gallery', async (req, res) => {
     }
   }
 });
+// ===== (نهاية الجزء المعدل) =====
+
 
 // --- API: خلفيات (إدارة) ---
 app.post('/api/upload-background', upload.single('image'), handleMulterErrors, async (req, res) => {
@@ -626,6 +634,7 @@ app.delete('/api/backgrounds/:shortId', async (req, res) => {
     const doc = await coll.findOne({ shortId });
     if (!doc) return res.status(404).json({ error: 'Not found' });
 
+    // حذف الملف المرتبط إذا كان موجودًا
     if (doc.url) {
         try {
             const urlParts = doc.url.split('/');
@@ -661,11 +670,11 @@ app.get('/robots.txt', (req, res) => {
   const txt = [
     'User-agent: *',
     'Allow: /nfc/',
-    'Allow: /nfc/viewer.html',
-    'Disallow: /nfc/view/',
+    'Allow: /nfc/viewer.html', // السماح بالمسار الجديد
+    'Disallow: /nfc/view/', // حظر المسار القديم
     'Disallow: /nfc/editor',
     'Disallow: /nfc/editor.html',
-    'Disallow: /nfc/viewer.ejs',
+    'Disallow: /nfc/viewer.ejs', // حظر ملف القالب نفسه
     `Sitemap: ${base}/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
@@ -693,7 +702,7 @@ app.get('/sitemap.xml', async (req, res) => {
         .toArray();
 
       designUrls = docs.map(d => ({
-        loc: `${base}/nfc/viewer.html?id=${d.shortId}`,
+        loc: `${base}/nfc/viewer.html?id=${d.shortId}`, // *** تحديث الرابط هنا ***
         lastmod: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : undefined,
         changefreq: 'monthly',
         priority: '0.8'
@@ -735,6 +744,8 @@ app.get('/healthz', (req, res) => {
 });
 
 // --- معالج الملفات الثابتة (يأتي أخيراً) ---
+// هذا السطر يخدم الملفات مثل index.html, editor.html, style.css
+// لأنه يأتي *بعد* مسار /nfc/viewer.html، فإنه لن يتداخل معه
 app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
 
 
