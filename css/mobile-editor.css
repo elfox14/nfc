@@ -1,0 +1,160 @@
+/* Mobile Editor Styles */
+@media (max-width: 768px) {
+
+    /* Hide Desktop Toolbar elements that are not needed or moved */
+    .toolbar-title-desktop,
+    .undo-redo-container,
+    .toolbar-btn-mobile-hidden {
+        display: none !important;
+    }
+
+    /* Adjust Layout for Mobile */
+    .pro-layout {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 60px);
+        /* Adjust based on header/nav height */
+        overflow: hidden;
+    }
+
+    /* Sidebars are now Tab Contents */
+    .pro-sidebar {
+        width: 100%;
+        border: none;
+        background: transparent;
+        overflow-y: auto;
+        padding-bottom: 80px;
+        /* Space for bottom nav */
+        display: none;
+        /* Hidden by default, shown via JS */
+    }
+
+    .pro-sidebar.active-tab-content {
+        display: block;
+    }
+
+    /* Main Canvas (Card Preview) - Always Visible at Top */
+    .pro-canvas {
+        flex: 0 0 auto;
+        /* Don't grow, size based on content */
+        height: auto;
+        min-height: 300px;
+        /* Minimum height for card preview */
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+        /* Allow card flip */
+    }
+
+    .cards-wrapper {
+        transform: scale(0.6);
+        /* Scale down for mobile */
+        transform-origin: center top;
+        height: auto;
+        min-height: 400px;
+        /* Ensure space for scaled card */
+        margin-top: 0;
+        overflow: visible;
+    }
+
+    /* Adjust Card Wrapper to show only one face or handle flip better */
+    .business-card {
+        margin: 0 auto;
+    }
+
+    /* Mobile Bottom Navigation */
+    .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        background: var(--bg-primary);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-family: 'Tajawal', sans-serif;
+        font-size: 0.8rem;
+        cursor: pointer;
+        padding: 5px;
+        transition: color 0.3s;
+    }
+
+    .mobile-nav-item i {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+    }
+
+    .mobile-nav-item.active {
+        color: var(--accent-primary);
+    }
+
+    /* Custom Mobile Save/Share Tab Content */
+    #mobile-save-content {
+        padding: 20px;
+        display: none;
+    }
+
+    #mobile-save-content.active-tab-content {
+        display: block;
+    }
+
+    #mobile-save-content .btn {
+        width: 100%;
+        margin-bottom: 15px;
+        justify-content: center;
+        padding: 12px;
+    }
+
+    /* Flip Controls for Mobile */
+    .mobile-flip-controls {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+    }
+
+    .mobile-flip-btn {
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+    }
+
+    .mobile-flip-btn.active {
+        background: var(--accent-primary);
+    }
+}
+
+/* Desktop overrides to ensure mobile stuff is hidden */
+@media (min-width: 769px) {
+
+    .mobile-bottom-nav,
+    .mobile-flip-controls {
+        display: none !important;
+    }
+}
