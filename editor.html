@@ -6,71 +6,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>محرر بطاقات العمل الذكية | MC PRIME</title>
-    <meta name="description"
-        content="استخدم محرر MC PRIME لتصميم وتخصيص بطاقة عملك الذكية (NFC) مجاناً. تحكم كامل في الألوان، الخطوط، الشعار، ومعلومات الاتصال.">
-
-    <meta name="robots" content="noindex, nofollow">
-    <link rel="icon" id="favicon" href="mcprime-logo-transparent.png" type="image/png">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <script src="script-main.js" defer></script>
-    <script src="chatbot-guide.js" defer></script>
-
-</head>
-
-<body>
-
-    <header class="pro-toolbar">
-        <div class="toolbar-group toolbar-start">
-            <a href="index.html"
-                style="color: var(--text-primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px;"
-                title="العودة إلى الرئيسية">
-                <img src="mcprime-logo-transparent.png" alt="MC PRIME Logo" style="height: 30px; width: 30px;">
-                <span class="toolbar-title-desktop">محرر MC PRIME</span>
-            </a>
-            <div class="undo-redo-container">
-                <button id="redo-btn" class="btn-icon" title="إعادة" aria-label="إعادة" disabled><i
-                        class="fas fa-redo"></i></button>
-                <button id="undo-btn" class="btn-icon" title="تراجع" aria-label="تراجع" disabled><i
-                        class="fas fa-undo"></i></button>
-            </div>
+    <meta name="description" <header class="pro-toolbar">
+    <div class="toolbar-group toolbar-start">
+        <a href="index.html"
+            style="color: var(--text-primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px;"
+            title="العودة إلى الرئيسية">
+            <img src="mcprime-logo-transparent.png" alt="MC PRIME Logo" style="height: 30px; width: 30px;">
+            <span class="toolbar-title-desktop">محرر MC PRIME</span>
+        </a>
+        <div class="undo-redo-container">
+            <button id="redo-btn" class="btn-icon" title="إعادة" aria-label="إعادة" disabled><i
+                    class="fas fa-redo"></i></button>
+            <button id="undo-btn" class="btn-icon" title="تراجع" aria-label="تراجع" disabled><i
+                    class="fas fa-undo"></i></button>
         </div>
+    </div>
 
-        <div class="toolbar-group toolbar-end">
-            <button id="save-to-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"><span>حفظ
-                    بالمعرض</span><i class="fas fa-save" aria-hidden="true"></i></button>
-            <div class="download-container">
-                <button id="download-options-btn" class="btn btn-secondary">
-                    <span>تنزيل</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
-                </button>
-                <ul id="download-menu" class="dropdown-menu">
-                    <li><button id="download-png-front" aria-controls="export-modal-overlay" aria-expanded="false"><i
-                                class="fas fa-image" aria-hidden="true"></i> صورة الواجهة (PNG)</button></li>
-                    <li><button id="download-png-back" aria-controls="export-modal-overlay" aria-expanded="false"><i
-                                class="fas fa-image" aria-hidden="true"></i> صورة الخلفية (PNG)</button></li>
-                    <li><button id="download-pdf"><i class="fas fa-file-pdf" aria-hidden="true"></i> ملف PDF</button>
-                    </li>
-                    <li><button id="download-vcf"><i class="fas fa-address-card" aria-hidden="true"></i> جهة اتصال
-                            (VCF)</button></li>
-                    <li><button id="download-qrcode"><i class="fas fa-qrcode" aria-hidden="true"></i> رمز QR
-                            Code</button></li>
-                </ul>
-            </div>
-            <button id="share-card-btn" class="btn btn-success" aria-controls="share-fallback-modal-overlay"
-                aria-expanded="false">
-                <span>مشاركة الكارت</span><i class="fas fa-share-alt" aria-hidden="true"></i>
+    <div class="toolbar-group toolbar-end">
+        <button id="save-to-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"><span>حفظ
+                بالمعرض</span><i class="fas fa-save" aria-hidden="true"></i></button>
+        <div class="download-container">
+            <button id="download-options-btn" class="btn btn-secondary">
+                <span>تنزيل</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
             </button>
-
-            <button id="show-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
-                aria-controls="gallery-modal-overlay" aria-expanded="false"><span>عرض المعرض</span><i
-                    class="fas fa-images" aria-hidden="true"></i></button>
-            <button id="share-editor-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
-                style="background-color: transparent; font-size: 0.9rem;"><span>مشاركة رابط الموقع</span><i
-                    class="fas fa-edit" aria-hidden="true"></i></button>
-            <button id="reset-design-btn" class="btn btn-danger toolbar-btn-mobile-hidden"><span>إعادة تعيين</span><i
-                    class="fas fa-undo" aria-hidden="true"></i></button>
+            <ul id="download-menu" class="dropdown-menu">
+                <li><button id="download-png-front" aria-controls="export-modal-overlay" aria-expanded="false"><i
+                            class="fas fa-image" aria-hidden="true"></i> صورة الواجهة (PNG)</button></li>
+                <li><button id="download-png-back" aria-controls="export-modal-overlay" aria-expanded="false"><i
+                            class="fas fa-image" aria-hidden="true"></i> صورة الخلفية (PNG)</button></li>
+                <li><button id="download-pdf"><i class="fas fa-file-pdf" aria-hidden="true"></i> ملف PDF</button>
+                </li>
+                <li><button id="download-vcf"><i class="fas fa-address-card" aria-hidden="true"></i> جهة اتصال
+                        (VCF)</button></li>
+                <li><button id="download-qrcode"><i class="fas fa-qrcode" aria-hidden="true"></i> رمز QR
+                        Code</button></li>
+            </ul>
         </div>
+        <button id="share-card-btn" class="btn btn-success" aria-controls="share-fallback-modal-overlay"
+            aria-expanded="false">
+            <span>مشاركة الكارت</span><i class="fas fa-share-alt" aria-hidden="true"></i>
+        </button>
+
+        <button id="show-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
+            aria-controls="gallery-modal-overlay" aria-expanded="false"><span>عرض المعرض</span><i class="fas fa-images"
+                aria-hidden="true"></i></button>
+        <button id="share-editor-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
+            style="background-color: transparent; font-size: 0.9rem;"><span>مشاركة رابط الموقع</span><i
+                class="fas fa-edit" aria-hidden="true"></i></button>
+        <button id="reset-design-btn" class="btn btn-danger toolbar-btn-mobile-hidden"><span>إعادة تعيين</span><i
+                class="fas fa-undo" aria-hidden="true"></i></button>
+    </div>
     </header>
 
     <div class="pro-layout">
@@ -1205,6 +1190,6 @@
     <script src="script-main.js" defer></script>
     <script src="chatbot-guide.js" defer></script>
 
-</body>
+    </body>
 
 </html>
