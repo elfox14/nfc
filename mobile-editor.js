@@ -105,13 +105,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (accordion) accordion.open = true;
                 }
 
-                // Scroll to Input
+                // Scroll to Input (Native)
                 const input = document.getElementById(item.targetInput);
                 if (input) {
                     setTimeout(() => {
                         input.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         input.focus();
-                        // Highlight effect
+
+                        // Highlight effect with animation class
+                        const formGroup = input.closest('.form-group');
+                        if (formGroup) {
+                            formGroup.classList.remove('form-element-highlighted');
+                            void formGroup.offsetWidth; // Trigger reflow
+                            formGroup.classList.add('form-element-highlighted');
+                            setTimeout(() => formGroup.classList.remove('form-element-highlighted'), 1500);
+                        }
+
+                        // Also highlight input border
                         input.style.transition = 'box-shadow 0.3s';
                         input.style.boxShadow = '0 0 0 2px var(--accent-primary)';
                         setTimeout(() => input.style.boxShadow = '', 1500);
@@ -123,4 +133,53 @@ document.addEventListener('DOMContentLoaded', () => {
             element.style.cursor = 'pointer';
         }
     });
+
+    // Wire up Mobile Undo/Redo Buttons
+    const mobileUndoBtn = document.getElementById('mobile-undo-btn');
+    const mobileRedoBtn = document.getElementById('mobile-redo-btn');
+    const desktopUndoBtn = document.getElementById('undo-btn');
+    const desktopRedoBtn = document.getElementById('redo-btn');
+
+    if (mobileUndoBtn && desktopUndoBtn) {
+        mobileUndoBtn.addEventListener('click', () => {
+            desktopUndoBtn.click();
+            updateMobileUndoRedoState();
+        });
+    }
+
+    if (mobileRedoBtn && desktopRedoBtn) {
+        mobileRedoBtn.addEventListener('click', () => {
+            desktopRedoBtn.click();
+            updateMobileUndoRedoState();
+        });
+    }
+
+    // Sync state between desktop and mobile buttons
+    function updateMobileUndoRedoState() {
+        if (mobileUndoBtn && desktopUndoBtn) {
+            mobileUndoBtn.disabled = desktopUndoBtn.disabled;
+        }
+        if (mobileRedoBtn && desktopRedoBtn) {
+            mobileRedoBtn.disabled = desktopRedoBtn.disabled;
+        }
+    }
+
+    // Observe changes to desktop buttons to sync state
+    if (desktopUndoBtn) {
+        const observer = new MutationObserver(updateMobileUndoRedoState);
+        observer.observe(desktopUndoBtn, { attributes: true, attributeFilter: ['disabled'] });
+        observer.observe(desktopRedoBtn, { attributes: true, attributeFilter: ['disabled'] });
+    }
+
+    // Close all accordions except the first one on load (Mobile only)
+    if (window.innerWidth <= 768) {
+        const accordions = document.querySelectorAll('.fieldset-accordion');
+        accordions.forEach((acc, index) => {
+            if (index === 0) {
+                acc.open = true;
+            } else {
+                acc.open = false;
+            }
+        });
+    }
 });
