@@ -1,4 +1,3 @@
-// script-core.js
 'use strict';
 
 const Config = {
