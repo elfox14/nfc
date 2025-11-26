@@ -1,4 +1,4 @@
-// server.js (الكود الكامل والنهائي)
+// server.js (الكود الكامل والنهائي بدون أي اختصارات)
 
 require('dotenv').config();
 const express = require('express');
@@ -22,12 +22,12 @@ const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
 
 const app = express();
+
+// --- START: MIDDLEWARE SETUP ---
 app.use(compression());
-app.use(useragent.express()); // تطبيق Middleware لاكتشاف الجهاز
+app.use(useragent.express()); // !! هام: تفعيل Middleware اكتشاف الجهاز
 
 const port = process.env.PORT || 3000;
-
-// --- إعدادات عامة ---
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
@@ -35,13 +35,7 @@ app.disable('x-powered-by');
 app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
-app.use(helmet.hsts({
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-}));
-
-// Custom CSP to allow necessary external resources
+app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));
 app.use(helmet.contentSecurityPolicy({
     directives: {
         defaultSrc: ["'self'"],
@@ -62,7 +56,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
 
-// قاعدة البيانات
+// --- DATABASE CONNECTION ---
 const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'nfc_db';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
@@ -75,7 +69,7 @@ MongoClient.connect(mongoUrl)
 
 const rootDir = __dirname;
 
-// أدوات مساعدة
+// --- UTILITY FUNCTIONS ---
 function absoluteBaseUrl(req) {
   const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
@@ -84,14 +78,12 @@ function absoluteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
-// قائمة بالحقول النصية التي يجب تعقيمها
 const FIELDS_TO_SANITIZE = [
     'input-name', 'input-tagline',
     'input-email', 'input-website',
     'input-whatsapp', 'input-facebook', 'input-linkedin'
 ];
 
-// دالة تعقيم لكائن الإدخالات
 function sanitizeInputs(inputs) {
     if (!inputs) return {};
     const sanitized = { ...inputs };
@@ -100,26 +92,22 @@ function sanitizeInputs(inputs) {
             sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
         }
     });
-    // تعقيم الحقول الديناميكية (مثل الروابط المضافة حديثًا)
     if (sanitized.dynamic && sanitized.dynamic.social) {
         sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
             ...link,
-            // التأكد من أن القيمة موجودة قبل التعقيم
             value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
         }));
     }
-    // تعقيم أرقام الهواتف الديناميكية
     if (sanitized.dynamic && sanitized.dynamic.phones) {
          sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
             ...phone,
-             // التأكد من أن القيمة موجودة قبل التعقيم
             value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
         }));
     }
     return sanitized;
 }
 
-// --- صفحة عرض SEO الجديدة (صيغة Query) ---
+// --- VIEWER & SEO ROUTES ---
 app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   try {
     if (!db) {
@@ -287,7 +275,6 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   }
 });
 
-// --- صفحة عرض SEO لكل بطاقة: /nfc/view/:id (Redirect) ---
 app.get('/nfc/view/:id', async (req, res) => {
   try {
     const id = String(req.params.id);
@@ -301,7 +288,7 @@ app.get('/nfc/view/:id', async (req, res) => {
   }
 });
 
-// هيدر كاش للملفات الثابتة
+// --- CACHING & REDIRECT MIDDLEWARE ---
 app.use((req, res, next) => {
   if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/view/')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -312,8 +299,6 @@ app.use((req, res, next) => {
   }
   next();
 });
-
-// إزالة .html من الروابط القديمة
 app.use((req, res, next) => {
   if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) { 
     const newPath = req.path.slice(0, -5);
@@ -321,18 +306,14 @@ app.use((req, res, next) => {
   }
   next();
 });
+app.get('/', (req, res) => { res.redirect(301, '/nfc/'); });
 
-// إعادة توجيه الجذر إلى /nfc/
-app.get('/', (req, res) => {
-  res.redirect(301, '/nfc/');
-});
-
-// مجلد uploads
+// --- UPLOADS FOLDER ---
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
-// --- واجهة برمجة التطبيقات (API) ---
+// --- API ROUTES ---
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -657,25 +638,37 @@ app.get('/healthz', (req, res) => {
     }
 });
 
-// --- نقطة نهاية المحرر (مع اكتشاف الجهاز) ---
-// هذا هو المسار الجديد والمهم
+// =======================================================================
+// === START: MOBILE/DESKTOP EDITOR ROUTE (المنطقة المعدلة والمهمة)     ===
+// =======================================================================
+
+// هذا المسار يجب أن يكون **قبل** معالج الملفات الثابتة العام
 app.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
-    // تحقق مما إذا كان الطلب من جهاز محمول
+    // --- START DEBUGGING CODE ---
+    console.log('--- Editor Route Hit ---');
+    console.log('Timestamp:', new Date().toLocaleTimeString());
+    console.log('User Agent String:', req.headers['user-agent']);
+    console.log('Is Mobile Detected:', req.useragent.isMobile);
+    console.log('Is Desktop Detected:', req.useragent.isDesktop);
+    // --- END DEBUGGING CODE ---
+
     if (req.useragent.isMobile) {
-        // إذا كان موبايل، أرسل نسخة الموبايل من المحرر
+        console.log('Action: Serving editor-mobile.html');
         res.sendFile(path.join(rootDir, 'editor-mobile.html'));
     } else {
-        // إذا كان جهاز مكتبي، أرسل نسخة سطح المكتب
+        console.log('Action: Serving editor.html');
         res.sendFile(path.join(rootDir, 'editor.html'));
     }
 });
 
+// =======================================================================
+// === END: MOBILE/DESKTOP EDITOR ROUTE                                ===
+// =======================================================================
 
-// --- معالج الملفات الثابتة (يأتي أخيراً) ---
+// --- STATIC FILE HANDLER (يجب أن يكون في نهاية المسارات) ---
 app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
 
-
-// --- معالج الأخطاء العام ---
+// --- GENERAL ERROR HANDLER ---
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.stack || err);
   const statusCode = err.status || 500;
@@ -685,8 +678,7 @@ app.use((err, req, res, next) => {
    }
 });
 
-
-// الاستماع
+// --- START SERVER ---
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
