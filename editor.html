@@ -4,22 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>محرر بطاقات العمل الذكية | MC PRIME</title>
     <meta name="description"
         content="استخدم محرر MC PRIME لتصميم وتخصيص بطاقة عملك الذكية (NFC) مجاناً. تحكم كامل في الألوان، الخطوط، الشعار، ومعلومات الاتصال.">
-
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" id="favicon" href="mcprime-logo-transparent.png" type="image/png">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <script src="script-main.js" defer></script>
-    <script src="chatbot-guide.js" defer></script>
-
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Lalezar&family=Poppins:wght@400;700&family=Tajawal:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <link rel="stylesheet" href="style.css?v=1.1">
+    <link rel="stylesheet" href="mobile-interface.css">
+    <link rel="stylesheet" href="toast.css">
 </head>
 
 <body>
-
     <header class="pro-toolbar">
         <div class="toolbar-group toolbar-start">
             <a href="index.html"
@@ -35,47 +38,33 @@
                         class="fas fa-undo"></i></button>
             </div>
         </div>
-
         <div class="toolbar-group toolbar-end">
             <button id="save-to-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"><span>حفظ
                     بالمعرض</span><i class="fas fa-save" aria-hidden="true"></i></button>
             <div class="download-container">
-                <button id="download-options-btn" class="btn btn-secondary">
-                    <span>تنزيل</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
-                </button>
+                <button id="download-options-btn" class="btn btn-secondary"><span>تنزيل</span><i
+                        class="fas fa-chevron-down" aria-hidden="true"></i></button>
                 <ul id="download-menu" class="dropdown-menu">
-                    <li><button id="download-png-front" aria-controls="export-modal-overlay" aria-expanded="false"><i
-                                class="fas fa-image" aria-hidden="true"></i> صورة الواجهة (PNG)</button></li>
-                    <li><button id="download-png-back" aria-controls="export-modal-overlay" aria-expanded="false"><i
-                                class="fas fa-image" aria-hidden="true"></i> صورة الخلفية (PNG)</button></li>
-                    <li><button id="download-pdf"><i class="fas fa-file-pdf" aria-hidden="true"></i> ملف PDF</button>
-                    </li>
-                    <li><button id="download-vcf"><i class="fas fa-address-card" aria-hidden="true"></i> جهة اتصال
-                            (VCF)</button></li>
-                    <li><button id="download-qrcode"><i class="fas fa-qrcode" aria-hidden="true"></i> رمز QR
-                            Code</button></li>
+                    <li><button id="download-png-front"><i class="fas fa-image"></i> صورة الواجهة (PNG)</button></li>
+                    <li><button id="download-png-back"><i class="fas fa-image"></i> صورة الخلفية (PNG)</button></li>
+                    <li><button id="download-pdf"><i class="fas fa-file-pdf"></i> ملف PDF</button></li>
+                    <li><button id="download-vcf"><i class="fas fa-address-card"></i> جهة اتصال (VCF)</button></li>
+                    <li><button id="download-qrcode"><i class="fas fa-qrcode"></i> رمز QR Code</button></li>
                 </ul>
             </div>
-            <button id="share-card-btn" class="btn btn-success" aria-controls="share-fallback-modal-overlay"
-                aria-expanded="false">
-                <span>مشاركة الكارت</span><i class="fas fa-share-alt" aria-hidden="true"></i>
-            </button>
-
-            <button id="show-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
-                aria-controls="gallery-modal-overlay" aria-expanded="false"><span>عرض المعرض</span><i
-                    class="fas fa-images" aria-hidden="true"></i></button>
+            <button id="share-card-btn" class="btn btn-success"><span>مشاركة الكارت</span><i
+                    class="fas fa-share-alt"></i></button>
+            <button id="show-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"><span>عرض المعرض</span><i
+                    class="fas fa-images"></i></button>
             <button id="share-editor-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
-                style="background-color: transparent; font-size: 0.9rem;"><span>مشاركة رابط الموقع</span><i
-                    class="fas fa-edit" aria-hidden="true"></i></button>
+                style="background-color: transparent;"><span>مشاركة رابط الموقع</span><i
+                    class="fas fa-edit"></i></button>
             <button id="reset-design-btn" class="btn btn-danger toolbar-btn-mobile-hidden"><span>إعادة تعيين</span><i
-                    class="fas fa-undo" aria-hidden="true"></i></button>
+                    class="fas fa-undo"></i></button>
         </div>
     </header>
-
     <div class="pro-layout">
-
         <aside class="pro-sidebar pro-sidebar-left" id="panel-design">
-
             <fieldset class="fieldset" id="layout-fieldset-source">
                 <legend>التخطيط</legend>
                 <div class="layout-selector-grid">
@@ -220,7 +209,8 @@
                         <legend>الشعار (Logo)</legend>
                         <div class="form-group"><label for="input-logo">رابط الشعار</label><input type="url"
                                 id="input-logo" value="mcprime-logo-transparent.png" data-update-target="card-logo"
-                                data-update-property="src"></div>
+                                data-update-property="src">
+                        </div>
                         <div class="form-group">
                             <label for="input-logo-upload">أو ارفع صورة (أقل من 2MB)</label>
                             <div class="logo-upload-group">
