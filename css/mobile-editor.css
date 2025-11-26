@@ -13,7 +13,6 @@
         display: flex;
         flex-direction: column;
         height: calc(100vh - 60px);
-        /* Adjust based on header/nav height */
         overflow: hidden;
     }
 
@@ -24,107 +23,173 @@
         background: transparent;
         overflow-y: auto;
         padding-bottom: 80px;
-        /* Space for bottom nav */
         display: none;
-        /* Hidden by default, shown via JS */
-
-        /* Flip Controls for Mobile */
-        .mobile-flip-controls {
-            position: absolute;
-            /* Back to absolute to overlay bottom of canvas */
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 100;
-            /* High z-index */
-            margin: 0;
-        }
-
-        .mobile-flip-btn {
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-        }
-
-        .mobile-flip-btn.active {
-            background: var(--accent-primary);
-            border-color: var(--accent-primary);
-        }
-
-        /* Mobile Bottom Navigation */
-        .mobile-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 55px;
-            /* Slightly smaller */
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 1000;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .mobile-nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-family: 'Tajawal', sans-serif;
-            font-size: 0.75rem;
-            /* Smaller text */
-            cursor: pointer;
-            padding: 5px;
-            transition: color 0.3s;
-        }
-
-        .mobile-nav-item i {
-            font-size: 1rem;
-            /* Smaller icon */
-            margin-bottom: 3px;
-        }
-
-        .mobile-nav-item.active {
-            color: var(--accent-primary);
-        }
-
-        /* Custom Mobile Save/Share Tab Content */
-        #mobile-save-content {
-            padding: 20px;
-            display: none;
-        }
-
-        #mobile-save-content.active-tab-content {
-            display: block;
-        }
-
-        #mobile-save-content .btn {
-            width: 100%;
-            margin-bottom: 15px;
-            justify-content: center;
-            padding: 12px;
-        }
     }
 
-    /* Desktop overrides to ensure mobile stuff is hidden */
-    @media (min-width: 769px) {
-
-        .mobile-bottom-nav,
-        .mobile-flip-controls {
-            display: none !important;
-        }
+    .pro-sidebar.active-tab-content {
+        display: block;
     }
+
+    /* --- CHANGE START: Major adjustments to Canvas and Card Wrapper for full size --- */
+    .pro-canvas {
+        flex: 0 0 auto;
+        /* REMOVED fixed height to allow content to define the height */
+        padding: 20px 0; /* Add vertical space around the card */
+        background: var(--page-bg);
+        border-bottom: 1px solid var(--accent-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible; /* Allow for potential overflow effects */
+        position: relative;
+        perspective: 1500px;
+    }
+
+    .cards-wrapper {
+        /* REMOVED transform: scale() to show the card at full size */
+        width: 95vw; /* Set width relative to viewport */
+        max-width: 450px; /* Add a max-width for larger mobile screens */
+        aspect-ratio: 51 / 33; /* CRITICAL: This now dynamically calculates height based on width */
+        position: relative; /* Needed for absolute children and flip effect */
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+    }
+
+    /* Handle vertical layout aspect ratio */
+    .cards-wrapper[data-layout="vertical"] {
+        aspect-ratio: 33 / 51;
+        width: 70vw; /* Adjust width for vertical cards to look natural */
+        max-width: 300px;
+    }
+
+    .cards-wrapper.is-flipped {
+        transform: rotateY(180deg);
+    }
+    /* --- CHANGE END --- */
+
+    .business-card {
+        margin: 0;
+        backface-visibility: hidden;
+        position: absolute;
+        /* ADDED properties to ensure cards fill the wrapper perfectly */
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+    }
+
+    #card-back-preview {
+        transform: rotateY(180deg);
+    }
+
+    .mobile-flip-controls {
+        position: absolute;
+        /* --- CHANGE START: Adjust position to be just below the canvas content area --- */
+        bottom: 5px;
+        /* --- CHANGE END --- */
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        z-index: 100;
+        margin: 0;
+    }
+
+    .mobile-flip-btn {
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 1rem;
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s, transform 0.2s;
+    }
+
+    .mobile-flip-btn:hover {
+        background-color: var(--accent-primary);
+        transform: scale(1.1);
+    }
+
+    .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 55px;
+        background: var(--form-bg);
+        border-top: 1px solid var(--accent-secondary);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .mobile-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-family: 'Tajawal', sans-serif;
+        font-size: 0.75rem;
+        cursor: pointer;
+        padding: 5px;
+        transition: color 0.3s;
+    }
+
+    .mobile-nav-item i {
+        font-size: 1rem;
+        margin-bottom: 3px;
+    }
+
+    .mobile-nav-item.active {
+        color: var(--accent-primary);
+    }
+
+    #mobile-save-content {
+        padding: 20px;
+        display: none;
+    }
+
+    #mobile-save-content.active-tab-content {
+        display: block;
+    }
+
+    #mobile-save-content .btn,
+    #mobile-save-content .btn-icon {
+        width: 100%;
+        margin-bottom: 15px;
+        justify-content: center;
+        padding: 12px;
+    }
+
+    #mobile-save-content .undo-redo-container {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+     #mobile-save-content .undo-redo-container .btn-icon {
+        width: 50px;
+        height: 50px;
+        margin: 0;
+        flex: 1;
+        padding: 0;
+    }
+}
+
+/* Desktop overrides to ensure mobile stuff is hidden */
+@media (min-width: 769px) {
+    .mobile-bottom-nav,
+    .mobile-flip-controls {
+        display: none !important;
+    }
+}

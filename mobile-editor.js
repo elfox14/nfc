@@ -47,36 +47,29 @@ document.addEventListener('DOMContentLoaded', () => {
         switchTab('data');
     }
 
-    // Flip Card Logic (Mobile Specific)
-    const flipFrontBtn = document.getElementById('mobile-flip-front');
-    const flipBackBtn = document.getElementById('mobile-flip-back');
-    const cardFront = document.getElementById('card-front-preview');
-    const cardBack = document.getElementById('card-back-preview');
+    // --- CHANGE START: New Flip Card Logic (3D Flip) ---
+    const flipBtn = document.getElementById('mobile-flip-btn');
+    const cardsWrapper = document.getElementById('cards-wrapper');
 
-    function showFront() {
-        if (cardFront && cardBack) {
-            cardFront.style.display = 'block';
-            cardBack.style.display = 'none';
-            flipFrontBtn.classList.add('active');
-            flipBackBtn.classList.remove('active');
-        }
+    if (flipBtn && cardsWrapper) {
+        flipBtn.addEventListener('click', () => {
+            cardsWrapper.classList.toggle('is-flipped');
+        });
     }
+    // --- CHANGE END ---
 
-    function showBack() {
-        if (cardFront && cardBack) {
-            cardFront.style.display = 'none';
-            cardBack.style.display = 'block';
-            flipFrontBtn.classList.remove('active');
-            flipBackBtn.classList.add('active');
-        }
-    }
 
-    if (flipFrontBtn && flipBackBtn) {
-        flipFrontBtn.addEventListener('click', showFront);
-        flipBackBtn.addEventListener('click', showBack);
-        // Default to front
-        showFront();
+    // --- ADDED START: Undo/Redo buttons logic for mobile ---
+    const mobileUndoBtn = document.getElementById('mobile-undo-btn');
+    const mobileRedoBtn = document.getElementById('mobile-redo-btn');
+    if (mobileUndoBtn && typeof HistoryManager !== 'undefined') {
+        mobileUndoBtn.addEventListener('click', () => HistoryManager.undo());
     }
+    if (mobileRedoBtn && typeof HistoryManager !== 'undefined') {
+        mobileRedoBtn.addEventListener('click', () => HistoryManager.redo());
+    }
+    // --- ADDED END ---
+
 
     // Click to Edit Logic
     const editableElements = [
@@ -105,26 +98,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (accordion) accordion.open = true;
                 }
 
-                // Scroll to Input (Native)
+                // Scroll to Input
                 const input = document.getElementById(item.targetInput);
                 if (input) {
                     setTimeout(() => {
+                        // --- CHANGE START: Use more reliable scrollIntoView ---
                         input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // --- CHANGE END ---
+
                         input.focus();
-
-                        // Highlight effect with animation class
-                        const formGroup = input.closest('.form-group');
-                        if (formGroup) {
-                            formGroup.classList.remove('form-element-highlighted');
-                            void formGroup.offsetWidth; // Trigger reflow
-                            formGroup.classList.add('form-element-highlighted');
-                            setTimeout(() => formGroup.classList.remove('form-element-highlighted'), 1500);
-                        }
-
-                        // Also highlight input border
-                        input.style.transition = 'box-shadow 0.3s';
+                        // Highlight effect
+                        input.style.transition = 'box-shadow 0.3s, background-color 0.3s';
                         input.style.boxShadow = '0 0 0 2px var(--accent-primary)';
+                        
+                        // Find parent fieldset for background highlight
+                        const fieldset = input.closest('.fieldset, .dynamic-input-group, .form-group');
+                        if (fieldset) {
+                           fieldset.classList.add('form-element-highlighted');
+                           setTimeout(() => fieldset.classList.remove('form-element-highlighted'), 2000);
+                        }
+                        
                         setTimeout(() => input.style.boxShadow = '', 1500);
+
                     }, 100);
                 }
             });
@@ -133,53 +128,4 @@ document.addEventListener('DOMContentLoaded', () => {
             element.style.cursor = 'pointer';
         }
     });
-
-    // Wire up Mobile Undo/Redo Buttons
-    const mobileUndoBtn = document.getElementById('mobile-undo-btn');
-    const mobileRedoBtn = document.getElementById('mobile-redo-btn');
-    const desktopUndoBtn = document.getElementById('undo-btn');
-    const desktopRedoBtn = document.getElementById('redo-btn');
-
-    if (mobileUndoBtn && desktopUndoBtn) {
-        mobileUndoBtn.addEventListener('click', () => {
-            desktopUndoBtn.click();
-            updateMobileUndoRedoState();
-        });
-    }
-
-    if (mobileRedoBtn && desktopRedoBtn) {
-        mobileRedoBtn.addEventListener('click', () => {
-            desktopRedoBtn.click();
-            updateMobileUndoRedoState();
-        });
-    }
-
-    // Sync state between desktop and mobile buttons
-    function updateMobileUndoRedoState() {
-        if (mobileUndoBtn && desktopUndoBtn) {
-            mobileUndoBtn.disabled = desktopUndoBtn.disabled;
-        }
-        if (mobileRedoBtn && desktopRedoBtn) {
-            mobileRedoBtn.disabled = desktopRedoBtn.disabled;
-        }
-    }
-
-    // Observe changes to desktop buttons to sync state
-    if (desktopUndoBtn) {
-        const observer = new MutationObserver(updateMobileUndoRedoState);
-        observer.observe(desktopUndoBtn, { attributes: true, attributeFilter: ['disabled'] });
-        observer.observe(desktopRedoBtn, { attributes: true, attributeFilter: ['disabled'] });
-    }
-
-    // Close all accordions except the first one on load (Mobile only)
-    if (window.innerWidth <= 768) {
-        const accordions = document.querySelectorAll('.fieldset-accordion');
-        accordions.forEach((acc, index) => {
-            if (index === 0) {
-                acc.open = true;
-            } else {
-                acc.open = false;
-            }
-        });
-    }
 });

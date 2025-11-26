@@ -186,18 +186,10 @@
 
         <main class="pro-canvas">
             <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
-
-                <!-- 
-                    ==================================================================
-                    == START: FIX - نقل عناصر المحتوى إلى داخل الواجهة الأمامية      ==
-                    ==================================================================
-                -->
-
                 <div class="business-card" id="card-front-preview">
                     <div class="card-background-layer" id="front-bg-image-layer"></div>
                     <div class="card-background-layer" id="front-bg-gradient-layer"></div>
                     <div class="card-content-layer card-front" id="card-front-content">
-                        <!-- تم نقل العناصر إلى هنا -->
                         <img src="mcprime-logo-transparent.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية"
                             class="logo-front" id="card-logo" style="max-width: 25%; opacity: 1;">
                         <div id="card-personal-photo-wrapper"></div>
@@ -210,26 +202,21 @@
                     </div>
                 </div>
 
-                <!-- 
-                    ==================================================================
-                    == END: FIX                                                     ==
-                    ==================================================================
-                -->
-
                 <div class="business-card" id="card-back-preview">
                     <div class="card-background-layer" id="back-bg-image-layer"></div>
                     <div class="card-background-layer" id="back-bg-gradient-layer"></div>
                     <div class="card-content-layer card-back" id="card-back-content">
-                        <!-- هذا يبقى فارغًا، حيث سيقوم JS بنقل العناصر إليه عند الحاجة -->
                     </div>
                 </div>
             </main>
 
-            <!-- Mobile Flip Controls -->
+            <!-- --- CHANGE START: Replaced two buttons with a single flip button --- -->
             <div class="mobile-flip-controls">
-                <button id="mobile-flip-front" class="mobile-flip-btn active">الوجه الأمامي</button>
-                <button id="mobile-flip-back" class="mobile-flip-btn">الوجه الخلفي</button>
+                <button id="mobile-flip-btn" class="mobile-flip-btn" title="قلب البطاقة" aria-label="قلب البطاقة">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
             </div>
+            <!-- --- CHANGE END --- -->
         </main>
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
@@ -994,20 +981,42 @@
         </aside>
 
     </div>
-    <span>تنزيل الواجهة الخلفية</span><i class="fas fa-image" aria-hidden="true"></i>
-    </button>
-    <button class="btn btn-secondary" onclick="document.getElementById('download-pdf').click()">
-        <span>تنزيل PDF</span><i class="fas fa-file-pdf" aria-hidden="true"></i>
-    </button>
-    <button class="btn btn-secondary" onclick="document.getElementById('download-vcf').click()">
-        <span>تنزيل جهة اتصال (VCF)</span><i class="fas fa-address-card" aria-hidden="true"></i>
-    </button>
-    <button class="btn btn-secondary" onclick="document.getElementById('download-qrcode').click()">
-        <span>تنزيل QR Code</span><i class="fas fa-qrcode" aria-hidden="true"></i>
-    </button>
-    <button class="btn btn-danger" onclick="document.getElementById('reset-design-btn').click()">
-        <span>إعادة تعيين التصميم</span><i class="fas fa-undo" aria-hidden="true"></i>
-    </button>
+
+    <!-- Mobile Save/Share Tab Content -->
+    <div id="mobile-save-content" class="pro-sidebar">
+        <h3 style="text-align: center; margin-bottom: 20px;">الحفظ والمشاركة</h3>
+        
+        <!-- --- ADDED START: Undo/Redo container for mobile --- -->
+        <div class="undo-redo-container">
+            <button id="mobile-redo-btn" class="btn-icon" title="إعادة" aria-label="إعادة"><i class="fas fa-redo"></i></button>
+            <button id="mobile-undo-btn" class="btn-icon" title="تراجع" aria-label="تراجع"><i class="fas fa-undo"></i></button>
+        </div>
+        <!-- --- ADDED END --- -->
+        
+        <button class="btn btn-success" onclick="document.getElementById('share-card-btn').click()">
+            <span>مشاركة الكارت</span><i class="fas fa-share-alt" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-secondary" onclick="document.getElementById('save-to-gallery-btn').click()">
+            <span>حفظ بالمعرض</span><i class="fas fa-save" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-secondary" onclick="document.getElementById('download-png-front').click()">
+            <span>تنزيل الواجهة الأمامية</span><i class="fas fa-image" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-secondary" onclick="document.getElementById('download-png-back').click()">
+            <span>تنزيل الواجهة الخلفية</span><i class="fas fa-image" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-secondary" onclick="document.getElementById('download-pdf').click()">
+            <span>تنزيل PDF</span><i class="fas fa-file-pdf" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-secondary" onclick="document.getElementById('download-vcf').click()">
+            <span>تنزيل جهة اتصال (VCF)</span><i class="fas fa-address-card" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-secondary" onclick="document.getElementById('download-qrcode').click()">
+            <span>تنزيل QR Code</span><i class="fas fa-qrcode" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-danger" onclick="document.getElementById('reset-design-btn').click()">
+            <span>إعادة تعيين التصميم</span><i class="fas fa-undo" aria-hidden="true"></i>
+        </button>
     </div>
 
     <!-- Mobile Bottom Navigation -->
