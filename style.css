@@ -9,7 +9,6 @@
     --danger-color: #e74c3c;
     --success-color: #2ecc71;
     --toolbar-height: 60px;
-    --mobile-nav-height: 60px;
 }
 
 html {
@@ -28,6 +27,10 @@ body {
     transition: background-color 0.5s ease, color 0.5s ease; 
     overflow-x: hidden;
     padding-top: var(--toolbar-height);
+    padding-bottom: 0; /* Desktop default */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 html.ltr body {
@@ -35,7 +38,7 @@ html.ltr body {
 }
 
 /* ========================================= */
-/* === 1. الهيكل الاحترافي الجديد (Pro Layout) === */
+/* === 1. الهيكل الاحترافي (Desktop Only Layout) === */
 /* ========================================= */
 
 .pro-toolbar {
@@ -69,28 +72,31 @@ html.ltr body {
     gap: 10px;
 }
 .toolbar-title-desktop {
-    display: none;
+    display: inline; /* Desktop default */
+    font-weight: bold;
+    color: var(--text-primary);
 }
 
 .toolbar-btn-mobile-hidden {
-    display: none;
+    display: inline-flex; /* Desktop default */
 }
 
 .pro-layout {
     display: grid;
-    grid-template-columns: 1fr; 
+    grid-template-columns: 320px 1fr 350px; /* Desktop default */
     height: calc(100vh - var(--toolbar-height));
     position: relative;
-    padding-bottom: var(--mobile-nav-height); 
+    flex-grow: 1;
 }
 
 .pro-canvas {
-    grid-column: 1 / -1;
+    grid-column: 2 / 3;
+    grid-row: 1;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    padding: 20px 10px;
+    padding: 40px;
     overflow-y: auto;
     position: relative;
     background-color: var(--page-bg);
@@ -100,105 +106,27 @@ html.ltr body {
     background-color: var(--form-bg);
     overflow-y: auto;
     padding: 20px;
-    display: none;
+    display: block; /* Desktop default */
+    height: 100%;
 }
-.pro-sidebar.active {
-    display: block;
-}
-
 .pro-sidebar::-webkit-scrollbar { width: 8px; }
 .pro-sidebar::-webkit-scrollbar-track { background: var(--accent-secondary); }
 .pro-sidebar::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 4px; }
 
-.pro-mobile-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: var(--mobile-nav-height);
-    background-color: var(--form-bg);
-    border-top: 1px solid var(--accent-secondary);
-    z-index: 1000;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+.pro-sidebar-left {
+    grid-column: 3 / 4;
+    grid-row: 1;
+    border-left: 1px solid var(--accent-secondary);
 }
-.pro-mobile-nav .mobile-tab-btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 8px 5px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: none;
-    border: none;
-    border-top: 3px solid transparent;
-    border-radius: 0;
-    margin: 0;
-    cursor: pointer;
-    transition: color 0.2s, border-color 0.2s;
+.pro-sidebar-right {
+    grid-column: 1 / 2;
+    grid-row: 1;
+    border-right: 1px solid var(--accent-secondary);
 }
-.pro-mobile-nav .mobile-tab-btn i {
-    font-size: 1.2rem;
-}
-.pro-mobile-nav .mobile-tab-btn.active {
-    color: var(--accent-primary);
-    border-top-color: var(--accent-primary);
-}
-
-@media (min-width: 1201px) {
-    body {
-        padding-bottom: 0; 
-    }
     
-    .toolbar-title-desktop {
-        display: inline;
-        font-weight: bold;
-        color: var(--text-primary);
-    }
-
-    .toolbar-btn-mobile-hidden {
-        display: inline-flex;
-    }
-
-    .pro-layout {
-        grid-template-columns: 320px 1fr 350px;
-        height: calc(100vh - var(--toolbar-height));
-        padding-bottom: 0;
-    }
-    
-    .pro-sidebar {
-        display: block !important;
-        height: 100%;
-    }
-
-    .pro-sidebar-left {
-        grid-column: 3 / 4;
-        grid-row: 1;
-        border-left: 1px solid var(--accent-secondary);
-    }
-    .pro-canvas {
-        grid-column: 2 / 3;
-        grid-row: 1;
-        padding: 40px;
-    }
-    .pro-sidebar-right {
-        grid-column: 1 / 2;
-        grid-row: 1;
-        border-right: 1px solid var(--accent-secondary);
-    }
-    
-    .pro-mobile-nav {
-        display: none;
-    }
-
-    .pro-toolbar .btn-success {
-        padding: 10px 20px;
-        font-size: 1rem;
-    }
+.pro-toolbar .btn-success {
+    padding: 10px 20px;
+    font-size: 1rem;
 }
 
 /* ========================================= */
@@ -278,118 +206,6 @@ html.ltr body {
 .cards-wrapper.show-guides::after {
     display: block;
 }
-
-/* --- تحسين تجربة الموبايل (حجم كبير مع تقليب) --- */
-@media (max-width: 1200px) {
-    body {
-        overflow: hidden;
-        height: 100vh;
-        position: fixed;
-        width: 100%;
-    }
-
-    .pro-layout {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        padding-bottom: 0;
-    }
-
-    .pro-canvas {
-        flex: 0 0 50%; /* مساحة مناسبة للكارت */
-        background: #15202b;
-        overflow: hidden;
-        padding: 20px 5px;
-        display: flex;
-        align-items: center; /* توسيط عمودي */
-        justify-content: center; /* توسيط أفقي */
-        z-index: 5;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        border-bottom: 1px solid var(--accent-secondary);
-    }
-
-    .cards-wrapper {
-        display: block; /* استعادة وضع البلوك للتقليب */
-        position: relative;
-        width: 100%; /* استخدام كامل العرض المتاح */
-        max-width: 510px;
-        aspect-ratio: 51 / 33; /* الحفاظ على النسبة */
-        margin: 0 auto;
-        
-        /* تفعيل ميكانيكية القلب */
-        transform-style: preserve-3d; 
-        transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
-        transform: rotateY(0deg); /* البداية */
-        
-        gap: 0; /* إزالة الفراغات */
-    }
-    
-    .cards-wrapper.is-flipped {
-        transform: rotateY(180deg); /* التدوير عند التفعيل */
-    }
-    
-    .cards-wrapper[data-layout="vertical"] { 
-        width: 70%; 
-        max-width: 330px; 
-        aspect-ratio: 33 / 51;
-    }
-    
-    .business-card { 
-        position: absolute; /* تموضع مطلق لتطابق الوجهين */
-        top: 0; 
-        left: 0; 
-        width: 100%; 
-        height: 100%; 
-        aspect-ratio: unset; /* الاعتماد على الأب */
-        backface-visibility: hidden; /* إخفاء الظهر */
-        -webkit-backface-visibility: hidden;
-        transform: none; /* إزالة أي تحويل فردي */
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-
-    #card-back-preview { 
-        transform: rotateY(180deg); /* تدوير الوجه الخلفي */
-    }
-    
-    /* إظهار زر التقليب */
-    .mobile-flip-btn {
-        display: flex !important;
-        margin-top: 20px;
-    }
-
-    .pro-mobile-nav {
-        position: relative;
-        flex: 0 0 60px;
-        order: 2;
-        background-color: var(--form-bg);
-        border-top: none;
-        border-bottom: 1px solid var(--accent-secondary);
-        box-shadow: none;
-        z-index: 10;
-    }
-
-    .pro-sidebar {
-        display: none;
-        order: 3;
-        flex: 1; /* ملء المساحة المتبقية */
-        overflow-y: auto;
-        padding: 20px;
-        padding-bottom: 100px;
-        background-color: var(--page-bg);
-        overscroll-behavior: contain;
-    }
-
-    .pro-sidebar.active {
-        display: block;
-    }
-}
-
-/* تعديل للأجهزة الصغيرة جداً */
-@media (max-width: 380px) {
-    .pro-canvas { flex: 0 0 45%; }
-    .cards-wrapper { width: 100%; }
-}
-
 
 .page-header {
     text-align: center;
@@ -1138,49 +954,15 @@ footer a:hover {
     text-decoration: underline;
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-.pro-layout {
-    flex-grow: 1;
-}
-
-.mobile-flip-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    bottom: auto;
-    right: auto;
-    width: 150px;
-    height: 40px;
-    background-color: var(--accent-primary);
-    color: white;
-    border-radius: 20px;
-    border: none;
-    font-size: 1rem;
-    cursor: pointer;
-    z-index: 100;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    transition: transform 0.2s ease-in-out, background-color 0.2s ease;
-    margin-top: 15px;
-    gap: 8px;
-}
-
-.mobile-flip-btn:hover {
-    transform: scale(1.05);
-    background-color: #62b5ff;
+.mobile-flip-btn,
+.pro-mobile-nav {
+    display: none; /* Removed for desktop-only */
 }
 
 .tab-pane {
-    display: none;
+    display: block !important; /* Always visible in desktop-only */
 }
-.tab-pane.active {
-    display: block;
-    animation: fade-in 0.4s ease;
-}
+
 @keyframes fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -1356,139 +1138,6 @@ html.ltr .testimonial-card {
     height: auto;
 }
 
-/* ========================================= */
-/* === 5. تعديلات الموبايل (حجم كبير + تقليب) === */
-/* ========================================= */
-@media (max-width: 1200px) {
-    body {
-        overflow: hidden;
-        height: 100vh;
-        position: fixed;
-        width: 100%;
-    }
-
-    .pro-layout {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        padding-bottom: 0;
-    }
-
-    .pro-canvas {
-        flex: 0 0 50%; /* تخصيص مساحة كافية للكارت */
-        background: #15202b;
-        overflow: hidden;
-        padding: 20px 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 5;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        border-bottom: 1px solid var(--accent-secondary);
-    }
-
-    .cards-wrapper {
-        display: block; /* هام للتقليب */
-        position: relative;
-        width: 100%;
-        max-width: 510px;
-        aspect-ratio: 51 / 33;
-        margin: 0 auto;
-        
-        /* تفعيل ميكانيكا القلب */
-        transform-style: preserve-3d; 
-        transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
-        transform: rotateY(0deg); /* الوضع الافتراضي بدون تدوير */
-        
-        gap: 0;
-    }
-    
-    .cards-wrapper.is-flipped {
-        transform: rotateY(180deg); /* تدوير عند الضغط */
-    }
-    
-    .cards-wrapper[data-layout="vertical"] { 
-        width: 70%; 
-        max-width: 330px; 
-        aspect-ratio: 33 / 51;
-    }
-    
-    .business-card { 
-        position: absolute; /* وضع مطلق لتطابق الوجوه */
-        top: 0; 
-        left: 0; 
-        width: 100%; 
-        height: 100%; 
-        aspect-ratio: unset; 
-        backface-visibility: hidden; 
-        -webkit-backface-visibility: hidden;
-        transform: none; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-
-    #card-back-preview { 
-        transform: rotateY(180deg); /* تدوير الوجه الخلفي */
-    }
-    
-    /* إظهار زر التقليب */
-    .mobile-flip-btn {
-        display: flex !important;
-        margin-top: 20px;
-    }
-
-    .pro-mobile-nav {
-        position: relative;
-        flex: 0 0 60px;
-        order: 2;
-        background-color: var(--form-bg);
-        border-top: none;
-        border-bottom: 1px solid var(--accent-secondary);
-        box-shadow: none;
-        z-index: 10;
-    }
-
-    .pro-sidebar {
-        display: none;
-        order: 3;
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
-        padding-bottom: 100px;
-        background-color: var(--page-bg);
-        overscroll-behavior: contain;
-        border-top: 1px solid var(--accent-secondary);
-    }
-
-    .pro-sidebar.active {
-        display: block;
-    }
-}
-
-@media (max-width: 768px) {
-    .pro-sidebar {
-        padding: 10px;
-    }
-
-    .form-group label {
-        font-size: 0.9rem;
-    }
-
-    .control-grid, .export-buttons { 
-        grid-template-columns: 1fr; 
-        gap: 12px;
-    }
-    
-    .cards-wrapper[data-layout="vertical"] { width: 80%; }
-
-    .logo-front { max-width: 100px; max-height: 60px; }
-    #card-name { font-size: 20px; }
-    #card-tagline { font-size: 13px; }
-    .phone-buttons-wrapper { gap: 8px; }
-    .phone-button { font-size: 12px; padding: 5px 12px; }
-    .draggable-social-link a { font-size: 11px; padding: 4px 10px; }
-    .card-back-qr-image-wrapper { width: 85px; height: 85px; margin-bottom: 10px; }
-}
-
 .dnd-hint.is-hidden {
     opacity: 0;
     transform: scale(0.5);
@@ -1498,14 +1147,6 @@ html.ltr .testimonial-card {
     0% { transform: scale(1); }
     50% { transform: scale(1.15); }
     100% { transform: scale(1); }
-}
-
-
-@media (max-width: 768px) {
-    #back-to-top-btn {
-        inset-inline-start: auto;
-        inset-inline-end: 20px;
-    }
 }
 
 @media (hover: none) {

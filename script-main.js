@@ -1,4 +1,3 @@
-// script-main.js
 'use strict';
 
 const ExportManager = {
@@ -10,14 +9,7 @@ const ExportManager = {
         style.innerHTML = '.no-export { display: none !important; }'; 
         document.head.appendChild(style);
         
-        // --- [MODIFIED] Check if vertical layout ---
-        const isVertical = DOMElements.cardsWrapper.dataset.layout === 'vertical';
-        // For vertical cards, we might need special handling if html2canvas clips it, 
-        // but usually providing the element is enough. 
-        // However, ensures background layers are fully captured.
-        
         try { 
-            // Using backgroundColor: null to support transparent corners if needed
             return await html2canvas(element, { 
                 backgroundColor: null, 
                 scale: scale, 
@@ -62,11 +54,10 @@ const ExportManager = {
         try { 
             const { jsPDF } = window.jspdf; 
             
-            // --- [MODIFIED] Detect Orientation ---
             const isVertical = DOMElements.cardsWrapper.dataset.layout === 'vertical';
             const width = isVertical ? 330 : 510;
             const height = isVertical ? 510 : 330;
-            const orientation = isVertical ? 'p' : 'l'; // Portrait or Landscape
+            const orientation = isVertical ? 'p' : 'l';
 
             const doc = new jsPDF({ 
                 orientation: orientation, 
@@ -265,7 +256,6 @@ const ShareManager = {
     
     async captureAndUploadCard(element) {
         await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
-        // [MODIFIED] Detect vertical layout for proper capture scale/dimensions if needed internally by html2canvas
         const canvas = await ExportManager.captureElement(element, 2); 
         
         return new Promise((resolve, reject) => {
@@ -413,7 +403,6 @@ const EventManager = {
         container.addEventListener('dragend', e => { e.target.classList.remove('dragging'); });
         container.addEventListener('dragover', e => { e.preventDefault(); const afterElement = [...container.children].reduce((closest, child) => { const box = child.getBoundingClientRect(); const offset = e.clientY - box.top - box.height / 2; if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; } else { return closest; } }, { offset: Number.NEGATIVE_INFINITY }).element; if (afterElement == null) { container.appendChild(draggedItem); } else { container.insertBefore(draggedItem, afterElement); } });
         container.addEventListener('drop', () => { if (onSortCallback) onSortCallback(); 
-            // StateManager.saveDebounced(); // تم إلغاء الحفظ التلقائي 
         });
     },
     
@@ -434,18 +423,14 @@ const EventManager = {
         target.style.transform = `translate(${x}px, ${y}px)`;
         target.setAttribute('data-x', x);
         target.setAttribute('data-y', y);
-        
-        // StateManager.saveDebounced(); // تم إلغاء الحفظ التلقائي
     },
 
     bindEvents() {
         document.querySelectorAll('input, select, textarea').forEach(input => { 
             const eventType = (input.type === 'range' || input.type === 'color' || input.type === 'checkbox') ? 'change' : 'input';
             
-            // تم إلغاء الحفظ التلقائي عند التغيير
             input.addEventListener(eventType, () => { 
                 if (!StateManager.isApplyingState) {
-                    // StateManager.saveDebounced(); // تم الإلغاء
                 }
             }); 
 
@@ -461,7 +446,7 @@ const EventManager = {
                     CardManager.updateSocialTextStyles();
                 }
 
-                if (input.id.startsWith('input-') && !input.id.includes('-static-') && !input.id.includes('-dynsocial_')) CardManager.updateSocialLinks(); // منع الاستدعاء المزدوج
+                if (input.id.startsWith('input-') && !input.id.includes('-static-') && !input.id.includes('-dynsocial_')) CardManager.updateSocialLinks();
                 if (input.id.startsWith('front-bg-') || input.id.startsWith('back-bg-')) CardManager.updateCardBackgrounds();
                 if (input.id === 'qr-size') CardManager.updateQrCodeDisplay();
                 
@@ -535,8 +520,6 @@ const EventManager = {
                 } else {
                     CardManager.updateQrCodeDisplay();
                 }
-                
-                // StateManager.saveDebounced(); // تم الإلغاء
             });
         });
 
@@ -568,7 +551,6 @@ const EventManager = {
                 }
         
                 CardManager.renderCardContent();
-                // StateManager.saveDebounced(); // تم الإلغاء
             });
         });
 
@@ -583,7 +565,6 @@ const EventManager = {
                 DOMElements.draggable.logo.src = imageUrl;
                 document.getElementById('input-logo').value = imageUrl; 
                 UIManager.updateFavicon(imageUrl); 
-                // StateManager.saveDebounced(); // تم الإلغاء
             } 
         }));
 
@@ -593,7 +574,6 @@ const EventManager = {
                 CardManager.personalPhotoUrl = imageUrl;
                 DOMElements.photoControls.url.value = imageUrl;
                 DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
-                // StateManager.saveDebounced(); // تم الإلغاء
             }
         }));
         
@@ -602,7 +582,6 @@ const EventManager = {
             onSuccess: url => { 
                 CardManager.frontBgImageUrl = url; DOMElements.buttons.removeFrontBg.style.display = 'block'; 
                 CardManager.updateCardBackgrounds(); 
-                // StateManager.saveDebounced(); // تم الإلغاء
             }
         }));
         
@@ -611,7 +590,6 @@ const EventManager = {
             onSuccess: url => { 
                 CardManager.backBgImageUrl = url; DOMElements.buttons.removeBackBg.style.display = 'block'; 
                 CardManager.updateCardBackgrounds(); 
-                // StateManager.saveDebounced(); // تم الإلغاء
             }
         }));
         
@@ -620,7 +598,6 @@ const EventManager = {
             onSuccess: imageUrl => { 
                 CardManager.qrCodeImageUrl = imageUrl; DOMElements.qrImageUrlInput.value = imageUrl;
                 CardManager.updateQrCodeDisplay(); 
-                // StateManager.saveDebounced(); // تم الإلغاء
             }
         }));
 
@@ -653,9 +630,6 @@ const EventManager = {
         DOMElements.draggable.tagline.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('input-tagline'); });
         DOMElements.draggable.qr.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('qr-code-accordion'); });
         
-        const flipCard = () => { DOMElements.cardsWrapper.classList.toggle('is-flipped'); }
-        DOMElements.buttons.mobileFlip.addEventListener('click', (e) => { e.stopPropagation(); flipCard(); });
-
         DOMElements.buttons.togglePhone.addEventListener('input', () => { CardManager.updatePhoneButtonsVisibility(); });
         
         DOMElements.buttons.toggleSocial.addEventListener('input', () => { 
@@ -667,7 +641,6 @@ const EventManager = {
         if (DOMElements.buttons.toggleMasterSocial) {
             DOMElements.buttons.toggleMasterSocial.addEventListener('input', () => {
                 CardManager.handleMasterSocialToggle();
-                // StateManager.saveDebounced(); // تم الإلغاء
             });
         }
 
@@ -683,7 +656,6 @@ const EventManager = {
             DOMElements.frontBgOpacity.dispatchEvent(new Event('input')); 
             DOMElements.buttons.removeFrontBg.style.display = 'none'; 
             CardManager.updateCardBackgrounds(); 
-            // StateManager.saveDebounced(); // تم الإلغاء
         });
         
         DOMElements.buttons.removeBackBg.addEventListener('click', () => { 
@@ -693,7 +665,6 @@ const EventManager = {
             DOMElements.backBgOpacity.dispatchEvent(new Event('input')); 
             DOMElements.buttons.removeBackBg.style.display = 'none'; 
             CardManager.updateCardBackgrounds(); 
-            // StateManager.saveDebounced(); // تم الإلغاء
         });
         
         DOMElements.buttons.downloadOptions.addEventListener('click', (e) => {
@@ -868,7 +839,8 @@ const App = {
             buttons: { 
                 addPhone: document.getElementById('add-phone-btn'), addSocial: document.getElementById('add-social-btn'), 
                 removeFrontBg: document.getElementById('remove-front-bg-btn'), removeBackBg: document.getElementById('remove-back-bg-btn'),
-                backToTop: document.getElementById('back-to-top-btn'), mobileFlip: document.getElementById('mobile-flip-btn'), togglePhone: document.getElementById('toggle-phone-buttons'),
+                backToTop: document.getElementById('back-to-top-btn'), 
+                togglePhone: document.getElementById('toggle-phone-buttons'),
                 toggleSocial: document.getElementById('toggle-social-buttons'),
                 toggleMasterSocial: document.getElementById('toggle-master-social'), 
                 saveToGallery: document.getElementById('save-to-gallery-btn'),
@@ -927,8 +899,6 @@ const App = {
         CardManager.updatePhoneButtonsVisibility();
         CardManager.updatePhoneTextStyles();
         DragManager.init();
-        
-        TabManager.init('.pro-mobile-nav', '.mobile-tab-btn');
         
         UIManager.announce("محرر بطاقة الأعمال جاهز للاستخدام.");
         

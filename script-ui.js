@@ -1,8 +1,7 @@
-// script-ui.js
 "use strict";
 
 const TourManager = {
-  TOUR_SHOWN_KEY: "digitalCardTourShown_v5", // تم تغيير الإصدار
+  TOUR_SHOWN_KEY: "digitalCardTourShown_v5_desktop", // إصدار جديد خاص بسطح المكتب
   tour: null,
 
   init() {
@@ -32,13 +31,11 @@ const TourManager = {
       },
     });
 
-    const isMobile = window.innerWidth <= 1200;
-
-    // --- الخطوات الجديدة للهيكل الجديد ---
+    // --- خطوات جديدة لواجهة سطح المكتب فقط ---
     const steps = [
       {
         id: "welcome",
-        title: "مرحباً بك في المحرر الجديد!",
+        title: "مرحباً بك في المحرر!",
         text: "أهلاً بك في واجهة MC PRIME الاحترافية. لنبدأ جولة سريعة.",
         buttons: [
           {
@@ -54,21 +51,8 @@ const TourManager = {
         title: "1. لوحة العناصر",
         text: "هذه هي لوحتك الرئيسية. هنا يمكنك إضافة وتعديل *محتوى* بطاقتك (مثل اسمك، شعارك، وأرقام الهواتف).",
         attachTo: {
-          element: isMobile
-            ? '.pro-mobile-nav .mobile-tab-btn[data-tab-target="#panel-elements"]'
-            : ".pro-sidebar-right",
-          on: isMobile ? "top" : "left",
-        },
-        beforeShowPromise: () => {
-          if (isMobile) {
-            // التأكد من أننا في التبويب الصحيح
-            document
-              .querySelector(
-                '.pro-mobile-nav .mobile-tab-btn[data-tab-target="#panel-elements"]',
-              )
-              .click();
-          }
-          return Promise.resolve();
+          element: ".pro-sidebar-right",
+          on: "left",
         },
       },
       {
@@ -76,21 +60,8 @@ const TourManager = {
         title: "2. لوحة التصميم",
         text: "هنا يمكنك تغيير *الشكل العام* للبطاقة، مثل اختيار التصاميم الجاهزة، تغيير الخلفيات، أو تعديل التخطيط.",
         attachTo: {
-          element: isMobile
-            ? '.pro-mobile-nav .mobile-tab-btn[data-tab-target="#panel-design"]'
-            : ".pro-sidebar-left",
-          on: isMobile ? "top" : "right",
-        },
-        beforeShowPromise: () => {
-          if (isMobile) {
-            // الانتقال للتبويب التالي
-            document
-              .querySelector(
-                '.pro-mobile-nav .mobile-tab-btn[data-tab-target="#panel-design"]',
-              )
-              .click();
-          }
-          return Promise.resolve();
+          element: ".pro-sidebar-left",
+          on: "right",
         },
       },
       {
@@ -98,17 +69,6 @@ const TourManager = {
         title: "3. منطقة المعاينة",
         text: "هنا تظهر بطاقتك. يمكنك النقر على أي عنصر (مثل الاسم) لتعديله، أو سحبه مباشرة لتغيير مكانه.",
         attachTo: { element: "#cards-wrapper", on: "top" },
-        beforeShowPromise: () => {
-          if (isMobile) {
-            // العودة لتبويب العناصر الرئيسي
-            document
-              .querySelector(
-                '.pro-mobile-nav .mobile-tab-btn[data-tab-target="#panel-elements"]',
-              )
-              .click();
-          }
-          return Promise.resolve();
-        },
       },
       {
         id: "actions_toolbar",
@@ -166,14 +126,13 @@ const UIManager = {
       thumb.setAttribute("tabindex", "0");
       thumb.setAttribute("aria-label", `اختيار تصميم ${theme.name}`);
 
-      // ✅ FIXED: استخدام safe DOM manipulation
       const previewDiv = document.createElement("div");
       previewDiv.className = "theme-preview";
       previewDiv.style.background = `linear-gradient(135deg, ${theme.gradient[0]}, ${theme.gradient[1]})`;
 
       const nameSpan = document.createElement("span");
       nameSpan.className = "theme-name";
-      nameSpan.textContent = theme.name; // آمن - textContent
+      nameSpan.textContent = theme.name;
 
       thumb.appendChild(previewDiv);
       thumb.appendChild(nameSpan);
@@ -222,14 +181,13 @@ const UIManager = {
       thumb.setAttribute("role", "button");
       thumb.setAttribute("tabindex", "0");
 
-      // ✅ FIXED: استخدام safe DOM manipulation
       const previewDiv = document.createElement("div");
       previewDiv.className = "background-preview";
-      previewDiv.style.backgroundImage = `url('${bg.url}')`; // bg.url من server - يجب أن يكون آمن
+      previewDiv.style.backgroundImage = `url('${bg.url}')`;
 
       const nameSpan = document.createElement("span");
       nameSpan.className = "background-name";
-      nameSpan.textContent = bg.name; // آمن - textContent
+      nameSpan.textContent = bg.name;
 
       thumb.appendChild(previewDiv);
       thumb.appendChild(nameSpan);
@@ -323,7 +281,6 @@ const UIManager = {
     }
   },
 
-  // --- (تم التعديل) ---
   showSaveNotification() {
     const toast = DOMElements.saveToast;
     if (!toast) return;
@@ -333,14 +290,12 @@ const UIManager = {
     setTimeout(() => {
       toast.textContent = "تم الحفظ ✓";
       UIManager.announce("تم حفظ التغييرات تلقائيًا");
-      // تم تغيير 1500 إلى 3000 لزيادة مدة الظهور
       setTimeout(() => {
         toast.classList.remove("show");
       }, 3000);
     }, 500);
   },
-  // --- (نهاية التعديل) ---
-
+  
   updateFavicon(url) {
     if (url) document.getElementById("favicon").href = url;
   },
@@ -356,10 +311,7 @@ const UIManager = {
       }
     }
   },
-
-  // --- ========================================= ---
-  // --- === MODIFICATION START (navigateToAndHighlight) === ---
-  // --- ========================================= ---
+  
   navigateToAndHighlight(elementId) {
     const targetElement = document.getElementById(elementId);
     if (!targetElement) {
@@ -367,81 +319,47 @@ const UIManager = {
       return;
     }
 
-    const parentPane = targetElement.closest(".tab-pane");
-    const isMobile = window.innerWidth <= 1200;
-
-    // 1. التعامل مع تبويبات الموبايل
-    if (isMobile && parentPane && !parentPane.classList.contains("active")) {
-      const paneId = parentPane.id;
-      const buttonSelector = `.pro-mobile-nav .mobile-tab-btn[data-tab-target="#${paneId}"]`;
-      const buttonToClick = document.querySelector(buttonSelector);
-
-      if (buttonToClick) {
-        const allButtons = document.querySelectorAll(
-          ".pro-mobile-nav .mobile-tab-btn",
-        );
-        const allPanes = document.querySelectorAll(".pro-layout > .tab-pane");
-
-        // استدعاء TabManager لتبديل التبويب
-        TabManager.switchTab(`#${paneId}`, buttonToClick, allButtons, allPanes);
-      }
-    }
-
-    // 2. فتح الأكورديون (Accordion) والتركيز التلقائي (Auto-Focus)
+    // 1. فتح الأكورديون (Accordion) والتركيز التلقائي
     const parentAccordion = targetElement.closest("details");
     if (parentAccordion) {
-      // العثور على جميع الـ details داخل نفس اللوحة (sidebar)
       const sidebar = parentAccordion.closest(".pro-sidebar");
       if (sidebar) {
         const siblings = sidebar.querySelectorAll("details.fieldset-accordion");
         siblings.forEach((acc) => {
-          // إغلاق جميع الـ accordions الأخرى لتقليل التشتت
           if (acc !== parentAccordion) {
             acc.removeAttribute("open");
           }
         });
       }
-      parentAccordion.open = true; // فتح الهدف
+      parentAccordion.open = true;
     }
 
-    // 3. التمرير إلى العنصر وتظليله
+    // 2. التمرير إلى العنصر وتظليله
     setTimeout(() => {
-      // العنصر الذي سيتم تظليله
       const highlightTarget =
         targetElement.closest(".fieldset") ||
         targetElement.closest(".form-group") ||
         targetElement.closest(".dynamic-input-group") ||
         targetElement;
 
-      // حاوية التمرير (اللوحة الجانبية أو اللوحة في الموبايل)
       const scrollContainer = highlightTarget.closest(".pro-sidebar");
 
       if (scrollContainer) {
-        // التمرير داخل اللوحة الجانبية
         const targetTop = highlightTarget.offsetTop;
-        const containerTop = scrollContainer.scrollTop;
-        const containerHeight = scrollContainer.clientHeight;
-
-        // التحقق مما إذا كان العنصر خارج العرض أو التمرير دائماً للوسط
         scrollContainer.scrollTo({
           top: targetTop - 60, // تمرير إلى أعلى العنصر مع هامش
           behavior: "smooth",
         });
       } else {
-        // احتياطي: تمرير الصفحة كلها (للحالات النادرة)
         highlightTarget.scrollIntoView({ behavior: "smooth", block: "center" });
       }
 
-      // تطبيق التظليل
       highlightTarget.classList.add("form-element-highlighted");
       setTimeout(() => {
         highlightTarget.classList.remove("form-element-highlighted");
       }, 2000);
-    }, 150); // تأخير بسيط لضمان فتح التبويب أولاً
+    }, 150);
   },
-  // --- ========================================= ---
-  // --- === MODIFICATION END (navigateToAndHighlight) === ---
-  // --- ========================================= ---
 
   trapFocus(modalElement) {
     const focusableElements = modalElement.querySelectorAll(
@@ -473,8 +391,8 @@ const UIManager = {
     if (triggerElement) {
       triggerElement.setAttribute("aria-expanded", "true");
     }
-    const eventListener = this.trapFocus(modalOverlay); // بافتراض أن trapFocus تُرجع المستمع
-    focusTrapListeners.set(modalOverlay, eventListener); // خزّن في الـ Map
+    const eventListener = this.trapFocus(modalOverlay);
+    focusTrapListeners.set(modalOverlay, eventListener);
   },
   hideModal(modalOverlay) {
     modalOverlay.classList.remove("visible");
@@ -484,10 +402,10 @@ const UIManager = {
       triggerElement.setAttribute("aria-expanded", "false");
       triggerElement.focus();
     }
-    const eventListener = focusTrapListeners.get(modalOverlay); // استرد من الـ Map
+    const eventListener = focusTrapListeners.get(modalOverlay);
     if (eventListener) {
       modalOverlay.removeEventListener("keydown", eventListener);
-      focusTrapListeners.delete(modalOverlay); // أزل من الـ Map
+      focusTrapListeners.delete(modalOverlay);
     }
   },
   setupDragDrop(dropZoneId, fileInputId) {

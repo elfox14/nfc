@@ -18,7 +18,7 @@
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
-        <link rel="stylesheet" href="style.css?v=1.1">
+    <link rel="stylesheet" href="style.css?v=1.1">
     <link rel="stylesheet" href="toast.css">
     <script src="security-utils.js"></script>
     <script src="script-core.js" defer></script>
@@ -63,16 +63,15 @@
             <button id="show-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden" aria-controls="gallery-modal-overlay" aria-expanded="false"><span>عرض المعرض</span><i class="fas fa-images" aria-hidden="true"></i></button>
             <button id="share-editor-btn" class="btn btn-secondary toolbar-btn-mobile-hidden" style="background-color: transparent; font-size: 0.9rem;"><span>مشاركة رابط الموقع</span><i class="fas fa-edit" aria-hidden="true"></i></button>
             <button id="reset-design-btn" class="btn btn-danger toolbar-btn-mobile-hidden"><span>إعادة تعيين</span><i class="fas fa-undo" aria-hidden="true"></i></button>
-            </div>
+        </div>
     </header>
 
     <div class="pro-layout">
         
-        <aside class="pro-sidebar pro-sidebar-left tab-pane" id="panel-design">
+        <aside class="pro-sidebar pro-sidebar-left" id="panel-design">
             
             <fieldset class="fieldset" id="layout-fieldset-source">
                 <legend>التخطيط</legend>
-                <!-- NEW: Visual Layout Selector -->
                 <div class="layout-selector-grid">
                     <label class="layout-option">
                         <input type="radio" name="layout-select-visual" value="classic" checked>
@@ -96,7 +95,6 @@
                         </div>
                     </label>
                 </div>
-                <!-- Hidden input for compatibility -->
                 <input type="hidden" id="layout-select" value="classic">
             </fieldset>
             
@@ -143,36 +141,48 @@
                 </div>
             </details>
 
-            </aside>
+        </aside>
 
         <main class="pro-canvas">
              <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
-                <img src="mcprime-logo-transparent.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية" class="logo-front" id="card-logo" style="max-width: 25%; opacity: 1;">
-                <div id="card-personal-photo-wrapper"></div>
-                <h1 id="card-name" style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;"></h1>
-                <h2 class="tagline" id="card-tagline" style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;"></h2>
-                <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
-                <div class="card-back-qr-image-wrapper" id="qr-code-wrapper" style="width: 30%;"></div>
+                
+                <!-- 
+                    ==================================================================
+                    == START: FIX - نقل عناصر المحتوى إلى داخل الواجهة الأمامية      ==
+                    ==================================================================
+                -->
+
                 <div class="business-card" id="card-front-preview">
                     <div class="card-background-layer" id="front-bg-image-layer"></div>
                     <div class="card-background-layer" id="front-bg-gradient-layer"></div>
                     <div class="card-content-layer card-front" id="card-front-content">
-                        </div>
+                        <!-- تم نقل العناصر إلى هنا -->
+                        <img src="mcprime-logo-transparent.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية" class="logo-front" id="card-logo" style="max-width: 25%; opacity: 1;">
+                        <div id="card-personal-photo-wrapper"></div>
+                        <h1 id="card-name" style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;"></h1>
+                        <h2 class="tagline" id="card-tagline" style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;"></h2>
+                        <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
+                        <div class="card-back-qr-image-wrapper" id="qr-code-wrapper" style="width: 30%;"></div>
+                    </div>
                 </div>
+
+                <!-- 
+                    ==================================================================
+                    == END: FIX                                                     ==
+                    ==================================================================
+                -->
+
                 <div class="business-card" id="card-back-preview">
                     <div class="card-background-layer" id="back-bg-image-layer"></div>
                     <div class="card-background-layer" id="back-bg-gradient-layer"></div>
                     <div class="card-content-layer card-back" id="card-back-content">
-                        </div>
+                        <!-- هذا يبقى فارغًا، حيث سيقوم JS بنقل العناصر إليه عند الحاجة -->
+                    </div>
                 </div>
             </main>
-
-            <button id="mobile-flip-btn" class="mobile-flip-btn" aria-label="تقليب البطاقة">
-                <i class="fas fa-sync-alt"></i>
-            </button>
         </main>
         
-        <aside class="pro-sidebar pro-sidebar-right tab-pane active" id="panel-elements">
+        <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
 
             <details class="fieldset-accordion" open>
                 <summary>الشعار</summary>
@@ -207,7 +217,6 @@
                                 <label><input type="radio" name="placement-logo" value="back"> خلفي</label>
                             </div>
                         </div>
-                        <!-- Advanced Move Controls Hidden -->
                         <details class="fieldset-accordion" style="margin-top: 10px; background: transparent; border: none;">
                              <summary style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">خيارات متقدمة (تحريك دقيق)</summary>
                              <div class="fieldset-content" style="border: none; padding-top: 10px;">
@@ -279,7 +288,6 @@
                             </div>
                         </div>
                         
-                        <!-- Advanced Move Controls Hidden -->
                         <details class="fieldset-accordion" style="margin-top: 10px; background: transparent; border: none;">
                              <summary style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">خيارات متقدمة (تحريك دقيق)</summary>
                              <div class="fieldset-content" style="border: none; padding-top: 10px;">
@@ -324,7 +332,6 @@
                         </div>
                     </div>
                     
-                    <!-- Advanced Move Controls Hidden -->
                     <details class="fieldset-accordion" style="margin-top: 10px; background: transparent; border: none;">
                          <summary style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">خيارات متقدمة (تحريك دقيق)</summary>
                          <div class="fieldset-content" style="border: none; padding-top: 10px;">
@@ -364,7 +371,6 @@
                         </div>
                     </div>
                     
-                     <!-- Advanced Move Controls Hidden -->
                     <details class="fieldset-accordion" style="margin-top: 10px; background: transparent; border: none;">
                          <summary style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">خيارات متقدمة (تحريك دقيق)</summary>
                          <div class="fieldset-content" style="border: none; padding-top: 10px;">
@@ -486,7 +492,6 @@
                         <input type="range" id="qr-size" min="15" max="50" value="30">
                     </div>
                     
-                    <!-- Advanced Move Controls Hidden -->
                     <details class="fieldset-accordion" style="margin-top: 10px; background: transparent; border: none;">
                          <summary style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">خيارات متقدمة (تحريك دقيق)</summary>
                          <div class="fieldset-content" style="border: none; padding-top: 10px;">
@@ -575,7 +580,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Advanced Move Controls Hidden -->
                             <details class="fieldset-accordion" style="margin-top: 10px; background: transparent; border: none;">
                                  <summary style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">خيارات متقدمة (تحريك دقيق)</summary>
                                  <div class="fieldset-content" style="border: none; padding-top: 10px;">
@@ -619,7 +623,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Advanced Move Controls Hidden -->
                             <details class="fieldset-accordion" style="margin-top: 10px; background: transparent; border: none;">
                                  <summary style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">خيارات متقدمة (تحريك دقيق)</summary>
                                  <div class="fieldset-content" style="border: none; padding-top: 10px;">
@@ -663,7 +666,6 @@
                                 </div>
                             </div>
                             
-                             <!-- Advanced Move Controls Hidden -->
                             <details class="fieldset-accordion" style="margin-top: 10px; background: transparent; border: none;">
                                  <summary style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">خيارات متقدمة (تحريك دقيق)</summary>
                                  <div class="fieldset-content" style="border: none; padding-top: 10px;">
@@ -707,7 +709,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Advanced Move Controls Hidden -->
                             <details class="fieldset-accordion" style="margin-top: 10px; background: transparent; border: none;">
                                  <summary style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">خيارات متقدمة (تحريك دقيق)</summary>
                                  <div class="fieldset-content" style="border: none; padding-top: 10px;">
@@ -751,7 +752,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Advanced Move Controls Hidden -->
                             <details class="fieldset-accordion" style="margin-top: 10px; background: transparent; border: none;">
                                  <summary style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">خيارات متقدمة (تحريك دقيق)</summary>
                                  <div class="fieldset-content" style="border: none; padding-top: 10px;">
@@ -805,14 +805,7 @@
 
         </aside>
 
-    </div> <nav class="pro-mobile-nav">
-        <button class="mobile-tab-btn active" data-tab-target="#panel-elements">
-            <i class="fas fa-pen-ruler"></i><span>العناصر</span>
-        </button>
-        <button class="mobile-tab-btn" data-tab-target="#panel-design">
-            <i class="fas fa-palette"></i><span>التصميم</span>
-        </button>
-    </nav>
+    </div> 
     
     <div class="visually-hidden" aria-live="polite" id="live-announcer"></div>
     <div id="save-toast" class="toast"></div>
@@ -972,13 +965,9 @@
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     
     <script src="script-core.js" defer></script>
-    
     <script src="script-card.js" defer></script>
-    
     <script src="script-ui.js" defer></script>
-    
     <script src="script-main.js" defer></script>
-    
     <script src="chatbot-guide.js" defer></script>
     
 </body>

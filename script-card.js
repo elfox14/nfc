@@ -1,4 +1,3 @@
-// script-card.js - النسخة الآمنة المحدثة
 'use strict';
 
 const DragManager = {
@@ -24,8 +23,6 @@ const DragManager = {
             accept: '.draggable-on-card',
             overlap: 0.5,
             ondrop: (event) => {
-                if (window.innerWidth <= 1200) return;
-
                 const droppedElement = event.relatedTarget;
                 const dropzone = event.target;
                 const newPlacement = dropzone.id === 'card-front-content' ? 'front' : 'back';
@@ -67,7 +64,7 @@ const DragManager = {
                     CardManager.renderCardContent();
                 }
             },
-            ondragenter: (event) => { if (window.innerWidth > 1200) event.target.classList.add('drop-target-active'); },
+            ondragenter: (event) => event.target.classList.add('drop-target-active'),
             ondragleave: (event) => event.target.classList.remove('drop-target-active'),
             ondropdeactivate: (event) => event.target.classList.remove('drop-target-active')
         });
@@ -111,7 +108,6 @@ const CardManager = {
         const borderColor = DOMElements.photoControls.borderColor.value;
         const borderWidth = DOMElements.photoControls.borderWidth.value;
 
-        // استخدام دالة التحقق الآمنة من security-utils.js إذا كانت متوفرة
         const safeUrl = (typeof sanitizeURL === 'function') ? sanitizeURL(imageUrl) : imageUrl;
 
         wrapper.style.width = `${size}%`;
@@ -144,7 +140,6 @@ const CardManager = {
         });
     },
     
-    // --- (Safe Refactor) دالة عرض أزرار الهاتف الآمنة ---
     renderPhoneButtons() {
         document.querySelectorAll('.phone-button-draggable-wrapper').forEach(el => el.remove());
     
@@ -161,53 +156,39 @@ const CardManager = {
     
             const pos = phoneData.position || { x: 0, y: 0 };
             
-            // استخدام createElement لإنشاء العناصر بأمان
-            const wrapper = createElement('div', {
-                id: phoneId,
-                className: 'phone-button-draggable-wrapper draggable-on-card',
-                'data-control-id': group.id,
-                style: {
-                    position: 'absolute',
-                    transform: `translate(${pos.x}px, ${pos.y}px)`
-                },
-                'data-x': pos.x,
-                'data-y': pos.y
-            });
+            const wrapper = document.createElement('div');
+            wrapper.id = phoneId;
+            wrapper.className = 'phone-button-draggable-wrapper draggable-on-card';
+            wrapper.dataset.controlId = group.id;
+            wrapper.style.position = 'absolute';
+            wrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+            wrapper.setAttribute('data-x', pos.x);
+            wrapper.setAttribute('data-y', pos.y);
     
-            const phoneLink = createElement('a', {
-                href: `tel:${phoneData.value.replace(/[^0-9+]/g, '')}`,
-                className: 'phone-button'
-            });
+            const phoneLink = document.createElement('a');
+            phoneLink.href = `tel:${phoneData.value.replace(/[^0-9+]/g, '')}`;
+            phoneLink.className = 'phone-button';
     
-            const icon = createElement('i', { className: 'fas fa-phone-alt', 'aria-hidden': 'true' });
-            const span = createElement('span', { textContent: phoneData.value });
-            
-            const copyBtn = createElement('button', {
-                className: 'copy-btn no-export',
-                title: 'نسخ الرقم',
-                'aria-label': `نسخ الرقم ${phoneData.value}`,
-                onclick: (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // استخدام دالة النسخ الآمنة
-                    if (typeof Utils.copyTextToClipboard === 'function') {
-                        Utils.copyTextToClipboard(phoneData.value).then(success => { if (success) UIManager.announce('تم نسخ الرقم!'); });
-                    }
+            phoneLink.innerHTML = `
+                <i class="fas fa-phone-alt" aria-hidden="true"></i>
+                <span>${phoneData.value.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>
+                <button class="copy-btn no-export" title="نسخ الرقم" aria-label="نسخ الرقم ${phoneData.value.replace(/</g, "&lt;").replace(/>/g, "&gt;")}"><i class="fas fa-copy" aria-hidden="true"></i></button>
+            `;
+
+            phoneLink.querySelector('.copy-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof Utils.copyTextToClipboard === 'function') {
+                    Utils.copyTextToClipboard(phoneData.value).then(success => { if (success) UIManager.announce('تم نسخ الرقم!'); });
                 }
             });
-            
-            const copyIcon = createElement('i', { className: 'fas fa-copy', 'aria-hidden': 'true' });
-            copyBtn.appendChild(copyIcon);
-
-            phoneLink.appendChild(icon);
-            phoneLink.appendChild(span);
-            phoneLink.appendChild(copyBtn);
     
             phoneLink.addEventListener('click', (e) => { e.preventDefault(); UIManager.navigateToAndHighlight(wrapper.dataset.controlId); });
     
             wrapper.appendChild(phoneLink);
             
-            const hint = createElement('i', { className: 'fas fa-arrows-alt dnd-hover-hint' });
+            const hint = document.createElement('i');
+            hint.className = 'fas fa-arrows-alt dnd-hover-hint';
             wrapper.appendChild(hint);
 
             parentContainer.appendChild(wrapper);
@@ -227,65 +208,41 @@ const CardManager = {
         inputGroup.id = `phone-control-${id}`;
         inputGroup.dataset.phoneId = id;
     
-        const mainContent = document.createElement('div');
-        mainContent.style.flexGrow = '1';
-    
-        const inputWrapper = document.createElement('div');
-        inputWrapper.style.display = 'flex';
-        inputWrapper.style.alignItems = 'center';
-        inputWrapper.style.gap = '10px';
-    
-        const dragHandle = document.createElement('i');
-        dragHandle.className = 'fas fa-grip-vertical drag-handle';
-        dragHandle.setAttribute('aria-hidden', 'true');
-    
-        const newPhoneInput = document.createElement('input');
-        newPhoneInput.type = 'tel';
-        newPhoneInput.value = value;
-        newPhoneInput.placeholder = 'رقم هاتف جديد';
-        newPhoneInput.style.flexGrow = '1';
-    
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.textContent = '×';
-        removeBtn.setAttribute('aria-label', 'حذف رقم الهاتف');
-    
-        inputWrapper.append(dragHandle, newPhoneInput, removeBtn);
-    
-        const placementControl = document.createElement('div');
-        placementControl.className = 'placement-control';
-        placementControl.innerHTML = `
-            <div class="radio-group">
-                <label><input type="radio" name="placement-${id}" value="front" ${placement === 'front' ? 'checked' : ''}> أمامي</label>
-                <label><input type="radio" name="placement-${id}" value="back" ${placement === 'back' ? 'checked' : ''}> خلفي</label>
-            </div>
-        `;
-        
-        const positionControl = document.createElement('div');
-        positionControl.className = 'form-group';
-        positionControl.innerHTML = `
-            <label>تحريك دقيق (بالبكسل)</label>
-            <div class="position-controls-grid" data-target-id="${id}"> 
-                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                <div class="controls-row">
-                    <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                    <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
+        inputGroup.innerHTML = `
+            <div style="flex-grow: 1;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-grip-vertical drag-handle" aria-hidden="true"></i>
+                    <input type="tel" value="${value.replace(/"/g, "&quot;")}" placeholder="رقم هاتف جديد" style="flex-grow: 1;">
+                    <button class="remove-btn" aria-label="حذف رقم الهاتف">×</button>
                 </div>
-                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                <div class="placement-control">
+                    <div class="radio-group">
+                        <label><input type="radio" name="placement-${id}" value="front" ${placement === 'front' ? 'checked' : ''}> أمامي</label>
+                        <label><input type="radio" name="placement-${id}" value="back" ${placement === 'back' ? 'checked' : ''}> خلفي</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>تحريك دقيق (بالبكسل)</label>
+                    <div class="position-controls-grid" data-target-id="${id}">
+                        <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                        <div class="controls-row">
+                            <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                            <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                        <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                    </div>
+                </div>
             </div>
         `;
-    
-        mainContent.append(inputWrapper, placementControl, positionControl);
-        inputGroup.appendChild(mainContent);
     
         const handleUpdate = () => { 
             this.renderPhoneButtons(); 
         };
-        removeBtn.onclick = () => { inputGroup.remove(); handleUpdate(); };
-        newPhoneInput.addEventListener('input', () => { handleUpdate(); CardManager.generateVCardQrDebounced(); });
-        placementControl.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', handleUpdate));
+        inputGroup.querySelector('.remove-btn').onclick = () => { inputGroup.remove(); handleUpdate(); };
+        inputGroup.querySelector('input[type="tel"]').addEventListener('input', () => { handleUpdate(); CardManager.generateVCardQrDebounced(); });
+        inputGroup.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', handleUpdate));
         
-        positionControl.querySelectorAll('.move-btn').forEach(button => {
+        inputGroup.querySelectorAll('.move-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
                 EventManager.moveElement(id, button.dataset.direction);
@@ -311,7 +268,6 @@ const CardManager = {
                 if (opacityControl) opacityControl.style.display = 'block';
             }
             
-            // Sanitize Background URL
             const safeBg = (typeof sanitizeURL === 'function' && image) ? sanitizeURL(image) : image;
             imageLayer.style.backgroundImage = safeBg ? `url(${safeBg})` : 'none';
             
@@ -358,14 +314,13 @@ const CardManager = {
         this.updateSocialLinks();
     },
     
-    // --- (Safe Refactor) عرض QR Code الآمن ---
     updateQrCodeDisplay() {
         const qrSourceRadio = document.querySelector('input[name="qr-source"]:checked');
         if (!qrSourceRadio) return;
 
         const qrSource = qrSourceRadio.value;
         const qrWrapper = DOMElements.draggable.qr;
-        qrWrapper.innerHTML = ''; // Clear existing
+        qrWrapper.innerHTML = '';
 
         let qrImage = '';
 
@@ -378,25 +333,21 @@ const CardManager = {
         }
 
         if (qrImage) {
-            // استخدام sanitizeURL و createElement
             const safeUrl = (typeof sanitizeURL === 'function') ? sanitizeURL(qrImage) : qrImage;
             
             if (safeUrl) {
-                const img = createElement('img', {
-                    src: safeUrl,
-                    alt: 'QR Code',
-                    style: {
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: '4px',
-                        objectFit: 'contain'
-                    }
+                const img = document.createElement('img');
+                img.src = safeUrl;
+                img.alt = 'QR Code';
+                Object.assign(img.style, {
+                    width: '100%', height: '100%', borderRadius: '4px', objectFit: 'contain'
                 });
                 qrWrapper.appendChild(img);
             }
         }
 
-        const hint = createElement('i', { className: 'fas fa-arrows-alt dnd-hover-hint' });
+        const hint = document.createElement('i');
+        hint.className = 'fas fa-arrows-alt dnd-hover-hint';
         qrWrapper.appendChild(hint);
 
         qrWrapper.style.width = `${DOMElements.qrSizeSlider.value}%`;
@@ -474,7 +425,6 @@ const CardManager = {
         });
     },
 
-    // --- (Safe Refactor) عرض روابط التواصل الآمنة ---
     updateSocialLinks() {
         document.querySelectorAll('.draggable-social-link').forEach(el => el.remove());
 
@@ -493,18 +443,14 @@ const CardManager = {
             
             const pos = position || { x: 0, y: 0 };
 
-            // إنشاء Wrapper بأمان
-            const linkWrapper = createElement('div', {
-                id: elementId,
-                className: 'draggable-social-link draggable-on-card',
-                'data-control-id': controlId,
-                style: {
-                    position: 'absolute',
-                    transform: `translate(${pos.x}px, ${pos.y}px)`
-                },
-                'data-x': pos.x,
-                'data-y': pos.y
-            });
+            const linkWrapper = document.createElement('div');
+            linkWrapper.id = elementId;
+            linkWrapper.className = 'draggable-social-link draggable-on-card';
+            linkWrapper.dataset.controlId = controlId;
+            linkWrapper.style.position = 'absolute';
+            linkWrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+            linkWrapper.setAttribute('data-x', pos.x);
+            linkWrapper.setAttribute('data-y', pos.y);
 
             let fullUrl = value, displayText = value;
             if (platform.prefix) {
@@ -521,40 +467,31 @@ const CardManager = {
             }
             
             const safeUrl = (typeof sanitizeURL === 'function') ? sanitizeURL(fullUrl) : fullUrl;
-
-            const linkElement = createElement('a', {
-                href: safeUrl || '#',
-                target: '_blank',
-                rel: 'noopener noreferrer'
-            });
             
-            const icon = createElement('i', { className: platform.icon, 'aria-hidden': 'true' });
-            const textSpan = createElement('span', { textContent: displayText });
+            const sanitizedDisplayText = displayText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
             
-            const copyBtn = createElement('button', {
-                className: 'copy-btn no-export',
-                title: 'نسخ الرابط',
-                'aria-label': `نسخ الرابط ${displayText}`,
-                onclick: (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (typeof Utils.copyTextToClipboard === 'function') {
-                        Utils.copyTextToClipboard(fullUrl).then(success => { if (success) UIManager.announce('تم نسخ الرابط!'); });
-                    }
-                }
-            });
-            
-            const copyIcon = createElement('i', { className: 'fas fa-copy', 'aria-hidden': 'true' });
-            copyBtn.appendChild(copyIcon);
-
-            linkElement.appendChild(icon);
-            linkElement.appendChild(textSpan);
-            linkElement.appendChild(copyBtn);
+            const linkElement = document.createElement('a');
+            linkElement.href = safeUrl || '#';
+            linkElement.target = '_blank';
+            linkElement.rel = 'noopener noreferrer';
+            linkElement.innerHTML = `
+                <i class="${platform.icon}" aria-hidden="true"></i>
+                <span>${sanitizedDisplayText}</span>
+                <button class="copy-btn no-export" title="نسخ الرابط" aria-label="نسخ الرابط ${sanitizedDisplayText}"><i class="fas fa-copy" aria-hidden="true"></i></button>
+            `;
             
             linkWrapper.appendChild(linkElement);
             
-            const hint = createElement('i', { className: 'fas fa-arrows-alt dnd-hover-hint' });
+            const hint = document.createElement('i');
+            hint.className = 'fas fa-arrows-alt dnd-hover-hint';
             linkWrapper.appendChild(hint);
+
+            linkElement.querySelector('.copy-btn').addEventListener('click', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                if (typeof Utils.copyTextToClipboard === 'function') {
+                    Utils.copyTextToClipboard(fullUrl).then(success => { if (success) UIManager.announce('تم نسخ الرابط!'); });
+                }
+            });
 
             linkElement.addEventListener('click', (e) => { 
                 if (!e.metaKey && !e.ctrlKey) { 
@@ -620,8 +557,7 @@ const CardManager = {
             const currentLogo = DOMElements.draggable.logo.src;
             const isDefaultLogo = currentLogo.includes('mcprime-logo-transparent.png');
             
-            // Sanitize logo URL
-             const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
+            const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
 
             const qrCode = new QRCodeStyling({
                 width: 300,
@@ -783,86 +719,67 @@ const CardManager = {
         linkEl.dataset.platform = platformKey;
         linkEl.dataset.value = value;
     
-        const mainContent = document.createElement('div');
-        mainContent.style.flexGrow = '1';
-    
-        const infoWrapper = document.createElement('div');
-        infoWrapper.style.display = 'flex';
-        infoWrapper.style.alignItems = 'center';
-        infoWrapper.style.gap = '10px';
-        
-        // استخدام createElement للأمان (يمكن استبدال innerHTML هنا)
-        // لكن بما أن هذا الجزء في المحرر (Editor UI) وليس في المعاينة، 
-        // فالخطورة أقل، لكن للأفضل:
-        infoWrapper.innerHTML = `
-            <i class="fas fa-grip-vertical drag-handle"></i>
-            <i class="${platform.icon}" aria-hidden="true"></i>
-            <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${platform.name}: ${value.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>
-            <button class="remove-btn" aria-label="حذف رابط ${platform.name}">×</button>
-        `;
-        
+        const sanitizedValue = value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`; 
-    
-        const placementControl = document.createElement('div');
-        placementControl.className = 'placement-control';
-        placementControl.innerHTML = `
-            <div class="radio-group">
-                <label><input type="radio" name="placement-${id}" value="front"> أمامي</label>
-                <label><input type="radio" name="placement-${id}" value="back" checked> خلفي</label>
-            </div>
-        `;
-        
-        const positionControl = document.createElement('div');
-        positionControl.className = 'form-group';
-        positionControl.innerHTML = `
-            <label>تحريك دقيق (بالبكسل)</label>
-            <div class="position-controls-grid" data-target-id="${elementId}"> 
-                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                <div class="controls-row">
-                    <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                    <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                </div>
-                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-            </div>
-        `;
-        
-        const formattingControl = document.createElement('details');
-        formattingControl.className = 'fieldset-accordion';
-        formattingControl.style.backgroundColor = 'var(--page-bg)';
-        formattingControl.innerHTML = `
-            <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-            <div class="fieldset-content" style="padding: 10px;">
-                <div class="control-grid">
-                    <div class="form-group">
-                        <label for="input-${id}-color">لون الخط</label>
-                        <input type="color" id="input-${id}-color" value="#e6f0f7">
-                    </div>
-                    <div class="form-group">
-                        <label for="input-${id}-size">حجم الخط</label>
-                        <input type="range" id="input-${id}-size" min="10" max="24" value="12">
-                    </div>
-                </div>
-            </div>
-        `;
 
-        mainContent.append(infoWrapper, placementControl, positionControl, formattingControl); 
-        linkEl.appendChild(mainContent);
+        linkEl.innerHTML = `
+            <div style="flex-grow: 1;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-grip-vertical drag-handle"></i>
+                    <i class="${platform.icon}" aria-hidden="true"></i>
+                    <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${platform.name}: ${sanitizedValue}</span>
+                    <button class="remove-btn" aria-label="حذف رابط ${platform.name}">×</button>
+                </div>
+                <div class="placement-control">
+                    <div class="radio-group">
+                        <label><input type="radio" name="placement-${id}" value="front"> أمامي</label>
+                        <label><input type="radio" name="placement-${id}" value="back" checked> خلفي</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>تحريك دقيق (بالبكسل)</label>
+                    <div class="position-controls-grid" data-target-id="${elementId}"> 
+                        <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                        <div class="controls-row">
+                            <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                            <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                        <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                    </div>
+                </div>
+                <details class="fieldset-accordion" style="background-color: var(--page-bg);">
+                    <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
+                    <div class="fieldset-content" style="padding: 10px;">
+                        <div class="control-grid">
+                            <div class="form-group">
+                                <label for="input-${id}-color">لون الخط</label>
+                                <input type="color" id="input-${id}-color" value="#e6f0f7">
+                            </div>
+                            <div class="form-group">
+                                <label for="input-${id}-size">حجم الخط</label>
+                                <input type="range" id="input-${id}-size" min="10" max="24" value="12">
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        `;
     
         const handleUpdate = () => { 
             this.updateSocialLinks(); 
             this.generateVCardQrDebounced();
         };
-        infoWrapper.querySelector('.remove-btn').addEventListener('click', () => { linkEl.remove(); handleUpdate(); });
-        placementControl.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', handleUpdate));
+        linkEl.querySelector('.remove-btn').addEventListener('click', () => { linkEl.remove(); handleUpdate(); });
+        linkEl.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', handleUpdate));
         
-        positionControl.querySelectorAll('.move-btn').forEach(button => {
+        linkEl.querySelectorAll('.move-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
                 EventManager.moveElement(elementId, button.dataset.direction);
             });
         });
 
-        formattingControl.querySelectorAll('input').forEach(input => {
+        linkEl.querySelectorAll('details input').forEach(input => {
             input.addEventListener('input', () => {
                 this.updateSocialTextStyles();
             });
