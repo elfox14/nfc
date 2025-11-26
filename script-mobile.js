@@ -10,12 +10,6 @@ const MobileInterface = {
     selectedElement: null,
     isPreviewMode: false,
 
-    // DOM Elements  
-    controlPalette: null,
-    contextBar: null,
-    fabButton: null,
-    fabOverlay: null,
-
     // Configuration: Selectable elements and their properties
     selectableElements: {
         'card-logo': {
@@ -51,42 +45,97 @@ const MobileInterface = {
     init() {
         // Only initialize on mobile devices
         if (window.innerWidth > 768) {
-            console.log('Mobile Interface: Desktop detected, skipping initialization');
             return;
         }
 
-        console.log('Mobile Interface: Initializing...');
+        console.log('Mobile Interface: Initializing New Layout...');
 
-        // Get DOM elements
-        this.controlPalette = document.getElementById('mobile-control-palette');
-        this.contextBar = document.getElementById('mobile-context-bar');
-        this.fabButton = document.getElementById('fab-menu-button');
-        this.fabOverlay = document.getElementById('fab-menu-overlay');
+        // 1. Inject Tab Bar
+        this.injectTabBar();
 
-        if (!this.controlPalette || !this.contextBar || !this.fabButton) {
-            console.error('Mobile Interface: Required DOM elements not found');
-            return;
-        }
+        // 2. Initialize Tabs
+        this.initTabs();
 
-        // Bind events
-        this.bindEvents();
-
-        // Initialize touch gestures
-        this.initTouchGestures();
-
-        // Initialize Flip System
+        // 3. Initialize Flip System with new scaling
         this.initFlipSystem();
 
-        // Add visible Flip Button
+        // 4. Add Flip Button (Updated location)
         this.addFlipButton();
 
+        // 5. Bind Events
+        this.bindEvents();
+
+        // 6. Init Touch Gestures
+        this.initTouchGestures();
+
         console.log('Mobile Interface: Initialized successfully');
+    },
+
+    /**
+     * Inject Tab Bar HTML
+     */
+    injectTabBar() {
+        // Check if already injected
+        if (document.querySelector('.mobile-tab-bar')) return;
+
+        const tabBarHTML = `
+            <div class="mobile-tab-bar">
+                <button class="mobile-tab-btn active" data-target="panel-elements">
+                    <i class="fas fa-layer-group"></i>
+                    <span>المحتوى</span>
+                </button>
+                <button class="mobile-tab-btn" data-target="panel-design">
+                    <i class="fas fa-paint-brush"></i>
+                    <span>التصميم</span>
+                </button>
+            </div>
+        `;
+
+        // Insert after .pro-layout (which contains sidebars and canvas)
+        const layout = document.querySelector('.pro-layout');
+        if (layout) {
+            layout.insertAdjacentHTML('afterend', tabBarHTML);
+        }
+    },
+
+    /**
+     * Initialize Tab Switching Logic
+     */
+    initTabs() {
+        const tabs = document.querySelectorAll('.mobile-tab-btn');
+        const sidebars = document.querySelectorAll('.pro-sidebar');
+
+        // Set initial state (Content tab active)
+        const contentPanel = document.getElementById('panel-elements');
+        if (contentPanel) contentPanel.classList.add('active-tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 1. Update Tab Styles
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // 2. Show Target Sidebar
+                const targetId = tab.dataset.target;
+                sidebars.forEach(sidebar => {
+                    if (sidebar.id === targetId) {
+                        sidebar.classList.add('active-tab-content');
+                    } else {
+                        sidebar.classList.remove('active-tab-content');
+                    }
+                });
+            });
+        });
     },
 
     /**
      * Add a visible Flip Button
      */
     addFlipButton() {
+        // Remove existing if any
+        const existingBtn = document.querySelector('.mobile-flip-btn');
+        if (existingBtn) existingBtn.remove();
+
         const canvas = document.querySelector('.pro-canvas');
         if (canvas) {
             const flipBtn = document.createElement('button');
@@ -101,506 +150,88 @@ const MobileInterface = {
      * Bind all event listeners  
      */
     bindEvents() {
-        // Click on card elements to select them
+        // Click on card elements to select them (Optional now with tabs, but good for focus)
         Object.keys(this.selectableElements).forEach(elementId => {
             const element = document.getElementById(elementId);
             if (element) {
                 element.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.selectElement(elementId);
+                    // e.stopPropagation(); // Let it bubble so we don't block other interactions
+                    // Maybe switch to Content tab if not active?
+                    const contentTab = document.querySelector('.mobile-tab-btn[data-target="panel-elements"]');
+                    if (contentTab && !contentTab.classList.contains('active')) {
+                        contentTab.click();
+                    }
+
+                    // Scroll to specific control? (Advanced)
                 });
             }
         });
 
-        // FAB button
-        this.fabButton.addEventListener('click', () => {
-            this.toggleFabMenu();
-        });
-
-        // FAB menu overlay (click outside to close)
-        this.fabOverlay.addEventListener('click', (e) => {
-            if (e.target === this.fabOverlay) {
-                this.closeFabMenu();
-            }
-        });
-
-        // FAB menu items
-        document.querySelectorAll('.fab-menu-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const action = item.dataset.action;
-                this.handleFabAction(action);
-            });
-        });
-
-        // FAB close button
-        const fabCloseBtn = document.getElementById('fab-menu-close');
-        if (fabCloseBtn) {
-            fabCloseBtn.addEventListener('click', () => this.closeFabMenu());
-        }
-
-        // Palette close button
-        const paletteCloseBtn = document.getElementById('palette-close-btn');
-        if (paletteCloseBtn) {
-            paletteCloseBtn.addEventListener('click', () => {
-                this.hideControlPalette();
-                this.deselectElement();
-            });
-        }
-
-        // Click outside to deselect
-        document.addEventListener('click', (e) => {
-            // Don't deselect if clicking on palette or context bar
-            if (!this.controlPalette.contains(e.target) &&
-                !this.contextBar.contains(e.target)) {
-                this.deselectElement();
-            }
+        // Window resize (debounced)
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (window.innerWidth <= 768) {
+                    // Re-check scaling if needed
+                }
+            }, 250);
         });
     },
 
     /**
-     * Select an element on the card
+     * Initialize Flip System (Scaling)
      */
-    selectElement(elementId) {
-        const elementConfig = this.selectableElements[elementId];
-        if (!elementConfig) return;
+    initFlipSystem() {
+        const cardWrapper = document.getElementById('cards-wrapper');
+        if (!cardWrapper) return;
 
-        // Remove previous selection
-        if (this.selectedElement) {
-            const prevElement = document.getElementById(this.selectedElement);
-            if (prevElement) {
-                prevElement.classList.remove('mobile-selected');
-            }
-        }
+        const updateScale = () => {
+            if (window.innerWidth <= 768) {
+                // Available dimensions (35vh height, full width)
+                const containerHeight = window.innerHeight * 0.35;
+                const containerWidth = window.innerWidth - 20; // 10px padding each side
 
-        // Select new element
-        this.selectedElement = elementId;
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.classList.add('mobile-selected');
-        }
+                const cardWidth = 510;
+                const cardHeight = 330;
 
-        // Update context bar
-        this.updateContextBar(elementConfig);
+                // Calculate scale to fit BOTH width and height
+                // We subtract some buffer from height for the flip button
+                const scaleX = containerWidth / cardWidth;
+                const scaleY = (containerHeight - 50) / cardHeight;
 
-        // Update control palette
-        this.updateControlPalette(elementConfig);
+                const scale = Math.min(scaleX, scaleY, 1); // Don't scale up > 1
 
-        // Show UI elements
-        this.showContextBar();
-        this.showControlPalette();
+                cardWrapper.style.transform = `scale(${scale})`;
 
-        // Haptic feedback
-        this.triggerHaptic('selection');
-    },
-
-    /**
-     * Deselect current element
-     */
-    deselectElement() {
-        if (this.selectedElement) {
-            const element = document.getElementById(this.selectedElement);
-            if (element) {
-                element.classList.remove('mobile-selected');
-            }
-            this.selectedElement = null;
-        }
-
-        this.hideContextBar();
-        this.hideControlPalette();
-    },
-
-    /**
-     * Update context bar with element info
-     */
-    updateContextBar(config) {
-        const nameElement = document.getElementById('context-element-name');
-        if (nameElement) {
-            nameElement.innerHTML = `<i class="${config.icon}"></i> ${config.name}`;
-        }
-
-        // Add quick action buttons
-        const actionsContainer = document.getElementById('context-actions');
-        if (actionsContainer) {
-            actionsContainer.innerHTML = `
-                <button class="context-action-btn" onclick="MobileInterface.deleteCurrentElement()">
-                    <i class="fas fa-trash"></i> حذف
-                </button>
-                <button class="context-action-btn" onclick="MobileInterface.togglePlacement()">
-                    <i class="fas fa-exchange-alt"></i> تبديل الوجه
-                </button>
-            `;
-        }
-    },
-
-    /**
-     * Update control palette with element-specific controls
-     */
-    updateControlPalette(config) {
-        const paletteContent = document.getElementById('palette-content');
-        if (!paletteContent) return;
-
-        paletteContent.innerHTML = '';
-
-        // Create control sections based on element type
-        config.controls.forEach(controlType => {
-            const controlHTML = this.getControlHTML(controlType);
-            if (controlHTML) {
-                paletteContent.innerHTML += controlHTML;
-            }
-        });
-
-        // Rebind events for new controls
-        this.rebindControlEvents();
-    },
-
-    /**
-     * Get HTML for specific control type
-     */
-    getControlHTML(controlType) {
-        const templates = {
-            'logo-upload': `
-                <div class="palette-section">
-                    <div class="palette-section-title">رفع شعار جديد</div>
-                    <button class="btn btn-secondary" onclick="document.getElementById('input-logo-upload').click()">
-                        <i class="fas fa-upload"></i> تغيير الشعار
-                    </button>
-                </div>
-            `,
-            'logo-size': `
-                <div class="palette-section">
-                    <div class="palette-section-title">حجم الشعار</div>
-                    <input type="range" id="mobile-logo-size" min="10" max="80" value="25" class="form-control">
-                </div>
-            `,
-            'logo-opacity': `
-                <div class="palette-section">
-                    <div class="palette-section-title">شفافية الشعار</div>
-                    <input type="range" id="mobile-logo-opacity" min="0" max="1" step="0.05" value="1" class="form-control">
-                </div>
-            `,
-            'name-text': `
-                <div class="palette-section">
-                    <div class="palette-section-title">نص الاسم</div>
-                    <textarea id="mobile-name-text" rows="2" class="form-control"></textarea>
-                </div>
-            `,
-            'name-size': `
-                <div class="palette-section">
-                    <div class="palette-section-title">حجم الخط</div>
-                    <input type="range" id="mobile-name-size" min="16" max="48" value="22" class="form-control">
-                </div>
-            `,
-            'name-color': `
-                <div class="palette-section">
-                    <div class="palette-section-title">لون الخط</div>
-                    <input type="color" id="mobile-name-color" value="#e6f0f7" class="form-control">
-                </div>
-            `
-            // Add more control templates as needed
-        };
-
-        return templates[controlType] || '';
-    },
-
-    /**
-     * Rebind events for dynamically created controls
-     */
-    rebindControlEvents() {
-        // Logo size
-        const logoSize = document.getElementById('mobile-logo-size');
-        if (logoSize) {
-            logoSize.addEventListener('input', (e) => {
-                const logo = document.getElementById('card-logo');
-                if (logo) {
-                    logo.style.maxWidth = e.target.value + '%';
-                    // Also update the desktop control
-                    const desktopControl = document.getElementById('logo-size');
-                    if (desktopControl) desktopControl.value = e.target.value;
-                }
-            });
-        }
-
-        // Logo opacity
-        const logoOpacity = document.getElementById('mobile-logo-opacity');
-        if (logoOpacity) {
-            logoOpacity.addEventListener('input', (e) => {
-                const logo = document.getElementById('card-logo');
-                if (logo) {
-                    logo.style.opacity = e.target.value;
-                    const desktopControl = document.getElementById('logo-opacity');
-                    if (desktopControl) desktopControl.value = e.target.value;
-                }
-            });
-        }
-
-        // Name text
-        const nameText = document.getElementById('mobile-name-text');
-        if (nameText) {
-            // Get current value
-            const cardName = document.getElementById('card-name');
-            if (cardName) {
-                nameText.value = cardName.innerText;
-            }
-
-            nameText.addEventListener('input', (e) => {
-                if (cardName) {
-                    cardName.innerText = e.target.value;
-                    const desktopControl = document.getElementById('input-name');
-                    if (desktopControl) desktopControl.value = e.target.value;
-                }
-            });
-        }
-
-        // Name size
-        const nameSize = document.getElementById('mobile-name-size');
-        if (nameSize) {
-            nameSize.addEventListener('input', (e) => {
-                const cardName = document.getElementById('card-name');
-                if (cardName) {
-                    cardName.style.fontSize = e.target.value + 'px';
-                    const desktopControl = document.getElementById('name-font-size');
-                    if (desktopControl) desktopControl.value = e.target.value;
-                }
-            });
-        }
-
-        // Name color
-        const nameColor = document.getElementById('mobile-name-color');
-        if (nameColor) {
-            nameColor.addEventListener('input', (e) => {
-                const cardName = document.getElementById('card-name');
-                if (cardName) {
-                    cardName.style.color = e.target.value;
-                    const desktopControl = document.getElementById('name-color');
-                    if (desktopControl) desktopControl.value = e.target.value;
-                }
-            });
-        }
-    },
-
-    /**
-     * Handle FAB menu actions
-     */
-    handleFabAction(action) {
-        this.closeFabMenu();
-
-        const actions = {
-            'layout': () => this.showLayoutControls(),
-            'themes': () => this.showThemeGallery(),
-            'backgrounds': () => this.showBackgroundControls(),
-            'preview': () => this.enterPreviewMode(),
-            'help': () => this.showHelp()
-        };
-
-        if (actions[action]) {
-            actions[action]();
-        }
-    },
-
-    /**
-     * Show help modal
-     */
-    showHelp() {
-        if (typeof UIManager !== 'undefined' && typeof DOMElements !== 'undefined' && DOMElements.helpModal) {
-            UIManager.showModal(DOMElements.helpModal.overlay);
-        } else {
-            alert('المساعدة غير متاحة حالياً.');
-        }
-    },
-
-    /**
-     * Show layout controls in palette
-     */
-    showLayoutControls() {
-        const layoutSource = document.getElementById('layout-fieldset-source');
-        if (layoutSource) {
-            const paletteContent = document.getElementById('palette-content');
-            if (paletteContent) {
-                paletteContent.innerHTML = layoutSource.outerHTML;
-                this.showControlPalette();
-
-                // Rebind layout radio buttons
-                document.querySelectorAll('input[name="layout-select-visual"]').forEach(radio => {
-                    radio.addEventListener('change', (e) => {
-                        // Trigger the existing layout change logic
-                        const desktopRadio = document.querySelector(`input[name="layout-select-visual"][value="${e.target.value}"]`);
-                        if (desktopRadio && desktopRadio !== e.target) {
-                            desktopRadio.click();
-                        }
-                    });
-                });
-            }
-        }
-    },
-
-    /**
-     * Show theme gallery in palette
-     */
-    showThemeGallery() {
-        const themesSource = document.getElementById('designs-fieldset-source');
-        if (themesSource) {
-            const paletteContent = document.getElementById('palette-content');
-            if (paletteContent) {
-                paletteContent.innerHTML = themesSource.outerHTML;
-                this.showControlPalette();
-            }
-        }
-    },
-
-    /**
-     * Show background controls in palette
-     */
-    showBackgroundControls() {
-        const bgSource = document.getElementById('backgrounds-accordion');
-        if (bgSource) {
-            const paletteContent = document.getElementById('palette-content');
-            if (paletteContent) {
-                const content = bgSource.querySelector('.fieldset-content');
-                if (content) {
-                    paletteContent.innerHTML = content.innerHTML;
-                    this.showControlPalette();
-                }
-            }
-        }
-    },
-
-    /**
-     * Enter preview mode (hide all controls)
-     */
-    enterPreviewMode() {
-        this.isPreviewMode = true;
-        this.hideContextBar();
-        this.hideControlPalette();
-        this.fabButton.style.display = 'none';
-
-        // Add exit button
-        const exitBtn = document.createElement('button');
-        exitBtn.className = 'preview-exit-btn';
-        exitBtn.innerHTML = '<i class="fas fa-times"></i> إنهاء المعاينة';
-        exitBtn.onclick = () => this.exitPreviewMode();
-        document.body.appendChild(exitBtn);
-
-        this.triggerHaptic('success');
-    },
-
-    /**
-     * Exit preview mode
-     */
-    exitPreviewMode() {
-        this.isPreviewMode = false;
-        document.querySelector('.preview-exit-btn')?.remove();
-        this.fabButton.style.display = '';
-    },
-
-    /**
-     * Toggle FAB menu
-     */
-    toggleFabMenu() {
-        this.fabOverlay.classList.toggle('active');
-        this.fabButton.classList.toggle('active');
-    },
-
-    /**
-     * Close FAB menu
-     */
-    closeFabMenu() {
-        this.fabOverlay.classList.remove('active');
-        this.fabButton.classList.remove('active');
-    },
-
-    /**
-     * Show context bar
-     */
-    showContextBar() {
-        this.contextBar.classList.remove('hidden');
-    },
-
-    /**
-     * Hide context bar
-     */
-    hideContextBar() {
-        this.contextBar.classList.add('hidden');
-    },
-
-    /**
-     * Show control palette
-     */
-    showControlPalette() {
-        this.controlPalette.classList.add('active');
-    },
-
-    /**
-     * Hide control palette
-     */
-    hideControlPalette() {
-        this.controlPalette.classList.remove('active');
-    },
-
-    /**
-     * Delete currently selected element
-     */
-    deleteCurrentElement() {
-        if (this.selectedElement) {
-            if (confirm('هل أنت متأكد من حذف هذا العنصر؟')) {
-                const element = document.getElementById(this.selectedElement);
-                if (element) {
-                    // Logic depends on element type
-                    if (this.selectedElement === 'card-logo') {
-                        element.src = '';
-                        element.style.display = 'none';
-                    } else if (this.selectedElement.startsWith('card-')) {
-                        element.innerText = '';
-                    } else {
-                        element.style.display = 'none';
-                    }
-
-                    this.triggerHaptic('impact');
-                    this.deselectElement();
-
-                    // Show toast
-                    const toast = document.getElementById('save-toast');
-                    if (toast) {
-                        toast.textContent = 'تم حذف العنصر';
-                        toast.className = 'toast show';
-                        setTimeout(() => toast.className = toast.className.replace('show', ''), 3000);
-                    }
-                }
-            }
-        }
-    },
-
-    /**
-     * Toggle element placement between front and back
-     */
-    togglePlacement() {
-        if (this.selectedElement) {
-            const element = document.getElementById(this.selectedElement);
-            if (!element) return;
-
-            const currentParent = element.parentElement;
-            const frontContainer = document.getElementById('card-front-content');
-            const backContainer = document.getElementById('card-back-content');
-
-            let newParent;
-            if (currentParent.id === 'card-front-content') {
-                newParent = backContainer;
+                // Ensure parent container centers the scaled card
+                // No need to set minHeight on parent as .pro-canvas has fixed 35vh
             } else {
-                newParent = frontContainer;
+                cardWrapper.style.transform = '';
             }
+        };
 
-            if (newParent) {
-                newParent.appendChild(element);
-                this.triggerHaptic('success');
+        window.addEventListener('resize', updateScale);
+        // Call immediately
+        setTimeout(updateScale, 100);
+    },
 
-                // Update radio button in desktop view if exists
-                const placementRadios = document.querySelectorAll(`input[name="placement-${this.selectedElement.replace('card-', '')}"]`);
-                placementRadios.forEach(radio => {
-                    if (radio.value === (newParent === frontContainer ? 'front' : 'back')) {
-                        radio.checked = true;
-                    }
-                });
-            }
+    /**
+     * Toggle Card Flip State
+     */
+    toggleCardFlip(showBack = null) {
+        const cardWrapper = document.getElementById('cards-wrapper');
+        if (!cardWrapper) return;
+
+        if (showBack === null) {
+            cardWrapper.classList.toggle('flipped');
+        } else if (showBack) {
+            cardWrapper.classList.add('flipped');
+        } else {
+            cardWrapper.classList.remove('flipped');
         }
+
+        this.triggerHaptic('impact');
     },
 
     /**
@@ -616,6 +247,7 @@ const MobileInterface = {
 
         // Multi-touch detection
         let touchCount = 0;
+        let longPressTimer;
 
         cardWrapper.addEventListener('touchstart', (e) => {
             touchCount = e.touches.length;
@@ -631,7 +263,7 @@ const MobileInterface = {
 
             if (e.target.closest('.business-card') && touchCount === 1) {
                 // Long Press Logic
-                this.longPressTimer = setTimeout(() => {
+                longPressTimer = setTimeout(() => {
                     this.triggerHaptic('success');
                 }, 500);
             }
@@ -660,25 +292,13 @@ const MobileInterface = {
                 }
             }
 
-            clearTimeout(this.longPressTimer);
+            clearTimeout(longPressTimer);
             touchCount = 0;
         }, { passive: true });
 
         cardWrapper.addEventListener('touchmove', () => {
-            clearTimeout(this.longPressTimer);
+            clearTimeout(longPressTimer);
         });
-    },
-
-    /**
-     * Show a temporary toast message
-     */
-    showToast(message, icon) {
-        const toast = document.getElementById('save-toast');
-        if (toast) {
-            toast.innerHTML = `<i class="${icon}"></i> ${message}`;
-            toast.className = 'toast show';
-            setTimeout(() => toast.className = toast.className.replace('show', ''), 2000);
-        }
     },
 
     /**
@@ -696,53 +316,21 @@ const MobileInterface = {
     },
 
     /**
-     * Toggle Card Flip State
+     * Show a temporary toast message
      */
-    toggleCardFlip(showBack = null) {
-        const cardWrapper = document.getElementById('cards-wrapper');
-        if (!cardWrapper) return;
-
-        if (showBack === null) {
-            cardWrapper.classList.toggle('flipped');
-        } else if (showBack) {
-            cardWrapper.classList.add('flipped');
-        } else {
-            cardWrapper.classList.remove('flipped');
+    showToast(message, icon) {
+        // Create toast if not exists
+        let toast = document.getElementById('save-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'save-toast';
+            toast.className = 'toast';
+            document.body.appendChild(toast);
         }
 
-        this.triggerHaptic('impact');
-    },
-
-    /**
-     * Initialize Flip System (Scaling)
-     */
-    initFlipSystem() {
-        const cardWrapper = document.getElementById('cards-wrapper');
-        if (!cardWrapper) return;
-
-        const updateScale = () => {
-            if (window.innerWidth <= 768) {
-                const containerWidth = window.innerWidth - 30; // 15px padding each side
-                const cardWidth = 510; // Fixed desktop width
-                const scale = Math.min(containerWidth / cardWidth, 1);
-
-                cardWrapper.style.transform = `scale(${scale})`;
-                // Fix origin to ensure it stays centered/top
-                cardWrapper.style.transformOrigin = 'top center';
-
-                // Adjust height of parent container to match scaled height
-                // This prevents large empty space below the card
-                const scaledHeight = 330 * scale;
-                cardWrapper.parentElement.style.minHeight = `${scaledHeight + 40}px`;
-            } else {
-                cardWrapper.style.transform = '';
-                cardWrapper.parentElement.style.minHeight = '';
-            }
-        };
-
-        window.addEventListener('resize', updateScale);
-        // Call immediately
-        setTimeout(updateScale, 100);
+        toast.innerHTML = `<i class="${icon}"></i> ${message}`;
+        toast.className = 'toast show';
+        setTimeout(() => toast.className = toast.className.replace('show', ''), 2000);
     },
 
     /**
@@ -772,8 +360,11 @@ let resizeTimer;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-        if (window.innerWidth <= 768 && !MobileInterface.controlPalette) {
-            MobileInterface.init();
+        if (window.innerWidth <= 768) {
+            // Check if tabs are injected, if not init
+            if (!document.querySelector('.mobile-tab-bar')) {
+                MobileInterface.init();
+            }
         }
     }, 250);
 });

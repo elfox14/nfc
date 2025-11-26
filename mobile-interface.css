@@ -1,955 +1,201 @@
 /* ========================================= */
-/* Mobile Smart Palette Interface Styles   */
+/* Mobile Interface Styles (New Layout)    */
 /* ========================================= */
 
-/* Mobile Context Bar */
-.mobile-context-bar {
-    display: none;
-    /* Hidden by default on desktop */
-    position: fixed;
-    bottom: 30vh;
-    left: 0;
-    right: 0;
-    background: linear-gradient(135deg, var(--form-bg) 0%, var(--accent-secondary) 100%);
-    padding: 12px 20px;
-    z-index: 900;
-    border-top: 2px solid var(--accent-primary);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-}
-
-.mobile-context-bar.hidden {
-    transform: translateY(20px);
-    opacity: 0;
-    pointer-events: none;
-}
-
-.context-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--text-primary);
-    font-weight: 600;
-    font-size: 0.95rem;
-    margin-bottom: 8px;
-}
-
-.context-info i {
-    color: var(--accent-primary);
-    font-size: 1.1rem;
-}
-
-.context-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.context-action-btn {
-    padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    color: var(--text-primary);
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.context-action-btn:active {
-    transform: scale(0.95);
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.context-action-btn i {
-    font-size: 0.8rem;
-}
-
-.palette-header {
-    position: sticky;
-    top: 0;
-    background-color: var(--accent-secondary);
-    padding: 10px;
-    text-align: center;
-    z-index: 10;
-    border-bottom: 1px solid var(--accent-primary);
-}
-
-.palette-close-btn {
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 5px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-}
-
-.palette-close-btn:active {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.palette-content {
-    padding: 20px;
-}
-
-.palette-section {
-    margin-bottom: 20px;
-}
-
-.palette-section-title {
-    color: var(--accent-primary);
-    font-weight: 600;
-    margin-bottom: 12px;
-    font-size: 0.95rem;
-    padding-bottom: 5px;
-    border-bottom: 1px solid var(--accent-secondary);
-}
-
-/* FAB Menu Button */
-.fab-menu-button {
-    display: none;
-    /* Hidden by default on desktop */
-    position: fixed;
-    bottom: calc(35vh + 20px);
-    left: 20px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent-primary) 0%, #62b5ff 100%);
-    color: white;
-    border: none;
-    box-shadow: 0 4px 20px rgba(77, 166, 255, 0.5);
-    cursor: pointer;
-    z-index: 950;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 1.3rem;
-    display: none;
-    align-items: center;
-    justify-content: center;
-}
-
-html[dir="rtl"] .fab-menu-button {
-    left: auto;
-    right: 20px;
-}
-
-.fab-menu-button:active {
-    transform: scale(0.9);
-}
-
-.fab-menu-button.active {
-    background: linear-gradient(135deg, var(--danger-color) 0%, #c0392b 100%);
-}
-
-/* FAB Menu Overlay */
-.fab-menu-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 940;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.fab-menu-overlay.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 1;
-    animation: fadeIn 0.3s ease forwards;
-}
-
-.fab-menu-content {
-    background-color: var(--form-bg);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    max-width: 90%;
-    width: 300px;
-    animation: slideUp 0.3s ease forwards;
-}
-
-.fab-menu-title {
-    color: var(--text-primary);
-    margin: 0 0 15px 0;
-    font-size: 1.2rem;
-    text-align: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--accent-secondary);
-}
-
-.fab-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    background: none;
-    border: none;
-    border-radius: 8px;
-    color: var(--text-primary);
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    width: 100%;
-    text-align: right;
-    margin-bottom: 5px;
-}
-
-html:not([dir="rtl"]) .fab-menu-item {
-    text-align: left;
-}
-
-.fab-menu-item:active {
-    background-color: rgba(77, 166, 255, 0.2);
-}
-
-.fab-menu-item i {
-    font-size: 1.2rem;
-    color: var(--accent-primary);
-    min-width: 24px;
-}
-
-.fab-menu-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 12px;
-    background-color: var(--danger-color);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 0.95rem;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
-    transition: background-color 0.2s ease;
-}
-
-.fab-menu-close:active {
-    background-color: #c0392b;
-}
-
-/* Selected Element Highlight */
-.mobile-selected {
-    outline: 3px solid var(--accent-primary) !important;
-    outline-offset: 4px;
-    box-shadow: 0 0 15px var(--accent-primary) !important;
-    animation: pulse-glow 2s infinite;
-}
-
-/* Quick Actions Menu (Long Press) */
-.quick-actions-menu {
-    position: fixed;
-    background-color: var(--form-bg);
-    border-radius: 8px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-    padding: 8px;
-    z-index: 1000;
-    animation: popIn 0.2s ease;
-}
-
-.quick-actions-menu button {
-    display: block;
-    width: 100%;
-    padding: 10px 15px;
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    text-align: right;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-size: 0.9rem;
-}
-
-html:not([dir="rtl"]) .quick-actions-menu button {
-    text-align: left;
-}
-
-.quick-actions-menu button:active {
-    background-color: rgba(77, 166, 255, 0.2);
-}
-
-/* Preview Mode Exit Button */
-.preview-exit-btn {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 20px;
-    background-color: var(--danger-color);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    z-index: 1000;
-    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-    transition: all 0.2s ease;
-}
-
-html[dir="rtl"] .preview-exit-btn {
-    right: auto;
-    left: 20px;
-}
-
-.preview-exit-btn:active {
-    transform: scale(0.95);
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translate Y(0);
-        opacity: 1;
-    }
-}
-
-@keyframes popIn {
-    from {
-        transform: scale(0.8);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-@keyframes pulse-glow {
-
-    0%,
-    100% {
-        box-shadow: 0 0 15px var(--accent-primary);
-    }
-
-    50% {
-        box-shadow: 0 0 25px var(--accent-primary);
-    }
-}
-
-/* Mobile-specific overrides */
 @media (max-width: 768px) {
 
-    /* Adjust bodypadding for mobile interface */
+    /* 1. Layout Structure */
     body {
-        padding-bottom: 35vh;
+        padding-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+        /* Prevent body scroll */
     }
 
-    /* Hide desktop sidebar panels */
-    .pro-sidebar {
+    /* 2. Header (Toolbar) Adaptation */
+    .pro-toolbar {
+        display: flex !important;
+        position: relative;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: auto;
+        min-height: 60px;
+        padding: 10px;
+        z-index: 100;
+        background: var(--form-bg);
+        border-bottom: 1px solid var(--accent-secondary);
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .toolbar-title-desktop {
+        display: none;
+        /* Hide desktop title if too long */
+    }
+
+    .toolbar-group {
+        gap: 8px;
+    }
+
+    .toolbar-btn-mobile-hidden {
         display: none !important;
     }
 
-    /* Adjust layout for mobile */
+    /* 3. Canvas Area (35% Height) */
     .pro-layout {
-        grid-template-columns: 1fr !important;
-        height: auto;
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 60px);
+        /* Subtract header */
+        overflow: hidden;
     }
 
-    /* Canvas adjustments */
     .pro-canvas {
-        grid-column: 1;
-        font-size: 1.2rem;
-        text-align: center;
-        padding-bottom: 10px;
-        border-bottom: 1px solid var(--accent-secondary);
-    }
-
-    .fab-menu-item {
+        height: 35vh !important;
+        min-height: 35vh !important;
+        max-height: 35vh !important;
+        flex-shrink: 0;
+        padding: 10px;
         display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 15px;
-        background: none;
-        border: none;
-        border-radius: 8px;
-        color: var(--text-primary);
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-        width: 100%;
-        text-align: right;
-        margin-bottom: 5px;
-    }
-
-    html:not([dir="rtl"]) .fab-menu-item {
-        text-align: left;
-    }
-
-    .fab-menu-item:active {
-        background-color: rgba(77, 166, 255, 0.2);
-    }
-
-    .fab-menu-item i {
-        font-size: 1.2rem;
-        color: var(--accent-primary);
-        min-width: 24px;
-    }
-
-    .fab-menu-close {
-        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        padding: 12px;
-        background-color: var(--danger-color);
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-size: 0.95rem;
-        cursor: pointer;
-        width: 100%;
-        margin-top: 10px;
-        transition: background-color 0.2s ease;
+        background-color: var(--canvas-bg);
+        position: relative;
+        overflow: hidden;
     }
 
-    .fab-menu-close:active {
-        background-color: #c0392b;
+    /* Card Wrapper Scaling */
+    .cards-wrapper {
+        transform-origin: center center;
+        transition: transform 0.3s ease;
+        /* Width/Height are fixed desktop sizes, scaled via JS */
+        width: 510px;
+        height: 330px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
-    /* Selected Element Highlight */
-    .mobile-selected {
-        outline: 3px solid var(--accent-primary) !important;
-        outline-offset: 4px;
-        box-shadow: 0 0 15px var(--accent-primary) !important;
-        animation: pulse-glow 2s infinite;
+    /* 4. Tab Bar (Bottom Navigation) */
+    .mobile-tab-bar {
+        display: flex;
+        height: 50px;
+        background: var(--form-bg);
+        border-top: 1px solid var(--accent-secondary);
+        flex-shrink: 0;
+        z-index: 100;
     }
 
-    /* Quick Actions Menu (Long Press) */
-    .quick-actions-menu {
-        position: fixed;
-        background-color: var(--form-bg);
-        border-radius: 8px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-        padding: 8px;
-        z-index: 1000;
-        animation: popIn 0.2s ease;
-    }
-
-    .quick-actions-menu button {
-        display: block;
-        width: 100%;
-        padding: 10px 15px;
+    .mobile-tab-btn {
+        flex: 1;
         background: none;
         border: none;
-        color: var(--text-primary);
-        text-align: right;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
+        color: var(--text-secondary);
         font-size: 0.9rem;
-    }
-
-    html:not([dir="rtl"]) .quick-actions-menu button {
-        text-align: left;
-    }
-
-    .quick-actions-menu button:active {
-        background-color: rgba(77, 166, 255, 0.2);
-    }
-
-    /* Preview Mode Exit Button */
-    .preview-exit-btn {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 20px;
-        background-color: var(--danger-color);
-        color: white;
-        border: none;
-        border-radius: 25px;
-        font-size: 1rem;
-        font-weight: 600;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
         cursor: pointer;
-        z-index: 1000;
-        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
         transition: all 0.2s ease;
+        border-bottom: 3px solid transparent;
     }
 
-    html[dir="rtl"] .preview-exit-btn {
-        right: auto;
-        left: 20px;
+    .mobile-tab-btn.active {
+        color: var(--accent-primary);
+        background-color: rgba(77, 166, 255, 0.05);
+        border-bottom-color: var(--accent-primary);
     }
 
-    .preview-exit-btn:active {
+    .mobile-tab-btn i {
+        font-size: 1.1rem;
+    }
+
+    /* 5. Sidebar Panels (Content Area) */
+    .pro-sidebar {
+        display: none !important;
+        /* Hidden by default */
+        flex: 1;
+        overflow-y: auto;
+        width: 100% !important;
+        padding: 20px;
+        background: var(--form-bg);
+        border: none;
+    }
+
+    .pro-sidebar.active-tab-content {
+        display: block !important;
+        animation: fadeIn 0.3s ease;
+    }
+
+    /* 6. Flip Button */
+    .mobile-flip-btn {
+        margin-top: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--accent-primary);
+        color: var(--text-primary);
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+
+    .mobile-flip-btn:active {
+        background: var(--accent-primary);
+        color: white;
         transform: scale(0.95);
+    }
+
+    /* 7. Hide Old Elements (Just in case) */
+    .mobile-context-bar,
+    .mobile-control-palette,
+    .fab-menu-button,
+    .fab-menu-overlay {
+        display: none !important;
     }
 
     /* Animations */
     @keyframes fadeIn {
         from {
             opacity: 0;
+            transform: translateY(10px);
         }
 
         to {
             opacity: 1;
+            transform: translateY(0);
         }
     }
+}
 
-    @keyframes slideUp {
-        from {
-            transform: translateY(50px);
-            opacity: 0;
-        }
-
-        to {
-            transform: translate Y(0);
-            opacity: 1;
-        }
+/* Landscape Adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+    .pro-canvas {
+        height: 100vh !important;
+        width: 50% !important;
+        position: fixed;
+        left: 0;
+        top: 0;
     }
 
-    @keyframes popIn {
-        from {
-            transform: scale(0.8);
-            opacity: 0;
-        }
-
-        to {
-            transform: scale(1);
-            opacity: 1;
-        }
+    .mobile-tab-bar {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        width: 50%;
     }
 
-    @keyframes pulse-glow {
-
-        0%,
-        100% {
-            box-shadow: 0 0 15px var(--accent-primary);
-        }
-
-        50% {
-            box-shadow: 0 0 25px var(--accent-primary);
-        }
+    .pro-sidebar.active-tab-content {
+        margin-right: 50%;
+        /* Push content to right side */
+        height: calc(100vh - 50px);
     }
-
-    /* Mobile-specific overrides */
-    @media (max-width: 768px) {
-
-        /* Adjust bodypadding for mobile interface */
-        body {
-            padding-bottom: 35vh;
-        }
-
-        /* Hide desktop sidebar panels */
-        .pro-sidebar {
-            display: none !important;
-        }
-
-        /* Adjust layout for mobile */
-        .pro-layout {
-            grid-template-columns: 1fr !important;
-            height: auto;
-        }
-
-        /* Canvas adjustments */
-        .pro-canvas {
-            grid-column: 1;
-            font-size: 1.2rem;
-            text-align: center;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--accent-secondary);
-        }
-
-        .fab-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: none;
-            border: none;
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            width: 100%;
-            text-align: right;
-            margin-bottom: 5px;
-        }
-
-        html:not([dir="rtl"]) .fab-menu-item {
-            text-align: left;
-        }
-
-        .fab-menu-item:active {
-            background-color: rgba(77, 166, 255, 0.2);
-        }
-
-        .fab-menu-item i {
-            font-size: 1.2rem;
-            color: var(--accent-primary);
-            min-width: 24px;
-        }
-
-        .fab-menu-close {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 12px;
-            background-color: var(--danger-color);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 0.95rem;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-            transition: background-color 0.2s ease;
-        }
-
-        .fab-menu-close:active {
-            background-color: #c0392b;
-        }
-
-        /* Selected Element Highlight */
-        .mobile-selected {
-            outline: 3px solid var(--accent-primary) !important;
-            outline-offset: 4px;
-            box-shadow: 0 0 15px var(--accent-primary) !important;
-            animation: pulse-glow 2s infinite;
-        }
-
-        /* Quick Actions Menu (Long Press) */
-        .quick-actions-menu {
-            position: fixed;
-            background-color: var(--form-bg);
-            border-radius: 8px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-            padding: 8px;
-            z-index: 1000;
-            animation: popIn 0.2s ease;
-        }
-
-        .quick-actions-menu button {
-            display: block;
-            width: 100%;
-            padding: 10px 15px;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            text-align: right;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            font-size: 0.9rem;
-        }
-
-        html:not([dir="rtl"]) .quick-actions-menu button {
-            text-align: left;
-        }
-
-        .quick-actions-menu button:active {
-            background-color: rgba(77, 166, 255, 0.2);
-        }
-
-        /* Preview Mode Exit Button */
-        .preview-exit-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            background-color: var(--danger-color);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-            transition: all 0.2s ease;
-        }
-
-        html[dir="rtl"] .preview-exit-btn {
-            right: auto;
-            left: 20px;
-        }
-
-        .preview-exit-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translate Y(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes popIn {
-            from {
-                transform: scale(0.8);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        @keyframes pulse-glow {
-
-            0%,
-            100% {
-                box-shadow: 0 0 15px var(--accent-primary);
-            }
-
-            50% {
-                box-shadow: 0 0 25px var(--accent-primary);
-            }
-        }
-
-        /* Mobile-specific overrides */
-        @media (max-width: 768px) {
-
-            /* Adjust bodypadding for mobile interface */
-            body {
-                padding-bottom: 35vh;
-            }
-
-            /* Hide desktop sidebar panels */
-            .pro-sidebar {
-                display: none !important;
-            }
-
-            /* Adjust layout for mobile */
-            .pro-layout {
-                grid-template-columns: 1fr !important;
-                height: auto;
-            }
-
-            /* Canvas adjustments */
-            .pro-canvas {
-                grid-column: 1;
-                padding: 10px 5px 60px 5px;
-                /* Reduced padding */
-                height: auto;
-                /* Allow height to grow */
-                min-height: 400px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: flex-start;
-                gap: 15px;
-            }
-
-            /* Show mobile interface elements */
-            .mobile-context-bar,
-            .mobile-control-palette,
-            .fab-menu-button {
-                display: block !important;
-            }
-
-            /* Card wrapper adjustments for Flip Effect */
-            .cards-wrapper {
-                max-width: none;
-                /* Remove max-width constraint to allow fixed desktop size */
-                width: 510px;
-                /* Fixed desktop width */
-                height: 330px;
-                /* Fixed desktop height (based on aspect ratio) */
-                padding: 0;
-                position: relative;
-                transform-style: preserve-3d;
-                transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                margin: 0 auto;
-                /* Scale will be applied via JS */
-                transform-origin: top center;
-                flex-shrink: 0;
-            }
-
-            .cards-wrapper.flipped {
-                transform: rotateY(180deg);
-            }
-
-            .business-card {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                backface-visibility: hidden;
-                -webkit-backface-visibility: hidden;
-                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-                margin: 0;
-            }
-
-            #card-front-preview {
-                z-index: 2;
-                transform: rotateY(0deg);
-            }
-
-            #card-back-preview {
-                transform: rotateY(180deg);
-            }
-
-            /* Vertical Layout Adjustments */
-            .cards-wrapper[data-layout="vertical"] {
-                width: 330px;
-                height: 510px;
-            }
-
-            /* Toolbar adjustments for mobile */
-            .toolbar-btn-mobile-hidden {
-                display: none !important;
-            }
-
-            .toolbar-title-desktop {
-                display: none;
-            }
-
-            .pro-toolbar {
-                padding: 0 10px;
-            }
-
-            .toolbar-group {
-                gap: 8px;
-            }
-
-            .toolbar-group .btn {
-                padding: 6px 10px;
-                font-size: 0.85rem;
-            }
-
-            /* Adjust form controls in palette */
-            .palette-content .form-group {
-                margin-bottom: 15px;
-            }
-
-            .palette-content .form-group label {
-                font-size: 0.9rem;
-            }
-
-            .palette-content input[type="range"] {
-                width: 100%;
-            }
-
-            .palette-content .control-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-        }
-
-        /* Extra small devices */
-        @media (max-width: 480px) {
-            .mobile-control-palette {
-                height: 40vh;
-            }
-
-            .fab-menu-button {
-                width: 50px;
-                height: 50px;
-                font-size: 1.1rem;
-                bottom: calc(40vh + 15px);
-            }
-
-            .pro-canvas {
-                height: 55vh;
-                padding: 15px 10px 60px 10px;
-            }
-
-            body {
-                padding-bottom: 40vh;
-            }
-        }
-
-        /* Landscape mode adjustments */
-        @media (max-width: 768px) and (orientation: landscape) {
-            .mobile-control-palette {
-                height: 50vh;
-            }
-
-            .pro-canvas {
-                height: 45vh;
-            }
-
-            .mobile-context-bar {
-                bottom: 50vh;
-            }
-
-            .fab-menu-button {
-                bottom: calc(50vh + 15px);
-            }
-        }
-
-        /* Flip Button Style */
-        .mobile-flip-btn {
-            position: relative;
-            /* Changed from fixed */
-            background-color: var(--form-bg);
-            color: var(--text-primary);
-            border: 1px solid var(--accent-primary);
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            z-index: 900;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 20px;
-            /* Space from card */
-            align-self: center;
-        }
-
-        html[dir="rtl"] .mobile-flip-btn {
-            right: auto;
-            left: auto;
-        }
-
-        .mobile-flip-btn:active {
-            transform: scale(0.95);
-            background-color: var(--accent-primary);
-            color: white;
-        }
-
-        .mobile-flip-btn i {
-            font-size: 1rem;
-        }
+}
