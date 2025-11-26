@@ -77,7 +77,24 @@ const MobileInterface = {
         // Initialize Flip System
         this.initFlipSystem();
 
+        // Add visible Flip Button
+        this.addFlipButton();
+
         console.log('Mobile Interface: Initialized successfully');
+    },
+
+    /**
+     * Add a visible Flip Button
+     */
+    addFlipButton() {
+        const canvas = document.querySelector('.pro-canvas');
+        if (canvas) {
+            const flipBtn = document.createElement('button');
+            flipBtn.className = 'mobile-flip-btn';
+            flipBtn.innerHTML = '<i class="fas fa-sync-alt"></i> تقليب البطاقة';
+            flipBtn.onclick = () => this.toggleCardFlip(null);
+            canvas.appendChild(flipBtn);
+        }
     },
 
     /**
