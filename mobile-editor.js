@@ -73,11 +73,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Click to Edit Logic
     const editableElements = [
-        { id: 'card-name', targetInput: 'input-name', accordion: 'name-tagline-accordion' },
-        { id: 'card-tagline', targetInput: 'input-tagline', accordion: 'name-tagline-accordion' },
-        { id: 'card-logo', targetInput: 'input-logo', accordion: null }, // Logo is in first open details usually
-        { id: 'phone-buttons-wrapper', targetInput: 'add-phone-btn', accordion: 'phones-accordion' },
-        // Add more mappings as needed
+        { id: 'card-name', targetInput: 'input-name', accordion: 'name-tagline-accordion', tab: 'data' },
+        { id: 'card-tagline', targetInput: 'input-tagline', accordion: 'name-tagline-accordion', tab: 'data' },
+        { id: 'card-logo', targetInput: 'input-logo', accordion: null, tab: 'data' },
+        { id: 'phone-buttons-wrapper', targetInput: 'add-phone-btn', accordion: 'phones-accordion', tab: 'data' },
+        // Backgrounds (Design Tab)
+        { id: 'front-bg-image-layer', targetInput: 'front-bg-start', accordion: 'backgrounds-accordion', tab: 'design' },
+        { id: 'front-bg-gradient-layer', targetInput: 'front-bg-start', accordion: 'backgrounds-accordion', tab: 'design' },
+        { id: 'back-bg-image-layer', targetInput: 'back-bg-start', accordion: 'backgrounds-accordion', tab: 'design' },
+        { id: 'back-bg-gradient-layer', targetInput: 'back-bg-start', accordion: 'backgrounds-accordion', tab: 'design' },
+        // Back Face Elements (Data Tab)
+        { id: 'qr-code-wrapper', targetInput: 'qr-source', accordion: 'qr-code-accordion', tab: 'data' },
+        { id: 'card-personal-photo-wrapper', targetInput: 'input-photo-upload', accordion: 'photo-accordion', tab: 'data' },
     ];
 
     editableElements.forEach(item => {
@@ -89,8 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Switch to Data Tab
-                switchTab('data');
+                // Switch to Correct Tab
+                switchTab(item.tab || 'data');
 
                 // Open Accordion if needed
                 if (item.accordion) {
@@ -110,14 +117,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Highlight effect
                         input.style.transition = 'box-shadow 0.3s, background-color 0.3s';
                         input.style.boxShadow = '0 0 0 2px var(--accent-primary)';
-                        
+
                         // Find parent fieldset for background highlight
                         const fieldset = input.closest('.fieldset, .dynamic-input-group, .form-group');
                         if (fieldset) {
-                           fieldset.classList.add('form-element-highlighted');
-                           setTimeout(() => fieldset.classList.remove('form-element-highlighted'), 2000);
+                            fieldset.classList.add('form-element-highlighted');
+                            setTimeout(() => fieldset.classList.remove('form-element-highlighted'), 2000);
                         }
-                        
+
                         setTimeout(() => input.style.boxShadow = '', 1500);
 
                     }, 100);
