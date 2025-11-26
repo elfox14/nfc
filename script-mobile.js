@@ -71,6 +71,12 @@ const MobileInterface = {
         // Bind events
         this.bindEvents();
 
+        // Initialize touch gestures
+        this.initTouchGestures();
+
+        // Initialize Flip System
+        this.initFlipSystem();
+
         console.log('Mobile Interface: Initialized successfully');
     },
 
@@ -365,11 +371,23 @@ const MobileInterface = {
             'layout': () => this.showLayoutControls(),
             'themes': () => this.showThemeGallery(),
             'backgrounds': () => this.showBackgroundControls(),
-            'preview': () => this.enterPreviewMode()
+            'preview': () => this.enterPreviewMode(),
+            'help': () => this.showHelp()
         };
 
         if (actions[action]) {
             actions[action]();
+        }
+    },
+
+    /**
+     * Show help modal
+     */
+    showHelp() {
+        if (typeof UIManager !== 'undefined' && typeof DOMElements !== 'undefined' && DOMElements.helpModal) {
+            UIManager.showModal(DOMElements.helpModal.overlay);
+        } else {
+            alert('المساعدة غير متاحة حالياً.');
         }
     },
 
@@ -502,13 +520,35 @@ const MobileInterface = {
     },
 
     /**
-     * Delete currently selected element (placeholder)
+     * Delete currently selected element
      */
     deleteCurrentElement() {
         if (this.selectedElement) {
-            console.log('Delete element:', this.selectedElement);
-            // Implement deletion logic here
-            this.triggerHaptic('impact');
+            if (confirm('هل أنت متأكد من حذف هذا العنصر؟')) {
+                const element = document.getElementById(this.selectedElement);
+                if (element) {
+                    // Logic depends on element type
+                    if (this.selectedElement === 'card-logo') {
+                        element.src = '';
+                        element.style.display = 'none';
+                    } else if (this.selectedElement.startsWith('card-')) {
+                        element.innerText = '';
+                    } else {
+                        element.style.display = 'none';
+                    }
+
+                    this.triggerHaptic('impact');
+                    this.deselectElement();
+
+                    // Show toast
+                    const toast = document.getElementById('save-toast');
+                    if (toast) {
+                        toast.textContent = 'تم حذف العنصر';
+                        toast.className = 'toast show';
+                        setTimeout(() => toast.className = toast.className.replace('show', ''), 3000);
+                    }
+                }
+            }
         }
     },
 
@@ -517,10 +557,175 @@ const MobileInterface = {
      */
     togglePlacement() {
         if (this.selectedElement) {
-            console.log('Toggle placement for:', this.selectedElement);
-            // Implement toggle logic here
-            this.triggerHaptic('success');
+            const element = document.getElementById(this.selectedElement);
+            if (!element) return;
+
+            const currentParent = element.parentElement;
+            const frontContainer = document.getElementById('card-front-content');
+            const backContainer = document.getElementById('card-back-content');
+
+            let newParent;
+            if (currentParent.id === 'card-front-content') {
+                newParent = backContainer;
+            } else {
+                newParent = frontContainer;
+            }
+
+            if (newParent) {
+                newParent.appendChild(element);
+                this.triggerHaptic('success');
+
+                // Update radio button in desktop view if exists
+                const placementRadios = document.querySelectorAll(`input[name="placement-${this.selectedElement.replace('card-', '')}"]`);
+                placementRadios.forEach(radio => {
+                    if (radio.value === (newParent === frontContainer ? 'front' : 'back')) {
+                        radio.checked = true;
+                    }
+                });
+            }
         }
+    },
+
+    /**
+     * Initialize touch gestures (Swipe & Long Press & Multi-touch)
+     */
+    initTouchGestures() {
+        const cardWrapper = document.getElementById('cards-wrapper');
+        if (!cardWrapper) return;
+
+        // Swipe to Flip
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        // Multi-touch detection
+        let touchCount = 0;
+
+        cardWrapper.addEventListener('touchstart', (e) => {
+            touchCount = e.touches.length;
+            touchStartX = e.changedTouches[0].screenX;
+
+            if (touchCount === 2) {
+                // Potential Undo
+                e.preventDefault();
+            } else if (touchCount === 3) {
+                // Potential Redo
+                e.preventDefault();
+            }
+
+            if (e.target.closest('.business-card') && touchCount === 1) {
+                // Long Press Logic
+                this.longPressTimer = setTimeout(() => {
+                    this.triggerHaptic('success');
+                }, 500);
+            }
+        }, { passive: false });
+
+        cardWrapper.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+
+            // Handle Swipe (only single touch)
+            if (touchCount === 1) {
+                this.handleSwipe(touchStartX, touchEndX);
+            }
+
+            // Handle Multi-touch Taps
+            if (touchCount === 2) {
+                if (typeof HistoryManager !== 'undefined') {
+                    HistoryManager.undo();
+                    this.showToast('تراجع', 'fas fa-undo');
+                    this.triggerHaptic('selection');
+                }
+            } else if (touchCount === 3) {
+                if (typeof HistoryManager !== 'undefined') {
+                    HistoryManager.redo();
+                    this.showToast('إعادة', 'fas fa-redo');
+                    this.triggerHaptic('selection');
+                }
+            }
+
+            clearTimeout(this.longPressTimer);
+            touchCount = 0;
+        }, { passive: true });
+
+        cardWrapper.addEventListener('touchmove', () => {
+            clearTimeout(this.longPressTimer);
+        });
+    },
+
+    /**
+     * Show a temporary toast message
+     */
+    showToast(message, icon) {
+        const toast = document.getElementById('save-toast');
+        if (toast) {
+            toast.innerHTML = `<i class="${icon}"></i> ${message}`;
+            toast.className = 'toast show';
+            setTimeout(() => toast.className = toast.className.replace('show', ''), 2000);
+        }
+    },
+
+    /**
+     * Handle swipe gestures
+     */
+    handleSwipe(startX, endX) {
+        const threshold = 50;
+        if (startX - endX > threshold) {
+            // Swipe Left -> Show Back
+            this.toggleCardFlip(true);
+        } else if (endX - startX > threshold) {
+            // Swipe Right -> Show Front
+            this.toggleCardFlip(false);
+        }
+    },
+
+    /**
+     * Toggle Card Flip State
+     */
+    toggleCardFlip(showBack = null) {
+        const cardWrapper = document.getElementById('cards-wrapper');
+        if (!cardWrapper) return;
+
+        if (showBack === null) {
+            cardWrapper.classList.toggle('flipped');
+        } else if (showBack) {
+            cardWrapper.classList.add('flipped');
+        } else {
+            cardWrapper.classList.remove('flipped');
+        }
+
+        this.triggerHaptic('impact');
+    },
+
+    /**
+     * Initialize Flip System (Scaling)
+     */
+    initFlipSystem() {
+        const cardWrapper = document.getElementById('cards-wrapper');
+        if (!cardWrapper) return;
+
+        const updateScale = () => {
+            if (window.innerWidth <= 768) {
+                const containerWidth = window.innerWidth - 30; // 15px padding each side
+                const cardWidth = 510; // Fixed desktop width
+                const scale = Math.min(containerWidth / cardWidth, 1);
+
+                cardWrapper.style.transform = `scale(${scale})`;
+                // Fix origin to ensure it stays centered/top
+                cardWrapper.style.transformOrigin = 'top center';
+
+                // Adjust height of parent container to match scaled height
+                // This prevents large empty space below the card
+                const scaledHeight = 330 * scale;
+                cardWrapper.parentElement.style.minHeight = `${scaledHeight + 40}px`;
+            } else {
+                cardWrapper.style.transform = '';
+                cardWrapper.parentElement.style.minHeight = '';
+            }
+        };
+
+        window.addEventListener('resize', updateScale);
+        // Call immediately
+        setTimeout(updateScale, 100);
     },
 
     /**
@@ -545,9 +750,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Re-initialize on resize if switching to mobile
+// Re-initialize on resize if switching to mobile (Debounced)
+let resizeTimer;
 window.addEventListener('resize', () => {
-    if (window.innerWidth <= 768 && !MobileInterface.controlPalette) {
-        MobileInterface.init();
-    }
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        if (window.innerWidth <= 768 && !MobileInterface.controlPalette) {
+            MobileInterface.init();
+        }
+    }, 250);
 });
