@@ -117,7 +117,8 @@
         padding-bottom: env(safe-area-inset-bottom);
     }
 
-    .mobile-nav-item {
+    .mobile-nav-item,
+    .mobile-nav-action {
         background: none;
         border: none;
         color: var(--text-secondary);
@@ -135,7 +136,8 @@
         transition: all 0.2s ease;
     }
 
-    .mobile-nav-item i {
+    .mobile-nav-item i,
+    .mobile-nav-action i {
         font-size: 1.2rem;
         margin-bottom: 2px;
     }
