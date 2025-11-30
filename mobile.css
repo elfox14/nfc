@@ -18,26 +18,19 @@
 
     /* --- Layout Adjustments --- */
     body {
-        /* Use 100% height of the viewport */
         height: 100vh;
         max-height: 100vh;
-        
-        /* Layout for fixed header/footer */
         display: flex;
         flex-direction: column;
-        
-        /* Prevent body scroll, scrolling is handled in panels */
         overflow: hidden; 
-        
-        /* Reset desktop padding */
         padding-top: 0; 
-        padding-bottom: 65px; /* Space for bottom nav */
+        padding-bottom: 65px;
     }
 
     .pro-layout {
         display: flex;
         flex-direction: column;
-        flex-grow: 1; /* Allow layout to fill available space */
+        flex-grow: 1;
         height: 100%;
         padding: 0;
         position: relative;
@@ -45,39 +38,37 @@
 
     /* --- Fixed Preview Area --- */
     .pro-canvas {
-        display: flex; /* Use flexbox for centering */
+        display: flex;
         align-items: center;
         justify-content: center;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
-        height: 48vh; /* Increased height for full-size card */
+        height: 45vh; /* MODIFIED: Increased height for better vertical layout fit */
         z-index: 100;
         background-color: var(--page-bg);
         border-bottom: 1px solid var(--accent-secondary);
-        padding: 20px;
-        overflow: auto; /* Enable scrolling for cards larger than the canvas */
+        padding: 10px;
+        overflow: hidden;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
     
     .cards-wrapper {
-        /* Remove scaling to show card at full size */
-        transform: none;
+        /* MODIFIED: Removed static transform. JS will handle dynamic scaling. */
+        transform-origin: center center;
         margin: 0;
         width: auto;
         max-width: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 15px; /* Space between card and flip button */
+        gap: 15px;
     }
 
     /* --- Card Flip Animation --- */
     .card-flipper-container {
         perspective: 1500px;
-        /* The dimensions are controlled by [data-layout] on .cards-wrapper */
-        /* We need to ensure the container inherits the correct size */
         width: 100%;
         height: 100%;
     }
@@ -109,21 +100,18 @@
         position: absolute;
         width: 100%;
         height: 100%;
-        -webkit-backface-visibility: hidden; /* Safari */
+        -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
-        /* The .business-card class is on this element now */
     }
 
     .card-face.card-back {
         transform: rotateY(180deg);
     }
     
-    /* Hide the second card by default on desktop, mobile handles it with flip */
     #card-back-preview {
-        display: block; /* Ensure it's visible for the flip */
+        display: block;
     }
 
-    /* Since we removed the two-card column layout, we don't need this */
     .business-card {
         margin-bottom: 0; 
     }
@@ -138,10 +126,10 @@
 
     /* --- Scrollable Panels --- */
     .pro-sidebar {
-        display: none; /* Hidden by default */
+        display: none;
         position: fixed;
-        top: 48vh;      /* Start below new canvas height */
-        bottom: 65px;   /* End above nav */
+        top: 45vh;      /* MODIFIED: Adjusted to match new canvas height */
+        bottom: 65px;
         left: 0;
         right: 0;
         width: 100%;
@@ -152,162 +140,30 @@
         z-index: 50;
     }
 
-    /* THIS IS THE FIX: Show the sidebar only when it has the .active-view class */
     .pro-sidebar.active-view {
         display: block;
         animation: slideUp 0.3s ease;
     }
 
-    /* --- Toolbar Adjustments --- */
-    .pro-toolbar {
-        display: none; /* Hide desktop toolbar completely */
-    }
-
-    /* --- Bottom Navigation Bar --- */
-    .mobile-bottom-nav {
-        display: flex;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 65px;
-        background-color: var(--form-bg);
-        border-top: 1px solid var(--accent-secondary);
-        z-index: 2000;
-        justify-content: space-around;
-        align-items: center;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .mobile-nav-item {
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-        font-family: inherit;
-        font-size: 0.75rem;
-        padding: 8px;
-        width: 100%;
-        height: 100%;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .mobile-nav-item i {
-        font-size: 1.2rem;
-        margin-bottom: 2px;
-    }
-
-    .mobile-nav-item.active {
-        color: var(--accent-primary);
-        background-color: rgba(77, 166, 255, 0.05);
-    }
-
-    .mobile-nav-item.active i {
-        transform: translateY(-2px);
-    }
-    
-    /* --- Mobile Share Panel --- */
-    #panel-share h3 {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .mobile-actions-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 15px;
-    }
-    
-    .mobile-action-btn {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 15px;
-        height: auto;
-        text-align: center;
-        font-size: 0.8rem;
-    }
-
-    .mobile-action-btn i {
-        font-size: 1.5rem;
-        margin: 0;
-    }
-
-    /* --- General Adjustments --- */
-    .fieldset-accordion summary {
-        padding: 15px;
-        font-size: 1rem;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        font-size: 16px; /* Prevents iOS auto-zoom */
-        padding: 12px;
-    }
-
-    .control-grid {
-        gap: 10px;
-    }
-    
-    /* Fix modals to be scrollable and centered on mobile */
-    .modal-content {
-        width: 95%;
-        margin: 10px auto;
-        max-height: 85vh;
-        overflow-y: auto;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
-
-    /* Click to Edit Highlight */
-    .click-to-edit-highlight {
-        animation: highlightPulse 1s ease;
-        border: 1px solid var(--accent-primary) !important;
-        box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.3) !important;
-        border-radius: 6px;
-    }
-    
-    /* Hide desktop-only elements on mobile */
-    .toolbar-btn-mobile-hidden {
-        display: none;
-    }
-    
-    /* Ensure Shepherd tour (desktop guide) is hidden on mobile */
-    .shepherd-active {
-        display: none !important;
-    }
+    /* --- Other Styles (unchanged) --- */
+    .pro-toolbar { display: none; }
+    .mobile-bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background-color: var(--form-bg); border-top: 1px solid var(--accent-secondary); z-index: 2000; justify-content: space-around; align-items: center; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2); padding-bottom: env(safe-area-inset-bottom); }
+    .mobile-nav-item { background: none; border: none; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font-family: inherit; font-size: 0.75rem; padding: 8px; width: 100%; height: 100%; cursor: pointer; transition: all 0.2s ease; }
+    .mobile-nav-item i { font-size: 1.2rem; margin-bottom: 2px; }
+    .mobile-nav-item.active { color: var(--accent-primary); background-color: rgba(77, 166, 255, 0.05); }
+    .mobile-nav-item.active i { transform: translateY(-2px); }
+    #panel-share h3 { text-align: center; margin-bottom: 20px; }
+    .mobile-actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; }
+    .mobile-action-btn { display: flex; flex-direction: column; gap: 8px; padding: 15px; height: auto; text-align: center; font-size: 0.8rem; }
+    .mobile-action-btn i { font-size: 1.5rem; margin: 0; }
+    .fieldset-accordion summary { padding: 15px; font-size: 1rem; }
+    .form-group input, .form-group select, .form-group textarea { font-size: 16px; padding: 12px; }
+    .control-grid { gap: 10px; }
+    .modal-content { width: 95%; margin: 10px auto; max-height: 85vh; overflow-y: auto; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .click-to-edit-highlight { animation: highlightPulse 1s ease; border: 1px solid var(--accent-primary) !important; box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.3) !important; border-radius: 6px; }
+    .toolbar-btn-mobile-hidden { display: none; }
+    .shepherd-active { display: none !important; }
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes highlightPulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.7);
-    }
-
-    70% {
-        box-shadow: 0 0 0 10px rgba(77, 166, 255, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0);
-    }
-}
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes highlightPulse { 0% { box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(77, 166, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(77, 166, 255, 0); } }
