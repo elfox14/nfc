@@ -20,13 +20,13 @@ const DragManager = {
     },
     setupDropzones() {
         if (window.MobileUtils && !window.MobileUtils.shouldEnableDrop()) return;
-        interact('.card-content-layer').dropzone({ // Updated selector
+        interact('.card-content-layer').dropzone({
             accept: '.draggable-on-card',
             overlap: 0.5,
             ondrop: (event) => {
                 const droppedElement = event.relatedTarget;
                 const dropzone = event.target;
-                const newPlacement = dropzone.classList.contains('card-front-content-layer') ? 'front' : 'back'; // Updated logic
+                const newPlacement = dropzone.classList.contains('card-front-content-layer') ? 'front' : 'back';
 
                 const placementMap = {
                     'card-logo': 'logo',
@@ -791,9 +791,16 @@ const CardManager = {
         DOMElements.social.input.value = '';
         handleUpdate();
     },
+    
+    // --- MODIFIED FUNCTION ---
     applyLayout(layoutName = 'classic') {
         DOMElements.cardsWrapper.dataset.layout = layoutName;
+        // Recalculate the scale for mobile view whenever layout changes
+        if (window.MobileUtils && window.MobileUtils.isMobile()) {
+            window.MobileUtils.updateMobileCardScale();
+        }
     },
+
     applyBackground(bgUrl) {
         const targetSide = document.querySelector('input[name="bg-gallery-target"]:checked')?.value || 'front';
         const safeUrl = (typeof sanitizeURL === 'function') ? sanitizeURL(bgUrl) : bgUrl;

@@ -9,18 +9,20 @@ window.MobileUtils = {
         MobileUtils.setupNavigation();
         MobileUtils.setupActionButtons();
         MobileUtils.setupClickToEdit();
-        MobileUtils.setupCardFlipper(); // The logic inside is now updated
+        MobileUtils.setupCardFlipper();
+        MobileUtils.updateMobileCardScale(); // Add this line
     },
 
     handleResize: () => {
         const isMobile = MobileUtils.isMobile();
         document.body.classList.toggle('is-mobile', isMobile);
 
-        if (isMobile && !document.querySelector('.active-view')) {
-            MobileUtils.switchView('panel-elements');
-        }
-
-        if (!isMobile) {
+        if (isMobile) {
+            if (!document.querySelector('.active-view')) {
+                MobileUtils.switchView('panel-elements');
+            }
+            MobileUtils.updateMobileCardScale(); // Add this line
+        } else {
             document.querySelectorAll('.active-view').forEach(el => el.classList.remove('active-view'));
             document.querySelectorAll('.pro-sidebar').forEach(el => el.style.display = '');
             document.querySelector('.pro-canvas').style.display = '';
@@ -29,10 +31,49 @@ window.MobileUtils = {
             if (cardFlipper) {
                 cardFlipper.classList.remove('is-flipped');
             }
-            // Reset pointer events for desktop
             document.getElementById('card-front-preview').style.pointerEvents = 'auto';
             document.getElementById('card-back-preview').style.pointerEvents = 'auto';
+             // Reset scale on desktop
+            const cardsWrapper = document.getElementById('cards-wrapper');
+            if(cardsWrapper) cardsWrapper.style.transform = '';
         }
+    },
+    
+    // --- NEW FUNCTION TO DYNAMICALLY SCALE THE CARD ---
+    updateMobileCardScale: () => {
+        if (!MobileUtils.isMobile()) return;
+
+        const canvas = document.querySelector('.pro-canvas');
+        const cardsWrapper = document.getElementById('cards-wrapper');
+        const flipperContainer = document.querySelector('.card-flipper-container');
+        if (!canvas || !cardsWrapper || !flipperContainer) return;
+
+        const layout = cardsWrapper.dataset.layout || 'classic';
+
+        // Get the base dimensions of the card
+        let cardWidth, cardHeight;
+        if (layout === 'vertical') {
+            cardWidth = 330;
+            cardHeight = 510;
+        } else {
+            cardWidth = 510;
+            cardHeight = 330;
+        }
+        
+        // Get the available dimensions of the canvas area, with some padding
+        const canvasPadding = 20; // 10px on each side
+        const availableWidth = canvas.clientWidth - canvasPadding;
+        const availableHeight = canvas.clientHeight - canvasPadding;
+
+        // Calculate the scale ratio needed for width and height
+        const scaleX = availableWidth / cardWidth;
+        const scaleY = availableHeight / cardHeight;
+        
+        // Use the smaller of the two ratios to ensure the card fits completely
+        const scale = Math.min(scaleX, scaleY);
+
+        // Apply the calculated scale
+        cardsWrapper.style.transform = `scale(${scale})`;
     },
 
     setupNavigation: () => {
@@ -48,7 +89,6 @@ window.MobileUtils = {
         });
     },
 
-    // --- UPDATED FUNCTION TO FIX CLICKS ---
     setupCardFlipper: () => {
         const flipButton = document.getElementById('flip-card-btn-mobile');
         const cardFlipper = document.querySelector('.card-flipper');
@@ -59,16 +99,14 @@ window.MobileUtils = {
             flipButton.addEventListener('click', () => {
                 const isFlipped = cardFlipper.classList.toggle('is-flipped');
                 
-                // **THE FIX**: Explicitly enable/disable clicks on the card faces
                 if (isFlipped) {
-                    cardFront.style.pointerEvents = 'none'; // Disable clicks on the hidden front face
-                    cardBack.style.pointerEvents = 'auto';  // Enable clicks on the visible back face
+                    cardFront.style.pointerEvents = 'none';
+                    cardBack.style.pointerEvents = 'auto';
                 } else {
-                    cardFront.style.pointerEvents = 'auto';  // Enable clicks on the visible front face
-                    cardBack.style.pointerEvents = 'none'; // Disable clicks on the hidden back face
+                    cardFront.style.pointerEvents = 'auto';
+                    cardBack.style.pointerEvents = 'none';
                 }
             });
-            // Set initial state on page load: only the front is clickable
             cardBack.style.pointerEvents = 'none';
         }
     },
