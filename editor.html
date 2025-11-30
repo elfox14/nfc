@@ -32,6 +32,47 @@
     <script src="script-ui.js" defer></script>
     <script src="script-main.js" defer></script>
     <script src="chatbot-guide.js" defer></script>
+
+    <style>
+        /* =============================================================== */
+        /* == START: DESKTOP FIX FOR FLIP CARD STRUCTURE                == */
+        /* =============================================================== */
+
+        /* This code block undoes the flip effect on screens wider than 1024px */
+        @media (min-width: 1025px) {
+
+            /* 1. Make the flipper a flex container to arrange cards side-by-side */
+            .card-flipper {
+                display: flex;
+                flex-direction: column;
+                gap: 30px; /* <<< THIS IS THE SPACE BETWEEN CARDS ON DESKTOP */
+                
+                /* 2. Reset 3D properties so it behaves like a normal container */
+                transform-style: flat;
+                position: relative;
+                transform: none;
+            }
+
+            /* 3. Make each card face a normal, non-overlapping block */
+            .card-face {
+                position: relative !important; /* Override absolute positioning */
+                transform: none !important; /* Remove any rotation */
+                backface-visibility: visible !important; /* Reset visibility */
+                pointer-events: auto !important; /* Ensure both are clickable */
+            }
+
+            /* 4. The main card wrapper now just centers the flipper container */
+            .cards-wrapper {
+                transform: none; /* Ensure no scaling is applied from old styles */
+                gap: 0; /* The gap is now handled by .card-flipper */
+            }
+
+            /* 5. Hide the mobile-only flip button on desktop */
+            #flip-card-btn-mobile {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -185,43 +226,39 @@
 
         <main class="pro-canvas">
             <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
+                <div class="card-flipper-container">
+                    <div class="card-flipper">
+                        <div class="business-card card-face card-front" id="card-front-preview">
+                            <div class="card-background-layer" id="front-bg-image-layer"></div>
+                            <div class="card-background-layer" id="front-bg-gradient-layer"></div>
+                            <div class="card-content-layer card-front-content-layer" id="card-front-content">
+                                <img src="mcprime-logo-transparent.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية"
+                                    class="logo-front" id="card-logo" data-input-target-id="logo-drop-zone" style="max-width: 25%; opacity: 1;">
+                                <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset"></div>
+                                <h1 id="card-name" data-input-target-id="name-tagline-accordion"
+                                    style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;"></h1>
+                                <h2 class="tagline" id="card-tagline" data-input-target-id="name-tagline-accordion"
+                                    style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;"></h2>
+                                <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
+                                <div class="card-back-qr-image-wrapper" id="qr-code-wrapper" data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
+                            </div>
+                        </div>
 
-                <!-- 
-                    ==================================================================
-                    == START: FIX - نقل عناصر المحتوى إلى داخل الواجهة الأمامية      ==
-                    ==================================================================
-                -->
-
-                <div class="business-card" id="card-front-preview">
-                    <div class="card-background-layer" id="front-bg-image-layer"></div>
-                    <div class="card-background-layer" id="front-bg-gradient-layer"></div>
-                    <div class="card-content-layer card-front" id="card-front-content">
-                        <!-- تم نقل العناصر إلى هنا -->
-                        <img src="mcprime-logo-transparent.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية"
-                            class="logo-front" id="card-logo" style="max-width: 25%; opacity: 1;">
-                        <div id="card-personal-photo-wrapper"></div>
-                        <h1 id="card-name"
-                            style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;"></h1>
-                        <h2 class="tagline" id="card-tagline"
-                            style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;"></h2>
-                        <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
-                        <div class="card-back-qr-image-wrapper" id="qr-code-wrapper" style="width: 30%;"></div>
+                        <div class="business-card card-face card-back" id="card-back-preview">
+                            <div class="card-background-layer" id="back-bg-image-layer"></div>
+                            <div class="card-background-layer" id="back-bg-gradient-layer"></div>
+                            <div class="card-content-layer card-back-content-layer" id="card-back-content">
+                                <!-- JS will populate this -->
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 
-                    ==================================================================
-                    == END: FIX                                                     ==
-                    ==================================================================
-                -->
+                <button id="flip-card-btn-mobile" class="btn btn-secondary" title="تقليب الكارت">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>تقليب الكارت</span>
+                </button>
 
-                <div class="business-card" id="card-back-preview">
-                    <div class="card-background-layer" id="back-bg-image-layer"></div>
-                    <div class="card-background-layer" id="back-bg-gradient-layer"></div>
-                    <div class="card-content-layer card-back" id="card-back-content">
-                        <!-- هذا يبقى فارغًا، حيث سيقوم JS بنقل العناصر إليه عند الحاجة -->
-                    </div>
-                </div>
             </main>
         </main>
 

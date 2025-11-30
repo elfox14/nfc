@@ -9,43 +9,71 @@ window.MobileUtils = {
         MobileUtils.setupNavigation();
         MobileUtils.setupActionButtons();
         MobileUtils.setupClickToEdit();
+        MobileUtils.setupCardFlipper(); // The logic inside is now updated
     },
 
     handleResize: () => {
         const isMobile = MobileUtils.isMobile();
         document.body.classList.toggle('is-mobile', isMobile);
 
-        // If switching to mobile and no view is active, default to Content (panel-elements)
         if (isMobile && !document.querySelector('.active-view')) {
             MobileUtils.switchView('panel-elements');
         }
 
-        // If switching to desktop, reset styles
         if (!isMobile) {
             document.querySelectorAll('.active-view').forEach(el => el.classList.remove('active-view'));
             document.querySelectorAll('.pro-sidebar').forEach(el => el.style.display = '');
             document.querySelector('.pro-canvas').style.display = '';
             document.getElementById('panel-share').style.display = 'none';
+            const cardFlipper = document.querySelector('.card-flipper');
+            if (cardFlipper) {
+                cardFlipper.classList.remove('is-flipped');
+            }
+            // Reset pointer events for desktop
+            document.getElementById('card-front-preview').style.pointerEvents = 'auto';
+            document.getElementById('card-back-preview').style.pointerEvents = 'auto';
         }
     },
 
     setupNavigation: () => {
         const navItems = document.querySelectorAll('.mobile-nav-item');
-
         navItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
                 const targetId = item.getAttribute('data-target');
                 MobileUtils.switchView(targetId);
-
                 navItems.forEach(nav => nav.classList.remove('active'));
                 item.classList.add('active');
             });
         });
     },
 
+    // --- UPDATED FUNCTION TO FIX CLICKS ---
+    setupCardFlipper: () => {
+        const flipButton = document.getElementById('flip-card-btn-mobile');
+        const cardFlipper = document.querySelector('.card-flipper');
+        const cardFront = document.getElementById('card-front-preview');
+        const cardBack = document.getElementById('card-back-preview');
+
+        if (flipButton && cardFlipper && cardFront && cardBack) {
+            flipButton.addEventListener('click', () => {
+                const isFlipped = cardFlipper.classList.toggle('is-flipped');
+                
+                // **THE FIX**: Explicitly enable/disable clicks on the card faces
+                if (isFlipped) {
+                    cardFront.style.pointerEvents = 'none'; // Disable clicks on the hidden front face
+                    cardBack.style.pointerEvents = 'auto';  // Enable clicks on the visible back face
+                } else {
+                    cardFront.style.pointerEvents = 'auto';  // Enable clicks on the visible front face
+                    cardBack.style.pointerEvents = 'none'; // Disable clicks on the hidden back face
+                }
+            });
+            // Set initial state on page load: only the front is clickable
+            cardBack.style.pointerEvents = 'none';
+        }
+    },
+
     switchView: (targetId) => {
-        // Hide all sidebars
         const sidebars = document.querySelectorAll('.pro-sidebar');
         sidebars.forEach(view => {
             view.classList.remove('active-view');
@@ -54,14 +82,12 @@ window.MobileUtils = {
             }
         });
 
-        // Show target sidebar
         const targetView = document.getElementById(targetId);
         if (targetView) {
             targetView.classList.add('active-view');
             targetView.style.display = 'block';
         }
 
-        // Update nav state if called programmatically
         const navItem = document.querySelector(`.mobile-nav-item[data-target="${targetId}"]`);
         if (navItem) {
             document.querySelectorAll('.mobile-nav-item').forEach(nav => nav.classList.remove('active'));
@@ -81,49 +107,40 @@ window.MobileUtils = {
     },
 
     setupClickToEdit: () => {
-        // Map card elements to their input IDs
-        const editMap = {
-            'card-name': 'input-name',
-            'card-tagline': 'input-tagline',
-            'card-logo': 'input-logo-upload', // Or input-logo
-            'phone-buttons-wrapper': 'phone-repeater-container', // General area
-            'qr-code-wrapper': 'qr-source-select'
-        };
+        const cardsWrapper = document.getElementById('cards-wrapper');
+        if (!cardsWrapper) return;
 
-        Object.keys(editMap).forEach(elementId => {
-            const element = document.getElementById(elementId);
-            if (element) {
-                element.addEventListener('click', (e) => {
-                    if (!window.MobileUtils.isMobile()) return;
+        cardsWrapper.addEventListener('click', (e) => {
+            if (!window.MobileUtils.isMobile()) return;
 
-                    e.stopPropagation(); // Prevent drag interference if any
+            const clickableElement = e.target.closest('.draggable-on-card');
+            if (!clickableElement) return;
 
-                    const targetInputId = editMap[elementId];
-                    const targetInput = document.getElementById(targetInputId);
+            e.preventDefault();
+            e.stopPropagation();
 
-                    if (targetInput) {
-                        // 1. Switch to Content View
-                        MobileUtils.switchView('panel-elements');
+            const targetControlId = clickableElement.dataset.controlId || clickableElement.dataset.inputTargetId;
+            if (!targetControlId) return;
 
-                        // 2. Scroll to Input
-                        // We need to wait for the view to be visible
-                        setTimeout(() => {
-                            targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            targetInput.focus();
+            const targetControl = document.getElementById(targetControlId);
+            if (!targetControl) return;
 
-                            // 3. Highlight
-                            targetInput.classList.add('click-to-edit-highlight');
-                            setTimeout(() => targetInput.classList.remove('click-to-edit-highlight'), 2000);
+            MobileUtils.switchView('panel-elements');
 
-                            // Open accordion if needed
-                            const accordion = targetInput.closest('details');
-                            if (accordion && !accordion.open) {
-                                accordion.open = true;
-                            }
-                        }, 100);
-                    }
-                });
-            }
+            setTimeout(() => {
+                targetControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                const firstInput = targetControl.querySelector('input, textarea, select');
+                if(firstInput) firstInput.focus();
+
+                targetControl.classList.add('click-to-edit-highlight');
+                setTimeout(() => targetControl.classList.remove('click-to-edit-highlight'), 2000);
+
+                const accordion = targetControl.closest('details');
+                if (accordion && !accordion.open) {
+                    accordion.open = true;
+                }
+            }, 100);
         });
     },
 
