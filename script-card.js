@@ -791,7 +791,7 @@ const CardManager = {
         DOMElements.social.input.value = '';
         handleUpdate();
     },
-    
+
     // --- MODIFIED FUNCTION ---
     applyLayout(layoutName = 'classic') {
         DOMElements.cardsWrapper.dataset.layout = layoutName;
