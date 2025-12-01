@@ -18,7 +18,7 @@ const Config = {
     defaultState: {
         inputs: {
             'layout-select': 'classic',
-            'layout-select-visual': 'classic', // Default layout
+            'layout-select-visual': 'classic', 
             'input-logo': 'mcprime-logo-transparent.png',
             'logo-size': 25,
             'logo-opacity': 1,
@@ -86,7 +86,6 @@ const Config = {
             photo: null
         },
         positions: {
-            // Default positions (x=0, y=0 means centered/default flow)
             "card-logo": { x: 0, y: 0 },
             "card-personal-photo-wrapper": { x: 0, y: 0 },
             "card-name": { x: 0, y: 0 },
@@ -103,12 +102,23 @@ const Config = {
     },
 
     THEMES: {
+        // --- التصاميم الأصلية ---
         'deep-sea': { name: 'بحر عميق', gradient: ['#2a3d54', '#223246'], values: { textPrimary: '#e6f0f7', taglineColor: '#4da6ff', backButtonBg: '#364f6b', backButtonText: '#aab8c2', phoneBtnBg: '#4da6ff', phoneBtnText: '#ffffff'}},
         'modern-light': { name: 'أبيض حديث', gradient: ['#e9e9e9', '#ffffff'], values: { textPrimary: '#121212', taglineColor: '#007BFF', backButtonBg: '#f0f2f5', backButtonText: '#343a40', phoneBtnBg: '#007BFF', phoneBtnText: '#ffffff'}},
         'forest-whisper': { name: 'همس الغابة', gradient: ['#234d20', '#364935'], values: { textPrimary: '#f0f3f0', taglineColor: '#77ab59', backButtonBg: '#4a785f', backButtonText: '#f0f3f0', phoneBtnBg: '#77ab59', phoneBtnText: '#f0f3f0'}},
         'sunset-gradient': { name: 'غروب الشمس', gradient: ['#ff8c42', '#ff5f6d'], values: { textPrimary: '#ffffff', taglineColor: '#ffcc80', backButtonBg: '#c44d56', backButtonText: '#ffffff', phoneBtnBg: 'rgba(255,255,255,0.2)', phoneBtnText: '#ffffff'}},
         'corporate-elegance': { name: 'أناقة الشركات', gradient: ['#f8f9fa', '#e9ecef'], values: { textPrimary: '#212529', taglineColor: '#0056b3', backButtonBg: '#343a40', backButtonText: '#ffffff', phoneBtnBg: '#0056b3', phoneBtnText: '#ffffff'}},
         'night-neon': { name: 'النيون الليلي', gradient: ['#0d0d0d', '#1a1a1a'], values: { textPrimary: '#f0f0f0', taglineColor: '#39ff14', backButtonBg: '#222222', backButtonText: '#00ffdd', phoneBtnBg: 'transparent', phoneBtnText: '#39ff14'}},
+        
+        // --- التصاميم الجديدة ---
+        'royal-gold': { name: 'ملكي ذهبي', gradient: ['#141E30', '#243B55'], values: { textPrimary: '#F2C94C', taglineColor: '#F2994A', backButtonBg: '#1F2E40', backButtonText: '#F2C94C', phoneBtnBg: '#F2C94C', phoneBtnText: '#141E30'}},
+        'crimson-red': { name: 'أحمر قرمزي', gradient: ['#870000', '#190A05'], values: { textPrimary: '#FFFFFF', taglineColor: '#FF6B6B', backButtonBg: '#4A0000', backButtonText: '#FFC3C3', phoneBtnBg: '#FF0000', phoneBtnText: '#FFFFFF'}},
+        'purple-haze': { name: 'ضباب بنفسجي', gradient: ['#4568DC', '#B06AB3'], values: { textPrimary: '#FFFFFF', taglineColor: '#E0C3FC', backButtonBg: 'rgba(255,255,255,0.2)', backButtonText: '#FFFFFF', phoneBtnBg: '#B06AB3', phoneBtnText: '#FFFFFF'}},
+        'teal-tech': { name: 'تكنولوجيا', gradient: ['#0F2027', '#203A43', '#2C5364'], values: { textPrimary: '#00FFFF', taglineColor: '#7FFFD4', backButtonBg: '#1C313A', backButtonText: '#00FFFF', phoneBtnBg: 'transparent', phoneBtnText: '#00FFFF'}},
+        'desert-sand': { name: 'رمال الصحراء', gradient: ['#C9D6FF', '#E2E2E2'], values: { textPrimary: '#5D4E3E', taglineColor: '#8E7C68', backButtonBg: '#D1C4B5', backButtonText: '#5D4E3E', phoneBtnBg: '#8E7C68', phoneBtnText: '#FFFFFF'}},
+        'midnight-blue': { name: 'أزرق منتصف الليل', gradient: ['#000428', '#004e92'], values: { textPrimary: '#E0E0E0', taglineColor: '#4CA1AF', backButtonBg: '#002651', backButtonText: '#4CA1AF', phoneBtnBg: '#004e92', phoneBtnText: '#FFFFFF'}},
+        'cherry-blossom': { name: 'أزهار الكرز', gradient: ['#FBD3E9', '#BB377D'], values: { textPrimary: '#5D1438', taglineColor: '#FFFFFF', backButtonBg: 'rgba(255,255,255,0.3)', backButtonText: '#5D1438', phoneBtnBg: '#BB377D', phoneBtnText: '#FFFFFF'}},
+        'carbon-fiber': { name: 'ألياف الكربون', gradient: ['#232526', '#414345'], values: { textPrimary: '#EAEAEA', taglineColor: '#BDC3C7', backButtonBg: '#595B5D', backButtonText: '#FFFFFF', phoneBtnBg: '#343638', phoneBtnText: '#FFFFFF'}}
     },
     
     SOCIAL_PLATFORMS: { 
