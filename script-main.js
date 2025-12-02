@@ -2,13 +2,13 @@
 
 const ExportManager = {
     pendingExportTarget: null,
-
+    
     async captureElement(element, scale = 2) {
         await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
-        const style = document.createElement('style');
-        style.innerHTML = '.no-export { display: none !important; }';
+        const style = document.createElement('style'); 
+        style.innerHTML = '.no-export { display: none !important; }'; 
         document.head.appendChild(style);
-
+        
         // START: FIX for mobile flip card capture
         const isMobile = typeof MobileUtils !== 'undefined' && MobileUtils.isMobile();
         const flipper = isMobile ? document.querySelector('.card-flipper') : null;
@@ -29,17 +29,17 @@ const ExportManager = {
         }
         // END: FIX
 
-        try {
-            return await html2canvas(element, {
-                backgroundColor: null,
-                scale: scale,
+        try { 
+            return await html2canvas(element, { 
+                backgroundColor: null, 
+                scale: scale, 
                 useCORS: true,
                 allowTaint: true,
                 logging: false
-            });
-        }
-        finally {
-            document.head.removeChild(style);
+            }); 
+        } 
+        finally { 
+            document.head.removeChild(style); 
             // Restore the original state after capture
             if (flipper) {
                 if (originalFlippedState) {
@@ -51,82 +51,82 @@ const ExportManager = {
         }
     },
 
-    async downloadElement(options) {
-        const { format, quality, scale } = options;
+    async downloadElement(options) { 
+        const {format, quality, scale} = options;
         const element = this.pendingExportTarget === 'front' ? DOMElements.cardFront : DOMElements.cardBack;
         const filename = `card-${this.pendingExportTarget}.${format}`;
-
+        
         UIManager.showModal(DOMElements.exportLoadingOverlay);
-        try {
+        try { 
             await new Promise(resolve => setTimeout(resolve, 100));
-            const canvas = await this.captureElement(element, scale);
-            const link = document.createElement('a');
-            link.download = filename;
-            link.href = canvas.toDataURL(`image/${format}`, quality);
+            const canvas = await this.captureElement(element, scale); 
+            const link = document.createElement('a'); 
+            link.download = filename; 
+            link.href = canvas.toDataURL(`image/${format}`, quality); 
             link.click();
-        } catch (e) {
-            console.error("Export failed:", e);
-            UIManager.announce("فشل التصدير.");
+        } catch(e) { 
+            console.error("Export failed:", e); 
+            UIManager.announce("فشل التصدير."); 
         }
-        finally {
-            UIManager.hideModal(DOMElements.exportLoadingOverlay);
-            UIManager.hideModal(DOMElements.exportModal.overlay);
-        }
+        finally { 
+            UIManager.hideModal(DOMElements.exportLoadingOverlay); 
+            UIManager.hideModal(DOMElements.exportModal.overlay); 
+        } 
     },
 
-    async downloadPdf() {
+    async downloadPdf() { 
         await Promise.all([
             Utils.loadScript(Config.SCRIPT_URLS.html2canvas),
             Utils.loadScript(Config.SCRIPT_URLS.jspdf)
         ]);
-        try {
-            const { jsPDF } = window.jspdf;
-
+        try { 
+            const { jsPDF } = window.jspdf; 
+            
             const isVertical = DOMElements.cardsWrapper.dataset.layout === 'vertical';
             const width = isVertical ? 330 : 510;
             const height = isVertical ? 510 : 330;
             const orientation = isVertical ? 'p' : 'l';
 
-            const doc = new jsPDF({
-                orientation: orientation,
-                unit: 'px',
-                format: [width, height]
-            });
-
-            const frontCanvas = await this.captureElement(DOMElements.cardFront, 2);
-            doc.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, width, height);
-
-            doc.addPage([width, height], orientation);
-
-            const backCanvas = await this.captureElement(DOMElements.cardBack, 2);
-            doc.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, width, height);
-
-            doc.save('business-card.pdf');
-        } catch (e) {
-            console.error('PDF export failed:', e);
-            UIManager.announce('فشل تصدير PDF.');
+            const doc = new jsPDF({ 
+                orientation: orientation, 
+                unit: 'px', 
+                format: [width, height] 
+            }); 
+            
+            const frontCanvas = await this.captureElement(DOMElements.cardFront, 2); 
+            doc.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, width, height); 
+            
+            doc.addPage([width, height], orientation); 
+            
+            const backCanvas = await this.captureElement(DOMElements.cardBack, 2); 
+            doc.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, width, height); 
+            
+            doc.save('business-card.pdf'); 
+        } catch (e) { 
+            console.error('PDF export failed:', e); 
+            UIManager.announce('فشل تصدير PDF.'); 
         }
     },
 
     getVCardString() {
         const name = DOMElements.nameInput.value.replace(/\n/g, ' ').split(' '); const firstName = name.slice(0, -1).join(' '); const lastName = name.slice(-1).join(' ');
         let vCard = `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${DOMElements.nameInput.value}\nORG:${DOMElements.taglineInput.value.replace(/\n/g, ' ')}\nTITLE:${DOMElements.taglineInput.value.replace(/\n/g, ' ')}\n`;
-
+    
         const state = StateManager.getStateObject();
-
+    
         if (state.dynamic.staticSocial.email && state.dynamic.staticSocial.email.value) {
             vCard += `EMAIL;TYPE=PREF,INTERNET:${state.dynamic.staticSocial.email.value}\n`;
         }
         if (state.dynamic.staticSocial.website && state.dynamic.staticSocial.website.value) {
             vCard += `URL:${state.dynamic.staticSocial.website.value}\n`;
         }
-
+    
         if (state.dynamic.phones) {
             state.dynamic.phones.forEach((phone, index) => {
                 if (phone.value) vCard += `TEL;TYPE=CELL${index === 0 ? ',PREF' : ''}:${phone.value}\n`;
             });
         }
-
+    
         if (state.dynamic.social) {
             state.dynamic.social.forEach(link => {
                 const platformKey = link.platform;
@@ -137,7 +137,7 @@ const ExportManager = {
                 }
             });
         }
-
+    
         vCard += `END:VCARD`;
         return vCard;
     },
@@ -149,7 +149,7 @@ const ExportManager = {
             if (!designId) {
                 throw new Error('فشل حفظ التصميم اللازم لإنشاء الرابط.');
             }
-
+            
             const viewerUrl = new URL('viewer.html', window.location.href);
             viewerUrl.searchParams.set('id', designId);
             const finalUrl = viewerUrl.href;
@@ -241,38 +241,38 @@ const GalleryManager = {
     async downloadSelectedAsZip() {
         const selectedIndices = [...DOMElements.galleryModal.grid.querySelectorAll('.gallery-item-select:checked')].map(cb => parseInt(cb.dataset.index, 10));
         if (selectedIndices.length === 0) return;
-
+        
         try {
             await Promise.all([
                 Utils.loadScript(Config.SCRIPT_URLS.html2canvas),
                 Utils.loadScript(Config.SCRIPT_URLS.jszip)
             ]);
 
-            const originalState = StateManager.getStateObject();
+            const originalState = StateManager.getStateObject(); 
             const zip = new JSZip();
-
+        
             for (const index of selectedIndices) {
-                const design = this.designs[index];
+                const design = this.designs[index]; 
                 StateManager.applyState(design.state, false);
                 await new Promise(resolve => setTimeout(resolve, 50));
-                const frontCanvas = await ExportManager.captureElement(DOMElements.cardFront);
+                const frontCanvas = await ExportManager.captureElement(DOMElements.cardFront); 
                 const backCanvas = await ExportManager.captureElement(DOMElements.cardBack);
-                const frontBlob = await new Promise(resolve => frontCanvas.toBlob(resolve, 'image/png'));
+                const frontBlob = await new Promise(resolve => frontCanvas.toBlob(resolve, 'image/png')); 
                 const backBlob = await new Promise(resolve => backCanvas.toBlob(resolve, 'image/png'));
-                zip.file(`${design.name}_Front.png`, frontBlob);
+                zip.file(`${design.name}_Front.png`, frontBlob); 
                 zip.file(`${design.name}_Back.png`, backBlob);
             }
 
             const content = await zip.generateAsync({ type: "blob" });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = "Business_Cards_Export.zip";
-            link.click();
+            const link = document.createElement('a'); 
+            link.href = URL.createObjectURL(content); 
+            link.download = "Business_Cards_Export.zip"; 
+            link.click(); 
             URL.revokeObjectURL(link.href);
             StateManager.applyState(originalState, false);
 
-        } catch (e) {
-            console.error("ZIP export failed:", e);
+        } catch(e) { 
+            console.error("ZIP export failed:", e); 
             UIManager.announce("حدث خطأ أثناء تصدير الملف المضغوط.");
             alert("فشل تصدير الملف المضغوط. قد تكون هناك مشكلة في تحميل المكونات اللازمة.");
             throw e;
@@ -281,11 +281,11 @@ const GalleryManager = {
 };
 
 const ShareManager = {
-
+    
     async captureAndUploadCard(element) {
         await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
-        const canvas = await ExportManager.captureElement(element, 2);
-
+        const canvas = await ExportManager.captureElement(element, 2); 
+        
         return new Promise((resolve, reject) => {
             canvas.toBlob(async (blob) => {
                 if (!blob) {
@@ -298,20 +298,20 @@ const ShareManager = {
                 } catch (e) {
                     reject(e);
                 }
-            }, 'image/png', 0.95);
+            }, 'image/png', 0.95); 
         });
     },
-
+    
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
         try {
             const response = await fetch(`${Config.API_BASE_URL}/api/save-design`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(state),
+                body: JSON.stringify(state), 
             });
             if (!response.ok) throw new Error('Server responded with an error');
-
+            
             const result = await response.json();
             if (result.success && result.id) {
                 return result.id;
@@ -338,16 +338,16 @@ const ShareManager = {
             this.showFallback(url, text);
         }
     },
-
+    
     async shareCard() {
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, 'جاري الالتقاط...');
-
+        
         let frontImageUrl, backImageUrl, state;
-
+        
         try {
             state = StateManager.getStateObject();
             frontImageUrl = await this.captureAndUploadCard(DOMElements.cardFront);
-
+            
             UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, 'جاري رفع الصور...');
             backImageUrl = await this.captureAndUploadCard(DOMElements.cardBack);
 
@@ -363,24 +363,24 @@ const ShareManager = {
         state.imageUrls.capturedBack = backImageUrl;
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, 'جاري الحفظ...');
-
-        const designId = await this.saveDesign(state);
-
+        
+        const designId = await this.saveDesign(state); 
+        
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
         if (!designId) return;
 
         const viewerUrl = new URL('viewer.html', window.location.href);
         viewerUrl.searchParams.set('id', designId);
-
+        
         this.performShare(viewerUrl.href, 'بطاقة عملي الرقمية', 'ألق نظرة على تصميم بطاقتي الجديدة!');
     },
 
     async shareEditor() {
         UIManager.setButtonLoadingState(DOMElements.buttons.shareEditor, true);
-        const designId = await this.saveDesign();
+        const designId = await this.saveDesign(); 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareEditor, false);
         if (!designId) return;
-
+        
         const editorUrl = new URL(window.location.href);
         editorUrl.searchParams.delete('id');
         editorUrl.searchParams.set('id', designId);
@@ -404,11 +404,11 @@ const ShareManager = {
             try {
                 const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`);
                 if (!response.ok) throw new Error('Design not found or server error');
-
+                
                 const state = await response.json();
                 StateManager.applyState(state, false);
                 UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
-
+                
                 const newUrl = new URL(window.location.href);
                 newUrl.searchParams.delete('id');
                 window.history.replaceState({}, document.title, newUrl.pathname + newUrl.search);
@@ -424,115 +424,16 @@ const ShareManager = {
     }
 };
 
-    }
-};
-
-const CropperManager = {
-    cropper: null,
-    currentTargetType: null, // 'logo' or 'photo'
-
-    init(imageSrc, targetType) {
-        this.currentTargetType = targetType;
-        const modal = document.getElementById('crop-modal-overlay');
-        const cropImage = document.getElementById('crop-image');
-
-        if (!modal || !cropImage) {
-            console.error("Crop modal elements not found");
-            return;
-        }
-
-        cropImage.src = imageSrc;
-        modal.style.display = 'flex';
-
-        if (this.cropper) {
-            this.cropper.destroy();
-        }
-
-        this.cropper = new Cropper(cropImage, {
-            aspectRatio: targetType === 'photo' ? 1 : NaN,
-            viewMode: 1,
-            autoCropArea: 0.8,
-        });
-    },
-
-    destroy() {
-        if (this.cropper) {
-            this.cropper.destroy();
-            this.cropper = null;
-        }
-        const modal = document.getElementById('crop-modal-overlay');
-        if (modal) modal.style.display = 'none';
-        const cropImage = document.getElementById('crop-image');
-        if (cropImage) cropImage.src = '';
-    },
-
-    async applyCrop() {
-        if (!this.cropper) return;
-
-        const canvas = this.cropper.getCroppedCanvas();
-        const croppedImage = canvas.toDataURL('image/png');
-
-        if (this.currentTargetType === 'logo') {
-            DOMElements.draggable.logo.src = croppedImage;
-            document.getElementById('input-logo').value = croppedImage;
-            if (DOMElements.previews && DOMElements.previews.logo) DOMElements.previews.logo.src = croppedImage;
-            UIManager.updateFavicon(croppedImage);
-        } else if (this.currentTargetType === 'photo') {
-            CardManager.personalPhotoUrl = croppedImage;
-            DOMElements.photoControls.url.value = croppedImage;
-            DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-
-        this.destroy();
-    }
-};
-
-// Extend CardManager with new shadow methods
-if (typeof CardManager !== 'undefined') {
-    CardManager.updateLogoShadow = function () {
-        if (!DOMElements.logoControls || !DOMElements.logoControls.shadowToggle) return;
-
-        const toggle = DOMElements.logoControls.shadowToggle.checked;
-        if (!toggle) {
-            DOMElements.draggable.logo.style.filter = 'none';
-            return;
-        }
-        const color = DOMElements.logoControls.shadowColor.value;
-        const blur = DOMElements.logoControls.shadowBlur.value;
-        const x = DOMElements.logoControls.shadowX.value;
-        const y = DOMElements.logoControls.shadowY.value;
-        // Using drop-shadow filter for transparent images
-        DOMElements.draggable.logo.style.filter = `drop-shadow(${x}px ${y}px ${blur}px ${color})`;
-    };
-
-    CardManager.updatePhotoShadow = function () {
-        if (!DOMElements.photoControlsAdvanced || !DOMElements.photoControlsAdvanced.shadowToggle) return;
-
-        const toggle = DOMElements.photoControlsAdvanced.shadowToggle.checked;
-        const img = DOMElements.draggable.photo.querySelector('img');
-        if (!toggle) {
-            if (img) img.style.boxShadow = 'none';
-            return;
-        }
-        const color = DOMElements.photoControlsAdvanced.shadowColor.value;
-        const blur = DOMElements.photoControlsAdvanced.shadowBlur.value;
-        const x = DOMElements.photoControlsAdvanced.shadowX.value;
-        const y = DOMElements.photoControlsAdvanced.shadowY.value;
-        if (img) img.style.boxShadow = `${x}px ${y}px ${blur}px ${color}`;
-    };
-}
-
 const EventManager = {
     makeListSortable(container, onSortCallback) {
         let draggedItem = null;
         container.addEventListener('dragstart', e => { draggedItem = e.target; setTimeout(() => e.target.classList.add('dragging'), 0); });
         container.addEventListener('dragend', e => { e.target.classList.remove('dragging'); });
         container.addEventListener('dragover', e => { e.preventDefault(); const afterElement = [...container.children].reduce((closest, child) => { const box = child.getBoundingClientRect(); const offset = e.clientY - box.top - box.height / 2; if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; } else { return closest; } }, { offset: Number.NEGATIVE_INFINITY }).element; if (afterElement == null) { container.appendChild(draggedItem); } else { container.insertBefore(draggedItem, afterElement); } });
-        container.addEventListener('drop', () => {
-            if (onSortCallback) onSortCallback();
+        container.addEventListener('drop', () => { if (onSortCallback) onSortCallback(); 
         });
     },
-
+    
     moveElement(elementId, direction, step = 5) {
         const target = document.getElementById(elementId);
         if (!target) return;
@@ -553,19 +454,19 @@ const EventManager = {
     },
 
     bindEvents() {
-        document.querySelectorAll('input, select, textarea').forEach(input => {
+        document.querySelectorAll('input, select, textarea').forEach(input => { 
             const eventType = (input.type === 'range' || input.type === 'color' || input.type === 'checkbox') ? 'change' : 'input';
-
-            input.addEventListener(eventType, () => {
+            
+            input.addEventListener(eventType, () => { 
                 if (!StateManager.isApplyingState) {
                 }
-            });
+            }); 
 
             input.addEventListener('input', () => {
                 CardManager.updateElementFromInput(input);
                 if (input.id.includes('photo-')) CardManager.updatePersonalPhotoStyles();
                 if (input.id.includes('phone-btn')) CardManager.updatePhoneButtonStyles();
-
+                
                 if (input.id.startsWith('back-buttons')) {
                     CardManager.updateSocialButtonStyles();
                 }
@@ -576,13 +477,13 @@ const EventManager = {
                 if (input.id.startsWith('input-') && !input.id.includes('-static-') && !input.id.includes('-dynsocial_')) CardManager.updateSocialLinks();
                 if (input.id.startsWith('front-bg-') || input.id.startsWith('back-bg-')) CardManager.updateCardBackgrounds();
                 if (input.id === 'qr-size') CardManager.updateQrCodeDisplay();
-
+                
                 const vCardFields = ['input-name', 'input-tagline', 'input-email', 'input-website'];
                 if (vCardFields.includes(input.id)) {
                     CardManager.generateVCardQrDebounced();
                 }
 
-                if (input.name.startsWith('placement-static-')) {
+                if(input.name.startsWith('placement-static-')) {
                     CardManager.updateSocialLinks();
                 }
             });
@@ -593,8 +494,8 @@ const EventManager = {
                     draggableId = `social-link-static-${parentGroup.id.replace('form-group-static-', '')}`;
                 }
                 if (draggableId) UIManager.highlightElement(draggableId, true);
-
-            });
+                
+            }); 
             input.addEventListener('blur', () => {
                 let draggableId = input.dataset.updateTarget;
                 const parentGroup = input.closest('.form-group');
@@ -602,14 +503,14 @@ const EventManager = {
                     draggableId = `social-link-static-${parentGroup.id.replace('form-group-static-', '')}`;
                 }
                 if (draggableId) UIManager.highlightElement(draggableId, false);
-            });
+            }); 
         });
-
+        
         document.querySelectorAll('input[name="layout-select-visual"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 CardManager.applyLayout(e.target.value);
                 const hiddenInput = document.getElementById('layout-select');
-                if (hiddenInput) hiddenInput.value = e.target.value;
+                if(hiddenInput) hiddenInput.value = e.target.value;
             });
         });
 
@@ -619,11 +520,11 @@ const EventManager = {
                     e.preventDefault();
                     const direction = button.dataset.direction;
                     let targetId = grid.dataset.targetId;
-
+                    
                     if (targetId && targetId.startsWith('form-group-static-')) {
-                        targetId = `social-link-static-${targetId.replace('form-group-static-', '')}`;
+                         targetId = `social-link-static-${targetId.replace('form-group-static-', '')}`;
                     }
-
+                    
                     if (targetId) {
                         EventManager.moveElement(targetId, direction);
                     } else {
@@ -639,9 +540,9 @@ const EventManager = {
                 DOMElements.qrUrlGroup.style.display = selectedValue === 'custom' ? 'block' : 'none';
                 DOMElements.qrUploadGroup.style.display = selectedValue === 'upload' ? 'block' : 'none';
                 DOMElements.qrAutoCardGroup.style.display = selectedValue === 'auto-card' ? 'block' : 'none';
-
+                
                 CardManager.autoGeneratedQrDataUrl = null;
-
+                
                 if (selectedValue === 'auto-vcard') {
                     CardManager.generateVCardQr();
                 } else {
@@ -654,12 +555,12 @@ const EventManager = {
             radio.addEventListener('change', () => {
                 const elementName = radio.name.replace('placement-', '');
                 let elementToReset;
-
+                
                 const staticMatch = elementName.match(/static-(.*)/);
                 if (staticMatch) {
                     elementToReset = document.getElementById(`social-link-static-${staticMatch[1]}`);
                 } else if (elementName.startsWith('dynsocial_')) {
-                    elementToReset = document.getElementById(`social-link-${elementName.replace(/[^a-zA-Z0-9-]/g, '-')}`);
+                    elementToReset = document.getElementById(`social-link-${elementName.replace(/[^a-zA-Z0-9-]/g, '-')}`); 
                 } else {
                     const elementsMap = {
                         logo: DOMElements.draggable.logo,
@@ -676,7 +577,7 @@ const EventManager = {
                     elementToReset.setAttribute('data-x', '0');
                     elementToReset.setAttribute('data-y', '0');
                 }
-
+        
                 CardManager.renderCardContent();
             });
         });
@@ -686,13 +587,13 @@ const EventManager = {
             CardManager.generateCardLinkQr();
         });
 
-        DOMElements.fileInputs.logo.addEventListener('change', e => UIManager.handleImageUpload(e, {
-            maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.logo,
-            onSuccess: imageUrl => {
+        DOMElements.fileInputs.logo.addEventListener('change', e => UIManager.handleImageUpload(e, { 
+            maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.logo, 
+            onSuccess: imageUrl => { 
                 DOMElements.draggable.logo.src = imageUrl;
-                document.getElementById('input-logo').value = imageUrl;
-                UIManager.updateFavicon(imageUrl);
-            }
+                document.getElementById('input-logo').value = imageUrl; 
+                UIManager.updateFavicon(imageUrl); 
+            } 
         }));
 
         DOMElements.fileInputs.photo.addEventListener('change', e => UIManager.handleImageUpload(e, {
@@ -703,28 +604,28 @@ const EventManager = {
                 DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
             }
         }));
-
-        DOMElements.fileInputs.frontBg.addEventListener('change', e => UIManager.handleImageUpload(e, {
+        
+        DOMElements.fileInputs.frontBg.addEventListener('change', e => UIManager.handleImageUpload(e, { 
             maxSizeMB: Config.MAX_BG_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.frontBg,
-            onSuccess: url => {
-                CardManager.frontBgImageUrl = url; DOMElements.buttons.removeFrontBg.style.display = 'block';
-                CardManager.updateCardBackgrounds();
+            onSuccess: url => { 
+                CardManager.frontBgImageUrl = url; DOMElements.buttons.removeFrontBg.style.display = 'block'; 
+                CardManager.updateCardBackgrounds(); 
             }
         }));
-
-        DOMElements.fileInputs.backBg.addEventListener('change', e => UIManager.handleImageUpload(e, {
+        
+        DOMElements.fileInputs.backBg.addEventListener('change', e => UIManager.handleImageUpload(e, { 
             maxSizeMB: Config.MAX_BG_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.backBg,
-            onSuccess: url => {
-                CardManager.backBgImageUrl = url; DOMElements.buttons.removeBackBg.style.display = 'block';
-                CardManager.updateCardBackgrounds();
+            onSuccess: url => { 
+                CardManager.backBgImageUrl = url; DOMElements.buttons.removeBackBg.style.display = 'block'; 
+                CardManager.updateCardBackgrounds(); 
             }
         }));
-
+        
         DOMElements.fileInputs.qrCode.addEventListener('change', e => UIManager.handleImageUpload(e, {
-            maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.qrUpload, spinnerEl: DOMElements.spinners.qr,
-            onSuccess: imageUrl => {
+            maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.qrUpload, spinnerEl: DOMElements.spinners.qr, 
+            onSuccess: imageUrl => { 
                 CardManager.qrCodeImageUrl = imageUrl; DOMElements.qrImageUrlInput.value = imageUrl;
-                CardManager.updateQrCodeDisplay();
+                CardManager.updateQrCodeDisplay(); 
             }
         }));
 
@@ -740,14 +641,14 @@ const EventManager = {
         DOMElements.buttons.addSocial.addEventListener('click', () => CardManager.addSocialLink());
         DOMElements.buttons.reset.addEventListener('click', () => StateManager.reset());
         DOMElements.layoutSelect.addEventListener('change', e => CardManager.applyLayout(e.target.value));
-
+        
         DOMElements.buttons.shareCard.addEventListener('click', () => {
             if (typeof gtag === 'function') { gtag('event', 'share_card', { 'share_type': 'viewer_link' }); }
             ShareManager.shareCard();
         });
 
         DOMElements.buttons.shareEditor.addEventListener('click', () => {
-            if (typeof gtag === 'function') { gtag('event', 'share_editor'); }
+             if (typeof gtag === 'function') { gtag('event', 'share_editor'); }
             ShareManager.shareEditor();
         });
 
@@ -756,10 +657,10 @@ const EventManager = {
         DOMElements.draggable.name.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('input-name'); });
         DOMElements.draggable.tagline.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('input-tagline'); });
         DOMElements.draggable.qr.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('qr-code-accordion'); });
-
+        
         DOMElements.buttons.togglePhone.addEventListener('input', () => { CardManager.updatePhoneButtonsVisibility(); });
-
-        DOMElements.buttons.toggleSocial.addEventListener('input', () => {
+        
+        DOMElements.buttons.toggleSocial.addEventListener('input', () => { 
             CardManager.updateSocialLinksVisibility();
             CardManager.updateSocialButtonStyles();
             CardManager.updateSocialTextStyles();
@@ -775,25 +676,25 @@ const EventManager = {
         phoneTextControlsList.forEach(control => {
             control.addEventListener('input', () => { CardManager.updatePhoneTextStyles(); });
         });
-
-        DOMElements.buttons.removeFrontBg.addEventListener('click', () => {
-            CardManager.frontBgImageUrl = null;
-            DOMElements.fileInputs.frontBg.value = '';
-            DOMElements.frontBgOpacity.value = 1;
-            DOMElements.frontBgOpacity.dispatchEvent(new Event('input'));
-            DOMElements.buttons.removeFrontBg.style.display = 'none';
-            CardManager.updateCardBackgrounds();
+        
+        DOMElements.buttons.removeFrontBg.addEventListener('click', () => { 
+            CardManager.frontBgImageUrl = null; 
+            DOMElements.fileInputs.frontBg.value = ''; 
+            DOMElements.frontBgOpacity.value = 1; 
+            DOMElements.frontBgOpacity.dispatchEvent(new Event('input')); 
+            DOMElements.buttons.removeFrontBg.style.display = 'none'; 
+            CardManager.updateCardBackgrounds(); 
         });
-
-        DOMElements.buttons.removeBackBg.addEventListener('click', () => {
-            CardManager.backBgImageUrl = null;
-            DOMElements.fileInputs.backBg.value = '';
-            DOMElements.backBgOpacity.value = 1;
-            DOMElements.backBgOpacity.dispatchEvent(new Event('input'));
-            DOMElements.buttons.removeBackBg.style.display = 'none';
-            CardManager.updateCardBackgrounds();
+        
+        DOMElements.buttons.removeBackBg.addEventListener('click', () => { 
+            CardManager.backBgImageUrl = null; 
+            DOMElements.fileInputs.backBg.value = ''; 
+            DOMElements.backBgOpacity.value = 1; 
+            DOMElements.backBgOpacity.dispatchEvent(new Event('input')); 
+            DOMElements.buttons.removeBackBg.style.display = 'none'; 
+            CardManager.updateCardBackgrounds(); 
         });
-
+        
         DOMElements.buttons.downloadOptions.addEventListener('click', (e) => {
             e.stopPropagation();
             DOMElements.downloadMenu.classList.toggle('show');
@@ -809,18 +710,18 @@ const EventManager = {
             if (typeof gtag === 'function') { gtag('event', 'save_card', { 'file_type': 'png_front' }); }
             ExportManager.pendingExportTarget = 'front'; UIManager.showModal(DOMElements.exportModal.overlay, e.currentTarget);
         });
-
+        
         DOMElements.buttons.downloadPngBack.addEventListener('click', (e) => {
             if (typeof gtag === 'function') { gtag('event', 'save_card', { 'file_type': 'png_back' }); }
             ExportManager.pendingExportTarget = 'back'; UIManager.showModal(DOMElements.exportModal.overlay, e.currentTarget);
         });
-
+        
         DOMElements.buttons.downloadPdf.addEventListener('click', async (e) => {
             if (typeof gtag === 'function') { gtag('event', 'save_card', { 'file_type': 'pdf' }); }
             const button = e.currentTarget;
             UIManager.setButtonLoadingState(button, true);
-            try { await ExportManager.downloadPdf(); }
-            catch (error) { }
+            try { await ExportManager.downloadPdf(); } 
+            catch (error) {} 
             finally { UIManager.setButtonLoadingState(button, false); }
         });
 
@@ -833,20 +734,20 @@ const EventManager = {
             if (typeof gtag === 'function') { gtag('event', 'save_card', { 'file_type': 'qr_code_link' }); }
             const button = e.currentTarget;
             UIManager.setButtonLoadingState(button, true);
-            try { await ExportManager.downloadQrCode(); }
-            catch (error) { }
+            try { await ExportManager.downloadQrCode(); } 
+            catch (error) {} 
             finally { UIManager.setButtonLoadingState(button, false); }
         });
-
+        
         DOMElements.buttons.backToTop.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
         const handleScroll = () => { window.scrollY > 300 ? DOMElements.buttons.backToTop.classList.add('visible') : DOMElements.buttons.backToTop.classList.remove('visible'); };
         window.addEventListener('scroll', Utils.debounce(handleScroll, 100));
         DOMElements.exportModal.overlay.addEventListener('click', (e) => { if (e.target === DOMElements.exportModal.overlay) UIManager.hideModal(DOMElements.exportModal.overlay); });
         DOMElements.exportModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.exportModal.overlay));
-
+        
         DOMElements.exportModal.confirmBtn.addEventListener('click', async () => {
             try {
-                const options = { format: DOMElements.exportModal.format.value, quality: DOMElements.exportModal.quality.value / 100, scale: parseFloat(DOMElements.exportModal.scaleContainer.querySelector('.selected').dataset.scale) };
+                const options = { format: DOMElements.exportModal.format.value, quality: DOMElements.exportModal.quality.value / 100, scale: parseFloat(DOMElements.exportModal.scaleContainer.querySelector('.selected').dataset.scale) }; 
                 await ExportManager.downloadElement(options);
             } catch (error) { alert("فشل تحميل أداة الحفظ. يرجى المحاولة مرة أخرى."); }
         });
@@ -854,36 +755,36 @@ const EventManager = {
         DOMElements.exportModal.format.addEventListener('input', () => { DOMElements.exportModal.qualityGroup.style.display = DOMElements.exportModal.format.value === 'jpeg' ? 'block' : 'none'; });
         DOMElements.exportModal.quality.addEventListener('input', () => { DOMElements.exportModal.qualityValue.textContent = DOMElements.exportModal.quality.value; });
         DOMElements.exportModal.scaleContainer.addEventListener('click', e => { if (e.target.classList.contains('scale-btn')) { DOMElements.exportModal.scaleContainer.querySelector('.selected').classList.remove('selected'); e.target.classList.add('selected'); } });
-
+        
         DOMElements.buttons.saveToGallery.addEventListener('click', async (e) => {
             const button = e.currentTarget;
             UIManager.setButtonLoadingState(button, true, 'جاري الحفظ...');
-            try { await GalleryManager.addCurrentDesign(); }
+            try { await GalleryManager.addCurrentDesign(); } 
             finally { UIManager.setButtonLoadingState(button, false); }
         });
         DOMElements.buttons.showGallery.addEventListener('click', (e) => { GalleryManager.render(); UIManager.showModal(DOMElements.galleryModal.overlay, e.currentTarget); });
-
+        
         DOMElements.galleryModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.galleryModal.overlay));
         DOMElements.galleryModal.selectAllBtn.addEventListener('click', () => DOMElements.galleryModal.grid.querySelectorAll('.gallery-item-select').forEach(cb => { cb.checked = true; cb.closest('.gallery-item').classList.add('selected'); GalleryManager.updateSelectionState(); }));
         DOMElements.galleryModal.deselectAllBtn.addEventListener('click', () => DOMElements.galleryModal.grid.querySelectorAll('.gallery-item-select').forEach(cb => { cb.checked = false; cb.closest('.gallery-item').classList.remove('selected'); GalleryManager.updateSelectionState(); }));
-
+        
         DOMElements.galleryModal.downloadZipBtn.addEventListener('click', async (e) => {
             const button = e.currentTarget;
             UIManager.setButtonLoadingState(button, true, 'جاري التجهيز...');
-            try { await GalleryManager.downloadSelectedAsZip(); }
+            try { await GalleryManager.downloadSelectedAsZip(); } 
             finally { StateManager.applyState(StateManager.getStateObject(), false); UIManager.setButtonLoadingState(button, false); }
         });
 
-        DOMElements.galleryModal.grid.addEventListener('change', e => { if (e.target.classList.contains('gallery-item-select')) { e.target.closest('.gallery-item').classList.toggle('selected', e.target.checked); GalleryManager.updateSelectionState(); } });
+        DOMElements.galleryModal.grid.addEventListener('change', e => { if (e.target.classList.contains('gallery-item-select')) { e.target.closest('.gallery-item').classList.toggle('selected', e.target.checked); GalleryManager.updateSelectionState(); }});
         DOMElements.shareModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.shareModal.overlay));
-        DOMElements.shareModal.overlay.addEventListener('click', e => { if (e.target === DOMElements.shareModal.overlay) UIManager.hideModal(DOMElements.shareModal.overlay); });
-
+        DOMElements.shareModal.overlay.addEventListener('click', e => { if(e.target === DOMElements.shareModal.overlay) UIManager.hideModal(DOMElements.shareModal.overlay); });
+    
         DOMElements.buttons.undoBtn.addEventListener('click', () => HistoryManager.undo());
         DOMElements.buttons.redoBtn.addEventListener('click', () => HistoryManager.redo());
-
+        
         DOMElements.helpModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.helpModal.overlay));
-        DOMElements.helpModal.overlay.addEventListener('click', e => {
-            if (e.target === DOMElements.helpModal.overlay) UIManager.hideModal(DOMElements.helpModal.overlay);
+        DOMElements.helpModal.overlay.addEventListener('click', e => { 
+            if(e.target === DOMElements.helpModal.overlay) UIManager.hideModal(DOMElements.helpModal.overlay); 
         });
 
         DOMElements.helpModal.nav.addEventListener('click', (e) => {
@@ -899,96 +800,18 @@ const EventManager = {
                 targetPane.classList.add('active');
             }
         });
-        targetPane.classList.add('active');
     }
-});
-
-// --- New Event Listeners for Logo & Photo Enhancements ---
-
-// Logo Controls
-if (DOMElements.logoControls && DOMElements.logoControls.cropBtn) {
-    DOMElements.logoControls.cropBtn.addEventListener('click', () => {
-        const currentSrc = DOMElements.draggable.logo.src;
-        if (currentSrc) CropperManager.init(currentSrc, 'logo');
-    });
-}
-
-if (DOMElements.logoControls) {
-    DOMElements.logoControls.alignRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            DOMElements.draggable.logo.dataset.alignment = e.target.value;
-        });
-    });
-
-    DOMElements.logoControls.bgRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            DOMElements.draggable.logo.dataset.bg = e.target.value;
-        });
-    });
-
-    if (DOMElements.logoControls.shadowToggle) {
-        DOMElements.logoControls.shadowToggle.addEventListener('change', (e) => {
-            DOMElements.logoControls.shadowControls.style.display = e.target.checked ? 'block' : 'none';
-            CardManager.updateLogoShadow();
-        });
-    }
-
-    [DOMElements.logoControls.shadowColor, DOMElements.logoControls.shadowBlur, DOMElements.logoControls.shadowX, DOMElements.logoControls.shadowY].forEach(input => {
-        if (input) input.addEventListener('input', () => CardManager.updateLogoShadow());
-    });
-}
-
-// Photo Controls
-if (DOMElements.photoControlsAdvanced && DOMElements.photoControlsAdvanced.cropBtn) {
-    DOMElements.photoControlsAdvanced.cropBtn.addEventListener('click', () => {
-        const currentSrc = CardManager.personalPhotoUrl || DOMElements.photoControls.url.value;
-        if (currentSrc) CropperManager.init(currentSrc, 'photo');
-    });
-}
-
-if (DOMElements.photoControlsAdvanced) {
-    DOMElements.photoControlsAdvanced.alignRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            DOMElements.draggable.photo.dataset.alignment = e.target.value;
-        });
-    });
-
-    DOMElements.photoControlsAdvanced.bgRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            DOMElements.draggable.photo.dataset.bg = e.target.value;
-        });
-    });
-
-    if (DOMElements.photoControlsAdvanced.shadowToggle) {
-        DOMElements.photoControlsAdvanced.shadowToggle.addEventListener('change', (e) => {
-            DOMElements.photoControlsAdvanced.shadowControls.style.display = e.target.checked ? 'block' : 'none';
-            CardManager.updatePhotoShadow();
-        });
-    }
-
-    [DOMElements.photoControlsAdvanced.shadowColor, DOMElements.photoControlsAdvanced.shadowBlur, DOMElements.photoControlsAdvanced.shadowX, DOMElements.photoControlsAdvanced.shadowY].forEach(input => {
-        if (input) input.addEventListener('input', () => CardManager.updatePhotoShadow());
-    });
-}
-
-// Crop Modal
-if (DOMElements.cropModal && DOMElements.cropModal.applyBtn) {
-    DOMElements.cropModal.applyBtn.addEventListener('click', () => CropperManager.applyCrop());
-}
-if (DOMElements.cropModal && DOMElements.cropModal.cancelBtn) {
-    DOMElements.cropModal.cancelBtn.addEventListener('click', () => CropperManager.destroy());
-}
 };
 const App = {
     async init() {
         Object.assign(DOMElements, {
-            cardFront: document.getElementById('card-front-preview'),
-            cardBack: document.getElementById('card-back-preview'),
+            cardFront: document.getElementById('card-front-preview'), 
+            cardBack: document.getElementById('card-back-preview'), 
             cardFrontContent: document.getElementById('card-front-content'),
             cardBackContent: document.getElementById('card-back-content'),
-            phoneNumbersContainer: document.getElementById('phone-numbers-container'),
-            cardsWrapper: document.getElementById('cards-wrapper'),
-
+            phoneNumbersContainer: document.getElementById('phone-numbers-container'), 
+            cardsWrapper: document.getElementById('cards-wrapper'), 
+            
             draggable: {
                 logo: document.getElementById('card-logo'),
                 photo: document.getElementById('card-personal-photo-wrapper'),
@@ -1005,41 +828,29 @@ const App = {
                 borderWidth: document.getElementById('photo-border-width'),
             },
 
-            logoControls: {
-                cropBtn: document.getElementById('logo-crop-btn'),
-                alignRadios: document.querySelectorAll('input[name="logo-alignment"]'),
-                bgRadios: document.querySelectorAll('input[name="logo-bg"]'),
-                shadowToggle: document.getElementById('logo-shadow-toggle'),
-                shadowColor: document.getElementById('logo-shadow-color'),
-                shadowBlur: document.getElementById('logo-shadow-blur'),
-                shadowX: document.getElementById('logo-shadow-x'),
-                shadowY: document.getElementById('logo-shadow-y'),
-                shadowControls: document.getElementById('logo-shadow-controls')
-            },
-            photoControlsAdvanced: {
-                cropBtn: document.getElementById('photo-crop-btn'),
-                alignRadios: document.querySelectorAll('input[name="photo-alignment"]'),
-                bgRadios: document.querySelectorAll('input[name="photo-bg"]'),
-                shadowToggle: document.getElementById('photo-shadow-toggle'),
-                shadowColor: document.getElementById('photo-shadow-color'),
-                shadowBlur: document.getElementById('photo-shadow-blur'),
-                shadowX: document.getElementById('photo-shadow-x'),
-                shadowY: document.getElementById('photo-shadow-y'),
-                shadowControls: document.getElementById('photo-shadow-controls')
-            },
-            cropModal: {
-                overlay: document.getElementById('crop-modal-overlay'),
-                image: document.getElementById('crop-image'),
-                applyBtn: document.getElementById('crop-apply-btn'),
-                cancelBtn: document.getElementById('crop-cancel-btn')
-            },
+            themeGallery: document.getElementById('theme-gallery'),
+            layoutSelect: document.getElementById('layout-select'), liveAnnouncer: document.getElementById('live-announcer'), saveToast: document.getElementById('save-toast'),
+            nameInput: document.getElementById('input-name'), taglineInput: document.getElementById('input-tagline'),
+            qrImageUrlInput: document.getElementById('input-qr-url'), 
+            qrCodeContainer: document.getElementById('qrcode-container'), 
+            qrCodeTempGenerator: document.getElementById('qr-code-temp-generator'),
+            qrSourceRadios: document.querySelectorAll('input[name="qr-source"]'), 
+            qrUrlGroup: document.getElementById('qr-url-group'), 
+            qrUploadGroup: document.getElementById('qr-upload-group'),
+            qrAutoCardGroup: document.getElementById('qr-auto-card-group'),
+            qrSizeSlider: document.getElementById('qr-size'),
+            phoneBtnBgColor: document.getElementById('phone-btn-bg-color'), phoneBtnTextColor: document.getElementById('phone-btn-text-color'), phoneBtnFontSize: document.getElementById('phone-btn-font-size'), phoneBtnFont: document.getElementById('phone-btn-font'), backButtonsBgColor: document.getElementById('back-buttons-bg-color'), backButtonsTextColor: document.getElementById('back-buttons-text-color'), backButtonsFont: document.getElementById('back-buttons-font'),
+            frontBgOpacity: document.getElementById('front-bg-opacity'), backBgOpacity: document.getElementById('back-bg-opacity'), phoneBtnPadding: document.getElementById('phone-btn-padding'), backButtonsSize: document.getElementById('back-buttons-size'),
+            nameColor: document.getElementById('name-color'), nameFontSize: document.getElementById('name-font-size'), nameFont: document.getElementById('name-font'),
+            taglineColor: document.getElementById('tagline-color'), taglineFontSize: document.getElementById('tagline-font-size'), taglineFont: document.getElementById('tagline-font'),
+            social: { input: document.getElementById('social-media-input'), container: document.getElementById('dynamic-social-links-container'), typeSelect: document.getElementById('social-media-type') },
             fileInputs: { logo: document.getElementById('input-logo-upload'), photo: document.getElementById('input-photo-upload'), frontBg: document.getElementById('front-bg-upload'), backBg: document.getElementById('back-bg-upload'), qrCode: document.getElementById('input-qr-upload') },
             previews: { logo: document.getElementById('logo-preview') }, errors: { logoUpload: document.getElementById('logo-upload-error'), photoUpload: document.getElementById('photo-upload-error'), qrUpload: document.getElementById('qr-upload-error') },
             spinners: { logo: document.getElementById('logo-spinner'), photo: document.getElementById('photo-spinner'), frontBg: document.getElementById('front-bg-spinner'), backBg: document.getElementById('back-bg-spinner'), qr: document.getElementById('qr-spinner') },
             sounds: { success: document.getElementById('audio-success'), error: document.getElementById('audio-error') },
             phoneTextControls: { container: document.getElementById('phone-text-controls'), layoutRadios: document.querySelectorAll('input[name="phone-text-layout"]'), size: document.getElementById('phone-text-size'), color: document.getElementById('phone-text-color'), font: document.getElementById('phone-text-font'), },
             socialTextControls: { container: document.getElementById('social-text-controls'), size: document.getElementById('social-text-size'), color: document.getElementById('social-text-color'), font: document.getElementById('social-text-font'), },
-            socialControlsWrapper: document.getElementById('social-controls-wrapper'),
+            socialControlsWrapper: document.getElementById('social-controls-wrapper'), 
             exportLoadingOverlay: document.getElementById('export-loading-overlay'),
             exportModal: { overlay: document.getElementById('export-modal-overlay'), closeBtn: document.getElementById('export-modal-close'), confirmBtn: document.getElementById('confirm-export-btn'), format: document.getElementById('export-format'), qualityGroup: document.getElementById('export-quality-group'), quality: document.getElementById('export-quality'), qualityValue: document.getElementById('export-quality-value'), scaleContainer: document.querySelector('.scale-buttons') },
             galleryModal: { overlay: document.getElementById('gallery-modal-overlay'), closeBtn: document.getElementById('gallery-modal-close'), grid: document.getElementById('gallery-grid'), selectAllBtn: document.getElementById('gallery-select-all'), deselectAllBtn: document.getElementById('gallery-deselect-all'), downloadZipBtn: document.getElementById('gallery-download-zip') },
@@ -1052,14 +863,14 @@ const App = {
                 nav: document.querySelector('.help-tabs-nav'),
                 panes: document.querySelectorAll('.help-tab-pane')
             },
-
-            buttons: {
-                addPhone: document.getElementById('add-phone-btn'), addSocial: document.getElementById('add-social-btn'),
+            
+            buttons: { 
+                addPhone: document.getElementById('add-phone-btn'), addSocial: document.getElementById('add-social-btn'), 
                 removeFrontBg: document.getElementById('remove-front-bg-btn'), removeBackBg: document.getElementById('remove-back-bg-btn'),
-                backToTop: document.getElementById('back-to-top-btn'),
+                backToTop: document.getElementById('back-to-top-btn'), 
                 togglePhone: document.getElementById('toggle-phone-buttons'),
                 toggleSocial: document.getElementById('toggle-social-buttons'),
-                toggleMasterSocial: document.getElementById('toggle-master-social'),
+                toggleMasterSocial: document.getElementById('toggle-master-social'), 
                 saveToGallery: document.getElementById('save-to-gallery-btn'),
                 showGallery: document.getElementById('show-gallery-btn'),
                 shareCard: document.getElementById('share-card-btn'),
@@ -1076,7 +887,7 @@ const App = {
                 generateAutoQr: document.getElementById('generate-auto-qr-btn'),
             }
         });
-
+        
         Object.values(DOMElements.draggable).forEach(el => {
             if (el) {
                 el.classList.add('draggable-on-card');
@@ -1090,7 +901,7 @@ const App = {
         UIManager.fetchAndPopulateBackgrounds();
         GalleryManager.init();
         EventManager.bindEvents();
-
+        
         const loadedFromUrl = await ShareManager.loadFromUrl();
         if (loadedFromUrl) {
             HistoryManager.pushState(StateManager.getStateObject());
@@ -1106,19 +917,19 @@ const App = {
                 UIManager.announce("تم تحميل التصميم الافتراضي.");
             }
         }
-
+        
         const initialQrSource = document.querySelector('input[name="qr-source"]:checked')?.value || 'auto-card';
         DOMElements.qrUrlGroup.style.display = initialQrSource === 'custom' ? 'block' : 'none';
         DOMElements.qrUploadGroup.style.display = initialQrSource === 'upload' ? 'block' : 'none';
         DOMElements.qrAutoCardGroup.style.display = initialQrSource === 'auto-card' ? 'block' : 'none';
 
-
+        
         CardManager.updatePhoneButtonsVisibility();
         CardManager.updatePhoneTextStyles();
         DragManager.init();
-
+        
         UIManager.announce("محرر بطاقة الأعمال جاهز للاستخدام.");
-
+        
         TourManager.init();
     }
 };
