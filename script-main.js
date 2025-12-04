@@ -459,6 +459,10 @@ const EventManager = {
             
             input.addEventListener(eventType, () => { 
                 if (!StateManager.isApplyingState) {
+                    if(input.id === 'logo-shadow-enabled' || input.id === 'photo-shadow-enabled') {
+                        CardManager.updateLogoShadow();
+                        CardManager.updatePersonalPhotoStyles();
+                    }
                 }
             }); 
 
@@ -467,12 +471,12 @@ const EventManager = {
                 if (input.id.includes('photo-')) CardManager.updatePersonalPhotoStyles();
                 if (input.id.includes('phone-btn')) CardManager.updatePhoneButtonStyles();
                 
-                if (input.id.startsWith('back-buttons')) {
-                    CardManager.updateSocialButtonStyles();
-                }
-                if (input.id.startsWith('social-text') || input.id.includes('-static-') || input.id.includes('-dynsocial_')) {
-                    CardManager.updateSocialTextStyles();
-                }
+                if (input.name === 'logo-align') CardManager.updateLogoAlignment();
+                if (input.id === 'logo-bg-enabled' || input.id === 'logo-bg-color') CardManager.updateLogoBackground();
+                if (input.id.startsWith('logo-shadow-')) CardManager.updateLogoShadow();
+
+                if (input.id.startsWith('back-buttons')) CardManager.updateSocialButtonStyles();
+                if (input.id.startsWith('social-text') || input.id.includes('-static-') || input.id.includes('-dynsocial_')) CardManager.updateSocialTextStyles();
 
                 if (input.id.startsWith('input-') && !input.id.includes('-static-') && !input.id.includes('-dynsocial_')) CardManager.updateSocialLinks();
                 if (input.id.startsWith('front-bg-') || input.id.startsWith('back-bg-')) CardManager.updateCardBackgrounds();
@@ -489,6 +493,7 @@ const EventManager = {
             });
             input.addEventListener('focus', () => {
                 let draggableId = input.dataset.updateTarget;
+                if (draggableId === 'card-logo-img') draggableId = 'card-logo'; // Focus container not img
                 const parentGroup = input.closest('.form-group');
                 if (parentGroup && parentGroup.id.startsWith('form-group-static-')) {
                     draggableId = `social-link-static-${parentGroup.id.replace('form-group-static-', '')}`;
@@ -498,6 +503,7 @@ const EventManager = {
             }); 
             input.addEventListener('blur', () => {
                 let draggableId = input.dataset.updateTarget;
+                if (draggableId === 'card-logo-img') draggableId = 'card-logo'; // Focus container not img
                 const parentGroup = input.closest('.form-group');
                 if (parentGroup && parentGroup.id.startsWith('form-group-static-')) {
                     draggableId = `social-link-static-${parentGroup.id.replace('form-group-static-', '')}`;
@@ -589,21 +595,30 @@ const EventManager = {
 
         DOMElements.fileInputs.logo.addEventListener('change', e => UIManager.handleImageUpload(e, { 
             maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.logo, 
-            onSuccess: imageUrl => { 
-                DOMElements.draggable.logo.src = imageUrl;
-                document.getElementById('input-logo').value = imageUrl; 
-                UIManager.updateFavicon(imageUrl); 
+            onSuccess: async (imageUrl) => { 
+                const croppedDataUrl = await ImageCropper.open(imageUrl);
+                if (croppedDataUrl) {
+                    DOMElements.draggable.logoImg.src = croppedDataUrl;
+                    document.getElementById('input-logo').value = croppedDataUrl;
+                    DOMElements.previews.logo.src = croppedDataUrl;
+                    UIManager.updateFavicon(croppedDataUrl); 
+                }
             } 
         }));
 
+        // START: MODIFIED PHOTO UPLOAD EVENT
         DOMElements.fileInputs.photo.addEventListener('change', e => UIManager.handleImageUpload(e, {
             maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.photoUpload, spinnerEl: DOMElements.spinners.photo,
-            onSuccess: imageUrl => {
-                CardManager.personalPhotoUrl = imageUrl;
-                DOMElements.photoControls.url.value = imageUrl;
-                DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
+            onSuccess: async (imageUrl) => {
+                const croppedDataUrl = await ImageCropper.open(imageUrl);
+                if (croppedDataUrl) {
+                    CardManager.personalPhotoUrl = croppedDataUrl;
+                    DOMElements.photoControls.url.value = croppedDataUrl;
+                    DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             }
         }));
+        // END: MODIFIED PHOTO UPLOAD EVENT
         
         DOMElements.fileInputs.frontBg.addEventListener('change', e => UIManager.handleImageUpload(e, { 
             maxSizeMB: Config.MAX_BG_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.frontBg,
@@ -814,19 +829,29 @@ const App = {
             
             draggable: {
                 logo: document.getElementById('card-logo'),
+                logoImg: document.getElementById('card-logo-img'),
                 photo: document.getElementById('card-personal-photo-wrapper'),
                 name: document.getElementById('card-name'),
                 tagline: document.getElementById('card-tagline'),
                 qr: document.getElementById('qr-code-wrapper')
             },
 
+            // START: UPDATED PHOTO CONTROLS
             photoControls: {
                 url: document.getElementById('input-photo-url'),
                 size: document.getElementById('photo-size'),
                 shapeRadios: document.querySelectorAll('input[name="photo-shape"]'),
+                opacity: document.getElementById('photo-opacity'),
                 borderColor: document.getElementById('photo-border-color'),
                 borderWidth: document.getElementById('photo-border-width'),
+                bgEnabled: document.getElementById('photo-bg-enabled'),
+                bgColor: document.getElementById('photo-bg-color'),
+                shadowEnabled: document.getElementById('photo-shadow-enabled'),
+                shadowControls: document.getElementById('photo-shadow-controls'),
+                shadowBlur: document.getElementById('photo-shadow-blur'),
+                shadowColor: document.getElementById('photo-shadow-color'),
             },
+            // END: UPDATED PHOTO CONTROLS
 
             themeGallery: document.getElementById('theme-gallery'),
             layoutSelect: document.getElementById('layout-select'), liveAnnouncer: document.getElementById('live-announcer'), saveToast: document.getElementById('save-toast'),
@@ -889,7 +914,7 @@ const App = {
         });
         
         Object.values(DOMElements.draggable).forEach(el => {
-            if (el) {
+            if (el && el.id !== 'card-logo-img') { // Skip the inner image
                 el.classList.add('draggable-on-card');
                 const hint = document.createElement('i');
                 hint.className = 'fas fa-arrows-alt dnd-hover-hint';
@@ -897,6 +922,7 @@ const App = {
             }
         });
 
+        ImageCropper.init();
         UIManager.init();
         UIManager.fetchAndPopulateBackgrounds();
         GalleryManager.init();

@@ -1,5 +1,108 @@
 "use strict";
 
+const ImageCropper = {
+    cropper: null,
+    modalOverlay: null,
+    confirmBtn: null,
+    cancelBtn: null,
+    imageElement: null,
+    resolvePromise: null,
+
+    init() {
+        this.modalOverlay = document.getElementById('crop-modal-overlay');
+        this.confirmBtn = document.getElementById('confirm-crop-btn');
+        this.cancelBtn = document.getElementById('cancel-crop-btn');
+        this.imageElement = document.getElementById('crop-image');
+
+        this.confirmBtn.addEventListener('click', this.handleConfirm.bind(this));
+        this.cancelBtn.addEventListener('click', this.handleCancel.bind(this));
+        this.modalOverlay.addEventListener('click', (e) => {
+            if (e.target === this.modalOverlay) this.handleCancel();
+        });
+    },
+
+    open(imageUrl) {
+        return new Promise((resolve) => {
+            this.resolvePromise = resolve;
+            console.log("[CROPPPER_DEBUG] 1. Open called with URL:", imageUrl);
+
+            // Immediately show the modal.
+            UIManager.showModal(this.modalOverlay);
+
+            // Attach onload handler BEFORE setting src.
+            this.imageElement.onload = () => {
+                console.log("[CROPPPER_DEBUG] 2. Image has loaded successfully.");
+
+                if (this.cropper) {
+                    this.cropper.destroy();
+                    console.log("[CROPPPER_DEBUG] 3. Previous cropper instance destroyed.");
+                }
+
+                // Wait for the modal's CSS animation to finish.
+                setTimeout(() => {
+                    console.log("[CROPPPER_DEBUG] 4. Timeout finished, attempting to initialize Cropper.");
+                    try {
+                        this.cropper = new Cropper(this.imageElement, {
+                            aspectRatio: 1 / 1,
+                            viewMode: 1,
+                            background: false,
+                            responsive: true,
+                        });
+                        console.log("[CROPPPER_DEBUG] 5. Cropper initialized successfully. Object:", this.cropper);
+                    } catch (error) {
+                        console.error("[CROPPPER_DEBUG] 5. FAILED to initialize Cropper:", error);
+                    }
+                }, 350); 
+            };
+            
+            this.imageElement.onerror = () => {
+                console.error(`[CROPPPER_DEBUG] Image failed to load from URL: ${imageUrl}`);
+                alert('حدث خطأ أثناء تحميل الصورة للقص.');
+                this.handleCancel();
+            };
+
+            // Set src to start loading.
+            this.imageElement.src = imageUrl;
+        });
+    },
+
+    handleConfirm() {
+        console.log("[CROPPPER_DEBUG] Confirm button clicked. Cropper object:", this.cropper);
+        if (!this.cropper) {
+            alert("خطأ: أداة القص غير جاهزة. يرجى المحاولة مرة أخرى.");
+            return;
+        }
+        const canvas = this.cropper.getCroppedCanvas({
+            width: 512,
+            height: 512,
+            imageSmoothingQuality: 'high',
+        });
+        const croppedDataUrl = canvas.toDataURL('image/png');
+        this.resolvePromise(croppedDataUrl);
+        this.close();
+    },
+
+    handleCancel() {
+        if (this.resolvePromise) {
+            this.resolvePromise(null);
+        }
+        this.close();
+    },
+
+    close() {
+        if (this.cropper) {
+            this.cropper.destroy();
+            this.cropper = null;
+        }
+        this.imageElement.src = '';
+        this.imageElement.onload = null;
+        this.imageElement.onerror = null;
+        UIManager.hideModal(this.modalOverlay);
+    }
+};
+
+// ... باقي الكود في الملف يبقى كما هو ...
+// (TourManager, UIManager, etc.)
 const TourManager = {
   TOUR_SHOWN_KEY: "digitalCardTourShown_v5_desktop", // إصدار جديد خاص بسطح المكتب
   tour: null,
@@ -31,7 +134,6 @@ const TourManager = {
       },
     });
 
-    // --- خطوات جديدة لواجهة سطح المكتب فقط ---
     const steps = [
       {
         id: "welcome",
@@ -322,7 +424,6 @@ const UIManager = {
       return;
     }
 
-    // 1. فتح الأكورديون (Accordion) والتركيز التلقائي
     const parentAccordion = targetElement.closest("details");
     if (parentAccordion) {
       const sidebar = parentAccordion.closest(".pro-sidebar");
@@ -337,7 +438,6 @@ const UIManager = {
       parentAccordion.open = true;
     }
 
-    // 2. التمرير إلى العنصر وتظليله
     setTimeout(() => {
       const highlightTarget =
         targetElement.closest(".fieldset") ||
@@ -350,7 +450,7 @@ const UIManager = {
       if (scrollContainer) {
         const targetTop = highlightTarget.offsetTop;
         scrollContainer.scrollTo({
-          top: targetTop - 60, // تمرير إلى أعلى العنصر مع هامش
+          top: targetTop - 60,
           behavior: "smooth",
         });
       } else {
@@ -395,7 +495,7 @@ const UIManager = {
       triggerElement.setAttribute("aria-expanded", "true");
     }
     const eventListener = this.trapFocus(modalOverlay);
-    focusTrapListeners.set(modalOverlay, eventListener);
+    window.focusTrapListeners.set(modalOverlay, eventListener);
   },
   hideModal(modalOverlay) {
     modalOverlay.classList.remove("visible");
@@ -405,10 +505,10 @@ const UIManager = {
       triggerElement.setAttribute("aria-expanded", "false");
       triggerElement.focus();
     }
-    const eventListener = focusTrapListeners.get(modalOverlay);
+    const eventListener = window.focusTrapListeners.get(modalOverlay);
     if (eventListener) {
       modalOverlay.removeEventListener("keydown", eventListener);
-      focusTrapListeners.delete(modalOverlay);
+      window.focusTrapListeners.delete(modalOverlay);
     }
   },
   setupDragDrop(dropZoneId, fileInputId) {
@@ -456,3 +556,8 @@ const UIManager = {
     }
   },
 };
+
+// Define focusTrapListeners globally if it's not already
+if (typeof window.focusTrapListeners === 'undefined') {
+    window.focusTrapListeners = new Map();
+}
