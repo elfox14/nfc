@@ -2042,19 +2042,12 @@ html.ltr .testimonial-card {
 /* تنسيقات مودال قص الصور */
 .crop-modal-content {
     max-width: 500px;
-    /* نجعل النافذة قابلة للتمدد عمودياً */
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
 }
 
 #crop-image-container {
     margin-top: 15px;
+    max-height: 400px;
     width: 100%;
-    /* السماح للحاوية بأخذ المساحة المتاحة */
-    flex-grow: 1; 
-    min-height: 200px; /* حد أدنى للارتفاع */
-    overflow: hidden; /* ضروري لعمل الأداة */
 }
 
 #crop-image {

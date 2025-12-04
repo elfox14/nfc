@@ -459,9 +459,8 @@ const EventManager = {
             
             input.addEventListener(eventType, () => { 
                 if (!StateManager.isApplyingState) {
-                    if(input.id === 'logo-shadow-enabled' || input.id === 'photo-shadow-enabled') {
+                    if(input.id === 'logo-shadow-enabled') {
                         CardManager.updateLogoShadow();
-                        CardManager.updatePersonalPhotoStyles();
                     }
                 }
             }); 
@@ -471,12 +470,22 @@ const EventManager = {
                 if (input.id.includes('photo-')) CardManager.updatePersonalPhotoStyles();
                 if (input.id.includes('phone-btn')) CardManager.updatePhoneButtonStyles();
                 
-                if (input.name === 'logo-align') CardManager.updateLogoAlignment();
-                if (input.id === 'logo-bg-enabled' || input.id === 'logo-bg-color') CardManager.updateLogoBackground();
-                if (input.id.startsWith('logo-shadow-')) CardManager.updateLogoShadow();
+                if (input.name === 'logo-align') {
+                    CardManager.updateLogoAlignment();
+                }
+                if (input.id === 'logo-bg-color') {
+                    CardManager.updateLogoBackground();
+                }
+                if (input.id.startsWith('logo-shadow-')) {
+                    CardManager.updateLogoShadow();
+                }
 
-                if (input.id.startsWith('back-buttons')) CardManager.updateSocialButtonStyles();
-                if (input.id.startsWith('social-text') || input.id.includes('-static-') || input.id.includes('-dynsocial_')) CardManager.updateSocialTextStyles();
+                if (input.id.startsWith('back-buttons')) {
+                    CardManager.updateSocialButtonStyles();
+                }
+                if (input.id.startsWith('social-text') || input.id.includes('-static-') || input.id.includes('-dynsocial_')) {
+                    CardManager.updateSocialTextStyles();
+                }
 
                 if (input.id.startsWith('input-') && !input.id.includes('-static-') && !input.id.includes('-dynsocial_')) CardManager.updateSocialLinks();
                 if (input.id.startsWith('front-bg-') || input.id.startsWith('back-bg-')) CardManager.updateCardBackgrounds();
@@ -606,19 +615,14 @@ const EventManager = {
             } 
         }));
 
-        // START: MODIFIED PHOTO UPLOAD EVENT
         DOMElements.fileInputs.photo.addEventListener('change', e => UIManager.handleImageUpload(e, {
             maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.photoUpload, spinnerEl: DOMElements.spinners.photo,
-            onSuccess: async (imageUrl) => {
-                const croppedDataUrl = await ImageCropper.open(imageUrl);
-                if (croppedDataUrl) {
-                    CardManager.personalPhotoUrl = croppedDataUrl;
-                    DOMElements.photoControls.url.value = croppedDataUrl;
-                    DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
-                }
+            onSuccess: imageUrl => {
+                CardManager.personalPhotoUrl = imageUrl;
+                DOMElements.photoControls.url.value = imageUrl;
+                DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
             }
         }));
-        // END: MODIFIED PHOTO UPLOAD EVENT
         
         DOMElements.fileInputs.frontBg.addEventListener('change', e => UIManager.handleImageUpload(e, { 
             maxSizeMB: Config.MAX_BG_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.frontBg,
@@ -836,22 +840,13 @@ const App = {
                 qr: document.getElementById('qr-code-wrapper')
             },
 
-            // START: UPDATED PHOTO CONTROLS
             photoControls: {
                 url: document.getElementById('input-photo-url'),
                 size: document.getElementById('photo-size'),
                 shapeRadios: document.querySelectorAll('input[name="photo-shape"]'),
-                opacity: document.getElementById('photo-opacity'),
                 borderColor: document.getElementById('photo-border-color'),
                 borderWidth: document.getElementById('photo-border-width'),
-                bgEnabled: document.getElementById('photo-bg-enabled'),
-                bgColor: document.getElementById('photo-bg-color'),
-                shadowEnabled: document.getElementById('photo-shadow-enabled'),
-                shadowControls: document.getElementById('photo-shadow-controls'),
-                shadowBlur: document.getElementById('photo-shadow-blur'),
-                shadowColor: document.getElementById('photo-shadow-color'),
             },
-            // END: UPDATED PHOTO CONTROLS
 
             themeGallery: document.getElementById('theme-gallery'),
             layoutSelect: document.getElementById('layout-select'), liveAnnouncer: document.getElementById('live-announcer'), saveToast: document.getElementById('save-toast'),

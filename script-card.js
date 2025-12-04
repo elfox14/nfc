@@ -116,21 +116,13 @@ const CardManager = {
         }
     },
 
-    // START: MODIFIED LOGO BACKGROUND FUNCTION
     updateLogoBackground() {
-        const enabled = document.getElementById('logo-bg-enabled').checked;
-        const colorInput = document.getElementById('logo-bg-color');
-        const logoImg = document.getElementById('card-logo-img');
-        
-        if (colorInput) {
-            colorInput.style.visibility = enabled ? 'visible' : 'hidden';
-        }
-
+        const bgColor = document.getElementById('logo-bg-color').value;
+        const logoImg = document.getElementById('card-logo-img'); // استهداف الصورة مباشرة
         if (logoImg) {
-            logoImg.style.backgroundColor = enabled ? colorInput.value : 'transparent';
+            logoImg.style.backgroundColor = bgColor;
         }
     },
-    // END: MODIFIED LOGO BACKGROUND FUNCTION
 
     updateLogoShadow() {
         const enabled = document.getElementById('logo-shadow-enabled').checked;
@@ -149,47 +141,25 @@ const CardManager = {
         }
     },
     
-    // START: MODIFIED PERSONAL PHOTO STYLES FUNCTION
     updatePersonalPhotoStyles() {
         const wrapper = DOMElements.draggable.photo;
         if (!wrapper) return;
 
-        const controls = DOMElements.photoControls;
-        const imageUrl = controls.url.value;
-        const size = controls.size.value;
+        const imageUrl = DOMElements.photoControls.url.value;
+        const size = DOMElements.photoControls.size.value;
         const shape = document.querySelector('input[name="photo-shape"]:checked').value;
-        const opacity = controls.opacity.value;
-        const borderColor = controls.borderColor.value;
-        const borderWidth = controls.borderWidth.value;
-        
-        // Background controls
-        const bgEnabled = controls.bgEnabled.checked;
-        controls.bgColor.style.visibility = bgEnabled ? 'visible' : 'hidden';
-        const bgColor = bgEnabled ? controls.bgColor.value : 'transparent';
+        const borderColor = DOMElements.photoControls.borderColor.value;
+        const borderWidth = DOMElements.photoControls.borderWidth.value;
 
-        // Shadow controls
-        const shadowEnabled = controls.shadowEnabled.checked;
-        controls.shadowControls.style.display = shadowEnabled ? 'grid' : 'none';
-        
         const safeUrl = (typeof sanitizeURL === 'function') ? sanitizeURL(imageUrl) : imageUrl;
-        
+
         wrapper.style.width = `${size}%`;
+        wrapper.style.height = `${size}%`;
         wrapper.style.borderRadius = shape === 'circle' ? '50%' : '8px';
         wrapper.style.border = `${borderWidth}px solid ${borderColor}`;
         wrapper.style.backgroundImage = safeUrl ? `url(${safeUrl})` : 'none';
-        wrapper.style.backgroundColor = bgColor;
-        wrapper.style.opacity = opacity;
         wrapper.style.display = safeUrl ? 'block' : 'none';
-
-        if (shadowEnabled) {
-            const shadowColor = controls.shadowColor.value;
-            const shadowBlur = controls.shadowBlur.value;
-            wrapper.style.boxShadow = `0 4px ${shadowBlur}px ${shadowColor}`;
-        } else {
-            wrapper.style.boxShadow = 'none';
-        }
     },
-    // END: MODIFIED PERSONAL PHOTO STYLES FUNCTION
 
     updatePhoneButtonStyles() {
         const bgColor = DOMElements.phoneBtnBgColor.value; const textColor = DOMElements.phoneBtnTextColor.value; const fontSize = DOMElements.phoneBtnFontSize.value; const fontFamily = DOMElements.phoneBtnFont.value; const padding = DOMElements.phoneBtnPadding.value;
@@ -864,6 +834,7 @@ const CardManager = {
         handleUpdate();
     },
 
+    // --- MODIFIED FUNCTION ---
     applyLayout(layoutName = 'classic') {
         DOMElements.cardsWrapper.dataset.layout = layoutName;
         // Recalculate the scale for mobile view whenever layout changes
