@@ -18,9 +18,16 @@
         href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+
     <link rel="stylesheet" href="style.css?v=1.1">
     <link rel="stylesheet" href="mobile.css">
     <link rel="stylesheet" href="toast.css">
+
+    <!-- Cropper.js JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
@@ -239,9 +246,13 @@
                             <div class="card-background-layer" id="front-bg-image-layer"></div>
                             <div class="card-background-layer" id="front-bg-gradient-layer"></div>
                             <div class="card-content-layer card-front-content-layer" id="card-front-content">
-                                <img src="mcprime-logo-transparent.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية"
-                                    class="logo-front" id="card-logo" data-input-target-id="logo-drop-zone"
-                                    style="max-width: 25%; opacity: 1;">
+                                
+                                <!-- === START: MODIFIED LOGO STRUCTURE === -->
+                                <div class="draggable-wrapper" id="card-logo" data-input-target-id="logo-drop-zone">
+                                    <img src="mcprime-logo-transparent.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية" class="logo-front" id="card-logo-img">
+                                </div>
+                                <!-- === END: MODIFIED LOGO STRUCTURE === -->
+
                                 <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
                                 </div>
                                 <h1 id="card-name" data-input-target-id="name-tagline-accordion"
@@ -276,20 +287,23 @@
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
 
+            <!-- === START: MODIFIED LOGO CONTROLS === -->
             <details class="fieldset-accordion" open>
                 <summary>الشعار</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" id="logo-drop-zone">
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة هنا</span></div>
                         <legend>الشعار (Logo)</legend>
-                        <div class="form-group"><label for="input-logo">رابط الشعار</label><input type="url"
-                                id="input-logo" value="mcprime-logo-transparent.png" data-update-target="card-logo"
-                                data-update-property="src"></div>
+
+                        <!-- قسم الرفع والرابط -->
                         <div class="form-group">
-                            <label for="input-logo-upload">أو ارفع صورة (أقل من 2MB)</label>
+                            <label for="input-logo">رابط الشعار</label>
+                            <input type="text" id="input-logo" value="mcprime-logo-transparent.png" data-update-target="card-logo-img" data-update-property="src">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-logo-upload">أو ارفع صورة (أقل من 10MB)</label>
                             <div class="logo-upload-group">
-                                <img id="logo-preview" src="" alt="معاينة الشعار المرفوع">
+                                <img id="logo-preview" src="mcprime-logo-transparent.png" alt="معاينة الشعار المرفوع">
                                 <div class="file-input-wrapper">
                                     <input type="file" id="input-logo-upload" accept="image/*">
                                     <div class="input-error-msg" id="logo-upload-error"></div>
@@ -297,17 +311,61 @@
                                 <div class="spinner" id="logo-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="logo-size">حجم الشعار</label>
-                            <input type="range" id="logo-size" min="10" max="80" value="25"
-                                data-update-target="card-logo" data-update-property="style.maxWidth"
-                                data-update-unit="%">
+
+                        <!-- قسم الحجم والمحاذاة -->
+                        <div class="control-grid">
+                            <div class="form-group">
+                                <label for="logo-size">حجم الشعار</label>
+                                <input type="range" id="logo-size" min="10" max="80" value="25" data-update-target="card-logo-img" data-update-property="style.maxWidth" data-update-unit="%">
+                            </div>
+                            <div class="form-group">
+                                <label for="logo-align-group">محاذاة الشعار</label>
+                                <div class="radio-group" id="logo-align-group">
+                                    <label><input type="radio" name="logo-align" value="flex-start"> يسار</label>
+                                    <label><input type="radio" name="logo-align" value="center" checked> وسط</label>
+                                    <label><input type="radio" name="logo-align" value="flex-end"> يمين</label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="logo-opacity">شفافية الشعار</label>
-                            <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
-                                data-update-target="card-logo" data-update-property="style.opacity">
+
+                        <!-- قسم الخلفية والشفافية -->
+                        <div class="control-grid">
+                            <div class="form-group">
+                                <label for="logo-opacity">شفافية الشعار</label>
+                                <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1" data-update-target="card-logo-img" data-update-property="style.opacity">
+                            </div>
+                            <div class="form-group">
+                                <label for="logo-bg-color">خلفية الشعار</label>
+                                <select id="logo-bg-color">
+                                    <option value="transparent">بدون</option>
+                                    <option value="#ffffff">أبيض</option>
+                                    <option value="#000000">أسود</option>
+                                </select>
+                            </div>
                         </div>
+
+                        <!-- قسم الظل -->
+                        <fieldset class="fieldset" style="margin-top: 15px;">
+                            <legend>ظل الشعار</legend>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="logo-shadow-enabled" style="width: auto; margin-inline-end: 10px;">
+                                    <span>تفعيل الظل</span>
+                                </label>
+                            </div>
+                            <div class="control-grid" id="logo-shadow-controls" style="display: none;">
+                                <div class="form-group">
+                                    <label for="logo-shadow-blur">حدة الظل</label>
+                                    <input type="range" id="logo-shadow-blur" min="0" max="40" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="logo-shadow-color">لون الظل</label>
+                                    <input type="color" id="logo-shadow-color" value="#000000">
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- قسم الموضع والتحريك -->
                         <div class="placement-control">
                             <label>مكان العنصر</label>
                             <div class="radio-group">
@@ -315,32 +373,22 @@
                                 <label><input type="radio" name="placement-logo" value="back"> خلفي</label>
                             </div>
                         </div>
-                        <details class="fieldset-accordion"
-                            style="margin-top: 10px; background: transparent; border: none;">
-                            <summary
-                                style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                خيارات متقدمة (تحريك دقيق)</summary>
-                            <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                <div class="form-group">
-                                    <label>تحريك دقيق (بالبكسل)</label>
-                                    <div class="position-controls-grid" data-target-id="card-logo">
-                                        <button type="button" class="btn-icon move-btn" data-direction="up"
-                                            title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                        <div class="controls-row">
-                                            <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                            <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                        </div>
-                                        <button type="button" class="btn-icon move-btn" data-direction="down"
-                                            title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                    </div>
+                        
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>تحريك دقيق (بالبكسل)</label>
+                            <div class="position-controls-grid" data-target-id="card-logo">
+                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                <div class="controls-row">
+                                    <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                    <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
                                 </div>
+                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
                             </div>
-                        </details>
+                        </div>
                     </fieldset>
                 </div>
             </details>
+            <!-- === END: MODIFIED LOGO CONTROLS === -->
 
             <details class="fieldset-accordion" open>
                 <summary>الصورة الشخصية</summary>
@@ -1257,26 +1305,16 @@
 
     <div id="crop-modal-overlay" class="modal-overlay">
         <div class="modal-content crop-modal-content">
-            <h3>قص الصورة الشخصية</h3>
+            <h3>قص الصورة</h3>
             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 15px;">
                 حرّك الصورة لتحديد الجزء المطلوب ثم اضغط "تأكيد".
             </p>
             <div id="crop-image-container">
                 <img id="crop-image" src="" alt="معاينة الصورة للقص">
             </div>
-
-            <div class="form-group" style="margin-top: 15px;">
-                <label>معاينة الشكل النهائي</label>
-                <div class="radio-group cropper-preview-toggle">
-                    <label><input type="radio" name="crop-shape-preview" value="square" checked> مربع</label>
-                    <label><input type="radio" name="crop-shape-preview" value="circle"> دائري</label>
-                </div>
-            </div>
-
-            <div class="modal-footer">
+            <div class="modal-footer" style="justify-content: flex-end;">
                 <button id="cancel-crop-btn" class="btn btn-secondary" style="width: auto;">إلغاء</button>
-                <button id="confirm-crop-btn" class="modal-confirm" style="width: auto; flex-grow: 1;">تأكيد
-                    القص</button>
+                <button id="confirm-crop-btn" class="modal-confirm" style="width: auto; flex-grow: 1;">تأكيد القص</button>
             </div>
         </div>
     </div>

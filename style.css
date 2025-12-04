@@ -2013,3 +2013,51 @@ html.ltr .testimonial-card {
     color: var(--accent-primary);
     font-size: 1.5rem;
 }
+
+/* --- تحسينات الشعار --- */
+
+/* الحاوية الجديدة للشعار */
+#card-logo {
+    width: 100%; /* اجعل الحاوية تمتد بعرض الكارت لتسهيل المحاذاة */
+    display: flex;
+    justify-content: center; /* المحاذاة الافتراضية */
+    align-items: center;
+    padding: 5px; /* هامش داخلي بسيط */
+}
+
+/* صورة الشعار نفسها */
+#card-logo-img {
+    max-width: 25%; /* الحجم الافتراضي */
+    object-fit: contain;
+    transition: all 0.3s ease;
+    padding: 5px; /* مساحة بسيطة للخلفية المضافة */
+    border-radius: 8px; /* لتنعيم حواف الخلفية */
+}
+
+/* إظهار/إخفاء أدوات التحكم بالظل */
+#logo-shadow-controls {
+    transition: opacity 0.3s ease;
+}
+
+/* تنسيقات مودال قص الصور */
+.crop-modal-content {
+    max-width: 500px;
+    /* نجعل النافذة قابلة للتمدد عمودياً */
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#crop-image-container {
+    margin-top: 15px;
+    width: 100%;
+    /* السماح للحاوية بأخذ المساحة المتاحة */
+    flex-grow: 1; 
+    min-height: 200px; /* حد أدنى للارتفاع */
+    overflow: hidden; /* ضروري لعمل الأداة */
+}
+
+#crop-image {
+    display: block;
+    max-width: 100%;
+}
