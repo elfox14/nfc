@@ -1,4 +1,7 @@
-// server.js (الكود الكامل والنهائي بدون أي اختصارات)
+```javascript
+--- START OF FILE server.js ---
+
+// server.js (الكود الكامل مع إضافة مسار Sitemap)
 
 require('dotenv').config();
 const express = require('express');
@@ -576,58 +579,24 @@ app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
   const txt = [
     'User-agent: *',
-    'Allow: /nfc/',
-    'Allow: /nfc/viewer.html',
-    'Disallow: /nfc/view/',
-    'Disallow: /nfc/editor',
-    'Disallow: /nfc/editor.html',
-    'Disallow: /nfc/viewer.ejs',
-    `Sitemap: ${base}/sitemap.xml`
+    'Allow: /',
+    'Disallow: /admin/',
+    'Disallow: /tmp/',
+    'Disallow: /private/',
+    `Sitemap: ${base}/nfc/sitemap.xml`
   ].join('\n');
   res.type('text/plain').send(txt);
 });
 
-app.get('/sitemap.xml', async (req, res) => {
-  try {
-    const base = absoluteBaseUrl(req);
-    const staticPages = ['/nfc/', '/nfc/gallery', '/nfc/blog', '/nfc/privacy' ];
-    const blogPosts = [];
-    let designUrls = [];
-    if (db) {
-      const docs = await db.collection(designsCollectionName)
-        .find({})
-        .project({ shortId: 1, createdAt: 1 })
-        .sort({ createdAt: -1 })
-        .limit(5000)
-        .toArray();
-      designUrls = docs.map(d => ({
-        loc: `${base}/nfc/viewer.html?id=${d.shortId}`,
-        lastmod: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : undefined,
-        changefreq: 'monthly',
-        priority: '0.8'
-      }));
+// --- [ADDED] SITEMAP ROUTE ---
+app.get('/nfc/sitemap.xml', (req, res) => {
+    // التأكد من أن الملف موجود قبل محاولة إرساله
+    const sitemapPath = path.join(rootDir, 'sitemap.xml');
+    if (fs.existsSync(sitemapPath)) {
+        res.sendFile(sitemapPath);
+    } else {
+        res.status(404).send('Sitemap not found');
     }
-    function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
-        if (!loc) return '';
-        const lastmodTag = lastmod ? `<lastmod>${lastmod}</lastmod>` : '';
-        const changefreqTag = changefreq ? `<changefreq>${changefreq}</changefreq>` : '';
-        const priorityTag = priority ? `<priority>${priority}</priority>` : '';
-        return `
-  <url>
-    <loc>${loc}</loc>${lastmodTag}${changefreqTag}${priorityTag}
-  </url>`;
-    }
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${staticPages.map(p => urlTag(`${base}${p}`, { priority: '0.9', changefreq: 'weekly' })).join('')}
-${blogPosts.map(p => urlTag(`${base}${p}`, { priority: '0.7', changefreq: 'monthly' })).join('')}
-${designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefreq, priority: u.priority })).join('')}
-</urlset>`;
-    res.type('application/xml').send(xml);
-  } catch (e) {
-    console.error('Sitemap generation error:', e);
-    res.status(500).send('Sitemap failed');
-  }
 });
 
 app.get('/healthz', (req, res) => {
@@ -644,14 +613,6 @@ app.get('/healthz', (req, res) => {
 
 // هذا المسار يجب أن يكون **قبل** معالج الملفات الثابتة العام
 app.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
-    // --- START DEBUGGING CODE ---
-    console.log('--- Editor Route Hit ---');
-    console.log('Timestamp:', new Date().toLocaleTimeString());
-    console.log('User Agent String:', req.headers['user-agent']);
-    console.log('Is Mobile Detected:', req.useragent.isMobile);
-    console.log('Is Desktop Detected:', req.useragent.isDesktop);
-    // --- END DEBUGGING CODE ---
-
     if (req.useragent.isMobile) {
         console.log('Action: Serving editor-mobile.html');
         res.sendFile(path.join(rootDir, 'editor-mobile.html'));
