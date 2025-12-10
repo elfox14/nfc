@@ -38,7 +38,7 @@
     <script src="security-utils.js"></script>
     <script src="mobile.js"></script>
     <script src="script-core.js" defer></script>
-    <script src="script-ui.js" defer></script> <!-- هذا الملف يحتوي على إصلاح القص -->
+    <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
     <script src="script-main.js" defer></script>
     <script src="chatbot-guide.js" defer></script>
@@ -136,6 +136,11 @@
             <button id="share-card-btn" class="btn btn-success" aria-controls="share-fallback-modal-overlay"
                 aria-expanded="false">
                 <span>مشاركة الكارت</span><i class="fas fa-share-alt" aria-hidden="true"></i>
+            </button>
+
+            <!-- === الزر الجديد === -->
+            <button id="start-collab-btn" class="btn btn-secondary" title="بدء جلسة تحرير جماعي">
+                <span>تحرير جماعي</span><i class="fas fa-users"></i>
             </button>
 
             <button id="show-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
@@ -1266,6 +1271,24 @@
                 <a id="share-twitter" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i> تويتر</a>
                 <button id="share-copy-link"><i class="fas fa-copy" aria-hidden="true"></i> نسخ الرابط</button>
             </div>
+        </div>
+    </div>
+
+    <!-- === مودال التحرير الجماعي الجديد === -->
+    <div id="collab-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3>جلسة التحرير الجماعي</h3>
+            <button id="collab-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
+            <p>شارك هذا الرابط مع الآخرين لدعوتهم للتحرير معك في الوقت الفعلي.</p>
+            <div class="form-group">
+                <label for="collab-link-input">رابط الجلسة</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="collab-link-input" readonly style="flex-grow: 1;">
+                    <button id="copy-collab-link-btn" class="btn btn-secondary" style="width: auto; margin-top: 0;">نسخ</button>
+                </div>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">ملاحظة: أي شخص لديه هذا الرابط يمكنه تعديل تصميمك. ستنتهي الجلسة عند إغلاق الصفحة.</p>
+            <div id="collab-status" style="margin-top: 15px; font-weight: bold;">الحالة: غير متصل</div>
         </div>
     </div>
 

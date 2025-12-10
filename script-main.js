@@ -1,5 +1,133 @@
 'use strict';
 
+const CollaborationManager = {
+    ws: null,
+    collabId: null,
+    isActive: false,
+
+    init() {
+        // 1. تحقق من وجود `collabId` في الرابط عند تحميل الصفحة
+        const params = new URLSearchParams(window.location.search);
+        this.collabId = params.get('collabId');
+
+        if (this.collabId) {
+            // قم بإزالة معرف التصميم العادي لمنع التعارض
+            params.delete('id');
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState({}, '', newUrl);
+            
+            this.connect(this.collabId);
+        }
+
+        // 2. ربط الأحداث بالأزرار والمودال
+        const startBtn = document.getElementById('start-collab-btn');
+        const modalOverlay = document.getElementById('collab-modal-overlay');
+        const closeBtn = document.getElementById('collab-modal-close');
+        const copyBtn = document.getElementById('copy-collab-link-btn');
+
+        if (startBtn) startBtn.addEventListener('click', () => this.startSession());
+        if (closeBtn) closeBtn.addEventListener('click', () => UIManager.hideModal(modalOverlay));
+        if (copyBtn) copyBtn.addEventListener('click', () => this.copyLink());
+    },
+
+    async startSession() {
+        const startBtn = document.getElementById('start-collab-btn');
+        UIManager.setButtonLoadingState(startBtn, true, 'جاري الإنشاء...');
+        try {
+            // 3. احفظ التصميم للحصول على ID فريد
+            const designId = await ShareManager.saveDesign();
+            if (!designId) {
+                throw new Error('فشل حفظ التصميم لإنشاء جلسة.');
+            }
+            this.collabId = designId;
+
+            // 4. أنشئ الرابط واعرضه في المودال
+            const collabUrl = new URL(window.location.origin + window.location.pathname);
+            collabUrl.search = `?collabId=${this.collabId}`;
+            
+            document.getElementById('collab-link-input').value = collabUrl.href;
+            UIManager.showModal(document.getElementById('collab-modal-overlay'));
+
+            // 5. اتصل بالـ WebSocket
+            this.connect(this.collabId);
+
+        } catch (error) {
+            console.error("Failed to start collaboration session:", error);
+            alert(error.message);
+        } finally {
+            UIManager.setButtonLoadingState(startBtn, false);
+        }
+    },
+
+    connect(collabId) {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            return; // متصل بالفعل
+        }
+        
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}?collabId=${collabId}`;
+        
+        this.ws = new WebSocket(wsUrl);
+
+        this.ws.onopen = () => {
+            console.log('WebSocket connection established for collaboration.');
+            this.isActive = true;
+            this.updateStatus('متصل');
+            document.body.classList.add('collaboration-active');
+        };
+
+        this.ws.onmessage = (event) => {
+            try {
+                const state = JSON.parse(event.data);
+                console.log('Received state from collaborator:', state);
+                // 6. طبق التحديثات الواردة من الآخرين
+                StateManager.applyState(state, false);
+            } catch (error) {
+                console.error('Error processing incoming message:', error);
+            }
+        };
+
+        this.ws.onclose = () => {
+            console.log('WebSocket connection closed.');
+            this.isActive = false;
+            this.ws = null;
+            this.updateStatus('غير متصل');
+            document.body.classList.remove('collaboration-active');
+        };
+
+        this.ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            this.isActive = false;
+            this.updateStatus('خطأ في الاتصال');
+        };
+    },
+
+    sendState(state) {
+        // 7. أرسل التحديثات إلى الخادم
+        if (this.isActive && this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(state));
+        }
+    },
+    
+    updateStatus(message) {
+        const statusEl = document.getElementById('collab-status');
+        if (statusEl) statusEl.textContent = `الحالة: ${message}`;
+    },
+
+    copyLink() {
+        const input = document.getElementById('collab-link-input');
+        Utils.copyTextToClipboard(input.value).then(success => {
+            if (success) {
+                UIManager.announce('تم نسخ رابط الجلسة!');
+                const copyBtn = document.getElementById('copy-collab-link-btn');
+                const originalText = "نسخ";
+                copyBtn.textContent = 'تم النسخ ✓';
+                setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+            }
+        });
+    }
+};
+
 const ExportManager = {
     pendingExportTarget: null,
     
@@ -400,6 +528,11 @@ const ShareManager = {
         const params = new URLSearchParams(window.location.search);
         const designId = params.get('id');
 
+        // لا تقم بالتحميل إذا كان هناك معرف جلسة تحرير جماعي
+        if (params.has('collabId')) {
+            return false;
+        }
+
         if (designId) {
             try {
                 const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`);
@@ -465,7 +598,6 @@ const EventManager = {
             }); 
 
             input.addEventListener('input', () => {
-                // UPDATE: Handle bilingual inputs for card preview
                 if (input.id.startsWith('input-name_') || input.id.startsWith('input-tagline_')) {
                     const lang = document.body.classList.contains('lang-en') ? 'en' : 'ar';
                     if (input.dataset.lang === lang) {
@@ -512,14 +644,10 @@ const EventManager = {
             }); 
         });
 
-        // NEW: Keyboard Shortcuts for Undo/Redo
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey || e.metaKey) {
-                // Check if focus is inside an input field to avoid conflicts
                 if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                    // Allow default browser behavior for text editing (cut, copy, paste, select all)
                     if (['z', 'y', 'a', 'c', 'x', 'v'].includes(e.key.toLowerCase())) {
-                       // Let browser handle undo/redo inside text fields
                        if (e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y') return;
                     }
                 }
@@ -534,7 +662,6 @@ const EventManager = {
             }
         });
         
-        // NEW: Preview Mode Button & Escape key
         const previewBtn = DOMElements.buttons.previewMode;
         const exitPreviewBtn = DOMElements.buttons.exitPreview;
         if (previewBtn && exitPreviewBtn) {
@@ -553,7 +680,6 @@ const EventManager = {
             });
         }
         
-        // NEW: Language Toggle Button
         const langToggleBtn = DOMElements.buttons.langToggle;
         if(langToggleBtn) {
             langToggleBtn.addEventListener('click', () => {
@@ -839,11 +965,9 @@ const EventManager = {
         DOMElements.shareModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.shareModal.overlay));
         DOMElements.shareModal.overlay.addEventListener('click', e => { if(e.target === DOMElements.shareModal.overlay) UIManager.hideModal(DOMElements.shareModal.overlay); });
     
-        // START: AI Suggestion Button Binding
         const suggestBtn = document.getElementById('ai-suggest-btn');
         if (suggestBtn) {
             suggestBtn.addEventListener('click', () => {
-                // التأكد من وجود الكائن قبل استدعائه
                 if (typeof SuggestionEngine !== 'undefined') {
                     SuggestionEngine.suggestDesign();
                 } else {
@@ -851,7 +975,6 @@ const EventManager = {
                 }
             });
         }
-        // END: AI Suggestion Button Binding
 
         DOMElements.buttons.undoBtn.addEventListener('click', () => HistoryManager.undo());
         DOMElements.buttons.redoBtn.addEventListener('click', () => HistoryManager.redo());
@@ -876,6 +999,7 @@ const EventManager = {
         });
     }
 };
+
 const App = {
     async init() {
         Object.assign(DOMElements, {
@@ -904,8 +1028,8 @@ const App = {
 
             themeGallery: document.getElementById('theme-gallery'),
             layoutSelect: document.getElementById('layout-select'), liveAnnouncer: document.getElementById('live-announcer'), saveToast: document.getElementById('save-toast'),
-            nameInput: document.getElementById('input-name_ar'), // UPDATED for bilingual
-            taglineInput: document.getElementById('input-tagline_ar'), // UPDATED for bilingual
+            nameInput: document.getElementById('input-name_ar'),
+            taglineInput: document.getElementById('input-tagline_ar'),
             qrImageUrlInput: document.getElementById('input-qr-url'), 
             qrCodeContainer: document.getElementById('qrcode-container'), 
             qrCodeTempGenerator: document.getElementById('qr-code-temp-generator'),
@@ -961,7 +1085,6 @@ const App = {
                 undoBtn: document.getElementById('undo-btn'),
                 redoBtn: document.getElementById('redo-btn'),
                 generateAutoQr: document.getElementById('generate-auto-qr-btn'),
-                // NEW: UX Buttons
                 previewMode: document.getElementById('preview-mode-btn'),
                 exitPreview: document.getElementById('exit-preview-btn'),
                 langToggle: document.getElementById('lang-toggle-btn'),
@@ -981,13 +1104,14 @@ const App = {
         UIManager.init();
         UIManager.fetchAndPopulateBackgrounds();
         GalleryManager.init();
+        CollaborationManager.init();
         EventManager.bindEvents();
         
         const loadedFromUrl = await ShareManager.loadFromUrl();
         if (loadedFromUrl) {
             HistoryManager.pushState(StateManager.getStateObject());
             UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
-        } else {
+        } else if (!CollaborationManager.isActive) {
             const loadedFromStorage = StateManager.load();
             if (loadedFromStorage) {
                 HistoryManager.pushState(StateManager.getStateObject());
@@ -1013,16 +1137,11 @@ const App = {
         
         TourManager.init();
 
-        // NEW: Start Auto-Save Timer
         setInterval(() => {
-            // Check if there are changes before saving to avoid unnecessary saves
             if (HistoryManager.currentIndex >= 0) {
-                 const currentState = JSON.stringify(StateManager.getStateObject());
-                 const lastSavedState = JSON.stringify(HistoryManager.history[HistoryManager.history.length - 1]);
-                 // This logic might need refinement, but for now, we save periodically.
                  StateManager.saveDebounced();
             }
-        }, 30000); // Auto-save every 30 seconds
+        }, 30000);
     }
 };
 document.addEventListener('DOMContentLoaded', () => App.init());
