@@ -4,10 +4,10 @@ const DragManager = {
     init() {
         const draggableSelectors = ['#card-logo', '#card-personal-photo-wrapper', '#card-name', '#card-tagline', '#qr-code-wrapper'];
         draggableSelectors.forEach(selector => this.makeDraggable(selector));
-        this.makeDraggable('.draggable-icon', { clone: true }); // NEW: Make palette icons draggable
+        this.makeDraggable('.draggable-icon', { clone: true });
         this.setupDropzones();
     },
-    makeDraggable(selector, options = {}) { // UPDATED: Accept options
+    makeDraggable(selector, options = {}) {
         const interactable = interact(selector);
 
         if (options.clone) {
@@ -21,7 +21,6 @@ const DragManager = {
                     move: this.dragMoveListener,
                     end(event) {
                         event.target.classList.remove('dragging');
-                        // Reset position of the original icon in the palette
                         event.target.style.transform = 'translate(0px, 0px)';
                         event.target.setAttribute('data-x', '0');
                         event.target.setAttribute('data-y', '0');
@@ -45,24 +44,21 @@ const DragManager = {
         if (typeof MobileUtils !== 'undefined' && MobileUtils.isMobile()) return;
         
         interact('.card-content-layer').dropzone({
-            accept: '.draggable-on-card, .draggable-icon', // UPDATED: Accept palette icons
+            accept: '.draggable-on-card, .draggable-icon',
             overlap: 0.5,
             ondrop: (event) => {
                 const droppedElement = event.relatedTarget;
                 const dropzone = event.target;
 
-                // NEW: Handle drop from icon palette
                 if (droppedElement.classList.contains('draggable-icon')) {
                     const platform = droppedElement.dataset.platform;
                     if(platform){
-                        // Check if it's a dynamic or static platform to decide which function to call
                         if (Config.STATIC_CONTACT_METHODS.some(m => m.id === platform)) {
                            const input = document.getElementById(`input-${platform}`);
                            if (input && !input.value) {
                              input.focus();
                              UIManager.announce(`تمت إضافة ${platform}. أدخل البيانات.`);
                            } else if (!input) {
-                             // Fallback for unexpected cases
                              CardManager.addSocialLink(platform);
                            }
                         } else {
@@ -70,10 +66,9 @@ const DragManager = {
                         }
                         UIManager.announce(`اسحب العنصر الجديد لتغيير مكانه.`);
                     }
-                    return; // Stop further processing for palette icons
+                    return;
                 }
 
-                // --- Original ondrop logic for moving elements ---
                 const newPlacement = dropzone.classList.contains('card-front-content-layer') ? 'front' : 'back';
 
                 const placementMap = {
@@ -149,7 +144,6 @@ const CardManager = {
         current[properties[properties.length - 1]] = input.value + updateUnit; 
     },
     
-    // NEW: Update card text based on the current language
     updateCardForLanguageChange(lang) {
         const nameInput = document.getElementById(`input-name_${lang}`);
         const taglineInput = document.getElementById(`input-tagline_${lang}`);
@@ -199,7 +193,6 @@ const CardManager = {
         const alignValue = document.querySelector('input[name="photo-align"]:checked')?.value || 'center';
         const photoContainer = DOMElements.draggable.photo;
         if (photoContainer) {
-            // We use margin auto for horizontal alignment on a block element
             if(alignValue === 'flex-start') {
                 photoContainer.style.marginRight = 'auto';
                 photoContainer.style.marginLeft = '0';
@@ -226,7 +219,6 @@ const CardManager = {
             const blur = document.getElementById('photo-shadow-blur').value;
             wrapper.style.boxShadow = `0 4px ${blur}px ${color}`;
         } else {
-            // Reset to default or none, important for border to show correctly
             wrapper.style.boxShadow = '';
         }
     },
@@ -245,9 +237,7 @@ const CardManager = {
 
         const safeUrl = (typeof sanitizeURL === 'function') ? sanitizeURL(imageUrl) : imageUrl;
 
-        // Update card element
         wrapper.style.width = `${size}%`;
-        // Keep aspect ratio for the background image
         wrapper.style.paddingBottom = `${size}%`; 
         wrapper.style.height = 0; 
         wrapper.style.borderRadius = shape === 'circle' ? '50%' : '8px';
@@ -256,7 +246,6 @@ const CardManager = {
         wrapper.style.display = safeUrl ? 'block' : 'none';
         wrapper.style.opacity = opacity;
 
-        // Update preview in control panel
         if (preview) {
              preview.style.display = safeUrl ? 'block' : 'none';
              if (safeUrl) {
@@ -461,7 +450,6 @@ const CardManager = {
             }
         }
         
-        // Ensure language is correct on render
         this.updateCardForLanguageChange(state.currentLanguage || 'ar');
 
         this.updatePersonalPhotoStyles();
@@ -859,7 +847,6 @@ const CardManager = {
         this.updateCardBackgrounds();
         UIManager.announce(`تم تطبيق تصميم ${theme.name}`);
     },
-    // UPDATED: Accept a platform key to pre-fill
     addSocialLink(platformKey = null) {
         if (!platformKey) {
             platformKey = DOMElements.social.typeSelect.value;
@@ -961,7 +948,6 @@ const CardManager = {
         DOMElements.social.container.appendChild(linkEl);
         if(!platformKey) DOMElements.social.input.value = '';
         
-        // Focus the new input
         const newInput = linkEl.querySelector('.dynamic-social-value-input');
         if(newInput) newInput.focus();
 
@@ -1012,8 +998,7 @@ const StateManager = {
         };
         
         document.querySelectorAll('input, select, textarea').forEach(input => {
-             // Exclude dynamic social inputs handled separately
-            if (input.classList.contains('dynamic-social-value-input')) return;
+             if (input.classList.contains('dynamic-social-value-input')) return;
 
             if (input.type === 'radio' && !input.name.startsWith('placement-')) {
                 if (input.checked) { state.inputs[input.name] = input.value; }
@@ -1109,7 +1094,6 @@ const StateManager = {
 
         this.isApplyingState = true;
         
-        // NEW: Apply language state first
         if (state.currentLanguage) {
             const lang = state.currentLanguage;
             document.documentElement.lang = lang;
@@ -1135,7 +1119,6 @@ const StateManager = {
             }
         }
         
-        // Update card preview for the loaded language
         CardManager.updateCardForLanguageChange(state.currentLanguage || 'ar');
 
         DOMElements.phoneNumbersContainer.innerHTML = '';
@@ -1146,7 +1129,6 @@ const StateManager = {
         DOMElements.social.container.innerHTML = '';
         if (state.dynamic && state.dynamic.social) {
             state.dynamic.social.forEach(socialData => {
-                // Manually trigger add and then populate
                 CardManager.addSocialLink(socialData.platform);
                 const newControl = DOMElements.social.container.querySelector(`[data-social-id="${socialData.id}"]`);
 
@@ -1218,7 +1200,7 @@ const StateManager = {
                 }
             }
         } else {
-            DragManager.resetPositions();
+            // DragManager.resetPositions(); // You might need to implement this
         }
 
         if (state.inputs && state.inputs['theme-select-input']) {
@@ -1251,9 +1233,17 @@ const StateManager = {
             window.location.reload();
         }
     },
+    
     saveDebounced: Utils.debounce(() => {
         if(StateManager.isApplyingState) return;
-        HistoryManager.pushState(StateManager.getStateObject());
+        
+        const currentState = StateManager.getStateObject();
+        HistoryManager.pushState(currentState);
+        
+        if (typeof CollaborationManager !== 'undefined' && CollaborationManager.isActive) {
+            CollaborationManager.sendState(currentState);
+        }
+
         UIManager.showSaveNotification('جاري الحفظ التلقائي...', 'تم الحفظ ✓');
-    }, 1500) // Increased debounce for stability
+    }, 1500)
 };

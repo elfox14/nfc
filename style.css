@@ -1,4 +1,3 @@
-
 :root {
     --text-primary: #e6f0f7;
     --text-secondary: #bcc9d4;
@@ -2017,30 +2016,27 @@ html.ltr .testimonial-card {
 
 /* --- تحسينات الشعار --- */
 
-/* الحاوية الجديدة للشعار */
 #card-logo {
-    width: 100%; /* اجعل الحاوية تمتد بعرض الكارت لتسهيل المحاذاة */
+    width: 100%;
     display: flex;
-    justify-content: center; /* المحاذاة الافتراضية */
+    justify-content: center;
     align-items: center;
-    padding: 5px; /* هامش داخلي بسيط */
+    padding: 5px;
 }
 
-/* صورة الشعار نفسها */
 #card-logo-img {
-    max-width: 25%; /* الحجم الافتراضي */
+    max-width: 25%;
     object-fit: contain;
     transition: all 0.3s ease;
-    padding: 5px; /* مساحة بسيطة للخلفية المضافة */
-    border-radius: 8px; /* لتنعيم حواف الخلفية */
+    padding: 5px;
+    border-radius: 8px;
 }
 
-/* إظهار/إخفاء أدوات التحكم بالظل */
 #logo-shadow-controls {
     transition: opacity 0.3s ease;
 }
 
-/* --- تنسيقات مودال القص الجديد (هام جداً للحل) --- */
+/* --- تنسيقات مودال القص --- */
 .crop-modal-content {
     max-width: 600px;
     width: 95%;
@@ -2048,11 +2044,10 @@ html.ltr .testimonial-card {
     flex-direction: column;
 }
 
-/* الحاوية التي يضع فيها السكربت الصورة الجديدة */
 #crop-image-container {
     width: 100%;
-    height: 400px; /* ارتفاع ثابت لضمان ظهور الصورة */
-    background-color: #2b2b2b; /* خلفية داكنة */
+    height: 400px;
+    background-color: #2b2b2b;
     margin: 15px 0;
     display: flex;
     align-items: center;
@@ -2060,24 +2055,22 @@ html.ltr .testimonial-card {
     overflow: hidden;
     position: relative;
     border-radius: 4px;
-    direction: ltr; /* مهم لمكتبة Cropper */
+    direction: ltr;
 }
 
-/* الصورة التي يتم إنشاؤها */
 #crop-image {
     display: block;
     max-width: 100%;
     max-height: 100%;
-    opacity: 1; /* التأكد من أنها مرئية */
+    opacity: 1;
 }
 
-/* تأكد من أن أدوات التحكم بالقص تظهر فوق الصورة */
 .cropper-container {
     direction: ltr;
     z-index: 10001;
 }
 
-/* --- 1. Preview Mode Styles --- */
+/* --- Preview Mode Styles --- */
 body.preview-mode-active .pro-sidebar,
 body.preview-mode-active .pro-toolbar {
     display: none !important;
@@ -2106,7 +2099,7 @@ body.preview-mode-active #cards-wrapper {
 }
 
 
-/* --- 2. Social Icon Palette for Drag & Drop --- */
+/* --- Social Icon Palette --- */
 .social-icon-palette-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
@@ -2141,8 +2134,41 @@ body.preview-mode-active #cards-wrapper {
     opacity: 0.5;
 }
 
-/* --- 3. Language Toggle Support --- */
+/* --- Language Toggle --- */
 #lang-toggle-btn {
     font-weight: bold;
     font-family: 'Poppins', sans-serif;
+}
+
+/* --- Collaboration Mode Styles --- */
+@keyframes collab-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(46, 204, 113, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
+
+body.collaboration-active #start-collab-btn {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    animation: collab-pulse 2s infinite;
+}
+
+body.collaboration-active #start-collab-btn:hover {
+    background-color: #27ae60;
+}
+
+#collab-status {
+    padding: 8px 12px;
+    border-radius: 6px;
+    background-color: var(--page-bg);
+    border: 1px solid var(--accent-secondary);
+    text-align: center;
+    color: var(--text-secondary);
+    margin-top: 15px;
+    font-weight: 600;
+}
+
+body.collaboration-active #collab-status {
+    color: var(--success-color);
+    border-color: var(--success-color);
 }
