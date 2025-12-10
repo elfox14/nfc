@@ -1,3 +1,4 @@
+
 :root {
     --text-primary: #e6f0f7;
     --text-secondary: #bcc9d4;
@@ -2039,18 +2040,109 @@ html.ltr .testimonial-card {
     transition: opacity 0.3s ease;
 }
 
-/* تنسيقات مودال قص الصور */
+/* --- تنسيقات مودال القص الجديد (هام جداً للحل) --- */
 .crop-modal-content {
-    max-width: 500px;
+    max-width: 600px;
+    width: 95%;
+    display: flex;
+    flex-direction: column;
 }
 
+/* الحاوية التي يضع فيها السكربت الصورة الجديدة */
 #crop-image-container {
-    margin-top: 15px;
-    max-height: 400px;
     width: 100%;
+    height: 400px; /* ارتفاع ثابت لضمان ظهور الصورة */
+    background-color: #2b2b2b; /* خلفية داكنة */
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    border-radius: 4px;
+    direction: ltr; /* مهم لمكتبة Cropper */
 }
 
+/* الصورة التي يتم إنشاؤها */
 #crop-image {
     display: block;
     max-width: 100%;
+    max-height: 100%;
+    opacity: 1; /* التأكد من أنها مرئية */
+}
+
+/* تأكد من أن أدوات التحكم بالقص تظهر فوق الصورة */
+.cropper-container {
+    direction: ltr;
+    z-index: 10001;
+}
+
+/* --- 1. Preview Mode Styles --- */
+body.preview-mode-active .pro-sidebar,
+body.preview-mode-active .pro-toolbar {
+    display: none !important;
+}
+
+body.preview-mode-active .pro-layout {
+    display: flex;
+    grid-template-columns: 1fr !important;
+    height: 100vh;
+    padding-top: 0;
+}
+
+body.preview-mode-active .pro-canvas {
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+body.preview-mode-active #cards-wrapper {
+    transform: scale(1.1);
+    margin-top: 0;
+}
+
+#exit-preview-btn {
+    animation: fade-in 0.5s ease;
+}
+
+
+/* --- 2. Social Icon Palette for Drag & Drop --- */
+.social-icon-palette-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    background-color: var(--page-bg);
+    border-radius: 8px;
+    border: 1px solid var(--accent-secondary);
+}
+
+.draggable-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background-color: var(--accent-secondary);
+    color: var(--text-primary);
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: grab;
+    transition: all 0.2s ease;
+}
+
+.draggable-icon:hover {
+    background-color: var(--accent-primary);
+    transform: scale(1.1);
+}
+
+.draggable-icon.dragging {
+    cursor: grabbing;
+    opacity: 0.5;
+}
+
+/* --- 3. Language Toggle Support --- */
+#lang-toggle-btn {
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
 }

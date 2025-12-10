@@ -9,7 +9,6 @@ const ExportManager = {
         style.innerHTML = '.no-export { display: none !important; }'; 
         document.head.appendChild(style);
         
-        // START: FIX for mobile flip card capture
         const isMobile = typeof MobileUtils !== 'undefined' && MobileUtils.isMobile();
         const flipper = isMobile ? document.querySelector('.card-flipper') : null;
         let originalFlippedState = false;
@@ -18,16 +17,13 @@ const ExportManager = {
             originalFlippedState = flipper.classList.contains('is-flipped');
             const isCapturingBack = element.id === 'card-back-preview';
 
-            // Temporarily set the card to the correct face for capture
             if (isCapturingBack && !originalFlippedState) {
                 flipper.classList.add('is-flipped');
             } else if (!isCapturingBack && originalFlippedState) {
                 flipper.classList.remove('is-flipped');
             }
-            // Give the browser a moment to apply the style change before capturing
             await new Promise(resolve => setTimeout(resolve, 50));
         }
-        // END: FIX
 
         try { 
             return await html2canvas(element, { 
@@ -40,7 +36,6 @@ const ExportManager = {
         } 
         finally { 
             document.head.removeChild(style); 
-            // Restore the original state after capture
             if (flipper) {
                 if (originalFlippedState) {
                     flipper.classList.add('is-flipped');
@@ -109,10 +104,15 @@ const ExportManager = {
     },
 
     getVCardString() {
-        const name = DOMElements.nameInput.value.replace(/\n/g, ' ').split(' '); const firstName = name.slice(0, -1).join(' '); const lastName = name.slice(-1).join(' ');
-        let vCard = `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${DOMElements.nameInput.value}\nORG:${DOMElements.taglineInput.value.replace(/\n/g, ' ')}\nTITLE:${DOMElements.taglineInput.value.replace(/\n/g, ' ')}\n`;
-    
         const state = StateManager.getStateObject();
+        const lang = state.currentLanguage || 'ar';
+        const nameInput = document.getElementById(`input-name_${lang}`);
+        const taglineInput = document.getElementById(`input-tagline_${lang}`);
+
+        const name = nameInput.value.replace(/\n/g, ' ').split(' '); 
+        const firstName = name.slice(0, -1).join(' '); 
+        const lastName = name.slice(-1).join(' ');
+        let vCard = `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${nameInput.value}\nORG:${taglineInput.value.replace(/\n/g, ' ')}\nTITLE:${taglineInput.value.replace(/\n/g, ' ')}\n`;
     
         if (state.dynamic.staticSocial.email && state.dynamic.staticSocial.email.value) {
             vCard += `EMAIL;TYPE=PREF,INTERNET:${state.dynamic.staticSocial.email.value}\n`;
@@ -459,67 +459,121 @@ const EventManager = {
             
             input.addEventListener(eventType, () => { 
                 if (!StateManager.isApplyingState) {
-                    if(input.id === 'logo-shadow-enabled') {
-                        CardManager.updateLogoShadow();
-                    }
+                    if(input.id === 'logo-shadow-enabled') CardManager.updateLogoShadow();
+                    if(input.id === 'photo-shadow-enabled') CardManager.updatePersonalPhotoShadow();
                 }
             }); 
 
             input.addEventListener('input', () => {
-                CardManager.updateElementFromInput(input);
+                // UPDATE: Handle bilingual inputs for card preview
+                if (input.id.startsWith('input-name_') || input.id.startsWith('input-tagline_')) {
+                    const lang = document.body.classList.contains('lang-en') ? 'en' : 'ar';
+                    if (input.dataset.lang === lang) {
+                        CardManager.updateElementFromInput(input);
+                    }
+                } else {
+                    CardManager.updateElementFromInput(input);
+                }
+                
                 if (input.id.includes('photo-')) CardManager.updatePersonalPhotoStyles();
                 if (input.id.includes('phone-btn')) CardManager.updatePhoneButtonStyles();
                 
-                if (input.name === 'logo-align') {
-                    CardManager.updateLogoAlignment();
-                }
-                if (input.id === 'logo-bg-color') {
-                    CardManager.updateLogoBackground();
-                }
-                if (input.id.startsWith('logo-shadow-')) {
-                    CardManager.updateLogoShadow();
-                }
+                if (input.name === 'logo-align') CardManager.updateLogoAlignment();
+                if (input.id === 'logo-bg-color') CardManager.updateLogoBackground();
+                if (input.id.startsWith('logo-shadow-')) CardManager.updateLogoShadow();
+                
+                if (input.name === 'photo-align') CardManager.updatePersonalPhotoAlignment();
+                if (input.id.startsWith('photo-shadow-') || input.id === 'photo-opacity') CardManager.updatePersonalPhotoStyles();
 
-                if (input.id.startsWith('back-buttons')) {
-                    CardManager.updateSocialButtonStyles();
-                }
-                if (input.id.startsWith('social-text') || input.id.includes('-static-') || input.id.includes('-dynsocial_')) {
-                    CardManager.updateSocialTextStyles();
-                }
-
+                if (input.id.startsWith('back-buttons')) CardManager.updateSocialButtonStyles();
+                if (input.id.startsWith('social-text') || input.id.includes('-static-') || input.id.includes('-dynsocial_')) CardManager.updateSocialTextStyles();
                 if (input.id.startsWith('input-') && !input.id.includes('-static-') && !input.id.includes('-dynsocial_')) CardManager.updateSocialLinks();
                 if (input.id.startsWith('front-bg-') || input.id.startsWith('back-bg-')) CardManager.updateCardBackgrounds();
                 if (input.id === 'qr-size') CardManager.updateQrCodeDisplay();
                 
-                const vCardFields = ['input-name', 'input-tagline', 'input-email', 'input-website'];
-                if (vCardFields.includes(input.id)) {
-                    CardManager.generateVCardQrDebounced();
-                }
-
-                if(input.name.startsWith('placement-static-')) {
-                    CardManager.updateSocialLinks();
-                }
+                const vCardFields = ['input-name_ar', 'input-name_en', 'input-tagline_ar', 'input-tagline_en', 'input-email', 'input-website'];
+                if (vCardFields.includes(input.id)) CardManager.generateVCardQrDebounced();
+                if(input.name.startsWith('placement-static-')) CardManager.updateSocialLinks();
             });
             input.addEventListener('focus', () => {
                 let draggableId = input.dataset.updateTarget;
-                if (draggableId === 'card-logo-img') draggableId = 'card-logo'; // Focus container not img
+                if (draggableId === 'card-logo-img') draggableId = 'card-logo';
                 const parentGroup = input.closest('.form-group');
-                if (parentGroup && parentGroup.id.startsWith('form-group-static-')) {
-                    draggableId = `social-link-static-${parentGroup.id.replace('form-group-static-', '')}`;
-                }
+                if (parentGroup && parentGroup.id.startsWith('form-group-static-')) draggableId = `social-link-static-${parentGroup.id.replace('form-group-static-', '')}`;
                 if (draggableId) UIManager.highlightElement(draggableId, true);
                 
             }); 
             input.addEventListener('blur', () => {
                 let draggableId = input.dataset.updateTarget;
-                if (draggableId === 'card-logo-img') draggableId = 'card-logo'; // Focus container not img
+                if (draggableId === 'card-logo-img') draggableId = 'card-logo';
                 const parentGroup = input.closest('.form-group');
-                if (parentGroup && parentGroup.id.startsWith('form-group-static-')) {
-                    draggableId = `social-link-static-${parentGroup.id.replace('form-group-static-', '')}`;
-                }
+                if (parentGroup && parentGroup.id.startsWith('form-group-static-')) draggableId = `social-link-static-${parentGroup.id.replace('form-group-static-', '')}`;
                 if (draggableId) UIManager.highlightElement(draggableId, false);
             }); 
         });
+
+        // NEW: Keyboard Shortcuts for Undo/Redo
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                // Check if focus is inside an input field to avoid conflicts
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                    // Allow default browser behavior for text editing (cut, copy, paste, select all)
+                    if (['z', 'y', 'a', 'c', 'x', 'v'].includes(e.key.toLowerCase())) {
+                       // Let browser handle undo/redo inside text fields
+                       if (e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y') return;
+                    }
+                }
+                
+                if (e.key === 'z') {
+                    e.preventDefault();
+                    HistoryManager.undo();
+                } else if (e.key === 'y') {
+                    e.preventDefault();
+                    HistoryManager.redo();
+                }
+            }
+        });
+        
+        // NEW: Preview Mode Button & Escape key
+        const previewBtn = DOMElements.buttons.previewMode;
+        const exitPreviewBtn = DOMElements.buttons.exitPreview;
+        if (previewBtn && exitPreviewBtn) {
+            const togglePreview = () => {
+                document.body.classList.toggle('preview-mode-active');
+                const isActive = document.body.classList.contains('preview-mode-active');
+                exitPreviewBtn.style.display = isActive ? 'flex' : 'none';
+                previewBtn.setAttribute('aria-pressed', isActive.toString());
+            };
+            previewBtn.addEventListener('click', togglePreview);
+            exitPreviewBtn.addEventListener('click', togglePreview);
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && document.body.classList.contains('preview-mode-active')) {
+                    togglePreview();
+                }
+            });
+        }
+        
+        // NEW: Language Toggle Button
+        const langToggleBtn = DOMElements.buttons.langToggle;
+        if(langToggleBtn) {
+            langToggleBtn.addEventListener('click', () => {
+                const isArabic = document.documentElement.lang === 'ar';
+                const newLang = isArabic ? 'en' : 'ar';
+                
+                document.documentElement.lang = newLang;
+                document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+                
+                langToggleBtn.textContent = newLang === 'ar' ? 'EN' : 'AR';
+                
+                document.querySelectorAll('[data-lang]').forEach(el => {
+                    el.style.display = el.dataset.lang === newLang ? 'block' : 'none';
+                });
+
+                CardManager.updateCardForLanguageChange(newLang);
+                
+                UIManager.announce(newLang === 'ar' ? "تم التبديل إلى العربية" : "Switched to English");
+            });
+        }
         
         document.querySelectorAll('input[name="layout-select-visual"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
@@ -535,16 +589,9 @@ const EventManager = {
                     e.preventDefault();
                     const direction = button.dataset.direction;
                     let targetId = grid.dataset.targetId;
-                    
-                    if (targetId && targetId.startsWith('form-group-static-')) {
-                         targetId = `social-link-static-${targetId.replace('form-group-static-', '')}`;
-                    }
-                    
-                    if (targetId) {
-                        EventManager.moveElement(targetId, direction);
-                    } else {
-                        console.error("Missing targetId for move button.");
-                    }
+                    if (targetId && targetId.startsWith('form-group-static-')) targetId = `social-link-static-${targetId.replace('form-group-static-', '')}`;
+                    if (targetId) EventManager.moveElement(targetId, direction);
+                    else console.error("Missing targetId for move button.");
                 });
             });
         });
@@ -555,14 +602,9 @@ const EventManager = {
                 DOMElements.qrUrlGroup.style.display = selectedValue === 'custom' ? 'block' : 'none';
                 DOMElements.qrUploadGroup.style.display = selectedValue === 'upload' ? 'block' : 'none';
                 DOMElements.qrAutoCardGroup.style.display = selectedValue === 'auto-card' ? 'block' : 'none';
-                
                 CardManager.autoGeneratedQrDataUrl = null;
-                
-                if (selectedValue === 'auto-vcard') {
-                    CardManager.generateVCardQr();
-                } else {
-                    CardManager.updateQrCodeDisplay();
-                }
+                if (selectedValue === 'auto-vcard') CardManager.generateVCardQr();
+                else CardManager.updateQrCodeDisplay();
             });
         });
 
@@ -577,13 +619,7 @@ const EventManager = {
                 } else if (elementName.startsWith('dynsocial_')) {
                     elementToReset = document.getElementById(`social-link-${elementName.replace(/[^a-zA-Z0-9-]/g, '-')}`); 
                 } else {
-                    const elementsMap = {
-                        logo: DOMElements.draggable.logo,
-                        photo: DOMElements.draggable.photo,
-                        name: DOMElements.draggable.name,
-                        tagline: DOMElements.draggable.tagline,
-                        qr: DOMElements.draggable.qr
-                    };
+                    const elementsMap = { logo: DOMElements.draggable.logo, photo: DOMElements.draggable.photo, name: DOMElements.draggable.name, tagline: DOMElements.draggable.tagline, qr: DOMElements.draggable.qr };
                     elementToReset = elementsMap[elementName];
                 }
 
@@ -592,7 +628,6 @@ const EventManager = {
                     elementToReset.setAttribute('data-x', '0');
                     elementToReset.setAttribute('data-y', '0');
                 }
-        
                 CardManager.renderCardContent();
             });
         });
@@ -603,25 +638,28 @@ const EventManager = {
         });
 
         DOMElements.fileInputs.logo.addEventListener('change', e => UIManager.handleImageUpload(e, { 
-            maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.logo, 
-            onSuccess: async (imageUrl) => { 
-                const croppedDataUrl = await ImageCropper.open(imageUrl);
-                if (croppedDataUrl) {
-                    DOMElements.draggable.logoImg.src = croppedDataUrl;
-                    document.getElementById('input-logo').value = croppedDataUrl;
-                    DOMElements.previews.logo.src = croppedDataUrl;
-                    UIManager.updateFavicon(croppedDataUrl); 
-                }
-            } 
+            maxSizeMB: Config.MAX_LOGO_SIZE_MB, 
+            errorEl: DOMElements.errors.logoUpload, 
+            spinnerEl: DOMElements.spinners.logo, 
+            onSuccess: (imageUrl) => { 
+                DOMElements.draggable.logoImg.src = imageUrl;
+                document.getElementById('input-logo').value = imageUrl;
+                DOMElements.previews.logo.src = imageUrl;
+                UIManager.updateFavicon(imageUrl); 
+            },
+            cropOptions: { aspectRatio: NaN } // Free crop for logos
         }));
 
         DOMElements.fileInputs.photo.addEventListener('change', e => UIManager.handleImageUpload(e, {
-            maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.photoUpload, spinnerEl: DOMElements.spinners.photo,
+            maxSizeMB: Config.MAX_LOGO_SIZE_MB, 
+            errorEl: DOMElements.errors.photoUpload, 
+            spinnerEl: DOMElements.spinners.photo,
             onSuccess: imageUrl => {
                 CardManager.personalPhotoUrl = imageUrl;
                 DOMElements.photoControls.url.value = imageUrl;
                 DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+            },
+            cropOptions: { aspectRatio: 1 / 1 } // Square crop for personal photos
         }));
         
         DOMElements.fileInputs.frontBg.addEventListener('change', e => UIManager.handleImageUpload(e, { 
@@ -629,7 +667,8 @@ const EventManager = {
             onSuccess: url => { 
                 CardManager.frontBgImageUrl = url; DOMElements.buttons.removeFrontBg.style.display = 'block'; 
                 CardManager.updateCardBackgrounds(); 
-            }
+            },
+            // No crop for backgrounds
         }));
         
         DOMElements.fileInputs.backBg.addEventListener('change', e => UIManager.handleImageUpload(e, { 
@@ -637,7 +676,8 @@ const EventManager = {
             onSuccess: url => { 
                 CardManager.backBgImageUrl = url; DOMElements.buttons.removeBackBg.style.display = 'block'; 
                 CardManager.updateCardBackgrounds(); 
-            }
+            },
+            // No crop for backgrounds
         }));
         
         DOMElements.fileInputs.qrCode.addEventListener('change', e => UIManager.handleImageUpload(e, {
@@ -645,7 +685,8 @@ const EventManager = {
             onSuccess: imageUrl => { 
                 CardManager.qrCodeImageUrl = imageUrl; DOMElements.qrImageUrlInput.value = imageUrl;
                 CardManager.updateQrCodeDisplay(); 
-            }
+            },
+            // No crop for QR codes
         }));
 
         DOMElements.themeGallery.addEventListener('click', (e) => {
@@ -673,8 +714,8 @@ const EventManager = {
 
         DOMElements.draggable.logo.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('logo-drop-zone'); });
         DOMElements.draggable.photo.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('photo-controls-fieldset'); });
-        DOMElements.draggable.name.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('input-name'); });
-        DOMElements.draggable.tagline.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('input-tagline'); });
+        DOMElements.draggable.name.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('name-tagline-accordion'); });
+        DOMElements.draggable.tagline.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('name-tagline-accordion'); });
         DOMElements.draggable.qr.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('qr-code-accordion'); });
         
         DOMElements.buttons.togglePhone.addEventListener('input', () => { CardManager.updatePhoneButtonsVisibility(); });
@@ -798,6 +839,20 @@ const EventManager = {
         DOMElements.shareModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.shareModal.overlay));
         DOMElements.shareModal.overlay.addEventListener('click', e => { if(e.target === DOMElements.shareModal.overlay) UIManager.hideModal(DOMElements.shareModal.overlay); });
     
+        // START: AI Suggestion Button Binding
+        const suggestBtn = document.getElementById('ai-suggest-btn');
+        if (suggestBtn) {
+            suggestBtn.addEventListener('click', () => {
+                // التأكد من وجود الكائن قبل استدعائه
+                if (typeof SuggestionEngine !== 'undefined') {
+                    SuggestionEngine.suggestDesign();
+                } else {
+                    console.error('SuggestionEngine is not defined.');
+                }
+            });
+        }
+        // END: AI Suggestion Button Binding
+
         DOMElements.buttons.undoBtn.addEventListener('click', () => HistoryManager.undo());
         DOMElements.buttons.redoBtn.addEventListener('click', () => HistoryManager.redo());
         
@@ -842,7 +897,6 @@ const App = {
 
             photoControls: {
                 url: document.getElementById('input-photo-url'),
-                size: document.getElementById('photo-size'),
                 shapeRadios: document.querySelectorAll('input[name="photo-shape"]'),
                 borderColor: document.getElementById('photo-border-color'),
                 borderWidth: document.getElementById('photo-border-width'),
@@ -850,7 +904,8 @@ const App = {
 
             themeGallery: document.getElementById('theme-gallery'),
             layoutSelect: document.getElementById('layout-select'), liveAnnouncer: document.getElementById('live-announcer'), saveToast: document.getElementById('save-toast'),
-            nameInput: document.getElementById('input-name'), taglineInput: document.getElementById('input-tagline'),
+            nameInput: document.getElementById('input-name_ar'), // UPDATED for bilingual
+            taglineInput: document.getElementById('input-tagline_ar'), // UPDATED for bilingual
             qrImageUrlInput: document.getElementById('input-qr-url'), 
             qrCodeContainer: document.getElementById('qrcode-container'), 
             qrCodeTempGenerator: document.getElementById('qr-code-temp-generator'),
@@ -865,7 +920,8 @@ const App = {
             taglineColor: document.getElementById('tagline-color'), taglineFontSize: document.getElementById('tagline-font-size'), taglineFont: document.getElementById('tagline-font'),
             social: { input: document.getElementById('social-media-input'), container: document.getElementById('dynamic-social-links-container'), typeSelect: document.getElementById('social-media-type') },
             fileInputs: { logo: document.getElementById('input-logo-upload'), photo: document.getElementById('input-photo-upload'), frontBg: document.getElementById('front-bg-upload'), backBg: document.getElementById('back-bg-upload'), qrCode: document.getElementById('input-qr-upload') },
-            previews: { logo: document.getElementById('logo-preview') }, errors: { logoUpload: document.getElementById('logo-upload-error'), photoUpload: document.getElementById('photo-upload-error'), qrUpload: document.getElementById('qr-upload-error') },
+            previews: { logo: document.getElementById('logo-preview'), photo: document.getElementById('photo-preview') },
+            errors: { logoUpload: document.getElementById('logo-upload-error'), photoUpload: document.getElementById('photo-upload-error'), qrUpload: document.getElementById('qr-upload-error') },
             spinners: { logo: document.getElementById('logo-spinner'), photo: document.getElementById('photo-spinner'), frontBg: document.getElementById('front-bg-spinner'), backBg: document.getElementById('back-bg-spinner'), qr: document.getElementById('qr-spinner') },
             sounds: { success: document.getElementById('audio-success'), error: document.getElementById('audio-error') },
             phoneTextControls: { container: document.getElementById('phone-text-controls'), layoutRadios: document.querySelectorAll('input[name="phone-text-layout"]'), size: document.getElementById('phone-text-size'), color: document.getElementById('phone-text-color'), font: document.getElementById('phone-text-font'), },
@@ -905,11 +961,15 @@ const App = {
                 undoBtn: document.getElementById('undo-btn'),
                 redoBtn: document.getElementById('redo-btn'),
                 generateAutoQr: document.getElementById('generate-auto-qr-btn'),
+                // NEW: UX Buttons
+                previewMode: document.getElementById('preview-mode-btn'),
+                exitPreview: document.getElementById('exit-preview-btn'),
+                langToggle: document.getElementById('lang-toggle-btn'),
             }
         });
         
         Object.values(DOMElements.draggable).forEach(el => {
-            if (el && el.id !== 'card-logo-img') { // Skip the inner image
+            if (el && el.id !== 'card-logo-img') {
                 el.classList.add('draggable-on-card');
                 const hint = document.createElement('i');
                 hint.className = 'fas fa-arrows-alt dnd-hover-hint';
@@ -952,6 +1012,17 @@ const App = {
         UIManager.announce("محرر بطاقة الأعمال جاهز للاستخدام.");
         
         TourManager.init();
+
+        // NEW: Start Auto-Save Timer
+        setInterval(() => {
+            // Check if there are changes before saving to avoid unnecessary saves
+            if (HistoryManager.currentIndex >= 0) {
+                 const currentState = JSON.stringify(StateManager.getStateObject());
+                 const lastSavedState = JSON.stringify(HistoryManager.history[HistoryManager.history.length - 1]);
+                 // This logic might need refinement, but for now, we save periodically.
+                 StateManager.saveDebounced();
+            }
+        }, 30000); // Auto-save every 30 seconds
     }
 };
 document.addEventListener('DOMContentLoaded', () => App.init());

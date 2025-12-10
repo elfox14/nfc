@@ -4,28 +4,76 @@ const DragManager = {
     init() {
         const draggableSelectors = ['#card-logo', '#card-personal-photo-wrapper', '#card-name', '#card-tagline', '#qr-code-wrapper'];
         draggableSelectors.forEach(selector => this.makeDraggable(selector));
+        this.makeDraggable('.draggable-icon', { clone: true }); // NEW: Make palette icons draggable
         this.setupDropzones();
     },
-    makeDraggable(selector) {
-        interact(selector).draggable({
-            inertia: true,
-            modifiers: [interact.modifiers.restrictRect({ restriction: 'parent', endOnly: true })],
-            autoScroll: false,
-            listeners: {
-                start: this.dragStartListener,
-                move: this.dragMoveListener,
-                end: this.dragEndListener
-            }
-        });
+    makeDraggable(selector, options = {}) { // UPDATED: Accept options
+        const interactable = interact(selector);
+
+        if (options.clone) {
+            interactable.draggable({
+                inertia: true,
+                listeners: {
+                    start(event) {
+                        const original = event.target;
+                        original.classList.add('dragging');
+                    },
+                    move: this.dragMoveListener,
+                    end(event) {
+                        event.target.classList.remove('dragging');
+                        // Reset position of the original icon in the palette
+                        event.target.style.transform = 'translate(0px, 0px)';
+                        event.target.setAttribute('data-x', '0');
+                        event.target.setAttribute('data-y', '0');
+                    },
+                },
+            });
+        } else {
+             interactable.draggable({
+                inertia: true,
+                modifiers: [interact.modifiers.restrictRect({ restriction: 'parent', endOnly: true })],
+                autoScroll: false,
+                listeners: {
+                    start: this.dragStartListener,
+                    move: this.dragMoveListener,
+                    end: this.dragEndListener
+                }
+            });
+        }
     },
     setupDropzones() {
-        if (window.MobileUtils && !window.MobileUtils.shouldEnableDrop()) return;
+        if (typeof MobileUtils !== 'undefined' && MobileUtils.isMobile()) return;
+        
         interact('.card-content-layer').dropzone({
-            accept: '.draggable-on-card',
+            accept: '.draggable-on-card, .draggable-icon', // UPDATED: Accept palette icons
             overlap: 0.5,
             ondrop: (event) => {
                 const droppedElement = event.relatedTarget;
                 const dropzone = event.target;
+
+                // NEW: Handle drop from icon palette
+                if (droppedElement.classList.contains('draggable-icon')) {
+                    const platform = droppedElement.dataset.platform;
+                    if(platform){
+                        // Check if it's a dynamic or static platform to decide which function to call
+                        if (Config.STATIC_CONTACT_METHODS.some(m => m.id === platform)) {
+                           const input = document.getElementById(`input-${platform}`);
+                           if (input && !input.value) {
+                             input.focus();
+                             UIManager.announce(`تمت إضافة ${platform}. أدخل البيانات.`);
+                           } else if (!input) {
+                             // Fallback for unexpected cases
+                             CardManager.addSocialLink(platform);
+                           }
+                        } else {
+                           CardManager.addSocialLink(platform);
+                        }
+                        UIManager.announce(`اسحب العنصر الجديد لتغيير مكانه.`);
+                    }
+                    return; // Stop further processing for palette icons
+                }
+
+                // --- Original ondrop logic for moving elements ---
                 const newPlacement = dropzone.classList.contains('card-front-content-layer') ? 'front' : 'back';
 
                 const placementMap = {
@@ -83,14 +131,7 @@ const DragManager = {
     },
     dragEndListener(event) {
         event.target.classList.remove('dragging');
-    },
-    resetPositions() {
-        const elementsToReset = ['#card-logo', '#card-personal-photo-wrapper', '#card-name', '#card-tagline', '#qr-code-wrapper', '.phone-button-draggable-wrapper', '.draggable-social-link'];
-        elementsToReset.forEach(selector => {
-            document.querySelectorAll(selector).forEach(el => {
-                if (el) { el.style.transform = 'translate(0px, 0px)'; el.removeAttribute('data-x'); el.removeAttribute('data-y'); }
-            });
-        });
+        StateManager.saveDebounced();
     }
 };
 
@@ -107,6 +148,19 @@ const CardManager = {
         for (let i = 0; i < properties.length - 1; i++) { current = current[properties[i]]; } 
         current[properties[properties.length - 1]] = input.value + updateUnit; 
     },
+    
+    // NEW: Update card text based on the current language
+    updateCardForLanguageChange(lang) {
+        const nameInput = document.getElementById(`input-name_${lang}`);
+        const taglineInput = document.getElementById(`input-tagline_${lang}`);
+        
+        DOMElements.draggable.name.innerText = nameInput ? nameInput.value : '';
+        DOMElements.draggable.tagline.innerText = taglineInput ? taglineInput.value : '';
+
+        const dir = lang === 'ar' ? 'rtl' : 'ltr';
+        DOMElements.draggable.name.dir = dir;
+        DOMElements.draggable.tagline.dir = dir;
+    },
 
     updateLogoAlignment() {
         const alignValue = document.querySelector('input[name="logo-align"]:checked')?.value || 'center';
@@ -118,7 +172,7 @@ const CardManager = {
 
     updateLogoBackground() {
         const bgColor = document.getElementById('logo-bg-color').value;
-        const logoImg = document.getElementById('card-logo-img'); // استهداف الصورة مباشرة
+        const logoImg = document.getElementById('card-logo-img');
         if (logoImg) {
             logoImg.style.backgroundColor = bgColor;
         }
@@ -141,24 +195,78 @@ const CardManager = {
         }
     },
     
+    updatePersonalPhotoAlignment() {
+        const alignValue = document.querySelector('input[name="photo-align"]:checked')?.value || 'center';
+        const photoContainer = DOMElements.draggable.photo;
+        if (photoContainer) {
+            // We use margin auto for horizontal alignment on a block element
+            if(alignValue === 'flex-start') {
+                photoContainer.style.marginRight = 'auto';
+                photoContainer.style.marginLeft = '0';
+            } else if (alignValue === 'flex-end') {
+                photoContainer.style.marginRight = '0';
+                photoContainer.style.marginLeft = 'auto';
+            } else { // center
+                photoContainer.style.marginRight = 'auto';
+                photoContainer.style.marginLeft = 'auto';
+            }
+        }
+    },
+
+    updatePersonalPhotoShadow() {
+        const enabled = document.getElementById('photo-shadow-enabled').checked;
+        const controls = document.getElementById('photo-shadow-controls');
+        const wrapper = DOMElements.draggable.photo;
+
+        if (controls) controls.style.display = enabled ? 'grid' : 'none';
+        if (!wrapper) return;
+
+        if (enabled) {
+            const color = document.getElementById('photo-shadow-color').value;
+            const blur = document.getElementById('photo-shadow-blur').value;
+            wrapper.style.boxShadow = `0 4px ${blur}px ${color}`;
+        } else {
+            // Reset to default or none, important for border to show correctly
+            wrapper.style.boxShadow = '';
+        }
+    },
+
     updatePersonalPhotoStyles() {
         const wrapper = DOMElements.draggable.photo;
+        const preview = DOMElements.previews.photo;
         if (!wrapper) return;
 
         const imageUrl = DOMElements.photoControls.url.value;
-        const size = DOMElements.photoControls.size.value;
+        const size = document.getElementById('photo-size').value;
         const shape = document.querySelector('input[name="photo-shape"]:checked').value;
         const borderColor = DOMElements.photoControls.borderColor.value;
         const borderWidth = DOMElements.photoControls.borderWidth.value;
+        const opacity = document.getElementById('photo-opacity').value;
 
         const safeUrl = (typeof sanitizeURL === 'function') ? sanitizeURL(imageUrl) : imageUrl;
 
+        // Update card element
         wrapper.style.width = `${size}%`;
-        wrapper.style.height = `${size}%`;
+        // Keep aspect ratio for the background image
+        wrapper.style.paddingBottom = `${size}%`; 
+        wrapper.style.height = 0; 
         wrapper.style.borderRadius = shape === 'circle' ? '50%' : '8px';
         wrapper.style.border = `${borderWidth}px solid ${borderColor}`;
         wrapper.style.backgroundImage = safeUrl ? `url(${safeUrl})` : 'none';
         wrapper.style.display = safeUrl ? 'block' : 'none';
+        wrapper.style.opacity = opacity;
+
+        // Update preview in control panel
+        if (preview) {
+             preview.style.display = safeUrl ? 'block' : 'none';
+             if (safeUrl) {
+                preview.src = safeUrl;
+             }
+             preview.style.borderRadius = shape === 'circle' ? '50%' : '8px';
+        }
+
+        this.updatePersonalPhotoAlignment();
+        this.updatePersonalPhotoShadow();
     },
 
     updatePhoneButtonStyles() {
@@ -352,6 +460,9 @@ const CardManager = {
                 containers[side].appendChild(elements[key]);
             }
         }
+        
+        // Ensure language is correct on render
+        this.updateCardForLanguageChange(state.currentLanguage || 'ar');
 
         this.updatePersonalPhotoStyles();
         this.renderPhoneButtons();
@@ -748,12 +859,26 @@ const CardManager = {
         this.updateCardBackgrounds();
         UIManager.announce(`تم تطبيق تصميم ${theme.name}`);
     },
-    addSocialLink() {
-        const platformKey = DOMElements.social.typeSelect.value;
-        const value = DOMElements.social.input.value.trim();
-        if (!value) { UIManager.announce('الرجاء إدخال رابط أو معرف.'); return; }
+    // UPDATED: Accept a platform key to pre-fill
+    addSocialLink(platformKey = null) {
+        if (!platformKey) {
+            platformKey = DOMElements.social.typeSelect.value;
+        }
+        
+        const value = platformKey ? '' : DOMElements.social.input.value.trim();
+        if (!platformKey && !value) { UIManager.announce('الرجاء إدخال رابط أو معرف.'); return; }
 
-        const platform = Config.SOCIAL_PLATFORMS[platformKey];
+        const allPlatforms = {
+             ...Config.SOCIAL_PLATFORMS,
+            'email': { name: 'بريد إلكتروني', icon: 'fas fa-envelope' },
+            'website': { name: 'موقع ويب', icon: 'fas fa-globe' },
+            'whatsapp': { name: 'واتساب', icon: 'fab fa-whatsapp' },
+            'facebook': { name: 'فيسبوك', icon: 'fab fa-facebook-f' },
+            'linkedin': { name: 'لينكدإن', icon: 'fab fa-linkedin-in' },
+        };
+        const platform = allPlatforms[platformKey];
+        if(!platform) return;
+
         const id = `dynsocial_${Date.now()}`;
 
         const linkEl = document.createElement('div');
@@ -761,17 +886,15 @@ const CardManager = {
         linkEl.id = `social-control-${id}`;
         linkEl.dataset.socialId = id;
         linkEl.dataset.platform = platformKey;
-        linkEl.dataset.value = value;
-
-        const sanitizedValue = value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        
         const elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`;
 
         linkEl.innerHTML = `
             <div style="flex-grow: 1;">
-                <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
                     <i class="fas fa-grip-vertical drag-handle"></i>
                     <i class="${platform.icon}" aria-hidden="true"></i>
-                    <span style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${platform.name}: ${sanitizedValue}</span>
+                    <input type="text" class="dynamic-social-value-input" value="${value.replace(/"/g, "&quot;")}" placeholder="أدخل الرابط أو المعرف هنا" style="flex-grow: 1;">
                     <button class="remove-btn" aria-label="حذف رابط ${platform.name}">×</button>
                 </div>
                 <div class="placement-control">
@@ -813,6 +936,12 @@ const CardManager = {
             this.updateSocialLinks();
             this.generateVCardQrDebounced();
         };
+
+        linkEl.querySelector('.dynamic-social-value-input').addEventListener('input', (e) => {
+            linkEl.dataset.value = e.target.value;
+            handleUpdate();
+        });
+
         linkEl.querySelector('.remove-btn').addEventListener('click', () => { linkEl.remove(); handleUpdate(); });
         linkEl.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', handleUpdate));
 
@@ -830,14 +959,17 @@ const CardManager = {
         });
 
         DOMElements.social.container.appendChild(linkEl);
-        DOMElements.social.input.value = '';
+        if(!platformKey) DOMElements.social.input.value = '';
+        
+        // Focus the new input
+        const newInput = linkEl.querySelector('.dynamic-social-value-input');
+        if(newInput) newInput.focus();
+
         handleUpdate();
     },
 
-    // --- MODIFIED FUNCTION ---
     applyLayout(layoutName = 'classic') {
         DOMElements.cardsWrapper.dataset.layout = layoutName;
-        // Recalculate the scale for mobile view whenever layout changes
         if (window.MobileUtils && window.MobileUtils.isMobile()) {
             window.MobileUtils.updateMobileCardScale();
         }
@@ -871,14 +1003,18 @@ const StateManager = {
 
     getStateObject() {
         const state = {
+            currentLanguage: document.documentElement.lang || 'ar',
             inputs: {},
             dynamic: { phones: [], social: [], staticSocial: {} },
             imageUrls: {},
             positions: {},
             placements: {}
         };
-
+        
         document.querySelectorAll('input, select, textarea').forEach(input => {
+             // Exclude dynamic social inputs handled separately
+            if (input.classList.contains('dynamic-social-value-input')) return;
+
             if (input.type === 'radio' && !input.name.startsWith('placement-')) {
                 if (input.checked) { state.inputs[input.name] = input.value; }
             } else if (input.type === 'checkbox') {
@@ -906,17 +1042,18 @@ const StateManager = {
 
         DOMElements.social.container.querySelectorAll('.dynamic-social-link').forEach(group => {
             const socialId = group.dataset.socialId;
+            const valueInput = group.querySelector('.dynamic-social-value-input');
             const placementInput = group.querySelector(`input[name="placement-${socialId}"]:checked`);
             const cardElement = document.getElementById(`social-link-${socialId.replace(/[^a-zA-Z0-9-]/g, '-')}`);
 
             const colorInput = group.querySelector(`#input-${socialId}-color`);
             const sizeInput = group.querySelector(`#input-${socialId}-size`);
 
-            if (socialId) {
+            if (socialId && valueInput) {
                 state.dynamic.social.push({
                     id: socialId,
                     platform: group.dataset.platform,
-                    value: group.dataset.value,
+                    value: valueInput.value,
                     placement: placementInput ? placementInput.value : 'back',
                     position: cardElement ? { x: parseFloat(cardElement.getAttribute('data-x')) || 0, y: parseFloat(cardElement.getAttribute('data-y')) || 0 } : { x: 0, y: 0 },
                     color: colorInput ? colorInput.value : '#e6f0f7',
@@ -971,6 +1108,18 @@ const StateManager = {
         if (!state) return;
 
         this.isApplyingState = true;
+        
+        // NEW: Apply language state first
+        if (state.currentLanguage) {
+            const lang = state.currentLanguage;
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            if(DOMElements.buttons.langToggle) DOMElements.buttons.langToggle.textContent = lang === 'ar' ? 'EN' : 'AR';
+            
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                el.style.display = el.dataset.lang === lang ? 'block' : 'none';
+            });
+        }
 
         if (state.inputs) {
             for (const [key, value] of Object.entries(state.inputs)) {
@@ -985,6 +1134,9 @@ const StateManager = {
                 }
             }
         }
+        
+        // Update card preview for the loaded language
+        CardManager.updateCardForLanguageChange(state.currentLanguage || 'ar');
 
         DOMElements.phoneNumbersContainer.innerHTML = '';
         if (state.dynamic && state.dynamic.phones) {
@@ -994,12 +1146,15 @@ const StateManager = {
         DOMElements.social.container.innerHTML = '';
         if (state.dynamic && state.dynamic.social) {
             state.dynamic.social.forEach(socialData => {
-                DOMElements.social.typeSelect.value = socialData.platform;
-                DOMElements.social.input.value = socialData.value;
-                CardManager.addSocialLink();
+                // Manually trigger add and then populate
+                CardManager.addSocialLink(socialData.platform);
+                const newControl = DOMElements.social.container.querySelector(`[data-social-id="${socialData.id}"]`);
 
-                const newControl = document.getElementById(`social-control-${socialData.id}`);
                 if (newControl) {
+                    const valueInput = newControl.querySelector('.dynamic-social-value-input');
+                    if (valueInput) valueInput.value = socialData.value;
+                    newControl.dataset.value = socialData.value;
+                    
                     const placementRadio = newControl.querySelector(`input[value="${socialData.placement}"]`);
                     if (placementRadio) placementRadio.checked = true;
 
@@ -1097,7 +1252,8 @@ const StateManager = {
         }
     },
     saveDebounced: Utils.debounce(() => {
+        if(StateManager.isApplyingState) return;
         HistoryManager.pushState(StateManager.getStateObject());
-        UIManager.showSaveNotification();
-    }, 800)
+        UIManager.showSaveNotification('جاري الحفظ التلقائي...', 'تم الحفظ ✓');
+    }, 1500) // Increased debounce for stability
 };

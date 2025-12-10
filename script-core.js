@@ -16,6 +16,7 @@ const Config = {
     },
     
     defaultState: {
+        currentLanguage: 'ar', // NEW: To manage the current language
         inputs: {
             'layout-select': 'classic',
             'layout-select-visual': 'classic', 
@@ -27,14 +28,20 @@ const Config = {
             'photo-shape': 'circle',
             'photo-border-color': '#ffffff',
             'photo-border-width': 2,
-            'input-name': 'اسمك الكامل هنا',
+
+            // BILINGUAL SUPPORT: Updated text fields
+            'input-name_ar': 'اسمك الكامل هنا',
+            'input-name_en': 'Your Full Name Here',
             'name-font-size': 22,
             'name-color': '#e6f0f7',
             'name-font': 'Tajawal, sans-serif',
-            'input-tagline': 'المسمى الوظيفي / الشركة',
+
+            'input-tagline_ar': 'المسمى الوظيفي / الشركة',
+            'input-tagline_en': 'Job Title / Company',
             'tagline-font-size': 14,
             'tagline-color': '#4da6ff',
             'tagline-font': 'Tajawal, sans-serif',
+            
             'toggle-phone-buttons': true,
             'phone-text-layout': 'row',
             'phone-text-size': 14,
@@ -196,7 +203,7 @@ const Utils = {
 const HistoryManager = {
     history: [],
     currentIndex: -1,
-    maxHistory: 20,
+    // maxHistory: 20, // REMOVED: No limit for undo/redo history
 
     pushState(state) {
         // Cut future history if we push new state after undoing
@@ -211,13 +218,7 @@ const HistoryManager = {
         if (newStateStr === currentStateStr) return;
 
         this.history.push(JSON.parse(newStateStr));
-        
-        // Limit history size
-        if (this.history.length > this.maxHistory) {
-            this.history.shift();
-        } else {
-            this.currentIndex++;
-        }
+        this.currentIndex++; // UPDATED: Always increment index
         
         this.updateButtonStates();
     },
