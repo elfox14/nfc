@@ -18,7 +18,7 @@
         href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Cropper.js CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="style.css?v=2.0">
     <link rel="stylesheet" href="mobile.css?v=2.0">
     <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="editor-enhancements.css?v=1.0">
 
     <!-- المكتبات الخارجية -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
@@ -33,7 +34,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
-    
+
     <!-- ملفات الجافاسكريبت الخاصة بالمشروع (الترتيب مهم) -->
     <script src="security-utils.js"></script>
     <script src="mobile.js"></script>
@@ -42,6 +43,7 @@
     <script src="script-card.js" defer></script>
     <script src="script-main.js" defer></script>
     <script src="chatbot-guide.js" defer></script>
+    <script src="editor-enhancements.js" defer></script>
 
     <style>
         /* =============================================================== */
@@ -109,8 +111,10 @@
                         class="fas fa-undo"></i></button>
             </div>
             <!-- NEW: Language & Preview Buttons -->
-            <button id="lang-toggle-btn" class="btn-icon" title="تبديل اللغة / Toggle Language" aria-label="Toggle Language">EN</button>
-            <button id="preview-mode-btn" class="btn-icon" title="وضع المعاينة" aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
+            <button id="lang-toggle-btn" class="btn-icon" title="تبديل اللغة / Toggle Language"
+                aria-label="Toggle Language">EN</button>
+            <button id="preview-mode-btn" class="btn-icon" title="وضع المعاينة" aria-label="Enter Preview Mode"><i
+                    class="fas fa-eye"></i></button>
         </div>
         <div class="toolbar-group toolbar-end">
             <button id="save-to-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"><span>حفظ
@@ -191,7 +195,8 @@
                 <div class="form-group">
                     <label>اختر تصميمًا جاهزًا</label>
                     <div id="theme-gallery" class="theme-gallery-grid"></div>
-                    <div class="form-group" id="ai-suggestion-group" style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
+                    <div class="form-group" id="ai-suggestion-group"
+                        style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
                         <label>هل تحتاج للإلهام؟</label>
                         <button id="ai-suggest-btn" class="btn btn-secondary" style="width: 100%;">
                             <i class="fas fa-magic"></i> <span>اقترح تصميمًا ذكيًا</span>
@@ -264,9 +269,11 @@
                             <div class="card-background-layer" id="front-bg-image-layer"></div>
                             <div class="card-background-layer" id="front-bg-gradient-layer"></div>
                             <div class="card-content-layer card-front-content-layer" id="card-front-content">
-                                
+
                                 <div id="card-logo" data-input-target-id="logo-drop-zone">
-                                    <img src="mcprime-logo-transparent.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية" class="logo-front" id="card-logo-img">
+                                    <img src="mcprime-logo-transparent.png"
+                                        alt="شعار MC PRIME لتصميم بطاقات العمل الذكية" class="logo-front"
+                                        id="card-logo-img">
                                 </div>
 
                                 <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
@@ -307,13 +314,15 @@
                 <summary>الشعار</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" id="logo-drop-zone">
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة هنا</span></div>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
+                                هنا</span></div>
                         <legend>الشعار (Logo)</legend>
 
                         <!-- قسم الرفع والرابط -->
                         <div class="form-group">
                             <label for="input-logo">رابط الشعار</label>
-                            <input type="text" id="input-logo" value="mcprime-logo-transparent.png" data-update-target="card-logo-img" data-update-property="src">
+                            <input type="text" id="input-logo" value="mcprime-logo-transparent.png"
+                                data-update-target="card-logo-img" data-update-property="src">
                         </div>
                         <div class="form-group">
                             <label for="input-logo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
@@ -331,7 +340,9 @@
                         <div class="control-grid">
                             <div class="form-group">
                                 <label for="logo-size">حجم الشعار</label>
-                                <input type="range" id="logo-size" min="10" max="80" value="25" data-update-target="card-logo-img" data-update-property="style.maxWidth" data-update-unit="%">
+                                <input type="range" id="logo-size" min="10" max="80" value="25"
+                                    data-update-target="card-logo-img" data-update-property="style.maxWidth"
+                                    data-update-unit="%">
                             </div>
                             <div class="form-group">
                                 <label for="logo-align-group">محاذاة الشعار</label>
@@ -347,7 +358,8 @@
                         <div class="control-grid">
                             <div class="form-group">
                                 <label for="logo-opacity">شفافية الشعار</label>
-                                <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1" data-update-target="card-logo-img" data-update-property="style.opacity">
+                                <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
+                                    data-update-target="card-logo-img" data-update-property="style.opacity">
                             </div>
                             <div class="form-group">
                                 <label for="logo-bg-color">خلفية الشعار</label>
@@ -364,7 +376,8 @@
                             <legend>ظل الشعار</legend>
                             <div class="form-group">
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="logo-shadow-enabled" style="width: auto; margin-inline-end: 10px;">
+                                    <input type="checkbox" id="logo-shadow-enabled"
+                                        style="width: auto; margin-inline-end: 10px;">
                                     <span>تفعيل الظل</span>
                                 </label>
                             </div>
@@ -388,16 +401,20 @@
                                 <label><input type="radio" name="placement-logo" value="back"> خلفي</label>
                             </div>
                         </div>
-                        
+
                         <div class="form-group" style="margin-top: 15px;">
                             <label>تحريك دقيق (بالبكسل)</label>
                             <div class="position-controls-grid" data-target-id="card-logo">
-                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i
+                                        class="fas fa-arrow-up"></i></button>
                                 <div class="controls-row">
-                                    <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                    <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                    <button type="button" class="btn-icon move-btn" data-direction="left"
+                                        title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                    <button type="button" class="btn-icon move-btn" data-direction="right"
+                                        title="لليمين"><i class="fas fa-arrow-right"></i></button>
                                 </div>
-                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i
+                                        class="fas fa-arrow-down"></i></button>
                             </div>
                         </div>
                     </fieldset>
@@ -408,7 +425,8 @@
                 <summary>الصورة الشخصية</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" id="photo-controls-fieldset">
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة هنا</span></div>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
+                                هنا</span></div>
                         <legend>الصورة الشخصية</legend>
 
                         <!-- قسم الرفع والرابط -->
@@ -419,7 +437,8 @@
                         <div class="form-group">
                             <label for="input-photo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
                             <div class="logo-upload-group">
-                                <img id="photo-preview" src="" alt="معاينة الصورة الشخصية" style="display: none; background-color: var(--accent-secondary); border-radius: 50%; object-fit: cover; width: 50px; height: 50px;">
+                                <img id="photo-preview" src="" alt="معاينة الصورة الشخصية"
+                                    style="display: none; background-color: var(--accent-secondary); border-radius: 50%; object-fit: cover; width: 50px; height: 50px;">
                                 <div class="file-input-wrapper">
                                     <input type="file" id="input-photo-upload" accept="image/*">
                                     <div class="input-error-msg" id="photo-upload-error"></div>
@@ -430,7 +449,7 @@
 
                         <!-- قسم الحجم والشكل والمحاذاة -->
                         <div class="control-grid">
-                             <div class="form-group">
+                            <div class="form-group">
                                 <label for="photo-size">حجم الصورة</label>
                                 <input type="range" id="photo-size" min="15" max="50" value="25">
                             </div>
@@ -454,7 +473,7 @@
 
                         <!-- قسم الإطار والشفافية -->
                         <div class="control-grid">
-                             <div class="form-group">
+                            <div class="form-group">
                                 <label for="photo-opacity">شفافية الصورة</label>
                                 <input type="range" id="photo-opacity" min="0" max="1" step="0.05" value="1">
                             </div>
@@ -462,7 +481,7 @@
                                 <label for="photo-border-width">عرض الإطار (px)</label>
                                 <input type="range" id="photo-border-width" min="0" max="10" value="2">
                             </div>
-                             <div class="form-group">
+                            <div class="form-group">
                                 <label for="photo-border-color">لون الإطار</label>
                                 <input type="color" id="photo-border-color" value="#ffffff">
                             </div>
@@ -473,7 +492,8 @@
                             <legend>ظل الصورة</legend>
                             <div class="form-group">
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="photo-shadow-enabled" style="width: auto; margin-inline-end: 10px;">
+                                    <input type="checkbox" id="photo-shadow-enabled"
+                                        style="width: auto; margin-inline-end: 10px;">
                                     <span>تفعيل الظل</span>
                                 </label>
                             </div>
@@ -497,16 +517,20 @@
                                 <label><input type="radio" name="placement-photo" value="back"> خلفي</label>
                             </div>
                         </div>
-                        
+
                         <div class="form-group" style="margin-top: 15px;">
                             <label>تحريك دقيق (بالبكسل)</label>
                             <div class="position-controls-grid" data-target-id="card-personal-photo-wrapper">
-                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i
+                                        class="fas fa-arrow-up"></i></button>
                                 <div class="controls-row">
-                                    <button type="button" class="btn-icon move-btn" data-direction="left" title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                    <button type="button" class="btn-icon move-btn" data-direction="right" title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                    <button type="button" class="btn-icon move-btn" data-direction="left"
+                                        title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                    <button type="button" class="btn-icon move-btn" data-direction="right"
+                                        title="لليمين"><i class="fas fa-arrow-right"></i></button>
                                 </div>
-                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i
+                                        class="fas fa-arrow-down"></i></button>
                             </div>
                         </div>
                     </fieldset>
@@ -519,8 +543,11 @@
                     <div class="form-group">
                         <label for="input-name_ar">الاسم الكامل</label>
                         <!-- UPDATED: Dual language fields -->
-                        <textarea id="input-name_ar" rows="2" data-lang="ar" data-update-target="card-name" data-update-property="innerText"></textarea>
-                        <textarea id="input-name_en" rows="2" data-lang="en" style="display:none;" data-update-target="card-name" data-update-property="innerText" placeholder="Full Name"></textarea>
+                        <textarea id="input-name_ar" rows="2" data-lang="ar" data-update-target="card-name"
+                            data-update-property="innerText"></textarea>
+                        <textarea id="input-name_en" rows="2" data-lang="en" style="display:none;"
+                            data-update-target="card-name" data-update-property="innerText"
+                            placeholder="Full Name"></textarea>
                     </div>
                     <div class="control-grid">
                         <div class="form-group"><label for="name-font-size">حجم الخط</label><input type="range"
@@ -571,8 +598,11 @@
                     <div class="form-group">
                         <label for="input-tagline_ar">النشاط/المسمى الوظيفي</label>
                         <!-- UPDATED: Dual language fields -->
-                        <textarea id="input-tagline_ar" rows="2" data-lang="ar" data-update-target="card-tagline" data-update-property="innerText"></textarea>
-                        <textarea id="input-tagline_en" rows="2" data-lang="en" style="display:none;" data-update-target="card-tagline" data-update-property="innerText" placeholder="Job Title / Company"></textarea>
+                        <textarea id="input-tagline_ar" rows="2" data-lang="ar" data-update-target="card-tagline"
+                            data-update-property="innerText"></textarea>
+                        <textarea id="input-tagline_en" rows="2" data-lang="en" style="display:none;"
+                            data-update-target="card-tagline" data-update-property="innerText"
+                            placeholder="Job Title / Company"></textarea>
                     </div>
                     <div class="control-grid">
                         <div class="form-group"><label for="tagline-font-size">حجم الخط</label><input type="range"
@@ -1105,7 +1135,8 @@
                         </div>
                         <hr>
                         <h4>سحب وإفلات الأيقونات</h4>
-                        <p style="font-size:12px; color:var(--text-secondary); margin-top:-10px; margin-bottom:10px;">اسحب أيقونة وأفلتها على البطاقة لإضافتها.</p>
+                        <p style="font-size:12px; color:var(--text-secondary); margin-top:-10px; margin-bottom:10px;">
+                            اسحب أيقونة وأفلتها على البطاقة لإضافتها.</p>
                         <!-- NEW: Social Icon Palette for Drag & Drop -->
                         <div id="social-icon-palette" class="social-icon-palette-grid">
                             <!-- Populated by JavaScript -->
@@ -1284,10 +1315,12 @@
                 <label for="collab-link-input">رابط الجلسة</label>
                 <div style="display: flex; gap: 10px;">
                     <input type="text" id="collab-link-input" readonly style="flex-grow: 1;">
-                    <button id="copy-collab-link-btn" class="btn btn-secondary" style="width: auto; margin-top: 0;">نسخ</button>
+                    <button id="copy-collab-link-btn" class="btn btn-secondary"
+                        style="width: auto; margin-top: 0;">نسخ</button>
                 </div>
             </div>
-            <p style="font-size: 0.8rem; color: var(--text-secondary);">ملاحظة: أي شخص لديه هذا الرابط يمكنه تعديل تصميمك. ستنتهي الجلسة عند إغلاق الصفحة.</p>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">ملاحظة: أي شخص لديه هذا الرابط يمكنه تعديل
+                تصميمك. ستنتهي الجلسة عند إغلاق الصفحة.</p>
             <div id="collab-status" style="margin-top: 15px; font-weight: bold;">الحالة: غير متصل</div>
         </div>
     </div>
@@ -1378,24 +1411,26 @@
             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 15px;">
                 حرّك الصورة لتحديد الجزء المطلوب ثم اضغط "تأكيد".
             </p>
-            
+
             <!-- الحاوية الجديدة التي سيتم تعبئتها بواسطة JavaScript -->
             <div id="crop-image-container">
                 <!-- سيتم إنشاء عنصر IMG هنا ديناميكياً -->
             </div>
-            
+
             <div class="modal-footer" style="justify-content: flex-end;">
                 <button id="cancel-crop-btn" class="btn btn-secondary" style="width: auto;">إلغاء</button>
-                <button id="confirm-crop-btn" class="modal-confirm" style="width: auto; flex-grow: 1;">تأكيد القص</button>
+                <button id="confirm-crop-btn" class="modal-confirm" style="width: auto; flex-grow: 1;">تأكيد
+                    القص</button>
             </div>
         </div>
     </div>
 
     <!-- NEW: Floating button to exit preview mode -->
-    <button id="exit-preview-btn" class="btn btn-secondary" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">
+    <button id="exit-preview-btn" class="btn btn-secondary"
+        style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">
         <i class="fas fa-times"></i> الخروج من المعاينة
     </button>
-    
+
     <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" data-target="panel-elements">
             <i class="fas fa-pen"></i>
