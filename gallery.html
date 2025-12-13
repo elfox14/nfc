@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معرض الأعمال وقوالب كروت NFC | MC PRIME</title>
-    <meta name="description" content="تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة. شاهد أمثلة حقيقية لبطاقات عمل رقمية تم إنشاؤها باستخدام محرر MC PRIME المجاني.">
-    
-    <meta name="keywords" content="معرض أعمال, قوالب كروت NFC, تصميمات بطاقات, أمثلة كروت ذكية, بطاقات عمل رقمية, gallery, MC PRIME">
+    <meta name="description"
+        content="تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة. شاهد أمثلة حقيقية لبطاقات عمل رقمية تم إنشاؤها باستخدام محرر MC PRIME المجاني.">
+
+    <meta name="keywords"
+        content="معرض أعمال, قوالب كروت NFC, تصميمات بطاقات, أمثلة كروت ذكية, بطاقات عمل رقمية, gallery, MC PRIME">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.mcprim.com/nfc/gallery.html">
     <meta property="og:title" content="معرض الأعمال وقوالب كروت NFC | MC PRIME">
-    <meta property="og:description" content="تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالB كروت NFC ذكية جاهزة.">
+    <meta property="og:description" content="تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة.">
     <meta property="og:image" content="https://www.mcprim.com/nfc/og-image.png">
     <meta property="og:image:alt" content="معرض أعمال وتصاميم بطاقات عمل رقمية ذكية من MC PRIME">
     <meta property="og:site_name" content="MC PRIME">
@@ -20,16 +23,24 @@
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://www.mcprim.com/nfc/gallery.html">
     <meta property="twitter:title" content="معرض الأعمال وقوالب كروت NFC | MC PRIME">
-    <meta property="twitter:description" content="تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة.">
+    <meta property="twitter:description"
+        content="تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة.">
     <meta property="twitter:image" content="https://www.mcprim.com/nfc/og-image.png">
     <meta property="twitter:image:alt" content="معرض أعمال وتصاميم بطاقات عمل رقمية ذكية من MC PRIME">
-    
-    <link rel="canonical" href="https://www.mcprim.com/nfc/gallery.html" />
+
+    <link rel="canonical" href="https://www.mcprim.com/nfc/gallery.html">
+    <link rel="icon" href="/nfc/mcprime-logo-transparent.png" type="image/png">
+
+    <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Tajawal:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&family=Tajawal:wght@400;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
+
+    <!-- Schema -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -37,7 +48,7 @@
         {
           "@type": "CollectionPage",
           "name": "معرض الأعمال وقوالب كروت NFC جاهزة | MC PRIME",
-          "description": "تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالB كروت NFC ذكية جاهزة.",
+          "description": "تصفح معرض أعمالنا واستلهم أفكارًا من تصميمات وقوالب كروت NFC ذكية جاهزة.",
           "url": "https://www.mcprim.com/nfc/gallery.html",
           "mainEntity": {
             "@type": "ItemList",
@@ -62,317 +73,589 @@
       ]
     }
     </script>
-    
-    <link rel="stylesheet" href="/nfc/style.css">
-    <link rel="stylesheet" href="/nfc/gallery.css"> 
-    
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/nfc/gallery.css">
 </head>
+
 <body>
 
-    <div class="gallery-container">
-        <header class="gallery-header">
-            <h1>معرض الأعمال</h1>
-            <p>تصفح أحدث التصاميم التي أنشأها مستخدمونا. استلهم الأفكار واستخدم أي تصميم كنقطة بداية لمشروعك.</p>
-        </header>
-        
-        <div class="gallery-controls">
-            <div class="search-wrapper">
-                <input type="search" id="search-input" placeholder="ابحث بالاسم أو المسمى الوظيفي...">
-                <button id="search-btn" aria-label="بحث"><i class="fas fa-search"></i></button>
-            </div>
-            <div class="sort-wrapper">
-                <label for="sort-by">فرز حسب:</label>
-                <select id="sort-by">
-                    <option value="createdAt">الأحدث</option>
-                    <option value="views">الأكثر مشاهدة</option>
-                </select>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-content">
+            <a href="/nfc/" class="nav-logo">
+                <img src="/nfc/mcprime-logo-transparent.png" alt="MC PRIME" loading="eager">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/nfc/">الرئيسية</a></li>
+                <li><a href="/nfc/#features">المميزات</a></li>
+                <li><a href="/nfc/gallery.html" class="active">المعرض</a></li>
+                <li><a href="/nfc/blog.html">المدونة</a></li>
+                <li><a href="/nfc/#faq">الأسئلة الشائعة</a></li>
+            </ul>
+            <a href="/nfc/editor.html" class="nav-cta">صمم بطاقتك</a>
+            <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
-        <main>
-            <div id="loader" class="loader-container">
-                <div class="spinner" style="margin: 0 auto 1rem auto;"></div>
-                <p>جاري تحميل أحدث التصاميم...</p>
-            </div>
-            <div id="error-message" class="error-message" style="display: none;">
-                </div>
-            
-            <div id="gallery-grid" class="gallery-grid">
-                </div>
+    </nav>
 
-            <div id="load-more-container" class="load-more-container" style="display: none;">
-                <button id="load-more-btn" class="btn btn-primary">تحميل المزيد</button>
+    <div class="gallery-container">
+
+        <!-- Header -->
+        <header class="gallery-header">
+            <h1><i class="fas fa-images"></i> معرض الأعمال</h1>
+            <p>تصفح أحدث التصاميم التي أنشأها مستخدمونا. استلهم الأفكار واستخدم أي تصميم كنقطة بداية لمشروعك.</p>
+            <div class="header-cta">
+                <a href="/nfc/editor.html" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> صمم بطاقتك الآن
+                </a>
             </div>
-            
+        </header>
+
+        <!-- Demo Notice (shown when using fallback) -->
+        <div id="demo-notice" class="demo-notice" style="display: none;">
+            <i class="fas fa-info-circle"></i>
+            <p>يتم عرض تصاميم تجريبية. السيرفر غير متاح حالياً، يرجى المحاولة لاحقاً لعرض التصاميم الحقيقية.</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="gallery-controls">
+            <div class="search-wrapper">
+                <button id="search-btn" aria-label="بحث"><i class="fas fa-search"></i></button>
+                <input type="search" id="search-input" placeholder="ابحث بالاسم أو المسمى الوظيفي...">
+            </div>
+            <div class="controls-right">
+                <div class="sort-wrapper">
+                    <label for="sort-by">فرز حسب:</label>
+                    <select id="sort-by">
+                        <option value="createdAt">الأحدث</option>
+                        <option value="views">الأكثر مشاهدة</option>
+                    </select>
+                </div>
+                <div class="view-toggle">
+                    <button id="grid-view-btn" class="active" aria-label="عرض شبكي">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button id="list-view-btn" aria-label="عرض قائمة">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <main>
+            <!-- Error Container -->
+            <div id="error-container" class="error-container" style="display: none;">
+                <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <h2>عفواً، حدث خطأ</h2>
+                <p id="error-text">تعذر تحميل المعرض. يرجى المحاولة مرة أخرى.</p>
+                <button class="retry-btn" id="retry-btn">
+                    <i class="fas fa-redo"></i> إعادة المحاولة
+                </button>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <i class="fas fa-search"></i>
+                <h2>لا توجد نتائج</h2>
+                <p>لم يتم العثور على تصميمات تطابق بحثك. جرب كلمة أخرى.</p>
+            </div>
+
+            <!-- Gallery Grid -->
+            <div id="gallery-grid" class="gallery-grid"></div>
+
+            <!-- Load More -->
+            <div id="load-more-container" class="load-more-container" style="display: none;">
+                <button id="load-more-btn">
+                    <i class="fas fa-arrow-down"></i> تحميل المزيد
+                </button>
+            </div>
         </main>
     </div>
 
-    <footer>
-      &copy; 2025 جميع الحقوق محفوظة. | 
-      <a href="/nfc/index.html">الرئيسية</a> | 
-      <a href="/nfc/gallery.html">المعرض</a> |
-      <a href="/nfc/blog.html">المدونة</a> |
-      <a href="/nfc/about.html">من نحن</a> |
-      <a href="/nfc/contact.html">اتصل بنا</a> | 
-      <a href="/nfc/privacy.html">سياسة الخصوصية</a>
-      </footer>
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox-overlay">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close" aria-label="إغلاق">
+                <i class="fas fa-times"></i>
+            </button>
+            <iframe id="lightbox-iframe" class="lightbox-iframe"></iframe>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>MC PRIME</h3>
+                <p>نقدم حلول بطاقات العمل الذكية NFC للأفراد والشركات.</p>
+            </div>
+            <div class="footer-section">
+                <h3>روابط سريعة</h3>
+                <ul>
+                    <li><a href="/nfc/">الرئيسية</a></li>
+                    <li><a href="/nfc/gallery.html">المعرض</a></li>
+                    <li><a href="/nfc/blog.html">المدونة</a></li>
+                    <li><a href="/nfc/editor.html">محرر التصميم</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>الدعم</h3>
+                <ul>
+                    <li><a href="/nfc/#faq">الأسئلة الشائعة</a></li>
+                    <li><a href="/nfc/contact.html">اتصل بنا</a></li>
+                    <li><a href="/nfc/privacy.html">سياسة الخصوصية</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>تابعنا</h3>
+                <div class="social-links">
+                    <a href="https://facebook.com/mcprime" target="_blank" rel="noopener" aria-label="فيسبوك">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://instagram.com/mcprime" target="_blank" rel="noopener" aria-label="إنستغرام">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener" aria-label="لينكد إن">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener" aria-label="واتساب">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 MC PRIME. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
             const grid = document.getElementById('gallery-grid');
-            const loader = document.getElementById('loader');
-            const errorMessage = document.getElementById('error-message');
+            const errorContainer = document.getElementById('error-container');
+            const errorText = document.getElementById('error-text');
+            const emptyState = document.getElementById('empty-state');
+            const demoNotice = document.getElementById('demo-notice');
             const sortBySelect = document.getElementById('sort-by');
             const searchInput = document.getElementById('search-input');
             const searchBtn = document.getElementById('search-btn');
             const loadMoreContainer = document.getElementById('load-more-container');
             const loadMoreBtn = document.getElementById('load-more-btn');
-            
+            const retryBtn = document.getElementById('retry-btn');
+            const navbar = document.getElementById('navbar');
+            const navToggle = document.getElementById('nav-toggle');
+            const navLinks = document.getElementById('nav-links');
+            const gridViewBtn = document.getElementById('grid-view-btn');
+            const listViewBtn = document.getElementById('list-view-btn');
+            const lightbox = document.getElementById('lightbox');
+            const lightboxClose = document.getElementById('lightbox-close');
+            const lightboxIframe = document.getElementById('lightbox-iframe');
+
             const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
+            const CACHE_KEY = 'mcprime_gallery_cache';
+            const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
             let currentPage = 1;
             let totalPages = 1;
             let currentSortBy = 'createdAt';
             let currentSearchTerm = '';
             let isLoading = false;
+            let usingFallback = false;
 
-            // ===== (تم تبسيط كود التحميل الكسول) =====
+            // Demo/Fallback Data
+            const DEMO_CARDS = [
+                { shortId: 'demo1', data: { inputs: { 'input-name': 'أحمد محمد', 'input-tagline': 'مطور ويب' } }, views: 1250, gradient: 'linear-gradient(135deg, #667eea, #764ba2)' },
+                { shortId: 'demo2', data: { inputs: { 'input-name': 'سارة أحمد', 'input-tagline': 'مصممة جرافيك' } }, views: 980, gradient: 'linear-gradient(135deg, #f093fb, #f5576c)' },
+                { shortId: 'demo3', data: { inputs: { 'input-name': 'محمد علي', 'input-tagline': 'مدير تسويق' } }, views: 756, gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
+                { shortId: 'demo4', data: { inputs: { 'input-name': 'فاطمة خالد', 'input-tagline': 'استشارية أعمال' } }, views: 543, gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
+                { shortId: 'demo5', data: { inputs: { 'input-name': 'خالد عمر', 'input-tagline': 'مهندس برمجيات' } }, views: 432, gradient: 'linear-gradient(135deg, #fa709a, #fee140)' },
+                { shortId: 'demo6', data: { inputs: { 'input-name': 'نورا سعيد', 'input-tagline': 'مديرة مشاريع' } }, views: 321, gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)' },
+                { shortId: 'demo7', data: { inputs: { 'input-name': 'عمر حسن', 'input-tagline': 'مصور فوتوغرافي' } }, views: 289, gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)' },
+                { shortId: 'demo8', data: { inputs: { 'input-name': 'هدى محمود', 'input-tagline': 'كاتبة محتوى' } }, views: 198, gradient: 'linear-gradient(135deg, #a1c4fd, #c2e9fb)' },
+            ];
+
+            // Navbar scroll effect
+            window.addEventListener('scroll', () => {
+                navbar.classList.toggle('scrolled', window.scrollY > 50);
+            });
+
+            // Mobile menu toggle
+            navToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+
+            // View toggle
+            gridViewBtn.addEventListener('click', () => {
+                grid.classList.remove('list-view');
+                gridViewBtn.classList.add('active');
+                listViewBtn.classList.remove('active');
+            });
+
+            listViewBtn.addEventListener('click', () => {
+                grid.classList.add('list-view');
+                listViewBtn.classList.add('active');
+                gridViewBtn.classList.remove('active');
+            });
+
+            // Lightbox
+            lightboxClose.addEventListener('click', closeLightbox);
+            lightbox.addEventListener('click', (e) => {
+                if (e.target === lightbox) closeLightbox();
+            });
+
+            function openLightbox(url) {
+                lightboxIframe.src = url;
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeLightbox() {
+                lightbox.classList.remove('active');
+                lightboxIframe.src = '';
+                document.body.style.overflow = '';
+            }
+
+            // Escape key closes lightbox
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeLightbox();
+            });
+
+            // Lazy Load Observer
             const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const card = entry.target;
                         const bgLayer = card.querySelector('.thumb-bg-layer[data-bg]');
-
                         if (bgLayer) {
                             bgLayer.style.backgroundImage = `url('${bgLayer.dataset.bg}')`;
                             bgLayer.classList.add('loaded');
                             bgLayer.removeAttribute('data-bg');
                         }
-
                         observer.unobserve(card);
                     }
                 });
-            }, {
-                rootMargin: '0px 0px 200px 0px'
-            });
+            }, { rootMargin: '0px 0px 200px 0px' });
 
-            // ===== (دالة جلب البيانات المحدثة بالكامل) =====
+            // Show Skeleton Loading
+            function showSkeletons(count = 8) {
+                grid.innerHTML = '';
+                for (let i = 0; i < count; i++) {
+                    const skeleton = document.createElement('div');
+                    skeleton.className = 'skeleton-card';
+                    skeleton.innerHTML = `
+                        <div class="skeleton-thumbnail"></div>
+                        <div class="skeleton-info">
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line short"></div>
+                            <div class="skeleton-line tiny"></div>
+                        </div>
+                    `;
+                    grid.appendChild(skeleton);
+                }
+            }
+
+            // Create Card Element
+            function createCardElement(design, isDemo = false) {
+                const inputs = design.data.inputs;
+                const cardElement = document.createElement('div');
+                cardElement.className = 'gallery-card';
+
+                const viewUrl = isDemo ? '#' : `/nfc/viewer.html?id=${design.shortId}`;
+                const editUrl = isDemo ? '/nfc/editor.html' : `/nfc/editor.html?id=${design.shortId}`;
+
+                // Thumbnail
+                const thumbnailContainer = document.createElement('div');
+                thumbnailContainer.className = 'card-thumbnail';
+
+                const bgImageLayer = document.createElement('div');
+                bgImageLayer.className = 'thumb-bg-layer';
+
+                if (isDemo) {
+                    bgImageLayer.style.background = design.gradient;
+                    bgImageLayer.classList.add('loaded');
+                } else {
+                    const imageUrls = design.data.imageUrls || {};
+                    const capturedImageUrl = imageUrls.capturedFront || imageUrls.front;
+                    if (capturedImageUrl) {
+                        bgImageLayer.dataset.bg = capturedImageUrl;
+                    } else {
+                        bgImageLayer.style.backgroundColor = '#2a3d54';
+                        bgImageLayer.classList.add('loaded');
+                    }
+                }
+
+                // Overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'thumb-overlay';
+                overlay.innerHTML = `
+                    <a href="${viewUrl}" class="thumb-btn preview-btn" ${isDemo ? '' : 'target="_blank"'}><i class="fas fa-eye"></i> معاينة</a>
+                    <a href="${editUrl}" class="thumb-btn" target="_blank"><i class="fas fa-edit"></i> تعديل</a>
+                `;
+
+                thumbnailContainer.append(bgImageLayer, overlay);
+
+                // Info
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'card-info';
+                infoDiv.innerHTML = `
+                    <h3>${inputs['input-name'] || 'اسم غير محدد'}</h3>
+                    <p>${inputs['input-tagline'] || 'وصف غير محدد'}</p>
+                    <div class="card-stats">
+                        <i class="fas fa-eye"></i> ${(design.views || 0).toLocaleString('ar-EG')}
+                    </div>
+                `;
+
+                // Actions
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'card-actions';
+                actionsDiv.innerHTML = `
+                    <a href="${viewUrl}" class="btn btn-secondary" ${isDemo ? '' : 'target="_blank"'}><i class="fas fa-eye"></i> عرض</a>
+                    <a href="${editUrl}" class="btn btn-primary" target="_blank"><i class="fas fa-pencil-alt"></i> استخدم كقالب</a>
+                `;
+
+                cardElement.append(thumbnailContainer, infoDiv, actionsDiv);
+
+                // Preview button opens lightbox (for non-demo)
+                if (!isDemo) {
+                    const previewBtn = overlay.querySelector('.preview-btn');
+                    previewBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        openLightbox(viewUrl);
+                    });
+                }
+
+                return cardElement;
+            }
+
+            // Show Demo Cards (Fallback)
+            function showDemoCards() {
+                grid.innerHTML = '';
+                usingFallback = true;
+                demoNotice.style.display = 'flex';
+                errorContainer.style.display = 'none';
+                emptyState.style.display = 'none';
+                loadMoreContainer.style.display = 'none';
+
+                DEMO_CARDS.forEach(design => {
+                    const card = createCardElement(design, true);
+                    grid.appendChild(card);
+                });
+            }
+
+            // Cache Functions
+            function getCachedData() {
+                try {
+                    const cached = localStorage.getItem(CACHE_KEY);
+                    if (cached) {
+                        const { data, timestamp } = JSON.parse(cached);
+                        if (Date.now() - timestamp < CACHE_DURATION) {
+                            return data;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Cache read failed:', e);
+                }
+                return null;
+            }
+
+            function setCacheData(data) {
+                try {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify({
+                        data,
+                        timestamp: Date.now()
+                    }));
+                } catch (e) {
+                    console.warn('Cache write failed:', e);
+                }
+            }
+
+            // Fetch Gallery Cards
             async function fetchGalleryCards(page = 1, sortBy = 'createdAt', searchTerm = '', append = false) {
                 if (isLoading) return;
                 isLoading = true;
-                
-                // إذا لم يكن "إضافة"، أظهر اللودر الرئيسي
+                usingFallback = false;
+                demoNotice.style.display = 'none';
+
                 if (!append) {
-                    grid.innerHTML = '';
-                    loader.style.display = 'block';
+                    showSkeletons(8);
                     loadMoreContainer.style.display = 'none';
                 } else {
-                    // إذا كان "إضافة"، أظهر نص "جاري التحميل" على الزر
                     loadMoreBtn.disabled = true;
-                    loadMoreBtn.textContent = 'جاري التحميل...';
+                    loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';
                 }
-                errorMessage.style.display = 'none';
+
+                errorContainer.style.display = 'none';
+                emptyState.style.display = 'none';
 
                 try {
-                    // بناء رابط الـ API مع جميع الخيارات
-                    const params = new URLSearchParams({
-                        page: page,
-                        sortBy: sortBy,
-                    });
-                    if (searchTerm) {
-                        params.append('search', searchTerm);
-                    }
-
-                    const response = await fetch(`${API_BASE_URL}/api/gallery?${params.toString()}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    const designs = data.designs || [];
-                    
-                    loader.style.display = 'none';
-                    isLoading = false;
-                    
-                    if (append) {
-                        loadMoreBtn.disabled = false;
-                        loadMoreBtn.textContent = 'تحميل المزيد';
-                    }
-
-                    if (designs.length === 0 && !append) {
-                        errorMessage.innerHTML = '<h2>لا توجد نتائج</h2><p>لم يتم العثور على تصميمات تطابق بحثك. جرب كلمة أخرى.</p>';
-                        errorMessage.style.display = 'block';
-                        return;
-                    }
-                    
-                    // تحديث بيانات الـ Pagination
-                    currentPage = data.pagination.page;
-                    totalPages = data.pagination.totalPages;
-
-                    // إظهار أو إخفاء زر "تحميل المزيد"
-                    if (currentPage < totalPages) {
-                        loadMoreContainer.style.display = 'block';
-                    } else {
-                        loadMoreContainer.style.display = 'none';
-                    }
-                    
-                    // تحديث بيانات SEO (Schema)
-                    updateSchema(designs, append);
-
-                    // بناء البطاقات
-                    designs.forEach(design => {
-                        if (!design.shortId || !design.data || !design.data.inputs) {
-                            console.warn('Skipping invalid design object:', design);
+                    // Check cache first (only for first page, no search)
+                    if (page === 1 && !searchTerm && sortBy === 'createdAt') {
+                        const cached = getCachedData();
+                        if (cached && cached.designs && cached.designs.length > 0) {
+                            displayCards(cached.designs, cached.pagination, append);
+                            isLoading = false;
+                            // Still try to fetch fresh data in background
+                            fetchFreshData(page, sortBy, searchTerm);
                             return;
                         }
+                    }
 
-                        const inputs = design.data.inputs;
-                        const cardElement = document.createElement('div');
-                        cardElement.className = 'gallery-card';
+                    const params = new URLSearchParams({ page, sortBy });
+                    if (searchTerm) params.append('search', searchTerm);
 
-                        const viewUrl = `/nfc/viewer.html?id=${design.shortId}`;
-                        
-                        const thumbnailUrl = document.createElement('a');
-                        thumbnailUrl.href = viewUrl;
-                        thumbnailUrl.className = 'card-thumbnail-link';
-                        thumbnailUrl.target = '_blank';
-                        thumbnailUrl.rel = 'noopener noreferrer';
-                        
-                        const thumbnailContainer = document.createElement('div');
-                        thumbnailContainer.className = `card-thumbnail`; 
-                        
-                        const bgImageLayer = document.createElement('div');
-                        bgImageLayer.className = 'thumb-bg-layer';
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-                        const imageUrls = design.data.imageUrls || {};
-                        const capturedImageUrl = imageUrls.capturedFront || imageUrls.front;
-
-                        if (capturedImageUrl) {
-                            bgImageLayer.dataset.bg = capturedImageUrl;
-                        } else {
-                            bgImageLayer.style.backgroundColor = '#2a3d54';
-                            bgImageLayer.classList.add('loaded'); 
-                        }
-
-                        thumbnailContainer.append(bgImageLayer);
-                        thumbnailUrl.appendChild(thumbnailContainer);
-                        
-                        const infoDiv = document.createElement('div');
-                        infoDiv.className = 'card-info';
-                        
-                        // ===== (الاقتراح 2: إضافة عدد المشاهدات) =====
-                        infoDiv.innerHTML = `
-                            <h3>${inputs['input-name'] || 'اسم غير محدد'}</h3>
-                            <p>${inputs['input-tagline'] || 'وصف غير محدد'}</p>
-                            <div class="card-stats">
-                                <i class="fas fa-eye"></i> ${design.views || 0}
-                            </div>
-                        `;
-                        
-                        const actionsDiv = document.createElement('div');
-                        actionsDiv.className = 'card-actions';
-
-                        const viewBtn = document.createElement('a');
-                        viewBtn.href = viewUrl; 
-                        viewBtn.className = 'btn btn-secondary';
-                        viewBtn.target = '_blank';
-                        viewBtn.rel = 'noopener noreferrer';
-                        viewBtn.innerHTML = `<i class="fas fa-eye"></i> عرض`;
-
-                        const templateBtn = document.createElement('a');
-                        templateBtn.href = `/nfc/editor.html?id=${design.shortId}`;
-                        templateBtn.className = 'btn btn-primary';
-                        templateBtn.target = '_blank';
-                        templateBtn.rel = 'noopener noreferrer';
-                        templateBtn.innerHTML = `<i class="fas fa-pencil-alt"></i> استخدم كقالب`;
-
-                        actionsDiv.append(viewBtn, templateBtn);
-
-                        cardElement.append(thumbnailUrl, infoDiv, actionsDiv);
-                        grid.appendChild(cardElement);
-
-                        // إضافة البطاقة للمراقب (Lazy Load)
-                        lazyLoadObserver.observe(cardElement);
+                    const response = await fetch(`${API_BASE_URL}/api/gallery?${params}`, {
+                        signal: controller.signal
                     });
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                    const data = await response.json();
+                    const designs = data.designs || [];
+
+                    // Cache the data
+                    if (page === 1 && !searchTerm && sortBy === 'createdAt') {
+                        setCacheData(data);
+                    }
+
+                    isLoading = false;
+
+                    if (designs.length === 0 && !append) {
+                        grid.innerHTML = '';
+                        emptyState.style.display = 'block';
+                        return;
+                    }
+
+                    displayCards(designs, data.pagination, append);
 
                 } catch (error) {
                     console.error('Failed to fetch gallery cards:', error);
-                    loader.style.display = 'none';
-                    errorMessage.innerHTML = '<h2>عفواً، حدث خطأ</h2><p>عفواً، حدث خطأ أثناء تحميل المعرض. يرجى المحاولة مرة أخرى لاحقاً.</p>';
-                    errorMessage.style.display = 'block';
                     isLoading = false;
-                    if (append) {
+
+                    if (!append) {
+                        grid.innerHTML = '';
+
+                        // Show demo cards as fallback
+                        if (error.name === 'AbortError') {
+                            errorText.textContent = 'انتهت مهلة الاتصال. السيرفر قد يكون في وضع السكون.';
+                        } else {
+                            errorText.textContent = 'تعذر الاتصال بالسيرفر. يتم عرض تصاميم تجريبية.';
+                        }
+
+                        showDemoCards();
+                    } else {
                         loadMoreBtn.disabled = false;
-                        loadMoreBtn.textContent = 'تحميل المزيد';
+                        loadMoreBtn.innerHTML = '<i class="fas fa-arrow-down"></i> تحميل المزيد';
                     }
                 }
             }
 
-            // ===== (دالة تحديث بيانات SEO Schema) =====
+            function fetchFreshData(page, sortBy, searchTerm) {
+                const params = new URLSearchParams({ page, sortBy });
+                if (searchTerm) params.append('search', searchTerm);
+
+                fetch(`${API_BASE_URL}/api/gallery?${params}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.designs && data.designs.length > 0) {
+                            setCacheData(data);
+                        }
+                    })
+                    .catch(() => { });
+            }
+
+            function displayCards(designs, pagination, append) {
+                if (!append) grid.innerHTML = '';
+
+                if (append) {
+                    loadMoreBtn.disabled = false;
+                    loadMoreBtn.innerHTML = '<i class="fas fa-arrow-down"></i> تحميل المزيد';
+                }
+
+                currentPage = pagination.page;
+                totalPages = pagination.totalPages;
+                loadMoreContainer.style.display = currentPage < totalPages ? 'block' : 'none';
+
+                designs.forEach(design => {
+                    if (!design.shortId || !design.data || !design.data.inputs) return;
+                    const card = createCardElement(design, false);
+                    grid.appendChild(card);
+                    lazyLoadObserver.observe(card);
+                });
+
+                updateSchema(designs, append);
+            }
+
+            // Update SEO Schema
             function updateSchema(designs, append) {
                 const schemaScript = document.querySelector('script[type="application/ld+json"]');
                 if (!schemaScript) return;
-                
+
                 try {
                     const schema = JSON.parse(schemaScript.textContent);
-                    const collectionPageObject = schema['@graph'].find(item => item['@type'] === 'CollectionPage');
-                    if (collectionPageObject) {
-                        const itemList = collectionPageObject.mainEntity;
-                        if (!append) {
-                            itemList.itemListElement = []; // أعد الضبط عند البحث أو الفرز
-                        }
-                        
-                        let currentPosition = itemList.itemListElement.length + 1;
-                        
-                        designs.forEach((design) => {
+                    const collectionPage = schema['@graph'].find(item => item['@type'] === 'CollectionPage');
+                    if (collectionPage) {
+                        const itemList = collectionPage.mainEntity;
+                        if (!append) itemList.itemListElement = [];
+
+                        let pos = itemList.itemListElement.length + 1;
+                        designs.forEach(design => {
                             if (!design.shortId || !design.data || !design.data.inputs) return;
-                            
-                            const correctViewUrl = `/nfc/viewer.html?id=${design.shortId}`;
                             itemList.itemListElement.push({
                                 "@type": "ListItem",
-                                "position": currentPosition++,
+                                "position": pos++,
                                 "item": {
                                     "@type": "CreativeWork",
                                     "name": design.data.inputs['input-name'] || 'تصميم بطاقة عمل',
-                                    "description": design.data.inputs['input-tagline'] || 'أحد القوالب المتاحة في معرض أعمالنا.',
-                                    "url": correctViewUrl
+                                    "description": design.data.inputs['input-tagline'] || '',
+                                    "url": `/nfc/viewer.html?id=${design.shortId}`
                                 }
                             });
                         });
-                        
                         schemaScript.textContent = JSON.stringify(schema, null, 2);
                     }
                 } catch (e) {
-                    console.error("Failed to update schema:", e);
+                    console.error("Schema update failed:", e);
                 }
             }
 
-            // ===== (دالة لتنفيذ البحث أو الفرز) =====
+            // Event Handlers
             function handleFilterChange() {
-                currentPage = 1; // أعد الضبط إلى الصفحة الأولى
+                currentPage = 1;
                 currentSortBy = sortBySelect.value;
                 currentSearchTerm = searchInput.value;
                 fetchGalleryCards(currentPage, currentSortBy, currentSearchTerm, false);
             }
 
-            // ربط الأحداث
             sortBySelect.addEventListener('change', handleFilterChange);
             searchBtn.addEventListener('click', handleFilterChange);
             searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleFilterChange();
-                }
+                if (e.key === 'Enter') handleFilterChange();
             });
 
-            // حدث زر "تحميل المزيد"
             loadMoreBtn.addEventListener('click', () => {
                 if (currentPage < totalPages) {
                     fetchGalleryCards(currentPage + 1, currentSortBy, currentSearchTerm, true);
                 }
             });
 
-            // الجلب الأولي للبيانات
-            fetchGalleryCards(currentPage, currentSortBy, currentSearchTerm, false);
+            retryBtn.addEventListener('click', () => {
+                fetchGalleryCards(currentPage, currentSortBy, currentSearchTerm, false);
+            });
+
+            // Initial Load
+            fetchGalleryCards(1, 'createdAt', '', false);
         });
     </script>
 
 </body>
+
 </html>
