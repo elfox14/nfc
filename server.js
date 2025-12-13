@@ -440,7 +440,76 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
-// ... (بقية مسارات API مثل gallery و backgrounds كما هي) ...
+// START: NEW GALLERY API ENDPOINT
+app.get('/api/gallery', async (req, res) => {
+    try {
+        if (!db) return res.status(500).json({ error: 'Database not connected' });
+
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = 20; // 5 columns * 4 rows
+        const skip = (page - 1) * limit;
+        const sortBy = req.query.sortBy || 'createdAt';
+        const searchTerm = req.query.search ? String(req.query.search).trim() : '';
+
+        // Build search query
+        const query = {};
+        if (searchTerm) {
+            const regex = new RegExp(searchTerm, 'i'); // Case-insensitive search
+            query['$or'] = [
+                { 'data.inputs.input-name_ar': regex },
+                { 'data.inputs.input-name_en': regex },
+                { 'data.inputs.input-tagline_ar': regex },
+                { 'data.inputs.input-tagline_en': regex }
+            ];
+        }
+
+        // Build sort options
+        const sortOptions = {};
+        if (sortBy === 'views') {
+            sortOptions.views = -1; // Descending
+        } else {
+            sortOptions.createdAt = -1; // Default to newest
+        }
+
+        // Get total count for pagination
+        const totalDesigns = await db.collection(designsCollectionName).countDocuments(query);
+        const totalPages = Math.ceil(totalDesigns / limit);
+
+        // Fetch paginated designs with projection
+        const designs = await db.collection(designsCollectionName)
+            .find(query)
+            .project({
+                'data.inputs.input-name_ar': 1,
+                'data.inputs.input-name_en': 1,
+                'data.inputs.input-tagline_ar': 1,
+                'data.inputs.input-tagline_en': 1,
+                'data.imageUrls.capturedFront': 1,
+                'data.imageUrls.front': 1,
+                'shortId': 1,
+                'createdAt': 1,
+                'views': 1
+            })
+            .sort(sortOptions)
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+
+        res.json({
+            success: true,
+            designs,
+            pagination: {
+                page,
+                totalPages,
+                totalDesigns
+            }
+        });
+
+    } catch (e) {
+        console.error('Gallery fetch error:', e);
+        res.status(500).json({ success: false, error: 'Failed to fetch gallery designs' });
+    }
+});
+// END: NEW GALLERY API ENDPOINT
 
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
