@@ -35,6 +35,10 @@
         const progressBar = document.createElement('div');
         progressBar.className = 'editor-progress-bar';
         progressBar.innerHTML = `
+            <button id="ai-suggest-btn-top" class="btn btn-ai-suggest" title="اقترح تصميمًا ذكيًا">
+                <i class="fas fa-magic"></i>
+                <span>اقتراح ذكي</span>
+            </button>
             <div class="progress-steps">
                 ${STEPS.map((step, index) => `
                     <div class="progress-step ${index === 0 ? 'active' : ''}" data-step="${index}">
@@ -45,10 +49,6 @@
                     </div>
                 `).join('')}
             </div>
-            <button id="ai-suggest-btn-top" class="btn btn-ai-suggest" title="اقترح تصميمًا ذكيًا">
-                <i class="fas fa-magic"></i>
-                <span>اقتراح ذكي</span>
-            </button>
         `;
 
         // Insert after toolbar
