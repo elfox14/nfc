@@ -45,6 +45,10 @@
                     </div>
                 `).join('')}
             </div>
+            <button id="ai-suggest-btn-top" class="btn btn-ai-suggest" title="اقترح تصميمًا ذكيًا">
+                <i class="fas fa-magic"></i>
+                <span>اقتراح ذكي</span>
+            </button>
         `;
 
         // Insert after toolbar
@@ -54,13 +58,25 @@
             document.body.classList.add('has-progress-bar');
         }
 
-        // Add click handlers
+        // Add click handlers for steps
         progressBar.querySelectorAll('.progress-step').forEach(step => {
             step.addEventListener('click', () => {
                 const stepIndex = parseInt(step.dataset.step);
                 goToStep(stepIndex);
             });
         });
+
+        // AI Suggest button click handler
+        const aiSuggestBtnTop = progressBar.querySelector('#ai-suggest-btn-top');
+        if (aiSuggestBtnTop) {
+            aiSuggestBtnTop.addEventListener('click', () => {
+                // Trigger the original AI suggest button
+                const originalBtn = document.getElementById('ai-suggest-btn');
+                if (originalBtn) {
+                    originalBtn.click();
+                }
+            });
+        }
 
         // Track panel interactions
         trackPanelInteractions();
