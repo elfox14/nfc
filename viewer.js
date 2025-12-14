@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const blob = new Blob([signatureHTML], { type: "text/html" });
         const clipboardItem = new ClipboardItem({ "text/html": blob });
-        
+
         navigator.clipboard.write([clipboardItem]).then(() => {
             alert("✅ تم نسخ التوقيع!\n\nيمكنك الآن الذهاب إلى إعدادات بريدك الإلكتروني (Outlook, Gmail) ولصق التوقيع هناك.");
             trackClick('save_email_signature');
@@ -140,8 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container || !profileHeader || !profileName || !profileTagline) return;
 
         const inputs = data.inputs || {};
-        const name = inputs['input-name'] || 'اسم البطاقة';
-        const tagline = inputs['input-tagline'] || '';
+        // Support bilingual fields with fallback
+        const name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || 'اسم البطاقة';
+        const tagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || '';
 
         profileName.textContent = name;
         if (tagline && tagline.trim() !== '') {
@@ -153,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         profileHeader.style.display = 'block';
 
         container.innerHTML = '';
-        
+
         const showSocial = (inputs['toggle-master-social'] === undefined || inputs['toggle-master-social'] === true);
         if (!showSocial) {
             container.innerHTML = `
@@ -198,8 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (key === 'whatsapp') {
                 fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`;
             } else {
-                 fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
-                 displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
+                fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
+                displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
             }
             displayValue = displayValue.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -209,10 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
             a.target = '_blank';
             a.rel = 'noopener noreferrer';
             a.innerHTML = `<i class="${platform.icon}"></i><span>${displayValue}</span>`;
-            
+
             // *** إضافة حدث التتبع ***
             a.addEventListener('click', () => trackClick(key));
-            
+
             return a;
         };
 
@@ -224,19 +225,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (dynamicData.phones) {
-             const whatsappNumberClean = (staticSocial.whatsapp && staticSocial.whatsapp.value)
+            const whatsappNumberClean = (staticSocial.whatsapp && staticSocial.whatsapp.value)
                 ? staticSocial.whatsapp.value.replace(/\D/g, '') : '';
             dynamicData.phones.forEach(phone => {
                 if (phone && phone.value) {
                     const phoneValueClean = phone.value.replace(/\D/g, '');
                     if (phoneValueClean !== whatsappNumberClean) {
-                         const sanitizedValue = phone.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                         const a = document.createElement('a');
-                         a.href = `tel:${phoneValueClean}`;
-                         a.className = 'contact-link';
-                         a.innerHTML = `<i class="fas fa-phone"></i><span>${sanitizedValue}</span>`;
-                         a.addEventListener('click', () => trackClick('phone_call'));
-                         container.appendChild(a);
+                        const sanitizedValue = phone.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        const a = document.createElement('a');
+                        a.href = `tel:${phoneValueClean}`;
+                        a.className = 'contact-link';
+                        a.innerHTML = `<i class="fas fa-phone"></i><span>${sanitizedValue}</span>`;
+                        a.addEventListener('click', () => trackClick('phone_call'));
+                        container.appendChild(a);
                     }
                 }
             });
@@ -259,8 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const buildCardForRender = async (data) => {
         if (!cardData) cardData = data;
         const state = data;
-        const inputs = state.inputs || {}; 
-        const dynamicData = state.dynamic || {}; 
+        const inputs = state.inputs || {};
+        const dynamicData = state.dynamic || {};
         const positions = state.positions || {};
         const placements = state.placements || {};
         const imageUrls = state.imageUrls || {};
@@ -291,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const getPlacement = (key, defaultPlacement = 'front') => placements[key] || defaultPlacement;
 
         const renderElement = (elementHTML, placement, containerCollection) => {
-             if (containerCollection[placement]) {
+            if (containerCollection[placement]) {
                 containerCollection[placement].insertAdjacentHTML('beforeend', elementHTML);
             } else {
                 containerCollection.front.insertAdjacentHTML('beforeend', elementHTML);
@@ -371,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (dynamicData.phones && dynamicData.phones.length > 0) {
-            const showAsButtons = inputs['toggle-phone-buttons'] !== undefined ? inputs['toggle-phone-buttons'] : true; 
+            const showAsButtons = inputs['toggle-phone-buttons'] !== undefined ? inputs['toggle-phone-buttons'] : true;
             const phoneBtnBg = inputs['phone-btn-bg-color'] || '#4da6ff';
             const phoneBtnText = inputs['phone-btn-text-color'] || '#ffffff';
             const phoneBtnSize = inputs['phone-btn-font-size'] || 12;
@@ -394,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (showAsButtons) {
                     phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: ${phoneBtnBg} !important; color: ${phoneBtnText} !important; border: 2px solid ${phoneBtnBg === 'transparent' || phoneBtnBg.includes('rgba(0,0,0,0)') ? phoneBtnText : 'transparent'} !important; font-size: ${phoneBtnSize}px !important; font-family: ${phoneBtnFont} !important; padding: ${phoneBtnPadding}px ${phoneBtnPadding * 2}px !important; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="fas fa-phone-alt"></i><span>${sanitizedValue}</span></a></div>`;
                 } else {
-                     phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: transparent !important; border: none !important; font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-phone-alt" style="display:none;"></i> <span>${sanitizedValue}</span></a></div>`;
+                    phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: transparent !important; border: none !important; font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-phone-alt" style="display:none;"></i> <span>${sanitizedValue}</span></a></div>`;
                 }
                 renderElement(phoneHTML, placement, containers);
             });
@@ -407,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const dynamicSocial = dynamicData.social || [];
 
             const platforms = {
-                 whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+                whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
                 email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
                 website: { icon: 'fas fa-globe', prefix: 'https://' },
                 facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
@@ -423,12 +424,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             Object.entries(staticSocial).forEach(([key, linkData]) => {
                 if (linkData && linkData.value && platforms[key]) {
-                    allSocialLinks.push({ id: `static-${key}`, value: linkData.value, placement: linkData.placement || 'back', position: linkData.position || {x:0, y:0}, platformKey: key });
+                    allSocialLinks.push({ id: `static-${key}`, value: linkData.value, placement: linkData.placement || 'back', position: linkData.position || { x: 0, y: 0 }, platformKey: key });
                 }
             });
             dynamicSocial.forEach(linkData => {
                 if (linkData && linkData.value && linkData.platform && platforms[linkData.platform]) {
-                     allSocialLinks.push({ id: linkData.id || `dynamic-${linkData.platform}-${Date.now()}`, value: linkData.value, placement: linkData.placement || 'back', position: linkData.position || {x:0, y:0}, platformKey: linkData.platform });
+                    allSocialLinks.push({ id: linkData.id || `dynamic-${linkData.platform}-${Date.now()}`, value: linkData.value, placement: linkData.placement || 'back', position: linkData.position || { x: 0, y: 0 }, platformKey: linkData.platform });
                 }
             });
 
@@ -475,8 +476,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let qrDataString = null;
         const qrSource = inputs['qr-source'] || 'auto-vcard';
 
-        if (qrSource === 'custom') { qrDataString = inputs['input-qr-url']; } 
-        else if (qrSource === 'upload') { qrDataString = imageUrls.qrCode; } 
+        if (qrSource === 'custom') { qrDataString = inputs['input-qr-url']; }
+        else if (qrSource === 'upload') { qrDataString = imageUrls.qrCode; }
         else if (qrSource === 'auto-vcard' || qrSource === 'auto-card') { qrDataString = getVCardString(); }
 
         if (qrDataString) {
@@ -486,8 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let qrHTML = '';
 
             if (qrSource === 'custom' || qrSource === 'upload') {
-                 qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}% !important; padding-top: ${qrSize}%; height: 0; position: absolute !important; ${qrPos}"><img src="${qrDataString}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;"></div>`;
-                 renderElement(qrHTML, qrPlacement, containers);
+                qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}% !important; padding-top: ${qrSize}%; height: 0; position: absolute !important; ${qrPos}"><img src="${qrDataString}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;"></div>`;
+                renderElement(qrHTML, qrPlacement, containers);
             } else if (qrDataString.length > 20) {
                 try {
                     await loadScript(SCRIPT_URLS.qrcode);
@@ -497,14 +498,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.appendChild(tempQrDiv);
 
                     new QRCode(tempQrDiv, {
-                        text: qrDataString, width: 256, height: 256, colorDark : "#000000", colorLight : "#ffffff", correctLevel: QRCode.CorrectLevel.H
+                        text: qrDataString, width: 256, height: 256, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
                     });
 
                     await new Promise(resolve => setTimeout(() => {
                         const qrImgElement = tempQrDiv.querySelector('img');
                         const qrCanvasElement = tempQrDiv.querySelector('canvas');
                         let dataUrl = null;
-                        if (qrImgElement && qrImgElement.src) { dataUrl = qrImgElement.src; } 
+                        if (qrImgElement && qrImgElement.src) { dataUrl = qrImgElement.src; }
                         else if (qrCanvasElement) { dataUrl = qrCanvasElement.toDataURL(); }
 
                         if (dataUrl) {
@@ -515,8 +516,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         resolve();
                     }, 300));
                 } catch (error) {
-                     qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}%; aspect-ratio: 1; position: absolute; ${qrPos} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: red; text-align: center; border-radius: 4px; padding: 5px;">QR Error</div>`;
-                     renderElement(qrHTML, qrPlacement, containers);
+                    qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}%; aspect-ratio: 1; position: absolute; ${qrPos} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: red; text-align: center; border-radius: 4px; padding: 5px;">QR Error</div>`;
+                    renderElement(qrHTML, qrPlacement, containers);
                 }
             }
         }
@@ -588,12 +589,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (viewerContainer) viewerContainer.style.display = 'none';
     };
-    
+
     const setupThemeToggle = () => {
         const toggle = document.getElementById('theme-toggle');
         if (!toggle) return;
         const applyTheme = (theme) => {
-            if (theme === 'dark') { document.documentElement.classList.add('dark-mode'); toggle.checked = true; } 
+            if (theme === 'dark') { document.documentElement.classList.add('dark-mode'); toggle.checked = true; }
             else { document.documentElement.classList.remove('dark-mode'); toggle.checked = false; }
         };
         let savedTheme = localStorage.getItem('theme');
@@ -613,8 +614,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            cardData = data; 
-            
+            cardData = data;
+
             renderContactLinks(data);
 
             const inputs = data.inputs || {};
@@ -629,13 +630,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const backRenderWrapper = document.getElementById('back-card');
 
             if (isVertical) {
-                if(wrapper) wrapper.classList.add('is-vertical');
-                if(frontRenderWrapper) frontRenderWrapper.classList.add('is-vertical');
-                if(backRenderWrapper) backRenderWrapper.classList.add('is-vertical');
+                if (wrapper) wrapper.classList.add('is-vertical');
+                if (frontRenderWrapper) frontRenderWrapper.classList.add('is-vertical');
+                if (backRenderWrapper) backRenderWrapper.classList.add('is-vertical');
             } else {
-                if(wrapper) wrapper.classList.remove('is-vertical');
-                if(frontRenderWrapper) frontRenderWrapper.classList.remove('is-vertical');
-                if(backRenderWrapper) backRenderWrapper.classList.remove('is-vertical');
+                if (wrapper) wrapper.classList.remove('is-vertical');
+                if (frontRenderWrapper) frontRenderWrapper.classList.remove('is-vertical');
+                if (backRenderWrapper) backRenderWrapper.classList.remove('is-vertical');
             }
             // --- [END] ---
 
@@ -659,14 +660,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 frontDisplay.innerHTML = `<img src="${capturedFront}" alt="الوجه الأمامي للبطاقة" loading="lazy">`;
                 backDisplay.innerHTML = `<img src="${capturedBack}" alt="الوجه الخلفي للبطاقة" loading="lazy" ${backImageStyle}>`;
-                
+
                 const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
                 flipWrapper.addEventListener('click', flipFn);
                 flipBtn.addEventListener('click', flipFn);
                 flipBtn.style.display = 'inline-flex';
 
                 const renderWrapper = document.querySelector('.visually-hidden');
-                if(renderWrapper) renderWrapper.remove();
+                if (renderWrapper) renderWrapper.remove();
 
             } else {
                 console.log("Building card for capture...");
@@ -675,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await captureAndDisplayCards();
             }
 
-            addSaveButtonListeners(); 
+            addSaveButtonListeners();
 
             if (loader) loader.style.display = 'none';
             if (viewerContainer) viewerContainer.style.display = 'block';
@@ -719,23 +720,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const downloadCapturedImage = (cardFace) => {
-             const imageContainer = cardFace === 'front' ? document.getElementById('card-front-display') : document.getElementById('card-back-display');
-             if (!imageContainer) return;
+            const imageContainer = cardFace === 'front' ? document.getElementById('card-front-display') : document.getElementById('card-back-display');
+            if (!imageContainer) return;
             const imgElement = imageContainer.querySelector('img');
 
-             if (imgElement && imgElement.src && (imgElement.src.startsWith('data:image/png') || imgElement.src.startsWith('http'))) {
-                 try {
-                     const link = document.createElement('a');
-                     link.href = imgElement.src;
-                     link.setAttribute('download', ''); 
-                     const filenameBase = (cardData && cardData.inputs && cardData.inputs['input-name'] ? cardData.inputs['input-name'] : 'card').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                     link.download = `${filenameBase}_${cardFace}.png`;
-                     document.body.appendChild(link);
-                     link.click();
-                     document.body.removeChild(link);
-                     trackClick(`save_${cardFace}_png`); // تتبع
-                 } catch (e) { alert(`حدث خطأ أثناء تجهيز صورة الواجهة.`); }
-             } else { alert(`لم يتم العثور على صورة البطاقة.`); }
+            if (imgElement && imgElement.src && (imgElement.src.startsWith('data:image/png') || imgElement.src.startsWith('http'))) {
+                try {
+                    const link = document.createElement('a');
+                    link.href = imgElement.src;
+                    link.setAttribute('download', '');
+                    const filenameBase = (cardData && cardData.inputs && cardData.inputs['input-name'] ? cardData.inputs['input-name'] : 'card').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    link.download = `${filenameBase}_${cardFace}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    trackClick(`save_${cardFace}_png`); // تتبع
+                } catch (e) { alert(`حدث خطأ أثناء تجهيز صورة الواجهة.`); }
+            } else { alert(`لم يتم العثور على صورة البطاقة.`); }
         };
 
         if (saveFrontPngBtn) saveFrontPngBtn.onclick = () => downloadCapturedImage('front');
@@ -745,8 +746,8 @@ document.addEventListener('DOMContentLoaded', () => {
             savePdfBtn.onclick = async () => {
                 const frontImgElement = document.getElementById('card-front-display')?.querySelector('img');
                 const backImgElement = document.getElementById('card-back-display')?.querySelector('img');
-                
-                if (!frontImgElement || !frontImgElement.src || !backImgElement || !backImgElement.src ) {
+
+                if (!frontImgElement || !frontImgElement.src || !backImgElement || !backImgElement.src) {
                     alert("لم يتم العثور على صور البطاقة.");
                     return;
                 }
@@ -762,9 +763,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!frontImg.complete) await new Promise(resolve => frontImg.onload = resolve);
                     if (!backImg.complete) await new Promise(resolve => backImg.onload = resolve);
 
-                    const imgWidth = frontImg.naturalWidth || 510*2; 
-                    const imgHeight = frontImg.naturalHeight || 330*2;
-                    const pdfWidth = imgWidth * 0.75; 
+                    const imgWidth = frontImg.naturalWidth || 510 * 2;
+                    const imgHeight = frontImg.naturalHeight || 330 * 2;
+                    const pdfWidth = imgWidth * 0.75;
                     const pdfHeight = imgHeight * 0.75;
                     const orientation = pdfWidth > pdfHeight ? 'l' : 'p';
 
@@ -778,15 +779,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     trackClick('save_pdf'); // تتبع
                 } catch (error) { alert("حدث خطأ أثناء إنشاء ملف PDF."); } finally {
                     savePdfBtn.disabled = false;
-                    savePdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> حفظ كـ PDF'; 
+                    savePdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> حفظ كـ PDF';
                 }
             };
         }
     };
-    
+
     const setupMobileTabs = () => {
         const tabContainer = document.querySelector('.mobile-viewer-tabs');
-        if (!tabContainer) return; 
+        if (!tabContainer) return;
         const tabButtons = tabContainer.querySelectorAll('.mobile-tab-btn');
         const tabPanes = document.querySelectorAll('.viewer-layout > .side-column');
         tabButtons.forEach(button => {
@@ -811,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const pathSegments = window.location.pathname.split('/');
                 let relevantSegments = pathSegments.filter(p => p.toLowerCase() !== 'viewer.html');
-                
+
                 if (relevantSegments.length >= 3 && relevantSegments[relevantSegments.length - 2].toLowerCase() === 'view' && relevantSegments[relevantSegments.length - 1]) {
                     cardId = relevantSegments[relevantSegments.length - 1];
                 } else {

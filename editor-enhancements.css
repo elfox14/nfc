@@ -25,15 +25,15 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
 }
 
 .progress-steps {
     display: flex;
     align-items: center;
     gap: 0;
-    max-width: 600px;
-    width: 100%;
+    max-width: 550px;
+    flex: 1;
 }
 
 /* AI Suggest Button in Progress Bar */
@@ -41,27 +41,34 @@
     background: linear-gradient(135deg, #9b59b6, #8e44ad);
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 11px;
     font-weight: 600;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 3px 10px rgba(155, 89, 182, 0.3);
+    box-shadow: 0 2px 6px rgba(155, 89, 182, 0.3);
     white-space: nowrap;
+    flex: 0 0 auto;
+    width: auto;
+}
+
+.btn-ai-suggest span {
+    display: inline;
+    font-size: 11px;
 }
 
 .btn-ai-suggest:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(155, 89, 182, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(155, 89, 182, 0.5);
+    background: linear-gradient(135deg, #a569bd, #9b59b6);
 }
 
 .btn-ai-suggest i {
-    font-size: 14px;
-    animation: sparkle 2s infinite;
+    font-size: 10px;
 }
 
 @keyframes sparkle {
