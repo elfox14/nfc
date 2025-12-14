@@ -101,20 +101,32 @@
             <a href="index.html"
                 style="color: var(--text-primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px;"
                 title="العودة إلى الرئيسية">
-                <img src="mcprime-logo-transparent.png" alt="MC PRIME Logo" style="height: 30px; width: 30px;">
-                <span class="toolbar-title-desktop">محرر MC PRIME</span>
+                <img src="mcprime-logo-transparent.png" alt="MC PRIME Logo" style="height: 28px; width: 28px;">
+                <span class="toolbar-title-desktop" style="font-size: 0.9rem;">MC PRIME</span>
             </a>
+
+            <!-- روابط التنقل -->
+            <nav class="toolbar-nav"
+                style="display: flex; gap: 5px; margin-right: 15px; padding-right: 15px; border-right: 1px solid rgba(77,166,255,0.2);">
+                <a href="index.html" class="btn-icon" title="الرئيسية" style="font-size: 12px;"><i
+                        class="fas fa-home"></i></a>
+                <a href="gallery.html" class="btn-icon" title="المعرض" style="font-size: 12px;"><i
+                        class="fas fa-images"></i></a>
+                <a href="blog.html" class="btn-icon" title="المدونة" style="font-size: 12px;"><i
+                        class="fas fa-blog"></i></a>
+            </nav>
+
             <div class="undo-redo-container">
-                <button id="redo-btn" class="btn-icon" title="إعادة (Ctrl+Y)" aria-label="إعادة" disabled><i
+                <button id="redo-btn" class="btn-icon btn-compact" title="إعادة (Ctrl+Y)" aria-label="إعادة" disabled><i
                         class="fas fa-redo"></i></button>
-                <button id="undo-btn" class="btn-icon" title="تراجع (Ctrl+Z)" aria-label="تراجع" disabled><i
+                <button id="undo-btn" class="btn-icon btn-compact" title="تراجع (Ctrl+Z)" aria-label="تراجع" disabled><i
                         class="fas fa-undo"></i></button>
             </div>
             <!-- NEW: Language & Preview Buttons -->
-            <button id="lang-toggle-btn" class="btn-icon" title="تبديل اللغة / Toggle Language"
-                aria-label="Toggle Language">EN</button>
-            <button id="preview-mode-btn" class="btn-icon" title="وضع المعاينة" aria-label="Enter Preview Mode"><i
-                    class="fas fa-eye"></i></button>
+            <button id="lang-toggle-btn" class="btn-icon btn-compact" title="تبديل اللغة / Toggle Language"
+                aria-label="Toggle Language" style="font-size: 11px;">EN</button>
+            <button id="preview-mode-btn" class="btn-icon btn-compact" title="وضع المعاينة"
+                aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
         </div>
         <div class="toolbar-group toolbar-end">
             <button id="save-to-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"><span>حفظ

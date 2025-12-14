@@ -52,7 +52,9 @@
         z-index: 100;
         background-color: var(--page-bg);
         border-bottom: 1px solid var(--accent-secondary);
-        padding: 10px;
+        padding: 15px 10px 10px 10px;
+        padding-top: 55px;
+        /* Space for toolbar */
         overflow: hidden;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
@@ -147,9 +149,16 @@
         animation: slideUp 0.3s ease;
     }
 
-    /* --- Toolbar Adjustments --- */
+    /* --- Toolbar Visible on Mobile --- */
     .pro-toolbar {
-        display: none;
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        height: auto;
+        min-height: 45px;
     }
 
     /* --- Bottom Navigation Bar --- */
