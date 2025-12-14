@@ -1,7 +1,5 @@
 /* ===========================================
    MC PRIME NFC - Editor Enhancements CSS
-   New features: Progress bar, Auto-save indicator,
-   Improved toolbar, Keyboard shortcuts modal
    =========================================== */
 
 /* CSS Variables */
@@ -36,6 +34,148 @@
     gap: 0;
     max-width: 700px;
     width: 100%;
+}
+
+/* ===========================================
+   TOOLBAR IMPROVEMENTS
+   =========================================== */
+.pro-toolbar {
+    background: linear-gradient(180deg, var(--form-bg, #243447) 0%, rgba(36, 52, 71, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    gap: 10px;
+}
+
+/* Compact buttons - smaller size */
+.btn-compact {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+}
+
+.btn-compact i {
+    font-size: 12px !important;
+}
+
+/* Smaller toolbar buttons */
+.pro-toolbar .btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+.pro-toolbar .btn span {
+    font-size: 0.75rem;
+}
+
+.pro-toolbar .btn i {
+    font-size: 12px;
+}
+
+/* Navigation links in toolbar */
+.toolbar-nav a.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+/* Toolbar Logo */
+.toolbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-primary, #e6f0f7);
+    font-weight: 700;
+    transition: opacity 0.2s ease;
+}
+
+.toolbar-logo:hover {
+    opacity: 0.8;
+}
+
+.toolbar-logo img {
+    height: 32px;
+    width: 32px;
+}
+
+.toolbar-logo .toolbar-title-desktop {
+    font-size: 1rem;
+    background: linear-gradient(135deg, var(--editor-gradient-start), var(--editor-gradient-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Toolbar Navigation */
+.toolbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-right: 20px;
+    padding-right: 20px;
+    border-right: 1px solid rgba(77, 166, 255, 0.2);
+}
+
+html[dir="rtl"] .toolbar-nav {
+    margin-right: 0;
+    margin-left: 20px;
+    padding-right: 0;
+    padding-left: 20px;
+    border-right: none;
+    border-left: 1px solid rgba(77, 166, 255, 0.2);
+}
+
+.toolbar-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    color: var(--text-secondary, #bcc9d4);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.toolbar-nav-link:hover {
+    color: var(--accent-primary, #4da6ff);
+    background: rgba(77, 166, 255, 0.1);
+}
+
+.toolbar-nav-link i {
+    font-size: 14px;
+}
+
+/* Toolbar Center */
+.toolbar-center {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toolbar-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(77, 166, 255, 0.2);
+    margin: 0 5px;
+}
+
+/* Danger icon button */
+.btn-icon-danger {
+    background-color: transparent;
+    color: var(--text-secondary, #bcc9d4);
+}
+
+.btn-icon-danger:hover:not(:disabled) {
+    background-color: var(--danger-color, #e74c3c);
+    color: white;
 }
 
 .progress-step {
@@ -625,6 +765,76 @@ html[dir="rtl"] .fieldset-accordion summary::after {
         bottom: 80px;
         font-size: 11px;
         padding: 6px 15px;
+    }
+
+    /* === MOBILE HEADER LAYOUT === */
+    .pro-toolbar {
+        padding: 8px 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* Hide navigation links */
+    .toolbar-nav {
+        display: none !important;
+    }
+
+    /* Hide logo text */
+    .toolbar-title-desktop {
+        display: none !important;
+    }
+
+    /* Toolbar groups */
+    .toolbar-group.toolbar-start {
+        flex: 0 0 auto;
+        gap: 5px;
+    }
+
+    .toolbar-group.toolbar-end {
+        flex: 1;
+        justify-content: flex-end;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+
+    /* Hide text in buttons, show only icons */
+    .pro-toolbar .btn span {
+        display: none;
+    }
+
+    /* Smaller buttons for mobile */
+    .pro-toolbar .btn {
+        padding: 8px 10px;
+        min-width: auto;
+    }
+
+    .pro-toolbar .btn i {
+        margin: 0;
+        font-size: 14px;
+    }
+
+    /* Icon buttons smaller */
+    .pro-toolbar .btn-icon {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+    }
+
+    /* Hide less important buttons on mobile */
+    .toolbar-btn-mobile-hidden {
+        display: none !important;
+    }
+
+    /* Undo/Redo container */
+    .undo-redo-container {
+        gap: 3px;
+    }
+
+    /* Keep essential buttons visible */
+    #save-to-gallery-btn,
+    #download-options-btn,
+    #share-card-btn {
+        display: flex !important;
     }
 }
 

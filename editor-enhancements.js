@@ -500,46 +500,10 @@
     }
 
     // ===========================================
-    // ZOOM CONTROLS
+    // ZOOM CONTROLS (DISABLED)
     // ===========================================
-    let currentZoom = 100;
-    const ZOOM_MIN = 50;
-    const ZOOM_MAX = 150;
-    const ZOOM_STEP = 10;
-
     function initZoomControls() {
-        const canvas = document.querySelector('.pro-canvas');
-        if (!canvas) return;
-
-        const controls = document.createElement('div');
-        controls.className = 'canvas-zoom-controls';
-        controls.innerHTML = `
-            <button class="zoom-btn" id="zoom-out" title="تصغير"><i class="fas fa-minus"></i></button>
-            <span class="zoom-level" id="zoom-level">100%</span>
-            <button class="zoom-btn" id="zoom-in" title="تكبير"><i class="fas fa-plus"></i></button>
-            <button class="zoom-btn" id="zoom-reset" title="إعادة ضبط"><i class="fas fa-undo"></i></button>
-        `;
-
-        canvas.appendChild(controls);
-
-        // Handlers
-        controls.querySelector('#zoom-in').addEventListener('click', () => setZoom(currentZoom + ZOOM_STEP));
-        controls.querySelector('#zoom-out').addEventListener('click', () => setZoom(currentZoom - ZOOM_STEP));
-        controls.querySelector('#zoom-reset').addEventListener('click', () => setZoom(100));
-    }
-
-    function setZoom(level) {
-        currentZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, level));
-
-        const wrapper = document.querySelector('.cards-wrapper');
-        if (wrapper) {
-            wrapper.style.transform = `scale(${currentZoom / 100})`;
-        }
-
-        const levelDisplay = document.getElementById('zoom-level');
-        if (levelDisplay) {
-            levelDisplay.textContent = `${currentZoom}%`;
-        }
+        // Zoom controls disabled
     }
 
     // ===========================================
