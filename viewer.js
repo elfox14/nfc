@@ -140,18 +140,46 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container || !profileHeader || !profileName || !profileTagline) return;
 
         const inputs = data.inputs || {};
-        // Support bilingual fields with fallback
-        const name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || 'اسم البطاقة';
-        const tagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || '';
 
-        profileName.textContent = name;
-        if (tagline && tagline.trim() !== '') {
-            profileTagline.textContent = tagline;
-            profileTagline.style.display = 'block';
+        // Default/placeholder values to filter out
+        const placeholderValues = [
+            'اسمك الكامل هنا',
+            'اسمك الكامل',
+            'اسم البطاقة',
+            'المسمى الوظيفي / الشركة',
+            'المسمى الوظيفي',
+            'your name here',
+            'your full name',
+            'job title'
+        ];
+
+        const isPlaceholder = (value) => {
+            if (!value) return true;
+            const lowerValue = value.toLowerCase().trim();
+            return placeholderValues.some(p => lowerValue === p.toLowerCase());
+        };
+
+        // Support bilingual fields with fallback
+        let name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || '';
+        let tagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || '';
+
+        // Filter out placeholder values
+        if (isPlaceholder(name)) name = '';
+        if (isPlaceholder(tagline)) tagline = '';
+
+        // Only show header if we have real data
+        if (name) {
+            profileName.textContent = name;
+            if (tagline && tagline.trim() !== '') {
+                profileTagline.textContent = tagline;
+                profileTagline.style.display = 'block';
+            } else {
+                profileTagline.style.display = 'none';
+            }
+            profileHeader.style.display = 'block';
         } else {
-            profileTagline.style.display = 'none';
+            profileHeader.style.display = 'none';
         }
-        profileHeader.style.display = 'block';
 
         container.innerHTML = '';
 
