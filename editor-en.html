@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>محرر بطاقات العمل الذكية | MC PRIME</title>
+    <title>Smart Business Card Editor | MC PRIME</title>
     <meta name="description"
-        content="استخدم محرر MC PRIME لتصميم وتخصيص بطاقة عملك الذكية (NFC) مجاناً. تحكم كامل في الألوان، الخطوط، الشعار، ومعلومات الاتصال.">
+        content="Use the MC PRIME editor to design and customize your smart NFC business card for free. Full control over colors, fonts, logo, and contact information.">
 
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" id="favicon" href="mcprime-logo-transparent.png" type="image/png">
@@ -22,29 +22,53 @@
     <!-- Cropper.js CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
-    <!-- ملفات التنسيق الخاصة بالمشروع -->
+    <!-- Project stylesheets -->
     <link rel="stylesheet" href="style.css?v=2.0">
     <link rel="stylesheet" href="mobile.css?v=2.0">
     <link rel="stylesheet" href="toast.css">
     <link rel="stylesheet" href="editor-enhancements.css?v=1.0">
 
-    <!-- المكتبات الخارجية -->
+    <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
 
-    <!-- ملفات الجافاسكريبت الخاصة بالمشروع (الترتيب مهم) -->
-    <script src="lang-switcher.js" defer></script>
+    <!-- Project JavaScript files (order matters) -->
     <script src="security-utils.js" defer></script>
     <script src="mobile.js" defer></script>
+    <script src="lang-switcher.js" defer></script>
     <script src="script-core.js" defer></script>
     <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
     <script src="script-main.js" defer></script>
     <script src="chatbot-guide.js" defer></script>
     <script src="editor-enhancements.js" defer></script>
+
+    <!-- English placeholder initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set English placeholders for input fields
+            setTimeout(function () {
+                const nameInput = document.getElementById('input-name_ar');
+                const taglineInput = document.getElementById('input-tagline_ar');
+
+                if (nameInput) {
+                    nameInput.placeholder = 'Your Full Name Here';
+                    if (!nameInput.value || nameInput.value === 'اسمك الكامل هنا') {
+                        nameInput.value = 'Your Full Name Here';
+                    }
+                }
+                if (taglineInput) {
+                    taglineInput.placeholder = 'Job Title / Company';
+                    if (!taglineInput.value || taglineInput.value === 'المسمى الوظيفي / الشركة') {
+                        taglineInput.value = 'Job Title / Company';
+                    }
+                }
+            }, 100);
+        });
+    </script>
 
     <style>
         /* =============================================================== */
@@ -99,75 +123,74 @@
 
     <header class="pro-toolbar">
         <div class="toolbar-group toolbar-start">
-            <a href="index.html"
+            <a href="index-en.html"
                 style="color: var(--text-primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px;"
-                title="العودة إلى الرئيسية">
+                title="Back to Home">
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Crect fill='%23667eea' width='28' height='28' rx='4'/%3E%3Ctext x='14' y='18' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold' font-size='10'%3EMP%3C/text%3E%3C/svg%3E"
                     alt="MC PRIME Logo" style="height: 28px; width: 28px;">
                 <span class="toolbar-title-desktop" style="font-size: 0.9rem;">MC PRIME</span>
             </a>
 
-            <!-- روابط التنقل -->
+            <!-- Navigation Links -->
             <nav class="toolbar-nav"
-                style="display: flex; gap: 5px; margin-right: 15px; padding-right: 15px; border-right: 1px solid rgba(77,166,255,0.2);">
-                <a href="index.html" class="btn-icon" title="الرئيسية" style="font-size: 12px;"><i
+                style="display: flex; gap: 5px; margin-left: 15px; padding-left: 15px; border-left: 1px solid rgba(77,166,255,0.2);">
+                <a href="index-en.html" class="btn-icon" title="Home" style="font-size: 12px;"><i
                         class="fas fa-home"></i></a>
-                <a href="gallery.html" class="btn-icon" title="المعرض" style="font-size: 12px;"><i
+                <a href="gallery-en.html" class="btn-icon" title="Gallery" style="font-size: 12px;"><i
                         class="fas fa-images"></i></a>
-                <a href="blog.html" class="btn-icon" title="المدونة" style="font-size: 12px;"><i
+                <a href="blog-en.html" class="btn-icon" title="Blog" style="font-size: 12px;"><i
                         class="fas fa-blog"></i></a>
             </nav>
 
             <div class="undo-redo-container">
-                <button id="redo-btn" class="btn-icon btn-compact" title="إعادة (Ctrl+Y)" aria-label="إعادة" disabled><i
+                <button id="redo-btn" class="btn-icon btn-compact" title="Redo (Ctrl+Y)" aria-label="Redo" disabled><i
                         class="fas fa-redo"></i></button>
-                <button id="undo-btn" class="btn-icon btn-compact" title="تراجع (Ctrl+Z)" aria-label="تراجع" disabled><i
+                <button id="undo-btn" class="btn-icon btn-compact" title="Undo (Ctrl+Z)" aria-label="Undo" disabled><i
                         class="fas fa-undo"></i></button>
             </div>
             <!-- NEW: Language & Preview Buttons -->
-            <button id="lang-toggle-btn" class="btn-icon btn-compact" title="تبديل اللغة / Toggle Language"
-                aria-label="Toggle Language" style="font-size: 11px;">EN</button>
-            <button id="preview-mode-btn" class="btn-icon btn-compact" title="وضع المعاينة"
+            <button id="lang-toggle-btn" class="btn-icon btn-compact" title="Toggle Language"
+                aria-label="Toggle Language" style="font-size: 11px;" onclick="switchLanguage('ar')">عربي</button>
+            <button id="preview-mode-btn" class="btn-icon btn-compact" title="Preview Mode"
                 aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
         </div>
         <div class="toolbar-group toolbar-end">
-            <button id="save-to-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"><span>حفظ
-                    بالمعرض</span><i class="fas fa-save" aria-hidden="true"></i></button>
+            <button id="save-to-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"><span>Save to
+                    Gallery</span><i class="fas fa-save" aria-hidden="true"></i></button>
             <div class="download-container">
                 <button id="download-options-btn" class="btn btn-secondary">
-                    <span>تنزيل</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
+                    <span>Download</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
                 </button>
                 <ul id="download-menu" class="dropdown-menu">
                     <li><button id="download-png-front" aria-controls="export-modal-overlay" aria-expanded="false"><i
-                                class="fas fa-image" aria-hidden="true"></i> صورة الواجهة (PNG)</button></li>
+                                class="fas fa-image" aria-hidden="true"></i> Front Image (PNG)</button></li>
                     <li><button id="download-png-back" aria-controls="export-modal-overlay" aria-expanded="false"><i
-                                class="fas fa-image" aria-hidden="true"></i> صورة الخلفية (PNG)</button></li>
-                    <li><button id="download-pdf"><i class="fas fa-file-pdf" aria-hidden="true"></i> ملف PDF</button>
+                                class="fas fa-image" aria-hidden="true"></i> Back Image (PNG)</button></li>
+                    <li><button id="download-pdf"><i class="fas fa-file-pdf" aria-hidden="true"></i> PDF File</button>
                     </li>
-                    <li><button id="download-vcf"><i class="fas fa-address-card" aria-hidden="true"></i> جهة اتصال
+                    <li><button id="download-vcf"><i class="fas fa-address-card" aria-hidden="true"></i> Contact
                             (VCF)</button></li>
-                    <li><button id="download-qrcode"><i class="fas fa-qrcode" aria-hidden="true"></i> رمز QR
-                            Code</button>
+                    <li><button id="download-qrcode"><i class="fas fa-qrcode" aria-hidden="true"></i> QR Code</button>
                     </li>
                 </ul>
             </div>
             <button id="share-card-btn" class="btn btn-success" aria-controls="share-fallback-modal-overlay"
                 aria-expanded="false">
-                <span>مشاركة الكارت</span><i class="fas fa-share-alt" aria-hidden="true"></i>
+                <span>Share Card</span><i class="fas fa-share-alt" aria-hidden="true"></i>
             </button>
 
-            <!-- === الزر الجديد === -->
-            <button id="start-collab-btn" class="btn btn-secondary" title="بدء جلسة تحرير جماعي">
-                <span>تحرير جماعي</span><i class="fas fa-users"></i>
+            <!-- Collaboration Button -->
+            <button id="start-collab-btn" class="btn btn-secondary" title="Start Collaboration Session">
+                <span>Collaborate</span><i class="fas fa-users"></i>
             </button>
 
             <button id="show-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
-                aria-controls="gallery-modal-overlay" aria-expanded="false"><span>عرض المعرض</span><i
+                aria-controls="gallery-modal-overlay" aria-expanded="false"><span>View Gallery</span><i
                     class="fas fa-images" aria-hidden="true"></i></button>
             <button id="share-editor-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
-                style="background-color: transparent; font-size: 0.9rem;"><span>مشاركة رابط الموقع</span><i
+                style="background-color: transparent; font-size: 0.9rem;"><span>Share Site Link</span><i
                     class="fas fa-edit" aria-hidden="true"></i></button>
-            <button id="reset-design-btn" class="btn btn-danger toolbar-btn-mobile-hidden"><span>إعادة تعيين</span><i
+            <button id="reset-design-btn" class="btn btn-danger toolbar-btn-mobile-hidden"><span>Reset</span><i
                     class="fas fa-undo" aria-hidden="true"></i></button>
         </div>
     </header>
@@ -177,27 +200,27 @@
         <aside class="pro-sidebar pro-sidebar-left" id="panel-design">
 
             <fieldset class="fieldset" id="layout-fieldset-source">
-                <legend>التخطيط</legend>
+                <legend>Layout</legend>
                 <div class="layout-selector-grid">
                     <label class="layout-option">
                         <input type="radio" name="layout-select-visual" value="classic" checked>
                         <div class="layout-preview-box">
                             <i class="far fa-id-card"></i>
-                            <span>كلاسيكي</span>
+                            <span>Classic</span>
                         </div>
                     </label>
                     <label class="layout-option">
                         <input type="radio" name="layout-select-visual" value="modern">
                         <div class="layout-preview-box">
                             <i class="fas fa-columns"></i>
-                            <span>عصري</span>
+                            <span>Modern</span>
                         </div>
                     </label>
                     <label class="layout-option">
                         <input type="radio" name="layout-select-visual" value="vertical">
                         <div class="layout-preview-box">
                             <i class="fas fa-mobile-alt"></i>
-                            <span>طولي</span>
+                            <span>Vertical</span>
                         </div>
                     </label>
                 </div>
@@ -205,15 +228,15 @@
             </fieldset>
 
             <fieldset class="fieldset" id="designs-fieldset-source">
-                <legend>التصاميم الجاهزة</legend>
+                <legend>Ready Designs</legend>
                 <div class="form-group">
-                    <label>اختر تصميمًا جاهزًا</label>
+                    <label>Choose a ready design</label>
                     <div id="theme-gallery" class="theme-gallery-grid"></div>
                     <div class="form-group" id="ai-suggestion-group"
                         style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
-                        <label>هل تحتاج للإلهام؟</label>
+                        <label>Need inspiration?</label>
                         <button id="ai-suggest-btn" class="btn btn-secondary" style="width: 100%;">
-                            <i class="fas fa-magic"></i> <span>اقترح تصميمًا ذكيًا</span>
+                            <i class="fas fa-magic"></i> <span>Suggest a Smart Design</span>
                         </button>
                         <div class="spinner" id="ai-spinner" style="display: none; margin: 10px auto 0;"></div>
                     </div>
@@ -222,52 +245,52 @@
             </fieldset>
 
             <details class="fieldset-accordion" id="backgrounds-accordion" open>
-                <summary>الخلفيات والألوان</summary>
+                <summary>Backgrounds & Colors</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" style="padding: 10px;">
-                        <legend>الواجهة الأمامية</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <div class="form-group"><label>لون الخلفية</label>
+                        <legend>Front Side</legend>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
+                                here</span></div>
+                        <div class="form-group"><label>Background Color</label>
                             <div class="control-grid"><input type="color" id="front-bg-start" value="#2a3d54"><input
                                     type="color" id="front-bg-end" value="#223246"></div>
                         </div>
                         <div class="form-group">
-                            <label for="front-bg-upload">رفع صورة للخلفية</label>
+                            <label for="front-bg-upload">Upload Background Image</label>
                             <div class="file-input-group">
                                 <input type="file" id="front-bg-upload" accept="image/*">
                                 <button type="button" class="remove-image-btn" id="remove-front-bg-btn"
-                                    style="display: none;" title="إزالة الصورة"
-                                    aria-label="إزالة صورة الخلفية الأمامية"><i class="fas fa-times"
+                                    style="display: none;" title="Remove Image"
+                                    aria-label="Remove front background image"><i class="fas fa-times"
                                         aria-hidden="true"></i></button>
                                 <div class="spinner" id="front-bg-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">شفافية اللون فوق
-                                الصورة</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
+                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">Color Overlay
+                                Opacity</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
                                 value="0"></div>
                     </fieldset>
                     <fieldset class="fieldset" style="padding: 10px; margin-top: 15px;">
-                        <legend>الواجهة الخلفية</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <div class="form-group"><label>لون الخلفية</label>
+                        <legend>Back Side</legend>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
+                                here</span></div>
+                        <div class="form-group"><label>Background Color</label>
                             <div class="control-grid"><input type="color" id="back-bg-start" value="#2a3d54"><input
                                     type="color" id="back-bg-end" value="#223246"></div>
                         </div>
                         <div class="form-group">
-                            <label for="back-bg-upload">رفع صورة للخلفية</label>
+                            <label for="back-bg-upload">Upload Background Image</label>
                             <div class="file-input-group">
                                 <input type="file" id="back-bg-upload" accept="image/*">
                                 <button type="button" class="remove-image-btn" id="remove-back-bg-btn"
-                                    style="display: none;" title="إزالة الصورة"
-                                    aria-label="إزالة صورة الخلفية الخلفية"><i class="fas fa-times"
+                                    style="display: none;" title="Remove Image"
+                                    aria-label="Remove back background image"><i class="fas fa-times"
                                         aria-hidden="true"></i></button>
                                 <div class="spinner" id="back-bg-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">شفافية اللون فوق
-                                الصورة</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
+                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">Color Overlay
+                                Opacity</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
                                 value="0"></div>
                     </fieldset>
                 </div>
@@ -285,9 +308,8 @@
                             <div class="card-content-layer card-front-content-layer" id="card-front-content">
 
                                 <div id="card-logo" data-input-target-id="logo-drop-zone">
-                                    <img src="mcprime-logo-transparent.png"
-                                        alt="شعار MC PRIME لتصميم بطاقات العمل الذكية" class="logo-front"
-                                        id="card-logo-img">
+                                    <img src="mcprime-logo-transparent.png" alt="MC PRIME Smart Business Card Logo"
+                                        class="logo-front" id="card-logo-img">
                                 </div>
 
                                 <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
@@ -314,9 +336,9 @@
                     </div>
                 </div>
 
-                <button id="flip-card-btn-mobile" class="btn btn-secondary" title="تقليب الكارت">
+                <button id="flip-card-btn-mobile" class="btn btn-secondary" title="Flip Card">
                     <i class="fas fa-sync-alt"></i>
-                    <span>تقليب الكارت</span>
+                    <span>Flip Card</span>
                 </button>
 
             </main>
@@ -325,23 +347,23 @@
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
 
             <details class="fieldset-accordion" open>
-                <summary>الشعار</summary>
+                <summary>Logo</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" id="logo-drop-zone">
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <legend>الشعار (Logo)</legend>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
+                                here</span></div>
+                        <legend>Logo</legend>
 
-                        <!-- قسم الرفع والرابط -->
+                        <!-- Upload and URL section -->
                         <div class="form-group">
-                            <label for="input-logo">رابط الشعار</label>
+                            <label for="input-logo">Logo URL</label>
                             <input type="text" id="input-logo" value="mcprime-logo-transparent.png"
                                 data-update-target="card-logo-img" data-update-property="src">
                         </div>
                         <div class="form-group">
-                            <label for="input-logo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
+                            <label for="input-logo-upload">Or upload image (will be cropped)</label>
                             <div class="logo-upload-group">
-                                <img id="logo-preview" src="mcprime-logo-transparent.png" alt="معاينة الشعار المرفوع">
+                                <img id="logo-preview" src="mcprime-logo-transparent.png" alt="Uploaded logo preview">
                                 <div class="file-input-wrapper">
                                     <input type="file" id="input-logo-upload" accept="image/*">
                                     <div class="input-error-msg" id="logo-upload-error"></div>
@@ -350,84 +372,84 @@
                             </div>
                         </div>
 
-                        <!-- قسم الحجم والمحاذاة -->
+                        <!-- Size and Alignment section -->
                         <div class="control-grid">
                             <div class="form-group">
-                                <label for="logo-size">حجم الشعار</label>
+                                <label for="logo-size">Logo Size</label>
                                 <input type="range" id="logo-size" min="10" max="80" value="25"
                                     data-update-target="card-logo-img" data-update-property="style.maxWidth"
                                     data-update-unit="%">
                             </div>
                             <div class="form-group">
-                                <label for="logo-align-group">محاذاة الشعار</label>
+                                <label for="logo-align-group">Logo Alignment</label>
                                 <div class="radio-group" id="logo-align-group">
-                                    <label><input type="radio" name="logo-align" value="flex-start"> يسار</label>
-                                    <label><input type="radio" name="logo-align" value="center" checked> وسط</label>
-                                    <label><input type="radio" name="logo-align" value="flex-end"> يمين</label>
+                                    <label><input type="radio" name="logo-align" value="flex-start"> Left</label>
+                                    <label><input type="radio" name="logo-align" value="center" checked> Center</label>
+                                    <label><input type="radio" name="logo-align" value="flex-end"> Right</label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- قسم الخلفية والشفافية -->
+                        <!-- Background and Opacity section -->
                         <div class="control-grid">
                             <div class="form-group">
-                                <label for="logo-opacity">شفافية الشعار</label>
+                                <label for="logo-opacity">Logo Opacity</label>
                                 <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
                                     data-update-target="card-logo-img" data-update-property="style.opacity">
                             </div>
                             <div class="form-group">
-                                <label for="logo-bg-color">خلفية الشعار</label>
+                                <label for="logo-bg-color">Logo Background</label>
                                 <select id="logo-bg-color">
-                                    <option value="transparent">بدون</option>
-                                    <option value="#ffffff">أبيض</option>
-                                    <option value="#000000">أسود</option>
+                                    <option value="transparent">None</option>
+                                    <option value="#ffffff">White</option>
+                                    <option value="#000000">Black</option>
                                 </select>
                             </div>
                         </div>
 
-                        <!-- قسم الظل -->
+                        <!-- Shadow section -->
                         <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>ظل الشعار</legend>
+                            <legend>Logo Shadow</legend>
                             <div class="form-group">
                                 <label style="display: flex; align-items: center; cursor: pointer;">
                                     <input type="checkbox" id="logo-shadow-enabled"
                                         style="width: auto; margin-inline-end: 10px;">
-                                    <span>تفعيل الظل</span>
+                                    <span>Enable Shadow</span>
                                 </label>
                             </div>
                             <div class="control-grid" id="logo-shadow-controls" style="display: none;">
                                 <div class="form-group">
-                                    <label for="logo-shadow-blur">حدة الظل</label>
+                                    <label for="logo-shadow-blur">Shadow Blur</label>
                                     <input type="range" id="logo-shadow-blur" min="0" max="40" value="10">
                                 </div>
                                 <div class="form-group">
-                                    <label for="logo-shadow-color">لون الظل</label>
+                                    <label for="logo-shadow-color">Shadow Color</label>
                                     <input type="color" id="logo-shadow-color" value="#000000">
                                 </div>
                             </div>
                         </fieldset>
 
-                        <!-- قسم الموضع والتحريك -->
+                        <!-- Position and Movement section -->
                         <div class="placement-control">
-                            <label>مكان العنصر</label>
+                            <label>Element Placement</label>
                             <div class="radio-group">
-                                <label><input type="radio" name="placement-logo" value="front" checked> أمامي</label>
-                                <label><input type="radio" name="placement-logo" value="back"> خلفي</label>
+                                <label><input type="radio" name="placement-logo" value="front" checked> Front</label>
+                                <label><input type="radio" name="placement-logo" value="back"> Back</label>
                             </div>
                         </div>
 
                         <div class="form-group" style="margin-top: 15px;">
-                            <label>تحريك دقيق (بالبكسل)</label>
+                            <label>Fine Position (pixels)</label>
                             <div class="position-controls-grid" data-target-id="card-logo">
-                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i
+                                <button type="button" class="btn-icon move-btn" data-direction="up" title="Up"><i
                                         class="fas fa-arrow-up"></i></button>
                                 <div class="controls-row">
                                     <button type="button" class="btn-icon move-btn" data-direction="left"
-                                        title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                        title="Left"><i class="fas fa-arrow-left"></i></button>
                                     <button type="button" class="btn-icon move-btn" data-direction="right"
-                                        title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                        title="Right"><i class="fas fa-arrow-right"></i></button>
                                 </div>
-                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i
+                                <button type="button" class="btn-icon move-btn" data-direction="down" title="Down"><i
                                         class="fas fa-arrow-down"></i></button>
                             </div>
                         </div>
@@ -436,22 +458,22 @@
             </details>
 
             <details class="fieldset-accordion" open>
-                <summary>الصورة الشخصية</summary>
+                <summary>Personal Photo</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" id="photo-controls-fieldset">
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <legend>الصورة الشخصية</legend>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
+                                here</span></div>
+                        <legend>Personal Photo</legend>
 
-                        <!-- قسم الرفع والرابط -->
+                        <!-- Upload and URL section -->
                         <div class="form-group">
-                            <label for="input-photo-url">رابط الصورة</label>
+                            <label for="input-photo-url">Photo URL</label>
                             <input type="url" id="input-photo-url">
                         </div>
                         <div class="form-group">
-                            <label for="input-photo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
+                            <label for="input-photo-upload">Or upload image (will be cropped)</label>
                             <div class="logo-upload-group">
-                                <img id="photo-preview" src="" alt="معاينة الصورة الشخصية"
+                                <img id="photo-preview" src="" alt="Personal photo preview"
                                     style="display: none; background-color: var(--accent-secondary); border-radius: 50%; object-fit: cover; width: 50px; height: 50px;">
                                 <div class="file-input-wrapper">
                                     <input type="file" id="input-photo-upload" accept="image/*">
@@ -461,89 +483,89 @@
                             </div>
                         </div>
 
-                        <!-- قسم الحجم والشكل والمحاذاة -->
+                        <!-- Size, Shape and Alignment section -->
                         <div class="control-grid">
                             <div class="form-group">
-                                <label for="photo-size">حجم الصورة</label>
+                                <label for="photo-size">Photo Size</label>
                                 <input type="range" id="photo-size" min="15" max="50" value="25">
                             </div>
                             <div class="form-group">
-                                <label>شكل الصورة</label>
+                                <label>Photo Shape</label>
                                 <div class="radio-group">
-                                    <label><input type="radio" name="photo-shape" value="circle" checked> دائري</label>
-                                    <label><input type="radio" name="photo-shape" value="square"> مربع</label>
+                                    <label><input type="radio" name="photo-shape" value="circle" checked> Circle</label>
+                                    <label><input type="radio" name="photo-shape" value="square"> Square</label>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="photo-align-group">محاذاة الصورة</label>
+                            <label for="photo-align-group">Photo Alignment</label>
                             <div class="radio-group" id="photo-align-group">
-                                <label><input type="radio" name="photo-align" value="flex-start"> يسار</label>
-                                <label><input type="radio" name="photo-align" value="center" checked> وسط</label>
-                                <label><input type="radio" name="photo-align" value="flex-end"> يمين</label>
+                                <label><input type="radio" name="photo-align" value="flex-start"> Left</label>
+                                <label><input type="radio" name="photo-align" value="center" checked> Center</label>
+                                <label><input type="radio" name="photo-align" value="flex-end"> Right</label>
                             </div>
                         </div>
 
 
-                        <!-- قسم الإطار والشفافية -->
+                        <!-- Border and Opacity section -->
                         <div class="control-grid">
                             <div class="form-group">
-                                <label for="photo-opacity">شفافية الصورة</label>
+                                <label for="photo-opacity">Photo Opacity</label>
                                 <input type="range" id="photo-opacity" min="0" max="1" step="0.05" value="1">
                             </div>
                             <div class="form-group">
-                                <label for="photo-border-width">عرض الإطار (px)</label>
+                                <label for="photo-border-width">Border Width (px)</label>
                                 <input type="range" id="photo-border-width" min="0" max="10" value="2">
                             </div>
                             <div class="form-group">
-                                <label for="photo-border-color">لون الإطار</label>
+                                <label for="photo-border-color">Border Color</label>
                                 <input type="color" id="photo-border-color" value="#ffffff">
                             </div>
                         </div>
 
-                        <!-- قسم الظل -->
+                        <!-- Shadow section -->
                         <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>ظل الصورة</legend>
+                            <legend>Photo Shadow</legend>
                             <div class="form-group">
                                 <label style="display: flex; align-items: center; cursor: pointer;">
                                     <input type="checkbox" id="photo-shadow-enabled"
                                         style="width: auto; margin-inline-end: 10px;">
-                                    <span>تفعيل الظل</span>
+                                    <span>Enable Shadow</span>
                                 </label>
                             </div>
                             <div class="control-grid" id="photo-shadow-controls" style="display: none;">
                                 <div class="form-group">
-                                    <label for="photo-shadow-blur">حدة الظل</label>
+                                    <label for="photo-shadow-blur">Shadow Blur</label>
                                     <input type="range" id="photo-shadow-blur" min="0" max="40" value="10">
                                 </div>
                                 <div class="form-group">
-                                    <label for="photo-shadow-color">لون الظل</label>
+                                    <label for="photo-shadow-color">Shadow Color</label>
                                     <input type="color" id="photo-shadow-color" value="#000000">
                                 </div>
                             </div>
                         </fieldset>
 
-                        <!-- قسم الموضع والتحريك -->
+                        <!-- Position and Movement section -->
                         <div class="placement-control">
-                            <label>مكان الصورة</label>
+                            <label>Photo Placement</label>
                             <div class="radio-group">
-                                <label><input type="radio" name="placement-photo" value="front" checked> أمامي</label>
-                                <label><input type="radio" name="placement-photo" value="back"> خلفي</label>
+                                <label><input type="radio" name="placement-photo" value="front" checked> Front</label>
+                                <label><input type="radio" name="placement-photo" value="back"> Back</label>
                             </div>
                         </div>
 
                         <div class="form-group" style="margin-top: 15px;">
-                            <label>تحريك دقيق (بالبكسل)</label>
+                            <label>Fine Position (pixels)</label>
                             <div class="position-controls-grid" data-target-id="card-personal-photo-wrapper">
-                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i
+                                <button type="button" class="btn-icon move-btn" data-direction="up" title="Up"><i
                                         class="fas fa-arrow-up"></i></button>
                                 <div class="controls-row">
                                     <button type="button" class="btn-icon move-btn" data-direction="left"
-                                        title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                        title="Left"><i class="fas fa-arrow-left"></i></button>
                                     <button type="button" class="btn-icon move-btn" data-direction="right"
-                                        title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                        title="Right"><i class="fas fa-arrow-right"></i></button>
                                 </div>
-                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i
+                                <button type="button" class="btn-icon move-btn" data-direction="down" title="Down"><i
                                         class="fas fa-arrow-down"></i></button>
                             </div>
                         </div>
@@ -552,10 +574,10 @@
             </details>
 
             <details class="fieldset-accordion" id="name-tagline-accordion">
-                <summary>الاسم والمسمى الوظيفي</summary>
+                <summary>Name & Job Title</summary>
                 <div class="fieldset-content">
                     <div class="form-group">
-                        <label for="input-name_ar">الاسم الكامل</label>
+                        <label for="input-name_ar">Full Name</label>
                         <!-- UPDATED: Dual language fields -->
                         <textarea id="input-name_ar" rows="2" data-lang="ar" data-update-target="card-name"
                             data-update-property="innerText"></textarea>
@@ -564,23 +586,23 @@
                             placeholder="Full Name"></textarea>
                     </div>
                     <div class="control-grid">
-                        <div class="form-group"><label for="name-font-size">حجم الخط</label><input type="range"
+                        <div class="form-group"><label for="name-font-size">Font Size</label><input type="range"
                                 id="name-font-size" min="16" max="48" value="22" data-update-target="card-name"
                                 data-update-property="style.fontSize" data-update-unit="px"></div>
-                        <div class="form-group"><label for="name-color">اللون</label><input type="color" id="name-color"
+                        <div class="form-group"><label for="name-color">Color</label><input type="color" id="name-color"
                                 value="#e6f0f7" data-update-target="card-name" data-update-property="style.color"></div>
                     </div>
-                    <div class="form-group"><label for="name-font">الخط</label><select id="name-font"
+                    <div class="form-group"><label for="name-font">Font</label><select id="name-font"
                             data-update-target="card-name" data-update-property="style.fontFamily">
                             <option value="'Tajawal', sans-serif">Tajawal</option>
                             <option value="'Cairo', sans-serif">Cairo</option>
                             <option value="'Lalezar', cursive">Lalezar</option>
                         </select></div>
                     <div class="placement-control">
-                        <label>مكان الاسم</label>
+                        <label>Name Placement</label>
                         <div class="radio-group">
-                            <label><input type="radio" name="placement-name" value="front" checked> أمامي</label>
-                            <label><input type="radio" name="placement-name" value="back"> خلفي</label>
+                            <label><input type="radio" name="placement-name" value="front" checked> Front</label>
+                            <label><input type="radio" name="placement-name" value="back"> Back</label>
                         </div>
                     </div>
 
@@ -588,21 +610,21 @@
                         style="margin-top: 10px; background: transparent; border: none;">
                         <summary
                             style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                            خيارات متقدمة (تحريك دقيق)</summary>
+                            Advanced Options (Fine Position)</summary>
                         <div class="fieldset-content" style="border: none; padding-top: 10px;">
                             <div class="form-group">
-                                <label>تحريك دقيق (بالبكسل)</label>
+                                <label>Fine Position (pixels)</label>
                                 <div class="position-controls-grid" data-target-id="card-name">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up"
-                                        title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                    <button type="button" class="btn-icon move-btn" data-direction="up" title="Up"><i
+                                            class="fas fa-arrow-up"></i></button>
                                     <div class="controls-row">
                                         <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                            title="Left"><i class="fas fa-arrow-left"></i></button>
                                         <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                            title="Right"><i class="fas fa-arrow-right"></i></button>
                                     </div>
                                     <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                                        title="Down"><i class="fas fa-arrow-down"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -610,7 +632,7 @@
 
                     <hr style="border-color: var(--accent-secondary); margin: 20px 0;">
                     <div class="form-group">
-                        <label for="input-tagline_ar">النشاط/المسمى الوظيفي</label>
+                        <label for="input-tagline_ar">Job Title / Company</label>
                         <!-- UPDATED: Dual language fields -->
                         <textarea id="input-tagline_ar" rows="2" data-lang="ar" data-update-target="card-tagline"
                             data-update-property="innerText"></textarea>
@@ -619,24 +641,24 @@
                             placeholder="Job Title / Company"></textarea>
                     </div>
                     <div class="control-grid">
-                        <div class="form-group"><label for="tagline-font-size">حجم الخط</label><input type="range"
+                        <div class="form-group"><label for="tagline-font-size">Font Size</label><input type="range"
                                 id="tagline-font-size" min="12" max="32" value="14" data-update-target="card-tagline"
                                 data-update-property="style.fontSize" data-update-unit="px"></div>
-                        <div class="form-group"><label for="tagline-color">اللون</label><input type="color"
+                        <div class="form-group"><label for="tagline-color">Color</label><input type="color"
                                 id="tagline-color" value="#4da6ff" data-update-target="card-tagline"
                                 data-update-property="style.color"></div>
                     </div>
-                    <div class="form-group"><label for="tagline-font">الخط</label><select id="tagline-font"
+                    <div class="form-group"><label for="tagline-font">Font</label><select id="tagline-font"
                             data-update-target="card-tagline" data-update-property="style.fontFamily">
                             <option value="'Tajawal', sans-serif">Tajawal</option>
                             <option value="'Cairo', sans-serif">Cairo</option>
                             <option value="'Lalezar', cursive">Lalezar</option>
                         </select></div>
                     <div class="placement-control">
-                        <label>مكان المسمى الوظيفي</label>
+                        <label>Job Title Placement</label>
                         <div class="radio-group">
-                            <label><input type="radio" name="placement-tagline" value="front" checked> أمامي</label>
-                            <label><input type="radio" name="placement-tagline" value="back"> خلفي</label>
+                            <label><input type="radio" name="placement-tagline" value="front" checked> Front</label>
+                            <label><input type="radio" name="placement-tagline" value="back"> Back</label>
                         </div>
                     </div>
 
@@ -644,21 +666,21 @@
                         style="margin-top: 10px; background: transparent; border: none;">
                         <summary
                             style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                            خيارات متقدمة (تحريك دقيق)</summary>
+                            Advanced Options (Fine Position)</summary>
                         <div class="fieldset-content" style="border: none; padding-top: 10px;">
                             <div class="form-group">
-                                <label>تحريك دقيق (بالبكسل)</label>
+                                <label>Fine Position (pixels)</label>
                                 <div class="position-controls-grid" data-target-id="card-tagline">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up"
-                                        title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                    <button type="button" class="btn-icon move-btn" data-direction="up" title="Up"><i
+                                            class="fas fa-arrow-up"></i></button>
                                     <div class="controls-row">
                                         <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                            title="Left"><i class="fas fa-arrow-left"></i></button>
                                         <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                            title="Right"><i class="fas fa-arrow-right"></i></button>
                                     </div>
                                     <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                                        title="Down"><i class="fas fa-arrow-down"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -667,36 +689,37 @@
             </details>
 
             <details class="fieldset-accordion" id="phones-accordion">
-                <summary>أرقام الهواتف</summary>
+                <summary>Phone Numbers</summary>
                 <div class="fieldset-content">
                     <div class="form-group">
                         <label for="toggle-phone-buttons" style="display: flex; align-items: center; cursor: pointer;">
                             <input type="checkbox" id="toggle-phone-buttons" checked
                                 style="width: auto; margin-inline-end: 10px;">
-                            <span>إظهار كأزرار</span>
+                            <span>Show as Buttons</span>
                         </label>
                     </div>
                     <div id="phone-text-controls">
-                        <h4>تنسيق الأرقام كنص</h4>
+                        <h4>Text Number Format</h4>
                         <div class="form-group">
-                            <label>شكل العرض</label>
+                            <label>Display Layout</label>
                             <div class="radio-group">
-                                <label><input type="radio" name="phone-text-layout" value="row" checked> أفقي</label>
-                                <label><input type="radio" name="phone-text-layout" value="column"> رأسي</label>
+                                <label><input type="radio" name="phone-text-layout" value="row" checked>
+                                    Horizontal</label>
+                                <label><input type="radio" name="phone-text-layout" value="column"> Vertical</label>
                             </div>
                         </div>
                         <div class="control-grid">
                             <div class="form-group">
-                                <label for="phone-text-size">حجم الخط</label>
+                                <label for="phone-text-size">Font Size</label>
                                 <input type="range" id="phone-text-size" min="10" max="24" value="14">
                             </div>
                             <div class="form-group">
-                                <label for="phone-text-color">لون الخط</label>
+                                <label for="phone-text-color">Font Color</label>
                                 <input type="color" id="phone-text-color" value="#e6f0f7">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="phone-text-font">الخط</label>
+                            <label for="phone-text-font">Font</label>
                             <select id="phone-text-font">
                                 <option value="'Tajawal', sans-serif">Tajawal</option>
                                 <option value="'Cairo', sans-serif">Cairo</option>
@@ -707,19 +730,19 @@
                     <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
                     <div id="phone-numbers-container"></div>
                     <button id="add-phone-btn" class="btn btn-secondary"><i class="fas fa-plus" aria-hidden="true"></i>
-                        إضافة رقم هاتف</button>
-                    <h4>تصميم الأزرار</h4>
+                        Add Phone Number</button>
+                    <h4>Button Style</h4>
                     <div class="control-grid">
-                        <div class="form-group"><label for="phone-btn-bg-color">لون الزر</label><input type="color"
+                        <div class="form-group"><label for="phone-btn-bg-color">Button Color</label><input type="color"
                                 id="phone-btn-bg-color" value="#4da6ff"></div>
-                        <div class="form-group"><label for="phone-btn-text-color">لون النص</label><input type="color"
+                        <div class="form-group"><label for="phone-btn-text-color">Text Color</label><input type="color"
                                 id="phone-btn-text-color" value="#ffffff"></div>
                     </div>
-                    <div class="form-group"><label for="phone-btn-font-size">حجم خط الزر</label><input type="range"
+                    <div class="form-group"><label for="phone-btn-font-size">Button Font Size</label><input type="range"
                             id="phone-btn-font-size" min="10" max="24" value="12"></div>
-                    <div class="form-group"><label for="phone-btn-padding">حجم حشو الزر (Padding)</label><input
-                            type="range" id="phone-btn-padding" min="4" max="16" value="6"></div>
-                    <div class="form-group"><label for="phone-btn-font">خط الزر</label><select id="phone-btn-font">
+                    <div class="form-group"><label for="phone-btn-padding">Button Padding</label><input type="range"
+                            id="phone-btn-padding" min="4" max="16" value="6"></div>
+                    <div class="form-group"><label for="phone-btn-font">Button Font</label><select id="phone-btn-font">
                             <option value="'Poppins', sans-serif">Poppins</option>
                             <option value="'Tajawal', sans-serif">Tajawal</option>
                             <option value="'Cairo', sans-serif">Cairo</option>
@@ -728,42 +751,41 @@
             </details>
 
             <details class="fieldset-accordion" id="qr-code-accordion">
-                <summary>رمز الاستجابة السريعة (QR)</summary>
+                <summary>QR Code</summary>
                 <div class="fieldset-content">
                     <div class="placement-control" style="border-top: none; padding-top: 0; margin-top: 0;">
-                        <label>مكان رمز QR</label>
+                        <label>QR Code Placement</label>
                         <div class="radio-group">
-                            <label><input type="radio" name="placement-qr" value="front"> أمامي</label>
-                            <label><input type="radio" name="placement-qr" value="back" checked> خلفي</label>
+                            <label><input type="radio" name="placement-qr" value="front"> Front</label>
+                            <label><input type="radio" name="placement-qr" value="back" checked> Back</label>
                         </div>
                     </div>
                     <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
                     <div class="form-group">
-                        <label>مصدر QR Code</label>
+                        <label>QR Code Source</label>
                         <div class="radio-group">
-                            <label><input type="radio" name="qr-source" value="auto-card" checked> رابط البطاقة (مُوصى
-                                به)</label>
-                            <label><input type="radio" name="qr-source" value="auto-vcard"> بيانات الاتصال
-                                (vCard)</label>
-                            <label><input type="radio" name="qr-source" value="custom"> استخدام رابط</label>
-                            <label><input type="radio" name="qr-source" value="upload"> رفع صورة</label>
+                            <label><input type="radio" name="qr-source" value="auto-card" checked> Card Link
+                                (Recommended)</label>
+                            <label><input type="radio" name="qr-source" value="auto-vcard"> Contact Data (vCard)</label>
+                            <label><input type="radio" name="qr-source" value="custom"> Custom URL</label>
+                            <label><input type="radio" name="qr-source" value="upload"> Upload Image</label>
                         </div>
                     </div>
 
                     <div id="qr-auto-card-group" style="display: block;">
                         <button id="generate-auto-qr-btn" class="btn btn-primary"><i class="fas fa-qrcode"></i>
-                            إنشاء/تحديث QR Code</button>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">يقوم هذا الخيار بحفظ
-                            تصميمك وإنشاء QR Code لرابط المشاركة الخاص ببطاقتك.</p>
+                            Generate/Update QR Code</button>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">This option saves
+                            your design and generates a QR Code for your card's share link.</p>
                     </div>
 
                     <div class="form-group" id="qr-url-group" style="display: none;">
-                        <label for="input-qr-url">رابط صورة QR Code</label>
+                        <label for="input-qr-url">QR Code Image URL</label>
                         <input type="url" id="input-qr-url" value="mcprime_qr.png">
                     </div>
 
                     <div class="form-group" id="qr-upload-group" style="display: none;">
-                        <label for="input-qr-upload">ارفع صورة QR Code (أقل من 2MB)</label>
+                        <label for="input-qr-upload">Upload QR Code (max 2MB)</label>
                         <div class="file-input-wrapper">
                             <input type="file" id="input-qr-upload" accept="image/*">
                             <div class="input-error-msg" id="qr-upload-error"></div>
@@ -774,7 +796,7 @@
                     <hr style="border-color: var(--accent-secondary); margin: 20px 0;">
 
                     <div class="form-group">
-                        <label for="qr-size">حجم QR Code</label>
+                        <label for="qr-size">QR Code Size</label>
                         <input type="range" id="qr-size" min="15" max="50" value="30">
                     </div>
 
@@ -782,21 +804,21 @@
                         style="margin-top: 10px; background: transparent; border: none;">
                         <summary
                             style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                            خيارات متقدمة (تحريك دقيق)</summary>
+                            Advanced Options (Fine Position)</summary>
                         <div class="fieldset-content" style="border: none; padding-top: 10px;">
                             <div class="form-group">
-                                <label>تحريك دقيق (بالبكسل)</label>
+                                <label>Fine Position (pixels)</label>
                                 <div class="position-controls-grid" data-target-id="qr-code-wrapper">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up"
-                                        title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                    <button type="button" class="btn-icon move-btn" data-direction="up" title="Up"><i
+                                            class="fas fa-arrow-up"></i></button>
                                     <div class="controls-row">
                                         <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                            title="Left"><i class="fas fa-arrow-left"></i></button>
                                         <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                            title="Right"><i class="fas fa-arrow-right"></i></button>
                                     </div>
                                     <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                                        title="Down"><i class="fas fa-arrow-down"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -805,14 +827,14 @@
             </details>
 
             <details class="fieldset-accordion" id="contact-info-accordion">
-                <summary>بيانات التواصل</summary>
+                <summary>Contact Info</summary>
                 <div class="fieldset-content">
 
                     <div class="form-group">
                         <label for="toggle-master-social" style="display: flex; align-items: center; cursor: pointer;">
                             <input type="checkbox" id="toggle-master-social" checked
                                 style="width: auto; margin-inline-end: 10px;">
-                            <span>إظهار قسم التواصل (الروابط)</span>
+                            <span>Show Contact Section (Links)</span>
                         </label>
                     </div>
                     <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
@@ -824,23 +846,23 @@
                                 style="display: flex; align-items: center; cursor: pointer;">
                                 <input type="checkbox" id="toggle-social-buttons" checked
                                     style="width: auto; margin-inline-end: 10px;">
-                                <span>إظهار كأزرار</span>
+                                <span>Show as Buttons</span>
                             </label>
                         </div>
                         <div id="social-text-controls" style="display: none;">
-                            <h4>تنسيق الروابط كنص (عام)</h4>
+                            <h4>Link Text Format (General)</h4>
                             <div class="control-grid">
                                 <div class="form-group">
-                                    <label for="social-text-size">حجم الخط (الافتراضي)</label>
+                                    <label for="social-text-size">Font Size (Default)</label>
                                     <input type="range" id="social-text-size" min="10" max="24" value="12">
                                 </div>
                                 <div class="form-group">
-                                    <label for="social-text-color">لون الخط (الافتراضي)</label>
+                                    <label for="social-text-color">Font Color (Default)</label>
                                     <input type="color" id="social-text-color" value="#e6f0f7">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="social-text-font">الخط (الافتراضي)</label>
+                                <label for="social-text-font">Font (Default)</label>
                                 <select id="social-text-font">
                                     <option value="'Tajawal', sans-serif">Tajawal</option>
                                     <option value="'Cairo', sans-serif">Cairo</option>
@@ -849,18 +871,18 @@
                             </div>
                         </div>
 
-                        <h4>تصميم أزرار التواصل</h4>
+                        <h4>Contact Button Style</h4>
                         <div class="form-group">
-                            <label for="back-buttons-size">حجم الأيقونات</label>
+                            <label for="back-buttons-size">Icon Size</label>
                             <input type="range" id="back-buttons-size" min="10" max="20" value="10">
                         </div>
                         <div class="control-grid">
-                            <div class="form-group"><label for="back-buttons-bg-color">لون الزر</label><input
+                            <div class="form-group"><label for="back-buttons-bg-color">Button Color</label><input
                                     type="color" id="back-buttons-bg-color" value="#364f6b"></div>
-                            <div class="form-group"><label for="back-buttons-text-color">لون النص</label><input
+                            <div class="form-group"><label for="back-buttons-text-color">Text Color</label><input
                                     type="color" id="back-buttons-text-color" value="#aab8c2"></div>
                         </div>
-                        <div class="form-group"><label for="back-buttons-font">خط الأزرار</label><select
+                        <div class="form-group"><label for="back-buttons-font">Button Font</label><select
                                 id="back-buttons-font">
                                 <option value="'Poppins', sans-serif">Poppins</option>
                                 <option value="'Tajawal', sans-serif">Tajawal</option>
@@ -870,14 +892,14 @@
                         <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
 
                         <div class="form-group" id="form-group-static-email">
-                            <label for="input-email">البريد الإلكتروني</label>
+                            <label for="input-email">Email</label>
                             <input type="email" id="input-email" value="">
                             <div class="placement-control">
                                 <div class="radio-group">
                                     <label><input type="radio" name="placement-static-email" value="front">
-                                        أمامي</label>
+                                        Front</label>
                                     <label><input type="radio" name="placement-static-email" value="back" checked>
-                                        خلفي</label>
+                                        Back</label>
                                 </div>
                             </div>
 
@@ -885,21 +907,21 @@
                                 style="margin-top: 10px; background: transparent; border: none;">
                                 <summary
                                     style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
+                                    Advanced Options (Fine Position)</summary>
                                 <div class="fieldset-content" style="border: none; padding-top: 10px;">
                                     <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
+                                        <label>Fine Position (pixels)</label>
                                         <div class="position-controls-grid" data-target-id="social-link-static-email">
                                             <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                                title="Up"><i class="fas fa-arrow-up"></i></button>
                                             <div class="controls-row">
                                                 <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                                    title="Left"><i class="fas fa-arrow-left"></i></button>
                                                 <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                                    title="Right"><i class="fas fa-arrow-right"></i></button>
                                             </div>
                                             <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                                                title="Down"><i class="fas fa-arrow-down"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -907,16 +929,16 @@
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
+                                <summary style="padding: 8px 12px; font-size: 0.9rem;">Custom Styles (Text)</summary>
                                 <div class="fieldset-content" style="padding: 10px;">
                                     <div class="control-grid">
                                         <div class="form-group">
-                                            <label for="input-static-email-color">لون الخط</label>
+                                            <label for="input-static-email-color">Font Color</label>
                                             <input type="color" id="input-static-email-color" value="#e6f0f7"
                                                 data-input-type="static-social-style">
                                         </div>
                                         <div class="form-group">
-                                            <label for="input-static-email-size">حجم الخط</label>
+                                            <label for="input-static-email-size">Font Size</label>
                                             <input type="range" id="input-static-email-size" min="10" max="24"
                                                 value="12" data-input-type="static-social-style">
                                         </div>
@@ -925,14 +947,14 @@
                             </details>
                         </div>
                         <div class="form-group" id="form-group-static-website">
-                            <label for="input-website">الموقع الإلكتروني</label>
+                            <label for="input-website">Website</label>
                             <input type="url" id="input-website" value="">
                             <div class="placement-control">
                                 <div class="radio-group">
                                     <label><input type="radio" name="placement-static-website" value="front">
-                                        أمامي</label>
+                                        Front</label>
                                     <label><input type="radio" name="placement-static-website" value="back" checked>
-                                        خلفي</label>
+                                        Back</label>
                                 </div>
                             </div>
 
@@ -940,21 +962,21 @@
                                 style="margin-top: 10px; background: transparent; border: none;">
                                 <summary
                                     style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
+                                    Advanced Options (Fine Position)</summary>
                                 <div class="fieldset-content" style="border: none; padding-top: 10px;">
                                     <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
+                                        <label>Fine Position (pixels)</label>
                                         <div class="position-controls-grid" data-target-id="social-link-static-website">
                                             <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                                title="Up"><i class="fas fa-arrow-up"></i></button>
                                             <div class="controls-row">
                                                 <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                                    title="Left"><i class="fas fa-arrow-left"></i></button>
                                                 <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                                    title="Right"><i class="fas fa-arrow-right"></i></button>
                                             </div>
                                             <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                                                title="Down"><i class="fas fa-arrow-down"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -962,16 +984,16 @@
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
+                                <summary style="padding: 8px 12px; font-size: 0.9rem;">Custom Styles (Text)</summary>
                                 <div class="fieldset-content" style="padding: 10px;">
                                     <div class="control-grid">
                                         <div class="form-group">
-                                            <label for="input-static-website-color">لون الخط</label>
+                                            <label for="input-static-website-color">Font Color</label>
                                             <input type="color" id="input-static-website-color" value="#e6f0f7"
                                                 data-input-type="static-social-style">
                                         </div>
                                         <div class="form-group">
-                                            <label for="input-static-website-size">حجم الخط</label>
+                                            <label for="input-static-website-size">Font Size</label>
                                             <input type="range" id="input-static-website-size" min="10" max="24"
                                                 value="12" data-input-type="static-social-style">
                                         </div>
@@ -980,14 +1002,14 @@
                             </details>
                         </div>
                         <div class="form-group" id="form-group-static-whatsapp">
-                            <label for="input-whatsapp">واتساب</label>
+                            <label for="input-whatsapp">WhatsApp</label>
                             <input type="text" id="input-whatsapp" value="">
                             <div class="placement-control">
                                 <div class="radio-group">
                                     <label><input type="radio" name="placement-static-whatsapp" value="front">
-                                        أمامي</label>
+                                        Front</label>
                                     <label><input type="radio" name="placement-static-whatsapp" value="back" checked>
-                                        خلفي</label>
+                                        Back</label>
                                 </div>
                             </div>
 
@@ -995,22 +1017,22 @@
                                 style="margin-top: 10px; background: transparent; border: none;">
                                 <summary
                                     style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
+                                    Advanced Options (Fine Position)</summary>
                                 <div class="fieldset-content" style="border: none; padding-top: 10px;">
                                     <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
+                                        <label>Fine Position (pixels)</label>
                                         <div class="position-controls-grid"
                                             data-target-id="social-link-static-whatsapp">
                                             <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                                title="Up"><i class="fas fa-arrow-up"></i></button>
                                             <div class="controls-row">
                                                 <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                                    title="Left"><i class="fas fa-arrow-left"></i></button>
                                                 <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                                    title="Right"><i class="fas fa-arrow-right"></i></button>
                                             </div>
                                             <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                                                title="Down"><i class="fas fa-arrow-down"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -1018,16 +1040,16 @@
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
+                                <summary style="padding: 8px 12px; font-size: 0.9rem;">Custom Styles (Text)</summary>
                                 <div class="fieldset-content" style="padding: 10px;">
                                     <div class="control-grid">
                                         <div class="form-group">
-                                            <label for="input-static-whatsapp-color">لون الخط</label>
+                                            <label for="input-static-whatsapp-color">Font Color</label>
                                             <input type="color" id="input-static-whatsapp-color" value="#e6f0f7"
                                                 data-input-type="static-social-style">
                                         </div>
                                         <div class="form-group">
-                                            <label for="input-static-whatsapp-size">حجم الخط</label>
+                                            <label for="input-static-whatsapp-size">Font Size</label>
                                             <input type="range" id="input-static-whatsapp-size" min="10" max="24"
                                                 value="12" data-input-type="static-social-style">
                                         </div>
@@ -1036,14 +1058,14 @@
                             </details>
                         </div>
                         <div class="form-group" id="form-group-static-facebook">
-                            <label for="input-facebook">فيسبوك</label>
+                            <label for="input-facebook">Facebook</label>
                             <input type="url" id="input-facebook" value="">
                             <div class="placement-control">
                                 <div class="radio-group">
                                     <label><input type="radio" name="placement-static-facebook" value="front">
-                                        أمامي</label>
+                                        Front</label>
                                     <label><input type="radio" name="placement-static-facebook" value="back" checked>
-                                        خلفي</label>
+                                        Back</label>
                                 </div>
                             </div>
 
@@ -1051,22 +1073,22 @@
                                 style="margin-top: 10px; background: transparent; border: none;">
                                 <summary
                                     style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
+                                    Advanced Options (Fine Position)</summary>
                                 <div class="fieldset-content" style="border: none; padding-top: 10px;">
                                     <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
+                                        <label>Fine Position (pixels)</label>
                                         <div class="position-controls-grid"
                                             data-target-id="social-link-static-facebook">
                                             <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                                title="Up"><i class="fas fa-arrow-up"></i></button>
                                             <div class="controls-row">
                                                 <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                                    title="Left"><i class="fas fa-arrow-left"></i></button>
                                                 <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                                    title="Right"><i class="fas fa-arrow-right"></i></button>
                                             </div>
                                             <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                                                title="Down"><i class="fas fa-arrow-down"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -1074,16 +1096,16 @@
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
+                                <summary style="padding: 8px 12px; font-size: 0.9rem;">Custom Styles (Text)</summary>
                                 <div class="fieldset-content" style="padding: 10px;">
                                     <div class="control-grid">
                                         <div class="form-group">
-                                            <label for="input-static-facebook-color">لون الخط</label>
+                                            <label for="input-static-facebook-color">Font Color</label>
                                             <input type="color" id="input-static-facebook-color" value="#e6f0f7"
                                                 data-input-type="static-social-style">
                                         </div>
                                         <div class="form-group">
-                                            <label for="input-static-facebook-size">حجم الخط</label>
+                                            <label for="input-static-facebook-size">Font Size</label>
                                             <input type="range" id="input-static-facebook-size" min="10" max="24"
                                                 value="12" data-input-type="static-social-style">
                                         </div>
@@ -1092,14 +1114,14 @@
                             </details>
                         </div>
                         <div class="form-group" id="form-group-static-linkedin">
-                            <label for="input-linkedin">لينكدإن</label>
+                            <label for="input-linkedin">LinkedIn</label>
                             <input type="url" id="input-linkedin" value="">
                             <div class="placement-control">
                                 <div class="radio-group">
                                     <label><input type="radio" name="placement-static-linkedin" value="front">
-                                        أمامي</label>
+                                        Front</label>
                                     <label><input type="radio" name="placement-static-linkedin" value="back" checked>
-                                        خلفي</label>
+                                        Back</label>
                                 </div>
                             </div>
 
@@ -1107,22 +1129,22 @@
                                 style="margin-top: 10px; background: transparent; border: none;">
                                 <summary
                                     style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
+                                    Advanced Options (Fine Position)</summary>
                                 <div class="fieldset-content" style="border: none; padding-top: 10px;">
                                     <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
+                                        <label>Fine Position (pixels)</label>
                                         <div class="position-controls-grid"
                                             data-target-id="social-link-static-linkedin">
                                             <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
+                                                title="Up"><i class="fas fa-arrow-up"></i></button>
                                             <div class="controls-row">
                                                 <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                                    title="Left"><i class="fas fa-arrow-left"></i></button>
                                                 <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
+                                                    title="Right"><i class="fas fa-arrow-right"></i></button>
                                             </div>
                                             <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                                                title="Down"><i class="fas fa-arrow-down"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -1130,16 +1152,16 @@
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
+                                <summary style="padding: 8px 12px; font-size: 0.9rem;">Custom Styles (Text)</summary>
                                 <div class="fieldset-content" style="padding: 10px;">
                                     <div class="control-grid">
                                         <div class="form-group">
-                                            <label for="input-static-linkedin-color">لون الخط</label>
+                                            <label for="input-static-linkedin-color">Font Color</label>
                                             <input type="color" id="input-static-linkedin-color" value="#e6f0f7"
                                                 data-input-type="static-social-style">
                                         </div>
                                         <div class="form-group">
-                                            <label for="input-static-linkedin-size">حجم الخط</label>
+                                            <label for="input-static-linkedin-size">Font Size</label>
                                             <input type="range" id="input-static-linkedin-size" min="10" max="24"
                                                 value="12" data-input-type="static-social-style">
                                         </div>
@@ -1148,27 +1170,26 @@
                             </details>
                         </div>
                         <hr>
-                        <h4>سحب وإفلات الأيقونات</h4>
+                        <h4>Drag and Drop Icons</h4>
                         <p style="font-size:12px; color:var(--text-secondary); margin-top:-10px; margin-bottom:10px;">
-                            اسحب أيقونة وأفلتها على البطاقة لإضافتها.</p>
+                            Drag an icon and drop it on the card to add it.</p>
                         <!-- NEW: Social Icon Palette for Drag & Drop -->
                         <div id="social-icon-palette" class="social-icon-palette-grid">
                             <!-- Populated by JavaScript -->
                         </div>
                         <hr>
-                        <h4>إضافة روابط أخرى</h4>
+                        <h4>Add Other Links</h4>
                         <div class="add-social-group">
                             <div class="form-group">
-                                <label for="social-media-type">اختر المنصة</label>
+                                <label for="social-media-type">Select Platform</label>
                                 <select id="social-media-type"></select>
                             </div>
-                            <button id="add-social-btn" class="btn btn-secondary" title="إضافة رابط"
-                                aria-label="إضافة رابط تواصل اجتماعي"><i class="fas fa-plus"
-                                    aria-hidden="true"></i></button>
+                            <button id="add-social-btn" class="btn btn-secondary" title="Add Link"
+                                aria-label="Add Social Link"><i class="fas fa-plus" aria-hidden="true"></i></button>
                         </div>
                         <div class="form-group">
-                            <label for="social-media-input">ادخل الرابط أو المعرف</label>
-                            <input type="text" id="social-media-input" placeholder="الرابط هنا...">
+                            <label for="social-media-input">Enter URL or Username</label>
+                            <input type="text" id="social-media-input" placeholder="Link here...">
                         </div>
                         <div id="dynamic-social-links-container"></div>
 
@@ -1181,35 +1202,35 @@
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-share" style="display: none;">
             <fieldset class="fieldset">
-                <legend>الحفظ والمشاركة</legend>
+                <legend>Save & Share</legend>
                 <div class="form-group">
                     <button class="btn btn-success mobile-action-btn" data-trigger-id="share-card-btn"
                         style="width: 100%;">
-                        <i class="fas fa-share-alt"></i> مشاركة الكارت
+                        <i class="fas fa-share-alt"></i> Share Card
                     </button>
                 </div>
                 <div class="form-group">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="save-to-gallery-btn"
                         style="width: 100%;">
-                        <i class="fas fa-save"></i> حفظ بالمعرض
+                        <i class="fas fa-save"></i> Save to Gallery
                     </button>
                 </div>
                 <div class="form-group">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn"
                         style="width: 100%;">
-                        <i class="fas fa-images"></i> عرض المعرض
+                        <i class="fas fa-images"></i> View Gallery
                     </button>
                 </div>
             </fieldset>
 
             <fieldset class="fieldset">
-                <legend>التنزيل</legend>
+                <legend>Download</legend>
                 <div class="control-grid">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-front">
-                        <i class="fas fa-image"></i> واجهة (PNG)
+                        <i class="fas fa-image"></i> Front (PNG)
                     </button>
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-back">
-                        <i class="fas fa-image"></i> خلفية (PNG)
+                        <i class="fas fa-image"></i> Back (PNG)
                     </button>
                 </div>
                 <div class="control-grid" style="margin-top: 10px;">
@@ -1217,29 +1238,29 @@
                         <i class="fas fa-file-pdf"></i> PDF
                     </button>
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-vcf">
-                        <i class="fas fa-address-card"></i> جهة اتصال (VCF)
+                        <i class="fas fa-address-card"></i> Contact (VCF)
                     </button>
                 </div>
                 <div class="form-group" style="margin-top: 10px;">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-qrcode"
                         style="width: 100%;">
-                        <i class="fas fa-qrcode"></i> رمز QR Code
+                        <i class="fas fa-qrcode"></i> QR Code
                     </button>
                 </div>
             </fieldset>
 
             <fieldset class="fieldset">
-                <legend>أخرى</legend>
+                <legend>Other</legend>
                 <div class="form-group">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="share-editor-btn"
                         style="width: 100%;">
-                        <i class="fas fa-edit"></i> مشاركة رابط المحرر
+                        <i class="fas fa-edit"></i> Share Editor Link
                     </button>
                 </div>
                 <div class="form-group">
                     <button class="btn btn-danger mobile-action-btn" data-trigger-id="reset-design-btn"
                         style="width: 100%;">
-                        <i class="fas fa-undo"></i> إعادة تعيين التصميم
+                        <i class="fas fa-undo"></i> Reset Design
                     </button>
                 </div>
             </fieldset>
@@ -1252,90 +1273,89 @@
     <div id="export-loading-overlay" class="modal-overlay">
         <div class="modal-content" style="text-align: center;">
             <div class="spinner" style="margin: 0 auto 15px auto;"></div>
-            <p>جاري تجهيز الصورة عالية الجودة، قد يستغرق الأمر بضع لحظات...</p>
+            <p>Preparing high-quality image, this may take a moment...</p>
         </div>
     </div>
 
     <div id="export-modal-overlay" class="modal-overlay">
         <div class="modal-content">
-            <h3>خيارات التصدير</h3>
-            <button id="export-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
+            <h3>Export Options</h3>
+            <button id="export-modal-close" class="modal-close" aria-label="Close">&times;</button>
             <div class="form-group">
-                <label for="export-format">نوع الملف</label>
+                <label for="export-format">File Type</label>
                 <select id="export-format">
-                    <option value="png">PNG (جودة عالية)</option>
-                    <option value="jpeg">JPEG (حجم أصغر)</option>
+                    <option value="png">PNG (High Quality)</option>
+                    <option value="jpeg">JPEG (Smaller Size)</option>
                 </select>
             </div>
             <div class="form-group" id="export-quality-group" style="display: none;">
-                <label for="export-quality">الجودة (1-100)</label>
+                <label for="export-quality">Quality (1-100)</label>
                 <div class="quality-slider-wrapper">
                     <input type="range" id="export-quality" min="10" max="100" value="92">
                     <span id="export-quality-value">92</span>
                 </div>
             </div>
             <div class="form-group">
-                <label>حجم الصورة (الدقة) <i class="fas fa-question-circle"
-                        data-tooltip="اختر 2x أو 3x للحصول على جودة مناسبة للطباعة." aria-hidden="true"></i></label>
+                <label>Image Size (Resolution) <i class="fas fa-question-circle"
+                        data-tooltip="Choose 2x or 3x for print-quality images." aria-hidden="true"></i></label>
                 <div class="scale-buttons">
-                    <button class="scale-btn" data-scale="1">1x (ويب)</button>
-                    <button class="scale-btn selected" data-scale="2">2x (طباعة)</button>
-                    <button class="scale-btn" data-scale="3">3x (فائقة)</button>
+                    <button class="scale-btn" data-scale="1">1x (Web)</button>
+                    <button class="scale-btn selected" data-scale="2">2x (Print)</button>
+                    <button class="scale-btn" data-scale="3">3x (Ultra)</button>
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="confirm-export-btn" class="modal-confirm">تأكيد الحفظ</button>
+                <button id="confirm-export-btn" class="modal-confirm">Confirm Export</button>
             </div>
         </div>
     </div>
 
     <div id="gallery-modal-overlay" class="modal-overlay">
         <div class="modal-content gallery-modal">
-            <h3>معرض التصاميم المحفوظة</h3>
-            <button id="gallery-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
+            <h3>Saved Designs Gallery</h3>
+            <button id="gallery-modal-close" class="modal-close" aria-label="Close">&times;</button>
             <div id="gallery-grid" class="gallery-grid">
             </div>
             <div class="modal-footer">
-                <button id="gallery-select-all">تحديد الكل</button>
-                <button id="gallery-deselect-all">إلغاء تحديد الكل</button>
+                <button id="gallery-select-all">Select All</button>
+                <button id="gallery-deselect-all">Deselect All</button>
                 <button id="gallery-download-zip" class="modal-confirm" disabled><i class="fas fa-file-archive"
-                        aria-hidden="true"></i> تحميل المحددات (ZIP)</button>
+                        aria-hidden="true"></i> Download Selected (ZIP)</button>
             </div>
         </div>
     </div>
 
     <div id="share-fallback-modal-overlay" class="modal-overlay">
         <div class="modal-content">
-            <h3>مشاركة الرابط</h3>
-            <button id="share-fallback-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
-            <p>متصفحك لا يدعم المشاركة المباشرة. استخدم أحد الخيارات التالية:</p>
+            <h3>Share Link</h3>
+            <button id="share-fallback-modal-close" class="modal-close" aria-label="Close">&times;</button>
+            <p>Your browser doesn't support direct sharing. Use one of the following options:</p>
             <div class="share-fallback-buttons">
-                <a id="share-email" target="_blank"><i class="fas fa-envelope" aria-hidden="true"></i> بريد
-                    إلكتروني</a>
-                <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> واتساب</a>
-                <a id="share-twitter" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i> تويتر</a>
-                <button id="share-copy-link"><i class="fas fa-copy" aria-hidden="true"></i> نسخ الرابط</button>
+                <a id="share-email" target="_blank"><i class="fas fa-envelope" aria-hidden="true"></i> Email</a>
+                <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp</a>
+                <a id="share-twitter" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i> Twitter</a>
+                <button id="share-copy-link"><i class="fas fa-copy" aria-hidden="true"></i> Copy Link</button>
             </div>
         </div>
     </div>
 
-    <!-- === مودال التحرير الجماعي الجديد === -->
+    <!-- === Collaborative Editing Modal === -->
     <div id="collab-modal-overlay" class="modal-overlay">
         <div class="modal-content">
-            <h3>جلسة التحرير الجماعي</h3>
-            <button id="collab-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
-            <p>شارك هذا الرابط مع الآخرين لدعوتهم للتحرير معك في الوقت الفعلي.</p>
+            <h3>Collaborative Editing Session</h3>
+            <button id="collab-modal-close" class="modal-close" aria-label="Close">&times;</button>
+            <p>Share this link with others to invite them to edit with you in real-time.</p>
             <div class="form-group">
-                <label for="collab-link-input">رابط الجلسة</label>
+                <label for="collab-link-input">Session Link</label>
                 <div style="display: flex; gap: 10px;">
                     <input type="text" id="collab-link-input" readonly style="flex-grow: 1;">
                     <button id="copy-collab-link-btn" class="btn btn-secondary"
-                        style="width: auto; margin-top: 0;">نسخ</button>
+                        style="width: auto; margin-top: 0;">Copy</button>
                 </div>
             </div>
-            <p style="font-size: 0.8rem; color: var(--text-secondary);">ملاحظة: أي شخص لديه هذا الرابط يمكنه تعديل
-                تصميمك. ستنتهي الجلسة عند إغلاق الصفحة.</p>
-            <div id="collab-status" style="margin-top: 15px; font-weight: bold;">الحالة: غير متصل</div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">Note: Anyone with this link can edit your
+                design. The session will end when you close this page.</p>
+            <div id="collab-status" style="margin-top: 15px; font-weight: bold;">Status: Disconnected</div>
         </div>
     </div>
 
@@ -1347,69 +1367,69 @@
     <div id="qrcode-container" class="visually-hidden"></div>
     <div id="qr-code-temp-generator"></div>
 
-    <button id="back-to-top-btn" title="الرجوع للأعلى" aria-label="الرجوع إلى أعلى الصفحة"><i class="fas fa-arrow-up"
+    <button id="back-to-top-btn" title="Back to Top" aria-label="Back to top of page"><i class="fas fa-arrow-up"
             aria-hidden="true"></i></button>
 
     <div id="help-modal-overlay" class="modal-overlay">
         <div class="modal-content" style="max-width: 700px;">
-            <h3 style="text-align: center; margin-top: 0;">مركز المساعدة</h3>
-            <button id="help-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
+            <h3 style="text-align: center; margin-top: 0;">Help Center</h3>
+            <button id="help-modal-close" class="modal-close" aria-label="Close">&times;</button>
 
             <nav class="help-tabs-nav">
                 <button class="help-tab-btn active" data-tab-target="tab-video-tutorial">
-                    <i class="fas fa-play-circle"></i> شرح بالفيديو
+                    <i class="fas fa-play-circle"></i> Video Tutorial
                 </button>
                 <button class="help-tab-btn" data-tab-target="tab-faq">
-                    <i class="fas fa-question-circle"></i> أسئلة شائعة
+                    <i class="fas fa-question-circle"></i> FAQ
                 </button>
             </nav>
 
             <div class="help-tabs-content">
                 <div id="tab-video-tutorial" class="help-tab-pane active">
-                    <h4>شرح سريع لوظائف المحرر</h4>
-                    <p>شاهد هذا الفيديو القصير (دقيقة واحدة) لمعرفة كيفية استخدام أهم الميزات.</p>
+                    <h4>Quick Guide to Editor Features</h4>
+                    <p>Watch this short video (1 minute) to learn how to use the key features.</p>
                     <div class="video-container">
                         <iframe src="" title="YouTube video player" frameborder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowfullscreen></iframe>
                     </div>
                     <hr>
-                    <h4>شروحات متحركة (GIFs)</h4>
+                    <h4>Animated Tutorials (GIFs)</h4>
                     <div class="gif-grid">
                         <div>
-                            <p><strong>1. تغيير مكان العناصر</strong></p>
+                            <p><strong>1. Moving Elements</strong></p>
                             <img src="https://media.giphy.com/media/3o7TKSjRrfIPjeI6e4/giphy.gif"
-                                alt="شرح متحرك لكيفية سحب وإفلات العناصر">
+                                alt="Animated guide on how to drag and drop elements">
                         </div>
                         <div>
-                            <p><strong>2. رفع شعار خاص بك</strong></p>
+                            <p><strong>2. Uploading Your Logo</strong></p>
                             <img src="https://media.giphy.com/media/l41lUj1oeHo1h2b1S/giphy.gif"
-                                alt="شرح متحرك لكيفية رفع شعار">
+                                alt="Animated guide on how to upload a logo">
                         </div>
                     </div>
                 </div>
 
                 <div id="tab-faq" class="help-tab-pane">
                     <details class="fieldset-accordion" open>
-                        <summary>كيف أغير مكان الشعار أو الاسم؟</summary>
+                        <summary>How do I move the logo or name?</summary>
                         <div class="fieldset-content">
-                            <p>ببساطة، اضغط على العنصر الذي تريد تحريكه (مثل الشعار أو مربع النص) واستمر بالضغط مع
-                                سحبه
-                                إلى المكان الجديد على البطاقة.</p>
+                            <p>Simply click and hold the element you want to move (such as the logo or text box) and
+                                drag it
+                                to the new position on the card.</p>
                         </div>
                     </details>
                     <details class="fieldset-accordion">
-                        <summary>لا يظهر رمز الـ QR، ماذا أفعل؟</summary>
+                        <summary>The QR code isn't showing, what do I do?</summary>
                         <div class="fieldset-content">
-                            <p>تأكد من اختيار مصدر للرمز من قسم "رمز الاستجابة السريعة (QR)". الخيار الموصى به هو
-                                "رابط
-                                البطاقة"، وبعد اختياره اضغط على زر "إنشاء/تحديث QR Code".</p>
+                            <p>Make sure to select a source for the QR code in the "QR Code" section. The recommended
+                                option is "Card Link", then click the "Generate/Update QR Code" button.</p>
                         </div>
                     </details>
                     <details class="fieldset-accordion">
-                        <summary>كيف أحفظ التصميم كصورة؟</summary>
+                        <summary>How do I save the design as an image?</summary>
                         <div class="fieldset-content">
-                            <p>من شريط الأدوات العلوي، اضغط على زر "تنزيل" واختر "صورة الواجهة" أو "صورة الخلفية".
+                            <p>From the top toolbar, click the "Download" button and select "Front Image" or "Back
+                                Image".
                             </p>
                         </div>
                     </details>
@@ -1418,23 +1438,23 @@
         </div>
     </div>
 
-    <!-- مودال قص الصور الجديد -->
+    <!-- Image Crop Modal -->
     <div id="crop-modal-overlay" class="modal-overlay">
         <div class="modal-content crop-modal-content">
-            <h3>قص الصورة</h3>
+            <h3>Crop Image</h3>
             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 15px;">
-                حرّك الصورة لتحديد الجزء المطلوب ثم اضغط "تأكيد".
+                Move the image to select the desired area, then click "Confirm".
             </p>
 
-            <!-- الحاوية الجديدة التي سيتم تعبئتها بواسطة JavaScript -->
+            <!-- Container to be filled by JavaScript -->
             <div id="crop-image-container">
-                <!-- سيتم إنشاء عنصر IMG هنا ديناميكياً -->
+                <!-- IMG element will be created dynamically -->
             </div>
 
             <div class="modal-footer" style="justify-content: flex-end;">
-                <button id="cancel-crop-btn" class="btn btn-secondary" style="width: auto;">إلغاء</button>
-                <button id="confirm-crop-btn" class="modal-confirm" style="width: auto; flex-grow: 1;">تأكيد
-                    القص</button>
+                <button id="cancel-crop-btn" class="btn btn-secondary" style="width: auto;">Cancel</button>
+                <button id="confirm-crop-btn" class="modal-confirm" style="width: auto; flex-grow: 1;">Confirm
+                    Crop</button>
             </div>
         </div>
     </div>
@@ -1442,21 +1462,21 @@
     <!-- NEW: Floating button to exit preview mode -->
     <button id="exit-preview-btn" class="btn btn-secondary"
         style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">
-        <i class="fas fa-times"></i> الخروج من المعاينة
+        <i class="fas fa-times"></i> Exit Preview
     </button>
 
     <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" data-target="panel-elements">
             <i class="fas fa-pen"></i>
-            <span>المحتوى</span>
+            <span>Content</span>
         </button>
         <button class="mobile-nav-item" data-target="panel-design">
             <i class="fas fa-palette"></i>
-            <span>التصميم</span>
+            <span>Design</span>
         </button>
         <button class="mobile-nav-item" data-target="panel-share">
             <i class="fas fa-share-square"></i>
-            <span>حفظ ومشاركة</span>
+            <span>Save & Share</span>
         </button>
     </nav>
 </body>

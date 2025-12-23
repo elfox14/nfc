@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عرض البطاقة</title>
+    <title>View Card</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,20 +22,21 @@
 <body>
 
     <nav class="viewer-nav">
-        <a href="index.html" class="nav-logo" title="العودة إلى الرئيسية">
+        <a href="index-en.html" class="nav-logo" title="Back to Home">
             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect fill='%23667eea' width='40' height='40' rx='6'/%3E%3Ctext x='20' y='26' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold' font-size='12'%3EMP%3C/text%3E%3C/svg%3E"
                 alt="MC PRIME Logo">
         </a>
         <div class="nav-links">
-            <a href="index.html">الرئيسية</a>
-            <a href="gallery.html">المعرض</a>
-            <a href="blog.html">المدونة</a>
-            <a href="editor.html">إنشاء بطاقة</a>
+            <a href="index-en.html">Home</a>
+            <a href="gallery-en.html">Gallery</a>
+            <a href="blog-en.html">Blog</a>
+            <a href="editor-en.html">Create Card</a>
         </div>
 
         <div class="nav-actions">
-            <button id="lang-toggle-btn" class="btn" onclick="switchLanguage('en')"
-                style="padding: 6px 12px; font-size: 0.85rem; margin-left: 10px;" title="Switch to English">EN</button>
+            <button id="lang-toggle-btn" class="btn" onclick="switchLanguage('ar')"
+                style="padding: 6px 12px; font-size: 0.85rem; margin-right: 10px;"
+                title="التبديل إلى العربية">عربي</button>
             <div class="theme-switch-wrapper">
                 <label class="theme-switch" for="theme-toggle">
                     <input type="checkbox" id="theme-toggle" />
@@ -45,13 +46,13 @@
                     </span>
                 </label>
             </div>
-            <a href="editor.html" class="btn nav-cta">اصنع بطاقتك مجانًا</a>
+            <a href="editor-en.html" class="btn nav-cta">Create Your Card Free</a>
         </div>
     </nav>
 
     <div id="loader" class="viewer-loader">
         <div class="spinner"></div>
-        <p>جاري تحميل البطاقة...</p>
+        <p>Loading card...</p>
     </div>
 
     <div class="viewer-container" style="display: none;">
@@ -67,58 +68,58 @@
                     </p>
                 </div>
 
-                <h2><i class="fas fa-address-book"></i> معلومات الاتصال</h2>
+                <h2><i class="fas fa-address-book"></i> Contact Information</h2>
                 <div id="contact-links-container">
                 </div>
             </aside>
 
             <main class="center-column">
-                <div class="cards-wrapper-viewer" id="cards-wrapper-viewer" title="انقر لتقليب البطاقة">
+                <div class="cards-wrapper-viewer" id="cards-wrapper-viewer" title="Click to flip the card">
                     <div class="business-card-viewer" id="card-front-display">
                     </div>
                     <div class="business-card-viewer" id="card-back-display" style="transform: rotateY(180deg);">
                     </div>
                 </div>
-                <button id="viewer-flip-btn" class="btn" aria-label="تقليب البطاقة"
+                <button id="viewer-flip-btn" class="btn" aria-label="Flip card"
                     style="display:none; position:relative; margin-top: 15px;">
-                    <i class="fas fa-sync-alt"></i> <span>تقليب البطاقة</span>
+                    <i class="fas fa-sync-alt"></i> <span>Flip Card</span>
                 </button>
             </main>
 
             <aside class="side-column save-options" id="right-column">
-                <h2><i class="fas fa-download"></i> حفظ ومشاركة</h2>
+                <h2><i class="fas fa-download"></i> Save & Share</h2>
 
                 <button id="save-vcf-btn" class="btn btn-primary">
                     <i class="fas fa-user-plus"></i>
-                    حفظ جهة الاتصال (VCF)
+                    Save Contact (VCF)
                 </button>
                 <p
                     style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-top: 5px; margin-bottom: 15px;">
-                    (ملف لإضافة جهة الاتصال لهاتفك مباشرة)
+                    (File to add contact directly to your phone)
                 </p>
 
-                <!-- *** زر جديد: توقيع البريد الإلكتروني *** -->
+                <!-- *** New Button: Email Signature *** -->
                 <button id="save-email-sig-btn" class="btn btn-secondary" style="margin-bottom: 15px;">
                     <i class="fas fa-signature"></i>
-                    نسخ توقيع الإيميل
+                    Copy Email Signature
                 </button>
 
                 <details class="fieldset-accordion">
                     <summary class="secondary-actions-summary">
-                        <i class="fas fa-cog"></i> خيارات إضافية (PNG, PDF)
+                        <i class="fas fa-cog"></i> More Options (PNG, PDF)
                     </summary>
                     <div class="fieldset-content secondary-actions-content">
                         <button id="save-front-png-btn" class="btn btn-secondary">
                             <i class="fas fa-image"></i>
-                            حفظ الواجهة (PNG)
+                            Save Front (PNG)
                         </button>
                         <button id="save-back-png-btn" class="btn btn-secondary">
                             <i class="fas fa-image"></i>
-                            حفظ الخلفية (PNG)
+                            Save Back (PNG)
                         </button>
                         <button id="save-pdf-btn" class="btn btn-secondary">
                             <i class="fas fa-file-pdf"></i>
-                            حفظ كـ PDF
+                            Save as PDF
                         </button>
                     </div>
                 </details>
@@ -126,38 +127,38 @@
                 <div class="info-box">
                     <h3 class="info-box-title">
                         <i class="fas fa-info-circle"></i>
-                        دليل الزائر
+                        Visitor Guide
                     </h3>
                     <p class="info-box-text">
-                        <strong>للحفظ:</strong> اضغط على <strong>"حفظ جهة الاتصال"</strong> لإضافة الملف لهاتفك.
+                        <strong>To Save:</strong> Click <strong>"Save Contact"</strong> to add to your phone.
                     </p>
                     <p class="info-box-text">
-                        <strong>للتوقيع:</strong> انسخ توقيع الإيميل والصقه في Outlook أو Gmail.
+                        <strong>For Signature:</strong> Copy the email signature and paste it in Outlook or Gmail.
                     </p>
 
                     <h4 class="info-box-subtitle">
-                        <i class="fas fa-lightbulb"></i> ميزات البطاقة الرقمية
+                        <i class="fas fa-lightbulb"></i> Digital Card Features
                     </h4>
                     <ul class="info-box-list">
-                        <li><i class="fas fa-check-circle c-green"></i> احفظ جهة الاتصال مباشرة</li>
-                        <li><i class="fas fa-leaf c-green"></i> تحد من استهلاك الورق</li>
-                        <li><i class="fas fa-edit c-blue"></i> يمكن تعديلها في أي وقت</li>
-                        <li><i class="fas fa-chart-line c-yellow"></i> تتبع زيارات بطاقتك</li>
+                        <li><i class="fas fa-check-circle c-green"></i> Save contact directly</li>
+                        <li><i class="fas fa-leaf c-green"></i> Reduce paper consumption</li>
+                        <li><i class="fas fa-edit c-blue"></i> Edit anytime</li>
+                        <li><i class="fas fa-chart-line c-yellow"></i> Track your card visits</li>
                     </ul>
                 </div>
 
-                <a href="editor.html" class="btn btn-secondary"
+                <a href="editor-en.html" class="btn btn-secondary"
                     style="margin-top: 25px; text-align: center; width: 100%;">
-                    <i class="fas fa-magic"></i> أنشئ بطاقتك المجانية
+                    <i class="fas fa-magic"></i> Create Your Free Card
                 </a>
             </aside>
 
             <nav class="mobile-viewer-tabs">
                 <button class="mobile-tab-btn active" data-tab-target="#left-column">
-                    <i class="fas fa-address-book"></i> معلومات الاتصال
+                    <i class="fas fa-address-book"></i> Contact Info
                 </button>
                 <button class="mobile-tab-btn" data-tab-target="#right-column">
-                    <i class="fas fa-download"></i> حفظ ومشاركة
+                    <i class="fas fa-download"></i> Save & Share
                 </button>
             </nav>
 

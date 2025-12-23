@@ -1,5 +1,19 @@
 'use strict';
 
+// Language detection and i18n for script-main.js (computed once at load)
+const _isEnglishPage = document.documentElement.lang === 'en';
+const i18nMain = {
+    capturing: _isEnglishPage ? 'Capturing...' : 'جاري الالتقاط...',
+    uploading: _isEnglishPage ? 'Uploading images...' : 'جاري رفع الصور...',
+    generating: _isEnglishPage ? 'Generating link...' : 'جاري إنشاء الرابط...',
+    captureError: _isEnglishPage ? 'Failed to capture or upload card image. Please try again.' : 'فشل التقاط أو رفع صورة البطاقة. يرجى المحاولة مرة أخرى.',
+    saveError: _isEnglishPage ? 'Failed to save design. Please try again.' : 'فشل حفظ التصميم. يرجى المحاولة مرة أخرى.',
+    linkCopied: _isEnglishPage ? 'Link copied to clipboard!' : 'تم نسخ الرابط!',
+    shareTitle: _isEnglishPage ? 'My Digital Business Card' : 'بطاقة العمل الرقمية الخاصة بي',
+    shareText: _isEnglishPage ? 'Check out my digital business card:' : 'اطلع على بطاقتي الرقمية:',
+    copyLinkFailed: _isEnglishPage ? 'Could not copy link automatically. Please copy it manually.' : 'لم نتمكن من نسخ الرابط تلقائياً. يرجى نسخه يدوياً.',
+};
+
 const CollaborationManager = {
     ws: null,
     collabId: null,
@@ -468,7 +482,7 @@ const ShareManager = {
     },
 
     async shareCard() {
-        UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, 'جاري الالتقاط...');
+        UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.capturing);
 
         let frontImageUrl, backImageUrl, state;
 
@@ -476,12 +490,12 @@ const ShareManager = {
             state = StateManager.getStateObject();
             frontImageUrl = await this.captureAndUploadCard(DOMElements.cardFront);
 
-            UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, 'جاري رفع الصور...');
+            UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.uploading);
             backImageUrl = await this.captureAndUploadCard(DOMElements.cardBack);
 
         } catch (error) {
             console.error("Card capture/upload failed:", error);
-            alert("فشل التقاط أو رفع صورة البطاقة. يرجى المحاولة مرة أخرى.");
+            alert(i18nMain.captureError);
             UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
             return;
         }
@@ -493,7 +507,7 @@ const ShareManager = {
         // Mark as shared to gallery - unique flag for gallery filtering
         state.sharedToGallery = true;
 
-        UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, 'جاري الحفظ...');
+        UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
 
         const designId = await this.saveDesign(state);
 
@@ -503,7 +517,7 @@ const ShareManager = {
         const viewerUrl = new URL('viewer.html', window.location.href);
         viewerUrl.searchParams.set('id', designId);
 
-        this.performShare(viewerUrl.href, 'بطاقة عملي الرقمية', 'ألق نظرة على تصميم بطاقتي الجديدة!');
+        this.performShare(viewerUrl.href, i18nMain.shareTitle, i18nMain.shareText);
     },
 
     async shareEditor() {
@@ -687,21 +701,20 @@ const EventManager = {
         const langToggleBtn = DOMElements.buttons.langToggle;
         if (langToggleBtn) {
             langToggleBtn.addEventListener('click', () => {
-                const isArabic = document.documentElement.lang === 'ar';
-                const newLang = isArabic ? 'en' : 'ar';
-
-                document.documentElement.lang = newLang;
-                document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
-
-                langToggleBtn.textContent = newLang === 'ar' ? 'EN' : 'AR';
-
-                document.querySelectorAll('[data-lang]').forEach(el => {
-                    el.style.display = el.dataset.lang === newLang ? 'block' : 'none';
-                });
-
-                CardManager.updateCardForLanguageChange(newLang);
-
-                UIManager.announce(newLang === 'ar' ? "تم التبديل إلى العربية" : "Switched to English");
+                // Use the global switchLanguage function from lang-switcher.js for page redirect
+                if (typeof window.switchLanguage === 'function') {
+                    const isArabic = document.documentElement.lang === 'ar' || !document.documentElement.lang;
+                    const targetLang = isArabic ? 'en' : 'ar';
+                    window.switchLanguage(targetLang);
+                } else {
+                    // Fallback: manual redirect if lang-switcher.js not loaded
+                    const currentPage = window.location.pathname.split('/').pop() || 'editor.html';
+                    if (currentPage === 'editor.html') {
+                        window.location.href = 'editor-en.html';
+                    } else if (currentPage === 'editor-en.html') {
+                        window.location.href = 'editor.html';
+                    }
+                }
             });
         }
 

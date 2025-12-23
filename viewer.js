@@ -1,10 +1,79 @@
 // viewer.js
+
+// Auto-detect language and redirect first-time visitors
+(function () {
+    const LANG_REDIRECT_KEY = 'viewer_lang_redirected';
+
+    // Check if already redirected in this session
+    if (sessionStorage.getItem(LANG_REDIRECT_KEY)) return;
+
+    // Get browser language preference
+    const browserLang = (navigator.language || navigator.userLanguage || 'ar').split('-')[0].toLowerCase();
+    const currentPage = window.location.pathname.split('/').pop() || 'viewer.html';
+    const isCurrentlyEnglish = currentPage.includes('-en.html');
+    const browserPrefersEnglish = browserLang === 'en';
+
+    // Mark as redirected to prevent infinite loops
+    sessionStorage.setItem(LANG_REDIRECT_KEY, 'true');
+
+    // Redirect if needed
+    if (browserPrefersEnglish && !isCurrentlyEnglish) {
+        // Browser prefers English, but we're on Arabic page
+        const newPage = currentPage.replace('.html', '-en.html');
+        window.location.replace(newPage + window.location.search + window.location.hash);
+    } else if (!browserPrefersEnglish && isCurrentlyEnglish) {
+        // Browser prefers Arabic, but we're on English page
+        const newPage = currentPage.replace('-en.html', '.html');
+        window.location.replace(newPage + window.location.search + window.location.hash);
+    }
+})();
 document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     const viewerContainer = document.querySelector('.viewer-container');
     const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
     let cardData = null;
-    let cardId = null; // لتخزين معرف البطاقة للتتبع
+    let cardId = null; // Store card ID for tracking
+
+    // Language detection and i18n support (values computed once at load)
+    const isEnglish = document.documentElement.lang === 'en';
+    const i18n = {
+        // Direct property values (not getters - for better performance)
+        loadingCard: isEnglish ? 'Loading card...' : 'جاري تحميل البطاقة...',
+        loadingError: isEnglish ? 'Loading Error:' : 'خطأ في التحميل:',
+        unexpectedError: isEnglish ? 'An unexpected error occurred.' : 'حدث خطأ غير متوقع.',
+        defaultName: isEnglish ? 'Name' : 'الاسم',
+        viewBusinessCard: isEnglish ? 'View Business Card →' : 'عرض بطاقة العمل →',
+        signatureCopied: isEnglish ? '✅ Signature copied!\n\nYou can now go to your email settings (Outlook, Gmail) and paste the signature there.' : '✅ تم نسخ التوقيع!\n\nيمكنك الآن الذهاب إلى إعدادات بريدك الإلكتروني (Outlook, Gmail) ولصق التوقيع هناك.',
+        copyFailed: isEnglish ? 'Automatic copy failed. Please try from another browser.' : 'تعذر النسخ التلقائي. يرجى المحاولة من متصفح آخر.',
+        noContactData: isEnglish ? 'Not enough data to save contact.' : 'لا توجد بيانات كافية لحفظ جهة الاتصال.',
+        contactFilePrepError: isEnglish ? 'An error occurred while preparing the contact file.' : 'حدث خطأ أثناء تجهيز ملف جهة الاتصال.',
+        noLinksAvailable: isEnglish ? 'No links available' : 'لا توجد روابط متاحة',
+        ownerHiddenContact: isEnglish ? 'The card owner chose not to display contact information here.' : 'صاحب البطاقة اختار عدم إظهار معلومات الاتصال هنا.',
+        failedLoadHtml2canvas: isEnglish ? 'Failed to load image capture library' : 'فشل تحميل مكتبة التقاط الصور',
+        cardElementsNotFound: isEnglish ? 'Card elements or display container not found' : 'لم يتم العثور على عناصر البطاقة أو حاوية العرض',
+        failedCaptureCardImages: isEnglish ? 'Failed to capture card images' : 'فشل التقاط صور البطاقة',
+        cardFront: isEnglish ? 'Front of the card' : 'الوجه الأمامي للبطاقة',
+        cardBack: isEnglish ? 'Back of the card' : 'الوجه الخلفي للبطاقة',
+        couldNotLoadCardData: isEnglish ? 'Could not load card data or data is invalid.' : 'لم نتمكن من تحميل بيانات البطاقة أو أن البيانات غير صالحة.',
+        displayContainerNotFound: isEnglish ? 'Card display container not found!' : 'حاوية عرض صور البطاقة غير موجودة!',
+        errorProcessingCard: isEnglish ? 'An error occurred while processing the card.' : 'حدث خطأ أثناء معالجة البطاقة.',
+        cardImagesNotFound: isEnglish ? 'Card images not found.' : 'لم يتم العثور على صور البطاقة.',
+        imagePreparationError: isEnglish ? 'An error occurred while preparing the image.' : 'حدث خطأ أثناء تجهيز صورة الواجهة.',
+        cardImageNotFound: isEnglish ? 'Card image not found.' : 'لم يتم العثور على صورة البطاقة.',
+        creatingPdf: isEnglish ? 'Creating...' : 'جاري الإنشاء...',
+        savePdf: isEnglish ? '<i class="fas fa-file-pdf"></i> Save as PDF' : '<i class="fas fa-file-pdf"></i> حفظ كـ PDF',
+        pdfCreationError: isEnglish ? 'An error occurred while creating the PDF file.' : 'حدث خطأ أثناء إنشاء ملف PDF.',
+        cardIdNotFound: isEnglish ? 'Card ID not found.' : 'لم يتم العثور على معرف البطاقة.',
+        failedLoadCardData: isEnglish ? 'Failed to load card data' : 'فشل تحميل بيانات البطاقة',
+        receivedDataInvalid: isEnglish ? 'Received data is invalid.' : 'البيانات المستلمة غير صالحة.',
+        viewCard: (name, tagline) => {
+            if (isEnglish) {
+                return tagline ? `View Card: ${name} - ${tagline}` : `View Card: ${name}`;
+            }
+            return tagline ? `عرض بطاقة: ${name} - ${tagline}` : `عرض بطاقة: ${name}`;
+        }
+    };
+
 
     const SCRIPT_URLS = {
         html2canvas: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
@@ -47,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateEmailSignature = () => {
         if (!cardData) return;
         const inputs = cardData.inputs || {};
-        const name = inputs['input-name'] || 'الاسم';
+        const name = inputs['input-name'] || i18n.defaultName;
         const tagline = inputs['input-tagline'] || '';
         const photoUrl = cardData.imageUrls.photo || 'https://via.placeholder.com/80';
         const cardUrl = window.location.href;
@@ -64,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <h3 style="margin: 0; font-size: 18px; color: #2a3d54; font-weight: bold;">${name}</h3>
                             <p style="margin: 4px 0; font-size: 14px; color: #666;">${tagline}</p>
                             <p style="margin: 8px 0 0 0;">
-                                <a href="${cardUrl}" style="background-color: #4da6ff; color: #ffffff; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; display: inline-block;">عرض بطاقة العمل &rarr;</a>
+                                <a href="${cardUrl}" style="background-color: #4da6ff; color: #ffffff; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; display: inline-block;">${i18n.viewBusinessCard}</a>
                             </p>
                         </td>
                     </tr>
@@ -76,11 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const clipboardItem = new ClipboardItem({ "text/html": blob });
 
         navigator.clipboard.write([clipboardItem]).then(() => {
-            alert("✅ تم نسخ التوقيع!\n\nيمكنك الآن الذهاب إلى إعدادات بريدك الإلكتروني (Outlook, Gmail) ولصق التوقيع هناك.");
+            alert(i18n.signatureCopied);
             trackClick('save_email_signature');
         }).catch(err => {
             console.error("Copy failed:", err);
-            alert("تعذر النسخ التلقائي. يرجى المحاولة من متصفح آخر.");
+            alert(i18n.copyFailed);
         });
     };
 
@@ -188,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = `
                 <div class="no-links-message" style="margin-top: 20px; text-align: center; color: var(--text-secondary);">
                     <i class="fas fa-eye-slash" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
-                    <p>صاحب البطاقة اختار عدم إظهار معلومات الاتصال هنا.</p>
+                    <p>${i18n.ownerHiddenContact}</p>
                 </div>
             `;
             const h2 = container.previousElementSibling;
@@ -281,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (container.children.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">لا توجد روابط متاحة</p>';
+            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">${i18n.noLinksAvailable}</p>`;
         }
     };
 
@@ -566,7 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await loadScript(SCRIPT_URLS.html2canvas);
         } catch (error) {
-            throw new Error('فشل تحميل مكتبة التقاط الصور');
+            throw new Error(i18n.failedLoadHtml2canvas);
         }
 
         const frontCardRenderArea = document.getElementById('front-card');
@@ -577,7 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const flipBtn = document.getElementById('viewer-flip-btn');
 
         if (!frontCardRenderArea || !backCardRenderArea || !frontDisplay || !backDisplay || !flipWrapper || !flipBtn) {
-            throw new Error('لم يتم العثور على عناصر البطاقة أو حاوية العرض');
+            throw new Error(i18n.cardElementsNotFound);
         }
 
         frontCardRenderArea.style.visibility = 'visible';
@@ -595,8 +664,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
             const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
 
-            frontDisplay.innerHTML = `<img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="الوجه الأمامي للبطاقة">`;
-            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="الوجه الخلفي للبطاقة" ${backImageStyle}>`;
+            frontDisplay.innerHTML = `<img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardFront}">`;
+            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardBack}" ${backImageStyle}>`;
 
             const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
             flipWrapper.addEventListener('click', flipFn);
@@ -606,13 +675,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             frontCardRenderArea.style.visibility = 'hidden';
             backCardRenderArea.style.visibility = 'hidden';
-            throw new Error('فشل التقاط صور البطاقة');
+            throw new Error(i18n.failedCaptureCardImages);
         }
     };
 
     const showLoadingError = (message) => {
         if (loader) {
-            loader.innerHTML = `<p style="color: #dc3545; font-weight: bold;">خطأ في التحميل:</p><p>${message || 'حدث خطأ غير متوقع.'}</p>`;
+            loader.innerHTML = `<p style="color: #dc3545; font-weight: bold;">${i18n.loadingError}</p><p>${message || i18n.unexpectedError}</p>`;
             loader.style.display = 'flex'; loader.style.flexDirection = 'column'; loader.style.alignItems = 'center'; loader.style.justifyContent = 'center';
         }
         if (viewerContainer) viewerContainer.style.display = 'none';
@@ -637,7 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const processCardData = async (data) => {
         if (!data || !data.inputs) {
-            showLoadingError('لم نتمكن من تحميل بيانات البطاقة أو أن البيانات غير صالحة.');
+            showLoadingError(i18n.couldNotLoadCardData);
             return;
         }
 
@@ -668,15 +737,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // --- [END] ---
 
-            if (name && tagline) document.title = `عرض بطاقة: ${name} - ${tagline}`;
-            else if (name) document.title = `عرض بطاقة: ${name}`;
+            if (name && tagline) document.title = i18n.viewCard(name, tagline);
+            else if (name) document.title = i18n.viewCard(name, '');
 
             const frontDisplay = document.getElementById('card-front-display');
             const backDisplay = document.getElementById('card-back-display');
             const flipWrapper = document.getElementById('cards-wrapper-viewer');
             const flipBtn = document.getElementById('viewer-flip-btn');
 
-            if (!frontDisplay || !backDisplay || !flipWrapper || !flipBtn) throw new Error("حاوية عرض صور البطاقة غير موجودة!");
+            if (!frontDisplay || !backDisplay || !flipWrapper || !flipBtn) throw new Error(i18n.displayContainerNotFound);
 
             const imageUrls = data.imageUrls || {};
             const capturedFront = imageUrls.capturedFront;
@@ -686,8 +755,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
                 const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
 
-                frontDisplay.innerHTML = `<img src="${capturedFront}" alt="الوجه الأمامي للبطاقة" loading="lazy">`;
-                backDisplay.innerHTML = `<img src="${capturedBack}" alt="الوجه الخلفي للبطاقة" loading="lazy" ${backImageStyle}>`;
+                frontDisplay.innerHTML = `<img src="${capturedFront}" alt="${i18n.cardFront}" loading="lazy">`;
+                backDisplay.innerHTML = `<img src="${capturedBack}" alt="${i18n.cardBack}" loading="lazy" ${backImageStyle}>`;
 
                 const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
                 flipWrapper.addEventListener('click', flipFn);
@@ -710,7 +779,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (viewerContainer) viewerContainer.style.display = 'block';
 
         } catch (error) {
-            showLoadingError(error.message || 'حدث خطأ أثناء معالجة البطاقة.');
+            showLoadingError(error.message || i18n.errorProcessingCard);
         }
     };
 
@@ -726,7 +795,7 @@ document.addEventListener('DOMContentLoaded', () => {
             saveVcfBtn.onclick = () => {
                 try {
                     const vcfData = getVCardString();
-                    if (!vcfData || vcfData.length < 20) { alert("لا توجد بيانات كافية لحفظ جهة الاتصال."); return; }
+                    if (!vcfData || vcfData.length < 20) { alert(i18n.noContactData); return; }
                     const blob = new Blob([vcfData], { type: 'text/vcard;charset=utf-8' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
@@ -738,7 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.removeChild(link);
                     URL.revokeObjectURL(url);
                     trackClick('save_vcf'); // تتبع
-                } catch (e) { alert("حدث خطأ أثناء تجهيز ملف جهة الاتصال."); }
+                } catch (e) { alert(i18n.contactFilePrepError); }
             };
         }
 
@@ -763,8 +832,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.click();
                     document.body.removeChild(link);
                     trackClick(`save_${cardFace}_png`); // تتبع
-                } catch (e) { alert(`حدث خطأ أثناء تجهيز صورة الواجهة.`); }
-            } else { alert(`لم يتم العثور على صورة البطاقة.`); }
+                } catch (e) { alert(i18n.imagePreparationError); }
+            } else { alert(i18n.cardImageNotFound); }
         };
 
         if (saveFrontPngBtn) saveFrontPngBtn.onclick = () => downloadCapturedImage('front');
@@ -776,12 +845,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const backImgElement = document.getElementById('card-back-display')?.querySelector('img');
 
                 if (!frontImgElement || !frontImgElement.src || !backImgElement || !backImgElement.src) {
-                    alert("لم يتم العثور على صور البطاقة.");
+                    alert(i18n.cardImagesNotFound);
                     return;
                 }
 
                 savePdfBtn.disabled = true;
-                savePdfBtn.textContent = 'جاري الإنشاء...';
+                savePdfBtn.textContent = i18n.creatingPdf;
 
                 try {
                     await loadScript(SCRIPT_URLS.jspdf);
@@ -805,9 +874,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const filenameBase = (cardData && cardData.inputs && cardData.inputs['input-name'] ? cardData.inputs['input-name'] : 'card').replace(/[^a-z0-9]/gi, '_').toLowerCase();
                     doc.save(`${filenameBase}.pdf`);
                     trackClick('save_pdf'); // تتبع
-                } catch (error) { alert("حدث خطأ أثناء إنشاء ملف PDF."); } finally {
+                } catch (error) { alert(i18n.pdfCreationError); } finally {
                     savePdfBtn.disabled = false;
-                    savePdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> حفظ كـ PDF';
+                    savePdfBtn.innerHTML = i18n.savePdf;
                 }
             };
         }
@@ -847,21 +916,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     cardId = new URLSearchParams(window.location.search).get('id');
                 }
 
-                if (!cardId) throw new Error('لم يتم العثور على معرف البطاقة.');
+                if (!cardId) throw new Error(i18n.cardIdNotFound);
 
                 const apiUrl = `${API_BASE_URL}/api/get-design/${cardId}`;
                 const response = await fetch(apiUrl);
 
-                if (!response.ok) throw new Error(`فشل تحميل بيانات البطاقة`);
+                if (!response.ok) throw new Error(i18n.failedLoadCardData);
                 data = await response.json();
             }
 
-            if (!data || typeof data !== 'object' || !data.inputs) throw new Error("البيانات المستلمة غير صالحة.");
+            if (!data || typeof data !== 'object' || !data.inputs) throw new Error(i18n.receivedDataInvalid);
 
             await processCardData(data);
 
         } catch (error) {
-            showLoadingError(error.message || 'حدث خطأ غير متوقع.');
+            showLoadingError(error.message || i18n.unexpectedError);
         }
     };
 
