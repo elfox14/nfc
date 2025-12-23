@@ -149,26 +149,85 @@
     <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/">
     <link rel="icon" id="favicon" href="mcprime-logo-transparent.png" type="image/png">
 
-    <!-- Preconnect & Preload -->
+    <!-- Preconnect for external resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Preload removed - logo now inline SVG -->
-    <link rel="preload"
-        href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
-        as="style">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
-    <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-    <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="/nfc/homepage.css">
-
-    <!-- Language Switcher -->
-    <script src="/nfc/lang-switcher.js" defer></script>
-
+    <!-- Critical CSS - Inline for faster initial render -->
     <style>
+        /* Critical CSS for above-the-fold content */
+        :root {
+            --primary-color: #4da6ff;
+            --background-color: #1c2a3b;
+            --surface-color: #243447;
+            --text-primary-color: #e6f0f7;
+            --text-secondary-color: #bcc9d4;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-primary-color);
+            font-family: 'Tajawal', Arial, sans-serif;
+            line-height: 1.7;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 15px 0;
+            background: transparent;
+        }
+
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 100px;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(28, 42, 59, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(77, 166, 255, 0.3);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         .lang-btn {
             background: rgba(77, 166, 255, 0.2);
             border: 1px solid var(--primary-color);
@@ -187,6 +246,32 @@
             color: white;
         }
     </style>
+
+    <!-- Fonts - Preload and async load -->
+    <link rel="preload"
+        href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
+        as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
+            rel="stylesheet">
+    </noscript>
+
+    <!-- Font Awesome - Load async for performance -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    </noscript>
+
+    <!-- Main Stylesheet - Load async -->
+    <link rel="preload" href="/nfc/homepage.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/nfc/homepage.css">
+    </noscript>
+
+    <!-- Language Switcher -->
+    <script src="/nfc/lang-switcher.js" defer></script>
 </head>
 
 <body>
@@ -196,6 +281,26 @@
         <div class="loading-spinner" aria-hidden="true"></div>
         <p class="loading-text">جارٍ التحميل...</p>
     </div>
+
+    <!-- Reading Progress Bar -->
+    <div class="reading-progress" id="reading-progress"></div>
+
+    <!-- Floating CTA Button -->
+    <a href="/nfc/editor.html" class="floating-cta" id="floating-cta">
+        <i class="fas fa-rocket"></i>
+        <span>صمم بطاقتك الآن</span>
+    </a>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="back-to-top" aria-label="العودة للأعلى">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="theme-toggle" aria-label="تبديل الوضع الليلي/النهاري">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+    </button>
 
     <!-- Navbar -->
     <nav class="navbar" id="navbar">
@@ -242,27 +347,26 @@
                             <span>MC PRIME</span>
                         </div>
                     </div>
+                    <!-- Trust Badges -->
+                    <div class="trust-badges reveal">
+                        <div class="trust-badge">
+                            <i class="fas fa-users"></i>
+                            <span><span class="badge-number">+5000</span> مستخدم</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>بياناتك آمنة 100%</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span>مجاني بالكامل</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>تحديثات لا محدودة</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Statistics Section -->
-        <section class="stats-section" aria-label="إحصائيات">
-            <div class="stat-item reveal">
-                <span class="stat-number" data-target="10000">0</span>
-                <span class="stat-label">بطاقة تم إنشاؤها</span>
-            </div>
-            <div class="stat-item reveal">
-                <span class="stat-number" data-target="5000">0</span>
-                <span class="stat-label">مستخدم سعيد</span>
-            </div>
-            <div class="stat-item reveal">
-                <span class="stat-number" data-target="50">0</span>
-                <span class="stat-label">قالب جاهز</span>
-            </div>
-            <div class="stat-item reveal">
-                <span class="stat-number" data-target="99">0</span>
-                <span class="stat-label">% رضا العملاء</span>
             </div>
         </section>
 
@@ -336,36 +440,66 @@
                 <p style="text-align: center; color: var(--text-secondary-color); margin-bottom: 2rem;">
                     استلهم من إبداعات مجتمعنا واستخدم أي تصميم كنقطة انطلاق
                 </p>
-                <div class="gallery-preview-grid reveal">
-                    <div class="gallery-preview-card">
-                        <div
-                            style="height: 150px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
-                            <i class="fas fa-user-tie"></i>
+
+                <!-- Gallery Slider -->
+                <div class="gallery-slider-wrapper reveal">
+                    <div class="gallery-slider" id="gallery-slider">
+                        <div class="gallery-preview-card">
+                            <div
+                                style="height: 150px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="card-name">تصميم احترافي</div>
                         </div>
-                        <div class="card-name">تصميم احترافي</div>
-                    </div>
-                    <div class="gallery-preview-card">
-                        <div
-                            style="height: 150px; background: linear-gradient(135deg, #f093fb, #f5576c); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
-                            <i class="fas fa-palette"></i>
+                        <div class="gallery-preview-card">
+                            <div
+                                style="height: 150px; background: linear-gradient(135deg, #f093fb, #f5576c); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                                <i class="fas fa-palette"></i>
+                            </div>
+                            <div class="card-name">تصميم إبداعي</div>
                         </div>
-                        <div class="card-name">تصميم إبداعي</div>
-                    </div>
-                    <div class="gallery-preview-card">
-                        <div
-                            style="height: 150px; background: linear-gradient(135deg, #4facfe, #00f2fe); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
-                            <i class="fas fa-briefcase"></i>
+                        <div class="gallery-preview-card">
+                            <div
+                                style="height: 150px; background: linear-gradient(135deg, #4facfe, #00f2fe); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div class="card-name">تصميم شركات</div>
                         </div>
-                        <div class="card-name">تصميم شركات</div>
-                    </div>
-                    <div class="gallery-preview-card">
-                        <div
-                            style="height: 150px; background: linear-gradient(135deg, #43e97b, #38f9d7); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
-                            <i class="fas fa-leaf"></i>
+                        <div class="gallery-preview-card">
+                            <div
+                                style="height: 150px; background: linear-gradient(135deg, #43e97b, #38f9d7); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                                <i class="fas fa-leaf"></i>
+                            </div>
+                            <div class="card-name">تصميم عصري</div>
                         </div>
-                        <div class="card-name">تصميم عصري</div>
+                        <div class="gallery-preview-card">
+                            <div
+                                style="height: 150px; background: linear-gradient(135deg, #fa709a, #fee140); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <div class="card-name">تصميم مصور</div>
+                        </div>
+                        <div class="gallery-preview-card">
+                            <div
+                                style="height: 150px; background: linear-gradient(135deg, #a18cd1, #fbc2eb); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="card-name">تصميم مطور</div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Slider Navigation -->
+                <div class="slider-nav">
+                    <button class="slider-btn" id="slider-prev" aria-label="السابق">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="slider-btn" id="slider-next" aria-label="التالي">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                <div class="slider-dots" id="slider-dots"></div>
+
                 <div style="text-align: center; margin-top: 2rem;">
                     <a href="/nfc/gallery.html" class="btn btn-primary">شاهد المعرض الكامل</a>
                 </div>
@@ -376,22 +510,51 @@
         <section id="generator-cta" class="generator-cta-section" aria-labelledby="generator-title">
             <div class="container">
                 <h2 id="generator-title" class="reveal">جرّب المحرر بنفسك</h2>
-                <p class="reveal" style="color: var(--text-secondary-color); margin-bottom: 2rem;">
+                <p class="reveal" style="color: var(--text-secondary-color); margin-bottom: 1.5rem;">
                     شاهد مدى سهولة تصميم بطاقتك الاحترافية. انقر أدناه للانتقال إلى المحرر والبدء فوراً.
                 </p>
+
+                <!-- CTA Badges -->
+                <div class="cta-badges reveal">
+                    <span class="cta-badge cta-badge-free">
+                        <i class="fas fa-gift"></i> مجاني 100%
+                    </span>
+                    <span class="cta-badge cta-badge-time">
+                        <i class="fas fa-clock"></i> دقيقتين فقط
+                    </span>
+                    <span class="cta-badge cta-badge-easy">
+                        <i class="fas fa-magic"></i> بدون تسجيل
+                    </span>
+                </div>
+
                 <div class="generator-preview-container reveal">
-                    <a href="/nfc/editor.html" title="الانتقال إلى محرر تصميم البطاقات">
-                        <div class="generator-preview-img"
-                            style="width: 100%; max-width: 800px; height: 400px; background: linear-gradient(145deg, #243447, #1c2a3b); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; border: 2px solid var(--primary-color);">
-                            <i class="fas fa-edit" style="font-size: 4rem; color: var(--primary-color);"></i>
-                            <span style="color: white; font-size: 1.5rem; font-weight: 600;">محرر التصميم
-                                التفاعلي</span>
-                            <span style="color: var(--text-secondary-color);">انقر للبدء</span>
+                    <a href="/nfc/editor.html" title="الانتقال إلى محرر تصميم البطاقات" class="editor-preview-link">
+                        <div class="editor-preview-card">
+                            <div class="editor-preview-mockup">
+                                <div class="mockup-toolbar">
+                                    <span class="mockup-dot"></span>
+                                    <span class="mockup-dot"></span>
+                                    <span class="mockup-dot"></span>
+                                </div>
+                                <div class="mockup-content">
+                                    <div class="mockup-sidebar"></div>
+                                    <div class="mockup-main">
+                                        <div class="mockup-card-preview"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="editor-preview-overlay">
+                                <i class="fas fa-play-circle"></i>
+                                <span>ابدأ التصميم الآن</span>
+                            </div>
                         </div>
                     </a>
                 </div>
-                <a href="/nfc/editor.html" class="btn btn-primary btn-lg reveal" style="margin-top: 2rem;">انتقل إلى
-                    محرر التصميم</a>
+
+                <a href="/nfc/editor.html" class="btn btn-primary btn-lg cta-main-btn reveal">
+                    <i class="fas fa-rocket"></i>
+                    انتقل إلى محرر التصميم
+                </a>
             </div>
         </section>
 
@@ -400,7 +563,7 @@
             <div class="container">
                 <h2 id="use-cases-title">حلول مخصصة لكل مجال</h2>
                 <div class="use-cases-grid">
-                    <a href="/nfc/nfc-for-freelancers">
+                    <a href="/nfc/nfc-for-freelancers.html">
                         <article class="use-case-card reveal">
                             <div class="feature-icon" aria-hidden="true">💼</div>
                             <h3>للمستقلين</h3>
@@ -412,12 +575,12 @@
                         <h3>للشركات</h3>
                         <p>حلول موحدة ومخصصة حسب الدولة.</p>
                         <div class="country-links">
-                            <a href="/nfc/nfc-for-companies-egypt">مصر</a>
-                            <a href="/nfc/nfc-for-companies-saudi">السعودية</a>
-                            <a href="/nfc/nfc-for-companies-uae">الإمارات</a>
+                            <a href="/nfc/nfc-for-companies-egypt.html">مصر</a>
+                            <a href="/nfc/nfc-for-companies-saudi.html">السعودية</a>
+                            <a href="/nfc/nfc-for-companies-uae.html">الإمارات</a>
                         </div>
                     </article>
-                    <a href="/nfc/blog-digital-menus-for-restaurants">
+                    <a href="/nfc/nfc-for-restaurants.html">
                         <article class="use-case-card reveal">
                             <div class="feature-icon" aria-hidden="true">🍴</div>
                             <h3>للمطاعم</h3>
@@ -728,6 +891,129 @@
                     summary.setAttribute('aria-expanded', !isExpanded);
                 });
             }
+        });
+
+        // ========================================
+        // INTERACTIVE ENHANCEMENTS
+        // ========================================
+
+        // Reading Progress Bar
+        const progressBar = document.getElementById('reading-progress');
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            progressBar.style.width = scrollPercent + '%';
+        });
+
+        // Floating CTA & Back to Top visibility
+        const floatingCTA = document.getElementById('floating-cta');
+        const backToTop = document.getElementById('back-to-top');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 500) {
+                floatingCTA.classList.add('visible');
+                backToTop.classList.add('visible');
+            } else {
+                floatingCTA.classList.remove('visible');
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // Back to Top click
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Gallery Slider
+        const slider = document.getElementById('gallery-slider');
+        const prevBtn = document.getElementById('slider-prev');
+        const nextBtn = document.getElementById('slider-next');
+        const dotsContainer = document.getElementById('slider-dots');
+
+        if (slider && prevBtn && nextBtn) {
+            const cards = slider.querySelectorAll('.gallery-preview-card');
+            const cardWidth = 280 + 24; // card width + gap
+            let currentIndex = 0;
+            const maxIndex = Math.max(0, cards.length - Math.floor(slider.parentElement.offsetWidth / cardWidth));
+
+            // Create dots
+            cards.forEach((_, i) => {
+                if (i <= maxIndex) {
+                    const dot = document.createElement('span');
+                    dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
+                    dot.addEventListener('click', () => slideTo(i));
+                    dotsContainer.appendChild(dot);
+                }
+            });
+
+            function updateDots() {
+                dotsContainer.querySelectorAll('.slider-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === currentIndex);
+                });
+            }
+
+            function slideTo(index) {
+                currentIndex = Math.max(0, Math.min(index, maxIndex));
+                slider.style.transform = `translateX(${currentIndex * cardWidth}px)`;
+                updateDots();
+            }
+
+            prevBtn.addEventListener('click', () => slideTo(currentIndex - 1));
+            nextBtn.addEventListener('click', () => slideTo(currentIndex + 1));
+
+            // Touch/drag support
+            let startX, isDragging = false;
+            slider.addEventListener('mousedown', (e) => { startX = e.pageX; isDragging = true; });
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const diff = startX - e.pageX;
+                if (Math.abs(diff) > 50) {
+                    slideTo(currentIndex + (diff > 0 ? 1 : -1));
+                    isDragging = false;
+                }
+            });
+            slider.addEventListener('mouseup', () => isDragging = false);
+            slider.addEventListener('mouseleave', () => isDragging = false);
+
+            // Touch events
+            slider.addEventListener('touchstart', (e) => { startX = e.touches[0].pageX; });
+            slider.addEventListener('touchmove', (e) => {
+                const diff = startX - e.touches[0].pageX;
+                if (Math.abs(diff) > 50) {
+                    slideTo(currentIndex + (diff > 0 ? 1 : -1));
+                    startX = e.touches[0].pageX;
+                }
+            });
+
+            // Auto-slide
+            setInterval(() => {
+                if (currentIndex >= maxIndex) currentIndex = -1;
+                slideTo(currentIndex + 1);
+            }, 4000);
+        }
+
+        // ========================================
+        // THEME TOGGLE (Dark/Light Mode)
+        // ========================================
+        const themeToggle = document.getElementById('theme-toggle');
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+        // Check for saved theme preference or use system preference
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'light') {
+            document.body.classList.add('light-mode');
+        } else if (currentTheme === 'dark') {
+            document.body.classList.remove('light-mode');
+        } else if (!prefersDarkScheme.matches) {
+            // If no saved preference and system prefers light, use light mode
+            document.body.classList.add('light-mode');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const theme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+            localStorage.setItem('theme', theme);
         });
     </script>
 
