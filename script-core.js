@@ -1,12 +1,12 @@
 'use strict';
 
 const Config = {
-    API_BASE_URL: 'https://nfc-vjy6.onrender.com', 
-    LOCAL_STORAGE_KEY: 'digitalCardEditorState_v20', 
+    API_BASE_URL: 'https://nfc-vjy6.onrender.com',
+    LOCAL_STORAGE_KEY: 'digitalCardEditorState_v20',
     GALLERY_STORAGE_KEY: 'digitalCardGallery_v2',
-    MAX_LOGO_SIZE_MB: 10, 
+    MAX_LOGO_SIZE_MB: 10,
     MAX_BG_SIZE_MB: 10,
-    
+
     SCRIPT_URLS: {
         html2canvas: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
         jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
@@ -14,12 +14,12 @@ const Config = {
         jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.0/jszip.min.js',
         qrcode: 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
     },
-    
+
     defaultState: {
         currentLanguage: 'ar', // NEW: To manage the current language
         inputs: {
             'layout-select': 'classic',
-            'layout-select-visual': 'classic', 
+            'layout-select-visual': 'classic',
             'input-logo': 'mcprime-logo-transparent.png',
             'logo-size': 25,
             'logo-opacity': 1,
@@ -41,7 +41,7 @@ const Config = {
             'tagline-font-size': 14,
             'tagline-color': '#4da6ff',
             'tagline-font': 'Tajawal, sans-serif',
-            
+
             'toggle-phone-buttons': true,
             'phone-text-layout': 'row',
             'phone-text-size': 14,
@@ -109,41 +109,41 @@ const Config = {
     },
 
     THEMES: {
-        // --- التصاميم الأصلية ---
-        'deep-sea': { name: 'بحر عميق', gradient: ['#2a3d54', '#223246'], values: { textPrimary: '#e6f0f7', taglineColor: '#4da6ff', backButtonBg: '#364f6b', backButtonText: '#aab8c2', phoneBtnBg: '#4da6ff', phoneBtnText: '#ffffff'}},
-        'modern-light': { name: 'أبيض حديث', gradient: ['#e9e9e9', '#ffffff'], values: { textPrimary: '#121212', taglineColor: '#007BFF', backButtonBg: '#f0f2f5', backButtonText: '#343a40', phoneBtnBg: '#007BFF', phoneBtnText: '#ffffff'}},
-        'forest-whisper': { name: 'همس الغابة', gradient: ['#234d20', '#364935'], values: { textPrimary: '#f0f3f0', taglineColor: '#77ab59', backButtonBg: '#4a785f', backButtonText: '#f0f3f0', phoneBtnBg: '#77ab59', phoneBtnText: '#f0f3f0'}},
-        'sunset-gradient': { name: 'غروب الشمس', gradient: ['#ff8c42', '#ff5f6d'], values: { textPrimary: '#ffffff', taglineColor: '#ffcc80', backButtonBg: '#c44d56', backButtonText: '#ffffff', phoneBtnBg: 'rgba(255,255,255,0.2)', phoneBtnText: '#ffffff'}},
-        'corporate-elegance': { name: 'أناقة الشركات', gradient: ['#f8f9fa', '#e9ecef'], values: { textPrimary: '#212529', taglineColor: '#0056b3', backButtonBg: '#343a40', backButtonText: '#ffffff', phoneBtnBg: '#0056b3', phoneBtnText: '#ffffff'}},
-        'night-neon': { name: 'النيون الليلي', gradient: ['#0d0d0d', '#1a1a1a'], values: { textPrimary: '#f0f0f0', taglineColor: '#39ff14', backButtonBg: '#222222', backButtonText: '#00ffdd', phoneBtnBg: 'transparent', phoneBtnText: '#39ff14'}},
-        
-        // --- التصاميم الجديدة ---
-        'royal-gold': { name: 'ملكي ذهبي', gradient: ['#141E30', '#243B55'], values: { textPrimary: '#F2C94C', taglineColor: '#F2994A', backButtonBg: '#1F2E40', backButtonText: '#F2C94C', phoneBtnBg: '#F2C94C', phoneBtnText: '#141E30'}},
-        'crimson-red': { name: 'أحمر قرمزي', gradient: ['#870000', '#190A05'], values: { textPrimary: '#FFFFFF', taglineColor: '#FF6B6B', backButtonBg: '#4A0000', backButtonText: '#FFC3C3', phoneBtnBg: '#FF0000', phoneBtnText: '#FFFFFF'}},
-        'purple-haze': { name: 'ضباب بنفسجي', gradient: ['#4568DC', '#B06AB3'], values: { textPrimary: '#FFFFFF', taglineColor: '#E0C3FC', backButtonBg: 'rgba(255,255,255,0.2)', backButtonText: '#FFFFFF', phoneBtnBg: '#B06AB3', phoneBtnText: '#FFFFFF'}},
-        'teal-tech': { name: 'تكنولوجيا', gradient: ['#0F2027', '#203A43', '#2C5364'], values: { textPrimary: '#00FFFF', taglineColor: '#7FFFD4', backButtonBg: '#1C313A', backButtonText: '#00FFFF', phoneBtnBg: 'transparent', phoneBtnText: '#00FFFF'}},
-        'desert-sand': { name: 'رمال الصحراء', gradient: ['#C9D6FF', '#E2E2E2'], values: { textPrimary: '#5D4E3E', taglineColor: '#8E7C68', backButtonBg: '#D1C4B5', backButtonText: '#5D4E3E', phoneBtnBg: '#8E7C68', phoneBtnText: '#FFFFFF'}},
-        'midnight-blue': { name: 'أزرق منتصف الليل', gradient: ['#000428', '#004e92'], values: { textPrimary: '#E0E0E0', taglineColor: '#4CA1AF', backButtonBg: '#002651', backButtonText: '#4CA1AF', phoneBtnBg: '#004e92', phoneBtnText: '#FFFFFF'}},
-        'cherry-blossom': { name: 'أزهار الكرز', gradient: ['#FBD3E9', '#BB377D'], values: { textPrimary: '#5D1438', taglineColor: '#FFFFFF', backButtonBg: 'rgba(255,255,255,0.3)', backButtonText: '#5D1438', phoneBtnBg: '#BB377D', phoneBtnText: '#FFFFFF'}},
-        'carbon-fiber': { name: 'ألياف الكربون', gradient: ['#232526', '#414345'], values: { textPrimary: '#EAEAEA', taglineColor: '#BDC3C7', backButtonBg: '#595B5D', backButtonText: '#FFFFFF', phoneBtnBg: '#343638', phoneBtnText: '#FFFFFF'}}
+        // --- Original Designs ---
+        'deep-sea': { name: 'بحر عميق', nameEn: 'Deep Sea', gradient: ['#2a3d54', '#223246'], values: { textPrimary: '#e6f0f7', taglineColor: '#4da6ff', backButtonBg: '#364f6b', backButtonText: '#aab8c2', phoneBtnBg: '#4da6ff', phoneBtnText: '#ffffff' } },
+        'modern-light': { name: 'أبيض حديث', nameEn: 'Modern Light', gradient: ['#e9e9e9', '#ffffff'], values: { textPrimary: '#121212', taglineColor: '#007BFF', backButtonBg: '#f0f2f5', backButtonText: '#343a40', phoneBtnBg: '#007BFF', phoneBtnText: '#ffffff' } },
+        'forest-whisper': { name: 'همس الغابة', nameEn: 'Forest Whisper', gradient: ['#234d20', '#364935'], values: { textPrimary: '#f0f3f0', taglineColor: '#77ab59', backButtonBg: '#4a785f', backButtonText: '#f0f3f0', phoneBtnBg: '#77ab59', phoneBtnText: '#f0f3f0' } },
+        'sunset-gradient': { name: 'غروب الشمس', nameEn: 'Sunset Gradient', gradient: ['#ff8c42', '#ff5f6d'], values: { textPrimary: '#ffffff', taglineColor: '#ffcc80', backButtonBg: '#c44d56', backButtonText: '#ffffff', phoneBtnBg: 'rgba(255,255,255,0.2)', phoneBtnText: '#ffffff' } },
+        'corporate-elegance': { name: 'أناقة الشركات', nameEn: 'Corporate Elegance', gradient: ['#f8f9fa', '#e9ecef'], values: { textPrimary: '#212529', taglineColor: '#0056b3', backButtonBg: '#343a40', backButtonText: '#ffffff', phoneBtnBg: '#0056b3', phoneBtnText: '#ffffff' } },
+        'night-neon': { name: 'النيون الليلي', nameEn: 'Night Neon', gradient: ['#0d0d0d', '#1a1a1a'], values: { textPrimary: '#f0f0f0', taglineColor: '#39ff14', backButtonBg: '#222222', backButtonText: '#00ffdd', phoneBtnBg: 'transparent', phoneBtnText: '#39ff14' } },
+
+        // --- New Designs ---
+        'royal-gold': { name: 'ملكي ذهبي', nameEn: 'Royal Gold', gradient: ['#141E30', '#243B55'], values: { textPrimary: '#F2C94C', taglineColor: '#F2994A', backButtonBg: '#1F2E40', backButtonText: '#F2C94C', phoneBtnBg: '#F2C94C', phoneBtnText: '#141E30' } },
+        'crimson-red': { name: 'أحمر قرمزي', nameEn: 'Crimson Red', gradient: ['#870000', '#190A05'], values: { textPrimary: '#FFFFFF', taglineColor: '#FF6B6B', backButtonBg: '#4A0000', backButtonText: '#FFC3C3', phoneBtnBg: '#FF0000', phoneBtnText: '#FFFFFF' } },
+        'purple-haze': { name: 'ضباب بنفسجي', nameEn: 'Purple Haze', gradient: ['#4568DC', '#B06AB3'], values: { textPrimary: '#FFFFFF', taglineColor: '#E0C3FC', backButtonBg: 'rgba(255,255,255,0.2)', backButtonText: '#FFFFFF', phoneBtnBg: '#B06AB3', phoneBtnText: '#FFFFFF' } },
+        'teal-tech': { name: 'تكنولوجيا', nameEn: 'Teal Tech', gradient: ['#0F2027', '#203A43', '#2C5364'], values: { textPrimary: '#00FFFF', taglineColor: '#7FFFD4', backButtonBg: '#1C313A', backButtonText: '#00FFFF', phoneBtnBg: 'transparent', phoneBtnText: '#00FFFF' } },
+        'desert-sand': { name: 'رمال الصحراء', nameEn: 'Desert Sand', gradient: ['#C9D6FF', '#E2E2E2'], values: { textPrimary: '#5D4E3E', taglineColor: '#8E7C68', backButtonBg: '#D1C4B5', backButtonText: '#5D4E3E', phoneBtnBg: '#8E7C68', phoneBtnText: '#FFFFFF' } },
+        'midnight-blue': { name: 'أزرق منتصف الليل', nameEn: 'Midnight Blue', gradient: ['#000428', '#004e92'], values: { textPrimary: '#E0E0E0', taglineColor: '#4CA1AF', backButtonBg: '#002651', backButtonText: '#4CA1AF', phoneBtnBg: '#004e92', phoneBtnText: '#FFFFFF' } },
+        'cherry-blossom': { name: 'أزهار الكرز', nameEn: 'Cherry Blossom', gradient: ['#FBD3E9', '#BB377D'], values: { textPrimary: '#5D1438', taglineColor: '#FFFFFF', backButtonBg: 'rgba(255,255,255,0.3)', backButtonText: '#5D1438', phoneBtnBg: '#BB377D', phoneBtnText: '#FFFFFF' } },
+        'carbon-fiber': { name: 'ألياف الكربون', nameEn: 'Carbon Fiber', gradient: ['#232526', '#414345'], values: { textPrimary: '#EAEAEA', taglineColor: '#BDC3C7', backButtonBg: '#595B5D', backButtonText: '#FFFFFF', phoneBtnBg: '#343638', phoneBtnText: '#FFFFFF' } }
     },
-    
-    SOCIAL_PLATFORMS: { 
-        instagram: { name: 'انستغرام', icon: 'fab fa-instagram', prefix: 'https://instagram.com/' }, 
-        x: { name: 'X (تويتر)', icon: 'fab fa-xing', prefix: 'https://x.com/' }, 
-        telegram: { name: 'تيليجرام', icon: 'fab fa-telegram', prefix: 'https://t.me/' }, 
-        tiktok: { name: 'تيك توك', icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' }, 
-        snapchat: { name: 'سناب شات', icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' }, 
-        youtube: { name: 'يوتيوب', icon: 'fab fa-youtube', prefix: 'https://youtube.com/' }, 
-        pinterest: { name: 'بينترست', icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' } 
+
+    SOCIAL_PLATFORMS: {
+        instagram: { name: 'انستغرام', nameEn: 'Instagram', icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
+        x: { name: 'X (تويتر)', nameEn: 'X (Twitter)', icon: 'fab fa-xing', prefix: 'https://x.com/' },
+        telegram: { name: 'تيليجرام', nameEn: 'Telegram', icon: 'fab fa-telegram', prefix: 'https://t.me/' },
+        tiktok: { name: 'تيك توك', nameEn: 'TikTok', icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
+        snapchat: { name: 'سناب شات', nameEn: 'Snapchat', icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
+        youtube: { name: 'يوتيوب', nameEn: 'YouTube', icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
+        pinterest: { name: 'بينترست', nameEn: 'Pinterest', icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
     },
-    
-    STATIC_CONTACT_METHODS: [ 
-        { id: 'whatsapp', icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' }, 
-        { id: 'email', icon: 'fas fa-envelope', prefix: 'mailto:' }, 
-        { id: 'website', icon: 'fas fa-globe' }, 
-        { id: 'facebook', icon: 'fab fa-facebook-f' }, 
-        { id: 'linkedin', icon: 'fab fa-linkedin-in' } 
+
+    STATIC_CONTACT_METHODS: [
+        { id: 'whatsapp', icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+        { id: 'email', icon: 'fas fa-envelope', prefix: 'mailto:' },
+        { id: 'website', icon: 'fas fa-globe' },
+        { id: 'facebook', icon: 'fab fa-facebook-f' },
+        { id: 'linkedin', icon: 'fab fa-linkedin-in' }
     ]
 };
 
@@ -151,43 +151,43 @@ const DOMElements = {}; // Filled in App.init()
 const loadedScripts = new Set();
 
 const Utils = {
-    debounce: (func, delay = 250) => { 
-        let timeoutId; 
-        return (...args) => { 
-            clearTimeout(timeoutId); 
-            timeoutId = setTimeout(() => func.apply(this, args), delay); 
-        }; 
+    debounce: (func, delay = 250) => {
+        let timeoutId;
+        return (...args) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func.apply(this, args), delay);
+        };
     },
-    
+
     playSound: (soundId) => {
         const audioEl = document.getElementById(`audio-${soundId}`); // Fixed selector
-        if (audioEl) { 
-            audioEl.currentTime = 0; 
-            audioEl.play().catch(e => console.warn("Audio play failed:", e)); 
+        if (audioEl) {
+            audioEl.currentTime = 0;
+            audioEl.play().catch(e => console.warn("Audio play failed:", e));
         }
     },
-    
-    async copyTextToClipboard(text) { 
-        try { 
-            if (navigator.clipboard && window.isSecureContext) { 
-                await navigator.clipboard.writeText(text); 
-            } else { 
-                const textArea = document.createElement('textarea'); 
-                textArea.value = text; 
-                textArea.style.position = 'absolute'; 
-                textArea.style.left = '-999999px'; 
-                document.body.prepend(textArea); 
-                textArea.select(); 
-                document.execCommand('copy'); 
-                textArea.remove(); 
-            } 
-            return true; 
-        } catch (error) { 
-            console.error('Clipboard error:', error); 
-            return false; 
-        } 
+
+    async copyTextToClipboard(text) {
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'absolute';
+                textArea.style.left = '-999999px';
+                document.body.prepend(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                textArea.remove();
+            }
+            return true;
+        } catch (error) {
+            console.error('Clipboard error:', error);
+            return false;
+        }
     },
-    
+
     loadScript(url) {
         if (loadedScripts.has(url)) return Promise.resolve();
         return new Promise((resolve, reject) => {
@@ -210,16 +210,16 @@ const HistoryManager = {
         if (this.currentIndex < this.history.length - 1) {
             this.history.splice(this.currentIndex + 1);
         }
-        
+
         // Avoid duplicates
         const newStateStr = JSON.stringify(state);
         const currentStateStr = this.currentIndex >= 0 ? JSON.stringify(this.history[this.currentIndex]) : null;
-        
+
         if (newStateStr === currentStateStr) return;
 
         this.history.push(JSON.parse(newStateStr));
         this.currentIndex++; // UPDATED: Always increment index
-        
+
         this.updateButtonStates();
     },
 
@@ -244,7 +244,7 @@ const HistoryManager = {
     updateButtonStates() {
         const undoBtn = document.getElementById('undo-btn');
         const redoBtn = document.getElementById('redo-btn');
-        if(undoBtn) undoBtn.disabled = this.currentIndex <= 0;
-        if(redoBtn) redoBtn.disabled = this.currentIndex >= this.history.length - 1;
+        if (undoBtn) undoBtn.disabled = this.currentIndex <= 0;
+        if (redoBtn) redoBtn.disabled = this.currentIndex >= this.history.length - 1;
     }
 };
