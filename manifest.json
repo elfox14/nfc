@@ -1,23 +1,56 @@
 {
-  "name": "محرر بطاقة الأعمال الرقمية",
-  "short_name": "بطاقتي الرقمية",
-  "description": "صمم واحفظ وشارك بطاقات عمل رقمية احترافية.",
-  "start_url": ".",
+  "name": "محرر بطاقة الأعمال الرقمية - MC PRIME",
+  "short_name": "MC PRIME NFC",
+  "description": "صمم واحفظ وشارك بطاقات عمل رقمية احترافية مع دعم NFC و QR Code.",
+  "start_url": "/nfc/",
+  "scope": "/nfc/",
   "display": "standalone",
   "background_color": "#1c2a3b",
-  "theme_color": "#1c2a3b",
+  "theme_color": "#4da6ff",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
   "icons": [
     {
-      "src": "https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png",
+      "src": "/nfc/mcprime-logo-transparent.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "https://www.elfoxdm.com/elfox/mcprime-logo-transparent.png",
+      "src": "/nfc/mcprime-logo-transparent.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
+    }
+  ],
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "إنشاء بطاقة جديدة",
+      "short_name": "بطاقة جديدة",
+      "url": "/nfc/editor.html",
+      "icons": [
+        {
+          "src": "/nfc/mcprime-logo-transparent.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "معرض التصاميم",
+      "short_name": "المعرض",
+      "url": "/nfc/gallery.html",
+      "icons": [
+        {
+          "src": "/nfc/mcprime-logo-transparent.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }
