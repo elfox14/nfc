@@ -3,7 +3,7 @@
 
 const Config = {
     // ... existing config ...
-    GA_MEASUREMENT_ID: 'G-XXXXXXXXXX', // Placeholder, to be replaced by Env or User
+    GA_MEASUREMENT_ID: 'G-E7G4KFZKYG', // Tracking ID
 
     API_BASE_URL: 'https://nfc-vjy6.onrender.com',
     LOCAL_STORAGE_KEY: 'digitalCardEditorState_v20',
