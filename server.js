@@ -10,6 +10,9 @@ const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
 const { body, validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const verifyToken = require('./auth-middleware');
 const { JSDOM } = require('jsdom');
 const DOMPurifyFactory = require('dompurify');
 const multer = require('multer');
@@ -40,18 +43,18 @@ app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
 app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));
 app.use(helmet.contentSecurityPolicy({
-    directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
-        mediaSrc: ["'self'", "data:"],
-        frameSrc: ["'self'", "https://www.youtube.com"],
-        connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com", "ws:", "wss:"], // **جديد: السماح باتصالات WebSocket**
-        objectSrc: ["'none'"],
-        upgradeInsecureRequests: [],
-    },
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
+    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+    fontSrc: ["'self'", "https://fonts.gstatic.com"],
+    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+    mediaSrc: ["'self'", "data:"],
+    frameSrc: ["'self'", "https://www.youtube.com"],
+    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com", "ws:", "wss:"], // **جديد: السماح باتصالات WebSocket**
+    objectSrc: ["'none'"],
+    upgradeInsecureRequests: [],
+  },
 }));
 // --- END: SECURITY HEADERS (HELMET) ---
 
@@ -63,6 +66,7 @@ app.set('view engine', 'ejs');
 const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'nfc_db';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
+const usersCollectionName = 'users'; // New Users Collection
 const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
 let db;
 
@@ -82,54 +86,54 @@ function absoluteBaseUrl(req) {
 }
 
 const FIELDS_TO_SANITIZE = [
-    'input-name', 'input-tagline',
-    'input-email', 'input-website',
-    'input-whatsapp', 'input-facebook', 'input-linkedin'
+  'input-name', 'input-tagline',
+  'input-email', 'input-website',
+  'input-whatsapp', 'input-facebook', 'input-linkedin'
 ];
 
 function sanitizeInputs(inputs) {
-    if (!inputs) return {};
-    const sanitized = { ...inputs };
-    FIELDS_TO_SANITIZE.forEach(k => {
-        if (sanitized[k]) {
-            sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
-        }
-    });
-    if (sanitized.dynamic && sanitized.dynamic.social) {
-        sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
-            ...link,
-            value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
-        }));
+  if (!inputs) return {};
+  const sanitized = { ...inputs };
+  FIELDS_TO_SANITIZE.forEach(k => {
+    if (sanitized[k]) {
+      sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
     }
-    if (sanitized.dynamic && sanitized.dynamic.phones) {
-         sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
-            ...phone,
-            value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
-        }));
-    }
-    return sanitized;
+  });
+  if (sanitized.dynamic && sanitized.dynamic.social) {
+    sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
+      ...link,
+      value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
+    }));
+  }
+  if (sanitized.dynamic && sanitized.dynamic.phones) {
+    sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
+      ...phone,
+      value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
+    }));
+  }
+  return sanitized;
 }
 
 // --- VIEWER & SEO ROUTES ---
 app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   try {
     if (!db) {
-        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        return res.status(500).send('DB not connected');
+      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+      return res.status(500).send('DB not connected');
     }
-    
-    const id = String(req.query.id); 
+
+    const id = String(req.query.id);
 
     if (!id || id === 'undefined') {
-         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-         return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
+      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+      return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
     }
 
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
     if (!doc || !doc.data) {
-        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        return res.status(404).send('Design not found or data is missing');
+      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+      return res.status(404).send('Design not found or data is missing');
     }
 
     db.collection(designsCollectionName).updateOne(
@@ -148,18 +152,18 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
 
     let contactLinksHtml = '';
     const platforms = {
-        whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
-        email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
-        website: { icon: 'fas fa-globe', prefix: 'https://' },
-        facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
-        linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
-        instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
-        x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
-        telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
-        tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
-        snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
-        youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
-        pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
+      whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+      email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
+      website: { icon: 'fas fa-globe', prefix: 'https://' },
+      facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
+      linkedin: { icon: 'fab fa-linkedin-in', prefix: 'https://linkedin.com/in/' },
+      instagram: { icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
+      x: { icon: 'fab fa-xing', prefix: 'https://x.com/' },
+      telegram: { icon: 'fab fa-telegram', prefix: 'https://t.me/' },
+      tiktok: { icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
+      snapchat: { icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
+      youtube: { icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
+      pinterest: { icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
     };
 
     const linksHTML = [];
@@ -167,17 +171,17 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
     const staticSocial = dynamicData.staticSocial || {};
 
     Object.entries(staticSocial).forEach(([key, linkData]) => {
-        if (linkData && linkData.value && platforms[key]) {
-            const platform = platforms[key];
-            const value = DOMPurify.sanitize(linkData.value);
-            let displayValue = value;
-            let fullUrl = value;
-            if (key === 'email') { fullUrl = `${platform.prefix}${value}`; }
-            else if (key === 'whatsapp') { fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`; }
-            else if (key === 'website') { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
-            else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
+      if (linkData && linkData.value && platforms[key]) {
+        const platform = platforms[key];
+        const value = DOMPurify.sanitize(linkData.value);
+        let displayValue = value;
+        let fullUrl = value;
+        if (key === 'email') { fullUrl = `${platform.prefix}${value}`; }
+        else if (key === 'whatsapp') { fullUrl = `${platform.prefix}${value.replace(/\D/g, '')}`; }
+        else if (key === 'website') { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
+        else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value; displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, ''); }
 
-             linksHTML.push(`
+        linksHTML.push(`
                 <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                     <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
                         <i class="${platform.icon}"></i>
@@ -188,16 +192,16 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
                     </button>
                 </div>
             `);
-        }
+      }
     });
 
     if (dynamicData.phones) {
-        dynamicData.phones.forEach(phone => {
-            if (phone && phone.value) {
-                const sanitizedValue = DOMPurify.sanitize(phone.value);
-                const cleanNumber = sanitizedValue.replace(/\D/g, '');
-                const fullUrl = `tel:${cleanNumber}`;
-                linksHTML.push(`
+      dynamicData.phones.forEach(phone => {
+        if (phone && phone.value) {
+          const sanitizedValue = DOMPurify.sanitize(phone.value);
+          const cleanNumber = sanitizedValue.replace(/\D/g, '');
+          const fullUrl = `tel:${cleanNumber}`;
+          linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${cleanNumber}">
                         <a href="${fullUrl}" class="contact-link">
                             <i class="fas fa-phone"></i>
@@ -208,20 +212,20 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
                         </button>
                     </div>
                 `);
-            }
-        });
+        }
+      });
     }
 
     if (dynamicData.social) {
-        dynamicData.social.forEach(link => {
-            if (link && link.value && link.platform && platforms[link.platform]) {
-                const platform = platforms[link.platform];
-                const value = DOMPurify.sanitize(link.value);
-                let displayValue = value;
-                let fullUrl = value;
-                fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
-                displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
-                linksHTML.push(`
+      dynamicData.social.forEach(link => {
+        if (link && link.value && link.platform && platforms[link.platform]) {
+          const platform = platforms[link.platform];
+          const value = DOMPurify.sanitize(link.value);
+          let displayValue = value;
+          let fullUrl = value;
+          fullUrl = !/^(https?:\/\/)/i.test(value) ? `${platform.prefix}${value}` : value;
+          displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
+          linksHTML.push(`
                     <div class="contact-link-wrapper" data-copy-value="${encodeURI(fullUrl)}">
                         <a href="${encodeURI(fullUrl)}" class="contact-link" target="_blank" rel="noopener noreferrer">
                             <i class="${platform.icon}"></i>
@@ -232,11 +236,11 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
                         </button>
                     </div>
                 `);
-            }
-        });
+        }
+      });
     }
 
-    if(linksHTML.length > 0) {
+    if (linksHTML.length > 0) {
       contactLinksHtml = `<div class="links-group">${linksHTML.join('')}</div>`;
     } else {
       contactLinksHtml = `
@@ -250,15 +254,15 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
     const imageUrls = doc.data.imageUrls || {};
     let ogImage = `${base}/nfc/og-image.png`;
     if (imageUrls.front) {
-        ogImage = imageUrls.front.startsWith('http')
-          ? imageUrls.front
-          : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`;
+      ogImage = imageUrls.front.startsWith('http')
+        ? imageUrls.front
+        : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`;
     }
 
     const keywords = [
-        'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
-        name,
-        ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])
+      'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
+      name,
+      ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])
     ].filter(Boolean).join(', ');
 
     res.render(path.join(rootDir, 'viewer.ejs'), {
@@ -282,7 +286,7 @@ app.get('/nfc/view/:id', async (req, res) => {
   try {
     const id = String(req.params.id);
     if (!id) {
-         return res.status(404).send('Not found');
+      return res.status(404).send('Not found');
     }
     res.redirect(301, `/nfc/viewer.html?id=${id}`);
   } catch (e) {
@@ -303,7 +307,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use((req, res, next) => {
-  if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) { 
+  if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) {
     const newPath = req.path.slice(0, -5);
     return res.redirect(301, newPath);
   }
@@ -332,14 +336,14 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype && file.mimetype.startsWith('image/')) {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('نوع الصورة غير مدعوم.'), false);
-        }
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('نوع الصورة غير مدعوم.'), false);
+      }
     } else {
-        cb(new Error('الرجاء رفع ملف صورة.'), false);
+      cb(new Error('الرجاء رفع ملف صورة.'), false);
     }
   }
 });
@@ -351,7 +355,7 @@ function handleMulterErrors(err, req, res, next) {
     }
     return res.status(400).json({ error: `خطأ في رفع الملف: ${err.message}` });
   } else if (err) {
-     return res.status(400).json({ error: err.message || 'خطأ غير معروف أثناء الرفع.' });
+    return res.status(400).json({ error: err.message || 'خطأ غير معروف أثناء الرفع.' });
   }
   next();
 }
@@ -360,8 +364,8 @@ function assertAdmin(req, res) {
   const expected = process.env.ADMIN_TOKEN || '';
   const provided = req.headers['x-admin-token'] || '';
   if (!expected || expected !== provided) {
-      res.status(401).json({ error: 'Unauthorized' });
-      return false;
+    res.status(401).json({ error: 'Unauthorized' });
+    return false;
   }
   return true;
 }
@@ -369,10 +373,10 @@ function assertAdmin(req, res) {
 app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
-        if (!res.headersSent) {
-           return res.status(400).json({ error: 'لم يتم تقديم أي ملف صورة.' });
-        }
-        return;
+      if (!res.headersSent) {
+        return res.status(400).json({ error: 'لم يتم تقديم أي ملف صورة.' });
+      }
+      return;
     }
 
     const filename = nanoid(10) + '.webp';
@@ -398,29 +402,191 @@ app.post('/api/save-design', async (req, res) => {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     let data = req.body || {};
     if (data.inputs) data.inputs = sanitizeInputs(data.inputs);
-     if (data.dynamic) {
-         if(data.dynamic.phones) {
-             data.dynamic.phones = data.dynamic.phones.map(phone => ({...phone, value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : '' }));
-         }
-         if(data.dynamic.social) {
-             data.dynamic.social = data.dynamic.social.map(link => ({...link, value: link && link.value ? DOMPurify.sanitize(String(link.value)) : '' }));
-         }
-         if(data.dynamic.staticSocial) {
-             for (const key in data.dynamic.staticSocial) {
-                 if (data.dynamic.staticSocial[key] && data.dynamic.staticSocial[key].value) {
-                      data.dynamic.staticSocial[key].value = DOMPurify.sanitize(String(data.dynamic.staticSocial[key].value));
-                 }
-             }
-         }
-     }
-    const shortId = nanoid(8);
-    await db.collection(designsCollectionName).insertOne({ shortId, data, createdAt: new Date(), views: 0 });
+    if (data.dynamic) {
+      if (data.dynamic.phones) {
+        data.dynamic.phones = data.dynamic.phones.map(phone => ({ ...phone, value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : '' }));
+      }
+      if (data.dynamic.social) {
+        data.dynamic.social = data.dynamic.social.map(link => ({ ...link, value: link && link.value ? DOMPurify.sanitize(String(link.value)) : '' }));
+      }
+      if (data.dynamic.staticSocial) {
+        for (const key in data.dynamic.staticSocial) {
+          if (data.dynamic.staticSocial[key] && data.dynamic.staticSocial[key].value) {
+            data.dynamic.staticSocial[key].value = DOMPurify.sanitize(String(data.dynamic.staticSocial[key].value));
+          }
+        }
+      }
+    }
+    const existingId = req.query.id;
+    let shortId = existingId || nanoid(8);
+    let isUpdate = false;
+
+    // Check for authenticated user to assign ownership
+    let ownerId = null;
+    const authHeader = req.headers['authorization'];
+    if (authHeader) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+        const decoded = jwt.verify(token, secret);
+        ownerId = decoded.userId;
+      } catch (err) {
+        console.warn('Invalid token during save, saving as anonymous');
+      }
+    }
+
+    if (existingId) {
+      const existingDesign = await db.collection(designsCollectionName).findOne({ shortId: existingId });
+      if (existingDesign) {
+        if (existingDesign.ownerId && existingDesign.ownerId !== ownerId) {
+          shortId = nanoid(8);
+          isUpdate = false;
+        } else {
+          isUpdate = true;
+        }
+      } else {
+        shortId = nanoid(8);
+        isUpdate = false;
+      }
+    }
+
+    const updateDoc = {
+      data,
+      lastModified: new Date()
+    };
+    if (ownerId && !isUpdate) updateDoc.ownerId = ownerId;
+    if (ownerId && isUpdate) updateDoc.ownerId = ownerId;
+
+    if (isUpdate) {
+      await db.collection(designsCollectionName).updateOne(
+        { shortId: shortId },
+        { $set: updateDoc }
+      );
+    } else {
+      await db.collection(designsCollectionName).insertOne({
+        shortId,
+        ...updateDoc,
+        createdAt: new Date(),
+        views: 0
+      });
+    }
     res.json({ success: true, id: shortId });
   } catch (e) {
     console.error('Save design error:', e);
-     if (!res.headersSent) {
-       res.status(500).json({ error: 'Save failed' });
-     }
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Save failed' });
+    }
+  }
+});
+
+// --- AUTHENTICATION ROUTES ---
+
+// Register
+app.post('/api/auth/register', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 6 }),
+  body('name').trim().notEmpty()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const { email, password, name } = req.body;
+
+    // Check if user exists
+    const existingUser = await db.collection(usersCollectionName).findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create user
+    const userId = nanoid(10);
+    await db.collection(usersCollectionName).insertOne({
+      userId,
+      email,
+      password: hashedPassword,
+      name,
+      createdAt: new Date()
+    });
+
+    // Generate Token
+    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const token = jwt.sign({ userId, email }, secret, { expiresIn: '7d' });
+
+    res.status(201).json({ success: true, token, user: { name, email, userId } });
+
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+// Login
+app.post('/api/auth/login', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').exists()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const { email, password } = req.body;
+
+    const user = await db.collection(usersCollectionName).findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const token = jwt.sign({ userId: user.userId, email: user.email }, secret, { expiresIn: '7d' });
+
+    res.json({ success: true, token, user: { name: user.name, email: user.email, userId: user.userId } });
+
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// Get User Profile/Designs
+app.get('/api/user/designs', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const designs = await db.collection(designsCollectionName)
+      .find({ ownerId: req.user.userId })
+      .project({
+        'data.inputs.input-name_ar': 1,
+        'data.inputs.input-name_en': 1,
+        'shortId': 1,
+        'createdAt': 1,
+        'views': 1,
+        'data.imageUrls.front': 1
+      })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.json({ success: true, designs });
+  } catch (err) {
+    console.error('Get user designs error:', err);
+    res.status(500).json({ error: 'Failed to fetch designs' });
   }
 });
 
@@ -442,72 +608,72 @@ app.get('/api/get-design/:id', async (req, res) => {
 
 // START: NEW GALLERY API ENDPOINT
 app.get('/api/gallery', async (req, res) => {
-    try {
-        if (!db) return res.status(500).json({ error: 'Database not connected' });
+  try {
+    if (!db) return res.status(500).json({ error: 'Database not connected' });
 
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = 20; // 5 columns * 4 rows
-        const skip = (page - 1) * limit;
-        const sortBy = req.query.sortBy || 'createdAt';
-        const searchTerm = req.query.search ? String(req.query.search).trim() : '';
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 20; // 5 columns * 4 rows
+    const skip = (page - 1) * limit;
+    const sortBy = req.query.sortBy || 'createdAt';
+    const searchTerm = req.query.search ? String(req.query.search).trim() : '';
 
-        // Build search query
-        const query = {};
-        if (searchTerm) {
-            const regex = new RegExp(searchTerm, 'i'); // Case-insensitive search
-            query['$or'] = [
-                { 'data.inputs.input-name_ar': regex },
-                { 'data.inputs.input-name_en': regex },
-                { 'data.inputs.input-tagline_ar': regex },
-                { 'data.inputs.input-tagline_en': regex }
-            ];
-        }
-
-        // Build sort options
-        const sortOptions = {};
-        if (sortBy === 'views') {
-            sortOptions.views = -1; // Descending
-        } else {
-            sortOptions.createdAt = -1; // Default to newest
-        }
-
-        // Get total count for pagination
-        const totalDesigns = await db.collection(designsCollectionName).countDocuments(query);
-        const totalPages = Math.ceil(totalDesigns / limit);
-
-        // Fetch paginated designs with projection
-        const designs = await db.collection(designsCollectionName)
-            .find(query)
-            .project({
-                'data.inputs.input-name_ar': 1,
-                'data.inputs.input-name_en': 1,
-                'data.inputs.input-tagline_ar': 1,
-                'data.inputs.input-tagline_en': 1,
-                'data.imageUrls.capturedFront': 1,
-                'data.imageUrls.front': 1,
-                'shortId': 1,
-                'createdAt': 1,
-                'views': 1
-            })
-            .sort(sortOptions)
-            .skip(skip)
-            .limit(limit)
-            .toArray();
-
-        res.json({
-            success: true,
-            designs,
-            pagination: {
-                page,
-                totalPages,
-                totalDesigns
-            }
-        });
-
-    } catch (e) {
-        console.error('Gallery fetch error:', e);
-        res.status(500).json({ success: false, error: 'Failed to fetch gallery designs' });
+    // Build search query
+    const query = {};
+    if (searchTerm) {
+      const regex = new RegExp(searchTerm, 'i'); // Case-insensitive search
+      query['$or'] = [
+        { 'data.inputs.input-name_ar': regex },
+        { 'data.inputs.input-name_en': regex },
+        { 'data.inputs.input-tagline_ar': regex },
+        { 'data.inputs.input-tagline_en': regex }
+      ];
     }
+
+    // Build sort options
+    const sortOptions = {};
+    if (sortBy === 'views') {
+      sortOptions.views = -1; // Descending
+    } else {
+      sortOptions.createdAt = -1; // Default to newest
+    }
+
+    // Get total count for pagination
+    const totalDesigns = await db.collection(designsCollectionName).countDocuments(query);
+    const totalPages = Math.ceil(totalDesigns / limit);
+
+    // Fetch paginated designs with projection
+    const designs = await db.collection(designsCollectionName)
+      .find(query)
+      .project({
+        'data.inputs.input-name_ar': 1,
+        'data.inputs.input-name_en': 1,
+        'data.inputs.input-tagline_ar': 1,
+        'data.inputs.input-tagline_en': 1,
+        'data.imageUrls.capturedFront': 1,
+        'data.imageUrls.front': 1,
+        'shortId': 1,
+        'createdAt': 1,
+        'views': 1
+      })
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    res.json({
+      success: true,
+      designs,
+      pagination: {
+        page,
+        totalPages,
+        totalDesigns
+      }
+    });
+
+  } catch (e) {
+    console.error('Gallery fetch error:', e);
+    res.status(500).json({ success: false, error: 'Failed to fetch gallery designs' });
+  }
 });
 // END: NEW GALLERY API ENDPOINT
 
@@ -529,7 +695,7 @@ app.get('/robots.txt', (req, res) => {
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
-    const staticPages = ['/nfc/', '/nfc/gallery', '/nfc/blog', '/nfc/privacy' ];
+    const staticPages = ['/nfc/', '/nfc/gallery', '/nfc/blog', '/nfc/privacy'];
     const blogPosts = [];
     let designUrls = [];
     if (db) {
@@ -547,11 +713,11 @@ app.get('/sitemap.xml', async (req, res) => {
       }));
     }
     function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
-        if (!loc) return '';
-        const lastmodTag = lastmod ? `<lastmod>${lastmod}</lastmod>` : '';
-        const changefreqTag = changefreq ? `<changefreq>${changefreq}</changefreq>` : '';
-        const priorityTag = priority ? `<priority>${priority}</priority>` : '';
-        return `
+      if (!loc) return '';
+      const lastmodTag = lastmod ? `<lastmod>${lastmod}</lastmod>` : '';
+      const changefreqTag = changefreq ? `<changefreq>${changefreq}</changefreq>` : '';
+      const priorityTag = priority ? `<priority>${priority}</priority>` : '';
+      return `
   <url>
     <loc>${loc}</loc>${lastmodTag}${changefreqTag}${priorityTag}
   </url>`;
@@ -570,19 +736,19 @@ ${designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefr
 });
 
 app.get('/healthz', (req, res) => {
-    if (db && db.client.topology && db.client.topology.isConnected()) {
-        res.json({ ok: true, db_status: 'connected' });
-    } else {
-         res.status(500).json({ ok: false, db_status: 'disconnected' });
-    }
+  if (db && db.client.topology && db.client.topology.isConnected()) {
+    res.json({ ok: true, db_status: 'connected' });
+  } else {
+    res.status(500).json({ ok: false, db_status: 'disconnected' });
+  }
 });
 
 app.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
-    if (req.useragent.isMobile) {
-        res.sendFile(path.join(rootDir, 'editor-mobile.html'));
-    } else {
-        res.sendFile(path.join(rootDir, 'editor.html'));
-    }
+  if (req.useragent.isMobile) {
+    res.sendFile(path.join(rootDir, 'editor-mobile.html'));
+  } else {
+    res.sendFile(path.join(rootDir, 'editor.html'));
+  }
 });
 
 // --- STATIC FILE HANDLER ---
@@ -593,9 +759,9 @@ app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.stack || err);
   const statusCode = err.status || 500;
   const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message;
-   if (!res.headersSent) {
-     res.status(statusCode).json({ error: message });
-   }
+  if (!res.headersSent) {
+    res.status(statusCode).json({ error: message });
+  }
 });
 
 // =================================================================
@@ -613,55 +779,55 @@ const wss = new WebSocketServer({ server });
 const rooms = new Map();
 
 wss.on('connection', (ws, req) => {
-    // 4. استخراج `collabId` من رابط الاتصال
-    const parameters = new url.URL(req.url, `ws://${req.headers.host}`).searchParams;
-    const collabId = parameters.get('collabId');
+  // 4. استخراج `collabId` من رابط الاتصال
+  const parameters = new url.URL(req.url, `ws://${req.headers.host}`).searchParams;
+  const collabId = parameters.get('collabId');
 
-    if (!collabId) {
-        console.log('Connection rejected: No collabId provided.');
-        ws.close(1008, 'collabId is required');
-        return;
-    }
+  if (!collabId) {
+    console.log('Connection rejected: No collabId provided.');
+    ws.close(1008, 'collabId is required');
+    return;
+  }
 
-    // 5. الانضمام إلى الغرفة
-    if (!rooms.has(collabId)) {
-        rooms.set(collabId, new Set());
-    }
-    const room = rooms.get(collabId);
-    room.add(ws);
+  // 5. الانضمام إلى الغرفة
+  if (!rooms.has(collabId)) {
+    rooms.set(collabId, new Set());
+  }
+  const room = rooms.get(collabId);
+  room.add(ws);
 
-    console.log(`Client connected to room: ${collabId}. Room size: ${room.size}`);
+  console.log(`Client connected to room: ${collabId}. Room size: ${room.size}`);
 
-    // 6. التعامل مع الرسائل الواردة من العميل
-    ws.on('message', (message) => {
-        try {
-            // بث الرسالة (حالة التصميم الجديدة) إلى جميع العملاء الآخرين في نفس الغرفة
-            room.forEach(client => {
-                if (client !== ws && client.readyState === ws.OPEN) {
-                    client.send(message.toString());
-                }
-            });
-        } catch (error) {
-            console.error('Error broadcasting message:', error);
+  // 6. التعامل مع الرسائل الواردة من العميل
+  ws.on('message', (message) => {
+    try {
+      // بث الرسالة (حالة التصميم الجديدة) إلى جميع العملاء الآخرين في نفس الغرفة
+      room.forEach(client => {
+        if (client !== ws && client.readyState === ws.OPEN) {
+          client.send(message.toString());
         }
-    });
+      });
+    } catch (error) {
+      console.error('Error broadcasting message:', error);
+    }
+  });
 
-    // 7. التعامل مع انقطاع الاتصال (تنظيف)
-    ws.on('close', () => {
-        if (room) {
-            room.delete(ws);
-            console.log(`Client disconnected from room: ${collabId}. Room size: ${room.size}`);
-            // إذا كانت الغرفة فارغة، قم بإزالتها لتوفير الذاكرة
-            if (room.size === 0) {
-                rooms.delete(collabId);
-                console.log(`Room ${collabId} is now empty and has been closed.`);
-            }
-        }
-    });
-    
-    ws.on('error', (error) => {
-        console.error('WebSocket error:', error);
-    });
+  // 7. التعامل مع انقطاع الاتصال (تنظيف)
+  ws.on('close', () => {
+    if (room) {
+      room.delete(ws);
+      console.log(`Client disconnected from room: ${collabId}. Room size: ${room.size}`);
+      // إذا كانت الغرفة فارغة، قم بإزالتها لتوفير الذاكرة
+      if (room.size === 0) {
+        rooms.delete(collabId);
+        console.log(`Room ${collabId} is now empty and has been closed.`);
+      }
+    }
+  });
+
+  ws.on('error', (error) => {
+    console.error('WebSocket error:', error);
+  });
 });
 
 // =================================================================

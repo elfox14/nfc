@@ -5,20 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>عرض البطاقة الرقمية | MC PRIME NFC</title>
-    <meta name="description" content="اعرض بطاقة العمل الذكية NFC واحفظ جهة الاتصال مباشرة على هاتفك. شارك بياناتك بسهولة مع MC PRIME.">
+    <meta name="description"
+        content="اعرض بطاقة العمل الذكية NFC واحفظ جهة الاتصال مباشرة على هاتفك. شارك بياناتك بسهولة مع MC PRIME.">
     <meta name="keywords" content="بطاقة عمل رقمية, NFC, QR Code, MC PRIME, عرض البطاقة, جهة اتصال">
-    <meta name="robots" content="noindex, follow">
-    
+    <meta name="robots" content="index, follow">
+
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="عرض البطاقة الرقمية | MC PRIME">
     <meta property="og:description" content="اعرض بطاقة العمل الذكية NFC واحفظ جهة الاتصال مباشرة على هاتفك.">
     <meta property="og:image" content="https://www.mcprim.com/nfc/mcprime-social-1200x630.png">
     <meta property="og:site_name" content="MC PRIME">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="mcprime-logo-transparent.png" type="image/png">
-    
+
+    <!-- Favicon & PWA -->
+    <link rel="icon" id="favicon" href="mcprime-logo-transparent.png" type="image/png">
+    <link rel="apple-touch-icon" href="mcprime-logo-transparent.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2a3d54">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -33,12 +39,40 @@
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
         crossorigin="anonymous"></script>
+    <link rel="canonical" href="https://mcprim.com/nfc/viewer.html?id=0M0ArUJw">
+
+    <!-- Schema.org Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "mainEntity": {
+        "@type": "Person",
+        "name": "MC PRIME Digital Card",
+        "description": "Smart NFC Business Card Hosted on MC PRIME"
+      },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://mcprim.com/nfc/"
+        }, {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Card Viewer",
+          "item": "https://mcprim.com/nfc/viewer.html"
+        }]
+      }
+    }
+    </script>
 </head>
 
 
 <body>
 
-    <nav class="viewer-nav">
+    <nav class="viewer-nav" aria-label="القائمة الرئيسية للعارض">
         <a href="index.html" class="nav-logo" title="العودة إلى الرئيسية">
             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect fill='%23667eea' width='40' height='40' rx='6'/%3E%3Ctext x='20' y='26' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold' font-size='12'%3EMP%3C/text%3E%3C/svg%3E"
                 alt="MC PRIME Logo">
@@ -161,6 +195,7 @@
                         <li><i class="fas fa-edit c-blue"></i> يمكن تعديلها في أي وقت</li>
                         <li><i class="fas fa-chart-line c-yellow"></i> تتبع زيارات بطاقتك</li>
                     </ul>
+
                 </div>
 
                 <a href="editor.html" class="btn btn-secondary"
@@ -192,7 +227,7 @@
         window.cardData = {};
     </script>
 
-    <script src="viewer.js"></script>
+    <script src="viewer.js" defer></script>
 
 </body>
 

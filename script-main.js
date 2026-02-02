@@ -447,15 +447,26 @@ const ShareManager = {
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
         try {
-            const response = await fetch(`${Config.API_BASE_URL}/api/save-design`, {
+            // Use Auth header if available
+            const headers = { 'Content-Type': 'application/json' };
+            const token = localStorage.getItem('authToken');
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            let url = `${Config.API_BASE_URL}/api/save-design`;
+            if (Config.currentDesignId) {
+                url += `?id=${Config.currentDesignId}`;
+            }
+
+            const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(state),
             });
             if (!response.ok) throw new Error('Server responded with an error');
 
             const result = await response.json();
             if (result.success && result.id) {
+                if (!stateToSave) Config.currentDesignId = result.id; // Update current ID if main save
                 return result.id;
             } else {
                 throw new Error('Invalid response from server');
@@ -557,6 +568,7 @@ const ShareManager = {
 
                 const state = await response.json();
                 StateManager.applyState(state, false);
+                Config.currentDesignId = designId; // Store loaded ID
                 UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
 
                 const newUrl = new URL(window.location.href);
