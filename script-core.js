@@ -3,7 +3,7 @@
 
 const Config = {
     // ... existing config ...
-    GA_MEASUREMENT_ID: 'G-E7G4KFZKYG', // Tracking ID
+    GTM_CONTAINER_ID: 'GTM-PLL5SLNM', // GTM Container ID
 
     API_BASE_URL: 'https://nfc-vjy6.onrender.com',
     LOCAL_STORAGE_KEY: 'digitalCardEditorState_v20',
