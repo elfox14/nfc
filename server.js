@@ -58,7 +58,10 @@ app.use(helmet.contentSecurityPolicy({
 }));
 // --- END: SECURITY HEADERS (HELMET) ---
 
-app.use(cors());
+app.use(cors({
+  origin: true, // Allow all origins (for development)
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
 
