@@ -524,6 +524,10 @@ app.post('/api/auth/register', [
     res.status(201).json({ success: true, token, user: { name, email, userId } });
 
   } catch (err) {
+    if (err.code === 11000) {
+      console.warn('Register duplicate error:', err);
+      return res.status(400).json({ error: 'User already exists' });
+    }
     console.error('Register error:', err);
     res.status(500).json({ error: 'Registration failed' });
   }
