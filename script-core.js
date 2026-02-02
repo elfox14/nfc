@@ -1,6 +1,10 @@
 'use strict';
 
+
 const Config = {
+    // ... existing config ...
+    GA_MEASUREMENT_ID: 'G-XXXXXXXXXX', // Placeholder, to be replaced by Env or User
+
     API_BASE_URL: 'https://nfc-vjy6.onrender.com',
     LOCAL_STORAGE_KEY: 'digitalCardEditorState_v20',
     GALLERY_STORAGE_KEY: 'digitalCardGallery_v2',
@@ -248,3 +252,20 @@ const HistoryManager = {
         if (redoBtn) redoBtn.disabled = this.currentIndex >= this.history.length - 1;
     }
 };
+
+// Google Analytics Integration
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if ID is configured and is not the placeholder
+    if (Config.GA_MEASUREMENT_ID && Config.GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX') {
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${Config.GA_MEASUREMENT_ID}`;
+        document.head.appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', Config.GA_MEASUREMENT_ID);
+        console.log('Google Analytics Initialized');
+    }
+});
