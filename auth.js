@@ -2,9 +2,22 @@
 
 const Auth = {
     // API Endpoints
-    API_LOGIN: '/api/auth/login',
-    API_REGISTER: '/api/auth/register',
-    API_USER_DESIGNS: '/api/user/designs',
+    // Determine Base URL:
+    // 1. If 'file:' protocol, default to Render live server (or localhost if you prefer debugging locally).
+    // 2. If 'localhost' or '127.0.0.1', use relative paths to hit the local server.
+    // 3. Otherwise (production domain), use relative paths or explicit URL.
+    getBaseUrl() {
+        if (window.location.protocol === 'file:') {
+            // NOTE: Change this to 'http://localhost:3000' if you are running the server locally but opening the HTML file directly.
+            // For now, we point to the production server to ensure it works out-of-the-box for users without a local server.
+            return 'https://nfc-vjy6.onrender.com';
+        }
+        return ''; // Use relative path
+    },
+
+    get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
+    get API_REGISTER() { return `${this.getBaseUrl()}/api/auth/register`; },
+    get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
 
     // State
     token: localStorage.getItem('authToken'),
@@ -17,6 +30,7 @@ const Auth = {
 
     async login(email, password) {
         try {
+            console.log(`[Auth] Attempting login to: ${this.API_LOGIN}`);
             const response = await fetch(this.API_LOGIN, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -31,12 +45,14 @@ const Auth = {
                 return { success: false, error: data.error || 'Login failed' };
             }
         } catch (err) {
-            return { success: false, error: 'Network error' };
+            console.error('[Auth] Login Error:', err);
+            return { success: false, error: `Network error: Failed to connect to ${this.API_LOGIN}` };
         }
     },
 
     async register(name, email, password) {
         try {
+            console.log(`[Auth] Attempting register to: ${this.API_REGISTER}`);
             const response = await fetch(this.API_REGISTER, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -51,7 +67,8 @@ const Auth = {
                 return { success: false, error: data.error || 'Registration failed' };
             }
         } catch (err) {
-            return { success: false, error: 'Network error' };
+            console.error('[Auth] Register Error:', err);
+            return { success: false, error: `Network error: Failed to connect to ${this.API_REGISTER}` };
         }
     },
 
