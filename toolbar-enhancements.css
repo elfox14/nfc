@@ -1,0 +1,160 @@
+/* ================================================
+   Trial Period Banner - Styles
+   ================================================ */
+
+.trial-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.trial-banner__icon {
+    font-size: 1.2em;
+}
+
+.trial-banner__text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.trial-banner__highlight {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.trial-banner__close {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.trial-banner__close:hover {
+    color: #ffffff;
+}
+
+/* Collapsed state */
+.trial-banner.collapsed {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .trial-banner {
+        font-size: 12px;
+        padding: 8px 40px 8px 15px;
+    }
+    
+    .trial-banner__highlight {
+        padding: 3px 8px;
+        font-size: 11px;
+    }
+}
+
+/* ================================================
+   Toolbar "More" Menu - Styles
+   ================================================ */
+
+.toolbar-more-container {
+    position: relative;
+}
+
+.toolbar-more-btn {
+    background: transparent;
+    border: 1px solid var(--accent-secondary);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.toolbar-more-btn:hover {
+    background: var(--accent-secondary);
+}
+
+.toolbar-more-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--accent-secondary);
+    border-radius: 8px;
+    min-width: 200px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+}
+
+.toolbar-more-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.toolbar-more-menu button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+    text-align: right;
+    transition: background 0.15s;
+}
+
+.toolbar-more-menu button:hover {
+    background: var(--accent-secondary);
+}
+
+.toolbar-more-menu button i {
+    width: 18px;
+    text-align: center;
+    color: var(--accent-primary);
+}
+
+.toolbar-more-menu hr {
+    border: none;
+    border-top: 1px solid var(--accent-secondary);
+    margin: 4px 0;
+}
+
+/* RTL Support */
+[dir="rtl"] .toolbar-more-menu {
+    left: auto;
+    right: 0;
+}

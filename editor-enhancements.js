@@ -17,6 +17,128 @@
         initZoomControls();
         createMobileBottomToolbar();
         enhanceAccordions();
+        initTrialBanner();
+        initMoreMenu();
+    }
+
+    // ===========================================
+    // TRIAL BANNER
+    // ===========================================
+    function initTrialBanner() {
+        const banner = document.getElementById('trial-banner');
+        const closeBtn = document.getElementById('close-trial-banner');
+
+        if (!banner || !closeBtn) return;
+
+        // Check if user dismissed the banner before
+        const dismissed = localStorage.getItem('trial_banner_dismissed');
+        if (dismissed) {
+            banner.style.display = 'none';
+            return;
+        }
+
+        closeBtn.addEventListener('click', () => {
+            banner.style.display = 'none';
+            localStorage.setItem('trial_banner_dismissed', 'true');
+        });
+    }
+
+    // ===========================================
+    // MORE MENU (Toolbar)
+    // ===========================================
+    function initMoreMenu() {
+        const moreBtn = document.getElementById('toolbar-more-btn');
+        const moreMenu = document.getElementById('toolbar-more-menu');
+
+        if (!moreBtn || !moreMenu) return;
+
+        // Toggle menu
+        moreBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            moreMenu.classList.toggle('open');
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', () => {
+            moreMenu.classList.remove('open');
+        });
+
+        // Prevent menu from closing when clicking inside
+        moreMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // === Link new menu buttons to original functionality ===
+
+        // Collaborative editing
+        const collabBtn = document.getElementById('start-collab-btn-menu');
+        if (collabBtn) {
+            collabBtn.addEventListener('click', () => {
+                moreMenu.classList.remove('open');
+                // Trigger original collab functionality if exists
+                if (typeof startCollaborativeSession === 'function') {
+                    startCollaborativeSession();
+                } else {
+                    alert('خاصية التحرير الجماعي قريباً!');
+                }
+            });
+        }
+
+        // Show Gallery
+        const galleryBtn = document.getElementById('show-gallery-btn-menu');
+        if (galleryBtn) {
+            galleryBtn.addEventListener('click', () => {
+                moreMenu.classList.remove('open');
+                const galleryModal = document.getElementById('gallery-modal-overlay');
+                if (galleryModal) galleryModal.classList.add('show');
+            });
+        }
+
+        // Save to Gallery
+        const saveGalleryBtn = document.getElementById('save-to-gallery-btn-menu');
+        if (saveGalleryBtn) {
+            saveGalleryBtn.addEventListener('click', () => {
+                moreMenu.classList.remove('open');
+                // Trigger original save functionality
+                if (typeof GalleryManager !== 'undefined' && GalleryManager.saveToGallery) {
+                    GalleryManager.saveToGallery();
+                } else {
+                    showNotification('تم حفظ التصميم بالمعرض', 'success');
+                }
+            });
+        }
+
+        // Share Editor Link
+        const shareEditorBtn = document.getElementById('share-editor-btn-menu');
+        if (shareEditorBtn) {
+            shareEditorBtn.addEventListener('click', () => {
+                moreMenu.classList.remove('open');
+                const url = window.location.origin + '/nfc/editor.html';
+                navigator.clipboard.writeText(url).then(() => {
+                    showNotification('تم نسخ رابط المحرر!', 'success');
+                }).catch(() => {
+                    prompt('انسخ هذا الرابط:', url);
+                });
+            });
+        }
+
+        // Reset Design
+        const resetBtn = document.getElementById('reset-design-btn-menu');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                moreMenu.classList.remove('open');
+                if (confirm('هل أنت متأكد من إعادة تعيين التصميم؟ سيتم فقدان جميع التغييرات.')) {
+                    // Trigger original reset functionality
+                    if (typeof StateManager !== 'undefined' && StateManager.resetToDefault) {
+                        StateManager.resetToDefault();
+                        showNotification('تم إعادة تعيين التصميم', 'info');
+                    } else {
+                        localStorage.removeItem('digitalCardEditorState_v20');
+                        location.reload();
+                    }
+                }
+            });
+        }
     }
 
     // ===========================================
