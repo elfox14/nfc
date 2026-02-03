@@ -735,17 +735,23 @@ const CardManager = {
 
             const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
 
+            const isUseLogoChecked = document.getElementById('qr-use-logo').checked;
+            const dotsColor = document.getElementById('qr-dots-color').value || "#000000";
+            const bgColor = document.getElementById('qr-bg-color').value || "#ffffff";
+            const dotsType = document.getElementById('qr-dots-type').value || "rounded";
+            const cornersType = document.getElementById('qr-corners-type').value || "extra-rounded";
+
             const qrCode = new QRCodeStyling({
                 width: 300,
                 height: 300,
                 data: vCardData,
-                image: isDefaultLogo ? null : safeLogo,
+                image: (isDefaultLogo || !isUseLogoChecked) ? null : safeLogo,
                 dotsOptions: {
-                    color: "#000000",
-                    type: "rounded"
+                    color: dotsColor,
+                    type: dotsType
                 },
                 backgroundOptions: {
-                    color: "#ffffff",
+                    color: bgColor,
                 },
                 imageOptions: {
                     crossOrigin: "anonymous",
@@ -753,7 +759,8 @@ const CardManager = {
                     imageSize: 0.4
                 },
                 cornersSquareOptions: {
-                    type: "extra-rounded"
+                    type: cornersType,
+                    color: dotsColor
                 }
             });
 
@@ -796,17 +803,23 @@ const CardManager = {
             const isDefaultLogo = currentLogo.includes('mcprime-logo-transparent.png');
             const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
 
+            const isUseLogoChecked = document.getElementById('qr-use-logo').checked;
+            const dotsColor = document.getElementById('qr-dots-color').value || "#000000";
+            const bgColor = document.getElementById('qr-bg-color').value || "#ffffff";
+            const dotsType = document.getElementById('qr-dots-type').value || "rounded";
+            const cornersType = document.getElementById('qr-corners-type').value || "extra-rounded";
+
             const qrCode = new QRCodeStyling({
                 width: 300,
                 height: 300,
                 data: finalUrl,
-                image: isDefaultLogo ? null : safeLogo,
+                image: (isDefaultLogo || !isUseLogoChecked) ? null : safeLogo,
                 dotsOptions: {
-                    color: "#000000",
-                    type: "rounded"
+                    color: dotsColor,
+                    type: dotsType
                 },
                 backgroundOptions: {
-                    color: "#ffffff",
+                    color: bgColor,
                 },
                 imageOptions: {
                     crossOrigin: "anonymous",
@@ -814,7 +827,8 @@ const CardManager = {
                     imageSize: 0.4
                 },
                 cornersSquareOptions: {
-                    type: "extra-rounded"
+                    type: cornersType,
+                    color: dotsColor // Using same color for corners for simplicity
                 }
             });
 

@@ -168,6 +168,8 @@
                         class="fas fa-undo"></i></button>
             </div>
             <!-- NEW: Language & Preview Buttons -->
+            <button id="theme-toggle-btn" class="btn-icon btn-compact" title="Switch Theme" aria-label="Switch Theme"><i
+                    class="fas fa-moon"></i></button>
             <button id="lang-toggle-btn" class="btn-icon btn-compact" title="Toggle Language"
                 aria-label="Toggle Language" style="font-size: 11px;" onclick="switchLanguage('ar')">عربي</button>
             <button id="preview-mode-btn" class="btn-icon btn-compact" title="Preview Mode"
@@ -189,6 +191,8 @@
                     </li>
                     <li><button id="download-vcf"><i class="fas fa-address-card" aria-hidden="true"></i> Contact
                             (VCF)</button></li>
+                    <li><button id="download-html" data-trigger-id="download-html"><i class="fas fa-globe"
+                                aria-hidden="true"></i> Web Package (HTML)</button></li>
                     <li><button id="download-qrcode"><i class="fas fa-qrcode" aria-hidden="true"></i> QR Code</button>
                     </li>
                 </ul>
@@ -788,6 +792,51 @@
                             <label><input type="radio" name="qr-source" value="auto-vcard"> Contact Data (vCard)</label>
                             <label><input type="radio" name="qr-source" value="custom"> Custom URL</label>
                             <label><input type="radio" name="qr-source" value="upload"> Upload Image</label>
+                        </div>
+                    </div>
+
+                    <!-- NEW: QR Customization Controls -->
+                    <div id="qr-customization-group"
+                        style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--accent-secondary);">
+                        <h4>QR Code Style</h4>
+
+                        <div class="form-group">
+                            <label for="qr-color">QR Color</label>
+                            <input type="color" id="qr-color" value="#000000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="qr-bg-color">Background Color</label>
+                            <input type="color" id="qr-bg-color" value="#ffffff">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="qr-dots-type">Dot Style</label>
+                            <select id="qr-dots-type">
+                                <option value="square">Square</option>
+                                <option value="dots">Dots</option>
+                                <option value="rounded" selected>Rounded</option>
+                                <option value="classy">Classy</option>
+                                <option value="classy-rounded">Classy Rounded</option>
+                                <option value="extra-rounded">Extra Rounded</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="qr-corners-type">Corner Style</label>
+                            <select id="qr-corners-type">
+                                <option value="square">Square</option>
+                                <option value="dot">Dot</option>
+                                <option value="extra-rounded" selected>Extra Rounded</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="qr-use-logo" checked
+                                    style="width: auto; margin-inline-end: 10px;">
+                                Include Logo in Center
+                            </label>
                         </div>
                     </div>
 
@@ -1457,17 +1506,16 @@
         </div>
     </div>
 
-    <!-- Image Crop Modal -->
+    <!-- NEW: Crop Modal -->
     <div id="crop-modal-overlay" class="modal-overlay">
         <div class="modal-content crop-modal-content">
             <h3>Crop Image</h3>
             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 15px;">
-                Move the image to select the desired area, then click "Confirm".
+                Move the image to select the area, then click 'Confirm'.
             </p>
 
-            <!-- Container to be filled by JavaScript -->
             <div id="crop-image-container">
-                <!-- IMG element will be created dynamically -->
+                <!-- Image element created dynamically -->
             </div>
 
             <div class="modal-footer" style="justify-content: flex-end;">
@@ -1477,6 +1525,14 @@
             </div>
         </div>
     </div>
+
+    <!-- NEW: Floating button to exit preview mode -->
+    <button id="exit-preview-btn" class="btn btn-secondary"
+        style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">
+        <i class="fas fa-times"></i> Exit Preview
+    </button>
+
+
 
     <!-- NEW: Floating button to exit preview mode -->
     <button id="exit-preview-btn" class="btn btn-secondary"

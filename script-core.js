@@ -139,7 +139,12 @@ const Config = {
         tiktok: { name: 'تيك توك', nameEn: 'TikTok', icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
         snapchat: { name: 'سناب شات', nameEn: 'Snapchat', icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
         youtube: { name: 'يوتيوب', nameEn: 'YouTube', icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
-        pinterest: { name: 'بينترست', nameEn: 'Pinterest', icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' }
+        pinterest: { name: 'بينترست', nameEn: 'Pinterest', icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' },
+        behance: { name: 'بيهانس', nameEn: 'Behance', icon: 'fab fa-behance', prefix: 'https://behance.net/' },
+        github: { name: 'جيت هب', nameEn: 'GitHub', icon: 'fab fa-github', prefix: 'https://github.com/' },
+        discord: { name: 'ديسكورد', nameEn: 'Discord', icon: 'fab fa-discord', prefix: 'https://discord.gg/' },
+        spotify: { name: 'سبوتيفاي', nameEn: 'Spotify', icon: 'fab fa-spotify', prefix: 'https://open.spotify.com/user/' },
+        soundcloud: { name: 'ساوند كلاود', nameEn: 'SoundCloud', icon: 'fab fa-soundcloud', prefix: 'https://soundcloud.com/' }
     },
 
     STATIC_CONTACT_METHODS: [

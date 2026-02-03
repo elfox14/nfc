@@ -157,20 +157,16 @@
                         class="fas fa-undo"></i></button>
             </div>
             <!-- NEW: Language & Preview Buttons -->
+            <button id="theme-toggle-btn" class="btn-icon btn-compact" title="تبديل المظهر (Dark/Light)"
+                aria-label="Toggle Theme"><i class="fas fa-sun"></i></button>
             <button id="lang-toggle-btn" class="btn-icon btn-compact" title="تبديل اللغة / Toggle Language"
                 aria-label="Toggle Language" style="font-size: 11px;">EN</button>
+            <button id="preview-3d-btn" class="btn-icon btn-compact" title="معاينة 3D" aria-label="3D Preview"><i
+                    class="fas fa-cube"></i></button>
             <button id="preview-mode-btn" class="btn-icon btn-compact" title="وضع المعاينة"
                 aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
         </div>
         <div class="toolbar-group toolbar-end">
-            <!-- Hidden buttons for backward compatibility with existing code -->
-            <div style="display: none;">
-                <button id="save-to-gallery-btn" class="btn btn-secondary"></button>
-                <button id="start-collab-btn" class="btn btn-secondary"></button>
-                <button id="show-gallery-btn" class="btn btn-secondary"></button>
-                <button id="share-editor-btn" class="btn btn-secondary"></button>
-                <button id="reset-design-btn" class="btn btn-secondary"></button>
-            </div>
             <div class="download-container">
                 <button id="download-options-btn" class="btn btn-secondary">
                     <span>تنزيل</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
@@ -190,33 +186,33 @@
                 </ul>
             </div>
             <button id="share-card-btn" class="btn btn-success" aria-controls="share-fallback-modal-overlay"
-                aria-expanded="false">
-                <span>مشاركة الكارت</span><i class="fas fa-share-alt" aria-hidden="true"></i>
+                aria-expanded="false" title="مشاركة الكارت">
+                <span>مشاركة</span><i class="fas fa-share-alt" aria-hidden="true"></i>
             </button>
 
-            <!-- قائمة المزيد -->
-            <div class="toolbar-more-container">
-                <button class="toolbar-more-btn" id="toolbar-more-btn" title="خيارات إضافية">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-                <div class="toolbar-more-menu" id="toolbar-more-menu">
-                    <button id="start-collab-btn-menu" title="بدء جلسة تحرير جماعي">
-                        <i class="fas fa-users"></i> تحرير جماعي
-                    </button>
-                    <button id="show-gallery-btn-menu" aria-controls="gallery-modal-overlay">
-                        <i class="fas fa-images"></i> عرض المعرض
-                    </button>
-                    <button id="save-to-gallery-btn-menu">
-                        <i class="fas fa-save"></i> حفظ بالمعرض
-                    </button>
-                    <button id="share-editor-btn-menu">
-                        <i class="fas fa-link"></i> مشاركة رابط الموقع
-                    </button>
-                    <hr>
-                    <button id="reset-design-btn-menu" style="color: #dc3545;">
-                        <i class="fas fa-undo" style="color: #dc3545;"></i> إعادة تعيين التصميم
-                    </button>
-                </div>
+            <!-- Toolbar buttons as icons with keyboard shortcuts -->
+            <button id="start-collab-btn" class="btn btn-secondary" title="تحرير جماعي (Ctrl+Shift+C)">
+                <i class="fas fa-users"></i>
+            </button>
+            <button id="show-gallery-btn" class="btn btn-secondary" title="عرض المعرض (Ctrl+G)"
+                aria-controls="gallery-modal-overlay">
+                <i class="fas fa-images"></i>
+            </button>
+            <button id="save-to-gallery-btn" class="btn btn-secondary" title="حفظ بالمعرض (Ctrl+S)">
+                <i class="fas fa-bookmark"></i>
+            </button>
+            <button id="share-editor-btn" class="btn btn-secondary" title="مشاركة رابط الموقع (Ctrl+Shift+L)">
+                <i class="fas fa-link"></i>
+            </button>
+            <button id="reset-design-btn" class="btn btn-secondary" title="إعادة تعيين (Ctrl+Shift+R)"
+                style="color: #dc3545;">
+                <i class="fas fa-undo"></i>
+            </button>
+
+            <!-- Auto-save indicator -->
+            <div id="autosave-indicator" class="autosave-indicator" title="حالة الحفظ التلقائي">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span id="autosave-status">محفوظ</span>
             </div>
 
             <!-- User Status & Save Button -->
@@ -821,6 +817,62 @@
                             تصميمك وإنشاء QR Code لرابط المشاركة الخاص ببطاقتك.</p>
                     </div>
 
+                    <!-- تخصيص QR Code -->
+                    <div id="qr-customization-group"
+                        style="margin-top: 15px; border-top: 1px dashed var(--accent-secondary); padding-top: 15px;">
+                        <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-primary);">تخصيص المظهر</h4>
+
+                        <div class="control-grid">
+                            <div class="form-group">
+                                <label for="qr-dots-color">لون الرمز</label>
+                                <div class="color-input-wrapper"
+                                    style="display: flex; align-items: center; border: 1px solid var(--accent-secondary); border-radius: 6px; padding: 0 5px;">
+                                    <input type="color" id="qr-dots-color" value="#000000"
+                                        style="border: none; padding: 0; height: 35px; width: 40px;">
+                                    <span style="font-size: 12px; margin-right: 5px;">اختر اللون</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="qr-bg-color">لون الخلفية</label>
+                                <div class="color-input-wrapper"
+                                    style="display: flex; align-items: center; border: 1px solid var(--accent-secondary); border-radius: 6px; padding: 0 5px;">
+                                    <input type="color" id="qr-bg-color" value="#ffffff"
+                                        style="border: none; padding: 0; height: 35px; width: 40px;">
+                                    <span style="font-size: 12px; margin-right: 5px;">اختر اللون</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="qr-dots-type">شكل النقاط</label>
+                            <select id="qr-dots-type">
+                                <option value="square">مربعات (Square)</option>
+                                <option value="dots">نقاط (Dots)</option>
+                                <option value="rounded" selected>دائري (Rounded)</option>
+                                <option value="classy">أنيق (Classy)</option>
+                                <option value="classy-rounded">أنيق دائري (Classy Rounded)</option>
+                                <option value="extra-rounded">دائري جداً (Extra Rounded)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="qr-corners-type">شكل الزوايا</label>
+                            <select id="qr-corners-type">
+                                <option value="square">مربعات (Square)</option>
+                                <option value="dot">نقاط (Dot)</option>
+                                <option value="extra-rounded" selected>دائري (Extra Rounded)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="qr-use-logo" checked
+                                    style="width: auto; margin-inline-end: 10px;">
+                                تضمين الشعار في المنتصف
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="form-group" id="qr-url-group" style="display: none;">
                         <label for="input-qr-url">رابط صورة QR Code</label>
                         <input type="url" id="input-qr-url" value="mcprime_qr.png">
@@ -1282,6 +1334,12 @@
                     </button>
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-vcf">
                         <i class="fas fa-address-card"></i> جهة اتصال (VCF)
+                    </button>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-html"
+                        style="width: 100%;">
+                        <i class="fas fa-globe"></i> ملف ويب (HTML)
                     </button>
                 </div>
                 <div class="form-group" style="margin-top: 10px;">
