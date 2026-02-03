@@ -621,6 +621,107 @@ app.post('/api/auth/login', [
   }
 });
 
+// Google OAuth - Initiate Flow
+app.get('/api/auth/google', (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) {
+    return res.status(500).send('Google OAuth not configured');
+  }
+
+  const redirectUri = `${process.env.PUBLIC_BASE_URL || 'https://nfc-vjy6.onrender.com'}/api/auth/google/callback`;
+  const scope = 'email profile';
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
+
+  res.redirect(authUrl);
+});
+
+// Google OAuth - Callback Handler
+app.get('/api/auth/google/callback', async (req, res) => {
+  const { code, error } = req.query;
+
+  if (error || !code) {
+    return res.send(`
+      <script>
+        window.opener.postMessage({ type: 'google-auth', success: false, error: '${error || 'Authorization failed'}' }, '*');
+        window.close();
+      </script>
+    `);
+  }
+
+  try {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const redirectUri = `${process.env.PUBLIC_BASE_URL || 'https://nfc-vjy6.onrender.com'}/api/auth/google/callback`;
+
+    // Exchange code for tokens
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code'
+      })
+    });
+
+    const tokens = await tokenResponse.json();
+    if (!tokens.access_token) throw new Error('No access token');
+
+    // Get user info
+    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` }
+    });
+    const googleUser = await userInfoResponse.json();
+
+    if (!googleUser.email) throw new Error('No email from Google');
+
+    // Find or create user
+    let user = await db.collection(usersCollectionName).findOne({ email: googleUser.email });
+
+    if (!user) {
+      // Create new user
+      const userId = nanoid(10);
+      await db.collection(usersCollectionName).insertOne({
+        userId,
+        email: googleUser.email,
+        name: googleUser.name || googleUser.email.split('@')[0],
+        googleId: googleUser.id,
+        isVerified: true, // Google accounts are pre-verified
+        createdAt: new Date()
+      });
+      user = { userId, email: googleUser.email, name: googleUser.name };
+    }
+
+    // Generate JWT
+    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const jwtToken = jwt.sign({ userId: user.userId, email: user.email }, secret, { expiresIn: '7d' });
+
+    // Send success back to opener
+    res.send(`
+      <script>
+        window.opener.postMessage({
+          type: 'google-auth',
+          success: true,
+          token: '${jwtToken}',
+          user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
+        }, '*');
+        window.close();
+      </script>
+    `);
+
+  } catch (err) {
+    console.error('Google OAuth error:', err);
+    res.send(`
+      <script>
+        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '*');
+        window.close();
+      </script>
+    `);
+  }
+});
+
 // Forgot Password - Request Reset Link
 app.post('/api/auth/forgot-password', [
   body('email').isEmail().normalizeEmail()

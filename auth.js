@@ -77,6 +77,51 @@ const Auth = {
         }
     },
 
+    // Google Sign-In using popup flow
+    async googleSignIn() {
+        return new Promise((resolve) => {
+            // Open popup to backend Google OAuth endpoint
+            const width = 500;
+            const height = 600;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+
+            const popup = window.open(
+                `${this.getBaseUrl()}/api/auth/google`,
+                'Google Sign In',
+                `width=${width},height=${height},left=${left},top=${top}`
+            );
+
+            // Listen for message from popup
+            const messageHandler = (event) => {
+                if (event.data && event.data.type === 'google-auth') {
+                    window.removeEventListener('message', messageHandler);
+                    if (event.data.success) {
+                        this.setSession(event.data.token, event.data.user);
+                        resolve({ success: true });
+                    } else {
+                        resolve({ success: false, error: event.data.error || 'فشل تسجيل الدخول' });
+                    }
+                    if (popup) popup.close();
+                }
+            };
+
+            window.addEventListener('message', messageHandler);
+
+            // Check if popup was blocked
+            if (!popup || popup.closed) {
+                resolve({ success: false, error: 'تم حظر النافذة المنبثقة. يرجى السماح بها.' });
+            }
+
+            // Timeout after 2 minutes
+            setTimeout(() => {
+                window.removeEventListener('message', messageHandler);
+                if (popup && !popup.closed) popup.close();
+                resolve({ success: false, error: 'انتهت المهلة. حاول مرة أخرى.' });
+            }, 120000);
+        });
+    },
+
     logout() {
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
