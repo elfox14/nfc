@@ -4,8 +4,8 @@ const Auth = {
     // API Endpoints
     // Determine Base URL:
     // 1. If 'file:' protocol, default to Render live server.
-    // 2. If 'localhost' or '127.0.0.1', always point to http://localhost:3000
-    // 3. Otherwise (production domain), use relative paths.
+    // 2. If 'localhost' or '127.0.0.1', point to http://localhost:3000
+    // 3. For production (mcprim.com), point to Render backend
     getBaseUrl() {
         if (window.location.protocol === 'file:') {
             return 'https://nfc-vjy6.onrender.com';
@@ -13,11 +13,11 @@ const Auth = {
 
         const hostname = window.location.hostname;
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            // Always use localhost:3000 for local development
             return 'http://localhost:3000';
         }
 
-        return ''; // Use relative path for production
+        // Production - use Render backend
+        return 'https://nfc-vjy6.onrender.com';
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
