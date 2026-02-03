@@ -106,22 +106,38 @@ const EditorUserStatus = {
             let state = StateManager.getStateObject();
 
             // Capture Images if requested (Manual Save)
-            if (captureImages && typeof DOMElements !== 'undefined' && ShareManager.captureAndUploadCard) {
-                try {
-                    // Capture Front
-                    const frontImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardFront);
-                    // Capture Back
-                    const backImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardBack);
+            if (captureImages) {
+                console.log('[EditorUserStatus] Attempting to capture images...');
+                console.log('[EditorUserStatus] DOMElements:', typeof DOMElements !== 'undefined' ? 'defined' : 'undefined');
+                console.log('[EditorUserStatus] ShareManager.captureAndUploadCard:', typeof ShareManager.captureAndUploadCard);
 
-                    if (!state.imageUrls) state.imageUrls = {};
-                    state.imageUrls.capturedFront = frontImageUrl;
-                    state.imageUrls.capturedBack = backImageUrl;
+                if (typeof DOMElements !== 'undefined' && DOMElements.cardFront && ShareManager.captureAndUploadCard) {
+                    try {
+                        if (saveBtnText) saveBtnText.textContent = 'جاري التقاط الصور...';
 
-                    if (saveBtnText) saveBtnText.textContent = 'جاري الرفع...';
-                } catch (captureErr) {
-                    console.warn('[EditorUserStatus] Image capture failed:', captureErr);
-                    // We continue to save JSON even if image capture fails, 
-                    // but maybe notify user? For now silent fail-over to JSON save.
+                        // Capture Front
+                        console.log('[EditorUserStatus] Capturing front...');
+                        const frontImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardFront);
+                        console.log('[EditorUserStatus] Front captured:', frontImageUrl);
+
+                        // Capture Back
+                        console.log('[EditorUserStatus] Capturing back...');
+                        const backImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardBack);
+                        console.log('[EditorUserStatus] Back captured:', backImageUrl);
+
+                        if (!state.imageUrls) state.imageUrls = {};
+                        state.imageUrls.capturedFront = frontImageUrl;
+                        state.imageUrls.capturedBack = backImageUrl;
+
+                        if (saveBtnText) saveBtnText.textContent = 'جاري الرفع...';
+                        console.log('[EditorUserStatus] Images captured successfully');
+                    } catch (captureErr) {
+                        console.error('[EditorUserStatus] Image capture failed:', captureErr);
+                        alert('فشل التقاط صورة البطاقة: ' + captureErr.message);
+                    }
+                } else {
+                    console.warn('[EditorUserStatus] Cannot capture images - missing dependencies');
+                    console.warn('DOMElements.cardFront:', DOMElements?.cardFront);
                 }
             }
 
