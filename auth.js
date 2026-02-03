@@ -4,9 +4,7 @@ const Auth = {
     // API Endpoints
     // Determine Base URL:
     // 1. If 'file:' protocol, default to Render live server.
-    // 2. If 'localhost' or '127.0.0.1':
-    //    - If port is 3000, use relative paths.
-    //    - If port is NOT 3000 (e.g. Live Server 5500), point to http://localhost:3000.
+    // 2. If 'localhost' or '127.0.0.1', always point to http://localhost:3000
     // 3. Otherwise (production domain), use relative paths.
     getBaseUrl() {
         if (window.location.protocol === 'file:') {
@@ -15,13 +13,11 @@ const Auth = {
 
         const hostname = window.location.hostname;
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            if (window.location.port !== '3000') {
-                // Creating a cross-origin request to the backend server
-                return 'http://localhost:3000';
-            }
+            // Always use localhost:3000 for local development
+            return 'http://localhost:3000';
         }
 
-        return ''; // Use relative path
+        return ''; // Use relative path for production
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
