@@ -10,7 +10,7 @@
     document.addEventListener('DOMContentLoaded', initEditorEnhancements);
 
     function initEditorEnhancements() {
-        createProgressBar();
+        // createProgressBar(); // Disabled - user requested removal
         initAutoSave();
         initKeyboardShortcuts();
         initFullPreviewMode();

@@ -2,6 +2,36 @@
    Trial Period Banner - Styles
    ================================================ */
 
+/* ================================================
+   Compact Toolbar - Icons Only
+   ================================================ */
+.pro-toolbar .btn span,
+.pro-toolbar .toolbar-group button span {
+    display: none !important;
+}
+
+.pro-toolbar .btn,
+.pro-toolbar .toolbar-group button {
+    padding: 8px 12px !important;
+    min-width: auto !important;
+}
+
+.pro-toolbar .btn i,
+.pro-toolbar .toolbar-group button i {
+    margin: 0 !important;
+    font-size: 16px;
+}
+
+/* Keep user status text visible */
+.pro-toolbar #user-status-text {
+    display: inline !important;
+}
+
+/* Save button special styling */
+.pro-toolbar #save-to-cloud-btn span {
+    display: inline !important;
+}
+
 .trial-banner {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #ffffff;
@@ -66,7 +96,7 @@
         font-size: 12px;
         padding: 8px 40px 8px 15px;
     }
-    
+
     .trial-banner__highlight {
         padding: 3px 8px;
         font-size: 11px;
