@@ -66,11 +66,12 @@ const EditorUserStatus = {
         // Save to cloud button
         const saveBtn = document.getElementById('save-to-cloud-btn');
         if (saveBtn) {
-            saveBtn.addEventListener('click', () => this.saveToCloud());
+            // Manual save: Capture images
+            saveBtn.addEventListener('click', () => this.saveToCloud(true));
         }
     },
 
-    async saveToCloud() {
+    async saveToCloud(captureImages = false) {
         const token = localStorage.getItem('authToken');
         const saveBtn = document.getElementById('save-to-cloud-btn');
         const saveBtnText = document.getElementById('save-btn-text');
@@ -91,33 +92,62 @@ const EditorUserStatus = {
         if (this.isSaving) return;
         this.isSaving = true;
 
-        // Update button state
-        if (saveBtnText) saveBtnText.textContent = 'جاري الحفظ...';
-        if (saveBtn) saveBtn.disabled = true;
+        // Update button state (visual feedback only for manual save usually)
+        if (captureImages && saveBtnText) saveBtnText.textContent = 'جاري المعالجة...';
+        if (captureImages && saveBtn) saveBtn.disabled = true;
+        if (!captureImages && saveBtnText) saveBtnText.textContent = 'حفظ تلقائي...';
 
         try {
             // Use ShareManager if available
-            if (typeof ShareManager !== 'undefined' && ShareManager.saveDesign) {
-                const designId = await ShareManager.saveDesign();
-                if (designId) {
-                    this.lastSaveTime = new Date();
+            if (typeof ShareManager === 'undefined' || !ShareManager.saveDesign) {
+                throw new Error('ShareManager not available');
+            }
+
+            let state = StateManager.getStateObject();
+
+            // Capture Images if requested (Manual Save)
+            if (captureImages && typeof DOMElements !== 'undefined' && ShareManager.captureAndUploadCard) {
+                try {
+                    // Capture Front
+                    const frontImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardFront);
+                    // Capture Back
+                    const backImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardBack);
+
+                    if (!state.imageUrls) state.imageUrls = {};
+                    state.imageUrls.capturedFront = frontImageUrl;
+                    state.imageUrls.capturedBack = backImageUrl;
+
+                    if (saveBtnText) saveBtnText.textContent = 'جاري الرفع...';
+                } catch (captureErr) {
+                    console.warn('[EditorUserStatus] Image capture failed:', captureErr);
+                    // We continue to save JSON even if image capture fails, 
+                    // but maybe notify user? For now silent fail-over to JSON save.
+                }
+            }
+
+            const designId = await ShareManager.saveDesign(state);
+            if (designId) {
+                this.lastSaveTime = new Date();
+
+                if (captureImages) {
                     if (saveBtnText) saveBtnText.textContent = 'تم الحفظ ✓';
                     if (typeof UIManager !== 'undefined') {
-                        UIManager.announce('تم حفظ التصميم بنجاح');
+                        UIManager.announce('تم حفظ التصميم والصور بنجاح');
                     }
                     setTimeout(() => {
                         if (saveBtnText) saveBtnText.textContent = 'حفظ التصميم';
                     }, 2000);
                 } else {
-                    throw new Error('Failed to save');
+                    // Auto-save silent update or minimal UI
+                    if (saveBtnText) saveBtnText.textContent = 'حفظ التصميم';
                 }
             } else {
-                throw new Error('ShareManager not available');
+                throw new Error('Failed to save');
             }
         } catch (err) {
             console.error('[EditorUserStatus] Save failed:', err);
-            if (saveBtnText) saveBtnText.textContent = 'فشل الحفظ';
-            if (typeof UIManager !== 'undefined') {
+            if (captureImages && saveBtnText) saveBtnText.textContent = 'فشل الحفظ';
+            if (captureImages && typeof UIManager !== 'undefined') {
                 UIManager.announce('فشل حفظ التصميم. حاول مرة أخرى.');
             }
             setTimeout(() => {
@@ -135,7 +165,8 @@ const EditorUserStatus = {
             const token = localStorage.getItem('authToken');
             if (token && !this.isSaving) {
                 console.log('[EditorUserStatus] Auto-saving...');
-                this.saveToCloud();
+                // Auto-save: Do NOT capture images (too heavy)
+                this.saveToCloud(false);
             }
         }, this.autoSaveDelay);
     },
