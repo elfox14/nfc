@@ -11,6 +11,18 @@
     --toolbar-height: 60px;
 }
 
+[data-theme="light"] {
+    --text-primary: #2c3e50;
+    --text-secondary: #5a6b7c;
+    --accent-primary: #2980b9;
+    --accent-secondary: #dcdde1;
+    --button-text: #ffffff;
+    --page-bg: #f5f6fa;
+    --form-bg: #ffffff;
+    --danger-color: #e74c3c;
+    --success-color: #27ae60;
+}
+
 html {
     box-sizing: border-box;
 }

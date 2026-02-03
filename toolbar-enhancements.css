@@ -14,6 +14,18 @@
 .pro-toolbar .toolbar-group button {
     padding: 8px 12px !important;
     min-width: auto !important;
+    transition: all 0.2s ease !important;
+}
+
+.pro-toolbar .btn:hover,
+.pro-toolbar .toolbar-group button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(77, 166, 255, 0.3);
+}
+
+.pro-toolbar .btn:active,
+.pro-toolbar .toolbar-group button:active {
+    transform: translateY(0);
 }
 
 .pro-toolbar .btn i,
@@ -30,6 +42,54 @@
 /* Save button special styling */
 .pro-toolbar #save-to-cloud-btn span {
     display: inline !important;
+}
+
+/* ================================================
+   Auto-save Indicator
+   ================================================ */
+.autosave-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(40, 167, 69, 0.15);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    border-radius: 20px;
+    font-size: 11px;
+    color: #28a745;
+    transition: all 0.3s ease;
+}
+
+.autosave-indicator i {
+    font-size: 12px;
+}
+
+.autosave-indicator.saving {
+    background: rgba(255, 193, 7, 0.15);
+    border-color: rgba(255, 193, 7, 0.3);
+    color: #ffc107;
+}
+
+.autosave-indicator.saving i {
+    animation: pulse 1s infinite;
+}
+
+.autosave-indicator.error {
+    background: rgba(220, 53, 69, 0.15);
+    border-color: rgba(220, 53, 69, 0.3);
+    color: #dc3545;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .trial-banner {
@@ -92,15 +152,129 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+
+    /* Hide trial banner on mobile */
     .trial-banner {
-        font-size: 12px;
-        padding: 8px 40px 8px 15px;
+        display: none !important;
     }
 
-    .trial-banner__highlight {
-        padding: 3px 8px;
-        font-size: 11px;
+    /* Compact toolbar for mobile */
+    .pro-toolbar {
+        padding: 5px 8px !important;
+        gap: 4px !important;
+        flex-wrap: wrap !important;
     }
+
+    .pro-toolbar .btn,
+    .pro-toolbar .toolbar-group button {
+        padding: 6px 8px !important;
+        font-size: 12px !important;
+    }
+
+    .pro-toolbar .btn i,
+    .pro-toolbar .toolbar-group button i {
+        font-size: 14px !important;
+    }
+
+    /* Hide some buttons on mobile */
+    .pro-toolbar #start-collab-btn,
+    .pro-toolbar #share-editor-btn,
+    .pro-toolbar #show-gallery-btn {
+        display: none !important;
+    }
+
+    /* Hide user status bar and autosave indicator on mobile */
+    .pro-toolbar .user-status-bar,
+    .autosave-indicator {
+        display: none !important;
+    }
+
+    /* Make save button more compact */
+    .pro-toolbar #save-to-cloud-btn span {
+        display: none !important;
+    }
+
+    /* Toolbar groups */
+    .pro-toolbar .toolbar-group {
+        gap: 4px !important;
+    }
+}
+
+/* ================================================
+   3D Preview Mode Styles
+   ================================================ */
+
+/* 3D Scene Wrapper */
+.cards-wrapper.mode-3d {
+    perspective: 1200px;
+    height: 350px;
+    /* Fixed height for 3D staging */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row !important;
+    /* Force side-by-side logic (though absolute) */
+    position: relative;
+    max-width: 100%;
+}
+
+/* Base styles for cards in 3D mode */
+.cards-wrapper.mode-3d .business-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* Start centered */
+    width: 330px !important;
+    /* Fixed width for better 3D control */
+    height: 520px !important;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    margin: 0 !important;
+}
+
+/* Front Face */
+.cards-wrapper.mode-3d .card-face.card-front {
+    z-index: 2;
+    transform: translate(-50%, -50%) rotateY(0deg);
+}
+
+/* Back Face */
+.cards-wrapper.mode-3d .card-face.card-back {
+    z-index: 1;
+    transform: translate(-50%, -50%) rotateY(180deg);
+    /* Ensure background exists so it's not transparent */
+    background-color: #223246;
+}
+
+/* Flipped State (via Class) */
+.cards-wrapper.mode-3d.flipped .card-face.card-front {
+    transform: translate(-50%, -50%) rotateY(-180deg);
+}
+
+.cards-wrapper.mode-3d.flipped .card-face.card-back {
+    transform: translate(-50%, -50%) rotateY(0deg);
+}
+
+/* Interactive Rotation (via JS drag) */
+.cards-wrapper.mode-3d.interactive .business-card {
+    transition: none;
+    /* Disable smooth transition when dragging */
+    cursor: grab;
+}
+
+.cards-wrapper.mode-3d.interactive .business-card:active {
+    cursor: grabbing;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* Active Button State */
+#preview-3d-btn.active {
+    background-color: var(--accent-primary);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(77, 166, 255, 0.5);
 }
 
 /* ================================================
