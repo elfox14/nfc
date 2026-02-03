@@ -13,6 +13,7 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const verifyToken = require('./auth-middleware');
+const EmailService = require('./email-service');
 const { JSDOM } = require('jsdom');
 const DOMPurifyFactory = require('dompurify');
 const multer = require('multer');
@@ -517,14 +518,30 @@ app.post('/api/auth/register', [
       email,
       password: hashedPassword,
       name,
+      isVerified: false,
       createdAt: new Date()
     });
 
-    // Generate Token
+    // Generate verification token
     const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
+
+    // Store verification token
+    await db.collection(usersCollectionName).updateOne(
+      { userId },
+      { $set: { verificationToken } }
+    );
+
+    // Send verification email
+    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
+    const verifyUrl = `${baseUrl}/verify-email.html?token=${verificationToken}`;
+    const emailTemplate = EmailService.verificationEmail(name, verifyUrl);
+    await EmailService.send({ to: email, ...emailTemplate });
+
+    // Generate login token
     const token = jwt.sign({ userId, email }, secret, { expiresIn: '7d' });
 
-    res.status(201).json({ success: true, token, user: { name, email, userId } });
+    res.status(201).json({ success: true, token, user: { name, email, userId, isVerified: false } });
 
   } catch (err) {
     if (err.code === 11000) {
@@ -669,6 +686,49 @@ app.post('/api/auth/reset-password/:token', [
   } catch (err) {
     console.error('Reset password error:', err);
     res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+// Verify Email
+app.get('/api/auth/verify-email/:token', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const { token } = req.params;
+
+    // Verify token
+    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    let decoded;
+    try {
+      decoded = jwt.verify(token, secret);
+      if (decoded.type !== 'email-verify') throw new Error('Invalid token type');
+    } catch (tokenErr) {
+      return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
+    }
+
+    // Find user and verify token matches
+    const user = await db.collection(usersCollectionName).findOne({ userId: decoded.userId, verificationToken: token });
+    if (!user) {
+      return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
+    }
+
+    // Check if already verified
+    if (user.isVerified) {
+      return res.json({ success: true, message: 'البريد مُتحقق مسبقاً' });
+    }
+
+    // Update user as verified
+    await db.collection(usersCollectionName).updateOne(
+      { userId: user.userId },
+      { $set: { isVerified: true }, $unset: { verificationToken: '' } }
+    );
+
+    console.log(`[VerifyEmail] Email verified for user: ${user.email}`);
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('Verify email error:', err);
+    res.status(500).json({ error: 'Failed to verify email' });
   }
 });
 
