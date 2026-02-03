@@ -649,21 +649,47 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error(i18n.cardElementsNotFound);
         }
 
-        // Move render areas into viewport for html2canvas to work properly
-        // html2canvas requires elements to be visible and within viewport
-        const originalFrontLeft = frontCardRenderArea.style.left;
-        const originalBackLeft = backCardRenderArea.style.left;
+        // Get the visually-hidden parent container and temporarily make it visible
+        const hiddenContainer = document.querySelector('.visually-hidden');
+        const originalContainerStyles = hiddenContainer ? {
+            position: hiddenContainer.style.position,
+            width: hiddenContainer.style.width,
+            height: hiddenContainer.style.height,
+            margin: hiddenContainer.style.margin,
+            padding: hiddenContainer.style.padding,
+            overflow: hiddenContainer.style.overflow,
+            clip: hiddenContainer.style.clip,
+            clipPath: hiddenContainer.style.clipPath
+        } : null;
+
+        if (hiddenContainer) {
+            // Override visually-hidden styles to make it visible for capture
+            hiddenContainer.style.position = 'fixed';
+            hiddenContainer.style.width = 'auto';
+            hiddenContainer.style.height = 'auto';
+            hiddenContainer.style.margin = '0';
+            hiddenContainer.style.padding = '0';
+            hiddenContainer.style.overflow = 'visible';
+            hiddenContainer.style.clip = 'auto';
+            hiddenContainer.style.clipPath = 'none';
+            hiddenContainer.style.left = '0';
+            hiddenContainer.style.top = '0';
+            hiddenContainer.style.opacity = '0.01'; // Nearly invisible
+            hiddenContainer.style.zIndex = '-9999';
+        }
+
+        // Also ensure render wrappers are positioned correctly
+        frontCardRenderArea.style.position = 'relative';
         frontCardRenderArea.style.left = '0';
         frontCardRenderArea.style.top = '0';
         frontCardRenderArea.style.visibility = 'visible';
-        frontCardRenderArea.style.opacity = '0.01'; // Nearly invisible but still renderable
+        backCardRenderArea.style.position = 'relative';
         backCardRenderArea.style.left = '0';
         backCardRenderArea.style.top = '0';
         backCardRenderArea.style.visibility = 'visible';
-        backCardRenderArea.style.opacity = '0.01';
 
         // Wait for reflow
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         const captureOptions = { scale: 2, useCORS: true, allowTaint: true, backgroundColor: null, logging: false, imageTimeout: 15000 };
 
@@ -671,13 +697,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const frontCanvas = await html2canvas(frontCardRenderArea, captureOptions);
             const backCanvas = await html2canvas(backCardRenderArea, captureOptions);
 
-            // Restore original positions and hide
-            frontCardRenderArea.style.left = originalFrontLeft || '-9999px';
+            // Restore hidden container
+            if (hiddenContainer && originalContainerStyles) {
+                hiddenContainer.style.position = originalContainerStyles.position || '';
+                hiddenContainer.style.width = originalContainerStyles.width || '';
+                hiddenContainer.style.height = originalContainerStyles.height || '';
+                hiddenContainer.style.margin = originalContainerStyles.margin || '';
+                hiddenContainer.style.padding = originalContainerStyles.padding || '';
+                hiddenContainer.style.overflow = originalContainerStyles.overflow || '';
+                hiddenContainer.style.clip = originalContainerStyles.clip || '';
+                hiddenContainer.style.clipPath = originalContainerStyles.clipPath || '';
+                hiddenContainer.style.left = '';
+                hiddenContainer.style.top = '';
+                hiddenContainer.style.opacity = '';
+                hiddenContainer.style.zIndex = '';
+            }
+
+            // Restore render areas
+            frontCardRenderArea.style.position = 'absolute';
+            frontCardRenderArea.style.left = '-9999px';
             frontCardRenderArea.style.visibility = 'hidden';
-            frontCardRenderArea.style.opacity = '1';
-            backCardRenderArea.style.left = originalBackLeft || '-9999px';
+            backCardRenderArea.style.position = 'absolute';
+            backCardRenderArea.style.left = '-9999px';
             backCardRenderArea.style.visibility = 'hidden';
-            backCardRenderArea.style.opacity = '1';
 
             const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
             const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
@@ -691,13 +733,28 @@ document.addEventListener('DOMContentLoaded', () => {
             flipBtn.style.display = 'inline-flex';
 
         } catch (error) {
-            // Restore original positions and hide on error
-            frontCardRenderArea.style.left = originalFrontLeft || '-9999px';
+            // Restore hidden container on error
+            if (hiddenContainer && originalContainerStyles) {
+                hiddenContainer.style.position = originalContainerStyles.position || '';
+                hiddenContainer.style.width = originalContainerStyles.width || '';
+                hiddenContainer.style.height = originalContainerStyles.height || '';
+                hiddenContainer.style.margin = originalContainerStyles.margin || '';
+                hiddenContainer.style.padding = originalContainerStyles.padding || '';
+                hiddenContainer.style.overflow = originalContainerStyles.overflow || '';
+                hiddenContainer.style.clip = originalContainerStyles.clip || '';
+                hiddenContainer.style.clipPath = originalContainerStyles.clipPath || '';
+                hiddenContainer.style.left = '';
+                hiddenContainer.style.top = '';
+                hiddenContainer.style.opacity = '';
+                hiddenContainer.style.zIndex = '';
+            }
+            // Restore render areas on error
+            frontCardRenderArea.style.position = 'absolute';
+            frontCardRenderArea.style.left = '-9999px';
             frontCardRenderArea.style.visibility = 'hidden';
-            frontCardRenderArea.style.opacity = '1';
-            backCardRenderArea.style.left = originalBackLeft || '-9999px';
+            backCardRenderArea.style.position = 'absolute';
+            backCardRenderArea.style.left = '-9999px';
             backCardRenderArea.style.visibility = 'hidden';
-            backCardRenderArea.style.opacity = '1';
             throw new Error(i18n.failedCaptureCardImages);
         }
     };
