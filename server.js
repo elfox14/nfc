@@ -532,11 +532,15 @@ app.post('/api/auth/register', [
       { $set: { verificationToken } }
     );
 
-    // Send verification email
+    // Send verification email (non-blocking)
     const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
     const verifyUrl = `${baseUrl}/verify-email.html?token=${verificationToken}`;
-    const emailTemplate = EmailService.verificationEmail(name, verifyUrl);
-    await EmailService.send({ to: email, ...emailTemplate });
+    try {
+      const emailTemplate = EmailService.verificationEmail(name, verifyUrl);
+      await EmailService.send({ to: email, ...emailTemplate });
+    } catch (emailErr) {
+      console.warn('[Register] Email sending failed (non-blocking):', emailErr.message);
+    }
 
     // Generate login token
     const token = jwt.sign({ userId, email }, secret, { expiresIn: '7d' });
