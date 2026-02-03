@@ -75,7 +75,22 @@ const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgro
 let db;
 
 MongoClient.connect(mongoUrl)
-  .then(client => { db = client.db(dbName); console.log('MongoDB connected'); })
+  .then(async client => {
+    db = client.db(dbName);
+    console.log('MongoDB connected');
+
+    // Create indexes for better performance
+    try {
+      await db.collection(designsCollectionName).createIndex({ shortId: 1 }, { unique: true });
+      await db.collection(designsCollectionName).createIndex({ ownerId: 1 });
+      await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
+      await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
+      await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
+      console.log('MongoDB indexes created');
+    } catch (indexErr) {
+      console.warn('Some indexes may already exist:', indexErr.message);
+    }
+  })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
 const rootDir = __dirname;
@@ -333,6 +348,19 @@ const apiLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api/', apiLimiter);
+
+// Stricter rate limiting for auth endpoints (5 attempts per 15 minutes)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'محاولات كثيرة جداً. حاول مرة أخرى بعد 15 دقيقة.' },
+  skipSuccessfulRequests: true // Don't count successful logins
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -774,6 +802,33 @@ app.get('/api/get-design/:id', async (req, res) => {
     if (!res.headersSent) {
       res.status(500).json({ error: 'Fetch failed' });
     }
+  }
+});
+
+// Get Card Statistics
+app.get('/api/card-stats/:id', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const id = String(req.params.id);
+    const doc = await db.collection(designsCollectionName).findOne(
+      { shortId: id },
+      { projection: { views: 1, createdAt: 1, lastModified: 1, shortId: 1 } }
+    );
+
+    if (!doc) return res.status(404).json({ error: 'Design not found' });
+
+    res.json({
+      success: true,
+      stats: {
+        id: doc.shortId,
+        views: doc.views || 0,
+        createdAt: doc.createdAt,
+        lastModified: doc.lastModified
+      }
+    });
+  } catch (e) {
+    console.error('Get card stats error:', e);
+    res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
 

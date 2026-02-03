@@ -58,6 +58,7 @@
     <script src="script-main.js" defer></script>
     <script src="chatbot-guide.js" defer></script>
     <script src="editor-enhancements.js" defer></script>
+    <script src="editor-user-status.js" defer></script>
 
     <style>
         /* =============================================================== */
@@ -189,6 +190,21 @@
                     class="fas fa-edit" aria-hidden="true"></i></button>
             <button id="reset-design-btn" class="btn btn-danger toolbar-btn-mobile-hidden"><span>إعادة تعيين</span><i
                     class="fas fa-undo" aria-hidden="true"></i></button>
+
+            <!-- User Status & Save Button -->
+            <div class="user-status-bar" id="user-status-bar"
+                style="display: flex; align-items: center; gap: 8px; margin-right: 10px; padding: 4px 10px; background: rgba(77,166,255,0.1); border-radius: 8px;">
+                <span id="user-status-text" style="font-size: 12px; color: var(--text-secondary);">غير مسجل</span>
+                <a href="login.html" id="user-login-link" class="btn btn-secondary"
+                    style="padding: 4px 10px; font-size: 11px;">تسجيل دخول</a>
+                <button id="user-logout-btn" class="btn btn-secondary"
+                    style="padding: 4px 10px; font-size: 11px; display: none;">خروج</button>
+            </div>
+            <button id="save-to-cloud-btn" class="btn btn-primary"
+                style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <span id="save-btn-text">حفظ التصميم</span>
+                <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+            </button>
         </div>
     </header>
 
