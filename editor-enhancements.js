@@ -822,28 +822,38 @@
     // MOBILE BOTTOM TOOLBAR
     // ===========================================
     function createMobileBottomToolbar() {
+        const isEnglish = document.documentElement.lang === 'en';
         const toolbar = document.createElement('div');
         toolbar.className = 'mobile-bottom-toolbar';
+
+        const labels = {
+            flip: isEnglish ? 'Flip' : 'قلب البطاقة',
+            undo: isEnglish ? 'Undo' : 'تراجع',
+            save: isEnglish ? 'Save' : 'حفظ',
+            share: isEnglish ? 'Share' : 'مشاركة',
+            download: isEnglish ? 'Download' : 'تنزيل'
+        };
+
         toolbar.innerHTML = `
-            <button class="mobile-bottom-btn" data-action="flip" title="Flip">
+            <button class="mobile-bottom-btn" data-action="flip" title="${labels.flip}">
                 <i class="fas fa-sync-alt"></i>
-                <span>Flip</span>
+                <span>${labels.flip}</span>
             </button>
-            <button class="mobile-bottom-btn" data-action="undo" title="Undo">
+            <button class="mobile-bottom-btn" data-action="undo" title="${labels.undo}">
                 <i class="fas fa-undo"></i>
-                <span>Undo</span>
+                <span>${labels.undo}</span>
             </button>
-            <button class="mobile-bottom-btn primary" data-action="save" title="Save">
+            <button class="mobile-bottom-btn primary" data-action="save" title="${labels.save}">
                 <i class="fas fa-save"></i>
-                <span>Save</span>
+                <span>${labels.save}</span>
             </button>
-            <button class="mobile-bottom-btn" data-action="share" title="Share">
+            <button class="mobile-bottom-btn" data-action="share" title="${labels.share}">
                 <i class="fas fa-share-alt"></i>
-                <span>Share</span>
+                <span>${labels.share}</span>
             </button>
-            <button class="mobile-bottom-btn" data-action="download" title="Download">
+            <button class="mobile-bottom-btn" data-action="download" title="${labels.download}">
                 <i class="fas fa-download"></i>
-                <span>Download</span>
+                <span>${labels.download}</span>
             </button>
         `;
 

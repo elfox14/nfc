@@ -18,6 +18,7 @@ const EditorUserStatus = {
     },
 
     updateUserStatus() {
+        const isEnglish = document.documentElement.lang === 'en';
         const statusText = document.getElementById('user-status-text');
         const loginLink = document.getElementById('user-login-link');
         const logoutBtn = document.getElementById('user-logout-btn');
@@ -29,35 +30,38 @@ const EditorUserStatus = {
         const token = localStorage.getItem('authToken');
 
         if (token && user) {
-            statusText.textContent = user.name || user.email || 'مستخدم';
+            statusText.textContent = user.name || user.email || (isEnglish ? 'User' : 'مستخدم');
             statusText.style.color = 'var(--accent-primary)';
             loginLink.style.display = 'none';
             logoutBtn.style.display = 'inline-flex';
+            logoutBtn.textContent = isEnglish ? 'Logout' : 'خروج';
             if (saveBtn) {
-                saveBtn.querySelector('#save-btn-text').textContent = 'حفظ التصميم';
+                saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
             }
         } else {
-            statusText.textContent = 'غير مسجل';
+            statusText.textContent = isEnglish ? 'Guest' : 'غير مسجل';
             statusText.style.color = 'var(--text-secondary)';
             loginLink.style.display = 'inline-flex';
+            loginLink.textContent = isEnglish ? 'Login' : 'تسجيل دخول';
             logoutBtn.style.display = 'none';
             if (saveBtn) {
-                saveBtn.querySelector('#save-btn-text').textContent = 'سجّل لحفظ';
+                saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ';
             }
         }
     },
 
     bindEvents() {
+        const isEnglish = document.documentElement.lang === 'en';
         // Logout button
         const logoutBtn = document.getElementById('user-logout-btn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                if (confirm('هل تريد تسجيل الخروج؟')) {
+                if (confirm(isEnglish ? 'Are you sure you want to logout?' : 'هل تريد تسجيل الخروج؟')) {
                     localStorage.removeItem('authToken');
                     localStorage.removeItem('authUser');
                     this.updateUserStatus();
                     if (typeof UIManager !== 'undefined') {
-                        UIManager.announce('تم تسجيل الخروج');
+                        UIManager.announce(isEnglish ? 'Logged out successfully' : 'تم تسجيل الخروج');
                     }
                 }
             });
@@ -72,19 +76,24 @@ const EditorUserStatus = {
     },
 
     async saveToCloud(captureImages = false) {
+        const isEnglish = document.documentElement.lang === 'en';
         const token = localStorage.getItem('authToken');
         const saveBtn = document.getElementById('save-to-cloud-btn');
         const saveBtnText = document.getElementById('save-btn-text');
 
         // If not logged in, redirect to login
         if (!token) {
-            const shouldLogin = confirm('يجب تسجيل الدخول لحفظ التصميم في حسابك.\n\nهل تريد تسجيل الدخول الآن؟');
+            const confirmMsg = isEnglish
+                ? 'You must be logged in to save your design.\n\nDo you want to login now?'
+                : 'يجب تسجيل الدخول لحفظ التصميم في حسابك.\n\nهل تريد تسجيل الدخول الآن؟';
+
+            const shouldLogin = confirm(confirmMsg);
             if (shouldLogin) {
                 // Save current state to localStorage before redirecting
                 if (typeof StateManager !== 'undefined') {
                     StateManager.saveState();
                 }
-                window.location.href = 'login.html?redirect=editor.html';
+                window.location.href = isEnglish ? 'login-en.html?redirect=editor-en.html' : 'login.html?redirect=editor.html';
             }
             return;
         }
@@ -93,9 +102,9 @@ const EditorUserStatus = {
         this.isSaving = true;
 
         // Update button state (visual feedback only for manual save usually)
-        if (captureImages && saveBtnText) saveBtnText.textContent = 'جاري المعالجة...';
+        if (captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Processing...' : 'جاري المعالجة...';
         if (captureImages && saveBtn) saveBtn.disabled = true;
-        if (!captureImages && saveBtnText) saveBtnText.textContent = 'حفظ تلقائي...';
+        if (!captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Auto-saving...' : 'حفظ تلقائي...';
 
         try {
             // Use ShareManager if available
