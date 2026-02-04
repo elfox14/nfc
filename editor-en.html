@@ -55,7 +55,7 @@
     <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
     <script src="script-main.js" defer></script>
-    <script src="chatbot-guide.js" defer></script>
+
     <script src="editor-enhancements.js" defer></script>
 
     <!-- English placeholder initialization -->
@@ -140,7 +140,34 @@
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
-    <header class="pro-toolbar">
+    <header class="pro-toolbar" style="direction: ltr; flex-direction: row;">
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const langBtn = document.getElementById('lang-toggle-btn');
+                if (langBtn) {
+                    const setLangText = () => {
+                        if (langBtn.textContent.trim() !== 'ع') {
+                            langBtn.innerHTML = 'ع';
+                            langBtn.style.fontFamily = "'Tajawal', sans-serif";
+                            langBtn.style.fontWeight = "bold";
+                        }
+                    };
+
+                    // Initial set
+                    setLangText();
+
+                    // Observer to prevent unwarranted changes
+                    const observer = new MutationObserver((mutations) => {
+                        // Disconnect briefly to avoid infinite loop if we trigger it
+                        observer.disconnect();
+                        setLangText();
+                        observer.observe(langBtn, { childList: true, characterData: true, subtree: true });
+                    });
+
+                    observer.observe(langBtn, { childList: true, characterData: true, subtree: true });
+                }
+            });
+        </script>
         <div class="toolbar-group toolbar-start">
             <a href="index-en.html"
                 style="color: var(--text-primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px;"
@@ -159,6 +186,10 @@
                         class="fas fa-images"></i></a>
                 <a href="blog-en.html" class="btn-icon" title="Blog" style="font-size: 12px;"><i
                         class="fas fa-blog"></i></a>
+                <a href="how-to-use-editor.html" class="btn btn-primary"
+                    style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); border: none; margin: 0;">
+                    <i class="fas fa-book-open"></i> <span>Editor Guide</span>
+                </a>
             </nav>
 
             <div class="undo-redo-container">
@@ -168,16 +199,17 @@
                         class="fas fa-undo"></i></button>
             </div>
             <!-- NEW: Language & Preview Buttons -->
-            <button id="theme-toggle-btn" class="btn-icon btn-compact" title="Switch Theme" aria-label="Switch Theme"><i
-                    class="fas fa-moon"></i></button>
+            <button id="theme-toggle-btn" class="btn-icon btn-compact" title="Switch Theme (Dark/Light)"
+                aria-label="Toggle Theme"><i class="fas fa-sun"></i></button>
             <button id="lang-toggle-btn" class="btn-icon btn-compact" title="Toggle Language"
-                aria-label="Toggle Language" style="font-size: 11px;" onclick="switchLanguage('ar')">عربي</button>
+                aria-label="Toggle Language"
+                style="font-size: 14px; font-weight: bold; font-family: 'Tajawal', sans-serif;"
+                onclick="switchLanguage('ar')">ع</button>
+
             <button id="preview-mode-btn" class="btn-icon btn-compact" title="Preview Mode"
                 aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
         </div>
         <div class="toolbar-group toolbar-end">
-            <button id="save-to-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"><span>Save to
-                    Gallery</span><i class="fas fa-save" aria-hidden="true"></i></button>
             <div class="download-container">
                 <button id="download-options-btn" class="btn btn-secondary">
                     <span>Download</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
@@ -198,23 +230,49 @@
                 </ul>
             </div>
             <button id="share-card-btn" class="btn btn-success" aria-controls="share-fallback-modal-overlay"
-                aria-expanded="false">
-                <span>Share Card</span><i class="fas fa-share-alt" aria-hidden="true"></i>
+                aria-expanded="false" title="Share Card">
+                <span>Share</span><i class="fas fa-share-alt" aria-hidden="true"></i>
             </button>
 
-            <!-- Collaboration Button -->
-            <button id="start-collab-btn" class="btn btn-secondary" title="Start Collaboration Session">
-                <span>Collaborate</span><i class="fas fa-users"></i>
+            <!-- Toolbar buttons as icons with keyboard shortcuts -->
+            <button id="start-collab-btn" class="btn btn-secondary" title="Collaborate (Ctrl+Shift+C)">
+                <i class="fas fa-users"></i>
+            </button>
+            <button id="show-gallery-btn" class="btn btn-secondary" title="View Gallery (Ctrl+G)"
+                aria-controls="gallery-modal-overlay">
+                <i class="fas fa-images"></i>
+            </button>
+            <button id="save-to-gallery-btn" class="btn btn-secondary" title="Save to Gallery (Ctrl+S)">
+                <i class="fas fa-bookmark"></i>
+            </button>
+            <button id="share-editor-btn" class="btn btn-secondary" title="Share Editor Link (Ctrl+Shift+L)">
+                <i class="fas fa-link"></i>
+            </button>
+            <button id="reset-design-btn" class="btn btn-secondary" title="Reset Design (Ctrl+Shift+R)"
+                style="color: #dc3545;">
+                <i class="fas fa-undo"></i>
             </button>
 
-            <button id="show-gallery-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
-                aria-controls="gallery-modal-overlay" aria-expanded="false"><span>View Gallery</span><i
-                    class="fas fa-images" aria-hidden="true"></i></button>
-            <button id="share-editor-btn" class="btn btn-secondary toolbar-btn-mobile-hidden"
-                style="background-color: transparent; font-size: 0.9rem;"><span>Share Site Link</span><i
-                    class="fas fa-edit" aria-hidden="true"></i></button>
-            <button id="reset-design-btn" class="btn btn-danger toolbar-btn-mobile-hidden"><span>Reset</span><i
-                    class="fas fa-undo" aria-hidden="true"></i></button>
+            <!-- Auto-save indicator -->
+            <div id="autosave-indicator" class="autosave-indicator" title="Auto-save Status">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span id="autosave-status">Saved</span>
+            </div>
+
+            <!-- User Status & Save Button -->
+            <div class="user-status-bar" id="user-status-bar"
+                style="display: flex; align-items: center; gap: 8px; margin-right: 10px; padding: 4px 10px; background: rgba(77,166,255,0.1); border-radius: 8px;">
+                <span id="user-status-text" style="font-size: 12px; color: var(--text-secondary);">Guest</span>
+                <a href="login.html" id="user-login-link" class="btn btn-secondary"
+                    style="padding: 4px 10px; font-size: 11px;">Login</a>
+                <button id="user-logout-btn" class="btn btn-secondary"
+                    style="padding: 4px 10px; font-size: 11px; display: none;">Logout</button>
+            </div>
+            <button id="save-to-cloud-btn" class="btn btn-primary"
+                style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <span id="save-btn-text">Save Design</span>
+                <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+            </button>
         </div>
     </header>
 
@@ -267,7 +325,7 @@
                 </div>
             </fieldset>
 
-            <details class="fieldset-accordion" id="backgrounds-accordion" open>
+            <details class="fieldset-accordion" id="backgrounds-accordion">
                 <summary>Backgrounds & Colors</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" style="padding: 10px;">
@@ -369,7 +427,7 @@
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
 
-            <details class="fieldset-accordion" open>
+            <details class="fieldset-accordion">
                 <summary>Logo</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" id="logo-drop-zone">
@@ -480,7 +538,7 @@
                 </div>
             </details>
 
-            <details class="fieldset-accordion" open>
+            <details class="fieldset-accordion">
                 <summary>Personal Photo</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" id="photo-controls-fieldset">

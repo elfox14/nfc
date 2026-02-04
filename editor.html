@@ -57,7 +57,7 @@
     <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
     <script src="script-main.js" defer></script>
-    <script src="chatbot-guide.js" defer></script>
+
     <script src="editor-enhancements.js" defer></script>
     <script src="editor-user-status.js" defer></script>
 
@@ -148,6 +148,10 @@
                         class="fas fa-images"></i></a>
                 <a href="blog.html" class="btn-icon" title="المدونة" style="font-size: 12px;"><i
                         class="fas fa-blog"></i></a>
+                <a href="how-to-use-editor.html" class="btn btn-primary"
+                    style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); border: none; margin: 0;">
+                    <i class="fas fa-book-open"></i> <span>شرح المحرر</span>
+                </a>
             </nav>
 
             <div class="undo-redo-container">
@@ -161,10 +165,9 @@
                 aria-label="Toggle Theme"><i class="fas fa-sun"></i></button>
             <button id="lang-toggle-btn" class="btn-icon btn-compact" title="تبديل اللغة / Toggle Language"
                 aria-label="Toggle Language" style="font-size: 11px;">EN</button>
-            <button id="preview-3d-btn" class="btn-icon btn-compact" title="معاينة 3D" aria-label="3D Preview"><i
-                    class="fas fa-cube"></i></button>
             <button id="preview-mode-btn" class="btn-icon btn-compact" title="وضع المعاينة"
                 aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
+
         </div>
         <div class="toolbar-group toolbar-end">
             <div class="download-container">
@@ -269,19 +272,11 @@
                 <div class="form-group">
                     <label>اختر تصميمًا جاهزًا</label>
                     <div id="theme-gallery" class="theme-gallery-grid"></div>
-                    <div class="form-group" id="ai-suggestion-group"
-                        style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
-                        <label>هل تحتاج للإلهام؟</label>
-                        <button id="ai-suggest-btn" class="btn btn-secondary" style="width: 100%;">
-                            <i class="fas fa-magic"></i> <span>اقترح تصميمًا ذكيًا</span>
-                        </button>
-                        <div class="spinner" id="ai-spinner" style="display: none; margin: 10px auto 0;"></div>
-                    </div>
                     <input type="hidden" id="theme-select-input">
                 </div>
             </fieldset>
 
-            <details class="fieldset-accordion" id="backgrounds-accordion" open>
+            <details class="fieldset-accordion" id="backgrounds-accordion">
                 <summary>الخلفيات والألوان</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" style="padding: 10px;">
@@ -384,7 +379,7 @@
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
 
-            <details class="fieldset-accordion" open>
+            <details class="fieldset-accordion">
                 <summary>الشعار</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" id="logo-drop-zone">
@@ -495,7 +490,7 @@
                 </div>
             </details>
 
-            <details class="fieldset-accordion" open>
+            <details class="fieldset-accordion">
                 <summary>الصورة الشخصية</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" id="photo-controls-fieldset">
@@ -1561,6 +1556,130 @@
         </div>
     </div>
 
+    <!-- AI Backgrounds Modal -->
+    <div id="ai-backgrounds-modal" class="ai-modal-overlay" style="display: none;">
+        <div class="ai-modal">
+            <div class="ai-modal-header">
+                <h3><i class="fas fa-magic"></i> خلفيات بالذكاء الاصطناعي</h3>
+                <button id="close-ai-modal" class="ai-modal-close">&times;</button>
+            </div>
+            <div class="ai-modal-body">
+                <p class="ai-modal-subtitle">اختر نوع الخلفية التي تفضلها:</p>
+
+                <div class="ai-patterns-grid">
+                    <!-- Geometric Pattern -->
+                    <div class="ai-pattern-card" data-pattern="geometric">
+                        <div class="ai-pattern-preview"
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="pattern-overlay geometric-pattern"></div>
+                            <i class="fas fa-shapes"></i>
+                        </div>
+                        <span>هندسي</span>
+                    </div>
+
+                    <!-- Gradient Pattern -->
+                    <div class="ai-pattern-card" data-pattern="gradient">
+                        <div class="ai-pattern-preview"
+                            style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-fill-drip"></i>
+                        </div>
+                        <span>تدرج لوني</span>
+                    </div>
+
+                    <!-- Abstract Pattern -->
+                    <div class="ai-pattern-card" data-pattern="abstract">
+                        <div class="ai-pattern-preview"
+                            style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="pattern-overlay abstract-pattern"></div>
+                            <i class="fas fa-paint-brush"></i>
+                        </div>
+                        <span>تجريدي</span>
+                    </div>
+
+                    <!-- Waves Pattern -->
+                    <div class="ai-pattern-card" data-pattern="waves">
+                        <div class="ai-pattern-preview"
+                            style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                            <div class="pattern-overlay waves-pattern"></div>
+                            <i class="fas fa-water"></i>
+                        </div>
+                        <span>موجات</span>
+                    </div>
+
+                    <!-- Dots Pattern -->
+                    <div class="ai-pattern-card" data-pattern="dots">
+                        <div class="ai-pattern-preview"
+                            style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                            <div class="pattern-overlay dots-pattern"></div>
+                            <i class="fas fa-braille"></i>
+                        </div>
+                        <span>نقاط</span>
+                    </div>
+
+                    <!-- Lines Pattern -->
+                    <div class="ai-pattern-card" data-pattern="lines">
+                        <div class="ai-pattern-preview"
+                            style="background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);">
+                            <div class="pattern-overlay lines-pattern"></div>
+                            <i class="fas fa-grip-lines"></i>
+                        </div>
+                        <span>خطوط</span>
+                    </div>
+
+                    <!-- Triangles Pattern -->
+                    <div class="ai-pattern-card" data-pattern="triangles">
+                        <div class="ai-pattern-preview"
+                            style="background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);">
+                            <div class="pattern-overlay triangles-pattern"></div>
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <span>مثلثات</span>
+                    </div>
+
+                    <!-- Noise Pattern -->
+                    <div class="ai-pattern-card" data-pattern="noise">
+                        <div class="ai-pattern-preview"
+                            style="background: linear-gradient(135deg, #c471f5 0%, #fa71cd 100%);">
+                            <div class="pattern-overlay noise-pattern"></div>
+                            <i class="fas fa-random"></i>
+                        </div>
+                        <span>ضوضاء</span>
+                    </div>
+                </div>
+
+                <div class="ai-color-picker-section">
+                    <h4><i class="fas fa-palette"></i> اختر اللون الأساسي</h4>
+                    <div class="ai-color-options">
+                        <button class="ai-color-btn" data-color="#667eea" style="background: #667eea;"
+                            title="بنفسجي"></button>
+                        <button class="ai-color-btn" data-color="#f5576c" style="background: #f5576c;"
+                            title="وردي"></button>
+                        <button class="ai-color-btn" data-color="#4facfe" style="background: #4facfe;"
+                            title="أزرق"></button>
+                        <button class="ai-color-btn" data-color="#00f2fe" style="background: #00f2fe;"
+                            title="سماوي"></button>
+                        <button class="ai-color-btn" data-color="#43e97b" style="background: #43e97b;"
+                            title="أخضر"></button>
+                        <button class="ai-color-btn" data-color="#fa709a" style="background: #fa709a;"
+                            title="فوشيا"></button>
+                        <button class="ai-color-btn" data-color="#fee140" style="background: #fee140;"
+                            title="أصفر"></button>
+                        <button class="ai-color-btn" data-color="#30cfd0" style="background: #30cfd0;"
+                            title="تركواز"></button>
+                    </div>
+                </div>
+
+                <div class="ai-apply-section">
+                    <button id="ai-apply-front" class="btn btn-primary">
+                        <i class="fas fa-check"></i> تطبيق على الواجهة الأمامية
+                    </button>
+                    <button id="ai-apply-back" class="btn btn-secondary">
+                        <i class="fas fa-check"></i> تطبيق على الواجهة الخلفية
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- NEW: Floating button to exit preview mode -->
     <button id="exit-preview-btn" class="btn btn-secondary"
         style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">

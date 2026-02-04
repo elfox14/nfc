@@ -165,7 +165,7 @@ const ImageCropper = {
 };
 
 const TourManager = {
-    TOUR_SHOWN_KEY: "digitalCardTourShown_v5_desktop",
+    TOUR_SHOWN_KEY: "digitalCardTourShown_v6_desktop",
     tour: null,
 
     init() {
@@ -196,18 +196,53 @@ const TourManager = {
         });
 
         const steps = [
-            { id: "welcome", title: "مرحباً بك في المحرر!", text: "أهلاً بك في واجهة MC PRIME الاحترافية. لنبدأ جولة سريعة.", buttons: [{ text: "لنبدأ!", action() { return this.next(); } }] },
-            { id: "elements_panel", title: "1. لوحة العناصر", text: "هذه هي لوحتك الرئيسية. هنا يمكنك إضافة وتعديل *محتوى* بطاقتك (مثل اسمك، شعارك، وأرقام الهواتف).", attachTo: { element: ".pro-sidebar-right", on: "left" } },
-            { id: "design_panel", title: "2. لوحة التصميم", text: "هنا يمكنك تغيير *الشكل العام* للبطاقة، مثل اختيار التصاميم الجاهزة، تغيير الخلفيات، أو تعديل التخطيط.", attachTo: { element: ".pro-sidebar-left", on: "right" } },
-            { id: "canvas_drag", title: "3. منطقة المعاينة", text: "هنا تظهر بطاقتك. يمكنك النقر على أي عنصر (مثل الاسم) لتعديله، أو سحبه مباشرة لتغيير مكانه.", attachTo: { element: "#cards-wrapper", on: "top" } },
-            { id: "actions_toolbar", title: "4. شريط الأدوات", text: "عندما يصبح تصميمك جاهزاً، استخدم هذا الشريط العلوي لحفظ التصميم في المعرض، تنزيله كصورة، أو مشاركة رابط الكارت.", attachTo: { element: ".pro-toolbar .toolbar-end", on: "bottom" } },
-            { id: "finish", title: "أنت الآن جاهز!", text: "هذه هي الأساسيات. استمتع بتصميم بطاقتك الاحترافية.", buttons: [{ text: "إنهاء", action() { return this.complete(); } }] },
+            {
+                id: "welcome",
+                title: "مرحباً بك في محرر MC PRIME",
+                text: "تعلم كيفية تصميم بطاقة عمل رقمية احترافية في دقائق معدودة. ستأخذك هذه الجولة السريعة عبر مميزات المحرر.",
+                buttons: [{ text: "لنبدأ الجولة!", action() { return this.next(); } }]
+            },
+            {
+                id: "design_panel",
+                title: "1. اللوحة اليمنى (التصميم)",
+                text: "هذه اللوحة مخصصة للمظهر العام. تحتوي على:\n- **خيارات التخطيط:** اختر من بين 3 تخطيطات مختلفة.\n- **معرض التصاميم:** قوالب جاهزة بألوان متناسقة.\n- **الخلفيات:** تخصيص خلفية البطاقة وألوانها.",
+                attachTo: { element: ".pro-sidebar-left", on: "auto" }
+            },
+            {
+                id: "elements_panel",
+                title: "2. اللوحة اليسرى (المحتوى)",
+                text: "هنا يتم إضافة وتعديل بياناتك:\n- **الشعار والصورة الشخصية:** رفع وتخصيص الصور.\n- **المعلومات:** الاسم والمسمى الوظيفي.\n- **التواصل:** أرقام الهواتف وحسابات التواصل الاجتماعي.",
+                attachTo: { element: ".pro-sidebar-right", on: "auto" }
+            },
+            {
+                id: "canvas_drag",
+                title: "3. منطقة المعاينة الحية",
+                text: "شاهد تصميمك مباشرة أثناء العمل.\n- **تحريك العناصر:** يمكنك سحب الاسم أو الشعار وتغيير مكانه يدوياً.\n- **الوجهين:** استخدم الزر أسفل البطاقة للتبديل بين الوجه الأمامي والخلفي.",
+                attachTo: { element: "#cards-wrapper", on: "auto" }
+            },
+            {
+                id: "actions_toolbar",
+                title: "4. الحفظ والمشاركة",
+                text: "في الشريط العلوي:\n- **حفظ التصميم:** لحفظ عملك في السحابة.\n- **مشاركة:** للحصول على رابط بطاقتك.\n- **تنزيل:** لتحميل البطاقة كصورة أو PDF.",
+                attachTo: { element: ".pro-toolbar .toolbar-end", on: "auto" }
+            },
+            {
+                id: "finish",
+                title: "أنت جاهز للانطلاق!",
+                text: "ابدأ الآن في تصميم بطاقتك الفريدة. لا تنس استخدام زر **'مساعدة'** في الأعلى إذا احتجت للرجوع للشرح الكامل.",
+                buttons: [{ text: "إنهاء الجولة", action() { return this.complete(); } }]
+            },
         ];
 
         if (window.MobileUtils) {
             window.MobileUtils.configureTourSteps(steps);
         }
         steps.forEach((step) => this.tour.addStep(step));
+
+        // Auto-start if not shown before
+        if (!localStorage.getItem(this.TOUR_SHOWN_KEY)) {
+            setTimeout(() => this.start(), 1000); // Slight delay to ensure UI is ready
+        }
     },
 
     start() {

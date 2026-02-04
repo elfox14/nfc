@@ -64,6 +64,26 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- مقالات المدونة - إنجليزي -->
+  <url>
+    <loc>https://www.mcprim.com/nfc/blog-nfc-at-events-en.html</loc>
+    <lastmod>2026-02-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.mcprim.com/nfc/blog-digital-menus-for-restaurants-en.html</loc>
+    <lastmod>2026-02-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.mcprim.com/nfc/blog-business-card-mistakes-en.html</loc>
+    <lastmod>2026-02-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- حالات الاستخدام - عربي -->
   <url>
     <loc>https://www.mcprim.com/nfc/nfc-for-freelancers.html</loc>
@@ -138,6 +158,20 @@
     <lastmod>2026-01-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <!-- دليل استخدام المحرر -->
+  <url>
+    <loc>https://www.mcprim.com/nfc/how-to-use-editor.html</loc>
+    <lastmod>2026-02-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.mcprim.com/nfc/how-to-use-editor-en.html</loc>
+    <lastmod>2026-02-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 
   <!-- صفحات الدعم -->

@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>دليل استخدام محرر البطاقات | MC PRIME</title>
+    <meta name="description"
+        content="دليل شامل لاستخدام محرر بطاقات العمل الذكية MC PRIME. تعلم كيفية تصميم وتخصيص بطاقتك الرقمية خطوة بخطوة.">
+
+    <link rel="canonical" href="https://www.mcprim.com/nfc/how-to-use-editor.html">
+    <link rel="icon" href="mcprime-logo-transparent.png" type="image/png">
+
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
+    <!-- End Google Tag Manager -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Use only tutorial-specific styles, not homepage.css which has the watermark -->
+    <script src="lang-switcher.js" defer></script>
+
+    <style>
+        /* Tutorial Page Specific Styles */
+
+        /* Reset and Base Styles */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Override any body backgrounds/watermarks */
+        body {
+            background: linear-gradient(180deg, #1c2a3b 0%, #0f1922 100%);
+            color: #e6f0f7;
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 15px 0;
+            background: rgba(28, 42, 59, 0.95);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(28, 42, 59, 0.98);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            padding: 10px 0;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #e6f0f7;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #a8c0d8;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 8px 0;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #4da6ff;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4da6ff, #2d86ff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(77, 166, 255, 0.3);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .nav-toggle span {
+            width: 25px;
+            height: 3px;
+            background: #e6f0f7;
+            border-radius: 3px;
+        }
+
+        .tutorial-hero {
+            background: linear-gradient(135deg, #1c2a3b 0%, #0f1922 100%);
+            padding: 120px 0 60px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Hide any inherited background watermarks */
+        .tutorial-hero::before,
+        .tutorial-hero::after {
+            display: none !important;
+        }
+
+        .tutorial-hero h1 {
+            font-size: 2.5rem;
+            font-family: 'Cairo', sans-serif;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .tutorial-hero h1 i {
+            font-size: 1.5rem;
+        }
+
+        .tutorial-hero p {
+            font-size: 1.2rem;
+            color: #a8c0d8;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .tutorial-content {
+            padding: 60px 0;
+            background: linear-gradient(180deg, #1c2a3b 0%, #0f1922 100%);
+            min-height: 100vh;
+        }
+
+        .tutorial-section {
+            background: linear-gradient(145deg, #253444, #1f2d3d);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(77, 166, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .tutorial-section:hover {
+            border-color: rgba(77, 166, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .tutorial-section h2 {
+            color: #4da6ff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tutorial-section h2 i {
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tutorial-section h3 {
+            color: #e6f0f7;
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.8rem;
+            padding-right: 1rem;
+            border-right: 3px solid #4da6ff;
+        }
+
+        .tutorial-section p,
+        .tutorial-section li {
+            color: #a8c0d8;
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .tutorial-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .tutorial-section ul li {
+            position: relative;
+            padding-right: 28px;
+            margin-bottom: 0.7rem;
+        }
+
+        .tutorial-section ul li::before {
+            content: "✓";
+            position: absolute;
+            right: 0;
+            color: #4da6ff;
+            font-weight: bold;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, rgba(77, 166, 255, 0.15), rgba(102, 126, 234, 0.1));
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            border-right: 4px solid #4da6ff;
+        }
+
+        .tip-box h4 {
+            color: #4da6ff;
+            margin: 0 0 0.5rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tip-box p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.1));
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            border-right: 4px solid #ffc107;
+        }
+
+        .warning-box h4 {
+            color: #ffc107;
+            margin: 0 0 0.5rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .warning-box p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .steps-list {
+            counter-reset: step-counter;
+        }
+
+        .steps-list li {
+            counter-increment: step-counter;
+            padding-right: 45px !important;
+        }
+
+        .steps-list li::before {
+            content: counter(step-counter) !important;
+            position: absolute;
+            right: 0;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .keyboard-shortcut {
+            background: rgba(77, 166, 255, 0.2);
+            border: 1px solid rgba(77, 166, 255, 0.3);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-family: 'Poppins', monospace;
+            font-size: 0.85rem;
+            color: #4da6ff;
+            white-space: nowrap;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-item {
+            background: rgba(77, 166, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: center;
+            border: 1px solid rgba(77, 166, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            border-color: rgba(77, 166, 255, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .feature-item i {
+            font-size: 2rem;
+            color: #4da6ff;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+
+        .feature-item h4 {
+            color: #e6f0f7;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-item p {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .cta-section {
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .cta-section .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .cta-section .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .toc-nav {
+            background: rgba(77, 166, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(77, 166, 255, 0.1);
+        }
+
+        .toc-nav h3 {
+            color: #4da6ff;
+            margin: 0 0 1rem;
+            font-size: 1.1rem;
+        }
+
+        .toc-nav ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-nav ul li::before {
+            display: none;
+        }
+
+        .toc-nav a {
+            display: inline-block;
+            color: #a8c0d8;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(77, 166, 255, 0.1);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .toc-nav a:hover {
+            background: rgba(77, 166, 255, 0.25);
+            color: #4da6ff;
+        }
+
+        /* Video Section */
+        .video-placeholder {
+            background: linear-gradient(135deg, rgba(77, 166, 255, 0.1), rgba(102, 126, 234, 0.05));
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            border: 2px dashed rgba(77, 166, 255, 0.3);
+            margin: 2rem 0;
+        }
+
+        .video-placeholder i {
+            font-size: 4rem;
+            color: #4da6ff;
+            margin-bottom: 1rem;
+        }
+
+        .video-placeholder p {
+            color: #a8c0d8;
+            font-size: 1.1rem;
+        }
+
+        /* New Layout Details Styling */
+        .layout-details {
+            display: grid;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .layout-item {
+            background: rgba(77, 166, 255, 0.05);
+            border: 1px solid rgba(77, 166, 255, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .layout-item h4 {
+            color: #4da6ff;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .layout-item ul {
+            margin: 0;
+            padding-right: 1.5rem;
+        }
+
+        .layout-item li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Tips Grid Styling */
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .tip-item {
+            background: rgba(77, 166, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            border-right: 3px solid #4da6ff;
+        }
+
+        .tip-item strong {
+            display: block;
+            color: #4da6ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .tip-item p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* QR Options Styling */
+        .qr-options {
+            display: grid;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .qr-option {
+            background: rgba(77, 166, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid rgba(77, 166, 255, 0.15);
+        }
+
+        .qr-option h4 {
+            color: #4da6ff;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .qr-option h4 i {
+            font-size: 1rem;
+        }
+
+        .qr-option p {
+            margin-bottom: 0.5rem;
+        }
+
+        .qr-option ul {
+            margin: 0.5rem 0 0 0;
+            padding-right: 1.25rem;
+            font-size: 0.9rem;
+        }
+
+        /* Option Details */
+        .option-details h4 {
+            color: #4da6ff;
+            margin: 1.25rem 0 0.75rem 0;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(28, 42, 59, 0.98);
+                flex-direction: column;
+                padding: 20px;
+                gap: 10px;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-toggle {
+                display: flex;
+            }
+
+            .tutorial-hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .tutorial-hero p {
+                font-size: 1rem;
+                padding: 0 15px;
+            }
+
+            .tutorial-section {
+                padding: 1.5rem;
+            }
+
+            .tutorial-section h2 {
+                font-size: 1.3rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="logo">
+                    <img src="mcprime-logo-transparent.png" alt="MC PRIME Logo">
+                    <span>MC PRIME</span>
+                </a>
+                <div class="nav-links">
+                    <a href="index.html">الرئيسية</a>
+                    <a href="gallery.html">المعرض</a>
+                    <a href="blog.html">المدونة</a>
+                    <a href="how-to-use-editor.html" class="active">دليل المحرر</a>
+                    <a href="editor.html" class="btn btn-primary btn-sm">ابدأ التصميم</a>
+                </div>
+                <div class="nav-toggle" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="tutorial-hero">
+        <div class="container">
+            <h1><i class="fas fa-book-open"></i> دليل استخدام محرر البطاقات</h1>
+            <p>تعلم كيفية تصميم بطاقة عمل رقمية احترافية في دقائق معدودة باستخدام محرر MC PRIME المجاني</p>
+        </div>
+    </section>
+
+    <!-- Tutorial Content -->
+    <section class="tutorial-content">
+        <div class="container">
+
+            <!-- Table of Contents -->
+            <nav class="toc-nav">
+                <h3><i class="fas fa-list"></i> محتويات الدليل</h3>
+                <ul>
+                    <li><a href="#overview">نظرة عامة</a></li>
+                    <li><a href="#layout">اختيار التخطيط</a></li>
+                    <li><a href="#backgrounds">الخلفيات والألوان</a></li>
+                    <li><a href="#logo">إضافة الشعار</a></li>
+                    <li><a href="#photo">الصورة الشخصية</a></li>
+                    <li><a href="#info">المعلومات الشخصية</a></li>
+                    <li><a href="#phones">أرقام الهواتف</a></li>
+                    <li><a href="#qr">رمز QR</a></li>
+                    <li><a href="#social">روابط التواصل</a></li>
+                    <li><a href="#save">الحفظ والمشاركة</a></li>
+                    <li><a href="#shortcuts">اختصارات لوحة المفاتيح</a></li>
+                </ul>
+            </nav>
+
+            <!-- Overview Section -->
+            <article class="tutorial-section" id="overview">
+                <h2><i class="fas fa-info-circle"></i> نظرة عامة على المحرر</h2>
+                <p>محرر MC PRIME هو أداة مجانية وقوية لتصميم بطاقات العمل الرقمية الذكية (NFC). يتميز بواجهة سهلة
+                    الاستخدام تتيح لك إنشاء بطاقة احترافية بالكامل دون الحاجة لأي خبرة تقنية.</p>
+
+                <h3>كيفية الوصول للمحرر</h3>
+                <ol class="steps-list">
+                    <li><strong>الخطوة 1:</strong> افتح متصفح الويب على جهازك (Chrome، Safari، Edge، أو Firefox)</li>
+                    <li><strong>الخطوة 2:</strong> انتقل إلى صفحة المحرر من الرابط في أعلى الصفحة أو من <a
+                            href="editor.html">هنا</a></li>
+                    <li><strong>الخطوة 3:</strong> انتظر تحميل المحرر بالكامل (ستظهر شاشة تحميل قصيرة)</li>
+                    <li><strong>الخطوة 4:</strong> ستجد نفسك أمام لوحة التحكم الرئيسية جاهزة للاستخدام</li>
+                </ol>
+
+                <h3>مكونات واجهة المحرر</h3>
+                <p>تتكون واجهة المحرر من 4 أجزاء رئيسية:</p>
+
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-columns"></i>
+                        <h4>اللوحة اليمنى (الشريط الجانبي)</h4>
+                        <p>تحتوي على:</p>
+                        <ul>
+                            <li>أزرار اختيار التخطيط (3 تخطيطات)</li>
+                            <li>معرض التصاميم الجاهزة</li>
+                            <li>خيارات تخصيص الخلفية</li>
+                            <li>منتقي الألوان</li>
+                        </ul>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-id-card"></i>
+                        <h4>منطقة المعاينة (المنتصف)</h4>
+                        <p>تعرض:</p>
+                        <ul>
+                            <li>معاينة حية للبطاقة</li>
+                            <li>زر للتبديل بين الوجه الأمامي والخلفي</li>
+                            <li>إمكانية سحب العناصر وتحريكها</li>
+                            <li>تقريب وتصغير لرؤية التفاصيل</li>
+                        </ul>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-sliders-h"></i>
+                        <h4>اللوحة اليسرى (أقسام التحرير)</h4>
+                        <p>تتضمن أقسام قابلة للطي:</p>
+                        <ul>
+                            <li>قسم الشعار وإعداداته</li>
+                            <li>قسم الصورة الشخصية</li>
+                            <li>قسم الاسم والمسمى الوظيفي</li>
+                            <li>قسم أرقام الهواتف</li>
+                            <li>قسم روابط التواصل الاجتماعي</li>
+                            <li>قسم رمز QR</li>
+                        </ul>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-tools"></i>
+                        <h4>شريط الأدوات العلوي</h4>
+                        <p>يحتوي على:</p>
+                        <ul>
+                            <li>زر حفظ التصميم في السحابة</li>
+                            <li>زر مشاركة البطاقة</li>
+                            <li>قائمة التنزيل (صورة، PDF، جهة اتصال)</li>
+                            <li>زر التراجع والإعادة</li>
+                            <li>مؤشر حالة الحفظ التلقائي</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>نظام الحفظ التلقائي</h3>
+                <p>يقوم المحرر بحفظ تصميمك تلقائياً في متصفحك أثناء العمل. ستلاحظ:</p>
+                <ul>
+                    <li><strong>أيقونة خضراء:</strong> تم الحفظ بنجاح</li>
+                    <li><strong>أيقونة برتقالية:</strong> جاري الحفظ...</li>
+                    <li><strong>أيقونة حمراء:</strong> فشل الحفظ (تحقق من الاتصال)</li>
+                </ul>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-lightbulb"></i> نصيحة مهمة</h4>
+                    <p>للحفاظ على تصميمك بشكل دائم، اضغط على زر "حفظ التصميم" لرفعه إلى السحابة. الحفظ المحلي في المتصفح
+                        قد يُفقد عند مسح بيانات المتصفح.</p>
+                </div>
+            </article>
+
+            <!-- Layout Section -->
+            <article class="tutorial-section" id="layout">
+                <h2><i class="fas fa-th-large"></i> اختيار التخطيط</h2>
+                <p>الخطوة الأولى في تصميم بطاقتك هي اختيار التخطيط المناسب لاحتياجاتك.</p>
+
+                <h3>التخطيطات المتوفرة</h3>
+                <p>يوفر المحرر ثلاثة تخطيطات أساسية:</p>
+
+                <div class="layout-details">
+                    <div class="layout-item">
+                        <h4>1. التخطيط الكلاسيكي</h4>
+                        <ul>
+                            <li><strong>الوصف:</strong> التخطيط التقليدي لبطاقات العمل</li>
+                            <li><strong>مميزاته:</strong> توزيع متوازن للعناصر، سهل القراءة</li>
+                            <li><strong>مناسب لـ:</strong> الشركات الرسمية، المحامين، المحاسبين</li>
+                            <li><strong>مكان الشعار:</strong> أعلى يمين البطاقة</li>
+                            <li><strong>مكان المعلومات:</strong> منتصف البطاقة</li>
+                        </ul>
+                    </div>
+                    <div class="layout-item">
+                        <h4>2. التخطيط العصري</h4>
+                        <ul>
+                            <li><strong>الوصف:</strong> تصميم حديث مع تقسيم عمودي</li>
+                            <li><strong>مميزاته:</strong> مظهر عصري وجذاب</li>
+                            <li><strong>مناسب لـ:</strong> المصممين، المطورين، وكالات الإعلان</li>
+                            <li><strong>مكان الشعار:</strong> الجانب الأيسر</li>
+                            <li><strong>مكان المعلومات:</strong> الجانب الأيمن</li>
+                        </ul>
+                    </div>
+                    <div class="layout-item">
+                        <h4>3. التخطيط الطولي</h4>
+                        <ul>
+                            <li><strong>الوصف:</strong> توزيع رأسي للعناصر</li>
+                            <li><strong>مميزاته:</strong> مثالي للمحتوى الكثير</li>
+                            <li><strong>مناسب لـ:</strong> الأطباء، المستشارين، من لديهم معلومات كثيرة</li>
+                            <li><strong>مكان الشعار:</strong> أعلى المنتصف</li>
+                            <li><strong>مكان المعلومات:</strong> أسفل الشعار تدريجياً</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>كيفية تغيير التخطيط</h3>
+                <ol class="steps-list">
+                    <li>انظر إلى اللوحة اليمنى في المحرر</li>
+                    <li>ستجد ثلاثة أزرار تمثل التخطيطات</li>
+                    <li>اضغط على أي زر لتطبيق التخطيط فوراً</li>
+                    <li>ستلاحظ تغير شكل البطاقة في منطقة المعاينة</li>
+                    <li>يمكنك التبديل بين التخطيطات في أي وقت</li>
+                </ol>
+
+                <h3>التصاميم الجاهزة</h3>
+                <p>بالإضافة للتخطيطات، يوفر المحرر تصاميم جاهزة بألوان متناسقة:</p>
+                <ol class="steps-list">
+                    <li>مرر لأسفل في اللوحة اليمنى</li>
+                    <li>ستجد معرض التصاميم الجاهزة</li>
+                    <li>اضغط على أي تصميم لتطبيقه</li>
+                    <li>سيتم تطبيق الألوان والتخطيط معاً</li>
+                    <li>يمكنك التعديل على التصميم بعد تطبيقه</li>
+                </ol>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-magic"></i> اقتراح ذكي</h4>
+                    <p>استخدم زر "اقترح تصميمًا ذكيًا" في أعلى معرض التصاميم للحصول على تصميم عشوائي متناسق الألوان! هذه
+                        الميزة رائعة إذا لم تكن متأكداً من الألوان المناسبة.</p>
+                </div>
+            </article>
+
+            <!-- Backgrounds Section -->
+            <article class="tutorial-section" id="backgrounds">
+                <h2><i class="fas fa-palette"></i> الخلفيات والألوان</h2>
+                <p>تخصيص الخلفية هو ما يجعل بطاقتك فريدة ومميزة. لديك تحكم كامل في خلفية كل وجه من البطاقة.</p>
+
+                <h3>الوصول لإعدادات الخلفية</h3>
+                <ol class="steps-list">
+                    <li>في اللوحة اليمنى، ابحث عن قسم "الخلفية"</li>
+                    <li>ستجد علامتي تبويب: "الوجه الأمامي" و"الوجه الخلفي"</li>
+                    <li>اضغط على أي تبويب لتعديل خلفية ذلك الوجه</li>
+                </ol>
+
+                <h3>خيارات الخلفية للواجهة الأمامية</h3>
+                <div class="option-details">
+                    <h4>الخيار 1: التدرج اللوني (Gradient)</h4>
+                    <ol class="steps-list">
+                        <li>اختر "اللون الأول" - سيكون في أعلى البطاقة</li>
+                        <li>اختر "اللون الثاني" - سيكون في أسفل البطاقة</li>
+                        <li>سترى تدرجاً سلساً بين اللونين</li>
+                        <li>جرب ألواناً مختلفة حتى تعجبك النتيجة</li>
+                    </ol>
+
+                    <h4>الخيار 2: صورة خلفية</h4>
+                    <ol class="steps-list">
+                        <li>اضغط على زر "رفع صورة"</li>
+                        <li>اختر صورة من جهازك</li>
+                        <li>ستظهر الصورة كخلفية للبطاقة</li>
+                        <li>استخدم شريط "الشفافية" لإضافة طبقة لون فوق الصورة</li>
+                        <li>هذا يساعد في جعل النص أكثر وضوحاً</li>
+                    </ol>
+                </div>
+
+                <h3>خيارات الواجهة الخلفية</h3>
+                <p>نفس الخيارات متاحة للوجه الخلفي. يمكنك:</p>
+                <ul>
+                    <li>استخدام نفس ألوان الوجه الأمامي للتناسق</li>
+                    <li>أو استخدام ألوان مختلفة تماماً للتباين</li>
+                    <li>رفع صورة مختلفة لكل وجه</li>
+                </ul>
+
+                <h3>نصائح لاختيار الألوان</h3>
+                <div class="tips-grid">
+                    <div class="tip-item">
+                        <strong>للمظهر الاحترافي:</strong>
+                        <p>استخدم درجات الأزرق الداكن مع الأبيض</p>
+                    </div>
+                    <div class="tip-item">
+                        <strong>للمظهر العصري:</strong>
+                        <p>استخدم تدرجات البنفسجي مع الوردي</p>
+                    </div>
+                    <div class="tip-item">
+                        <strong>للمظهر الهادئ:</strong>
+                        <p>استخدم درجات الرمادي مع لمسة ذهبية</p>
+                    </div>
+                    <div class="tip-item">
+                        <strong>للمظهر الجريء:</strong>
+                        <p>استخدم الأحمر أو البرتقالي مع الأسود</p>
+                    </div>
+                </div>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-lightbulb"></i> نصيحة للصور</h4>
+                    <p>للحصول على أفضل نتيجة، استخدم صور بأبعاد 1050×600 بكسل على الأقل. الصور الصغيرة ستظهر ضبابية.
+                        يمكنك سحب الصورة وإفلاتها مباشرة على منطقة الرفع بدلاً من الضغط على الزر.</p>
+                </div>
+
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> تحذير</h4>
+                    <p>إذا اخترت صورة خلفية داكنة، تأكد من جعل النص أبيض أو فاتح اللون. والعكس صحيح للخلفيات الفاتحة.
+                    </p>
+                </div>
+            </article>
+
+            <!-- Logo Section -->
+            <article class="tutorial-section" id="logo">
+                <h2><i class="fas fa-crown"></i> إضافة الشعار</h2>
+                <p>أضف شعار شركتك أو علامتك التجارية للبطاقة:</p>
+
+                <ul class="steps-list">
+                    <li>انقر على قسم "الشعار" في اللوحة اليسرى</li>
+                    <li>ارفع صورة الشعار من جهازك (يتم قصها تلقائياً)</li>
+                    <li>تحكم في حجم الشعار باستخدام شريط التمرير</li>
+                    <li>اختر محاذاة الشعار (يسار، وسط، يمين)</li>
+                    <li>أضف خلفية للشعار إذا لزم الأمر</li>
+                </ul>
+
+                <h3>إعدادات متقدمة</h3>
+                <ul>
+                    <li><strong>الشفافية:</strong> تحكم في شفافية الشعار</li>
+                    <li><strong>الظل:</strong> أضف ظل للشعار لإبرازه</li>
+                    <li><strong>الموضع:</strong> اختر عرض الشعار على الوجه الأمامي أو الخلفي</li>
+                    <li><strong>التحريك الدقيق:</strong> استخدم الأسهم لتحريك الشعار بالبكسل</li>
+                </ul>
+            </article>
+
+            <!-- Photo Section -->
+            <article class="tutorial-section" id="photo">
+                <h2><i class="fas fa-user-circle"></i> الصورة الشخصية</h2>
+                <p>أضف صورتك الشخصية لتضفي طابعاً شخصياً على البطاقة:</p>
+
+                <ul>
+                    <li>ارفع صورتك أو أدخل رابط الصورة</li>
+                    <li>اختر شكل الصورة (دائري أو مربع)</li>
+                    <li>تحكم في حجم الصورة والإطار</li>
+                    <li>أضف لون للإطار وتحكم في عرضه</li>
+                    <li>فعّل الظل لإبراز الصورة</li>
+                </ul>
+
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> ملاحظة</h4>
+                    <p>يُفضل استخدام صورة بجودة عالية مع خلفية واضحة. سيتم قص الصورة تلقائياً عند الرفع.</p>
+                </div>
+            </article>
+
+            <!-- Info Section -->
+            <article class="tutorial-section" id="info">
+                <h2><i class="fas fa-id-badge"></i> المعلومات الشخصية</h2>
+                <p>أدخل اسمك ومسماك الوظيفي:</p>
+
+                <h3>الاسم الكامل</h3>
+                <ul>
+                    <li>اكتب اسمك بالعربية أو الإنجليزية</li>
+                    <li>تحكم في حجم الخط واللون</li>
+                    <li>اختر نوع الخط (Tajawal, Cairo, Lalezar)</li>
+                    <li>حدد موضع الاسم (أمامي أو خلفي)</li>
+                </ul>
+
+                <h3>المسمى الوظيفي / النشاط</h3>
+                <ul>
+                    <li>اكتب منصبك أو مجال عملك</li>
+                    <li>نفس خيارات التنسيق متاحة</li>
+                    <li>يمكنك كتابة أكثر من سطر</li>
+                </ul>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-globe"></i> دعم ثنائي اللغة</h4>
+                    <p>يمكنك إدخال الاسم والمسمى الوظيفي بالعربية والإنجليزية. استخدم زر تبديل اللغة في شريط الأدوات
+                        للتنقل بين اللغتين.</p>
+                </div>
+            </article>
+
+            <!-- Phones Section -->
+            <article class="tutorial-section" id="phones">
+                <h2><i class="fas fa-phone-alt"></i> أرقام الهواتف</h2>
+                <p>أضف أرقام الهاتف للتواصل المباشر:</p>
+
+                <ul>
+                    <li>اضغط "إضافة رقم هاتف" لإضافة رقم جديد</li>
+                    <li>أدخل الرقم مع كود الدولة (مثال: +966123456789)</li>
+                    <li>اختر طريقة العرض: كأزرار أو كنص</li>
+                    <li>يمكنك إضافة عدة أرقام</li>
+                </ul>
+
+                <h3>تخصيص الأزرار</h3>
+                <ul>
+                    <li>تحكم في لون الزر ولون النص</li>
+                    <li>ضبط حجم الخط وحجم الحشو (Padding)</li>
+                    <li>اختيار نوع الخط</li>
+                </ul>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-touch"></i> أزرار تفاعلية</h4>
+                    <p>عند عرض البطاقة على الهاتف، يمكن للمستلم الضغط على الزر للاتصال مباشرة!</p>
+                </div>
+            </article>
+
+            <!-- QR Section -->
+            <article class="tutorial-section" id="qr">
+                <h2><i class="fas fa-qrcode"></i> رمز الاستجابة السريعة (QR Code)</h2>
+                <p>رمز QR يسهّل على الآخرين الوصول لبطاقتك بسرعة عبر مسح الرمز بكاميرا هواتفهم.</p>
+
+                <h3>الوصول لإعدادات QR</h3>
+                <ol class="steps-list">
+                    <li>في اللوحة اليسرى، ابحث عن قسم "رمز QR"</li>
+                    <li>اضغط على عنوان القسم لتوسيعه</li>
+                    <li>ستظهر جميع خيارات التخصيص</li>
+                </ol>
+
+                <h3>خيارات مصدر QR</h3>
+                <p>يمكنك اختيار ما يحتويه رمز QR:</p>
+
+                <div class="qr-options">
+                    <div class="qr-option">
+                        <h4><i class="fas fa-link"></i> رابط البطاقة (مُوصى به)</h4>
+                        <p>يُنشئ رمز QR يوجه إلى رابط المشاركة الخاص ببطاقتك الرقمية.</p>
+                        <ul>
+                            <li><strong>المميزات:</strong> يمكن تحديث البطاقة لاحقاً دون تغيير الرمز</li>
+                            <li><strong>الاستخدام:</strong> مثالي لطباعة الرمز على بطاقات ورقية أو ملصقات</li>
+                        </ul>
+                    </div>
+
+                    <div class="qr-option">
+                        <h4><i class="fas fa-address-card"></i> بيانات الاتصال (vCard)</h4>
+                        <p>يحتوي الرمز على معلوماتك لحفظها مباشرة في جهات الاتصال.</p>
+                        <ul>
+                            <li><strong>المميزات:</strong> حفظ مباشر بدون إنترنت</li>
+                            <li><strong>العيوب:</strong> لا يمكن تحديث البيانات بعد الطباعة</li>
+                        </ul>
+                    </div>
+
+                    <div class="qr-option">
+                        <h4><i class="fas fa-external-link-alt"></i> استخدام رابط مخصص</h4>
+                        <p>أدخل أي رابط تريده (موقعك، صفحة فيسبوك، الخ).</p>
+                    </div>
+
+                    <div class="qr-option">
+                        <h4><i class="fas fa-image"></i> رفع صورة QR</h4>
+                        <p>استخدم رمز QR جاهز من تصميمك الخاص.</p>
+                    </div>
+                </div>
+
+                <h3>تخصيص مظهر رمز QR</h3>
+                <p>يمكنك تخصيص شكل الرمز بالكامل:</p>
+
+                <h4>1. الألوان</h4>
+                <ol class="steps-list">
+                    <li>اضغط على "لون الرمز" واختر اللون الذي تريده</li>
+                    <li>اضغط على "لون الخلفية" لتغيير خلفية الرمز</li>
+                    <li>تأكد من وجود تباين كافٍ بين اللونين لضمان قابلية المسح</li>
+                </ol>
+
+                <h4>2. شكل النقاط</h4>
+                <ul>
+                    <li><strong>مربعات:</strong> الشكل التقليدي للـ QR</li>
+                    <li><strong>نقاط دائرية:</strong> مظهر عصري وناعم</li>
+                    <li><strong>مربعات مستديرة:</strong> بين الشكلين</li>
+                </ul>
+
+                <h4>3. شكل الزوايا</h4>
+                <ul>
+                    <li>حاد</li>
+                    <li>مستدير</li>
+                    <li>نقاط</li>
+                </ul>
+
+                <h4>4. إضافة شعار داخل الرمز</h4>
+                <ol class="steps-list">
+                    <li>فعّل خيار "إظهار الشعار في الرمز"</li>
+                    <li>سيظهر شعارك في منتصف رمز QR</li>
+                    <li>تحكم في حجم الشعار داخل الرمز</li>
+                </ol>
+
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> تحذير مهم</h4>
+                    <p>إذا كان الشعار كبيراً جداً داخل الرمز، قد يصعب مسحه ببعض الهواتف. اختبر الرمز دائماً قبل الطباعة!
+                    </p>
+                </div>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-lightbulb"></i> نصيحة احترافية</h4>
+                    <p>للحصول على أفضل نتيجة، استخدم ألوان داكنة للرمز على خلفية فاتحة. تجنب الألوان الفاتحة جداً للرمز
+                        نفسه.</p>
+                </div>
+            </article>
+
+            <!-- Social Section -->
+            <article class="tutorial-section" id="social">
+                <h2><i class="fas fa-share-alt"></i> بيانات وروابط التواصل</h2>
+                <p>أضف جميع طرق التواصل معك:</p>
+
+                <h3>البيانات الثابتة</h3>
+                <ul>
+                    <li><strong>البريد الإلكتروني:</strong> للتواصل عبر الإيميل</li>
+                    <li><strong>الموقع الإلكتروني:</strong> رابط موقعك أو محفظتك</li>
+                    <li><strong>واتساب:</strong> للتواصل المباشر عبر الواتساب</li>
+                    <li><strong>فيسبوك:</strong> رابط صفحتك على فيسبوك</li>
+                    <li><strong>إنستجرام:</strong> حسابك على إنستجرام</li>
+                    <li><strong>تويتر/X:</strong> حسابك على تويتر</li>
+                    <li><strong>لينكد إن:</strong> ملفك المهني</li>
+                    <li><strong>تيك توك:</strong> حسابك على تيك توك</li>
+                    <li><strong>يوتيوب:</strong> قناتك على يوتيوب</li>
+                    <li><strong>سناب شات:</strong> حسابك على سناب</li>
+                    <li><strong>الموقع:</strong> رابط خرائط جوجل لموقعك</li>
+                </ul>
+
+                <h3>روابط مخصصة</h3>
+                <p>يمكنك إضافة روابط إضافية مع اختيار الأيقونة المناسبة لها.</p>
+
+                <h3>إعدادات العرض</h3>
+                <ul>
+                    <li>عرض كأزرار بأيقونات</li>
+                    <li>أو عرض كنص عادي</li>
+                    <li>تحكم في لون الأزرار وحجمها</li>
+                    <li>اختيار موضع كل رابط (أمامي أو خلفي)</li>
+                </ul>
+            </article>
+
+            <!-- Save Section -->
+            <article class="tutorial-section" id="save">
+                <h2><i class="fas fa-cloud-upload-alt"></i> الحفظ والمشاركة</h2>
+
+                <h3>حفظ التصميم</h3>
+                <ul class="steps-list">
+                    <li>اضغط على زر "حفظ التصميم" في شريط الأدوات</li>
+                    <li>سيتم حفظ تصميمك في السحابة</li>
+                    <li>ستحصل على رابط مشاركة فريد لبطاقتك</li>
+                    <li>يمكنك العودة لتعديل التصميم في أي وقت</li>
+                </ul>
+
+                <h3>خيارات التنزيل</h3>
+                <ul>
+                    <li><strong>صورة PNG:</strong> صورة عالية الجودة للوجه الأمامي أو الخلفي</li>
+                    <li><strong>ملف PDF:</strong> للطباعة الاحترافية</li>
+                    <li><strong>جهة اتصال VCF:</strong> لحفظ البيانات في الهاتف</li>
+                    <li><strong>رمز QR Code:</strong> تحميل رمز QR كصورة</li>
+                </ul>
+
+                <h3>المشاركة</h3>
+                <ul>
+                    <li>اضغط على زر "مشاركة" للحصول على رابط البطاقة</li>
+                    <li>شارك الرابط عبر أي تطبيق تواصل</li>
+                    <li>أو انسخ الرابط للصقه في أي مكان</li>
+                </ul>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-bookmark"></i> حفظ بالمعرض</h4>
+                    <p>استخدم زر "حفظ بالمعرض" لحفظ تصميمك محلياً والوصول إليه من صفحة المعرض.</p>
+                </div>
+            </article>
+
+            <!-- Shortcuts Section -->
+            <article class="tutorial-section" id="shortcuts">
+                <h2><i class="fas fa-keyboard"></i> اختصارات لوحة المفاتيح</h2>
+                <p>استخدم هذه الاختصارات لتسريع عملك:</p>
+
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + S</span>
+                        <h4>حفظ بالمعرض</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + Z</span>
+                        <h4>تراجع</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + Y</span>
+                        <h4>إعادة</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + G</span>
+                        <h4>عرض المعرض</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + Shift + C</span>
+                        <h4>تحرير جماعي</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + Shift + R</span>
+                        <h4>إعادة تعيين</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + Shift + L</span>
+                        <h4>مشاركة رابط الموقع</h4>
+                    </div>
+                </div>
+            </article>
+
+            <!-- CTA Section -->
+            <div class="cta-section">
+                <h2 style="color: #e6f0f7; margin-bottom: 1.5rem;">جاهز لإنشاء بطاقتك؟</h2>
+                <a href="editor.html" class="btn-primary">
+                    <i class="fas fa-rocket"></i>
+                    ابدأ التصميم الآن مجاناً
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: #0f1922; padding: 40px 0; border-top: 1px solid rgba(77, 166, 255, 0.1);">
+        <div class="container" style="text-align: center;">
+            <div style="margin-bottom: 20px;">
+                <a href="index.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">الرئيسية</a>
+                <a href="editor.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">المحرر</a>
+                <a href="gallery.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">المعرض</a>
+                <a href="blog.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">المدونة</a>
+                <a href="contact.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">اتصل بنا</a>
+                <a href="privacy.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">الخصوصية</a>
+            </div>
+            <p style="color: #657d95; font-size: 0.9rem; margin: 0;">
+                © 2026 MC PRIME. جميع الحقوق محفوظة.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function () {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('active');
+        }
+    </script>
+</body>
+
+</html>
