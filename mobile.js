@@ -33,12 +33,12 @@ window.MobileUtils = {
             }
             document.getElementById('card-front-preview').style.pointerEvents = 'auto';
             document.getElementById('card-back-preview').style.pointerEvents = 'auto';
-             // Reset scale on desktop
+            // Reset scale on desktop
             const cardsWrapper = document.getElementById('cards-wrapper');
-            if(cardsWrapper) cardsWrapper.style.transform = '';
+            if (cardsWrapper) cardsWrapper.style.transform = '';
         }
     },
-    
+
     // --- NEW FUNCTION TO DYNAMICALLY SCALE THE CARD ---
     updateMobileCardScale: () => {
         if (!MobileUtils.isMobile()) return;
@@ -59,7 +59,7 @@ window.MobileUtils = {
             cardWidth = 510;
             cardHeight = 330;
         }
-        
+
         // Get the available dimensions of the canvas area, with some padding
         const canvasPadding = 20; // 10px on each side
         const availableWidth = canvas.clientWidth - canvasPadding;
@@ -68,7 +68,7 @@ window.MobileUtils = {
         // Calculate the scale ratio needed for width and height
         const scaleX = availableWidth / cardWidth;
         const scaleY = availableHeight / cardHeight;
-        
+
         // Use the smaller of the two ratios to ensure the card fits completely
         const scale = Math.min(scaleX, scaleY);
 
@@ -98,7 +98,7 @@ window.MobileUtils = {
         if (flipButton && cardFlipper && cardFront && cardBack) {
             flipButton.addEventListener('click', () => {
                 const isFlipped = cardFlipper.classList.toggle('is-flipped');
-                
+
                 if (isFlipped) {
                     cardFront.style.pointerEvents = 'none';
                     cardBack.style.pointerEvents = 'auto';
@@ -167,9 +167,9 @@ window.MobileUtils = {
 
             setTimeout(() => {
                 targetControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
+
                 const firstInput = targetControl.querySelector('input, textarea, select');
-                if(firstInput) firstInput.focus();
+                if (firstInput) firstInput.focus();
 
                 targetControl.classList.add('click-to-edit-highlight');
                 setTimeout(() => targetControl.classList.remove('click-to-edit-highlight'), 2000);
@@ -184,7 +184,32 @@ window.MobileUtils = {
 
     configureTourSteps: (steps) => {
         if (window.MobileUtils.isMobile()) {
-            // Mobile tour configuration
+            // 1. Design Panel -> Target Design Tab
+            const designStep = steps.find(s => s.id === 'design_panel');
+            if (designStep) {
+                designStep.attachTo = { element: '.mobile-nav-item[data-target="panel-design"]', on: 'top' };
+                designStep.text = "استخدم هذا الزر للوصول إلى خيارات التصميم والألوان والخلفيات.";
+            }
+
+            // 2. Elements Panel -> Target Content Tab
+            const elementsStep = steps.find(s => s.id === 'elements_panel');
+            if (elementsStep) {
+                elementsStep.attachTo = { element: '.mobile-nav-item[data-target="panel-elements"]', on: 'top' };
+                elementsStep.text = "استخدم هذا الزر لإضافة وتعديل بياناتك وصورك.";
+            }
+
+            // 3. Canvas -> No change needed, but ensure it's visible
+            const canvasStep = steps.find(s => s.id === 'canvas_drag');
+            if (canvasStep) {
+                canvasStep.attachTo = { element: '#cards-wrapper', on: 'bottom' };
+            }
+
+            // 4. Actions Toolbar -> Target More Button
+            const actionsStep = steps.find(s => s.id === 'actions_toolbar');
+            if (actionsStep) {
+                actionsStep.attachTo = { element: '#toolbar-more-btn', on: 'bottom' };
+                actionsStep.text = "اضغط هنا للوصول إلى خيارات الحفظ، المشاركة، والمزيد.";
+            }
         }
     }
 };

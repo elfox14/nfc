@@ -1597,7 +1597,7 @@ footer {
     text-align: center;
     padding: 1rem 0;
     background: var(--accent-secondary);
-    color: #fff;
+    color: var(--text-primary);
     font-size: 0.85rem;
     position: relative;
     z-index: 10;
@@ -1605,7 +1605,7 @@ footer {
 }
 
 footer a {
-    color: #53ecfc;
+    color: var(--accent-primary);
     text-decoration: none;
 }
 
