@@ -632,6 +632,12 @@ app.get('/api/auth/google', (req, res) => {
   const proto = req.headers['x-forwarded-proto'] || req.protocol;
   const host = req.get('host');
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
+
+  console.log('------------------------------------------------');
+  console.log('DEBUG: Google OAuth Redirect URI:', redirectUri);
+  console.log('DEBUG: Please ensure this EXACT URL is added to Authorized redirect URIs in Google Cloud Console');
+  console.log('------------------------------------------------');
+
   const scope = 'email profile';
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
 
