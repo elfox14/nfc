@@ -628,7 +628,10 @@ app.get('/api/auth/google', (req, res) => {
     return res.status(500).send('Google OAuth not configured');
   }
 
-  const redirectUri = `${process.env.PUBLIC_BASE_URL || 'https://nfc-vjy6.onrender.com'}/api/auth/google/callback`;
+  // Use dynamic host for redirect URI to support both localhost and production
+  const proto = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.get('host');
+  const redirectUri = `${proto}://${host}/api/auth/google/callback`;
   const scope = 'email profile';
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
 
@@ -651,7 +654,10 @@ app.get('/api/auth/google/callback', async (req, res) => {
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = `${process.env.PUBLIC_BASE_URL || 'https://nfc-vjy6.onrender.com'}/api/auth/google/callback`;
+    // Use dynamic host for redirect URI to support both localhost and production
+    const proto = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.get('host');
+    const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
     // Exchange code for tokens
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
