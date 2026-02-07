@@ -134,8 +134,8 @@
             <a href="index.html"
                 style="color: var(--text-primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px;"
                 title="العودة إلى الرئيسية">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Crect fill='%23667eea' width='28' height='28' rx='4'/%3E%3Ctext x='14' y='18' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold' font-size='10'%3EMP%3C/text%3E%3C/svg%3E"
-                    alt="MC PRIME Logo" style="height: 28px; width: 28px;">
+                <img src="https://www.mcprim.com/nfc/mcprime-logo-transparent.png" alt="MC PRIME Logo"
+                    style="height: 32px; width: auto;">
                 <span class="toolbar-title-desktop" style="font-size: 0.9rem;">MC PRIME</span>
             </a>
 
@@ -148,11 +148,12 @@
                         class="fas fa-images"></i></a>
                 <a href="blog.html" class="btn-icon" title="المدونة" style="font-size: 12px;"><i
                         class="fas fa-blog"></i></a>
-                <a href="how-to-use-editor.html" class="btn btn-primary"
-                    style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); border: none; margin: 0;">
-                    <i class="fas fa-book-open"></i> <span>شرح المحرر</span>
-                </a>
             </nav>
+            <!-- Promoted Editor Guide Button -->
+            <a href="how-to-use-editor.html" class="btn btn-primary editor-guide-promoted" id="editor-guide-btn-mobile"
+                style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); border: none; margin: 0;">
+                <i class="fas fa-book-open"></i> <span>شرح المحرر</span>
+            </a>
 
             <div class="undo-redo-container">
                 <button id="redo-btn" class="btn-icon btn-compact" title="إعادة (Ctrl+Y)" aria-label="إعادة" disabled><i
@@ -167,6 +168,15 @@
                 aria-label="Toggle Language" style="font-size: 11px;">EN</button>
             <button id="preview-mode-btn" class="btn-icon btn-compact" title="وضع المعاينة"
                 aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
+
+            <!-- Mobile More Menu Button -->
+            <div class="toolbar-more-container">
+                <button id="toolbar-more-btn" class="btn-icon btn-compact" title="المزيد" aria-label="More Options"
+                    style="display: none;">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+
+            </div>
 
         </div>
         <div class="toolbar-group toolbar-end">
@@ -1700,6 +1710,75 @@
             <span>حفظ ومشاركة</span>
         </button>
     </nav>
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>MC PRIME</h3>
+                    <p>نقدم حلول بطاقات العمل الذكية NFC للأفراد والشركات.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <ul role="list">
+                        <li><a href="index.html#features">المميزات</a></li>
+                        <li><a href="gallery.html">المعرض</a></li>
+                        <li><a href="blog.html">المدونة</a></li>
+                        <li><a href="editor.html">محرر التصميم</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الدعم</h3>
+                    <ul role="list">
+                        <li><a href="index.html#faq">الأسئلة الشائعة</a></li>
+                        <li><a href="contact.html">اتصل بنا</a></li>
+                        <li><a href="privacy.html">سياسة الخصوصية</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>تابعنا</h3>
+                    <div class="social-links">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer"
+                            aria-label="فيسبوك" title="زر صفحتنا على فيسبوك">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer"
+                            aria-label="إنستغرام" title="تابعنا على إنستغرام">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer"
+                            aria-label="لينكد إن" title="تواصل معنا على لينكد إن">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener noreferrer"
+                            aria-label="واتساب" title="تواصل معنا على واتساب">
+                            <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 MC PRIME. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile More Menu (Moved to body to avoid overflow issues) -->
+    <div id="toolbar-more-menu-floating" class="toolbar-more-menu">
+        <!-- Navigation Links (Mobile Only) -->
+        <a href="index.html" class="menu-item-link"><i class="fas fa-home"></i> الرئيسية</a>
+        <a href="gallery.html" class="menu-item-link"><i class="fas fa-images"></i> المعرض</a>
+        <a href="blog.html" class="menu-item-link"><i class="fas fa-blog"></i> المدونة</a>
+        <hr class="mobile-only-hr">
+
+        <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> المظهر</button>
+        <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> المعرض</button>
+        <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> حفظ بالمعرض</button>
+        <button id="start-collab-btn-menu"><i class="fas fa-users"></i> تعاون</button>
+        <button id="share-editor-btn-menu"><i class="fas fa-link"></i> مشاركة الرابط</button>
+        <hr>
+        <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> إعادة تعيين</button>
+    </div>
 </body>
 
 </html>

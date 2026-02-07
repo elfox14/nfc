@@ -220,41 +220,50 @@
     // ===========================================
     // MORE MENU (Toolbar)
     // ===========================================
+    // ===========================================
+    // MORE MENU (Toolbar)
+    // ===========================================
     function initMoreMenu() {
         const moreBtn = document.getElementById('toolbar-more-btn');
-        const moreMenu = document.getElementById('toolbar-more-menu');
-
-        if (!moreBtn || !moreMenu) return;
+        const moreMenu = document.getElementById('toolbar-more-menu-floating');
 
         // Toggle menu
-        moreBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            moreMenu.classList.toggle('open');
-        });
+        if (moreBtn && moreMenu) {
+            moreBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                moreMenu.classList.toggle('open');
+            });
 
-        // Close when clicking outside
-        document.addEventListener('click', () => {
-            moreMenu.classList.remove('open');
-        });
+            // Close when clicking outside
+            document.addEventListener('click', () => {
+                moreMenu.classList.remove('open');
+            });
 
-        // Prevent menu from closing when clicking inside
-        moreMenu.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
+            // Prevent menu from closing when clicking inside
+            moreMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
 
         // === Link new menu buttons to original functionality ===
+
+        // Theme Toggle
+        const themeBtn = document.getElementById('theme-toggle-btn-menu');
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                if (moreMenu) moreMenu.classList.remove('open');
+                const originalBtn = document.getElementById('theme-toggle-btn');
+                if (originalBtn) originalBtn.click();
+            });
+        }
 
         // Collaborative editing
         const collabBtn = document.getElementById('start-collab-btn-menu');
         if (collabBtn) {
             collabBtn.addEventListener('click', () => {
-                moreMenu.classList.remove('open');
-                // Trigger original collab functionality if exists
-                if (typeof startCollaborativeSession === 'function') {
-                    startCollaborativeSession();
-                } else {
-                    alert('خاصية التحرير الجماعي قريباً!');
-                }
+                if (moreMenu) moreMenu.classList.remove('open');
+                const originalBtn = document.getElementById('start-collab-btn');
+                if (originalBtn) originalBtn.click();
             });
         }
 
@@ -262,9 +271,9 @@
         const galleryBtn = document.getElementById('show-gallery-btn-menu');
         if (galleryBtn) {
             galleryBtn.addEventListener('click', () => {
-                moreMenu.classList.remove('open');
-                const galleryModal = document.getElementById('gallery-modal-overlay');
-                if (galleryModal) galleryModal.classList.add('show');
+                if (moreMenu) moreMenu.classList.remove('open');
+                const originalBtn = document.getElementById('show-gallery-btn');
+                if (originalBtn) originalBtn.click();
             });
         }
 
@@ -272,13 +281,9 @@
         const saveGalleryBtn = document.getElementById('save-to-gallery-btn-menu');
         if (saveGalleryBtn) {
             saveGalleryBtn.addEventListener('click', () => {
-                moreMenu.classList.remove('open');
-                // Trigger original save functionality
-                if (typeof GalleryManager !== 'undefined' && GalleryManager.saveToGallery) {
-                    GalleryManager.saveToGallery();
-                } else {
-                    showNotification('تم حفظ التصميم بالمعرض', 'success');
-                }
+                if (moreMenu) moreMenu.classList.remove('open');
+                const originalBtn = document.getElementById('save-to-gallery-btn');
+                if (originalBtn) originalBtn.click();
             });
         }
 
@@ -286,13 +291,9 @@
         const shareEditorBtn = document.getElementById('share-editor-btn-menu');
         if (shareEditorBtn) {
             shareEditorBtn.addEventListener('click', () => {
-                moreMenu.classList.remove('open');
-                const url = window.location.origin + '/nfc/editor.html';
-                navigator.clipboard.writeText(url).then(() => {
-                    showNotification('تم نسخ رابط المحرر!', 'success');
-                }).catch(() => {
-                    prompt('انسخ هذا الرابط:', url);
-                });
+                if (moreMenu) moreMenu.classList.remove('open');
+                const originalBtn = document.getElementById('share-editor-btn');
+                if (originalBtn) originalBtn.click();
             });
         }
 
@@ -300,17 +301,9 @@
         const resetBtn = document.getElementById('reset-design-btn-menu');
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
-                moreMenu.classList.remove('open');
-                if (confirm('هل أنت متأكد من إعادة تعيين التصميم؟ سيتم فقدان جميع التغييرات.')) {
-                    // Trigger original reset functionality
-                    if (typeof StateManager !== 'undefined' && StateManager.resetToDefault) {
-                        StateManager.resetToDefault();
-                        showNotification('تم إعادة تعيين التصميم', 'info');
-                    } else {
-                        localStorage.removeItem('digitalCardEditorState_v20');
-                        location.reload();
-                    }
-                }
+                if (moreMenu) moreMenu.classList.remove('open');
+                const originalBtn = document.getElementById('reset-design-btn');
+                if (originalBtn) originalBtn.click();
             });
         }
     }

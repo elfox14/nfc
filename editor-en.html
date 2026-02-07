@@ -39,6 +39,7 @@
     <link rel="stylesheet" href="mobile.css?v=2.0">
     <link rel="stylesheet" href="toast.css">
     <link rel="stylesheet" href="editor-enhancements.css?v=1.0">
+    <link rel="stylesheet" href="toolbar-enhancements.css?v=1.0">
 
     <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
@@ -172,8 +173,8 @@
             <a href="index-en.html"
                 style="color: var(--text-primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px;"
                 title="Back to Home">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Crect fill='%23667eea' width='28' height='28' rx='4'/%3E%3Ctext x='14' y='18' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold' font-size='10'%3EMP%3C/text%3E%3C/svg%3E"
-                    alt="MC PRIME Logo" style="height: 28px; width: 28px;">
+                <img src="https://www.mcprim.com/nfc/mcprime-logo-transparent.png" alt="MC PRIME Logo"
+                    style="height: 32px; width: auto;">
                 <span class="toolbar-title-desktop" style="font-size: 0.9rem;">MC PRIME</span>
             </a>
 
@@ -186,11 +187,12 @@
                         class="fas fa-images"></i></a>
                 <a href="blog-en.html" class="btn-icon" title="Blog" style="font-size: 12px;"><i
                         class="fas fa-blog"></i></a>
-                <a href="how-to-use-editor.html" class="btn btn-primary"
-                    style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); border: none; margin: 0;">
-                    <i class="fas fa-book-open"></i> <span>Editor Guide</span>
-                </a>
             </nav>
+            <!-- Promoted Editor Guide Button -->
+            <a href="how-to-use-editor.html" class="btn btn-primary editor-guide-promoted" id="editor-guide-btn-mobile"
+                style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); border: none; margin: 0;">
+                <i class="fas fa-book-open"></i> <span>Editor Guide</span>
+            </a>
 
             <div class="undo-redo-container">
                 <button id="redo-btn" class="btn-icon btn-compact" title="Redo (Ctrl+Y)" aria-label="Redo" disabled><i
@@ -208,6 +210,14 @@
 
             <button id="preview-mode-btn" class="btn-icon btn-compact" title="Preview Mode"
                 aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
+
+            <!-- Mobile More Menu Button -->
+            <div class="toolbar-more-container">
+                <button id="toolbar-more-btn" class="btn-icon btn-compact" title="More" aria-label="More Options"
+                    style="display: none;">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
         </div>
         <div class="toolbar-group toolbar-end">
             <div class="download-container">
@@ -1612,6 +1622,30 @@
             <span>Save & Share</span>
         </button>
     </nav>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>All Rights Reserved &copy; 2025 MC PRIME | <a href="privacy-en.html">Privacy Policy</a> | <a
+                    href="contact-en.html">Contact Us</a></p>
+        </div>
+    </footer>
+
+    <!-- Mobile More Menu (Floating) -->
+    <div id="toolbar-more-menu-floating" class="toolbar-more-menu">
+        <!-- Navigation Links (Mobile Only) -->
+        <a href="index-en.html" class="menu-item-link"><i class="fas fa-home"></i> Home</a>
+        <a href="gallery-en.html" class="menu-item-link"><i class="fas fa-images"></i> Gallery</a>
+        <a href="blog-en.html" class="menu-item-link"><i class="fas fa-blog"></i> Blog</a>
+        <hr class="mobile-only-hr">
+
+        <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> Theme</button>
+        <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> Gallery</button>
+        <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> Save to Gallery</button>
+        <button id="start-collab-btn-menu"><i class="fas fa-users"></i> Collaborate</button>
+        <button id="share-editor-btn-menu"><i class="fas fa-link"></i> Share Link</button>
+        <hr>
+        <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> Reset</button>
+    </div>
 </body>
 
 </html>
