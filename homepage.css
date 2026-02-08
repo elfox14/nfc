@@ -287,6 +287,8 @@ img {
 .hero-content h1 {
     font-family: var(--font-headings);
     font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
     margin-bottom: 1rem;
     color: white;
     animation: fadeInUp 0.8s ease;
