@@ -169,6 +169,8 @@ const TourManager = {
     tour: null,
 
     init() {
+        const isEnglish = document.documentElement.lang === 'en';
+
         this.tour = new Shepherd.Tour({
             useModalOverlay: true,
             defaultStepOptions: {
@@ -176,17 +178,17 @@ const TourManager = {
                 scrollTo: { behavior: "smooth", block: "center" },
                 cancelIcon: {
                     enabled: true,
-                    label: "إغلاق الجولة",
+                    label: isEnglish ? "Close Tour" : "إغلاق الجولة",
                 },
                 buttons: [
                     {
-                        text: "السابق",
+                        text: isEnglish ? "Back" : "السابق",
                         action() {
                             return this.back();
                         },
                     },
                     {
-                        text: "التالي",
+                        text: isEnglish ? "Next" : "التالي",
                         action() {
                             return this.next();
                         },
@@ -195,7 +197,44 @@ const TourManager = {
             },
         });
 
-        const steps = [
+        const steps = isEnglish ? [
+            {
+                id: "welcome",
+                title: "Welcome to MC PRIME Editor",
+                text: "Learn how to design a professional digital business card in minutes. This quick tour will guide you through the editor features.",
+                buttons: [{ text: "Start Tour!", action() { return this.next(); } }]
+            },
+            {
+                id: "design_panel",
+                title: "1. Right Panel (Design)",
+                text: "This panel is for the general look. It contains:\n- **Layout Options:** Choose from 3 different layouts.\n- **Design Gallery:** Ready-made templates with matching colors.\n- **Backgrounds:** Customize card background and colors.",
+                attachTo: { element: ".pro-sidebar-left", on: "auto" }
+            },
+            {
+                id: "elements_panel",
+                title: "2. Left Panel (Content)",
+                text: "Here you add and edit your data:\n- **Logo & Photo:** Upload and customize images.\n- **Information:** Name and Job Title.\n- **Contact:** Phone numbers and social media accounts.",
+                attachTo: { element: ".pro-sidebar-right", on: "auto" }
+            },
+            {
+                id: "canvas_drag",
+                title: "3. Live Preview Area",
+                text: "See your design live as you work.\n- **Move Elements:** You can drag the name or logo to change their position manually.\n- **Card Faces:** Use the button below the card to switch between Front and Back Face.",
+                attachTo: { element: "#cards-wrapper", on: "auto" }
+            },
+            {
+                id: "actions_toolbar",
+                title: "4. Save & Share",
+                text: "In the top toolbar:\n- **Save Design:** To save your work to the cloud.\n- **Share:** To get your card link.\n- **Download:** To download the card as an image or PDF.",
+                attachTo: { element: ".pro-toolbar .toolbar-end", on: "auto" }
+            },
+            {
+                id: "finish",
+                title: "You are ready to go!",
+                text: "Start designing your unique card now. Don't forget to use the **'Help'** button at the top if you need to refer back to the full guide.",
+                buttons: [{ text: "End Tour", action() { return this.complete(); } }]
+            },
+        ] : [
             {
                 id: "welcome",
                 title: "مرحباً بك في محرر MC PRIME",

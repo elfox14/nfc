@@ -148,6 +148,14 @@
     function initAutoSaveIndicator() {
         const indicator = document.getElementById('autosave-indicator');
         const statusText = document.getElementById('autosave-status');
+        const isEnglish = document.documentElement.lang === 'en';
+
+        const i18n = {
+            saving: isEnglish ? 'Saving...' : 'جاري الحفظ...',
+            saved: isEnglish ? 'Saved' : 'محفوظ',
+            error: isEnglish ? 'Save Error' : 'خطأ في الحفظ',
+            lastSaved: isEnglish ? 'Last saved:' : 'آخر حفظ:',
+        };
 
         if (!indicator || !statusText) return;
 
@@ -160,7 +168,7 @@
                 // Show "saving" state
                 indicator.classList.remove('error');
                 indicator.classList.add('saving');
-                statusText.textContent = 'جاري الحفظ...';
+                statusText.textContent = i18n.saving;
 
                 // Clear previous timeout
                 clearTimeout(saveTimeout);
@@ -168,12 +176,14 @@
                 // After 1.5 seconds, show "saved" state
                 saveTimeout = setTimeout(() => {
                     indicator.classList.remove('saving');
-                    statusText.textContent = 'محفوظ';
+                    statusText.textContent = i18n.saved;
 
                     // Add timestamp
                     const now = new Date();
-                    const time = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-                    indicator.title = `آخر حفظ: ${time}`;
+                    // Use appropriate locale for time
+                    const locale = isEnglish ? 'en-US' : 'ar-EG';
+                    const time = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+                    indicator.title = `${i18n.lastSaved} ${time}`;
                 }, 1500);
             });
         });
@@ -183,14 +193,14 @@
             if (status === 'saving') {
                 indicator.classList.remove('error');
                 indicator.classList.add('saving');
-                statusText.textContent = 'جاري الحفظ...';
+                statusText.textContent = i18n.saving;
             } else if (status === 'saved') {
                 indicator.classList.remove('saving', 'error');
-                statusText.textContent = 'محفوظ';
+                statusText.textContent = i18n.saved;
             } else if (status === 'error') {
                 indicator.classList.remove('saving');
                 indicator.classList.add('error');
-                statusText.textContent = 'خطأ في الحفظ';
+                statusText.textContent = i18n.error;
             }
         };
     }

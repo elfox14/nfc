@@ -53,10 +53,11 @@
     <script src="/nfc/auth.js" defer></script>
     <script src="security-utils.js" defer></script>
     <script src="mobile.js" defer></script>
-    <script src="script-core.js" defer></script>
+    <script src="tour.js?v=2.1" defer></script>
+    <script src="script-core.js?v=2.1" defer></script>
     <script src="script-ui.js" defer></script>
-    <script src="script-card.js" defer></script>
-    <script src="script-main.js" defer></script>
+    <script src="script-card.js?v=2.2" defer></script>
+    <script src="script-main.js?v=2.1" defer></script>
 
     <script src="editor-enhancements.js" defer></script>
     <script src="editor-user-status.js" defer></script>
@@ -149,6 +150,12 @@
                 <a href="blog.html" class="btn-icon" title="المدونة" style="font-size: 12px;"><i
                         class="fas fa-blog"></i></a>
             </nav>
+
+            <!-- Mobile Login Button -->
+            <a href="login.html" class="btn btn-secondary mobile-auth-btn" id="mobile-auth-btn">
+                <i class="fas fa-sign-in-alt"></i> <span>دخول</span>
+            </a>
+
             <!-- Promoted Editor Guide Button -->
             <a href="how-to-use-editor.html" class="btn btn-primary editor-guide-promoted" id="editor-guide-btn-mobile"
                 style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); border: none; margin: 0;">
@@ -1779,6 +1786,10 @@
         <hr>
         <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> إعادة تعيين</button>
     </div>
+    <!-- Driver.js for Interactive Tour -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css" />
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+    <script src="tour.js"></script>
 </body>
 
 </html>
