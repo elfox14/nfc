@@ -50,12 +50,13 @@
 
     <!-- Project JavaScript files (order matters) -->
     <script src="security-utils.js" defer></script>
+    <script src="tour.js?v=2.1" defer></script>
     <script src="mobile.js" defer></script>
     <script src="lang-switcher.js" defer></script>
-    <script src="script-core.js" defer></script>
+    <script src="script-core.js?v=2.1" defer></script>
     <script src="script-ui.js" defer></script>
-    <script src="script-card.js" defer></script>
-    <script src="script-main.js" defer></script>
+    <script src="script-card.js?v=2.2" defer></script>
+    <script src="script-main.js?v=2.1" defer></script>
 
     <script src="editor-enhancements.js" defer></script>
 
@@ -188,6 +189,12 @@
                 <a href="blog-en.html" class="btn-icon" title="Blog" style="font-size: 12px;"><i
                         class="fas fa-blog"></i></a>
             </nav>
+
+            <!-- Mobile Login Button -->
+            <a href="login.html" class="btn btn-secondary mobile-auth-btn" id="mobile-auth-btn">
+                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
+            </a>
+
             <!-- Promoted Editor Guide Button -->
             <a href="how-to-use-editor.html" class="btn btn-primary editor-guide-promoted" id="editor-guide-btn-mobile"
                 style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); border: none; margin: 0;">
@@ -671,10 +678,10 @@
                         <label for="input-name_ar">Full Name</label>
                         <!-- UPDATED: Dual language fields -->
                         <textarea id="input-name_ar" rows="2" data-lang="ar" data-update-target="card-name"
-                            data-update-property="innerText"></textarea>
+                            data-update-property="innerText" placeholder="الاسم الكامل"></textarea>
                         <textarea id="input-name_en" rows="2" data-lang="en" style="display:none;"
                             data-update-target="card-name" data-update-property="innerText"
-                            placeholder="Full Name"></textarea>
+                            placeholder="Full Name">Full Name</textarea>
                     </div>
                     <div class="control-grid">
                         <div class="form-group"><label for="name-font-size">Font Size</label><input type="range"
@@ -726,10 +733,10 @@
                         <label for="input-tagline_ar">Job Title / Company</label>
                         <!-- UPDATED: Dual language fields -->
                         <textarea id="input-tagline_ar" rows="2" data-lang="ar" data-update-target="card-tagline"
-                            data-update-property="innerText"></textarea>
+                            data-update-property="innerText" placeholder="المسمى الوظيفي"></textarea>
                         <textarea id="input-tagline_en" rows="2" data-lang="en" style="display:none;"
                             data-update-target="card-tagline" data-update-property="innerText"
-                            placeholder="Job Title / Company"></textarea>
+                            placeholder="Job Title / Company">Job Title</textarea>
                     </div>
                     <div class="control-grid">
                         <div class="form-group"><label for="tagline-font-size">Font Size</label><input type="range"

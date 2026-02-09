@@ -1,17 +1,59 @@
 'use strict';
 
 // Language detection and i18n for script-main.js (computed once at load)
-const _isEnglishPage = document.documentElement.lang === 'en';
+const _isEnglishPage = document.documentElement.lang === 'en' || window.location.pathname.includes('-en.html');
 const i18nMain = {
+    // General
     capturing: _isEnglishPage ? 'Capturing...' : 'جاري الالتقاط...',
     uploading: _isEnglishPage ? 'Uploading images...' : 'جاري رفع الصور...',
     generating: _isEnglishPage ? 'Generating link...' : 'جاري إنشاء الرابط...',
+    saved: _isEnglishPage ? 'Saved' : 'محفوظ',
+    error: _isEnglishPage ? 'Error' : 'خطأ',
+
+    // Share & Collaboration
     captureError: _isEnglishPage ? 'Failed to capture or upload card image. Please try again.' : 'فشل التقاط أو رفع صورة البطاقة. يرجى المحاولة مرة أخرى.',
     saveError: _isEnglishPage ? 'Failed to save design. Please try again.' : 'فشل حفظ التصميم. يرجى المحاولة مرة أخرى.',
     linkCopied: _isEnglishPage ? 'Link copied to clipboard!' : 'تم نسخ الرابط!',
+    sessionLinkCopied: _isEnglishPage ? 'Session link copied!' : 'تم نسخ رابط الجلسة!',
     shareTitle: _isEnglishPage ? 'My Digital Business Card' : 'بطاقة العمل الرقمية الخاصة بي',
     shareText: _isEnglishPage ? 'Check out my digital business card:' : 'اطلع على بطاقتي الرقمية:',
     copyLinkFailed: _isEnglishPage ? 'Could not copy link automatically. Please copy it manually.' : 'لم نتمكن من نسخ الرابط تلقائياً. يرجى نسخه يدوياً.',
+    creatingSession: _isEnglishPage ? 'Creating session...' : 'جاري الإنشاء...',
+    sessionSaveError: _isEnglishPage ? 'Failed to save design to create session.' : 'فشل حفظ التصميم لإنشاء جلسة.',
+    connected: _isEnglishPage ? 'Connected' : 'متصل',
+    disconnected: _isEnglishPage ? 'Disconnected' : 'غير متصل',
+    connectionError: _isEnglishPage ? 'Connection Error' : 'خطأ في الاتصال',
+    copy: _isEnglishPage ? 'Copy' : 'نسخ',
+    copied: _isEnglishPage ? 'Copied ✓' : 'تم النسخ ✓',
+
+    // Export
+    exportFailed: _isEnglishPage ? 'Export failed.' : 'فشل التصدير.',
+    pdfExportFailed: _isEnglishPage ? 'PDF export failed.' : 'فشل تصدير PDF.',
+    preparingPackage: _isEnglishPage ? 'Preparing web package... Please wait' : 'جاري تحضير ملف الويب... الرجاء الانتظار',
+    packageDownloaded: _isEnglishPage ? 'Web package (HTML) downloaded successfully!' : 'تم تنزيل ملف الويب (HTML) بنجاح!',
+    packageError: _isEnglishPage ? 'An error occurred while exporting the web package.' : 'حدث خطأ أثناء تصدير ملف الويب.',
+    qrGenError: _isEnglishPage ? 'Error generating QR Code. Please try again.' : 'حدث خطأ أثناء إنشاء QR Code. حاول مرة أخرى.',
+    qrLinkError: _isEnglishPage ? 'Failed to save design required for link generation.' : 'فشل حفظ التصميم اللازم لإنشاء الرابط.',
+    qrGenFailed: _isEnglishPage ? 'Error generating shareable QR code.' : 'حدث خطأ. لم نتمكن من إنشاء رابط QR Code.',
+
+    // Gallery
+    design: _isEnglishPage ? 'Design' : 'تصميم',
+    gallerySaved: _isEnglishPage ? 'Design saved to gallery successfully!' : 'تم حفظ التصميم في المعرض بنجاح!',
+    gallerySaveError: _isEnglishPage ? 'Failed to save design to gallery.' : 'فشل حفظ التصميم في المعرض. قد تكون هناك مشكلة في تحميل المكونات اللازمة.',
+    deleteConfirm: (name) => _isEnglishPage ? `Are you sure you want to delete "${name}"?` : `هل أنت متأكد من حذف "${name}"؟`,
+    galleryEmpty: _isEnglishPage ? 'Gallery is empty. Save your current design to start.' : 'المعرض فارغ. قم بحفظ تصميمك الحالي للبدء.',
+    previewAlt: (name) => _isEnglishPage ? `Preview for saved design '${name}'` : `معاينة لتصميم '${name}' المحفوظ`,
+    load: _isEnglishPage ? 'Load' : 'تحميل',
+    zipError: _isEnglishPage ? 'An error occurred while exporting the ZIP file.' : 'حدث خطأ أثناء تصدير الملف المضغوط.',
+    zipFailed: _isEnglishPage ? 'Failed to export ZIP file.' : 'فشل تصدير الملف المضغوط. قد تكون هناك مشكلة في تحميل المكونات اللازمة.',
+
+    // Card Load
+    loadSuccess: _isEnglishPage ? 'Design loaded successfully from link.' : 'تم تحميل التصميم من الرابط بنجاح.',
+    loadFailed: _isEnglishPage ? 'Failed to load design from link.' : 'فشل تحميل التصميم من الرابط.',
+
+    // Editor Share
+    editCardTitle: _isEnglishPage ? 'Edit Business Card' : 'تعديل بطاقة العمل',
+    editCardText: _isEnglishPage ? 'Use this link to edit the business card design.' : 'استخدم هذا الرابط لتعديل تصميم بطاقة العمل.',
 };
 
 const CollaborationManager = {
@@ -46,12 +88,12 @@ const CollaborationManager = {
 
     async startSession() {
         const startBtn = document.getElementById('start-collab-btn');
-        UIManager.setButtonLoadingState(startBtn, true, 'جاري الإنشاء...');
+        UIManager.setButtonLoadingState(startBtn, true, i18nMain.creatingSession);
         try {
             // 3. احفظ التصميم للحصول على ID فريد
             const designId = await ShareManager.saveDesign();
             if (!designId) {
-                throw new Error('فشل حفظ التصميم لإنشاء جلسة.');
+                throw new Error(i18nMain.sessionSaveError);
             }
             this.collabId = designId;
 
@@ -86,7 +128,7 @@ const CollaborationManager = {
         this.ws.onopen = () => {
             console.log('WebSocket connection established for collaboration.');
             this.isActive = true;
-            this.updateStatus('متصل');
+            this.updateStatus(i18nMain.connected);
             document.body.classList.add('collaboration-active');
         };
 
@@ -105,14 +147,14 @@ const CollaborationManager = {
             console.log('WebSocket connection closed.');
             this.isActive = false;
             this.ws = null;
-            this.updateStatus('غير متصل');
+            this.updateStatus(i18nMain.disconnected);
             document.body.classList.remove('collaboration-active');
         };
 
         this.ws.onerror = (error) => {
             console.error('WebSocket error:', error);
             this.isActive = false;
-            this.updateStatus('خطأ في الاتصال');
+            this.updateStatus(i18nMain.connectionError);
         };
     },
 
@@ -125,17 +167,17 @@ const CollaborationManager = {
 
     updateStatus(message) {
         const statusEl = document.getElementById('collab-status');
-        if (statusEl) statusEl.textContent = `الحالة: ${message}`;
+        if (statusEl) statusEl.textContent = `${_isEnglishPage ? 'Status: ' : 'الحالة: '}${message}`;
     },
 
     copyLink() {
         const input = document.getElementById('collab-link-input');
         Utils.copyTextToClipboard(input.value).then(success => {
             if (success) {
-                UIManager.announce('تم نسخ رابط الجلسة!');
+                UIManager.announce(i18nMain.sessionLinkCopied);
                 const copyBtn = document.getElementById('copy-collab-link-btn');
-                const originalText = "نسخ";
-                copyBtn.textContent = 'تم النسخ ✓';
+                const originalText = i18nMain.copy;
+                copyBtn.textContent = i18nMain.copied;
                 setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
             }
         });
@@ -153,31 +195,99 @@ const ExportManager = {
 
         const isMobile = typeof MobileUtils !== 'undefined' && MobileUtils.isMobile();
         const flipper = isMobile ? document.querySelector('.card-flipper') : null;
+        const proCanvas = document.querySelector('.pro-canvas');
+        const cardsWrapper = document.querySelector('.cards-wrapper'); // Select wrapper
         let originalFlippedState = false;
+        let originalCanvasStyles = null;
+        let originalWrapperTransform = null; // Store wrapper transform
+
+        if (isMobile && proCanvas) {
+            // Save original styles
+            originalCanvasStyles = {
+                position: proCanvas.style.position,
+                top: proCanvas.style.top,
+                left: proCanvas.style.left,
+                width: proCanvas.style.width,
+                height: proCanvas.style.height,
+                transform: proCanvas.style.transform,
+                padding: proCanvas.style.padding,
+                paddingTop: proCanvas.style.paddingTop,
+                margin: proCanvas.style.margin,
+                overflow: proCanvas.style.overflow,
+                zIndex: proCanvas.style.zIndex
+            };
+
+            // Enforce desktop-like styles for capture
+            proCanvas.style.position = 'fixed';
+            proCanvas.style.top = '0';
+            proCanvas.style.left = '0';
+            proCanvas.style.width = '100vw'; // Ensure full width
+            proCanvas.style.height = '100vh'; // Ensure full height
+            proCanvas.style.transform = 'none';
+            proCanvas.style.padding = '0';
+            proCanvas.style.paddingTop = '0';
+            proCanvas.style.margin = '0';
+            proCanvas.style.overflow = 'visible';
+            proCanvas.style.zIndex = '9999'; // Bring to front
+            proCanvas.style.backgroundColor = 'var(--page-bg)'; // Maintain background
+
+            // Reset wrapper scale
+            if (cardsWrapper) {
+                originalWrapperTransform = cardsWrapper.style.transform;
+                cardsWrapper.style.transform = 'scale(1)'; // Force full scale
+            }
+        }
 
         if (flipper) {
             originalFlippedState = flipper.classList.contains('is-flipped');
             const isCapturingBack = element.id === 'card-back-preview';
 
+            // Ensure correct side is visible for mobile capture
             if (isCapturingBack && !originalFlippedState) {
                 flipper.classList.add('is-flipped');
             } else if (!isCapturingBack && originalFlippedState) {
                 flipper.classList.remove('is-flipped');
             }
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(resolve => setTimeout(resolve, 100)); // Wait for transition
         }
 
         try {
+            // Force reflow/repaint check
+            if (isMobile) await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 100)));
+
             return await html2canvas(element, {
                 backgroundColor: null,
                 scale: scale,
                 useCORS: true,
                 allowTaint: true,
-                logging: false
+                logging: false,
+                width: 510, // Force typical card width
+                height: 330, // Force typical card height
+                windowWidth: 1200, // Simulate desktop window width
             });
         }
         finally {
             document.head.removeChild(style);
+
+            // Restore mobile styles
+            if (isMobile && proCanvas && originalCanvasStyles) {
+                proCanvas.style.position = originalCanvasStyles.position;
+                proCanvas.style.top = originalCanvasStyles.top;
+                proCanvas.style.left = originalCanvasStyles.left;
+                proCanvas.style.width = originalCanvasStyles.width;
+                proCanvas.style.height = originalCanvasStyles.height;
+                proCanvas.style.transform = originalCanvasStyles.transform;
+                proCanvas.style.padding = originalCanvasStyles.padding;
+                proCanvas.style.paddingTop = originalCanvasStyles.paddingTop;
+                proCanvas.style.margin = originalCanvasStyles.margin;
+                proCanvas.style.overflow = originalCanvasStyles.overflow;
+                proCanvas.style.zIndex = originalCanvasStyles.zIndex;
+            }
+
+            if (cardsWrapper && originalWrapperTransform !== null) {
+                cardsWrapper.style.transform = originalWrapperTransform;
+            }
+
             if (flipper) {
                 if (originalFlippedState) {
                     flipper.classList.add('is-flipped');
@@ -203,7 +313,7 @@ const ExportManager = {
             link.click();
         } catch (e) {
             console.error("Export failed:", e);
-            UIManager.announce("فشل التصدير.");
+            UIManager.announce(i18nMain.exportFailed);
         }
         finally {
             UIManager.hideModal(DOMElements.exportLoadingOverlay);
@@ -241,7 +351,7 @@ const ExportManager = {
             doc.save('business-card.pdf');
         } catch (e) {
             console.error('PDF export failed:', e);
-            UIManager.announce('فشل تصدير PDF.');
+            UIManager.announce(i18nMain.pdfExportFailed);
         }
     },
 
@@ -289,7 +399,7 @@ const ExportManager = {
             await Utils.loadScript(Config.SCRIPT_URLS.qrcode);
             const designId = await ShareManager.saveDesign();
             if (!designId) {
-                throw new Error('فشل حفظ التصميم اللازم لإنشاء الرابط.');
+                throw new Error(i18nMain.qrLinkError);
             }
 
             const viewerUrl = new URL('viewer.html', window.location.href);
@@ -310,21 +420,27 @@ const ExportManager = {
                         link.click();
                         resolve();
                     } else {
-                        reject(new Error("حدث خطأ أثناء إنشاء QR Code. حاول مرة أخرى."));
+                        reject(new Error(i18nMain.qrGenError));
                     }
                 }, 100);
             });
 
         } catch (error) {
             console.error("Error generating shareable QR code:", error);
-            alert(error.message || "حدث خطأ. لم نتمكن من إنشاء رابط QR Code.");
+            const msg = error.message || error.toString();
+            // Fallback if message is empty or [object Object]
+            if (!msg || msg === '[object Object]') {
+                alert(i18nMain.qrGenFailed);
+            } else {
+                alert(msg);
+            }
             throw error;
         }
     },
 
     async downloadHtmlPackage() {
         try {
-            UIManager.announce(document.documentElement.lang === 'en' ? "Preparing web package... Please wait" : "جاري تحضير ملف الويب... الرجاء الانتظار");
+            UIManager.announce(i18nMain.preparingPackage);
 
             const isEnglish = document.documentElement.lang === 'en';
             const viewerFile = isEnglish ? 'viewer-en.html' : 'viewer.html';
@@ -372,11 +488,11 @@ const ExportManager = {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            UIManager.announce("تم تنزيل ملف الويب (HTML) بنجاح!");
+            UIManager.announce(i18nMain.packageDownloaded);
 
         } catch (e) {
             console.error("HTML Export Error:", e);
-            alert("حدث خطأ أثناء تصدير ملف الويب.");
+            alert(i18nMain.packageError);
         }
     }
 };
@@ -389,16 +505,16 @@ const GalleryManager = {
         try {
             const state = StateManager.getStateObject();
             const thumbnail = await ExportManager.captureElement(DOMElements.cardFront, 0.5).then(canvas => canvas.toDataURL('image/jpeg', 0.5));
-            this.designs.push({ name: `تصميم ${this.designs.length + 1}`, timestamp: Date.now(), state, thumbnail });
+            this.designs.push({ name: `${i18nMain.design} ${this.designs.length + 1}`, timestamp: Date.now(), state, thumbnail });
             this.saveDesigns();
-            UIManager.announce('تم حفظ التصميم في المعرض بنجاح!');
+            UIManager.announce(i18nMain.gallerySaved);
         } catch (error) {
             console.error("Failed to add design to gallery:", error);
-            alert("فشل حفظ التصميم في المعرض. قد تكون هناك مشكلة في تحميل المكونات اللازمة.");
+            alert(i18nMain.gallerySaveError);
             throw error;
         }
     },
-    deleteDesign(index) { if (confirm(`هل أنت متأكد من حذف "${this.designs[index].name}"؟`)) { this.designs.splice(index, 1); this.saveDesigns(); this.render(); } },
+    deleteDesign(index) { if (confirm(i18nMain.deleteConfirm(this.designs[index].name))) { this.designs.splice(index, 1); this.saveDesigns(); this.render(); } },
     loadDesignToEditor(index) { const design = this.designs[index]; if (design) { StateManager.applyState(design.state); UIManager.hideModal(DOMElements.galleryModal.overlay, DOMElements.buttons.showGallery); } },
     toggleRename(itemElement, index) {
         const nameSpan = itemElement.querySelector('.gallery-item-name-span'); const nameInput = itemElement.querySelector('.gallery-item-name-input'); const renameBtn = itemElement.querySelector('.gallery-rename-btn'); const icon = renameBtn.querySelector('i');
@@ -411,12 +527,12 @@ const GalleryManager = {
     },
     render() {
         const grid = DOMElements.galleryModal.grid; grid.innerHTML = '';
-        if (this.designs.length === 0) { const p = document.createElement('p'); p.textContent = 'المعرض فارغ. قم بحفظ تصميمك الحالي للبدء.'; grid.appendChild(p); return; }
+        if (this.designs.length === 0) { const p = document.createElement('p'); p.textContent = i18nMain.galleryEmpty; grid.appendChild(p); return; }
         this.designs.forEach((design, index) => {
             const item = document.createElement('div'); item.className = 'gallery-item';
             const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.className = 'gallery-item-select'; checkbox.dataset.index = index; checkbox.onchange = () => this.updateSelectionState();
             const thumbnail = document.createElement('img'); thumbnail.src = design.thumbnail;
-            thumbnail.alt = `معاينة لتصميم '${design.name}' المحفوظ`;
+            thumbnail.alt = i18nMain.previewAlt(design.name);
             thumbnail.className = 'gallery-thumbnail';
             const nameDiv = document.createElement('div'); nameDiv.className = 'gallery-item-name';
             const nameSpan = document.createElement('span'); nameSpan.className = 'gallery-item-name-span'; nameSpan.textContent = design.name;
@@ -428,7 +544,7 @@ const GalleryManager = {
                 if (text) { button.append(icon, ` ${text}`); } else { button.appendChild(icon); }
                 button.onclick = clickHandler; if (isDanger) button.classList.add('danger'); return button;
             };
-            const loadBtn = createButton('تحميل', 'fas fa-edit', () => this.loadDesignToEditor(index));
+            const loadBtn = createButton(i18nMain.load, 'fas fa-edit', () => this.loadDesignToEditor(index));
             const renameBtn = createButton('', 'fas fa-pencil-alt', () => this.toggleRename(item, index)); renameBtn.classList.add('gallery-rename-btn');
             const deleteBtn = createButton('', 'fas fa-trash', () => this.deleteDesign(index), true);
             actionsDiv.append(loadBtn, renameBtn, deleteBtn);
@@ -473,8 +589,8 @@ const GalleryManager = {
 
         } catch (e) {
             console.error("ZIP export failed:", e);
-            UIManager.announce("حدث خطأ أثناء تصدير الملف المضغوط.");
-            alert("فشل تصدير الملف المضغوط. قد تكون هناك مشكلة في تحميل المكونات اللازمة.");
+            UIManager.announce(i18nMain.zipError);
+            alert(i18nMain.zipFailed);
             throw e;
         }
     }
@@ -489,7 +605,7 @@ const ShareManager = {
         return new Promise((resolve, reject) => {
             canvas.toBlob(async (blob) => {
                 if (!blob) {
-                    return reject(new Error("فشل تحويل canvas إلى blob"));
+                    return reject(new Error(i18nMain.captureError));
                 }
                 try {
                     const file = new File([blob], "card-capture.png", { type: "image/png" });
@@ -531,7 +647,7 @@ const ShareManager = {
             }
         } catch (error) {
             console.error("Failed to save design:", error);
-            UIManager.announce('فشل حفظ التصميم. حاول مرة أخرى.');
+            UIManager.announce(i18nMain.saveError);
             return null;
         }
     },
@@ -599,14 +715,14 @@ const ShareManager = {
         editorUrl.searchParams.delete('id');
         editorUrl.searchParams.set('id', designId);
 
-        this.performShare(editorUrl.href, 'تعديل بطاقة العمل', 'استخدم هذا الرابط لتعديل تصميم بطاقة العمل.');
+        this.performShare(editorUrl.href, i18nMain.editCardTitle, i18nMain.editCardText);
     },
 
     showFallback(url, text) {
-        DOMElements.shareModal.email.href = `mailto:?subject=My Business Card&body=${encodeURIComponent(text + '\n' + url)}`;
+        DOMElements.shareModal.email.href = `mailto:?subject=${encodeURIComponent(i18nMain.shareTitle)}&body=${encodeURIComponent(text + '\n' + url)}`;
         DOMElements.shareModal.whatsapp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + url)}`;
         DOMElements.shareModal.twitter.href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-        DOMElements.shareModal.copyLink.onclick = () => { Utils.copyTextToClipboard(url).then(success => { if (success) UIManager.announce('تم نسخ الرابط!'); }); };
+        DOMElements.shareModal.copyLink.onclick = () => { Utils.copyTextToClipboard(url).then(success => { if (success) UIManager.announce(i18nMain.linkCopied); }); };
         UIManager.showModal(DOMElements.shareModal.overlay);
     },
 
@@ -627,7 +743,7 @@ const ShareManager = {
                 const state = await response.json();
                 StateManager.applyState(state, false);
                 Config.currentDesignId = designId; // Store loaded ID
-                UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
+                UIManager.announce(i18nMain.loadSuccess);
 
                 const newUrl = new URL(window.location.href);
                 newUrl.searchParams.delete('id');
@@ -635,7 +751,7 @@ const ShareManager = {
                 return true;
             } catch (e) {
                 console.error("Failed to load state from URL:", e);
-                UIManager.announce("فشل تحميل التصميم من الرابط.");
+                UIManager.announce(i18nMain.loadFailed);
                 window.history.replaceState({}, document.title, window.location.pathname);
                 return false;
             }
