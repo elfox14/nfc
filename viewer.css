@@ -286,7 +286,7 @@ input:checked+.slider .moon-icon {
     display: block;
     position: relative;
     width: 100%;
-    max-width: 510px;
+    max-width: 680px;
     aspect-ratio: 1.58;
     /* نسبة البطاقة الأفقية 51/33 */
     transform-style: preserve-3d;
@@ -574,7 +574,7 @@ summary.secondary-actions-summary {
     }
 
     .cards-wrapper-viewer {
-        max-width: 510px;
+        max-width: 680px;
     }
 
     /* التبويبات */

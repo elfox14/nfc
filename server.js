@@ -1074,8 +1074,9 @@ app.get('/api/gallery', async (req, res) => {
 });
 // END: NEW GALLERY API ENDPOINT
 
-// Admin: Clear all cards from gallery
+// Admin: Clear all cards from gallery (requires ADMIN_TOKEN)
 app.post('/api/admin/clear-gallery', async (req, res) => {
+  if (!assertAdmin(req, res)) return;
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const result = await db.collection(designsCollectionName).updateMany(
