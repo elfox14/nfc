@@ -581,18 +581,13 @@
 
                     isLoading = false;
 
-                    // Filter to show only cards shared via "Share Card" button
-                    const sharedDesigns = designs.filter(d =>
-                        d.data && d.data.sharedToGallery === true
-                    );
-
-                    if (sharedDesigns.length === 0 && !append) {
+                    if (designs.length === 0 && !append) {
                         grid.innerHTML = '';
                         emptyState.style.display = 'block';
                         return;
                     }
 
-                    displayCards(sharedDesigns, data.pagination, append);
+                    displayCards(designs, data.pagination, append);
 
                 } catch (error) {
                     console.error('Failed to fetch gallery cards:', error);

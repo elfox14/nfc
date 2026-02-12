@@ -1014,8 +1014,8 @@ app.get('/api/gallery', async (req, res) => {
     const sortBy = req.query.sortBy || 'createdAt';
     const searchTerm = req.query.search ? String(req.query.search).trim() : '';
 
-    // Build search query
-    const query = {};
+    // Build search query — only show designs shared to gallery
+    const query = { 'data.sharedToGallery': true };
     if (searchTerm) {
       const regex = new RegExp(searchTerm, 'i'); // Case-insensitive search
       query['$or'] = [
