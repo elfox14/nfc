@@ -66,6 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
         cardIdNotFound: isEnglish ? 'Card ID not found.' : 'لم يتم العثور على معرف البطاقة.',
         failedLoadCardData: isEnglish ? 'Failed to load card data' : 'فشل تحميل بيانات البطاقة',
         receivedDataInvalid: isEnglish ? 'Received data is invalid.' : 'البيانات المستلمة غير صالحة.',
+        linkedMembersTitle: isEnglish ? 'Linked Members' : 'أعضاء مرتبطون',
+        loadingMembers: isEnglish ? 'Loading members...' : 'جاري تحميل الأعضاء...',
+        viewMemberCard: isEnglish ? 'View Card' : 'عرض البطاقة',
         viewCard: (name, tagline) => {
             if (isEnglish) {
                 return tagline ? `View Card: ${name} - ${tagline}` : `View Card: ${name}`;
@@ -852,6 +855,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             addSaveButtonListeners();
 
+            // Load linked members (non-blocking)
+            renderLinkedMembers();
+
             if (loader) loader.style.display = 'none';
             if (viewerContainer) viewerContainer.style.display = 'block';
 
@@ -956,6 +962,65 @@ document.addEventListener('DOMContentLoaded', () => {
                     savePdfBtn.innerHTML = i18n.savePdf;
                 }
             };
+        }
+    };
+
+    // --- Linked Members Feature ---
+    const renderLinkedMembers = async () => {
+        if (!cardId) return;
+
+        const section = document.getElementById('linked-members-section');
+        const container = document.getElementById('linked-members-container');
+        if (!section || !container) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/get-linked-members/${cardId}`);
+            if (!response.ok) return;
+
+            const result = await response.json();
+            if (!result.success || !result.members || result.members.length === 0) return;
+
+            container.innerHTML = '';
+
+            const viewerPage = isEnglish ? 'viewer-en.html' : 'viewer.html';
+
+            result.members.forEach(member => {
+                if (!member.name) return;
+
+                const memberCard = document.createElement('a');
+                memberCard.href = `${viewerPage}?id=${encodeURIComponent(member.id)}`;
+                memberCard.className = 'linked-member-card';
+                memberCard.title = member.name;
+
+                // Avatar: use photo or first letter
+                let avatarContent = '';
+                if (member.photo) {
+                    avatarContent = `<img src="${member.photo}" alt="${member.name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}" loading="lazy">`;
+                } else {
+                    const initial = member.name.charAt(0);
+                    avatarContent = `<span class="avatar-placeholder">${initial}</span>`;
+                }
+
+                const taglineHTML = member.tagline
+                    ? `<p class="linked-member-tagline">${member.tagline.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`
+                    : '';
+
+                memberCard.innerHTML = `
+                    <div class="linked-member-avatar">${avatarContent}</div>
+                    <div class="linked-member-info">
+                        <p class="linked-member-name">${member.name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+                        ${taglineHTML}
+                    </div>
+                    <i class="fas fa-chevron-right linked-member-arrow"></i>
+                `;
+
+                container.appendChild(memberCard);
+            });
+
+            section.style.display = 'block';
+
+        } catch (error) {
+            console.warn('Failed to load linked members:', error);
         }
     };
 

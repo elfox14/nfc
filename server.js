@@ -449,6 +449,13 @@ app.post('/api/save-design', async (req, res) => {
         }
       }
     }
+    // Sanitize linkedMembers array (array of shortId strings, max 10)
+    if (data.linkedMembers && Array.isArray(data.linkedMembers)) {
+      data.linkedMembers = data.linkedMembers
+        .filter(id => typeof id === 'string' && id.length > 0)
+        .slice(0, 10)
+        .map(id => DOMPurify.sanitize(String(id)));
+    }
     const existingId = req.query.id;
     let shortId = existingId || nanoid(8);
     let isUpdate = false;
@@ -915,6 +922,57 @@ app.get('/api/get-design/:id', async (req, res) => {
     if (!res.headersSent) {
       res.status(500).json({ error: 'Fetch failed' });
     }
+  }
+});
+
+// Get Linked Members for a Card
+app.get('/api/get-linked-members/:id', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const id = String(req.params.id);
+    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    if (!doc || !doc.data) return res.status(404).json({ error: 'Design not found' });
+
+    const linkedIds = doc.data.linkedMembers || [];
+    if (!Array.isArray(linkedIds) || linkedIds.length === 0) {
+      return res.json({ success: true, members: [] });
+    }
+
+    // Limit to 10 linked members
+    const limitedIds = linkedIds.slice(0, 10);
+
+    const linkedDocs = await db.collection(designsCollectionName)
+      .find({ shortId: { $in: limitedIds } })
+      .project({
+        'shortId': 1,
+        'data.inputs.input-name': 1,
+        'data.inputs.input-name_ar': 1,
+        'data.inputs.input-name_en': 1,
+        'data.inputs.input-tagline': 1,
+        'data.inputs.input-tagline_ar': 1,
+        'data.inputs.input-tagline_en': 1,
+        'data.imageUrls.capturedFront': 1,
+        'data.imageUrls.front': 1,
+        'data.inputs.input-photo-url': 1
+      })
+      .toArray();
+
+    const members = linkedDocs.map(d => {
+      const inputs = d.data?.inputs || {};
+      const imageUrls = d.data?.imageUrls || {};
+      return {
+        id: d.shortId,
+        name: inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || '',
+        tagline: inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || '',
+        photo: inputs['input-photo-url'] || null,
+        cardImage: imageUrls.capturedFront || imageUrls.front || null
+      };
+    });
+
+    res.json({ success: true, members });
+  } catch (e) {
+    console.error('Get linked members error:', e);
+    res.status(500).json({ error: 'Failed to fetch linked members' });
   }
 });
 
