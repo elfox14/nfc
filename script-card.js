@@ -1136,6 +1136,9 @@ const StateManager = {
             }
         });
 
+        // Linked Members
+        state.linkedMembers = LinkedMembersManager.getLinkedIds();
+
         return state;
     },
 
@@ -1271,6 +1274,12 @@ const StateManager = {
         }
 
         CardManager.handleMasterSocialToggle();
+
+        // Restore linked members
+        if (state.linkedMembers && Array.isArray(state.linkedMembers)) {
+            LinkedMembersManager.setLinkedIds(state.linkedMembers);
+        }
+
         this.isApplyingState = false;
 
         if (!state.inputs || !state.inputs['layout-select-visual']) {
@@ -1299,4 +1308,111 @@ const StateManager = {
 
         UIManager.showSaveNotification('جاري الحفظ التلقائي...', 'تم الحفظ ✓');
     }, 1500)
+};
+
+// ===== Linked Members Manager =====
+const LinkedMembersManager = {
+    linkedIds: [],
+    MAX_MEMBERS: 10,
+
+    init() {
+        const addBtn = document.getElementById('add-linked-member-btn');
+        const input = document.getElementById('linked-member-input');
+        if (addBtn) addBtn.addEventListener('click', () => this.addMember());
+        if (input) input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.addMember(); } });
+    },
+
+    extractId(value) {
+        if (!value) return null;
+        value = value.trim();
+        // Try to extract ID from URL: viewer.html?id=XYZ or viewer-en.html?id=XYZ
+        try {
+            const url = new URL(value);
+            const idParam = url.searchParams.get('id');
+            if (idParam) return idParam;
+        } catch (_) {
+            // Not a URL, might be just the ID
+        }
+        // Try query string pattern without full URL
+        const match = value.match(/[?&]id=([^&]+)/);
+        if (match) return match[1];
+        // If it looks like a short ID (alphanumeric, 6-12 chars), use as-is
+        if (/^[a-zA-Z0-9_-]{4,20}$/.test(value)) return value;
+        return null;
+    },
+
+    addMember() {
+        const input = document.getElementById('linked-member-input');
+        if (!input) return;
+
+        const rawValue = input.value.trim();
+        if (!rawValue) {
+            UIManager.announce(_isEnglishUI ? 'Please enter a card ID or URL.' : 'الرجاء إدخال معرّف البطاقة أو رابطها.');
+            return;
+        }
+
+        const memberId = this.extractId(rawValue);
+        if (!memberId) {
+            UIManager.announce(_isEnglishUI ? 'Invalid card ID or URL.' : 'معرّف أو رابط غير صالح.');
+            return;
+        }
+
+        if (this.linkedIds.includes(memberId)) {
+            UIManager.announce(_isEnglishUI ? 'This member is already linked.' : 'هذا العضو مرتبط بالفعل.');
+            input.value = '';
+            return;
+        }
+
+        if (this.linkedIds.length >= this.MAX_MEMBERS) {
+            UIManager.announce(_isEnglishUI ? `Maximum ${this.MAX_MEMBERS} linked members allowed.` : `الحد الأقصى ${this.MAX_MEMBERS} أعضاء مرتبطين.`);
+            return;
+        }
+
+        this.linkedIds.push(memberId);
+        input.value = '';
+        this.renderList();
+        StateManager.saveDebounced();
+    },
+
+    removeMember(id) {
+        this.linkedIds = this.linkedIds.filter(m => m !== id);
+        this.renderList();
+        StateManager.saveDebounced();
+    },
+
+    renderList() {
+        const container = document.getElementById('linked-members-editor-list');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (this.linkedIds.length === 0) {
+            container.innerHTML = `<p style="font-size: 12px; color: var(--text-secondary); text-align: center; padding: 10px;">${_isEnglishUI ? 'No linked members yet.' : 'لا يوجد أعضاء مرتبطون بعد.'}</p>`;
+            return;
+        }
+
+        this.linkedIds.forEach((id, index) => {
+            const item = document.createElement('div');
+            item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; margin-bottom: 6px; background: var(--accent-secondary); border-radius: 8px; font-size: 13px;';
+            item.innerHTML = `
+                <span style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-user-circle" style="color: var(--accent-primary); font-size: 16px;"></i>
+                    <span style="font-family: monospace; color: var(--text-primary);">${id}</span>
+                </span>
+                <button class="btn-icon" style="color: #dc3545; padding: 2px 6px; font-size: 14px;" title="${_isEnglishUI ? 'Remove' : 'إزالة'}" aria-label="${_isEnglishUI ? 'Remove member' : 'إزالة العضو'} ${id}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            item.querySelector('button').addEventListener('click', () => this.removeMember(id));
+            container.appendChild(item);
+        });
+    },
+
+    getLinkedIds() {
+        return [...this.linkedIds];
+    },
+
+    setLinkedIds(ids) {
+        this.linkedIds = Array.isArray(ids) ? ids.filter(id => typeof id === 'string' && id.length > 0).slice(0, this.MAX_MEMBERS) : [];
+        this.renderList();
+    }
 };

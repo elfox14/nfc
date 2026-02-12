@@ -1341,6 +1341,30 @@
                 </div>
             </details>
 
+            <!-- Linked Members Section -->
+            <details class="fieldset-accordion" id="linked-members-accordion">
+                <summary><i class="fas fa-users" style="margin-right: 5px;"></i> Linked Members</summary>
+                <div class="fieldset-content">
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">
+                        Add other members' cards to appear on your card viewer page (max 10).
+                    </p>
+                    <div class="form-group">
+                        <label for="linked-member-input">Card ID or URL</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="linked-member-input" placeholder="e.g. 0M0ArUJw or full URL..."
+                                style="flex: 1;">
+                            <button id="add-linked-member-btn" class="btn btn-secondary"
+                                style="width: auto; padding: 8px 12px;" title="Add Member">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="linked-members-editor-list" style="margin-top: 10px;">
+                        <!-- JS will populate this -->
+                    </div>
+                </div>
+            </details>
+
         </aside>
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-share" style="display: none;">

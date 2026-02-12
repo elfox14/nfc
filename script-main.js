@@ -1339,6 +1339,7 @@ const App = {
         GalleryManager.init();
         CollaborationManager.init();
         EventManager.bindEvents();
+        LinkedMembersManager.init();
 
         const loadedFromUrl = await ShareManager.loadFromUrl();
         if (loadedFromUrl) {
