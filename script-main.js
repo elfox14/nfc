@@ -689,8 +689,12 @@ const ShareManager = {
         state.imageUrls.capturedFront = frontImageUrl;
         state.imageUrls.capturedBack = backImageUrl;
 
-        // Mark as shared to gallery - unique flag for gallery filtering
-        state.sharedToGallery = true;
+        // Ask user if they want to show card in gallery
+        const isEnglish = document.documentElement.lang === 'en' || window.location.pathname.includes('-en.html');
+        const galleryMsg = isEnglish
+            ? 'Would you like to display your card in the MC PRIME public gallery?'
+            : 'هل تريد عرض بطاقتك في معرض MC PRIME العام؟';
+        state.sharedToGallery = confirm(galleryMsg);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
 
