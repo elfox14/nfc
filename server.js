@@ -1074,6 +1074,21 @@ app.get('/api/gallery', async (req, res) => {
 });
 // END: NEW GALLERY API ENDPOINT
 
+// Admin: Clear all cards from gallery
+app.post('/api/admin/clear-gallery', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const result = await db.collection(designsCollectionName).updateMany(
+      { 'data.sharedToGallery': true },
+      { $set: { 'data.sharedToGallery': false } }
+    );
+    res.json({ success: true, clearedCount: result.modifiedCount });
+  } catch (e) {
+    console.error('Clear gallery error:', e);
+    res.status(500).json({ error: 'Failed to clear gallery' });
+  }
+});
+
 app.get('/robots.txt', (req, res) => {
   const base = absoluteBaseUrl(req);
   const txt = [
