@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let cardData = null;
     let cardId = null; // Store card ID for tracking
 
+
+
     // Language detection and i18n support (values computed once at load)
     const isEnglish = document.documentElement.lang === 'en';
     const i18n = {
