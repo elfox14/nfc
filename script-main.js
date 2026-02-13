@@ -255,19 +255,14 @@ const ExportManager = {
             // Force reflow/repaint check
             if (isMobile) await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 100)));
 
-            // Detect vertical layout to use correct dimensions
-            const isVertical = typeof DOMElements !== 'undefined' && DOMElements.cardsWrapper && DOMElements.cardsWrapper.dataset.layout === 'vertical';
-            const captureWidth = isVertical ? 330 : 510;
-            const captureHeight = isVertical ? 510 : 330;
-
             return await html2canvas(element, {
                 backgroundColor: null,
                 scale: scale,
                 useCORS: true,
                 allowTaint: true,
                 logging: false,
-                width: captureWidth,
-                height: captureHeight,
+                width: 510, // Force typical card width
+                height: 330, // Force typical card height
                 windowWidth: 1200, // Simulate desktop window width
             });
         }
@@ -402,24 +397,7 @@ const ExportManager = {
     async downloadQrCode() {
         try {
             await Utils.loadScript(Config.SCRIPT_URLS.qrcode);
-
-            // Ensure we have captured images for dashboard thumbnail
-            const state = StateManager.getStateObject();
-            if (!state.imageUrls || !state.imageUrls.capturedFront) {
-                try {
-                    if (typeof DOMElements !== 'undefined' && DOMElements.cardFront && ShareManager.captureAndUploadCard) {
-                        if (!state.imageUrls) state.imageUrls = {};
-                        const front = await ShareManager.captureAndUploadCard(DOMElements.cardFront);
-                        const back = await ShareManager.captureAndUploadCard(DOMElements.cardBack);
-                        state.imageUrls.capturedFront = front;
-                        state.imageUrls.capturedBack = back;
-                    }
-                } catch (e) {
-                    console.warn("Auto-capture failed in downloadQrCode", e);
-                }
-            }
-
-            const designId = await ShareManager.saveDesign(state);
+            const designId = await ShareManager.saveDesign();
             if (!designId) {
                 throw new Error(i18nMain.qrLinkError);
             }
@@ -711,8 +689,8 @@ const ShareManager = {
         state.imageUrls.capturedFront = frontImageUrl;
         state.imageUrls.capturedBack = backImageUrl;
 
-        // Prompt moved to Save action
-        // state.sharedToGallery is set there
+        // Mark as shared to gallery - unique flag for gallery filtering
+        state.sharedToGallery = true;
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
 
@@ -1361,7 +1339,6 @@ const App = {
         GalleryManager.init();
         CollaborationManager.init();
         EventManager.bindEvents();
-        LinkedMembersManager.init();
 
         const loadedFromUrl = await ShareManager.loadFromUrl();
         if (loadedFromUrl) {

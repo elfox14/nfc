@@ -2,119 +2,119 @@
 
 /* 1. المتغيرات والألوان (Theming) */
 :root {
-    /* --- Premium Digital Wallet Theme (Dark Default) --- */
-    --page-bg: #0f172a;
-    /* Deep Slate */
-    --page-bg-gradient: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 70%);
+    --page-bg: #e9ecef;
+    --card-bg: #ffffff;
+    --nav-bg: rgba(255, 255, 255, 0.95);
+    --text-primary: #343a40;
+    --text-primary-inverted: #e6f0f7;
+    --text-secondary: #6c757d;
+    --border-color: #dee2e6;
+    --border-color-light: #e9ecef;
+    --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
 
-    --card-bg: rgba(30, 41, 59, 0.7);
-    /* Glassy Card */
-    --nav-bg: rgba(15, 23, 42, 0.85);
+    /* أزرار */
+    --button-secondary-bg: #f8f9fa;
+    --button-secondary-hover: #e9ecef;
 
-    --text-primary: #f8fafc;
-    /* White/Blue-ish */
-    --text-secondary: #94a3b8;
-    /* Slate-400 */
-    --text-accent: #38bdf8;
-    /* Cyan */
+    /* ألوان العلامة التجارية */
+    --accent-color: #007bff;
+    --accent-hover-color: #0056b3;
+    --accent-primary: #4da6ff;
 
-    --border-color: rgba(255, 255, 255, 0.1);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+    --accent-secondary: #364f6b;
+    --accent-secondary-hover: #4a6a8a;
 
-    --card-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
-    --glow-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+    --success-color: #2ecc71;
+    --success-hover-color: #27ae60;
 
-    /* Actions */
-    --action-primary: #38bdf8;
-    /* Cyan-400 */
-    --action-primary-hover: #0ea5e9;
-    /* Cyan-500 */
-    --action-secondary: rgba(255, 255, 255, 0.05);
-    --action-secondary-hover: rgba(255, 255, 255, 0.1);
+    /* لون زر التوقيع */
+    --purple-color: #8e44ad;
+    --purple-hover: #9b59b6;
 
-    /* Status */
-    --success-color: #22c55e;
-    --gold-color: #fbbf24;
+    /* ألوان الأيقونات */
+    --c-green: #28a745;
+    --c-blue: #007bff;
+    --c-yellow: #f1c40f;
 }
 
-/* Light mode override (Optional - kept for compatibility but design focuses on dark) */
-html.light-mode {
-    --page-bg: #f8fafc;
-    --page-bg-gradient: none;
-    --card-bg: #ffffff;
-    --nav-bg: rgba(255, 255, 255, 0.9);
-    --text-primary: #0f172a;
-    --text-secondary: #64748b;
-    --border-color: #e2e8f0;
-    --action-secondary: #f1f5f9;
-    --action-secondary-hover: #e2e8f0;
+html.dark-mode {
+    --page-bg: #1c2a3b;
+    --card-bg: #243447;
+    --nav-bg: rgba(36, 52, 71, 0.95);
+    --text-primary: #e6f0f7;
+    --text-primary-inverted: #343a40;
+    --text-secondary: #bcc9d4;
+    --border-color: #364f6b;
+    --border-color-light: #4a6a8a;
+    --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    --button-secondary-bg: #364f6b;
+    --button-secondary-hover: #4a6a8a;
 }
 
 /* 2. التنسيقات العامة */
-/* 2. Global Styles & Digital Wallet Layout */
 body {
     background-color: var(--page-bg);
-    background-image: var(--page-bg-gradient);
     color: var(--text-primary);
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    padding-top: 70px;
-    /* Space for Nav */
-    padding-bottom: 100px;
-    /* Space for Bottom Dock */
+    padding-top: 80px;
+    /* مسافة للناف بار */
     box-sizing: border-box;
     overflow-x: hidden;
     font-family: 'Tajawal', sans-serif;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Glassmorphism Utilities */
-.glass-panel {
-    background: var(--card-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: var(--glass-border);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
 
-/* 3. Navigation Bar (Glassy) */
+/* 3. شريط التنقل (Navbar) */
 .viewer-nav {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px;
+    padding: 10px 20px;
     background-color: var(--nav-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border-bottom: var(--glass-border);
+    border-bottom: 1px solid var(--border-color);
     z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease;
 }
 
 .viewer-nav .nav-logo img {
-    height: 32px;
+    height: 40px;
 }
 
 .viewer-nav .nav-links {
-    display: none;
+    display: flex;
+    gap: 20px;
 }
 
-/* Hidden by default for cleaner look */
-
 .viewer-nav .nav-links a {
-    color: var(--text-secondary);
-    font-weight: 500;
-    transition: color 0.2s;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 600;
+    transition: color 0.2s ease;
 }
 
 .viewer-nav .nav-links a:hover {
-    color: var(--text-primary);
+    color: var(--accent-color);
 }
 
 .viewer-nav .nav-actions {
@@ -123,430 +123,525 @@ body {
     gap: 15px;
 }
 
-/* 4. Layout: Hero Center & Info Grid */
-/* 4. Layout: 3-Column Grid System */
-.viewer-container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    position: relative;
-    z-index: 10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    /* Center vertically on desktop */
+.viewer-nav .nav-cta {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    margin: 0;
+    width: auto;
+    background-color: var(--accent-primary);
+    color: white !important;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
 }
 
-/* 3-Column Grid for Desktop */
-.viewer-layout {
-    display: grid;
-    grid-template-columns: 320px 1fr 320px;
-    gap: 30px;
-    align-items: start;
-    width: 100%;
-}
-
-.center-column {
+/* مفتاح الوضع الليلي */
+.theme-switch-wrapper {
     display: flex;
-    flex-direction: column;
     align-items: center;
+}
+
+.theme-switch {
     position: relative;
-    z-index: 5;
-    /* On mobile, this will be one of the tab views */
+    display: inline-block;
+    width: 50px;
+    height: 28px;
 }
 
-.side-column {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    animation: fadeInSide 0.8s ease-out;
-    height: fit-content;
-    max-height: 85vh;
-    overflow-y: auto;
-    position: sticky;
-    top: 80px;
-    /* Below nav */
-    padding: 20px;
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
-/* Hide Scrollbar for cleaner look */
-.side-column::-webkit-scrollbar {
-    width: 4px;
-}
-
-.side-column::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.side-column::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-}
-
-@keyframes fadeInSide {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* --- Mobile Tabs Navigation (Hidden on Desktop) --- */
-.mobile-viewer-tabs {
-    display: none;
-    position: fixed;
-    bottom: 0;
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
     left: 0;
-    width: 100%;
-    background: rgba(15, 23, 42, 0.95);
-    /* matching page-bg */
-    backdrop-filter: blur(12px);
-    border-top: 1px solid var(--border-color);
-    z-index: 1000;
-    padding: 10px 0;
-    justify-content: space-around;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 28px;
 }
 
-.mobile-tab-btn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.slider .sun-icon {
+    position: absolute;
+    left: 7px;
+    top: 6px;
+    color: #f39c12;
+    font-size: 14px;
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+
+.slider .moon-icon {
+    position: absolute;
+    right: 7px;
+    top: 6px;
+    color: #f1c40f;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+input:checked+.slider {
+    background-color: var(--accent-primary);
+}
+
+input:checked+.slider:before {
+    transform: translateX(22px);
+}
+
+input:checked+.slider .sun-icon {
+    opacity: 0;
+}
+
+input:checked+.slider .moon-icon {
+    opacity: 1;
+}
+
+/* Loader */
+.viewer-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--page-bg);
+    z-index: 2000;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-    font-size: 0.8rem;
-    padding: 5px 15px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 100%;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-primary);
 }
 
-.mobile-tab-btn i {
-    font-size: 1.2rem;
-    margin-bottom: 2px;
+.viewer-loader .spinner {
+    border: 4px solid var(--border-color-light);
+    border-top: 4px solid var(--accent-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px auto;
 }
 
-.mobile-tab-btn.active {
-    color: var(--action-primary);
-}
-
-.mobile-tab-btn.active i {
-    transform: translateY(-2px);
-    color: var(--action-primary);
-}
-
-/* 5. Center Column (The Card) */
-.center-column {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    perspective: 1000px;
-    z-index: 10;
-}
-
-/* Card Container */
-.cards-wrapper-viewer {
-    position: relative;
-    width: 100%;
-    /* Max-width is dynamically set by JS, but we set a default limit for large screens */
-    transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.4, 2.08, 0.55, 0.44);
-    cursor: pointer;
-    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.5));
-    animation: floatCard 6s ease-in-out infinite;
-}
-
-@keyframes floatCard {
+@keyframes spin {
     0% {
-        transform: translateY(0px);
-    }
-
-    50% {
-        transform: translateY(-10px);
+        transform: rotate(0deg);
     }
 
     100% {
-        transform: translateY(0px);
+        transform: rotate(360deg);
     }
+}
+
+/* 4. التخطيط (Layout) */
+.viewer-container {
+    width: 100%;
+    max-width: 1400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.viewer-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr 300px;
+    /* جانبي - وسط - جانبي */
+    gap: 25px;
+    width: 100%;
+    align-items: start;
+}
+
+/* 5. العمود الأوسط (البطاقة) */
+.center-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+}
+
+/* --- إعدادات حاوية البطاقة (الافتراضي: أفقي) --- */
+.cards-wrapper-viewer {
+    display: block;
+    position: relative;
+    width: 100%;
+    max-width: 510px;
+    aspect-ratio: 1.58;
+    /* نسبة البطاقة الأفقية 51/33 */
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    cursor: pointer;
+    margin: 0 auto;
 }
 
 .cards-wrapper-viewer.is-flipped {
     transform: rotateY(180deg);
 }
 
-/* Card Faces */
 .business-card-viewer {
-    position: relative;
-    /* Changed from absolute to allow natural height flow for front */
+    height: 100%;
     width: 100%;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    border-radius: 16px;
-    overflow: hidden;
-    background-color: transparent;
-    /* Fallback */
-}
-
-#card-back-display {
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
-    transform: rotateY(180deg);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    background-color: var(--card-bg);
+    transform-style: preserve-3d;
 }
 
 .business-card-viewer img {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
-    border-radius: 16px;
+    object-fit: cover;
 }
 
-/* Flip Button (Floating below card) */
+.cards-wrapper-viewer.is-flipped #card-front-display {
+    transform: rotateY(180deg);
+}
+
 #viewer-flip-btn {
-    margin-top: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: var(--text-primary);
-    border-radius: 50px;
-    padding: 10px 24px;
+    gap: 8px;
+    background-color: var(--accent-secondary);
+    color: white;
+    border-radius: 30px;
+    padding: 10px 25px;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 #viewer-flip-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    background-color: var(--accent-secondary-hover);
 }
 
-/* 6. Info Section (Replaces Sidebars) */
-.info-section {
+/* 6. الأعمدة الجانبية */
+.side-column {
+    background-color: var(--card-bg);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
     width: 100%;
+    box-sizing: border-box;
+    position: sticky;
+    top: 90px;
+}
+
+.side-column h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    text-align: center;
+    font-size: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+/* روابط الاتصال */
+#contact-links-container .links-group {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    animation: fadeInUp 0.8s ease-out;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.section-title {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-    padding-right: 5px;
-    /* RTL alignment */
-    border-right: 3px solid var(--action-primary);
-    padding-left: 10px;
-}
-
-/* Contact List Card */
-.contact-card-list {
-    display: flex;
-    flex-direction: column;
-    background: var(--card-bg);
-    backdrop-filter: blur(12px);
-    border: var(--glass-border);
-    border-radius: 16px;
-    overflow: hidden;
+    gap: 10px;
 }
 
 .contact-link {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 16px 20px;
-    color: var(--text-primary);
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    background-color: var(--page-bg);
     text-decoration: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    transition: background 0.2s;
-}
-
-.contact-link:last-child {
-    border-bottom: none;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
 }
 
 .contact-link:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background-color: #fff;
+    border-color: var(--accent-primary);
+    transform: translateX(-3px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .contact-link i {
+    font-size: 1.3rem;
+    color: var(--accent-primary);
     width: 24px;
     text-align: center;
-    font-size: 1.2rem;
-    color: var(--action-primary);
+    flex-shrink: 0;
 }
 
-/* Social Grid */
-.social-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 12px;
-}
-
-.social-icon-btn {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--card-bg);
-    border: var(--glass-border);
-    border-radius: 12px;
-    font-size: 1.5rem;
-    color: var(--text-secondary);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    text-decoration: none;
-}
-
-.social-icon-btn:hover {
-    transform: translateY(-5px);
-    background: var(--action-secondary-hover);
-    color: var(--text-primary);
-    border-color: var(--action-primary);
-    box-shadow: 0 5px 15px rgba(56, 189, 248, 0.2);
-}
-
-/* 7. Sticky Bottom Dock */
-.bottom-dock {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 500px;
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    padding: 10px;
-    display: flex;
-    gap: 10px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    z-index: 2000;
-    animation: slideUp 0.5s cubic-bezier(0.19, 1, 0.22, 1) 0.5s backwards;
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translate(-50%, 100px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translate(-50%, 0);
-    }
-}
-
-#save-vcf-btn {
+.contact-link span {
+    word-break: break-all;
     flex: 1;
-    background: linear-gradient(135deg, var(--action-primary), #0ea5e9);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 1rem;
-    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+}
+
+/* 7. أزرار الحفظ والمشاركة */
+.save-options {
+    padding: 25px;
+}
+
+.btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 14px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: white;
 }
 
-.dock-icon-btn {
-    width: 48px;
+.btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.btn-primary {
+    background-color: var(--success-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--success-hover-color);
+}
+
+.btn-secondary {
+    background-color: var(--accent-secondary);
+    color: var(--text-primary-inverted);
+}
+
+.btn-secondary:hover {
+    background-color: var(--accent-secondary-hover);
+}
+
+/* زر توقيع الإيميل */
+#save-email-sig-btn {
+    background-color: var(--purple-color);
+    width: 100%;
+    color: white;
+    box-shadow: 0 4px 15px rgba(142, 68, 173, 0.2);
+}
+
+#save-email-sig-btn:hover {
+    background-color: var(--purple-hover);
+}
+
+/* القائمة المنسدلة (Accordion) */
+.save-options .fieldset-accordion {
+    border: 1px solid var(--border-color);
+    margin: 0;
+    border-radius: 8px;
+    background-color: var(--button-secondary-bg);
+}
+
+summary.secondary-actions-summary {
+    text-align: center;
+    padding: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.secondary-actions-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.secondary-actions-content .btn {
+    width: 100%;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* صندوق المعلومات (Visitor Guide) */
+.info-box {
+    margin-top: 25px;
+    padding: 15px;
+    background: var(--button-secondary-bg);
+    border-radius: 8px;
+    border: 1px dashed var(--accent-primary);
+}
+
+.info-box-title {
+    font-size: 1rem;
+    margin: 0 0 10px 0;
+    color: var(--accent-primary);
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    gap: 8px;
+}
+
+.info-box-text {
+    margin: 0 0 8px 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.info-box-text strong {
     color: var(--text-primary);
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: background 0.2s;
 }
 
-.dock-icon-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+.info-box-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin: 15px 0 8px 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* --- Mobile Responsiveness --- */
+.info-box-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.info-box-list li {
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.c-green {
+    color: var(--c-green);
+}
+
+.c-blue {
+    color: var(--c-blue);
+}
+
+.c-yellow {
+    color: var(--c-yellow);
+}
+
+/* 8. وضع الموبايل (Responsive) */
+.mobile-viewer-tabs {
+    display: none;
+}
+
 @media (max-width: 1024px) {
     .viewer-layout {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        gap: 20px;
         width: 100%;
-        gap: 0;
     }
 
-    .viewer-container {
-        max-width: 100%;
-        padding: 15px 15px 80px 15px;
-        /* Bottom padding for tabs */
-        display: block;
-        min-height: auto;
-    }
-
-    /* On mobile, only the active section is shown via JS */
-    .side-column,
     .center-column {
-        display: none;
-        position: relative;
-        top: 0;
+        order: 1;
+        max-width: none;
         width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
-        padding: 0;
-        height: auto;
-        max-height: none;
-        overflow: visible;
     }
 
-    /* The active class will be toggled by JS */
-    .mobile-active-section {
-        display: flex !important;
-        animation: fadeIn 0.3s ease-out;
+    .cards-wrapper-viewer {
+        max-width: 510px;
     }
 
+    /* التبويبات */
     .mobile-viewer-tabs {
         display: flex;
-        padding-bottom: env(safe-area-inset-bottom, 10px);
+        order: 2;
+        width: 100%;
+        background-color: var(--card-bg);
+        border-radius: 12px 12px 0 0;
+        border: 1px solid var(--border-color);
+        border-bottom: none;
+        box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+        z-index: 10;
     }
 
-    /* Hide desktop nav links */
-    .viewer-nav .nav-links {
+    .mobile-tab-btn {
+        flex: 1;
+        padding: 15px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .mobile-tab-btn.active {
+        color: var(--accent-primary);
+        border-bottom-color: var(--accent-primary);
+        background-color: rgba(77, 166, 255, 0.05);
+    }
+
+    /* الأعمدة الجانبية في الموبايل */
+    .side-column {
+        display: none;
+        order: 3;
+        border-radius: 0 0 12px 12px;
+        margin-top: -20px;
+        /* دمج مع التبويبات */
+        border: 1px solid var(--border-color);
+        border-top: none;
+        box-shadow: none;
+    }
+
+    .side-column.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .side-column h2 {
         display: none;
     }
 
-    /* Ensure glass panels look good full width */
-    .glass-panel {
-        border-radius: 16px;
+    /* العنوان موجود في التبويب */
+
+    .nav-links {
+        display: none;
+    }
+
+    /* مسافة إضافية في الأسفل لضمان عدم اختفاء المحتوى */
+    .viewer-container {
+        padding-bottom: 60px;
     }
 }
 
@@ -583,31 +678,25 @@ body {
 
     .cards-wrapper-viewer {
         width: 100%;
-        max-width: 100%;
+        aspect-ratio: 1.58;
     }
 }
 
 /* منطقة الرندر المخفية (للتحميل) */
 .business-card-render-wrapper {
-    width: 510px !important;
-    height: 330px !important;
-    min-width: 510px;
-    min-height: 330px;
-    max-width: 510px;
-    max-height: 330px;
+    width: 510px;
+    height: 330px;
     position: absolute;
     left: -9999px;
     top: 0;
     overflow: hidden;
-    box-sizing: border-box;
 }
 
 .card-content-layer {
     /* مطابقة للمحرر */
     width: 100%;
     height: 100%;
-    padding: 8% 5% 5% 5%;
-    gap: 15px;
+    padding: 8% 5%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -628,8 +717,30 @@ body {
 
 /* --- [NEW] دعم البطاقات الطولية (Vertical Mode) --- */
 
-/* --- [NEW] دعم البطاقات الطولية (Vertical Mode) --- */
-/* Legacy widths removed to allow JS dynamic sizing to control width */
+.cards-wrapper-viewer.is-vertical {
+    aspect-ratio: 330 / 510;
+    /* نسبة البطاقة الطولية */
+    max-width: 350px;
+    max-height: calc(100vh - 200px);
+    /* حد أقصى للارتفاع */
+    width: auto;
+    height: auto;
+}
+
+/* للشاشات الصغيرة */
+@media (max-width: 768px) {
+    .cards-wrapper-viewer.is-vertical {
+        max-width: 280px;
+        max-height: calc(100vh - 250px);
+    }
+}
+
+@media (max-width: 480px) {
+    .cards-wrapper-viewer.is-vertical {
+        max-width: 240px;
+        max-height: calc(100vh - 280px);
+    }
+}
 
 .business-card-render-wrapper.is-vertical {
     width: 330px !important;
@@ -640,397 +751,4 @@ body {
 .is-vertical .business-card-viewer {
     width: 100%;
     height: 100%;
-}
-
-
-
-/* --- START: Linked Members Section --- */
-
-#linked-members-section {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid var(--border-color);
-}
-
-#linked-members-section h2 {
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.linked-members-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.linked-member-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--page-bg), var(--button-secondary-bg));
-    border: 1px solid var(--border-color);
-    text-decoration: none;
-    color: var(--text-primary);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-}
-
-.linked-member-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(77, 166, 255, 0.08), rgba(54, 79, 107, 0.05));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: inherit;
-}
-
-.linked-member-card:hover {
-    border-color: var(--accent-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(77, 166, 255, 0.15);
-}
-
-.linked-member-card:hover::before {
-    opacity: 1;
-}
-
-.linked-member-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--accent-primary);
-    flex-shrink: 0;
-    background-color: var(--accent-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-    z-index: 1;
-}
-
-.linked-member-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.linked-member-avatar .avatar-placeholder {
-    color: white;
-    font-size: 1.1rem;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.linked-member-info {
-    flex: 1;
-    min-width: 0;
-    position: relative;
-    z-index: 1;
-}
-
-.linked-member-name {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 0;
-}
-
-.linked-member-tagline {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 2px 0 0 0;
-}
-
-.linked-member-arrow {
-    color: var(--accent-primary);
-    font-size: 0.85rem;
-    flex-shrink: 0;
-    transition: transform 0.3s ease;
-    position: relative;
-    z-index: 1;
-}
-
-html[dir="rtl"] .linked-member-arrow {
-    transform: scaleX(-1);
-}
-
-.linked-member-card:hover .linked-member-arrow {
-    transform: translateX(3px);
-}
-
-html[dir="rtl"] .linked-member-card:hover .linked-member-arrow {
-    transform: scaleX(-1) translateX(3px);
-}
-
-/* Loading state */
-.linked-members-loading {
-    text-align: center;
-    padding: 15px;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-}
-
-.linked-members-loading i {
-    margin-bottom: 8px;
-    font-size: 1.2rem;
-    color: var(--accent-primary);
-}
-
-/* Mobile adjustments */
-@media (max-width: 1024px) {
-    #linked-members-section h2 {
-        display: block !important;
-        font-size: 1rem;
-        margin-top: 10px;
-    }
-}
-
-/* --- END: Linked Members Section --- */
-
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-/* --- Skeleton Loading --- */
-.viewer-loader {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    gap: 20px;
-    padding: 20px;
-}
-
-.viewer-loader.hidden {
-    display: none;
-}
-
-.skeleton-wrapper {
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.skeleton-card {
-    width: 100%;
-    aspect-ratio: 51 / 33;
-    border-radius: 16px;
-    background: linear-gradient(90deg, var(--card-bg) 25%, rgba(255, 255, 255, 0.08) 50%, var(--card-bg) 75%);
-    background-size: 400% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
-}
-
-.skeleton-line {
-    height: 14px;
-    border-radius: 7px;
-    background: linear-gradient(90deg, var(--card-bg) 25%, rgba(255, 255, 255, 0.06) 50%, var(--card-bg) 75%);
-    background-size: 400% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
-}
-
-.skeleton-line.short {
-    width: 60%;
-    margin: 0 auto;
-}
-
-.skeleton-line.medium {
-    width: 80%;
-    margin: 0 auto;
-}
-
-.skeleton-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 8px;
-}
-
-.skeleton-btn {
-    width: 100px;
-    height: 40px;
-    border-radius: 50px;
-    background: linear-gradient(90deg, var(--card-bg) 25%, rgba(255, 255, 255, 0.06) 50%, var(--card-bg) 75%);
-    background-size: 400% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: 200% 0;
-    }
-
-    100% {
-        background-position: -200% 0;
-    }
-}
-
-/* --- CTA Pulse Animation --- */
-#save-vcf-btn {
-    animation: ctaPulse 2.5s ease-in-out infinite;
-    transition: all 0.3s ease;
-}
-
-#save-vcf-btn:hover {
-    animation: none;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
-}
-
-@keyframes ctaPulse {
-
-    0%,
-    100% {
-        box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
-    }
-
-    50% {
-        box-shadow: 0 4px 25px rgba(56, 189, 248, 0.6);
-    }
-}
-
-/* --- 3D Tilt: Pause Float on Hover --- */
-.cards-wrapper-viewer:hover {
-    animation-play-state: paused;
-}
-
-.cards-wrapper-viewer {
-    transition: transform 0.6s cubic-bezier(0.4, 2.08, 0.55, 0.44);
-    will-change: transform;
-}
-
-/* --- Footer --- */
-.viewer-footer {
-    text-align: center;
-    padding: 30px 20px;
-    border-top: 1px solid var(--border-color);
-    margin-top: 40px;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    width: 100%;
-    max-width: 1200px;
-}
-
-.viewer-footer a {
-    color: var(--text-accent);
-    text-decoration: none;
-    margin: 0 8px;
-    transition: color 0.2s;
-}
-
-.viewer-footer a:hover {
-    color: var(--text-primary);
-}
-
-.viewer-footer .footer-links {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
-
-.viewer-footer .footer-brand {
-    margin-top: 10px;
-    font-size: 0.8rem;
-    opacity: 0.7;
-}
-
-/* --- Smooth Tab Transition --- */
-@media (max-width: 1024px) {
-    .mobile-active-section {
-        display: flex !important;
-        animation: fadeInTab 0.3s ease-out;
-    }
-}
-
-@keyframes fadeInTab {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* --- Toast Notification --- */
-.viewer-toast {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: rgba(34, 197, 94, 0.95);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    z-index: 3000;
-    opacity: 0;
-    transition: all 0.3s ease;
-    pointer-events: none;
-    backdrop-filter: blur(8px);
-}
-
-.viewer-toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
-
-.viewer-toast.error {
-    background: rgba(239, 68, 68, 0.95);
-}
-
-.viewer-toast i {
-    margin-left: 8px;
-}
-
-html[dir="ltr"] .viewer-toast i {
-    margin-left: 0;
-    margin-right: 8px;
-}
-
-/* Helper Class for Hidden Rendering */
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    border: 0;
-    padding: 0;
-    clip: rect(0 0 0 0);
-    overflow: hidden;
-    white-space: nowrap;
 }

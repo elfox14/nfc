@@ -218,7 +218,7 @@
                         const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || 'بدون اسم') : 'بطاقة';
                         const views = design.views || 0;
                         const date = new Date(design.createdAt).toLocaleDateString('ar-EG');
-                        const thumb = design.data?.imageUrls?.capturedFront || design.data?.imageUrls?.front || '';
+                        const thumb = design.data?.imageUrls?.front || '';
 
                         // Construct absolute URL for thumb if needed (though browser handles relative fine)
                         // Check if thumb is base64 or url

@@ -139,28 +139,6 @@
             flex-grow: 1;
         }
 
-        .lang-btn {
-            background: rgba(77, 166, 255, 0.2);
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            margin-right: 1rem;
-            /* Adjusted for RTL? No, usually margin-left in RTL if it's on the left... wait */
-            /* In RTL, margin-right pushes it to the left from the element on its right. */
-            font-family: 'Poppins', sans-serif;
-            margin-left: 1rem;
-        }
-
-        .lang-btn:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-
         /* START: Unified Header & Footer styles from index.html */
         .navbar {
             background: rgba(28, 42, 59, 0.8);
@@ -356,10 +334,7 @@
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
         crossorigin="anonymous"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
-        crossorigin="anonymous"></script>
     <script src="viewer.js" defer></script>
-    <script src="/nfc/lang-switcher.js" defer></script>
 </head>
 
 <body>
@@ -380,7 +355,6 @@
                     <li><a href="gallery.html">المعرض</a></li>
                     <li><a href="blog.html" aria-current="page">المدونة</a></li>
                 </ul>
-                <button onclick="switchLanguage('en')" class="lang-btn">English</button>
             </div>
         </nav>
     </header>

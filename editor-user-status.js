@@ -43,7 +43,6 @@ const EditorUserStatus = {
             statusText.style.color = 'var(--text-secondary)';
             loginLink.style.display = 'inline-flex';
             loginLink.textContent = isEnglish ? 'Login' : 'تسجيل دخول';
-            loginLink.href = isEnglish ? 'login-en.html' : 'login.html';
             logoutBtn.style.display = 'none';
             if (saveBtn) {
                 saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ';
@@ -115,25 +114,8 @@ const EditorUserStatus = {
 
             let state = StateManager.getStateObject();
 
-            // Capture Images if requested (Manual Save) OR if thumbnails are missing (First Auto-save)
-            // This ensures dashboard always has a thumbnail to display instead of just background
-            let shouldCapture = captureImages;
-            if (!shouldCapture && (!state.imageUrls || !state.imageUrls.capturedFront)) {
-                console.log('[EditorUserStatus] Thumbnail missing. Forcing capture for first auto-save...');
-                shouldCapture = true;
-            }
-
-            if (shouldCapture) {
-                // Ask user if they want to show card in gallery (ONLY for manual saves)
-                if (captureImages) {
-                    const galleryMsg = isEnglish
-                        ? 'Would you like to display your card in the MC PRIME public gallery?'
-                        : 'هل تريد عرض بطاقتك في معرض MC PRIME العام؟';
-                    // Only ask if not already set or if explicitly saving (maybe always ask on manual save?)
-                    // Let's ask always on manual save to give them a choice
-                    state.sharedToGallery = confirm(galleryMsg);
-                }
-
+            // Capture Images if requested (Manual Save)
+            if (captureImages) {
                 console.log('[EditorUserStatus] Attempting to capture images...');
                 console.log('[EditorUserStatus] DOMElements:', typeof DOMElements !== 'undefined' ? 'defined' : 'undefined');
                 console.log('[EditorUserStatus] ShareManager.captureAndUploadCard:', typeof ShareManager.captureAndUploadCard);
