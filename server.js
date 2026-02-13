@@ -418,14 +418,54 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
       return;
     }
 
-    const filename = nanoid(10) + '.webp';
-    const out = path.join(uploadDir, filename);
-    await sharp(req.file.buffer)
+    // Process image with sharp
+    const processedBuffer = await sharp(req.file.buffer)
       .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 85 })
-      .toFile(out);
+      .toBuffer();
+
+    // Try to upload to external hosting (persistent storage)
+    const externalUploadUrl = process.env.EXTERNAL_UPLOAD_URL; // e.g. https://mcprim.com/nfc/upload.php
+    const uploadSecret = process.env.UPLOAD_SECRET;
+
+    if (externalUploadUrl && uploadSecret) {
+      try {
+        const FormData = require('form-data');
+        const formData = new FormData();
+        formData.append('image', processedBuffer, {
+          filename: nanoid(10) + '.webp',
+          contentType: 'image/webp'
+        });
+
+        const uploadResponse = await fetch(externalUploadUrl, {
+          method: 'POST',
+          headers: {
+            'X-Upload-Secret': uploadSecret,
+            ...formData.getHeaders()
+          },
+          body: formData
+        });
+
+        if (uploadResponse.ok) {
+          const result = await uploadResponse.json();
+          if (result.success && result.url) {
+            console.log('[Upload] Image saved to external hosting:', result.url);
+            return res.json({ success: true, url: result.url });
+          }
+        }
+        console.warn('[Upload] External upload failed, falling back to local storage');
+      } catch (extErr) {
+        console.warn('[Upload] External upload error, falling back to local:', extErr.message);
+      }
+    }
+
+    // Fallback: save locally (will be lost on Render restart)
+    const filename = nanoid(10) + '.webp';
+    const out = path.join(uploadDir, filename);
+    fs.writeFileSync(out, processedBuffer);
 
     const base = absoluteBaseUrl(req);
+    console.log('[Upload] Image saved locally (fallback):', filename);
     return res.json({ success: true, url: `${base}/uploads/${filename}` });
 
   } catch (e) {
