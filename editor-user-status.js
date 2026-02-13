@@ -18,7 +18,7 @@ const EditorUserStatus = {
     },
 
     updateUserStatus() {
-        const isEnglish = document.documentElement.lang === 'en';
+        const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
         const statusText = document.getElementById('user-status-text');
         const loginLink = document.getElementById('user-login-link');
         const logoutBtn = document.getElementById('user-logout-btn');
@@ -29,10 +29,13 @@ const EditorUserStatus = {
         const user = JSON.parse(localStorage.getItem('authUser') || 'null');
         const token = localStorage.getItem('authToken');
 
+        const signupLink = document.getElementById('user-signup-link');
+
         if (token && user) {
             statusText.textContent = user.name || user.email || (isEnglish ? 'User' : 'مستخدم');
             statusText.style.color = 'var(--accent-primary)';
             loginLink.style.display = 'none';
+            if (signupLink) signupLink.style.display = 'none';
             logoutBtn.style.display = 'inline-flex';
             logoutBtn.textContent = isEnglish ? 'Logout' : 'خروج';
             if (saveBtn) {
@@ -43,6 +46,11 @@ const EditorUserStatus = {
             statusText.style.color = 'var(--text-secondary)';
             loginLink.style.display = 'inline-flex';
             loginLink.textContent = isEnglish ? 'Login' : 'تسجيل دخول';
+            if (signupLink) {
+                signupLink.style.display = 'inline-flex';
+                signupLink.textContent = isEnglish ? 'Sign Up' : 'إنشاء حساب';
+                signupLink.href = isEnglish ? 'signup-en.html' : 'signup.html';
+            }
             logoutBtn.style.display = 'none';
             if (saveBtn) {
                 saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ';
@@ -51,7 +59,7 @@ const EditorUserStatus = {
     },
 
     bindEvents() {
-        const isEnglish = document.documentElement.lang === 'en';
+        const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
         // Logout button
         const logoutBtn = document.getElementById('user-logout-btn');
         if (logoutBtn) {
@@ -76,7 +84,7 @@ const EditorUserStatus = {
     },
 
     async saveToCloud(captureImages = false) {
-        const isEnglish = document.documentElement.lang === 'en';
+        const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
         const token = localStorage.getItem('authToken');
         const saveBtn = document.getElementById('save-to-cloud-btn');
         const saveBtnText = document.getElementById('save-btn-text');

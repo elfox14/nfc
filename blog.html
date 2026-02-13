@@ -42,6 +42,9 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
+    <!-- Language Switcher -->
+    <script src="/nfc/lang-switcher.js" defer></script>
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -330,6 +333,24 @@
                 /* ... other styles */
             }
         }
+
+        .lang-btn {
+            background: rgba(77, 166, 255, 0.2);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            margin-right: 1rem;
+        }
+
+        .lang-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
     </style>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
@@ -355,6 +376,7 @@
                     <li><a href="gallery.html">المعرض</a></li>
                     <li><a href="blog.html" aria-current="page">المدونة</a></li>
                 </ul>
+                <button onclick="switchLanguage('en')" class="lang-btn">EN</button>
             </div>
         </nav>
     </header>

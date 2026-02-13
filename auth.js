@@ -100,7 +100,7 @@ const Auth = {
                         this.setSession(event.data.token, event.data.user);
                         resolve({ success: true });
                     } else {
-                        resolve({ success: false, error: event.data.error || 'فشل تسجيل الدخول' });
+                        resolve({ success: false, error: event.data.error || (document.documentElement.lang === 'en' ? 'Login failed' : 'فشل تسجيل الدخول') });
                     }
                     if (popup) popup.close();
                 }
@@ -110,14 +110,14 @@ const Auth = {
 
             // Check if popup was blocked
             if (!popup || popup.closed) {
-                resolve({ success: false, error: 'تم حظر النافذة المنبثقة. يرجى السماح بها.' });
+                resolve({ success: false, error: (document.documentElement.lang === 'en' ? 'Popup blocked. Please allow it.' : 'تم حظر النافذة المنبثقة. يرجى السماح بها.') });
             }
 
             // Timeout after 2 minutes
             setTimeout(() => {
                 window.removeEventListener('message', messageHandler);
                 if (popup && !popup.closed) popup.close();
-                resolve({ success: false, error: 'انتهت المهلة. حاول مرة أخرى.' });
+                resolve({ success: false, error: (document.documentElement.lang === 'en' ? 'Timeout. Try again.' : 'انتهت المهلة. حاول مرة أخرى.') });
             }, 120000);
         });
     },
@@ -127,7 +127,8 @@ const Auth = {
         localStorage.removeItem('authUser');
         this.token = null;
         this.user = null;
-        window.location.href = '/nfc/login.html';
+        const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
+        window.location.href = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
     },
 
     setSession(token, user) {
@@ -143,28 +144,38 @@ const Auth = {
 
     // UI Helpers
     updateNavAuth() {
+        const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
+        const loginUrl = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
+        const dashboardUrl = isEnglish ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html';
+        const loginText = isEnglish ? 'Login' : 'تسجيل الدخول';
+        const dashboardText = isEnglish ? 'Dashboard' : 'لوحة التحكم';
+
         // 1. Main Website Navbar (.nav-links)
         const navContainer = document.querySelector('.nav-links');
         if (navContainer) {
             if (this.isLoggedIn()) {
-                const loginLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('login.html'));
+                const loginLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('login') && !a.href.includes('dashboard'));
                 if (loginLink && loginLink.parentNode) loginLink.parentNode.style.display = 'none';
 
-                if (!document.querySelector('a[href="/nfc/dashboard.html"]')) {
+                if (!document.querySelector(`a[href="${dashboardUrl}"]`)) {
                     const li = document.createElement('li');
-                    li.innerHTML = `<a href="/nfc/dashboard.html">لوحة التحكم</a>`;
+                    li.innerHTML = `<a href="${dashboardUrl}">${dashboardText}</a>`;
                     navContainer.appendChild(li);
                 }
 
                 const ctaBtn = document.querySelector('.nav-cta');
                 if (ctaBtn) {
-                    ctaBtn.textContent = 'لوحة التحكم';
-                    ctaBtn.href = '/nfc/dashboard.html';
+                    ctaBtn.textContent = dashboardText;
+                    ctaBtn.href = dashboardUrl;
                 }
             } else {
-                if (!document.querySelector('a[href="/nfc/login.html"]')) {
+                // Ensure no dashboard link is shown if logged out
+                const dashLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('dashboard'));
+                if (dashLink && dashLink.parentNode) dashLink.parentNode.style.display = 'none';
+
+                if (!document.querySelector(`a[href="${loginUrl}"]`)) {
                     const li = document.createElement('li');
-                    li.innerHTML = `<a href="/nfc/login.html">تسجيل الدخول</a>`;
+                    li.innerHTML = `<a href="${loginUrl}">${loginText}</a>`;
                     navContainer.appendChild(li);
                 }
             }
@@ -174,21 +185,21 @@ const Auth = {
         const toolbarNav = document.querySelector('.toolbar-nav');
         if (toolbarNav) {
             if (this.isLoggedIn()) {
-                if (!toolbarNav.querySelector('a[href="/nfc/dashboard.html"]')) {
+                if (!toolbarNav.querySelector(`a[href="${dashboardUrl}"]`)) {
                     const a = document.createElement('a');
-                    a.href = "/nfc/dashboard.html";
+                    a.href = dashboardUrl;
                     a.className = "btn-icon";
-                    a.title = "لوحة التحكم";
+                    a.title = dashboardText;
                     a.style.fontSize = "12px";
                     a.innerHTML = '<i class="fas fa-user-circle"></i>';
                     toolbarNav.appendChild(a);
                 }
             } else {
-                if (!toolbarNav.querySelector('a[href="/nfc/login.html"]')) {
+                if (!toolbarNav.querySelector(`a[href="${loginUrl}"]`)) {
                     const a = document.createElement('a');
-                    a.href = "/nfc/login.html";
+                    a.href = loginUrl;
                     a.className = "btn-icon";
-                    a.title = "تسجيل الدخول";
+                    a.title = loginText;
                     a.style.fontSize = "12px";
                     a.innerHTML = '<i class="fas fa-sign-in-alt"></i>';
                     toolbarNav.appendChild(a);
