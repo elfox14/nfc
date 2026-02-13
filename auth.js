@@ -148,35 +148,83 @@ const Auth = {
         const loginUrl = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
         const dashboardUrl = isEnglish ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html';
         const loginText = isEnglish ? 'Login' : 'تسجيل الدخول';
-        const dashboardText = isEnglish ? 'Dashboard' : 'لوحة التحكم';
+        const dashboardText = isEnglish ? 'Control Panel' : 'لوحة التحكم';
+        const logoutText = isEnglish ? 'Logout' : 'خروج';
 
-        // 1. Main Website Navbar (.nav-links)
+        // 1. Main Website Navbar (.nav-links & .nav-cta)
         const navContainer = document.querySelector('.nav-links');
+        const ctaBtn = document.querySelector('.nav-cta');
+        const navContent = document.querySelector('.nav-content'); // Container for positioning
+
         if (navContainer) {
             if (this.isLoggedIn()) {
+                // Hide Login Link in Nav
                 const loginLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('login') && !a.href.includes('dashboard'));
                 if (loginLink && loginLink.parentNode) loginLink.parentNode.style.display = 'none';
 
-                if (!document.querySelector(`a[href="${dashboardUrl}"]`)) {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<a href="${dashboardUrl}">${dashboardText}</a>`;
-                    navContainer.appendChild(li);
-                }
-
-                const ctaBtn = document.querySelector('.nav-cta');
+                // We want to replace the CTA with: User Name + Control Panel Button
                 if (ctaBtn) {
-                    ctaBtn.textContent = dashboardText;
-                    ctaBtn.href = dashboardUrl;
-                }
-            } else {
-                // Ensure no dashboard link is shown if logged out
-                const dashLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('dashboard'));
-                if (dashLink && dashLink.parentNode) dashLink.parentNode.style.display = 'none';
+                    ctaBtn.style.display = 'none'; // Hide default CTA
 
-                if (!document.querySelector(`a[href="${loginUrl}"]`)) {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<a href="${loginUrl}">${loginText}</a>`;
-                    navContainer.appendChild(li);
+                    // Check if we already added the user info container
+                    let userInfoContainer = document.getElementById('nav-user-info');
+                    if (!userInfoContainer) {
+                        userInfoContainer = document.createElement('div');
+                        userInfoContainer.id = 'nav-user-info';
+                        userInfoContainer.style.cssText = 'display: flex; gap: 15px; align-items: center; margin-inline-start: 15px;';
+
+                        // User Name
+                        const userName = document.createElement('span');
+                        userName.textContent = this.user?.name || (isEnglish ? 'User' : 'مستخدم');
+                        userName.style.cssText = 'color: var(--text-primary-color); font-weight: bold; font-size: 0.9rem;';
+
+                        // Control Panel Button
+                        const dashboardBtn = document.createElement('a');
+                        dashboardBtn.href = dashboardUrl;
+                        dashboardBtn.className = 'btn';
+                        // Reuse styling from nav-cta but maybe adjust slightly or add specific class
+                        dashboardBtn.style.cssText = 'padding: 8px 15px; background: var(--primary-color); color: white; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem;';
+                        dashboardBtn.textContent = dashboardText;
+
+                        // Logout Icon/Button (Optional but good UX)
+                        const logoutBtn = document.createElement('button');
+                        logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
+                        logoutBtn.title = logoutText;
+                        logoutBtn.onclick = () => this.logout();
+                        logoutBtn.style.cssText = 'background: transparent; border: none; color: var(--text-secondary-color); cursor: pointer; font-size: 1.1rem;';
+
+                        userInfoContainer.appendChild(userName);
+                        userInfoContainer.appendChild(dashboardBtn);
+                        userInfoContainer.appendChild(logoutBtn);
+
+                        // Insert where CTA was (handle nested containers safely)
+                        if (ctaBtn.parentNode) {
+                            ctaBtn.parentNode.insertBefore(userInfoContainer, ctaBtn);
+                        } else if (navContent) {
+                            // Fallback if ctaBtn is somehow detached or we want to append to main nav
+                            navContent.appendChild(userInfoContainer);
+                        }
+                    }
+                }
+
+            } else {
+                // Logged Out State: Ensure standard Login/CTA is visible
+                const loginLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('login') && !a.href.includes('user'));
+                // Note: user-login-link in editor might match, but we are in nav-links loop usually. 
+                // Using specific check to be safe:
+                const allLinks = document.querySelectorAll('a');
+                allLinks.forEach(link => {
+                    if ((link.href.includes('login.html') || link.href.includes('login-en.html')) && link.style.display === 'none') {
+                        link.parentNode.style.display = ''; // Show li if hidden
+                    }
+                });
+
+                // Remove user info if exists
+                const userInfoContainer = document.getElementById('nav-user-info');
+                if (userInfoContainer) userInfoContainer.remove();
+
+                if (ctaBtn) {
+                    ctaBtn.style.display = ''; // Show default CTA
                 }
             }
         }

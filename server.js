@@ -495,6 +495,13 @@ app.post('/api/save-design', async (req, res) => {
         { $set: updateDoc }
       );
     } else {
+      // Enforce max 10 designs per user
+      if (ownerId) {
+        const designCount = await db.collection(designsCollectionName).countDocuments({ ownerId });
+        if (designCount >= 10) {
+          return res.status(403).json({ error: 'لقد وصلت للحد الأقصى (10 تصاميم). احذف تصميماً قديماً أولاً. / You have reached the maximum limit of 10 designs. Please delete an old design first.' });
+        }
+      }
       await db.collection(designsCollectionName).insertOne({
         shortId,
         ...updateDoc,
