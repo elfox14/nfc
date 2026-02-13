@@ -189,45 +189,155 @@
 
         .site-footer {
             background: var(--surface-color);
-            padding: 40px 0;
+            padding: 20px 0;
             border-top: 1px solid var(--secondary-color);
+            margin-top: auto;
         }
 
         .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-section {
+            flex: 0 1 auto;
+            margin: 0;
         }
 
         .footer-section h3 {
-            color: var(--primary-color);
-            margin-bottom: 1rem;
+            display: none;
         }
 
         .footer-section ul {
+            display: flex;
+            gap: 20px;
             list-style: none;
             padding: 0;
+            margin: 0;
+        }
+
+        .footer-section li {
+            margin: 0;
+        }
+
+        /* Adjust order for compact view */
+        .footer-section:first-child {
+            order: 1;
+            flex: 0 0 auto;
+        }
+
+        .footer-section:first-child p {
+            display: none;
+        }
+
+        .footer-section:nth-child(2) {
+            order: 2;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .footer-section:nth-child(3) {
+            order: 3;
+            flex: 0 0 auto;
+        }
+
+        .footer-section:nth-child(3) ul {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-section:last-child {
+            order: 4;
         }
 
         .footer-section a {
             color: var(--text-secondary-color);
             text-decoration: none;
+            transition: color 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary-color);
         }
 
         .social-links {
             display: flex;
-            gap: 1rem;
+            gap: 10px;
         }
 
         .social-links a {
-            font-size: 1.5rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(77, 166, 255, 0.1);
+            border-radius: 50%;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--primary-color);
+            color: white;
         }
 
         .footer-bottom {
             text-align: center;
-            margin-top: 2rem;
-            border-top: 1px solid var(--secondary-color);
-            padding-top: 1rem;
+            margin-top: 10px;
+            padding: 0 20px;
+            color: var(--text-secondary-color);
+            font-size: 0.8rem;
+            border-top: none;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-menu {
+                display: none;
+            }
+
+            .navbar-toggle {
+                display: block;
+                color: var(--text-primary-color);
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            /* Revert to stacked on mobile */
+            .footer-content {
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
+
+            .footer-section h3 {
+                display: block;
+                margin-bottom: 0.5rem;
+            }
+
+            .footer-section ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .footer-section:nth-child(2) {
+                flex-direction: column;
+            }
+
+            .footer-section:nth-child(3) ul {
+                flex-direction: column;
+            }
+
+            .footer-section:first-child p {
+                display: block;
+            }
         }
 
         /* END: Unified Header & Footer */

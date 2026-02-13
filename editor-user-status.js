@@ -130,7 +130,7 @@ const EditorUserStatus = {
 
                 if (typeof DOMElements !== 'undefined' && DOMElements.cardFront && ShareManager.captureAndUploadCard) {
                     try {
-                        if (saveBtnText) saveBtnText.textContent = 'جاري التقاط الصور...';
+                        if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Capturing images...' : 'جاري التقاط الصور...';
 
                         // Capture Front
                         console.log('[EditorUserStatus] Capturing front...');
@@ -145,12 +145,14 @@ const EditorUserStatus = {
                         if (!state.imageUrls) state.imageUrls = {};
                         state.imageUrls.capturedFront = frontImageUrl;
                         state.imageUrls.capturedBack = backImageUrl;
+                        state.imageUrls.front = frontImageUrl;
+                        state.imageUrls.back = backImageUrl;
 
-                        if (saveBtnText) saveBtnText.textContent = 'جاري الرفع...';
+                        if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Uploading...' : 'جاري الرفع...';
                         console.log('[EditorUserStatus] Images captured successfully');
                     } catch (captureErr) {
                         console.error('[EditorUserStatus] Image capture failed:', captureErr);
-                        alert('فشل التقاط صورة البطاقة: ' + captureErr.message);
+                        alert(isEnglish ? 'Failed to capture card image: ' + captureErr.message : 'فشل التقاط صورة البطاقة: ' + captureErr.message);
                     }
                 } else {
                     console.warn('[EditorUserStatus] Cannot capture images - missing dependencies');
@@ -158,33 +160,45 @@ const EditorUserStatus = {
                 }
             }
 
+            // Ask about gallery BEFORE saving (manual save only) so we save once
+            if (captureImages) {
+                const galleryPromptMsg = isEnglish
+                    ? 'Would you like to display your design in the gallery page?'
+                    : 'هل تريد عرض تصميمك في صفحة المعرض؟';
+                state.sharedToGallery = confirm(galleryPromptMsg);
+            }
+
             const designId = await ShareManager.saveDesign(state);
             if (designId) {
                 this.lastSaveTime = new Date();
 
                 if (captureImages) {
-                    if (saveBtnText) saveBtnText.textContent = 'تم الحفظ ✓';
+                    const savedMsg = state.sharedToGallery
+                        ? (isEnglish ? 'Design saved and added to gallery!' : 'تم حفظ التصميم وإضافته للمعرض!')
+                        : (isEnglish ? 'Design and images saved successfully' : 'تم حفظ التصميم والصور بنجاح');
+                    if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Saved ✓' : 'تم الحفظ ✓';
                     if (typeof UIManager !== 'undefined') {
-                        UIManager.announce('تم حفظ التصميم والصور بنجاح');
+                        UIManager.announce(savedMsg);
                     }
+
                     setTimeout(() => {
-                        if (saveBtnText) saveBtnText.textContent = 'حفظ التصميم';
+                        if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
                     }, 2000);
                 } else {
                     // Auto-save silent update or minimal UI
-                    if (saveBtnText) saveBtnText.textContent = 'حفظ التصميم';
+                    if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
                 }
             } else {
                 throw new Error('Failed to save');
             }
         } catch (err) {
             console.error('[EditorUserStatus] Save failed:', err);
-            if (captureImages && saveBtnText) saveBtnText.textContent = 'فشل الحفظ';
+            if (captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Failed' : 'فشل الحفظ';
             if (captureImages && typeof UIManager !== 'undefined') {
-                UIManager.announce('فشل حفظ التصميم. حاول مرة أخرى.');
+                UIManager.announce(isEnglish ? 'Failed to save design. Please try again.' : 'فشل حفظ التصميم. حاول مرة أخرى.');
             }
             setTimeout(() => {
-                if (saveBtnText) saveBtnText.textContent = 'حفظ التصميم';
+                if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
             }, 2000);
         } finally {
             this.isSaving = false;

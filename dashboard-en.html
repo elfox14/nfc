@@ -20,6 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
         rel="stylesheet">
     <script src="/nfc/auth.js"></script>
+    <script src="/nfc/lang-switcher.js"></script>
     <style>
         .dashboard-container {
             padding: 100px 20px 50px;
@@ -28,11 +29,97 @@
             min-height: 80vh;
         }
 
+        /* Dashboard Layout */
+        .dashboard-layout {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        /* Sidebar Styles */
+        .dashboard-sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            background: var(--surface-color);
+            border-radius: 16px;
+            padding: 20px;
+            height: fit-content;
+            border: 1px solid rgba(77, 166, 255, 0.1);
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: var(--text-secondary-color);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .sidebar-item:hover,
+        .sidebar-item.active {
+            background: rgba(77, 166, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        .sidebar-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-item.logout-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            /* LTR */
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .sidebar-item.logout-btn:hover {
+            background: rgba(255, 82, 82, 0.1);
+            color: #ff5252;
+        }
+
+        /* Main Content */
+        .dashboard-main {
+            flex-grow: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .dashboard-layout {
+                flex-direction: column;
+            }
+
+            .dashboard-sidebar {
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .sidebar-menu {
+                flex-direction: row;
+                min-width: max-content;
+            }
+        }
+
+        /* Previous Styles Preserved/Adjusted */
         .dashboard-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             flex-wrap: wrap;
             gap: 20px;
         }
@@ -40,10 +127,12 @@
         .dashboard-header h1 {
             font-family: 'Cairo', sans-serif;
             color: #fff;
+            margin-bottom: 5px;
         }
 
         .user-info {
             color: var(--text-secondary-color);
+            margin: 0;
         }
 
         .designs-grid {
@@ -170,6 +259,7 @@
                 <img src="https://www.mcprim.com/nfc/mcprime-logo-transparent.png" alt="MC PRIME">
             </a>
             <div style="display: flex; gap: 15px; align-items: center;">
+                <button onclick="switchLanguage('ar')" class="lang-btn" style="padding: 5px 10px;">عربي</button>
                 <span id="user-display-name" style="color: white; font-weight: bold;"></span>
                 <button onclick="Auth.logout()" class="btn btn-secondary" style="padding: 8px 15px;">Logout</button>
             </div>
@@ -177,21 +267,54 @@
     </nav>
 
     <div class="dashboard-container">
-        <div class="dashboard-header">
-            <div>
-                <h1>My Designs</h1>
-                <p class="user-info">Manage your digital business cards</p>
-            </div>
-            <a href="/nfc/editor-en.html" class="btn btn-primary">
-                <i class="fas fa-plus"></i> New Design
-            </a>
-        </div>
+        <div class="dashboard-layout">
+            <!-- Sidebar Navigation -->
+            <aside class="dashboard-sidebar">
+                <div class="sidebar-menu">
+                    <a href="/nfc/index-en.html" class="sidebar-item">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                    <a href="/nfc/dashboard-en.html" class="sidebar-item active">
+                        <i class="fas fa-th-large"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/nfc/editor-en.html" class="sidebar-item">
+                        <i class="fas fa-magic"></i>
+                        <span>Create New Card</span>
+                    </a>
+                    <a href="/nfc/gallery-en.html" class="sidebar-item">
+                        <i class="fas fa-images"></i>
+                        <span>Gallery</span>
+                    </a>
+                    <a href="/nfc/blog-en.html" class="sidebar-item">
+                        <i class="fas fa-blog"></i>
+                        <span>Blog</span>
+                    </a>
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 10px 0;">
+                    <button onclick="Auth.logout()" class="sidebar-item logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </aside>
 
-        <div id="designs-grid" class="designs-grid">
-            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
-                <p style="margin-top: 10px;">Loading designs...</p>
-            </div>
+            <!-- Main Content -->
+            <main class="dashboard-main">
+                <div class="dashboard-header">
+                    <div>
+                        <h1>My Designs</h1>
+                        <p class="user-info">Manage your digital business cards</p>
+                    </div>
+                </div>
+
+                <div id="designs-grid" class="designs-grid">
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                        <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
+                        <p style="margin-top: 10px;">Loading designs...</p>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 

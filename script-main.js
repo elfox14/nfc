@@ -3,6 +3,7 @@
 // Language detection and i18n for script-main.js (computed once at load)
 const _isEnglishPage = document.documentElement.lang === 'en';
 const i18nMain = {
+    galleryPrompt: _isEnglishPage ? 'Would you like to display your design in the gallery page?' : 'هل تريد عرض تصميمك في صفحة المعرض؟',
     capturing: _isEnglishPage ? 'Capturing...' : 'جاري الالتقاط...',
     uploading: _isEnglishPage ? 'Uploading images...' : 'جاري رفع الصور...',
     generating: _isEnglishPage ? 'Generating link...' : 'جاري إنشاء الرابط...',
@@ -524,14 +525,40 @@ const ShareManager = {
 
             const result = await response.json();
             if (result.success && result.id) {
-                if (!stateToSave) Config.currentDesignId = result.id; // Update current ID if main save
+                Config.currentDesignId = result.id;
                 return result.id;
             } else {
                 throw new Error('Invalid response from server');
             }
         } catch (error) {
             console.error("Failed to save design:", error);
-            UIManager.announce('فشل حفظ التصميم. حاول مرة أخرى.');
+            UIManager.announce(i18nMain.saveFailed || 'فشل حفظ التصميم. حاول مرة أخرى.');
+            return null;
+        }
+    },
+
+    // Save design without auth token (anonymous) - used by shareCard so it doesn't appear in dashboard
+    async saveDesignAnonymous(state) {
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            const url = `${Config.API_BASE_URL}/api/save-design`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(state),
+            });
+            if (!response.ok) throw new Error('Server responded with an error');
+
+            const result = await response.json();
+            if (result.success && result.id) {
+                return result.id;
+            } else {
+                throw new Error('Invalid response from server');
+            }
+        } catch (error) {
+            console.error("Failed to save design (anonymous):", error);
+            UIManager.announce(i18nMain.saveFailed || 'فشل حفظ التصميم. حاول مرة أخرى.');
             return null;
         }
     },
@@ -572,13 +599,16 @@ const ShareManager = {
         if (!state.imageUrls) state.imageUrls = {};
         state.imageUrls.capturedFront = frontImageUrl;
         state.imageUrls.capturedBack = backImageUrl;
+        state.imageUrls.front = frontImageUrl;
+        state.imageUrls.back = backImageUrl;
 
-        // Mark as shared to gallery - unique flag for gallery filtering
-        state.sharedToGallery = true;
+        // Ask user if they want to display their design in the gallery
+        state.sharedToGallery = confirm(i18nMain.galleryPrompt);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
 
-        const designId = await this.saveDesign(state);
+        // Save anonymously so shared card does NOT appear in user's dashboard
+        const designId = await this.saveDesignAnonymous(state);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
         if (!designId) return;
