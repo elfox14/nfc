@@ -143,52 +143,62 @@ const Auth = {
 
     // UI Helpers
     updateNavAuth() {
+        // Detect Language
+        const isEnglish = document.documentElement.lang === 'en' || window.location.pathname.includes('-en.html');
+        const loginUrl = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
+        const dashboardUrl = isEnglish ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html';
+        // If we create dashboard-en.html later, we update this. Current request implies "return to English version" after auth.
+        // But dashboard is the landing after auth. 
+        // For now, let's keep dashboard as is, but ensuring the "Logout" button there redirects to correct login page?
+        // Actually dashboard.html has its own logout logic.
+
         // 1. Main Website Navbar (.nav-links)
         const navContainer = document.querySelector('.nav-links');
         if (navContainer) {
-            if (this.isLoggedIn()) {
-                const loginLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('login.html'));
-                if (loginLink && loginLink.parentNode) loginLink.parentNode.style.display = 'none';
+            // Remove existing auth links to prevent duplicates if re-run
+            const existingLinks = navContainer.querySelectorAll('li a[href*="login"], li a[href*="dashboard"]');
+            existingLinks.forEach(el => el.parentElement.remove());
 
-                if (!document.querySelector('a[href="/nfc/dashboard.html"]')) {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<a href="/nfc/dashboard.html">لوحة التحكم</a>`;
-                    navContainer.appendChild(li);
-                }
+            if (this.isLoggedIn()) {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${dashboardUrl}">${isEnglish ? 'Dashboard' : 'لوحة التحكم'}</a>`;
+                navContainer.appendChild(li);
 
                 const ctaBtn = document.querySelector('.nav-cta');
                 if (ctaBtn) {
-                    ctaBtn.textContent = 'لوحة التحكم';
-                    ctaBtn.href = '/nfc/dashboard.html';
+                    ctaBtn.textContent = isEnglish ? 'Dashboard' : 'لوحة التحكم';
+                    ctaBtn.href = dashboardUrl;
                 }
             } else {
-                if (!document.querySelector('a[href="/nfc/login.html"]')) {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<a href="/nfc/login.html">تسجيل الدخول</a>`;
-                    navContainer.appendChild(li);
-                }
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${loginUrl}">${isEnglish ? 'Login' : 'تسجيل الدخول'}</a>`;
+                navContainer.appendChild(li);
             }
         }
 
         // 2. Editor Toolbar (.toolbar-nav)
         const toolbarNav = document.querySelector('.toolbar-nav');
         if (toolbarNav) {
+            // Remove existing to avoid dupes
+            const existingAuth = toolbarNav.querySelectorAll('.auth-link-dynamic');
+            existingAuth.forEach(el => el.remove());
+
             if (this.isLoggedIn()) {
-                if (!toolbarNav.querySelector('a[href="/nfc/dashboard.html"]')) {
+                if (!toolbarNav.querySelector(`a[href="${dashboardUrl}"]`)) {
                     const a = document.createElement('a');
-                    a.href = "/nfc/dashboard.html";
-                    a.className = "btn-icon";
-                    a.title = "لوحة التحكم";
+                    a.href = dashboardUrl;
+                    a.className = "btn-icon auth-link-dynamic";
+                    a.title = isEnglish ? "Dashboard" : "لوحة التحكم";
                     a.style.fontSize = "12px";
                     a.innerHTML = '<i class="fas fa-user-circle"></i>';
                     toolbarNav.appendChild(a);
                 }
             } else {
-                if (!toolbarNav.querySelector('a[href="/nfc/login.html"]')) {
+                if (!toolbarNav.querySelector(`a[href="${loginUrl}"]`)) {
                     const a = document.createElement('a');
-                    a.href = "/nfc/login.html";
-                    a.className = "btn-icon";
-                    a.title = "تسجيل الدخول";
+                    a.href = loginUrl;
+                    a.className = "btn-icon auth-link-dynamic";
+                    a.title = isEnglish ? "Login" : "تسجيل الدخول";
                     a.style.fontSize = "12px";
                     a.innerHTML = '<i class="fas fa-sign-in-alt"></i>';
                     toolbarNav.appendChild(a);
@@ -196,19 +206,17 @@ const Auth = {
             }
         }
 
-
         // 3. Mobile Auth Button (.mobile-auth-btn)
         const mobileAuthBtn = document.getElementById('mobile-auth-btn');
         if (mobileAuthBtn) {
-            const isEn = document.documentElement.lang === 'en';
             if (this.isLoggedIn()) {
-                mobileAuthBtn.href = '/nfc/dashboard.html';
-                mobileAuthBtn.innerHTML = `<i class="fas fa-user-circle"></i> <span>${isEn ? 'My Account' : 'حسابي'}</span>`;
+                mobileAuthBtn.href = dashboardUrl;
+                mobileAuthBtn.innerHTML = `<i class="fas fa-user-circle"></i> <span>${isEnglish ? 'My Account' : 'حسابي'}</span>`;
                 mobileAuthBtn.classList.remove('btn-secondary');
                 mobileAuthBtn.classList.add('btn-primary');
             } else {
-                mobileAuthBtn.href = '/nfc/login.html';
-                mobileAuthBtn.innerHTML = `<i class="fas fa-sign-in-alt"></i> <span>${isEn ? 'Login' : 'دخول'}</span>`;
+                mobileAuthBtn.href = loginUrl;
+                mobileAuthBtn.innerHTML = `<i class="fas fa-sign-in-alt"></i> <span>${isEnglish ? 'Login' : 'دخول'}</span>`;
                 mobileAuthBtn.classList.remove('btn-primary');
                 mobileAuthBtn.classList.add('btn-secondary');
             }
