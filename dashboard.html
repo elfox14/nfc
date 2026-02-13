@@ -609,8 +609,19 @@
 
             document.getElementById('user-display-name').textContent = Auth.user?.name || 'مستخدم';
 
-            // Load designs
-            loadMyDesigns();
+            // Check URL params for tab
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab) {
+                const sidebarItem = document.querySelector(`.sidebar-item[data-section="${tab}"]`);
+                if (sidebarItem) {
+                    sidebarItem.click();
+                } else {
+                    loadMyDesigns();
+                }
+            } else {
+                loadMyDesigns();
+            }
 
             // Load request count for badge
             loadRequestCount();
@@ -682,25 +693,28 @@
             const grid = document.getElementById('saved-cards-grid');
             try {
                 const res = await fetch(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
+
+                if (!res.ok) {
+                    const text = await res.text();
+                    console.error('Saved cards API error:', res.status, text);
+                    throw new Error(`Server returned ${res.status}`);
+                }
+
                 const data = await res.json();
                 grid.innerHTML = '';
-
                 if (data.savedCards && data.savedCards.length > 0) {
                     data.savedCards.forEach(card => {
                         const thumb = card.cardThumb || '';
                         let imgTag = '<i class="fas fa-id-card"></i>';
-                        if (thumb) imgTag = `<img src="${thumb}" alt="${card.ownerName}" loading="lazy">`;
-                        const date = new Date(card.savedAt).toLocaleDateString('ar-EG');
-
+                        if (thumb) imgTag = `<img src="${thumb}" alt="${card.ownerName || 'Card'}" loading="lazy">`;
+                        const date = card.savedAt ? new Date(card.savedAt).toLocaleDateString('ar-EG') : 'تاريخ غير معروف';
                         const el = document.createElement('div');
                         el.className = 'design-card';
                         el.innerHTML = `
                             <div class="card-thumb">${imgTag}</div>
                             <div class="card-details">
-                                <h3 class="card-title">${card.ownerName}</h3>
-                                <div class="card-meta">
-                                    <span><i class="far fa-calendar"></i> ${date}</span>
-                                </div>
+                                <h3 class="card-title">${card.ownerName || 'غير معروف'}</h3>
+                                <div class="card-meta"><span><i class="far fa-calendar"></i> ${date}</span></div>
                                 <div class="card-actions">
                                     <a href="/nfc/viewer.html?id=${card.designShortId}" class="action-btn btn-view" target="_blank">عرض</a>
                                     <button class="action-btn btn-remove" onclick="removeSavedCard('${card.designShortId}')">إزالة</button>
@@ -709,16 +723,11 @@
                         grid.appendChild(el);
                     });
                 } else {
-                    grid.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-heart" style="opacity: 0.3;"></i>
-                            <h3>لا توجد بطاقات محفوظة</h3>
-                            <p>يمكنك حفظ بطاقات الآخرين من صفحة عرض البطاقة</p>
-                        </div>`;
+                    grid.innerHTML = `<div class="empty-state"><i class="fas fa-heart" style="opacity: 0.3;"></i><h3>لا توجد بطاقات محفوظة</h3><p>يمكنك حفظ بطاقات الآخرين من صفحة عرض البطاقة</p></div>`;
                 }
             } catch (err) {
-                console.error(err);
-                grid.innerHTML = '<p style="text-align: center; color: #ff5252;">حدث خطأ</p>';
+                console.error('Load saved cards exception:', err);
+                grid.innerHTML = `<p style="text-align: center; color: #ff5252;">خطأ: ${err.message}</p>`;
             }
         }
 

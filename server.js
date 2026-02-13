@@ -1003,7 +1003,7 @@ app.post('/api/save-card/:designId', verifyToken, async (req, res) => {
     if (design.ownerId) {
       const owner = await db.collection(usersCollectionName).findOne(
         { userId: design.ownerId },
-        { projection: { cardPrivacy: 1 } }
+        { projection: { cardPrivacy: 1, email: 1, name: 1 } }
       );
       ownerPrivacy = owner?.cardPrivacy || 'require_approval';
     }
@@ -1044,6 +1044,23 @@ app.post('/api/save-card/:designId', verifyToken, async (req, res) => {
       status: 'pending',
       createdAt: new Date()
     });
+
+    // Send email notification to owner
+    if (owner && owner.email) {
+      const link = 'https://mcprim.com/nfc/dashboard.html?tab=card-requests'; // Or dynamic host
+      const emailContent = EmailService.cardRequestEmail(
+        owner.name || 'مستخدم',
+        requester?.name || 'مستخدم',
+        cardName,
+        link
+      );
+      // Fire and forget (don't await to avoid delaying response)
+      EmailService.send({
+        to: owner.email,
+        subject: emailContent.subject,
+        html: emailContent.html
+      }).catch(err => console.error('Failed to send request email:', err));
+    }
 
     res.json({ success: true, status: 'requested' });
   } catch (err) {

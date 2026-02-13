@@ -165,7 +165,23 @@ const EmailService = {
                 </div>
             `
         };
-    }
-};
+        cardRequestEmail(ownerName, requesterName, cardName, requestLink) {
+            return {
+                subject: 'طلب حفظ بطاقة جديد - MC PRIME',
+                html: `
+                <div style="font-family: 'Tajawal', Arial, sans-serif; direction: rtl; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #4DA6FF;">مرحباً ${ownerName}!</h2>
+                    <p>المستخدم <strong>${requesterName}</strong> يرغب في حفظ بطاقتك <strong>"${cardName}"</strong>.</p>
+                    <p>يمكنك قبول أو رفض الطلب من لوحة التحكم.</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="${requestLink}" style="background: linear-gradient(135deg, #4DA6FF, #00E5FF); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">عرض الطلبات</a>
+                    </div>
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                    <p style="color: #888; font-size: 12px;">© MC PRIME NFC - بطاقات الأعمال الرقمية</p>
+                </div>
+            `
+            };
+        }
+    };
 
-module.exports = EmailService;
+    module.exports = EmailService;
