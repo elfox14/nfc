@@ -72,6 +72,8 @@ const dbName = process.env.MONGO_DB || 'nfc_db';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 const usersCollectionName = 'users'; // New Users Collection
 const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
+const savedCardsCollectionName = 'savedCards';
+const cardRequestsCollectionName = 'cardRequests';
 let db;
 
 MongoClient.connect(mongoUrl)
@@ -86,6 +88,11 @@ MongoClient.connect(mongoUrl)
       await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
       await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
       await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
+      // Indexes for card save feature
+      await db.collection(savedCardsCollectionName).createIndex({ userId: 1 });
+      await db.collection(savedCardsCollectionName).createIndex({ userId: 1, designShortId: 1 }, { unique: true });
+      await db.collection(cardRequestsCollectionName).createIndex({ ownerUserId: 1, status: 1 });
+      await db.collection(cardRequestsCollectionName).createIndex({ requesterId: 1, designShortId: 1 });
       console.log('MongoDB indexes created');
     } catch (indexErr) {
       console.warn('Some indexes may already exist:', indexErr.message);
@@ -924,6 +931,264 @@ app.get('/api/user/designs', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Get user designs error:', err);
     res.status(500).json({ error: 'Failed to fetch designs' });
+  }
+});
+
+// ===== CARD SAVE WITH CONSENT FEATURE =====
+
+// Get card privacy setting
+app.get('/api/card-privacy', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const user = await db.collection(usersCollectionName).findOne(
+      { userId: req.user.userId },
+      { projection: { cardPrivacy: 1 } }
+    );
+    res.json({ success: true, cardPrivacy: user?.cardPrivacy || 'require_approval' });
+  } catch (err) {
+    console.error('Get card privacy error:', err);
+    res.status(500).json({ error: 'Failed to get privacy setting' });
+  }
+});
+
+// Update card privacy setting
+app.put('/api/card-privacy', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const { cardPrivacy } = req.body;
+    if (!['allow_all', 'require_approval', 'deny_all'].includes(cardPrivacy)) {
+      return res.status(400).json({ error: 'Invalid privacy setting' });
+    }
+    await db.collection(usersCollectionName).updateOne(
+      { userId: req.user.userId },
+      { $set: { cardPrivacy } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Update card privacy error:', err);
+    res.status(500).json({ error: 'Failed to update privacy setting' });
+  }
+});
+
+// Request to save someone's card
+app.post('/api/save-card/:designId', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const designId = String(req.params.designId);
+    const requesterId = req.user.userId;
+
+    // Find the design
+    const design = await db.collection(designsCollectionName).findOne({ shortId: designId });
+    if (!design) return res.status(404).json({ error: 'Design not found' });
+
+    // Can't save your own card
+    if (design.ownerId === requesterId) {
+      return res.status(400).json({ error: 'Cannot save your own card' });
+    }
+
+    // Check if already saved
+    const existing = await db.collection(savedCardsCollectionName).findOne({
+      userId: requesterId, designShortId: designId
+    });
+    if (existing) return res.json({ success: true, status: 'already_saved' });
+
+    // Check if request already pending
+    const pendingRequest = await db.collection(cardRequestsCollectionName).findOne({
+      requesterId, designShortId: designId, status: 'pending'
+    });
+    if (pendingRequest) return res.json({ success: true, status: 'already_requested' });
+
+    // Get owner's privacy setting
+    let ownerPrivacy = 'require_approval';
+    if (design.ownerId) {
+      const owner = await db.collection(usersCollectionName).findOne(
+        { userId: design.ownerId },
+        { projection: { cardPrivacy: 1 } }
+      );
+      ownerPrivacy = owner?.cardPrivacy || 'require_approval';
+    }
+
+    // Get requester info
+    const requester = await db.collection(usersCollectionName).findOne(
+      { userId: requesterId },
+      { projection: { name: 1, email: 1 } }
+    );
+
+    const cardName = design.data?.inputs?.['input-name_ar'] || design.data?.inputs?.['input-name_en'] || 'بطاقة';
+
+    if (ownerPrivacy === 'deny_all') {
+      return res.status(403).json({ error: 'Card owner does not allow saving', status: 'denied' });
+    }
+
+    if (ownerPrivacy === 'allow_all' || !design.ownerId) {
+      // Save directly
+      await db.collection(savedCardsCollectionName).insertOne({
+        userId: requesterId,
+        designShortId: designId,
+        ownerName: cardName,
+        cardThumb: design.data?.imageUrls?.front || null,
+        savedAt: new Date()
+      });
+      return res.json({ success: true, status: 'saved' });
+    }
+
+    // require_approval: create a request
+    await db.collection(cardRequestsCollectionName).insertOne({
+      requesterId,
+      requesterName: requester?.name || 'مستخدم',
+      requesterEmail: requester?.email || '',
+      designShortId: designId,
+      cardName,
+      cardThumb: design.data?.imageUrls?.front || null,
+      ownerUserId: design.ownerId,
+      status: 'pending',
+      createdAt: new Date()
+    });
+
+    res.json({ success: true, status: 'requested' });
+  } catch (err) {
+    console.error('Save card error:', err);
+    res.status(500).json({ error: 'Failed to process save request' });
+  }
+});
+
+// Get user's saved cards
+app.get('/api/saved-cards', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const savedCards = await db.collection(savedCardsCollectionName)
+      .find({ userId: req.user.userId })
+      .sort({ savedAt: -1 })
+      .toArray();
+    res.json({ success: true, savedCards });
+  } catch (err) {
+    console.error('Get saved cards error:', err);
+    res.status(500).json({ error: 'Failed to fetch saved cards' });
+  }
+});
+
+// Remove a saved card
+app.delete('/api/saved-cards/:designId', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    await db.collection(savedCardsCollectionName).deleteOne({
+      userId: req.user.userId,
+      designShortId: String(req.params.designId)
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete saved card error:', err);
+    res.status(500).json({ error: 'Failed to remove saved card' });
+  }
+});
+
+// Get pending card requests count (for badge)
+app.get('/api/card-requests/count', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const count = await db.collection(cardRequestsCollectionName).countDocuments({
+      ownerUserId: req.user.userId,
+      status: 'pending'
+    });
+    res.json({ success: true, count });
+  } catch (err) {
+    console.error('Get card requests count error:', err);
+    res.status(500).json({ error: 'Failed to get request count' });
+  }
+});
+
+// Get card requests for card owner
+app.get('/api/card-requests', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const requests = await db.collection(cardRequestsCollectionName)
+      .find({ ownerUserId: req.user.userId })
+      .sort({ createdAt: -1 })
+      .toArray();
+    res.json({ success: true, requests });
+  } catch (err) {
+    console.error('Get card requests error:', err);
+    res.status(500).json({ error: 'Failed to fetch requests' });
+  }
+});
+
+// Approve or reject a card request
+app.put('/api/card-requests/:requestId', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const { ObjectId } = require('mongodb');
+    const requestId = req.params.requestId;
+    const { action } = req.body; // 'approve' or 'reject'
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    const request = await db.collection(cardRequestsCollectionName).findOne({
+      _id: new ObjectId(requestId),
+      ownerUserId: req.user.userId
+    });
+
+    if (!request) return res.status(404).json({ error: 'Request not found' });
+    if (request.status !== 'pending') return res.status(400).json({ error: 'Request already processed' });
+
+    // Update request status
+    await db.collection(cardRequestsCollectionName).updateOne(
+      { _id: new ObjectId(requestId) },
+      { $set: { status: action === 'approve' ? 'approved' : 'rejected', processedAt: new Date() } }
+    );
+
+    // If approved, add to saved cards
+    if (action === 'approve') {
+      try {
+        await db.collection(savedCardsCollectionName).insertOne({
+          userId: request.requesterId,
+          designShortId: request.designShortId,
+          ownerName: request.cardName,
+          cardThumb: request.cardThumb,
+          savedAt: new Date()
+        });
+      } catch (dupErr) {
+        // Already saved, ignore duplicate key error
+        if (dupErr.code !== 11000) throw dupErr;
+      }
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Process card request error:', err);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+});
+
+// Get design owner info (for viewer save button)
+app.get('/api/design-owner/:designId', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const designId = String(req.params.designId);
+    const design = await db.collection(designsCollectionName).findOne(
+      { shortId: designId },
+      { projection: { ownerId: 1 } }
+    );
+    if (!design) return res.status(404).json({ error: 'Design not found' });
+
+    let cardPrivacy = 'require_approval';
+    if (design.ownerId) {
+      const owner = await db.collection(usersCollectionName).findOne(
+        { userId: design.ownerId },
+        { projection: { cardPrivacy: 1 } }
+      );
+      cardPrivacy = owner?.cardPrivacy || 'require_approval';
+    }
+
+    res.json({
+      success: true,
+      ownerId: design.ownerId || null,
+      cardPrivacy
+    });
+  } catch (err) {
+    console.error('Get design owner error:', err);
+    res.status(500).json({ error: 'Failed to get design info' });
   }
 });
 
