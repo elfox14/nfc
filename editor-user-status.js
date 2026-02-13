@@ -166,6 +166,14 @@ const EditorUserStatus = {
                     ? 'Would you like to display your design in the gallery page?'
                     : 'هل تريد عرض تصميمك في صفحة المعرض؟';
                 state.sharedToGallery = await customConfirm(galleryPromptMsg);
+            } else {
+                // Auto-save: don't overwrite previously captured card images
+                // getStateObject() sets imageUrls.front/back to background URLs, not captured images
+                // Removing these prevents auto-save from clearing the dashboard thumbnail
+                if (state.imageUrls) {
+                    delete state.imageUrls.capturedFront;
+                    delete state.imageUrls.capturedBack;
+                }
             }
 
             const designId = await ShareManager.saveDesign(state);
@@ -207,10 +215,12 @@ const EditorUserStatus = {
     },
 
     startAutoSave() {
-        // Only auto-save for logged-in users
+        // Only auto-save for logged-in users who already have a saved design
         this.autoSaveInterval = setInterval(() => {
             const token = localStorage.getItem('authToken');
-            if (token && !this.isSaving) {
+            // Only auto-save if user is logged in AND design was previously saved
+            // This prevents creating new empty designs on the dashboard
+            if (token && !this.isSaving && typeof Config !== 'undefined' && Config.currentDesignId) {
                 console.log('[EditorUserStatus] Auto-saving...');
                 // Auto-save: Do NOT capture images (too heavy)
                 this.saveToCloud(false);
