@@ -20,7 +20,7 @@ const Config = {
     },
 
     defaultState: {
-        currentLanguage: (document.documentElement.lang === 'en' || (window.location.pathname && window.location.pathname.includes('-en.html'))) ? 'en' : 'ar', // NEW: To manage the current language
+        currentLanguage: 'ar', // NEW: To manage the current language
         inputs: {
             'layout-select': 'classic',
             'layout-select-visual': 'classic',

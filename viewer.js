@@ -721,8 +721,11 @@ document.addEventListener('DOMContentLoaded', () => {
             backCardRenderArea.style.left = '-9999px';
             backCardRenderArea.style.visibility = 'hidden';
 
+            const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
+            const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
+
             frontDisplay.innerHTML = `<img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardFront}">`;
-            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardBack}">`;
+            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardBack}" ${backImageStyle}>`;
 
             const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
             flipWrapper.addEventListener('click', flipFn);

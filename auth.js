@@ -195,24 +195,6 @@ const Auth = {
                 }
             }
         }
-
-
-        // 3. Mobile Auth Button (.mobile-auth-btn)
-        const mobileAuthBtn = document.getElementById('mobile-auth-btn');
-        if (mobileAuthBtn) {
-            const isEn = document.documentElement.lang === 'en';
-            if (this.isLoggedIn()) {
-                mobileAuthBtn.href = '/nfc/dashboard.html';
-                mobileAuthBtn.innerHTML = `<i class="fas fa-user-circle"></i> <span>${isEn ? 'My Account' : 'حسابي'}</span>`;
-                mobileAuthBtn.classList.remove('btn-secondary');
-                mobileAuthBtn.classList.add('btn-primary');
-            } else {
-                mobileAuthBtn.href = '/nfc/login.html';
-                mobileAuthBtn.innerHTML = `<i class="fas fa-sign-in-alt"></i> <span>${isEn ? 'Login' : 'دخول'}</span>`;
-                mobileAuthBtn.classList.remove('btn-primary');
-                mobileAuthBtn.classList.add('btn-secondary');
-            }
-        }
     }
 };
 
