@@ -165,7 +165,7 @@ const EditorUserStatus = {
                 const galleryPromptMsg = isEnglish
                     ? 'Would you like to display your design in the gallery page?'
                     : 'هل تريد عرض تصميمك في صفحة المعرض؟';
-                state.sharedToGallery = confirm(galleryPromptMsg);
+                state.sharedToGallery = await customConfirm(galleryPromptMsg);
             }
 
             const designId = await ShareManager.saveDesign(state);

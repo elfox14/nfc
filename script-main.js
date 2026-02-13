@@ -2,6 +2,39 @@
 
 // Language detection and i18n for script-main.js (computed once at load)
 const _isEnglishPage = document.documentElement.lang === 'en';
+
+// Custom confirm dialog with نعم/لا (Yes/No) buttons
+function customConfirm(message) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+        const box = document.createElement('div');
+        box.style.cssText = 'background:#1c2a3b;border:1px solid rgba(77,166,255,0.2);border-radius:16px;padding:30px;max-width:400px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+        const msg = document.createElement('p');
+        msg.textContent = message;
+        msg.style.cssText = 'color:#fff;font-size:1.1rem;margin:0 0 25px;line-height:1.6;font-family:Tajawal,sans-serif;';
+        const btns = document.createElement('div');
+        btns.style.cssText = 'display:flex;gap:12px;justify-content:center;';
+        const yesBtn = document.createElement('button');
+        yesBtn.textContent = _isEnglishPage ? 'Yes' : 'نعم';
+        yesBtn.style.cssText = 'padding:10px 32px;border-radius:10px;border:none;cursor:pointer;font-size:1rem;font-weight:700;font-family:inherit;background:#4da6ff;color:#fff;transition:background 0.2s;';
+        yesBtn.onmouseenter = () => yesBtn.style.background = '#3d8fe6';
+        yesBtn.onmouseleave = () => yesBtn.style.background = '#4da6ff';
+        const noBtn = document.createElement('button');
+        noBtn.textContent = _isEnglishPage ? 'No' : 'لا';
+        noBtn.style.cssText = 'padding:10px 32px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;font-size:1rem;font-weight:700;font-family:inherit;background:transparent;color:#fff;transition:background 0.2s;';
+        noBtn.onmouseenter = () => noBtn.style.background = 'rgba(255,255,255,0.1)';
+        noBtn.onmouseleave = () => noBtn.style.background = 'transparent';
+        btns.appendChild(yesBtn);
+        btns.appendChild(noBtn);
+        box.appendChild(msg);
+        box.appendChild(btns);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        yesBtn.onclick = () => { overlay.remove(); resolve(true); };
+        noBtn.onclick = () => { overlay.remove(); resolve(false); };
+    });
+}
 const i18nMain = {
     galleryPrompt: _isEnglishPage ? 'Would you like to display your design in the gallery page?' : 'هل تريد عرض تصميمك في صفحة المعرض؟',
     capturing: _isEnglishPage ? 'Capturing...' : 'جاري الالتقاط...',
@@ -603,7 +636,7 @@ const ShareManager = {
         state.imageUrls.back = backImageUrl;
 
         // Ask user if they want to display their design in the gallery
-        state.sharedToGallery = confirm(i18nMain.galleryPrompt);
+        state.sharedToGallery = await customConfirm(i18nMain.galleryPrompt);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
 
