@@ -304,29 +304,28 @@
                     return;
                 }
 
-                // Check if already saved or requested
-                const checkRes = await fetch(`${baseUrl}/api/saved-cards`, {
-                    headers: Auth.getHeader()
-                });
-                const checkData = await checkRes.json();
-                if (checkData.savedCards?.some(c => c.designShortId === designId)) {
-                    btnText.textContent = 'تم الحفظ مسبقاً ✓';
-                    btn.querySelector('i').className = 'fas fa-check-circle';
-                    btn.style.background = '#2ecc71';
-                    btn.disabled = true;
-                    return;
-                }
-
+                // 1. Assign Click Handler IMMEDIATELY
                 btn.onclick = async () => {
+                    const originalText = btnText.textContent;
+                    const originalIconClass = btn.querySelector('i').className;
+
                     btn.disabled = true;
                     btnText.textContent = 'جاري الحفظ...';
                     btn.querySelector('i').className = 'fas fa-spinner fa-spin';
+
                     try {
                         const res = await fetch(`${baseUrl}/api/save-card/${designId}`, {
                             method: 'POST',
                             headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' }
                         });
+
+                        if (res.status === 401 || res.status === 403) {
+                            Auth.logout();
+                            return;
+                        }
+
                         const data = await res.json();
+
                         if (data.status === 'saved' || data.status === 'already_saved') {
                             btnText.textContent = 'تم الحفظ ✓';
                             btn.querySelector('i').className = 'fas fa-check-circle';
@@ -341,14 +340,39 @@
                             btnText.textContent = 'الحفظ غير متاح';
                             btn.querySelector('i').className = 'fas fa-ban';
                             btn.style.background = '#e74c3c';
+                        } else {
+                            throw new Error(data.error || 'فشل الحفظ');
                         }
                     } catch (err) {
                         console.error('Save card error:', err);
                         btnText.textContent = 'حدث خطأ، حاول مجدداً';
                         btn.querySelector('i').className = 'fas fa-exclamation-triangle';
                         btn.disabled = false;
+
+                        setTimeout(() => {
+                            btnText.textContent = originalText;
+                            btn.querySelector('i').className = originalIconClass;
+                        }, 2000);
                     }
                 };
+
+                // 2. Then check if already saved (Non-blocking UI update)
+                try {
+                    const checkRes = await fetch(`${baseUrl}/api/saved-cards`, {
+                        headers: Auth.getHeader()
+                    });
+                    if (checkRes.ok) {
+                        const checkData = await checkRes.json();
+                        if (checkData.savedCards?.some(c => c.designShortId === designId)) {
+                            btnText.textContent = 'تم الحفظ مسبقاً ✓';
+                            btn.querySelector('i').className = 'fas fa-check-circle';
+                            btn.style.background = '#2ecc71';
+                            btn.disabled = true;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to check saved status:', e);
+                }
             } catch (err) {
                 console.error('Save card init error:', err);
             }
