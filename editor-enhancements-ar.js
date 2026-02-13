@@ -183,6 +183,8 @@
 
         // Save before leaving
         window.addEventListener('beforeunload', (e) => {
+            // Don't block intentional redirects (e.g., to login page)
+            if (window._intentionalRedirect) return;
             if (hasUnsavedChanges) {
                 performAutosave();
                 e.preventDefault();

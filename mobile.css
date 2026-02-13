@@ -318,6 +318,38 @@
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
         z-index: 10000 !important;
     }
+
+    /* --- Mobile User Account Section --- */
+    .mobile-user-section {
+        margin-top: 10px;
+        border-color: var(--accent-primary) !important;
+    }
+
+    .mobile-user-section legend {
+        color: var(--accent-primary);
+        font-weight: 600;
+    }
+
+    .mobile-user-section .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-user-section .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .mobile-user-section .btn i {
+        font-size: 1rem;
+    }
 }
 
 @keyframes slideUp {

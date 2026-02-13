@@ -96,12 +96,21 @@ const EditorUserStatus = {
                 : 'يجب تسجيل الدخول لحفظ التصميم في حسابك.\n\nهل تريد تسجيل الدخول الآن؟';
 
             const shouldLogin = confirm(confirmMsg);
+            console.log('[EditorUserStatus] shouldLogin:', shouldLogin);
             if (shouldLogin) {
                 // Save current state to localStorage before redirecting
-                if (typeof StateManager !== 'undefined') {
-                    StateManager.saveState();
+                try {
+                    if (typeof StateManager !== 'undefined') {
+                        StateManager.saveState();
+                    }
+                } catch (e) {
+                    console.warn('[EditorUserStatus] saveState failed, continuing to redirect:', e);
                 }
-                window.location.href = isEnglish ? 'login-en.html?redirect=editor-en.html' : 'login.html?redirect=editor.html';
+                // Set flag so beforeunload handlers don't block the redirect
+                window._intentionalRedirect = true;
+                const redirectUrl = isEnglish ? 'login-en.html?redirect=editor-en.html' : 'login.html?redirect=editor.html';
+                console.log('[EditorUserStatus] Redirecting to:', redirectUrl);
+                window.location.href = redirectUrl;
             }
             return;
         }
