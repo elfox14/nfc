@@ -430,30 +430,28 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
 
     if (externalUploadUrl && uploadSecret) {
       try {
-        const FormData = require('form-data');
+        // Use Node.js built-in FormData and Blob (available in Node 18+)
+        const blob = new Blob([processedBuffer], { type: 'image/webp' });
         const formData = new FormData();
-        formData.append('image', processedBuffer, {
-          filename: nanoid(10) + '.webp',
-          contentType: 'image/webp'
-        });
+        formData.append('image', blob, nanoid(10) + '.webp');
+        formData.append('secret', uploadSecret);
 
         const uploadResponse = await fetch(externalUploadUrl, {
           method: 'POST',
-          headers: {
-            'X-Upload-Secret': uploadSecret,
-            ...formData.getHeaders()
-          },
           body: formData
         });
 
+        const responseText = await uploadResponse.text();
+        console.log('[Upload] External response:', uploadResponse.status, responseText);
+
         if (uploadResponse.ok) {
-          const result = await uploadResponse.json();
+          const result = JSON.parse(responseText);
           if (result.success && result.url) {
             console.log('[Upload] Image saved to external hosting:', result.url);
             return res.json({ success: true, url: result.url });
           }
         }
-        console.warn('[Upload] External upload failed, falling back to local storage');
+        console.warn('[Upload] External upload failed, status:', uploadResponse.status);
       } catch (extErr) {
         console.warn('[Upload] External upload error, falling back to local:', extErr.message);
       }
