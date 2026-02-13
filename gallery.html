@@ -89,31 +89,6 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="/nfc/gallery.css">
-
-    <!-- Language Switcher -->
-    <script src="/nfc/lang-switcher.js" defer></script>
-
-    <style>
-        .lang-btn {
-            background: rgba(77, 166, 255, 0.2);
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            margin-right: 1rem;
-            font-family: 'Poppins', sans-serif;
-            /* English font for English text */
-        }
-
-        .lang-btn:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-    </style>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
         crossorigin="anonymous"></script>
@@ -138,10 +113,7 @@
                 <li><a href="/nfc/blog.html">المدونة</a></li>
                 <li><a href="/nfc/#faq">الأسئلة الشائعة</a></li>
             </ul>
-            <div style="display: flex; align-items: center;">
-                <button onclick="switchLanguage('en')" class="lang-btn">English</button>
-                <a href="/nfc/editor.html" class="nav-cta">صمم بطاقتك</a>
-            </div>
+            <a href="/nfc/editor.html" class="nav-cta">صمم بطاقتك</a>
             <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
                 <span></span>
                 <span></span>
@@ -609,13 +581,18 @@
 
                     isLoading = false;
 
-                    if (designs.length === 0 && !append) {
+                    // Filter to show only cards shared via "Share Card" button
+                    const sharedDesigns = designs.filter(d =>
+                        d.data && d.data.sharedToGallery === true
+                    );
+
+                    if (sharedDesigns.length === 0 && !append) {
                         grid.innerHTML = '';
                         emptyState.style.display = 'block';
                         return;
                     }
 
-                    displayCards(designs, data.pagination, append);
+                    displayCards(sharedDesigns, data.pagination, append);
 
                 } catch (error) {
                     console.error('Failed to fetch gallery cards:', error);
