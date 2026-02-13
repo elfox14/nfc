@@ -613,10 +613,11 @@ const ShareManager = {
     async shareCard() {
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.capturing);
 
-        let frontImageUrl, backImageUrl, state;
+        let frontImageUrl, backImageUrl, shareState;
 
         try {
-            state = StateManager.getStateObject();
+            // Deep clone state so modifications don't leak to auto-save
+            shareState = JSON.parse(JSON.stringify(StateManager.getStateObject()));
             frontImageUrl = await this.captureAndUploadCard(DOMElements.cardFront);
 
             UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.uploading);
@@ -629,19 +630,19 @@ const ShareManager = {
             return;
         }
 
-        if (!state.imageUrls) state.imageUrls = {};
-        state.imageUrls.capturedFront = frontImageUrl;
-        state.imageUrls.capturedBack = backImageUrl;
-        state.imageUrls.front = frontImageUrl;
-        state.imageUrls.back = backImageUrl;
+        if (!shareState.imageUrls) shareState.imageUrls = {};
+        shareState.imageUrls.capturedFront = frontImageUrl;
+        shareState.imageUrls.capturedBack = backImageUrl;
+        shareState.imageUrls.front = frontImageUrl;
+        shareState.imageUrls.back = backImageUrl;
 
         // Ask user if they want to display their design in the gallery
-        state.sharedToGallery = await customConfirm(i18nMain.galleryPrompt);
+        shareState.sharedToGallery = await customConfirm(i18nMain.galleryPrompt);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
 
         // Save anonymously so shared card does NOT appear in user's dashboard
-        const designId = await this.saveDesignAnonymous(state);
+        const designId = await this.saveDesignAnonymous(shareState);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
         if (!designId) return;
