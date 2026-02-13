@@ -255,14 +255,19 @@ const ExportManager = {
             // Force reflow/repaint check
             if (isMobile) await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 100)));
 
+            // Detect vertical layout to use correct dimensions
+            const isVertical = typeof DOMElements !== 'undefined' && DOMElements.cardsWrapper && DOMElements.cardsWrapper.dataset.layout === 'vertical';
+            const captureWidth = isVertical ? 330 : 510;
+            const captureHeight = isVertical ? 510 : 330;
+
             return await html2canvas(element, {
                 backgroundColor: null,
                 scale: scale,
                 useCORS: true,
                 allowTaint: true,
                 logging: false,
-                width: 510, // Force typical card width
-                height: 330, // Force typical card height
+                width: captureWidth,
+                height: captureHeight,
                 windowWidth: 1200, // Simulate desktop window width
             });
         }
@@ -397,7 +402,24 @@ const ExportManager = {
     async downloadQrCode() {
         try {
             await Utils.loadScript(Config.SCRIPT_URLS.qrcode);
-            const designId = await ShareManager.saveDesign();
+
+            // Ensure we have captured images for dashboard thumbnail
+            const state = StateManager.getStateObject();
+            if (!state.imageUrls || !state.imageUrls.capturedFront) {
+                try {
+                    if (typeof DOMElements !== 'undefined' && DOMElements.cardFront && ShareManager.captureAndUploadCard) {
+                        if (!state.imageUrls) state.imageUrls = {};
+                        const front = await ShareManager.captureAndUploadCard(DOMElements.cardFront);
+                        const back = await ShareManager.captureAndUploadCard(DOMElements.cardBack);
+                        state.imageUrls.capturedFront = front;
+                        state.imageUrls.capturedBack = back;
+                    }
+                } catch (e) {
+                    console.warn("Auto-capture failed in downloadQrCode", e);
+                }
+            }
+
+            const designId = await ShareManager.saveDesign(state);
             if (!designId) {
                 throw new Error(i18nMain.qrLinkError);
             }
@@ -689,12 +711,8 @@ const ShareManager = {
         state.imageUrls.capturedFront = frontImageUrl;
         state.imageUrls.capturedBack = backImageUrl;
 
-        // Ask user if they want to show card in gallery
-        const isEnglish = document.documentElement.lang === 'en' || window.location.pathname.includes('-en.html');
-        const galleryMsg = isEnglish
-            ? 'Would you like to display your card in the MC PRIME public gallery?'
-            : 'هل تريد عرض بطاقتك في معرض MC PRIME العام؟';
-        state.sharedToGallery = confirm(galleryMsg);
+        // Prompt moved to Save action
+        // state.sharedToGallery is set there
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
 

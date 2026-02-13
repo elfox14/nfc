@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 
 <head>
     <meta charset="UTF-8">
@@ -14,7 +14,7 @@
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
     <!-- End Google Tag Manager -->
-    <title>لوحة التحكم - MC PRIME NFC</title>
+    <title>Dashboard - MC PRIME NFC</title>
     <link rel="stylesheet" href="/nfc/homepage.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
@@ -166,12 +166,12 @@
     <!-- End Google Tag Manager (noscript) -->
     <nav class="navbar" style="background: rgba(28, 42, 59, 1);">
         <div class="container nav-content">
-            <a href="/nfc/" class="nav-logo">
+            <a href="/nfc/index-en.html" class="nav-logo">
                 <img src="https://www.mcprim.com/nfc/mcprime-logo-transparent.png" alt="MC PRIME">
             </a>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <span id="user-display-name" style="color: white; font-weight: bold;"></span>
-                <button onclick="Auth.logout()" class="btn btn-secondary" style="padding: 8px 15px;">تسجيل خروج</button>
+                <button onclick="Auth.logout()" class="btn btn-secondary" style="padding: 8px 15px;">Logout</button>
             </div>
         </div>
     </nav>
@@ -179,18 +179,18 @@
     <div class="dashboard-container">
         <div class="dashboard-header">
             <div>
-                <h1>تصميماتي</h1>
-                <p class="user-info">إدارة بطاقات العمل الرقمية الخاصة بك</p>
+                <h1>My Designs</h1>
+                <p class="user-info">Manage your digital business cards</p>
             </div>
-            <a href="/nfc/editor.html" class="btn btn-primary">
-                <i class="fas fa-plus"></i> تصميم جديد
+            <a href="/nfc/editor-en.html" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Design
             </a>
         </div>
 
         <div id="designs-grid" class="designs-grid">
             <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
                 <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
-                <p style="margin-top: 10px;">جاري تحميل التصميمات...</p>
+                <p style="margin-top: 10px;">Loading designs...</p>
             </div>
         </div>
     </div>
@@ -198,11 +198,11 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             if (!Auth.isLoggedIn()) {
-                window.location.href = '/nfc/login.html';
+                window.location.href = '/nfc/login-en.html';
                 return;
             }
 
-            document.getElementById('user-display-name').textContent = Auth.user?.name || 'مستخدم';
+            document.getElementById('user-display-name').textContent = Auth.user?.name || 'User';
 
             try {
                 const response = await fetch(Auth.API_USER_DESIGNS, {
@@ -215,9 +215,9 @@
 
                 if (data.success && data.designs && data.designs.length > 0) {
                     data.designs.forEach(design => {
-                        const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || 'بدون اسم') : 'بطاقة';
+                        const name = design.data?.inputs ? (design.data.inputs['input-name_en'] || design.data.inputs['input-name_ar'] || 'Untitled') : 'Card';
                         const views = design.views || 0;
-                        const date = new Date(design.createdAt).toLocaleDateString('ar-EG');
+                        const date = new Date(design.createdAt).toLocaleDateString('en-US');
                         const thumb = design.data?.imageUrls?.capturedFront || design.data?.imageUrls?.front || '';
 
                         // Construct absolute URL for thumb if needed (though browser handles relative fine)
@@ -236,12 +236,12 @@
                              <div class="card-details">
                                  <h3 class="card-title">${name}</h3>
                                  <div class="card-meta">
-                                     <span><i class="far fa-eye"></i> ${views} مشاهدة</span>
+                                     <span><i class="far fa-eye"></i> ${views} Views</span>
                                      <span><i class="far fa-calendar"></i> ${date}</span>
                                  </div>
                                  <div class="card-actions">
-                                     <a href="/nfc/viewer.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">عرض</a>
-                                     <a href="/nfc/editor.html?id=${design.shortId}" class="action-btn btn-edit">تعديل</a>
+                                     <a href="/nfc/viewer.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">View</a>
+                                     <a href="/nfc/editor-en.html?id=${design.shortId}" class="action-btn btn-edit">Edit</a>
                                  </div>
                              </div>
                          `;
@@ -251,16 +251,16 @@
                     grid.innerHTML = `
                         <div class="empty-state">
                             <i class="far fa-folder-open"></i>
-                            <h3>لا توجد تصميمات محفوظة بعد</h3>
-                            <p>ابدأ بإنشاء أول بطاقة عمل رقمية لك الآن</p>
-                            <a href="/nfc/editor.html" class="btn btn-primary" style="margin-top: 20px;">إنشاء بطاقة</a>
+                            <h3>No designs saved yet</h3>
+                            <p>Start creating your first digital business card now</p>
+                            <a href="/nfc/editor-en.html" class="btn btn-primary" style="margin-top: 20px;">Create Card</a>
                         </div>
                      `;
                 }
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('designs-grid').innerHTML = '<p style="text-align: center; color: #ff5252;">حدث خطأ أثناء تحميل البيانات</p>';
+                document.getElementById('designs-grid').innerHTML = '<p style="text-align: center; color: #ff5252;">Error loading data</p>';
             }
         });
     </script>
