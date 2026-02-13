@@ -557,28 +557,36 @@ body.fullscreen-preview .pro-layout {
 body.fullscreen-preview .pro-canvas {
     grid-column: 1 / -1;
     background: var(--page-bg, #1c2a3b);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 0;
 }
 
 body.fullscreen-preview .cards-wrapper {
     transform: scale(1.2);
+    margin: auto;
+    transform-origin: center center;
 }
 
 .exit-fullscreen-btn {
     position: fixed;
-    top: 80px;
-    left: 20px;
-    background: linear-gradient(135deg, var(--editor-gradient-start), var(--editor-gradient-end));
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #dc3545;
     color: white;
     border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
+    padding: 8px 20px;
+    border-radius: 30px;
     font-weight: 600;
     cursor: pointer;
-    z-index: 1001;
+    z-index: 2000;
     display: none;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 4px 15px rgba(77, 166, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
 }
 

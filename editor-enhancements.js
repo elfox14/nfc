@@ -786,17 +786,22 @@
     // FULL PREVIEW MODE
     // ===========================================
     function initFullPreviewMode() {
-        // Create exit button
-        const exitBtn = document.createElement('button');
-        exitBtn.className = 'exit-fullscreen-btn';
-        exitBtn.innerHTML = '<i class="fas fa-compress"></i> Exit Preview';
-        exitBtn.addEventListener('click', toggleFullPreview);
-        document.body.appendChild(exitBtn);
+        // Create exit button if not exists
+        if (!document.querySelector('.exit-fullscreen-btn')) {
+            const exitBtn = document.createElement('button');
+            exitBtn.className = 'exit-fullscreen-btn';
+            exitBtn.innerHTML = '<i class="fas fa-compress"></i> Exit Preview';
+            exitBtn.addEventListener('click', toggleFullPreview);
+            document.body.appendChild(exitBtn);
+        }
 
         // Add preview button to toolbar
         const previewBtn = document.getElementById('preview-mode-btn');
         if (previewBtn) {
-            previewBtn.addEventListener('click', toggleFullPreview);
+            // Remove old listeners to prevent stacking
+            const newBtn = previewBtn.cloneNode(true);
+            previewBtn.parentNode.replaceChild(newBtn, previewBtn);
+            newBtn.addEventListener('click', toggleFullPreview);
         }
     }
 
