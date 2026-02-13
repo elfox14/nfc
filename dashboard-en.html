@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
+    <!-- End Google Tag Manager -->
+    <title>Dashboard - MC PRIME NFC</title>
+    <link rel="stylesheet" href="/nfc/homepage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
+        rel="stylesheet">
+    <script src="/nfc/auth.js"></script>
+    <style>
+        .dashboard-container {
+            padding: 100px 20px 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 80vh;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .dashboard-header h1 {
+            font-family: 'Cairo', sans-serif;
+            color: #fff;
+        }
+
+        .user-info {
+            color: var(--text-secondary-color);
+        }
+
+        .designs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .design-card {
+            background: var(--surface-color);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(77, 166, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .design-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary-color);
+        }
+
+        .card-thumb {
+            height: 180px;
+            background: #2a3d54;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* Changed to contain to show full card */
+        }
+
+        .card-thumb i {
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-details {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-meta {
+            font-size: 0.9rem;
+            color: var(--text-secondary-color);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-view {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn-view:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-edit {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .btn-edit:hover {
+            background: var(--primary-hover);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            grid-column: 1 / -1;
+            color: var(--text-secondary-color);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <nav class="navbar" style="background: rgba(28, 42, 59, 1);">
+        <div class="container nav-content">
+            <a href="/nfc/index-en.html" class="nav-logo">
+                <img src="https://www.mcprim.com/nfc/mcprime-logo-transparent.png" alt="MC PRIME">
+            </a>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <span id="user-display-name" style="color: white; font-weight: bold;"></span>
+                <button onclick="Auth.logout()" class="btn btn-secondary" style="padding: 8px 15px;">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div>
+                <h1>My Designs</h1>
+                <p class="user-info">Manage your digital business cards</p>
+            </div>
+            <a href="/nfc/editor-en.html" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Design
+            </a>
+        </div>
+
+        <div id="designs-grid" class="designs-grid">
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
+                <p style="margin-top: 10px;">Loading designs...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!Auth.isLoggedIn()) {
+                window.location.href = '/nfc/login-en.html';
+                return;
+            }
+
+            document.getElementById('user-display-name').textContent = Auth.user?.name || 'User';
+
+            try {
+                const response = await fetch(Auth.API_USER_DESIGNS, {
+                    headers: Auth.getHeader()
+                });
+                const data = await response.json();
+
+                const grid = document.getElementById('designs-grid');
+                grid.innerHTML = '';
+
+                if (data.success && data.designs && data.designs.length > 0) {
+                    data.designs.forEach(design => {
+                        const name = design.data?.inputs ? (design.data.inputs['input-name_en'] || design.data.inputs['input-name_ar'] || 'Untitled') : 'Card';
+                        const views = design.views || 0;
+                        const date = new Date(design.createdAt).toLocaleDateString('en-US');
+                        const thumb = design.data?.imageUrls?.front || '';
+
+                        // Construct absolute URL for thumb if needed (though browser handles relative fine)
+                        // Check if thumb is base64 or url
+                        let imgTag = '<i class="fas fa-id-card"></i>';
+                        if (thumb) {
+                            imgTag = `<img src="${thumb}" alt="${name}" loading="lazy">`;
+                        }
+
+                        const card = document.createElement('div');
+                        card.className = 'design-card';
+                        card.innerHTML = `
+                             <div class="card-thumb">
+                                 ${imgTag}
+                             </div>
+                             <div class="card-details">
+                                 <h3 class="card-title">${name}</h3>
+                                 <div class="card-meta">
+                                     <span><i class="far fa-eye"></i> ${views} Views</span>
+                                     <span><i class="far fa-calendar"></i> ${date}</span>
+                                 </div>
+                                 <div class="card-actions">
+                                     <a href="/nfc/viewer-en.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">View</a>
+                                     <a href="/nfc/editor-en.html?id=${design.shortId}" class="action-btn btn-edit">Edit</a>
+                                 </div>
+                             </div>
+                         `;
+                        grid.appendChild(card);
+                    });
+                } else {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="far fa-folder-open"></i>
+                            <h3>No saved designs yet</h3>
+                            <p>Start creating your first digital business card now</p>
+                            <a href="/nfc/editor-en.html" class="btn btn-primary" style="margin-top: 20px;">Create Card</a>
+                        </div>
+                     `;
+                }
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('designs-grid').innerHTML = '<p style="text-align: center; color: #ff5252;">Error loading data</p>';
+            }
+        });
+    </script>
+</body>
+
+</html>
