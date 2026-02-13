@@ -142,6 +142,19 @@
                     </div>
                 </details>
 
+                <!-- Save other person's card -->
+                <div id="save-card-section" style="display: none; margin-top: 15px;">
+                    <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 15px;">
+                    <button id="save-card-btn" class="btn btn-secondary"
+                        style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                        <i class="fas fa-heart"></i>
+                        <span id="save-card-text">Save This Card</span>
+                    </button>
+                    <p id="save-card-status"
+                        style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-top: 5px; display: none;">
+                    </p>
+                </div>
+
                 <div class="info-box">
                     <h3 class="info-box-title">
                         <i class="fas fa-info-circle"></i>
@@ -194,7 +207,87 @@
         window.cardData = {};
     </script>
 
+    <script src="/nfc/auth.js"></script>
     <script src="viewer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const designId = params.get('id');
+            if (!designId) return;
+
+            const section = document.getElementById('save-card-section');
+            const btn = document.getElementById('save-card-btn');
+            const btnText = document.getElementById('save-card-text');
+            const statusP = document.getElementById('save-card-status');
+            const baseUrl = Auth.getBaseUrl();
+
+            try {
+                const ownerRes = await fetch(`${baseUrl}/api/design-owner/${designId}`);
+                const ownerData = await ownerRes.json();
+                if (!ownerData.success) return;
+
+                const isLoggedIn = Auth.isLoggedIn();
+                const currentUserId = Auth.user?.userId;
+
+                if (isLoggedIn && ownerData.ownerId === currentUserId) return;
+                if (ownerData.cardPrivacy === 'deny_all') return;
+
+                section.style.display = 'block';
+
+                if (!isLoggedIn) {
+                    btnText.textContent = 'Sign in to save this card';
+                    btn.querySelector('i').className = 'fas fa-sign-in-alt';
+                    btn.onclick = () => { window.location.href = '/nfc/login-en.html'; };
+                    return;
+                }
+
+                const checkRes = await fetch(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
+                const checkData = await checkRes.json();
+                if (checkData.savedCards?.some(c => c.designShortId === designId)) {
+                    btnText.textContent = 'Already Saved \u2713';
+                    btn.querySelector('i').className = 'fas fa-check-circle';
+                    btn.style.background = '#2ecc71';
+                    btn.disabled = true;
+                    return;
+                }
+
+                btn.onclick = async () => {
+                    btn.disabled = true;
+                    btnText.textContent = 'Saving...';
+                    btn.querySelector('i').className = 'fas fa-spinner fa-spin';
+                    try {
+                        const res = await fetch(`${baseUrl}/api/save-card/${designId}`, {
+                            method: 'POST',
+                            headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' }
+                        });
+                        const data = await res.json();
+                        if (data.status === 'saved' || data.status === 'already_saved') {
+                            btnText.textContent = 'Saved \u2713';
+                            btn.querySelector('i').className = 'fas fa-check-circle';
+                            btn.style.background = '#2ecc71';
+                        } else if (data.status === 'requested' || data.status === 'already_requested') {
+                            btnText.textContent = 'Request Sent \u23f3';
+                            btn.querySelector('i').className = 'fas fa-clock';
+                            btn.style.background = '#f39c12';
+                            statusP.textContent = 'The card will be added after the owner approves';
+                            statusP.style.display = 'block';
+                        } else if (data.status === 'denied') {
+                            btnText.textContent = 'Save Not Available';
+                            btn.querySelector('i').className = 'fas fa-ban';
+                            btn.style.background = '#e74c3c';
+                        }
+                    } catch (err) {
+                        console.error('Save card error:', err);
+                        btnText.textContent = 'Error, try again';
+                        btn.querySelector('i').className = 'fas fa-exclamation-triangle';
+                        btn.disabled = false;
+                    }
+                };
+            } catch (err) {
+                console.error('Save card init error:', err);
+            }
+        });
+    </script>
 
 </body>
 
