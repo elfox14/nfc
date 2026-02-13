@@ -1,7 +1,7 @@
 'use strict';
 
 // Language detection for bilingual support (cached once on load)
-const _isEnglishUI = document.documentElement.lang === 'en' || window.location.pathname.includes('-en.html');
+const _isEnglishUI = document.documentElement.lang === 'en';
 const isEnglishUI = () => _isEnglishUI;
 
 // Bilingual strings for dynamic content (computed once at load)
@@ -25,12 +25,6 @@ const i18n = {
     qrGenerated: _isEnglishUI ? 'QR Code generated successfully.' : 'تم إنشاء QR Code بنجاح.',
     qrError: _isEnglishUI ? 'Error generating QR Code.' : 'حدث خطأ أثناء إنشاء QR Code.',
     saveFailed: _isEnglishUI ? 'Failed to save design.' : 'فشل حفظ التصميم اللازم لإنشاء الرابط.',
-    resetConfirm: _isEnglishUI ? 'Are you sure you want to reset the design completely? Any saved data will be lost.' : 'هل أنت متأكد أنك تريد إعادة تعيين التصميم بالكامل؟ سيتم حذف أي بيانات محفوظة.',
-    bgApplied: (side) => _isEnglishUI ? `New ${side} background applied.` : `تم تطبيق خلفية ${side === 'front' ? 'أمامية' : 'خلفية'} جديدة.`,
-    themeApplied: (name) => _isEnglishUI ? `Theme ${name} applied` : `تم تطبيق تصميم ${name}`,
-    enterLink: _isEnglishUI ? 'Please enter a link or ID.' : 'الرجاء إدخال رابط أو معرف.',
-    socialAdded: (platform) => _isEnglishUI ? `${platform} added. Enter details.` : `تمت إضافة ${platform}. أدخل البيانات.`,
-    dragToMove: _isEnglishUI ? 'Drag new element to move it.' : 'اسحب العنصر الجديد لتغيير مكانه.',
     // Social link strings
     enterLinkOrId: _isEnglishUI ? 'Enter link or username here' : 'أدخل الرابط أو المعرف هنا',
     deleteLink: (name) => _isEnglishUI ? `Delete ${name} link` : `حذف رابط ${name}`,
@@ -96,14 +90,14 @@ const DragManager = {
                             const input = document.getElementById(`input-${platform}`);
                             if (input && !input.value) {
                                 input.focus();
-                                UIManager.announce(i18n.socialAdded(platform));
+                                UIManager.announce(`تمت إضافة ${platform}. أدخل البيانات.`);
                             } else if (!input) {
                                 CardManager.addSocialLink(platform);
                             }
                         } else {
                             CardManager.addSocialLink(platform);
                         }
-                        UIManager.announce(i18n.dragToMove);
+                        UIManager.announce(`اسحب العنصر الجديد لتغيير مكانه.`);
                     }
                     return;
                 }
@@ -722,139 +716,141 @@ const CardManager = {
         this.updateSocialTextStyles();
     },
 
-
-    /**
-     * Internal helper to generate QR Code using qr-code-styling
-     * @param {string} data - The text/url to encode
-     * @param {string} logoUrl - Optional logo URL
-     * @param {HTMLElement} container - The container to render into
-     * @returns {Promise<string>} Data URL of the generated image
-     */
-    async _generateQrCodeInternal(data, logoUrl, container) {
-        if (!data) throw new Error("No data provided for QR Code");
-
-        await Utils.loadScript(Config.SCRIPT_URLS.qrCodeStyling);
-
-        // Sanitize and validate logo
-        let safeLogo = null;
-        if (logoUrl) {
-            const isDefaultLogo = logoUrl.includes('mcprime-logo-transparent.png');
-            if (!isDefaultLogo) {
-                safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(logoUrl) : logoUrl;
-            }
-        }
-
-        const isUseLogoChecked = document.getElementById('qr-use-logo')?.checked ?? true;
-
-        // Get styling options
-        const dotsColor = document.getElementById('qr-dots-color')?.value || "#000000";
-        const bgColor = document.getElementById('qr-bg-color')?.value || "#ffffff";
-        const dotsType = document.getElementById('qr-dots-type')?.value || "rounded";
-        const cornersType = document.getElementById('qr-corners-type')?.value || "extra-rounded";
-
-        const qrCode = new QRCodeStyling({
-            width: 300,
-            height: 300,
-            data: data,
-            image: (isUseLogoChecked && safeLogo) ? safeLogo : null,
-            dotsOptions: { color: dotsColor, type: dotsType },
-            backgroundOptions: { color: bgColor },
-            imageOptions: { crossOrigin: "anonymous", margin: 10, imageSize: 0.4 },
-            cornersSquareOptions: { type: cornersType, color: dotsColor }
-        });
-
-        container.innerHTML = '';
-
-        // Render
-        await qrCode.append(container);
-
-        // Wait for potential image loading (QRCodeStyling doesn't return a promise for image load)
-        // We use a small delay + checks or getRawData
-
-        // Robust way: get the raw buffer if possible, or wait for canvas
-        return new Promise((resolve, reject) => {
-            let attempts = 0;
-            const checkCanvas = () => {
-                const canvas = container.querySelector('canvas');
-                if (canvas && canvas.width > 0) {
-                    // Verify content is drawn (simple check) or just resolve
-                    resolve(canvas.toDataURL());
-                } else {
-                    attempts++;
-                    if (attempts > 20) { // 2 seconds timeout
-                        reject(new Error("Timeout waiting for QR canvas to render"));
-                    } else {
-                        setTimeout(checkCanvas, 100);
-                    }
-                }
-            };
-            checkCanvas();
-        });
-    },
-
     async generateVCardQr() {
         const qrSource = document.querySelector('input[name="qr-source"]:checked')?.value;
         if (qrSource !== 'auto-vcard') return;
 
         const vCardData = ExportManager.getVCardString();
-        // Min length check
-        if (!vCardData || vCardData.length < 30) {
+        if (vCardData.length < 30) {
             this.autoGeneratedQrDataUrl = null;
             this.updateQrCodeDisplay();
             return;
         }
 
         try {
-            const logoSrc = DOMElements.draggable.logoImg.src;
+            await Utils.loadScript(Config.SCRIPT_URLS.qrCodeStyling);
+
+            const currentLogo = DOMElements.draggable.logoImg.src;
+            const isDefaultLogo = currentLogo.includes('mcprime-logo-transparent.png');
+
+            const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
+
+            const isUseLogoChecked = document.getElementById('qr-use-logo').checked;
+            const dotsColor = document.getElementById('qr-dots-color').value || "#000000";
+            const bgColor = document.getElementById('qr-bg-color').value || "#ffffff";
+            const dotsType = document.getElementById('qr-dots-type').value || "rounded";
+            const cornersType = document.getElementById('qr-corners-type').value || "extra-rounded";
+
+            const qrCode = new QRCodeStyling({
+                width: 300,
+                height: 300,
+                data: vCardData,
+                image: (isDefaultLogo || !isUseLogoChecked) ? null : safeLogo,
+                dotsOptions: {
+                    color: dotsColor,
+                    type: dotsType
+                },
+                backgroundOptions: {
+                    color: bgColor,
+                },
+                imageOptions: {
+                    crossOrigin: "anonymous",
+                    margin: 10,
+                    imageSize: 0.4
+                },
+                cornersSquareOptions: {
+                    type: cornersType,
+                    color: dotsColor
+                }
+            });
+
             const container = DOMElements.qrCodeTempGenerator;
+            container.innerHTML = '';
 
-            const dataUrl = await this._generateQrCodeInternal(vCardData, logoSrc, container);
+            await qrCode.append(container);
 
-            this.autoGeneratedQrDataUrl = dataUrl;
-            this.updateQrCodeDisplay();
-            container.innerHTML = ''; // Clean up
+            setTimeout(() => {
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                    this.autoGeneratedQrDataUrl = canvas.toDataURL();
+                    this.updateQrCodeDisplay();
+                }
+                container.innerHTML = '';
+            }, 100);
 
         } catch (error) {
-            console.error("Failed to generate VCard QR code:", error);
-            // Non-critical, just don't update display
+            console.error("Failed to generate Styled QR code:", error);
         }
     },
 
     async generateCardLinkQr() {
         const button = DOMElements.buttons.generateAutoQr;
-        UIManager.setButtonLoadingState(button, true, 'Processing...'); // "Processing..." or localized
-
+        UIManager.setButtonLoadingState(button, true, 'جاري الحفظ...');
         try {
-            // 1. Save Design
+            await Utils.loadScript(Config.SCRIPT_URLS.qrCodeStyling);
             const designId = await ShareManager.saveDesign();
             if (!designId) {
-                const isEnglish = document.documentElement.lang === 'en' || window.location.pathname.includes('-en.html');
-                throw new Error(isEnglish ? "Failed to save design." : "فشل حفظ التصميم.");
+                alert('فشل حفظ التصميم اللازم لإنشاء الرابط.');
+                return;
             }
 
-            // 2. Prepare URL
-            UIManager.setButtonLoadingState(button, true, 'Generating...');
+            UIManager.setButtonLoadingState(button, true, 'جاري الإنشاء...');
             const viewerUrl = new URL('viewer.html', window.location.href);
             viewerUrl.searchParams.set('id', designId);
             const finalUrl = viewerUrl.href;
 
-            // 3. Generate QR
-            const logoSrc = DOMElements.draggable.logoImg.src;
+            const currentLogo = DOMElements.draggable.logoImg.src;
+            const isDefaultLogo = currentLogo.includes('mcprime-logo-transparent.png');
+            const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
+
+            const isUseLogoChecked = document.getElementById('qr-use-logo').checked;
+            const dotsColor = document.getElementById('qr-dots-color').value || "#000000";
+            const bgColor = document.getElementById('qr-bg-color').value || "#ffffff";
+            const dotsType = document.getElementById('qr-dots-type').value || "rounded";
+            const cornersType = document.getElementById('qr-corners-type').value || "extra-rounded";
+
+            const qrCode = new QRCodeStyling({
+                width: 300,
+                height: 300,
+                data: finalUrl,
+                image: (isDefaultLogo || !isUseLogoChecked) ? null : safeLogo,
+                dotsOptions: {
+                    color: dotsColor,
+                    type: dotsType
+                },
+                backgroundOptions: {
+                    color: bgColor,
+                },
+                imageOptions: {
+                    crossOrigin: "anonymous",
+                    margin: 10,
+                    imageSize: 0.4
+                },
+                cornersSquareOptions: {
+                    type: cornersType,
+                    color: dotsColor // Using same color for corners for simplicity
+                }
+            });
+
             const container = DOMElements.qrCodeTempGenerator;
+            container.innerHTML = '';
+            await qrCode.append(container);
 
-            const dataUrl = await this._generateQrCodeInternal(finalUrl, logoSrc, container);
-
-            this.autoGeneratedQrDataUrl = dataUrl;
-            this.updateQrCodeDisplay();
-
-            container.innerHTML = ''; // Clean up
-            UIManager.announce("QR Code Generated Successfully");
+            setTimeout(() => {
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                    this.autoGeneratedQrDataUrl = canvas.toDataURL();
+                    this.updateQrCodeDisplay();
+                    UIManager.announce("تم إنشاء QR Code بنجاح.");
+                } else {
+                    alert("حدث خطأ أثناء إنشاء QR Code.");
+                }
+                container.innerHTML = '';
+            }, 100);
 
         } catch (error) {
             console.error("Error generating shareable QR code:", error);
-            const isEnglish = document.documentElement.lang === 'en' || window.location.pathname.includes('-en.html');
-            const msg = error.message || (isEnglish ? "Error generating QR Code." : "حدث خطأ. لم نتمكن من إنشاء رابط QR Code.");
-            alert(msg);
+            alert("حدث خطأ. لم نتمكن من إنشاء رابط QR Code.");
         } finally {
             UIManager.setButtonLoadingState(button, false);
         }
@@ -896,7 +892,7 @@ const CardManager = {
         DOMElements.fileInputs.backBg.value = '';
 
         this.updateCardBackgrounds();
-        UIManager.announce(i18n.themeApplied(theme.name));
+        UIManager.announce(`تم تطبيق تصميم ${theme.name}`);
     },
     addSocialLink(platformKey = null) {
         if (!platformKey) {
@@ -904,7 +900,7 @@ const CardManager = {
         }
 
         const value = platformKey ? '' : DOMElements.social.input.value.trim();
-        if (!platformKey && !value) { UIManager.announce(i18n.enterLink); return; }
+        if (!platformKey && !value) { UIManager.announce('الرجاء إدخال رابط أو معرف.'); return; }
 
         const allPlatforms = {
             ...Config.SOCIAL_PLATFORMS,
@@ -1033,7 +1029,7 @@ const CardManager = {
         }
 
         this.updateCardBackgrounds();
-        UIManager.announce(i18n.bgApplied(targetSide));
+        UIManager.announce(`تم تطبيق خلفية ${targetSide === 'front' ? 'أمامية' : 'خلفية'} جديدة.`);
     },
 };
 
@@ -1281,7 +1277,7 @@ const StateManager = {
     },
 
     reset() {
-        if (confirm(i18n.resetConfirm)) {
+        if (confirm('هل أنت متأكد أنك تريد إعادة تعيين التصميم بالكامل؟ سيتم حذف أي بيانات محفوظة.')) {
             localStorage.removeItem(Config.LOCAL_STORAGE_KEY);
             window.location.reload();
         }

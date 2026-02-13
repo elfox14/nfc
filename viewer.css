@@ -651,25 +651,7 @@ summary.secondary-actions-summary {
     }
 
     .nav-cta {
-        display: flex;
-        padding: 8px;
-        font-size: 0;
-        /* Hide text */
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        justify-content: center;
-        align-items: center;
-        min-width: 36px;
-    }
-
-    .nav-cta span {
         display: none;
-    }
-
-    .nav-cta i {
-        font-size: 1.2rem;
-        margin: 0;
     }
 
     .mobile-tab-btn span {
