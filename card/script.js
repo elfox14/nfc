@@ -4,7 +4,7 @@
     'use strict';
 
     const Config = {
-        API_BASE_URL: 'https://nfc-vjy6.onrender.com',
+        API_BASE_URL: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:3000' : 'https://nfc-vjy6.onrender.com',
         LOCAL_STORAGE_KEY: 'digitalCardEditorState_v19',
         DND_HINT_SHOWN_KEY: 'dndHintShown_v1',
         GALLERY_STORAGE_KEY: 'digitalCardGallery_v1',
@@ -592,34 +592,11 @@
             const borderWidth = DOMElements.photoControls.borderWidth.value;
 
             wrapper.style.width = `${size}%`;
-            wrapper.style.paddingBottom = `${size}%`;
-            wrapper.style.height = '0';
+            wrapper.style.height = `${size}%`;
             wrapper.style.borderRadius = shape === 'circle' ? '50%' : '8px';
             wrapper.style.border = `${borderWidth}px solid ${borderColor}`;
-            wrapper.style.backgroundImage = 'none'; // clear fallback
-            wrapper.style.overflow = 'hidden';
-
-            let img = wrapper.querySelector('img.personal-photo-img');
-            if (imageUrl) {
-                if (!img) {
-                    img = document.createElement('img');
-                    img.className = 'personal-photo-img';
-                    img.style.position = 'absolute';
-                    img.style.top = '0';
-                    img.style.left = '0';
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.objectFit = 'cover';
-                    img.style.display = 'block';
-                    wrapper.appendChild(img);
-                }
-                img.crossOrigin = 'anonymous'; // CRITICAL for html2canvas
-                img.src = imageUrl && imageUrl.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(imageUrl)}` : imageUrl;
-                wrapper.style.display = 'block';
-            } else {
-                if (img) img.remove();
-                wrapper.style.display = 'none';
-            }
+            wrapper.style.backgroundImage = imageUrl ? `url(${imageUrl})` : 'none';
+            wrapper.style.display = imageUrl ? 'block' : 'none';
         },
 
         updatePhoneButtonStyles() {

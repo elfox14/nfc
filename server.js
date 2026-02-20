@@ -2,6 +2,7 @@
 
 require('dotenv').config();
 const express = require('express');
+const compression = require('compression');
 const { MongoClient } = require('mongodb');
 const path = require('path');
 const cors = require('cors');
@@ -30,6 +31,7 @@ const DOMPurify = DOMPurifyFactory(window);
 const app = express();
 
 // --- START: MIDDLEWARE SETUP ---
+app.use(compression());
 app.use(useragent.express());
 
 const port = process.env.PORT || 3000;
@@ -406,31 +408,6 @@ function assertAdmin(req, res) {
   }
   return true;
 }
-
-// --- IMAGE PROXY ENDPOINT ---
-// Used to cleanly bypass CORS for external images loaded into html2canvas
-app.get('/api/proxy-image', async (req, res) => {
-  try {
-    const targetUrl = req.query.url;
-    if (!targetUrl) return res.status(400).send('URL is required');
-
-    const response = await fetch(targetUrl);
-    if (!response.ok) {
-      return res.status(response.status).send('Proxy fetch failed');
-    }
-
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    res.set('Content-Type', response.headers.get('content-type') || 'application/octet-stream');
-    res.set('Access-Control-Allow-Origin', '*');
-    res.set('Cache-Control', 'public, max-age=86400');
-    res.send(buffer);
-  } catch (err) {
-    console.error('Proxy Image Error:', err);
-    res.status(500).send('Error proxying image');
-  }
-});
 
 app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {

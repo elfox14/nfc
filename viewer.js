@@ -696,38 +696,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const captureOptions = { scale: 2, useCORS: true, allowTaint: true, backgroundColor: null, logging: false, imageTimeout: 15000 };
 
         try {
-            // Temporary fix for html2canvas ignoring aspect-ratio and padding-bottom for absolute positioned elements
-            const fixAspectRatios = (area) => {
-                const photos = area.querySelectorAll('#card-photo, .personal-photo-wrapper');
-                const restoreFns = [];
-                photos.forEach(p => {
-                    const cssText = p.style.cssText;
-                    let width = p.offsetWidth || p.getBoundingClientRect().width;
-                    if (!width || width === 0) {
-                        const parentWidth = p.parentElement ? (p.parentElement.offsetWidth || 510) : 510;
-                        const pctStr = p.style.width || p.style.paddingBottom || '25%';
-                        const pct = parseFloat(pctStr);
-                        width = (pct / 100) * parentWidth;
-                    }
-                    if (width > 0) {
-                        p.style.setProperty('width', width + 'px', 'important');
-                        p.style.setProperty('height', width + 'px', 'important');
-                        p.style.setProperty('max-height', width + 'px', 'important');
-                        p.style.setProperty('min-height', width + 'px', 'important');
-                        p.style.setProperty('padding-bottom', '0px', 'important');
-                    }
-                    restoreFns.push(() => p.style.cssText = cssText);
-                });
-                return () => restoreFns.forEach(fn => fn());
-            };
-            const restoreFront = fixAspectRatios(frontCardRenderArea);
-            const restoreBack = fixAspectRatios(backCardRenderArea);
-
             const frontCanvas = await html2canvas(frontCardRenderArea, captureOptions);
             const backCanvas = await html2canvas(backCardRenderArea, captureOptions);
 
-            restoreFront();
-            restoreBack();
             // Restore hidden container
             if (hiddenContainer && originalContainerStyles) {
                 hiddenContainer.style.position = originalContainerStyles.position || '';
