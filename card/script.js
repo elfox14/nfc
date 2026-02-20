@@ -1,8 +1,8 @@
 // script.js
 
-(function() {
+(function () {
     'use strict';
-    
+
     const Config = {
         API_BASE_URL: 'https://nfc-vjy6.onrender.com',
         LOCAL_STORAGE_KEY: 'digitalCardEditorState_v19',
@@ -94,16 +94,16 @@
             }
         },
         THEMES: {
-            'deep-sea': { name: 'بحر عميق', gradient: ['#2a3d54', '#223246'], values: { textPrimary: '#e6f0f7', taglineColor: '#4da6ff', backButtonBg: '#364f6b', backButtonText: '#aab8c2', phoneBtnBg: '#4da6ff', phoneBtnText: '#ffffff'}},
-            'modern-light': { name: 'أبيض حديث', gradient: ['#e9e9e9', '#ffffff'], values: { textPrimary: '#121212', taglineColor: '#007BFF', backButtonBg: '#f0f2f5', backButtonText: '#343a40', phoneBtnBg: '#007BFF', phoneBtnText: '#ffffff'}},
-            'forest-whisper': { name: 'همس الغابة', gradient: ['#234d20', '#364935'], values: { textPrimary: '#f0f3f0', taglineColor: '#77ab59', backButtonBg: '#4a785f', backButtonText: '#f0f3f0', phoneBtnBg: '#77ab59', phoneBtnText: '#f0f3f0'}},
-            'sunset-gradient': { name: 'غروب الشمس', gradient: ['#ff8c42', '#ff5f6d'], values: { textPrimary: '#ffffff', taglineColor: '#ffcc80', backButtonBg: '#c44d56', backButtonText: '#ffffff', phoneBtnBg: 'rgba(255,255,255,0.2)', phoneBtnText: '#ffffff'}},
-            'corporate-elegance': { name: 'أناقة الشركات', gradient: ['#f8f9fa', '#e9ecef'], values: { textPrimary: '#212529', taglineColor: '#0056b3', backButtonBg: '#343a40', backButtonText: '#ffffff', phoneBtnBg: '#0056b3', phoneBtnText: '#ffffff'}},
-            'night-neon': { name: 'النيون الليلي', gradient: ['#0d0d0d', '#1a1a1a'], values: { textPrimary: '#f0f0f0', taglineColor: '#39ff14', backButtonBg: '#222222', backButtonText: '#00ffdd', phoneBtnBg: 'transparent', phoneBtnText: '#39ff14'}},
+            'deep-sea': { name: 'بحر عميق', gradient: ['#2a3d54', '#223246'], values: { textPrimary: '#e6f0f7', taglineColor: '#4da6ff', backButtonBg: '#364f6b', backButtonText: '#aab8c2', phoneBtnBg: '#4da6ff', phoneBtnText: '#ffffff' } },
+            'modern-light': { name: 'أبيض حديث', gradient: ['#e9e9e9', '#ffffff'], values: { textPrimary: '#121212', taglineColor: '#007BFF', backButtonBg: '#f0f2f5', backButtonText: '#343a40', phoneBtnBg: '#007BFF', phoneBtnText: '#ffffff' } },
+            'forest-whisper': { name: 'همس الغابة', gradient: ['#234d20', '#364935'], values: { textPrimary: '#f0f3f0', taglineColor: '#77ab59', backButtonBg: '#4a785f', backButtonText: '#f0f3f0', phoneBtnBg: '#77ab59', phoneBtnText: '#f0f3f0' } },
+            'sunset-gradient': { name: 'غروب الشمس', gradient: ['#ff8c42', '#ff5f6d'], values: { textPrimary: '#ffffff', taglineColor: '#ffcc80', backButtonBg: '#c44d56', backButtonText: '#ffffff', phoneBtnBg: 'rgba(255,255,255,0.2)', phoneBtnText: '#ffffff' } },
+            'corporate-elegance': { name: 'أناقة الشركات', gradient: ['#f8f9fa', '#e9ecef'], values: { textPrimary: '#212529', taglineColor: '#0056b3', backButtonBg: '#343a40', backButtonText: '#ffffff', phoneBtnBg: '#0056b3', phoneBtnText: '#ffffff' } },
+            'night-neon': { name: 'النيون الليلي', gradient: ['#0d0d0d', '#1a1a1a'], values: { textPrimary: '#f0f0f0', taglineColor: '#39ff14', backButtonBg: '#222222', backButtonText: '#00ffdd', phoneBtnBg: 'transparent', phoneBtnText: '#39ff14' } },
         },
         BACKGROUNDS: [], // تم حذف مصفوفة الخلفيات الثابتة من هنا. سيتم الآن تحميلها من قاعدة البيانات
         SOCIAL_PLATFORMS: { instagram: { name: 'انستغرام', icon: 'fab fa-instagram', prefix: 'https://instagram.com/' }, x: { name: 'X (تويتر)', icon: 'fab fa-xing', prefix: 'https://x.com/' }, telegram: { name: 'تيليجرام', icon: 'fab fa-telegram', prefix: 'https://t.me/' }, tiktok: { name: 'تيك توك', icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' }, snapchat: { name: 'سناب شات', icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' }, youtube: { name: 'يوتيوب', icon: 'fab fa-youtube', prefix: 'https://youtube.com/' }, pinterest: { name: 'بينترست', icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' } },
-        STATIC_CONTACT_METHODS: [ { id: 'whatsapp', icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' }, { id: 'email', icon: 'fas fa-envelope', prefix: 'mailto:' }, { id: 'website', icon: 'fas fa-globe' }, { id: 'facebook', icon: 'fab fa-facebook-f' }, { id: 'linkedin', icon: 'fab fa-linkedin-in' } ]
+        STATIC_CONTACT_METHODS: [{ id: 'whatsapp', icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' }, { id: 'email', icon: 'fas fa-envelope', prefix: 'mailto:' }, { id: 'website', icon: 'fas fa-globe' }, { id: 'facebook', icon: 'fab fa-facebook-f' }, { id: 'linkedin', icon: 'fab fa-linkedin-in' }]
     };
     const DOMElements = {};
     const loadedScripts = new Set();
@@ -176,7 +176,7 @@
             DOMElements.buttons.redoBtn.disabled = this.currentIndex >= this.history.length - 1;
         }
     };
-    
+
     const TabManager = {
         init(navSelector, buttonSelector) {
             const nav = document.querySelector(navSelector);
@@ -199,7 +199,7 @@
 
             clickedButton.classList.add('active');
             const targetPane = document.getElementById(targetId);
-            if(targetPane) {
+            if (targetPane) {
                 targetPane.classList.add('active');
             }
         }
@@ -264,7 +264,7 @@
                     buttons: [{ text: 'إنهاء', action() { return this.complete(); } }]
                 }
             ];
-            
+
             if (window.innerWidth <= 1200) {
                 steps[1].attachTo = { element: '.controls-column', on: 'top' };
                 steps[3].attachTo = { element: '#export-fieldset-source', on: 'top' };
@@ -281,8 +281,8 @@
 
     const UIManager = {
         init() { this.populateThemeThumbnails(); this.populateSocialMediaOptions(); },
-        announce: (message) => { if(DOMElements.liveAnnouncer) DOMElements.liveAnnouncer.textContent = message; },
-        
+        announce: (message) => { if (DOMElements.liveAnnouncer) DOMElements.liveAnnouncer.textContent = message; },
+
         populateThemeThumbnails() {
             const container = document.getElementById('theme-gallery');
             if (!container) {
@@ -322,19 +322,19 @@
             }
         },
 
-        populateSocialMediaOptions() { 
+        populateSocialMediaOptions() {
             const select = document.getElementById('social-media-type');
             if (!select) {
                 console.error("CRITICAL: #social-media-type element not found in DOM.");
                 return;
             }
-            select.innerHTML = Object.entries(Config.SOCIAL_PLATFORMS).map(([key, platform]) => `<option value="${key}">${platform.name}</option>`).join(''); 
+            select.innerHTML = Object.entries(Config.SOCIAL_PLATFORMS).map(([key, platform]) => `<option value="${key}">${platform.name}</option>`).join('');
         },
 
         populateBackgroundGallery(backgrounds = []) {
             const container = document.getElementById('background-gallery');
             if (!container) return;
-            
+
             container.innerHTML = '';
             backgrounds.forEach(bg => {
                 const thumb = document.createElement('div');
@@ -356,16 +356,16 @@
                 container.appendChild(thumb);
             });
         },
-        
+
         async fetchAndPopulateBackgrounds() {
             const container = document.getElementById('background-gallery');
             if (!container) return;
             try {
                 const response = await fetch(`${Config.API_BASE_URL}/api/gallery/backgrounds`);
                 if (!response.ok) throw new Error('Network response was not ok');
-                
+
                 const data = await response.json();
-                
+
                 if (data.success && data.items) {
                     this.populateBackgroundGallery(data.items);
                 } else {
@@ -402,17 +402,17 @@
             errorEl.textContent = ''; errorEl.style.display = 'none';
             if (!file) return;
 
-            if (!file.type.startsWith('image/')) { 
-                errorEl.textContent = 'الرجاء اختيار ملف صورة صالح.'; 
-                errorEl.style.display = 'block'; 
-                Utils.playSound('error'); 
-                return; 
+            if (!file.type.startsWith('image/')) {
+                errorEl.textContent = 'الرجاء اختيار ملف صورة صالح.';
+                errorEl.style.display = 'block';
+                Utils.playSound('error');
+                return;
             }
-            if (file.size > maxSizeMB * 1024 * 1024) { 
-                errorEl.textContent = `يجب أن يكون حجم الملف أقل من ${maxSizeMB} ميجابايت.`; 
-                errorEl.style.display = 'block'; 
-                Utils.playSound('error'); 
-                return; 
+            if (file.size > maxSizeMB * 1024 * 1024) {
+                errorEl.textContent = `يجب أن يكون حجم الملف أقل من ${maxSizeMB} ميجابايت.`;
+                errorEl.style.display = 'block';
+                Utils.playSound('error');
+                return;
             }
 
             spinnerEl.style.display = 'block';
@@ -429,7 +429,7 @@
                 spinnerEl.style.display = 'none';
             }
         },
-        
+
         showSaveNotification() {
             const toast = DOMElements.saveToast; if (!toast) return;
             toast.textContent = 'جاري الحفظ...'; toast.classList.add('show');
@@ -440,25 +440,25 @@
                 setTimeout(() => { toast.classList.remove('show'); }, 1500);
             }, 500);
         },
-        updateFavicon(url) { if(url) document.getElementById('favicon').href = url; },
-        highlightElement(targetId, state) { const el = document.getElementById(targetId); if(el) el.classList.toggle('highlighted', state); },
-        
+        updateFavicon(url) { if (url) document.getElementById('favicon').href = url; },
+        highlightElement(targetId, state) { const el = document.getElementById(targetId); if (el) el.classList.toggle('highlighted', state); },
+
         navigateToAndHighlight(elementId) {
             const targetElement = document.getElementById(elementId);
-            if (!targetElement) { 
-                console.warn(`Element with ID "${elementId}" not found.`); 
-                return; 
+            if (!targetElement) {
+                console.warn(`Element with ID "${elementId}" not found.`);
+                return;
             }
 
             const parentPane = targetElement.closest('.tab-pane');
             if (parentPane && !parentPane.classList.contains('active')) {
                 const paneId = parentPane.id;
                 const isMobile = window.innerWidth <= 1200;
-                
-                const buttonSelector = isMobile 
-                    ? `.mobile-tab-btn[data-tab-target="${paneId}"]` 
+
+                const buttonSelector = isMobile
+                    ? `.mobile-tab-btn[data-tab-target="${paneId}"]`
                     : `.desktop-tab-btn[data-tab-target="${paneId}"]`;
-                
+
                 const buttonToClick = document.querySelector(buttonSelector);
 
                 if (buttonToClick) {
@@ -468,12 +468,12 @@
                     TabManager.switchTab(paneId, buttonToClick, allButtons, allPanes);
                 }
             }
-            
+
             const parentAccordion = targetElement.closest('details');
             if (parentAccordion && !parentAccordion.open) {
                 parentAccordion.open = true;
             }
-            
+
             setTimeout(() => {
                 const highlightTarget = targetElement.closest('.fieldset') || targetElement.closest('.form-group') || targetElement.closest('.dynamic-input-group') || targetElement;
                 highlightTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -522,8 +522,8 @@
             if (html.dir === 'rtl') { html.dir = 'ltr'; html.classList.add('ltr'); span.textContent = 'AR'; }
             else { html.dir = 'rtl'; html.classList.remove('ltr'); span.textContent = 'EN'; }
         },
-        setupDragDrop(dropZoneId, fileInputId) { const dropZone = document.getElementById(dropZoneId); const fileInput = document.getElementById(fileInputId); if (!dropZone || !fileInput) return; ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }); }); ['dragenter', 'dragover'].forEach(eventName => { dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over')); }); ['dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over')); }); dropZone.addEventListener('drop', e => { if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; fileInput.dispatchEvent(new Event('change', { bubbles: true })); } }); },
-        setButtonLoadingState(button, isLoading, text = 'جاري التحميل...') { if (!button) return; const span = button.querySelector('span'); const originalText = button.dataset.originalText || (span ? span.textContent : ''); if(!button.dataset.originalText && span) button.dataset.originalText = originalText; if (isLoading) { button.disabled = true; button.classList.add('loading'); if(span) span.textContent = text; } else { button.disabled = false; button.classList.remove('loading'); if(span) span.textContent = originalText; }},
+        setupDragDrop(dropZoneId, fileInputId) { const dropZone = document.getElementById(dropZoneId); const fileInput = document.getElementById(fileInputId); if (!dropZone || !fileInput) return;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }); });['dragenter', 'dragover'].forEach(eventName => { dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over')); });['dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over')); }); dropZone.addEventListener('drop', e => { if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; fileInput.dispatchEvent(new Event('change', { bubbles: true })); } }); },
+        setButtonLoadingState(button, isLoading, text = 'جاري التحميل...') { if (!button) return; const span = button.querySelector('span'); const originalText = button.dataset.originalText || (span ? span.textContent : ''); if (!button.dataset.originalText && span) button.dataset.originalText = originalText; if (isLoading) { button.disabled = true; button.classList.add('loading'); if (span) span.textContent = text; } else { button.disabled = false; button.classList.remove('loading'); if (span) span.textContent = originalText; } },
         showDragAndDropHints() {
             const elementsToShowHint = ['#card-logo', '#card-personal-photo-wrapper', '#card-name', '#card-tagline', '#qr-code-wrapper', '.phone-button-draggable-wrapper', '.draggable-social-link'];
             elementsToShowHint.forEach(selector => {
@@ -570,7 +570,7 @@
             const elementsToReset = ['#card-logo', '#card-personal-photo-wrapper', '#card-name', '#card-tagline', '#qr-code-wrapper', '.phone-button-draggable-wrapper', '.draggable-social-link'];
             elementsToReset.forEach(selector => {
                 document.querySelectorAll(selector).forEach(el => {
-                    if(el) { el.style.transform = 'translate(0px, 0px)'; el.removeAttribute('data-x'); el.removeAttribute('data-y'); }
+                    if (el) { el.style.transform = 'translate(0px, 0px)'; el.removeAttribute('data-x'); el.removeAttribute('data-y'); }
                 });
             });
         }
@@ -580,7 +580,7 @@
         frontBgImageUrl: null, backBgImageUrl: null, qrCodeImageUrl: null, personalPhotoUrl: null,
         autoGeneratedQrDataUrl: null,
         updateElementFromInput(input) { const { updateTarget, updateProperty, updateUnit = '' } = input.dataset; if (!updateTarget || !updateProperty) return; const targetElement = document.getElementById(updateTarget); if (!targetElement) return; const properties = updateProperty.split('.'); let current = targetElement; for (let i = 0; i < properties.length - 1; i++) { current = current[properties[i]]; } current[properties[properties.length - 1]] = input.value + updateUnit; },
-        
+
         updatePersonalPhotoStyles() {
             const wrapper = DOMElements.draggable.photo;
             if (!wrapper) return;
@@ -592,14 +592,38 @@
             const borderWidth = DOMElements.photoControls.borderWidth.value;
 
             wrapper.style.width = `${size}%`;
-            wrapper.style.height = `${size}%`;
+            wrapper.style.paddingBottom = `${size}%`;
+            wrapper.style.height = '0';
             wrapper.style.borderRadius = shape === 'circle' ? '50%' : '8px';
             wrapper.style.border = `${borderWidth}px solid ${borderColor}`;
-            wrapper.style.backgroundImage = imageUrl ? `url(${imageUrl})` : 'none';
-            wrapper.style.display = imageUrl ? 'block' : 'none';
+            wrapper.style.backgroundImage = 'none'; // clear fallback
+            wrapper.style.overflow = 'hidden';
+
+            let img = wrapper.querySelector('img.personal-photo-img');
+            if (imageUrl) {
+                if (!img) {
+                    img = document.createElement('img');
+                    img.className = 'personal-photo-img';
+                    img.style.position = 'absolute';
+                    img.style.top = '0';
+                    img.style.left = '0';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    img.style.display = 'block';
+                    wrapper.appendChild(img);
+                }
+                img.crossOrigin = 'anonymous'; // CRITICAL for html2canvas
+                img.src = imageUrl && imageUrl.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(imageUrl)}` : imageUrl;
+                wrapper.style.display = 'block';
+            } else {
+                if (img) img.remove();
+                wrapper.style.display = 'none';
+            }
         },
-        
-        updatePhoneButtonStyles() { const bgColor = DOMElements.phoneBtnBgColor.value; const textColor = DOMElements.phoneBtnTextColor.value; const fontSize = DOMElements.phoneBtnFontSize.value; const fontFamily = DOMElements.phoneBtnFont.value; const padding = DOMElements.phoneBtnPadding.value;
+
+        updatePhoneButtonStyles() {
+            const bgColor = DOMElements.phoneBtnBgColor.value; const textColor = DOMElements.phoneBtnTextColor.value; const fontSize = DOMElements.phoneBtnFontSize.value; const fontFamily = DOMElements.phoneBtnFont.value; const padding = DOMElements.phoneBtnPadding.value;
             document.querySelectorAll('.phone-button').forEach(button => { button.style.backgroundColor = bgColor; button.style.color = textColor; button.style.borderColor = (bgColor === 'transparent' || bgColor.includes('rgba(0,0,0,0)')) ? textColor : 'transparent'; button.style.fontSize = `${fontSize}px`; button.style.fontFamily = fontFamily; button.style.padding = `${padding}px ${padding * 2}px`; });
         },
         updatePhoneButtonsVisibility() {
@@ -615,39 +639,39 @@
             document.querySelectorAll('.phone-button-draggable-wrapper').forEach(wrapper => {
                 wrapper.dataset.layout = layout;
                 const button = wrapper.querySelector('.phone-button');
-                if(button) {
+                if (button) {
                     button.style.fontSize = `${size}px`; button.style.color = color; button.style.fontFamily = font;
                 }
             });
         },
         renderPhoneButtons() {
             document.querySelectorAll('.phone-button-draggable-wrapper').forEach(el => el.remove());
-        
+
             const state = StateManager.getStateObject();
             const phoneState = state.dynamic.phones || [];
-        
+
             DOMElements.phoneNumbersContainer.querySelectorAll('.dynamic-input-group').forEach((group) => {
                 const phoneId = group.dataset.phoneId;
                 const phoneData = phoneState.find(p => p.id === phoneId);
                 if (!phoneData || !phoneData.value) return;
-        
+
                 const placement = phoneData.placement || 'front';
                 const parentContainer = placement === 'front' ? DOMElements.cardFrontContent : DOMElements.cardBackContent;
-        
+
                 const wrapper = document.createElement('div');
                 wrapper.id = phoneId;
                 wrapper.className = 'phone-button-draggable-wrapper';
                 wrapper.dataset.controlId = group.id;
-        
+
                 const pos = phoneData.position || { x: 0, y: 0 };
                 wrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
                 wrapper.setAttribute('data-x', pos.x);
                 wrapper.setAttribute('data-y', pos.y);
-        
+
                 const phoneLink = document.createElement('a');
                 phoneLink.href = `tel:${phoneData.value.replace(/[^0-9+]/g, '')}`;
                 phoneLink.className = 'phone-button';
-        
+
                 phoneLink.innerHTML = `
                     <i class="fas fa-phone-alt" aria-hidden="true"></i>
                     <span>${phoneData.value}</span>
@@ -655,52 +679,52 @@
                         <i class="fas fa-copy" aria-hidden="true"></i>
                     </button>
                 `;
-        
+
                 phoneLink.querySelector('.copy-btn').onclick = (e) => { e.preventDefault(); e.stopPropagation(); Utils.copyTextToClipboard(phoneData.value).then(success => { if (success) UIManager.announce('تم نسخ الرقم!'); }); };
                 phoneLink.addEventListener('click', (e) => { e.preventDefault(); UIManager.navigateToAndHighlight(wrapper.dataset.controlId); });
-        
+
                 wrapper.appendChild(phoneLink);
                 parentContainer.appendChild(wrapper);
                 DragManager.makeDraggable(`#${phoneId}`);
             });
-        
+
             this.updatePhoneButtonStyles();
             this.updatePhoneButtonsVisibility();
             this.updatePhoneTextStyles();
         },
         createPhoneInput(phoneData = {}) {
             const { id = `phone_${Date.now()}`, value = '', placement = 'front' } = phoneData;
-        
+
             const inputGroup = document.createElement('div');
             inputGroup.className = 'dynamic-input-group';
             inputGroup.id = `phone-control-${id}`;
             inputGroup.dataset.phoneId = id;
-        
+
             const mainContent = document.createElement('div');
             mainContent.style.flexGrow = '1';
-        
+
             const inputWrapper = document.createElement('div');
             inputWrapper.style.display = 'flex';
             inputWrapper.style.alignItems = 'center';
             inputWrapper.style.gap = '10px';
-        
+
             const dragHandle = document.createElement('i');
             dragHandle.className = 'fas fa-grip-vertical drag-handle';
             dragHandle.setAttribute('aria-hidden', 'true');
-        
+
             const newPhoneInput = document.createElement('input');
             newPhoneInput.type = 'tel';
             newPhoneInput.value = value;
             newPhoneInput.placeholder = 'رقم هاتف جديد';
             newPhoneInput.style.flexGrow = '1';
-        
+
             const removeBtn = document.createElement('button');
             removeBtn.className = 'remove-btn';
             removeBtn.textContent = '×';
             removeBtn.setAttribute('aria-label', 'حذف رقم الهاتف');
-        
+
             inputWrapper.append(dragHandle, newPhoneInput, removeBtn);
-        
+
             const placementControl = document.createElement('div');
             placementControl.className = 'placement-control';
             placementControl.innerHTML = `
@@ -709,15 +733,15 @@
                     <label><input type="radio" name="placement-${id}" value="back" ${placement === 'back' ? 'checked' : ''}> خلفي</label>
                 </div>
             `;
-        
+
             mainContent.append(inputWrapper, placementControl);
             inputGroup.appendChild(mainContent);
-        
+
             const handleUpdate = () => { this.renderPhoneButtons(); StateManager.saveDebounced(); };
             removeBtn.onclick = () => { inputGroup.remove(); handleUpdate(); };
             newPhoneInput.addEventListener('input', () => { handleUpdate(); CardManager.generateVCardQrDebounced(); });
             placementControl.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', handleUpdate));
-        
+
             DOMElements.phoneNumbersContainer.appendChild(inputGroup);
         },
         updateCardBackgrounds() {
@@ -726,12 +750,12 @@
                 const startColor = document.getElementById(startId).value;
                 const endColor = document.getElementById(endId).value;
                 const opacity = document.getElementById(opacityId).value;
-                
+
                 imageLayer.style.backgroundImage = image ? `url(${image})` : 'none';
                 gradientLayer.style.backgroundImage = `linear-gradient(135deg, ${startColor}, ${endColor})`;
                 gradientLayer.style.opacity = opacity;
             };
-        
+
             setBg(
                 document.getElementById('front-bg-image-layer'),
                 document.getElementById('front-bg-gradient-layer'),
@@ -743,18 +767,18 @@
                 'back-bg-start', 'back-bg-end', this.backBgImageUrl, 'back-bg-opacity'
             );
         },
-        
+
         renderCardContent() {
             const state = StateManager.getStateObject();
             if (!state || !state.placements) return;
 
             const containers = { front: DOMElements.cardFrontContent, back: DOMElements.cardBackContent };
-            const elements = { 
-                logo: DOMElements.draggable.logo, 
+            const elements = {
+                logo: DOMElements.draggable.logo,
                 photo: DOMElements.draggable.photo,
-                name: DOMElements.draggable.name, 
-                tagline: DOMElements.draggable.tagline, 
-                qr: DOMElements.draggable.qr 
+                name: DOMElements.draggable.name,
+                tagline: DOMElements.draggable.tagline,
+                qr: DOMElements.draggable.qr
             };
 
             Object.values(elements).forEach(el => el.parentNode?.removeChild(el));
@@ -764,12 +788,12 @@
                     containers[side].appendChild(elements[key]);
                 }
             }
-            
+
             this.updatePersonalPhotoStyles();
             this.renderPhoneButtons();
             this.updateSocialLinks();
         },
-        
+
         updateQrCodeDisplay() {
             const qrSourceRadio = document.querySelector('input[name="qr-source"]:checked');
             if (!qrSourceRadio) return;
@@ -798,7 +822,7 @@
         updateSocialLinksVisibility() {
             const isVisibleAsButtons = DOMElements.buttons.toggleSocial.checked;
             DOMElements.socialTextControls.container.classList.toggle('visible', !isVisibleAsButtons);
-             document.querySelectorAll('.draggable-social-link').forEach(wrapper => {
+            document.querySelectorAll('.draggable-social-link').forEach(wrapper => {
                 wrapper.classList.toggle('text-only-mode', !isVisibleAsButtons);
             });
         },
@@ -821,7 +845,7 @@
             const size = DOMElements.socialTextControls.size.value;
             const color = DOMElements.socialTextControls.color.value;
             const font = DOMElements.socialTextControls.font.value;
-            
+
             document.querySelectorAll('.draggable-social-link.text-only-mode a').forEach(link => {
                 const icon = link.querySelector('i');
                 const span = link.querySelector('span');
@@ -880,7 +904,7 @@
                         </button>
                     </a>
                 `;
-                
+
                 linkWrapper.querySelector('.copy-btn').onclick = (e) => { e.preventDefault(); e.stopPropagation(); Utils.copyTextToClipboard(fullUrl).then(success => { if (success) UIManager.announce('تم نسخ الرابط!'); }); };
                 linkWrapper.querySelector('a').addEventListener('click', (e) => { if (!e.metaKey && !e.ctrlKey) { e.preventDefault(); UIManager.navigateToAndHighlight(controlId); } });
 
@@ -907,7 +931,7 @@
             if (state.dynamic.social) {
                 state.dynamic.social.forEach((link, index) => {
                     if (link.platform && link.value && Config.SOCIAL_PLATFORMS[link.platform]) {
-                         renderLink({
+                        renderLink({
                             id: link.id || `dynamic-${link.platform}-${index}`,
                             value: link.value,
                             placement: link.placement,
@@ -918,7 +942,7 @@
                     }
                 });
             }
-            
+
             this.updateSocialLinksVisibility();
             this.updateSocialButtonStyles();
             this.updateSocialTextStyles();
@@ -927,28 +951,28 @@
         async generateVCardQr() {
             const qrSource = document.querySelector('input[name="qr-source"]:checked')?.value;
             if (qrSource !== 'auto-vcard') return;
-        
+
             const vCardData = ExportManager.getVCardString();
             if (vCardData.length < 30) {
                 this.autoGeneratedQrDataUrl = null;
                 this.updateQrCodeDisplay();
                 return;
             }
-        
+
             try {
                 await Utils.loadScript(Config.SCRIPT_URLS.qrcode);
-        
+
                 const container = DOMElements.qrCodeTempGenerator;
                 container.innerHTML = '';
                 container.style.display = 'block';
-        
+
                 new QRCode(container, {
                     text: vCardData,
                     width: 256,
                     height: 256,
                     correctLevel: QRCode.CorrectLevel.H
                 });
-        
+
                 setTimeout(() => {
                     const canvas = container.querySelector('canvas');
                     if (canvas) {
@@ -957,7 +981,7 @@
                     }
                     container.style.display = 'none';
                 }, 100);
-        
+
             } catch (error) {
                 console.error("Failed to load QRCode.js or generate QR code on page load:", error);
             }
@@ -973,7 +997,7 @@
                     alert('فشل حفظ التصميم اللازم لإنشاء الرابط.');
                     return;
                 }
-                
+
                 UIManager.setButtonLoadingState(button, true, 'جاري الإنشاء...');
                 const viewerUrl = new URL('viewer.html', window.location.href);
                 viewerUrl.searchParams.set('id', designId);
@@ -992,7 +1016,7 @@
                         this.updateQrCodeDisplay();
                         UIManager.announce("تم إنشاء QR Code بنجاح.");
                     } else {
-                         alert("حدث خطأ أثناء إنشاء QR Code. حاول مرة أخرى.");
+                        alert("حدث خطأ أثناء إنشاء QR Code. حاول مرة أخرى.");
                     }
                     container.style.display = 'none';
                 }, 100);
@@ -1004,62 +1028,62 @@
                 UIManager.setButtonLoadingState(button, false);
             }
         },
-        
+
         generateVCardQrDebounced: Utils.debounce(() => {
             CardManager.generateVCardQr();
         }, 400),
-        
-        applyTheme(themeKey) { 
-            const theme = Config.THEMES[themeKey]; 
-            if (!theme) return; 
+
+        applyTheme(themeKey) {
+            const theme = Config.THEMES[themeKey];
+            if (!theme) return;
 
             UIManager.setActiveThumbnail(themeKey);
 
-            const controlsToUpdate = { 
-                'name-color': theme.values.textPrimary, 
-                'tagline-color': theme.values.taglineColor, 
-                'front-bg-start': theme.gradient[0], 
-                'front-bg-end': theme.gradient[1], 
-                'back-bg-start': theme.gradient[0], 
-                'back-bg-end': theme.gradient[1], 
-                'back-buttons-bg-color': theme.values.backButtonBg, 
-                'back-buttons-text-color': theme.values.backButtonText, 
-                'phone-btn-bg-color': theme.values.phoneBtnBg, 
-                'phone-btn-text-color': theme.values.phoneBtnText 
-            }; 
-            for (const [id, value] of Object.entries(controlsToUpdate)) { 
-                const control = document.getElementById(id); 
-                if(control) { 
-                    control.value = value; 
-                    control.dispatchEvent(new Event('input', { bubbles: true })); 
-                } 
-            } 
-            this.frontBgImageUrl = null; 
-            this.backBgImageUrl = null; 
-            DOMElements.fileInputs.frontBg.value = ''; 
-            DOMElements.fileInputs.backBg.value = ''; 
-            this.updateCardBackgrounds(); 
-            UIManager.announce(`تم تطبيق تصميم ${theme.name}`); 
+            const controlsToUpdate = {
+                'name-color': theme.values.textPrimary,
+                'tagline-color': theme.values.taglineColor,
+                'front-bg-start': theme.gradient[0],
+                'front-bg-end': theme.gradient[1],
+                'back-bg-start': theme.gradient[0],
+                'back-bg-end': theme.gradient[1],
+                'back-buttons-bg-color': theme.values.backButtonBg,
+                'back-buttons-text-color': theme.values.backButtonText,
+                'phone-btn-bg-color': theme.values.phoneBtnBg,
+                'phone-btn-text-color': theme.values.phoneBtnText
+            };
+            for (const [id, value] of Object.entries(controlsToUpdate)) {
+                const control = document.getElementById(id);
+                if (control) {
+                    control.value = value;
+                    control.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+            this.frontBgImageUrl = null;
+            this.backBgImageUrl = null;
+            DOMElements.fileInputs.frontBg.value = '';
+            DOMElements.fileInputs.backBg.value = '';
+            this.updateCardBackgrounds();
+            UIManager.announce(`تم تطبيق تصميم ${theme.name}`);
             StateManager.saveDebounced();
         },
         addSocialLink() {
             const platformKey = DOMElements.social.typeSelect.value;
             const value = DOMElements.social.input.value.trim();
             if (!value) { UIManager.announce('الرجاء إدخال رابط أو معرف.'); return; }
-        
+
             const platform = Config.SOCIAL_PLATFORMS[platformKey];
             const id = `dynsocial_${Date.now()}`;
-        
+
             const linkEl = document.createElement('div');
             linkEl.className = 'dynamic-social-link';
             linkEl.id = `social-control-${id}`;
             linkEl.dataset.socialId = id;
             linkEl.dataset.platform = platformKey;
             linkEl.dataset.value = value;
-        
+
             const mainContent = document.createElement('div');
             mainContent.style.flexGrow = '1';
-        
+
             const infoWrapper = document.createElement('div');
             infoWrapper.style.display = 'flex';
             infoWrapper.style.alignItems = 'center';
@@ -1070,7 +1094,7 @@
                 <span style="flex-grow: 1;">${value}</span>
                 <button class="remove-btn" aria-label="حذف رابط ${platform.name}">×</button>
             `;
-        
+
             const placementControl = document.createElement('div');
             placementControl.className = 'placement-control';
             placementControl.innerHTML = `
@@ -1079,14 +1103,14 @@
                     <label><input type="radio" name="placement-${id}" value="back" checked> خلفي</label>
                 </div>
             `;
-        
+
             mainContent.append(infoWrapper, placementControl);
             linkEl.appendChild(mainContent);
-        
+
             const handleUpdate = () => { this.updateSocialLinks(); StateManager.saveDebounced(); };
             infoWrapper.querySelector('.remove-btn').addEventListener('click', () => { linkEl.remove(); handleUpdate(); });
             placementControl.querySelectorAll('input[type="radio"]').forEach(radio => radio.addEventListener('change', handleUpdate));
-        
+
             DOMElements.social.container.appendChild(linkEl);
             DOMElements.social.input.value = '';
             handleUpdate();
@@ -1094,13 +1118,13 @@
         applyLayout(layoutName) { DOMElements.cardsWrapper.dataset.layout = layoutName; StateManager.saveDebounced(); },
         applyBackground(bgUrl) {
             const targetSide = document.querySelector('input[name="bg-gallery-target"]:checked')?.value || 'front';
-            
+
             if (targetSide === 'front') {
                 this.frontBgImageUrl = bgUrl;
                 document.getElementById('front-bg-start').value = "#000000";
                 document.getElementById('front-bg-end').value = "#000000";
                 document.getElementById('front-bg-opacity').value = 0.3;
-                DOMElements.buttons.removeFrontBg.style.display = 'block'; 
+                DOMElements.buttons.removeFrontBg.style.display = 'block';
             } else {
                 this.backBgImageUrl = bgUrl;
                 document.getElementById('back-bg-start').value = "#000000";
@@ -1108,7 +1132,7 @@
                 document.getElementById('back-bg-opacity').value = 0.3;
                 DOMElements.buttons.removeBackBg.style.display = 'block';
             }
-            
+
             this.updateCardBackgrounds();
             StateManager.saveDebounced();
             UIManager.announce(`تم تطبيق خلفية ${targetSide === 'front' ? 'أمامية' : 'خلفية'} جديدة.`);
@@ -1117,16 +1141,16 @@
 
     const StateManager = {
         getStateObject() {
-            const state = { 
-                inputs: {}, 
-                dynamic: { phones: [], social: [], staticSocial: {} }, 
-                imageUrls: {}, 
+            const state = {
+                inputs: {},
+                dynamic: { phones: [], social: [], staticSocial: {} },
+                imageUrls: {},
                 positions: {},
                 placements: {}
             };
-        
+
             document.querySelectorAll('input, select, textarea').forEach(input => {
-                if (input.type === 'radio' && !input.name.startsWith('placement-')) { 
+                if (input.type === 'radio' && !input.name.startsWith('placement-')) {
                     if (input.checked) { state.inputs[input.name] = input.value; }
                 } else if (input.type === 'checkbox') {
                     state.inputs[input.id] = input.checked;
@@ -1134,13 +1158,13 @@
                     state.inputs[input.id] = input.value;
                 }
             });
-        
+
             DOMElements.phoneNumbersContainer.querySelectorAll('.dynamic-input-group').forEach(group => {
                 const phoneId = group.dataset.phoneId;
                 const phoneInput = group.querySelector('input[type="tel"]');
                 const placementInput = group.querySelector(`input[name="placement-${phoneId}"]:checked`);
                 const cardElement = document.getElementById(phoneId);
-        
+
                 if (phoneId && phoneInput) {
                     state.dynamic.phones.push({
                         id: phoneId,
@@ -1150,12 +1174,12 @@
                     });
                 }
             });
-        
+
             DOMElements.social.container.querySelectorAll('.dynamic-social-link').forEach(group => {
                 const socialId = group.dataset.socialId;
                 const placementInput = group.querySelector(`input[name="placement-${socialId}"]:checked`);
                 const cardElement = document.getElementById(`social-link-${socialId}`);
-        
+
                 if (socialId) {
                     state.dynamic.social.push({
                         id: socialId,
@@ -1166,13 +1190,13 @@
                     });
                 }
             });
-        
+
             Config.STATIC_CONTACT_METHODS.forEach(method => {
                 const controlGroup = document.getElementById(`form-group-${method.id}`);
                 const input = document.getElementById(`input-${method.id}`);
                 const placementInput = controlGroup ? controlGroup.querySelector(`input[name="placement-static-${method.id}"]:checked`) : null;
                 const cardElement = document.getElementById(`social-link-static-${method.id}`);
-        
+
                 if (input) {
                     state.dynamic.staticSocial[method.id] = {
                         value: input.value,
@@ -1181,12 +1205,12 @@
                     };
                 }
             });
-        
+
             state.imageUrls.front = CardManager.frontBgImageUrl;
             state.imageUrls.back = CardManager.backBgImageUrl;
             state.imageUrls.qrCode = CardManager.qrCodeImageUrl;
             state.imageUrls.photo = CardManager.personalPhotoUrl;
-        
+
             const coreElements = ['card-logo', 'card-personal-photo-wrapper', 'card-name', 'card-tagline', 'qr-code-wrapper'];
             coreElements.forEach(id => {
                 const el = document.getElementById(id);
@@ -1194,7 +1218,7 @@
                     state.positions[id] = { x: parseFloat(el.getAttribute('data-x')) || 0, y: parseFloat(el.getAttribute('data-y')) || 0 };
                 }
             });
-        
+
             const placementElements = ['logo', 'photo', 'name', 'tagline', 'qr'];
             placementElements.forEach(elName => {
                 const checkedRadio = document.querySelector(`input[name="placement-${elName}"]:checked`);
@@ -1202,16 +1226,16 @@
                     state.placements[elName] = checkedRadio.value;
                 }
             });
-        
+
             return state;
         },
 
         save() { try { const state = this.getStateObject(); localStorage.setItem(Config.LOCAL_STORAGE_KEY, JSON.stringify(state)); } catch (e) { console.error("Failed to save state:", e); } },
-        load() { try { const savedState = localStorage.getItem(Config.LOCAL_STORAGE_KEY); if (savedState) { this.applyState(JSON.parse(savedState), false); return true; } return false; } catch(e) { console.error("Failed to load state:", e); return false; } },
-        
+        load() { try { const savedState = localStorage.getItem(Config.LOCAL_STORAGE_KEY); if (savedState) { this.applyState(JSON.parse(savedState), false); return true; } return false; } catch (e) { console.error("Failed to load state:", e); return false; } },
+
         applyState(state, triggerSave = true) {
             if (!state) return;
-        
+
             if (state.inputs) {
                 for (const [key, value] of Object.entries(state.inputs)) {
                     const radioInputs = document.querySelectorAll(`input[name="${key}"][type="radio"]`);
@@ -1219,18 +1243,18 @@
                     else {
                         const input = document.getElementById(key);
                         if (input) {
-                           if (input.type === 'checkbox') { input.checked = value; }
-                           else { input.value = value || ''; }
+                            if (input.type === 'checkbox') { input.checked = value; }
+                            else { input.value = value || ''; }
                         }
                     }
                 }
             }
-        
-            DOMElements.phoneNumbersContainer.innerHTML = ''; 
+
+            DOMElements.phoneNumbersContainer.innerHTML = '';
             if (state.dynamic && state.dynamic.phones) {
                 state.dynamic.phones.forEach(phoneData => CardManager.createPhoneInput(phoneData));
             }
-        
+
             DOMElements.social.container.innerHTML = '';
             if (state.dynamic && state.dynamic.social) {
                 state.dynamic.social.forEach(socialData => {
@@ -1238,65 +1262,65 @@
                     DOMElements.social.input.value = socialData.value;
                     CardManager.addSocialLink();
                     const newControl = document.getElementById(`social-control-${socialData.id}`);
-                    if(newControl) {
+                    if (newControl) {
                         const placementRadio = newControl.querySelector(`input[value="${socialData.placement}"]`);
                         if (placementRadio) placementRadio.checked = true;
                     }
                 });
             }
-        
-            if(state.dynamic && state.dynamic.staticSocial) {
-                for(const [key, data] of Object.entries(state.dynamic.staticSocial)) {
+
+            if (state.dynamic && state.dynamic.staticSocial) {
+                for (const [key, data] of Object.entries(state.dynamic.staticSocial)) {
                     const input = document.getElementById(`input-${key}`);
                     if (input) input.value = data.value || '';
-        
+
                     const placementRadio = document.querySelector(`input[name="placement-static-${key}"][value="${data.placement}"]`);
                     if (placementRadio) placementRadio.checked = true;
                 }
             }
-        
-            if(state.imageUrls) {
-                CardManager.frontBgImageUrl = state.imageUrls.front; 
-                CardManager.backBgImageUrl = state.imageUrls.back; 
+
+            if (state.imageUrls) {
+                CardManager.frontBgImageUrl = state.imageUrls.front;
+                CardManager.backBgImageUrl = state.imageUrls.back;
                 CardManager.qrCodeImageUrl = state.imageUrls.qrCode;
                 CardManager.personalPhotoUrl = state.imageUrls.photo;
-                if(DOMElements.photoControls.url) DOMElements.photoControls.url.value = state.imageUrls.photo || '';
+                if (DOMElements.photoControls.url) DOMElements.photoControls.url.value = state.imageUrls.photo || '';
 
                 DOMElements.buttons.removeFrontBg.style.display = state.imageUrls.front ? 'block' : 'none';
                 DOMElements.buttons.removeBackBg.style.display = state.imageUrls.back ? 'block' : 'none';
             }
-            
+
             if (state.placements) {
                 for (const [elName, side] of Object.entries(state.placements)) {
                     const radio = document.querySelector(`input[name="placement-${elName}"][value="${side}"]`);
                     if (radio) radio.checked = true;
                 }
             }
-            
+
             document.querySelectorAll('input, select, textarea').forEach(input => {
                 input.dispatchEvent(new Event('input', { bubbles: true }));
                 input.dispatchEvent(new Event('change', { bubbles: true }));
             });
-        
+
             if (state.positions) {
                 for (const [id, pos] of Object.entries(state.positions)) {
                     const el = document.getElementById(id);
-                    if (el && pos) { 
-                        el.style.transform = `translate(${pos.x}px, ${pos.y}px)`; 
-                        el.setAttribute('data-x', pos.x); 
-                        el.setAttribute('data-y', pos.y); 
+                    if (el && pos) {
+                        el.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+                        el.setAttribute('data-x', pos.x);
+                        el.setAttribute('data-y', pos.y);
                     }
                 }
-            } else { 
-                DragManager.resetPositions(); 
+            } else {
+                DragManager.resetPositions();
             }
-        
+
             if (state.inputs && state.inputs['theme-select-input']) {
                 UIManager.setActiveThumbnail(state.inputs['theme-select-input']);
             }
-            
+
             CardManager.renderCardContent();
-        
+
             const qrSource = document.querySelector('input[name="qr-source"]:checked')?.value;
             if (qrSource === 'auto-vcard') {
                 setTimeout(() => CardManager.generateVCardQr(), 100);
@@ -1304,16 +1328,16 @@
                 CardManager.autoGeneratedQrDataUrl = null;
                 CardManager.updateQrCodeDisplay();
             }
-        
+
             if (triggerSave) {
                 StateManager.saveDebounced();
             }
         },
-        reset() { 
-            if (confirm('هل أنت متأكد أنك تريد إعادة تعيين التصميم بالكامل؟ سيتم حذف أي بيانات محفوظة.')) { 
+        reset() {
+            if (confirm('هل أنت متأكد أنك تريد إعادة تعيين التصميم بالكامل؟ سيتم حذف أي بيانات محفوظة.')) {
                 localStorage.removeItem(Config.LOCAL_STORAGE_KEY);
                 window.location.reload();
-            } 
+            }
         },
         saveDebounced: Utils.debounce(() => {
             HistoryManager.pushState(StateManager.getStateObject());
@@ -1325,59 +1349,59 @@
         async captureElement(element, scale = 2) {
             await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
             const style = document.createElement('style'); style.innerHTML = '.no-export { display: none !important; }'; document.head.appendChild(style);
-            try { return await html2canvas(element, { backgroundColor: null, scale: scale, useCORS: true }); } 
+            try { return await html2canvas(element, { backgroundColor: null, scale: scale, useCORS: true }); }
             finally { document.head.removeChild(style); }
         },
-        async downloadElement(options) { 
-            const {format, quality, scale} = options;
+        async downloadElement(options) {
+            const { format, quality, scale } = options;
             const element = this.pendingExportTarget === 'front' ? DOMElements.cardFront : DOMElements.cardBack;
             const filename = `card-${this.pendingExportTarget}.${format}`;
             UIManager.showModal(DOMElements.exportLoadingOverlay);
-            try { 
+            try {
                 await new Promise(resolve => setTimeout(resolve, 100));
-                const canvas = await this.captureElement(element, scale); 
+                const canvas = await this.captureElement(element, scale);
                 const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL(`image/${format}`, quality); link.click();
-            } catch(e) { console.error("Export failed:", e); UIManager.announce("فشل التصدير."); }
-            finally { UIManager.hideModal(DOMElements.exportLoadingOverlay); UIManager.hideModal(DOMElements.exportModal.overlay); } 
+            } catch (e) { console.error("Export failed:", e); UIManager.announce("فشل التصدير."); }
+            finally { UIManager.hideModal(DOMElements.exportLoadingOverlay); UIManager.hideModal(DOMElements.exportModal.overlay); }
         },
-        async downloadPdf() { 
+        async downloadPdf() {
             await Promise.all([
                 Utils.loadScript(Config.SCRIPT_URLS.html2canvas),
                 Utils.loadScript(Config.SCRIPT_URLS.jspdf)
             ]);
-            try { 
-                const { jsPDF } = window.jspdf; 
-                const doc = new jsPDF({ orientation: 'landscape', unit: 'px', format: [510, 330] }); 
-                const frontCanvas = await this.captureElement(DOMElements.cardFront, 2); 
-                doc.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 510, 330); 
-                doc.addPage(); 
-                const backCanvas = await this.captureElement(DOMElements.cardBack, 2); 
-                doc.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 510, 330); 
-                doc.save('business-card.pdf'); 
-            } catch (e) { 
-                console.error('PDF export failed:', e); 
-                UIManager.announce('فشل تصدير PDF.'); 
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'landscape', unit: 'px', format: [510, 330] });
+                const frontCanvas = await this.captureElement(DOMElements.cardFront, 2);
+                doc.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 510, 330);
+                doc.addPage();
+                const backCanvas = await this.captureElement(DOMElements.cardBack, 2);
+                doc.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 510, 330);
+                doc.save('business-card.pdf');
+            } catch (e) {
+                console.error('PDF export failed:', e);
+                UIManager.announce('فشل تصدير PDF.');
             }
         },
         getVCardString() {
             const name = DOMElements.nameInput.value.replace(/\n/g, ' ').split(' '); const firstName = name.slice(0, -1).join(' '); const lastName = name.slice(-1).join(' ');
             let vCard = `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${DOMElements.nameInput.value}\nORG:${DOMElements.taglineInput.value.replace(/\n/g, ' ')}\nTITLE:${DOMElements.taglineInput.value.replace(/\n/g, ' ')}\n`;
-        
+
             const state = StateManager.getStateObject();
-        
+
             if (state.dynamic.staticSocial.email && state.dynamic.staticSocial.email.value) {
                 vCard += `EMAIL;TYPE=PREF,INTERNET:${state.dynamic.staticSocial.email.value}\n`;
             }
             if (state.dynamic.staticSocial.website && state.dynamic.staticSocial.website.value) {
                 vCard += `URL:${state.dynamic.staticSocial.website.value}\n`;
             }
-        
+
             if (state.dynamic.phones) {
                 state.dynamic.phones.forEach((phone, index) => {
                     if (phone.value) vCard += `TEL;TYPE=CELL${index === 0 ? ',PREF' : ''}:${phone.value}\n`;
                 });
             }
-        
+
             if (state.dynamic.social) {
                 state.dynamic.social.forEach(link => {
                     const platformKey = link.platform;
@@ -1388,7 +1412,7 @@
                     }
                 });
             }
-        
+
             vCard += `END:VCARD`;
             return vCard;
         },
@@ -1400,7 +1424,7 @@
                 if (!designId) {
                     throw new Error('فشل حفظ التصميم اللازم لإنشاء الرابط.');
                 }
-                
+
                 const viewerUrl = new URL('viewer.html', window.location.href);
                 viewerUrl.searchParams.set('id', designId);
                 const finalUrl = viewerUrl.href;
@@ -1494,45 +1518,45 @@
         async downloadSelectedAsZip() {
             const selectedIndices = [...DOMElements.galleryModal.grid.querySelectorAll('.gallery-item-select:checked')].map(cb => parseInt(cb.dataset.index, 10));
             if (selectedIndices.length === 0) return;
-            
+
             try {
                 await Promise.all([
                     Utils.loadScript(Config.SCRIPT_URLS.html2canvas),
                     Utils.loadScript(Config.SCRIPT_URLS.jszip)
                 ]);
 
-                const originalState = StateManager.getStateObject(); 
+                const originalState = StateManager.getStateObject();
                 const zip = new JSZip();
-            
+
                 for (const index of selectedIndices) {
-                    const design = this.designs[index]; 
+                    const design = this.designs[index];
                     StateManager.applyState(design.state, false);
                     await new Promise(resolve => setTimeout(resolve, 50));
-                    const frontCanvas = await ExportManager.captureElement(DOMElements.cardFront); 
+                    const frontCanvas = await ExportManager.captureElement(DOMElements.cardFront);
                     const backCanvas = await ExportManager.captureElement(DOMElements.cardBack);
-                    const frontBlob = await new Promise(resolve => frontCanvas.toBlob(resolve, 'image/png')); 
+                    const frontBlob = await new Promise(resolve => frontCanvas.toBlob(resolve, 'image/png'));
                     const backBlob = await new Promise(resolve => backCanvas.toBlob(resolve, 'image/png'));
-                    zip.file(`${design.name}_Front.png`, frontBlob); 
+                    zip.file(`${design.name}_Front.png`, frontBlob);
                     zip.file(`${design.name}_Back.png`, backBlob);
                 }
 
                 const content = await zip.generateAsync({ type: "blob" });
-                const link = document.createElement('a'); 
-                link.href = URL.createObjectURL(content); 
-                link.download = "Business_Cards_Export.zip"; 
-                link.click(); 
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = "Business_Cards_Export.zip";
+                link.click();
                 URL.revokeObjectURL(link.href);
                 StateManager.applyState(originalState, false);
 
-            } catch(e) { 
-                console.error("ZIP export failed:", e); 
+            } catch (e) {
+                console.error("ZIP export failed:", e);
                 UIManager.announce("حدث خطأ أثناء تصدير الملف المضغوط.");
                 alert("فشل تصدير الملف المضغوط. قد تكون هناك مشكلة في تحميل المكونات اللازمة.");
                 throw e;
             }
         }
     };
-    
+
     const ShareManager = {
         async saveDesign() {
             const state = StateManager.getStateObject();
@@ -1543,7 +1567,7 @@
                     body: JSON.stringify(state),
                 });
                 if (!response.ok) throw new Error('Server responded with an error');
-                
+
                 const result = await response.json();
                 if (result.success && result.id) {
                     return result.id;
@@ -1570,7 +1594,7 @@
                 this.showFallback(url, text);
             }
         },
-        
+
         async shareCard() {
             UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true);
             const designId = await this.saveDesign();
@@ -1579,7 +1603,7 @@
 
             const viewerUrl = new URL('viewer.html', window.location.href);
             viewerUrl.searchParams.set('id', designId);
-            
+
             this.performShare(viewerUrl.href, 'بطاقة عملي الرقمية', 'ألق نظرة على تصميم بطاقتي الجديدة!');
         },
 
@@ -1588,7 +1612,7 @@
             const designId = await this.saveDesign();
             UIManager.setButtonLoadingState(DOMElements.buttons.shareEditor, false);
             if (!designId) return;
-            
+
             const editorUrl = new URL(window.location.href);
             editorUrl.searchParams.delete('id');
             editorUrl.searchParams.set('id', designId);
@@ -1612,11 +1636,11 @@
                 try {
                     const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`);
                     if (!response.ok) throw new Error('Design not found or server error');
-                    
+
                     const state = await response.json();
                     StateManager.applyState(state, false);
                     UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
-                    
+
                     const newUrl = new URL(window.location.href);
                     newUrl.searchParams.delete('id');
                     window.history.replaceState({}, document.title, newUrl.pathname + newUrl.search);
@@ -1631,7 +1655,7 @@
             return false;
         }
     };
-    
+
     const EventManager = {
         makeListSortable(container, onSortCallback) {
             let draggedItem = null;
@@ -1641,13 +1665,13 @@
             container.addEventListener('drop', () => { if (onSortCallback) onSortCallback(); StateManager.saveDebounced(); });
         },
         bindEvents() {
-            document.querySelectorAll('input, select, textarea').forEach(input => { 
+            document.querySelectorAll('input, select, textarea').forEach(input => {
                 const eventType = (input.type === 'range' || input.type === 'color' || input.type === 'checkbox') ? 'change' : 'input';
-                input.addEventListener(eventType, () => { 
+                input.addEventListener(eventType, () => {
                     if (document.activeElement === input || input.type === 'checkbox' || input.tagName === 'SELECT') {
                         StateManager.saveDebounced();
                     }
-                }); 
+                });
                 input.addEventListener('input', () => {
                     CardManager.updateElementFromInput(input);
                     if (input.id.includes('photo-')) CardManager.updatePersonalPhotoStyles();
@@ -1657,35 +1681,35 @@
                     if (input.id.startsWith('input-')) CardManager.updateSocialLinks();
                     if (input.id.startsWith('front-bg-') || input.id.startsWith('back-bg-')) CardManager.updateCardBackgrounds();
                     if (input.id === 'qr-size') CardManager.updateQrCodeDisplay();
-                    
+
                     const vCardFields = ['input-name', 'input-tagline', 'input-email', 'input-website'];
                     if (vCardFields.includes(input.id)) {
                         CardManager.generateVCardQrDebounced();
                     }
 
-                    if(input.name.startsWith('placement-static-')) {
+                    if (input.name.startsWith('placement-static-')) {
                         CardManager.updateSocialLinks();
                     }
                 });
-                input.addEventListener('focus', () => UIManager.highlightElement(input.dataset.updateTarget, true)); 
-                input.addEventListener('blur', () => UIManager.highlightElement(input.dataset.updateTarget, false)); 
+                input.addEventListener('focus', () => UIManager.highlightElement(input.dataset.updateTarget, true));
+                input.addEventListener('blur', () => UIManager.highlightElement(input.dataset.updateTarget, false));
             });
-            
+
             DOMElements.qrSourceRadios.forEach(radio => {
                 radio.addEventListener('change', () => {
                     const selectedValue = radio.value;
                     DOMElements.qrUrlGroup.style.display = selectedValue === 'custom' ? 'block' : 'none';
                     DOMElements.qrUploadGroup.style.display = selectedValue === 'upload' ? 'block' : 'none';
                     DOMElements.qrAutoCardGroup.style.display = selectedValue === 'auto-card' ? 'block' : 'none';
-                    
+
                     CardManager.autoGeneratedQrDataUrl = null;
-                    
+
                     if (selectedValue === 'auto-vcard') {
                         CardManager.generateVCardQr();
                     } else {
                         CardManager.updateQrCodeDisplay();
                     }
-                    
+
                     StateManager.saveDebounced();
                 });
             });
@@ -1706,7 +1730,7 @@
                         elementToReset.setAttribute('data-x', '0');
                         elementToReset.setAttribute('data-y', '0');
                     }
-            
+
                     CardManager.renderCardContent();
                     StateManager.saveDebounced();
                 });
@@ -1717,13 +1741,13 @@
                 CardManager.generateCardLinkQr();
             });
 
-            DOMElements.fileInputs.logo.addEventListener('change', e => UIManager.handleImageUpload(e, { 
-                maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.logo, 
-                onSuccess: imageUrl => { 
+            DOMElements.fileInputs.logo.addEventListener('change', e => UIManager.handleImageUpload(e, {
+                maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.logo,
+                onSuccess: imageUrl => {
                     DOMElements.draggable.logo.src = imageUrl;
-                    document.getElementById('input-logo').value = imageUrl; 
-                    UIManager.updateFavicon(imageUrl); StateManager.saveDebounced(); 
-                } 
+                    document.getElementById('input-logo').value = imageUrl;
+                    UIManager.updateFavicon(imageUrl); StateManager.saveDebounced();
+                }
             }));
 
             DOMElements.fileInputs.photo.addEventListener('change', e => UIManager.handleImageUpload(e, {
@@ -1735,28 +1759,28 @@
                     StateManager.saveDebounced();
                 }
             }));
-            
-            DOMElements.fileInputs.frontBg.addEventListener('change', e => UIManager.handleImageUpload(e, { 
+
+            DOMElements.fileInputs.frontBg.addEventListener('change', e => UIManager.handleImageUpload(e, {
                 maxSizeMB: Config.MAX_BG_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.frontBg,
-                onSuccess: url => { 
-                    CardManager.frontBgImageUrl = url; DOMElements.buttons.removeFrontBg.style.display = 'block'; 
-                    CardManager.updateCardBackgrounds(); StateManager.saveDebounced(); 
+                onSuccess: url => {
+                    CardManager.frontBgImageUrl = url; DOMElements.buttons.removeFrontBg.style.display = 'block';
+                    CardManager.updateCardBackgrounds(); StateManager.saveDebounced();
                 }
             }));
-            
-            DOMElements.fileInputs.backBg.addEventListener('change', e => UIManager.handleImageUpload(e, { 
+
+            DOMElements.fileInputs.backBg.addEventListener('change', e => UIManager.handleImageUpload(e, {
                 maxSizeMB: Config.MAX_BG_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.backBg,
-                onSuccess: url => { 
-                    CardManager.backBgImageUrl = url; DOMElements.buttons.removeBackBg.style.display = 'block'; 
-                    CardManager.updateCardBackgrounds(); StateManager.saveDebounced(); 
+                onSuccess: url => {
+                    CardManager.backBgImageUrl = url; DOMElements.buttons.removeBackBg.style.display = 'block';
+                    CardManager.updateCardBackgrounds(); StateManager.saveDebounced();
                 }
             }));
-            
+
             DOMElements.fileInputs.qrCode.addEventListener('change', e => UIManager.handleImageUpload(e, {
-                maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.qrUpload, spinnerEl: DOMElements.spinners.qr, 
-                onSuccess: imageUrl => { 
+                maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.qrUpload, spinnerEl: DOMElements.spinners.qr,
+                onSuccess: imageUrl => {
                     CardManager.qrCodeImageUrl = imageUrl; DOMElements.qrImageUrlInput.value = imageUrl;
-                    CardManager.updateQrCodeDisplay(); StateManager.saveDebounced(); 
+                    CardManager.updateQrCodeDisplay(); StateManager.saveDebounced();
                 }
             }));
 
@@ -1774,14 +1798,14 @@
             DOMElements.layoutSelect.addEventListener('change', e => CardManager.applyLayout(e.target.value));
             DOMElements.buttons.directionToggle.addEventListener('click', UIManager.toggleDirection);
             DOMElements.buttons.startTour.addEventListener('click', () => TourManager.start());
-            
+
             DOMElements.buttons.shareCard.addEventListener('click', () => {
                 if (typeof gtag === 'function') { gtag('event', 'share_card', { 'share_type': 'viewer_link' }); }
                 ShareManager.shareCard();
             });
 
             DOMElements.buttons.shareEditor.addEventListener('click', () => {
-                 if (typeof gtag === 'function') { gtag('event', 'share_editor'); }
+                if (typeof gtag === 'function') { gtag('event', 'share_editor'); }
                 ShareManager.shareEditor();
             });
 
@@ -1790,11 +1814,11 @@
             DOMElements.draggable.name.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('input-name'); });
             DOMElements.draggable.tagline.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('input-tagline'); });
             DOMElements.draggable.qr.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('qr-code-accordion'); });
-            
+
             const flipCard = () => { DOMElements.cardsWrapper.classList.toggle('is-flipped'); }
             DOMElements.buttons.mobileFlip.addEventListener('click', (e) => { e.stopPropagation(); flipCard(); });
             DOMElements.buttons.togglePhone.addEventListener('input', () => { CardManager.updatePhoneButtonsVisibility(); });
-            DOMElements.buttons.toggleSocial.addEventListener('input', () => { 
+            DOMElements.buttons.toggleSocial.addEventListener('input', () => {
                 CardManager.updateSocialLinksVisibility();
                 CardManager.updateSocialButtonStyles();
                 CardManager.updateSocialTextStyles();
@@ -1804,26 +1828,26 @@
             phoneTextControlsList.forEach(control => {
                 control.addEventListener('input', () => { CardManager.updatePhoneTextStyles(); });
             });
-            
+
             DOMElements.buttons.removeFrontBg.addEventListener('click', () => { CardManager.frontBgImageUrl = null; DOMElements.fileInputs.frontBg.value = ''; DOMElements.frontBgOpacity.value = 1; DOMElements.frontBgOpacity.dispatchEvent(new Event('input')); DOMElements.buttons.removeFrontBg.style.display = 'none'; CardManager.updateCardBackgrounds(); StateManager.saveDebounced(); });
             DOMElements.buttons.removeBackBg.addEventListener('click', () => { CardManager.backBgImageUrl = null; DOMElements.fileInputs.backBg.value = ''; DOMElements.backBgOpacity.value = 1; DOMElements.backBgOpacity.dispatchEvent(new Event('input')); DOMElements.buttons.removeBackBg.style.display = 'none'; CardManager.updateCardBackgrounds(); StateManager.saveDebounced(); });
-            
+
             DOMElements.buttons.downloadPngFront.addEventListener('click', (e) => {
                 if (typeof gtag === 'function') { gtag('event', 'save_card', { 'file_type': 'png_front' }); }
                 ExportManager.pendingExportTarget = 'front'; UIManager.showModal(DOMElements.exportModal.overlay, e.currentTarget);
             });
-            
+
             DOMElements.buttons.downloadPngBack.addEventListener('click', (e) => {
                 if (typeof gtag === 'function') { gtag('event', 'save_card', { 'file_type': 'png_back' }); }
                 ExportManager.pendingExportTarget = 'back'; UIManager.showModal(DOMElements.exportModal.overlay, e.currentTarget);
             });
-            
+
             DOMElements.buttons.downloadPdf.addEventListener('click', async (e) => {
                 if (typeof gtag === 'function') { gtag('event', 'save_card', { 'file_type': 'pdf' }); }
                 const button = e.currentTarget;
                 UIManager.setButtonLoadingState(button, true);
-                try { await ExportManager.downloadPdf(); } 
-                catch (error) {} 
+                try { await ExportManager.downloadPdf(); }
+                catch (error) { }
                 finally { UIManager.setButtonLoadingState(button, false); }
             });
 
@@ -1836,20 +1860,20 @@
                 if (typeof gtag === 'function') { gtag('event', 'save_card', { 'file_type': 'qr_code_link' }); }
                 const button = e.currentTarget;
                 UIManager.setButtonLoadingState(button, true);
-                try { await ExportManager.downloadQrCode(); } 
-                catch (error) {} 
+                try { await ExportManager.downloadQrCode(); }
+                catch (error) { }
                 finally { UIManager.setButtonLoadingState(button, false); }
             });
-            
+
             DOMElements.buttons.backToTop.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
             const handleScroll = () => { window.scrollY > 300 ? DOMElements.buttons.backToTop.classList.add('visible') : DOMElements.buttons.backToTop.classList.remove('visible'); };
             window.addEventListener('scroll', Utils.debounce(handleScroll, 100));
             DOMElements.exportModal.overlay.addEventListener('click', (e) => { if (e.target === DOMElements.exportModal.overlay) UIManager.hideModal(DOMElements.exportModal.overlay); });
             DOMElements.exportModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.exportModal.overlay));
-            
+
             DOMElements.exportModal.confirmBtn.addEventListener('click', async () => {
                 try {
-                    const options = { format: DOMElements.exportModal.format.value, quality: DOMElements.exportModal.quality.value / 100, scale: parseFloat(DOMElements.exportModal.scaleContainer.querySelector('.selected').dataset.scale) }; 
+                    const options = { format: DOMElements.exportModal.format.value, quality: DOMElements.exportModal.quality.value / 100, scale: parseFloat(DOMElements.exportModal.scaleContainer.querySelector('.selected').dataset.scale) };
                     await ExportManager.downloadElement(options);
                 } catch (error) { alert("فشل تحميل أداة الحفظ. يرجى المحاولة مرة أخرى."); }
             });
@@ -1857,40 +1881,40 @@
             DOMElements.exportModal.format.addEventListener('input', () => { DOMElements.exportModal.qualityGroup.style.display = DOMElements.exportModal.format.value === 'jpeg' ? 'block' : 'none'; });
             DOMElements.exportModal.quality.addEventListener('input', () => { DOMElements.exportModal.qualityValue.textContent = DOMElements.exportModal.quality.value; });
             DOMElements.exportModal.scaleContainer.addEventListener('click', e => { if (e.target.classList.contains('scale-btn')) { DOMElements.exportModal.scaleContainer.querySelector('.selected').classList.remove('selected'); e.target.classList.add('selected'); } });
-            
+
             DOMElements.buttons.saveToGallery.addEventListener('click', async (e) => {
                 const button = e.currentTarget;
                 UIManager.setButtonLoadingState(button, true, 'جاري الحفظ...');
-                try { await GalleryManager.addCurrentDesign(); } 
+                try { await GalleryManager.addCurrentDesign(); }
                 finally { UIManager.setButtonLoadingState(button, false); }
             });
             DOMElements.buttons.showGallery.addEventListener('click', (e) => { GalleryManager.render(); UIManager.showModal(DOMElements.galleryModal.overlay, e.currentTarget); });
-            
+
             DOMElements.galleryModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.galleryModal.overlay));
             DOMElements.galleryModal.selectAllBtn.addEventListener('click', () => DOMElements.galleryModal.grid.querySelectorAll('.gallery-item-select').forEach(cb => { cb.checked = true; cb.closest('.gallery-item').classList.add('selected'); GalleryManager.updateSelectionState(); }));
             DOMElements.galleryModal.deselectAllBtn.addEventListener('click', () => DOMElements.galleryModal.grid.querySelectorAll('.gallery-item-select').forEach(cb => { cb.checked = false; cb.closest('.gallery-item').classList.remove('selected'); GalleryManager.updateSelectionState(); }));
-            
+
             DOMElements.galleryModal.downloadZipBtn.addEventListener('click', async (e) => {
                 const button = e.currentTarget;
                 UIManager.setButtonLoadingState(button, true, 'جاري التجهيز...');
-                try { await GalleryManager.downloadSelectedAsZip(); } 
+                try { await GalleryManager.downloadSelectedAsZip(); }
                 finally { StateManager.applyState(StateManager.getStateObject(), false); UIManager.setButtonLoadingState(button, false); }
             });
 
-            DOMElements.galleryModal.grid.addEventListener('change', e => { if (e.target.classList.contains('gallery-item-select')) { e.target.closest('.gallery-item').classList.toggle('selected', e.target.checked); GalleryManager.updateSelectionState(); }});
+            DOMElements.galleryModal.grid.addEventListener('change', e => { if (e.target.classList.contains('gallery-item-select')) { e.target.closest('.gallery-item').classList.toggle('selected', e.target.checked); GalleryManager.updateSelectionState(); } });
             DOMElements.shareModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.shareModal.overlay));
-            DOMElements.shareModal.overlay.addEventListener('click', e => { if(e.target === DOMElements.shareModal.overlay) UIManager.hideModal(DOMElements.shareModal.overlay); });
-        
+            DOMElements.shareModal.overlay.addEventListener('click', e => { if (e.target === DOMElements.shareModal.overlay) UIManager.hideModal(DOMElements.shareModal.overlay); });
+
             DOMElements.buttons.undoBtn.addEventListener('click', () => HistoryManager.undo());
             DOMElements.buttons.redoBtn.addEventListener('click', () => HistoryManager.redo());
-            
+
             // ===== بداية الكود المضاف لمركز المساعدة =====
             DOMElements.buttons.showHelp.addEventListener('click', (e) => {
                 UIManager.showModal(DOMElements.helpModal.overlay, e.currentTarget);
             });
             DOMElements.helpModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.helpModal.overlay));
-            DOMElements.helpModal.overlay.addEventListener('click', e => { 
-                if(e.target === DOMElements.helpModal.overlay) UIManager.hideModal(DOMElements.helpModal.overlay); 
+            DOMElements.helpModal.overlay.addEventListener('click', e => {
+                if (e.target === DOMElements.helpModal.overlay) UIManager.hideModal(DOMElements.helpModal.overlay);
             });
 
             DOMElements.helpModal.nav.addEventListener('click', (e) => {
@@ -1952,19 +1976,19 @@
                 desktopControlsContainer.appendChild(desktopFrontPane);
                 desktopControlsContainer.appendChild(desktopBackPane);
                 const actionsControls = sourceContainer.querySelector('[data-tab-destination="tab-actions"]');
-                if(actionsControls) Array.from(actionsControls.children).forEach(child => desktopActionsContainer.appendChild(child));
+                if (actionsControls) Array.from(actionsControls.children).forEach(child => desktopActionsContainer.appendChild(child));
             }
         },
 
         async init() {
             Object.assign(DOMElements, {
-                cardFront: document.getElementById('card-front-preview'), 
-                cardBack: document.getElementById('card-back-preview'), 
+                cardFront: document.getElementById('card-front-preview'),
+                cardBack: document.getElementById('card-back-preview'),
                 cardFrontContent: document.getElementById('card-front-content'),
                 cardBackContent: document.getElementById('card-back-content'),
-                phoneNumbersContainer: document.getElementById('phone-numbers-container'), 
-                cardsWrapper: document.getElementById('cards-wrapper'), 
-                
+                phoneNumbersContainer: document.getElementById('phone-numbers-container'),
+                cardsWrapper: document.getElementById('cards-wrapper'),
+
                 draggable: {
                     logo: document.getElementById('card-logo'),
                     photo: document.getElementById('card-personal-photo-wrapper'),
@@ -1984,11 +2008,11 @@
                 themeGallery: document.getElementById('theme-gallery'),
                 layoutSelect: document.getElementById('layout-select'), liveAnnouncer: document.getElementById('live-announcer'), saveToast: document.getElementById('save-toast'),
                 nameInput: document.getElementById('input-name'), taglineInput: document.getElementById('input-tagline'),
-                qrImageUrlInput: document.getElementById('input-qr-url'), 
-                qrCodeContainer: document.getElementById('qrcode-container'), 
+                qrImageUrlInput: document.getElementById('input-qr-url'),
+                qrCodeContainer: document.getElementById('qrcode-container'),
                 qrCodeTempGenerator: document.getElementById('qr-code-temp-generator'),
-                qrSourceRadios: document.querySelectorAll('input[name="qr-source"]'), 
-                qrUrlGroup: document.getElementById('qr-url-group'), 
+                qrSourceRadios: document.querySelectorAll('input[name="qr-source"]'),
+                qrUrlGroup: document.getElementById('qr-url-group'),
                 qrUploadGroup: document.getElementById('qr-upload-group'),
                 qrAutoCardGroup: document.getElementById('qr-auto-card-group'),
                 qrSizeSlider: document.getElementById('qr-size'),
@@ -2015,9 +2039,9 @@
                     panes: document.querySelectorAll('.help-tab-pane')
                 },
                 // ===== نهاية الإضافة لمركز المساعدة =====
-                buttons: { 
-                    addPhone: document.getElementById('add-phone-btn'), addSocial: document.getElementById('add-social-btn'), 
-                    directionToggle: document.getElementById('direction-toggle-btn'), 
+                buttons: {
+                    addPhone: document.getElementById('add-phone-btn'), addSocial: document.getElementById('add-social-btn'),
+                    directionToggle: document.getElementById('direction-toggle-btn'),
                     startTour: document.getElementById('start-wizard-btn'),
                     removeFrontBg: document.getElementById('remove-front-bg-btn'), removeBackBg: document.getElementById('remove-back-bg-btn'),
                     backToTop: document.getElementById('back-to-top-btn'), mobileFlip: document.getElementById('mobile-flip-btn'), togglePhone: document.getElementById('toggle-phone-buttons'),
@@ -2038,15 +2062,15 @@
                     showHelp: document.getElementById('show-help-btn'),
                 }
             });
-            
+
             this.initResponsiveLayout();
             window.addEventListener('resize', Utils.debounce(() => this.initResponsiveLayout(), 150));
-            
+
             UIManager.init();
             UIManager.fetchAndPopulateBackgrounds();
             GalleryManager.init();
             EventManager.bindEvents();
-            
+
             const loadedFromUrl = await ShareManager.loadFromUrl();
             if (loadedFromUrl) {
                 HistoryManager.pushState(StateManager.getStateObject());
@@ -2062,22 +2086,22 @@
                     UIManager.announce("تم تحميل التصميم الافتراضي.");
                 }
             }
-            
+
             const initialQrSource = document.querySelector('input[name="qr-source"]:checked')?.value || 'auto-card';
             DOMElements.qrUrlGroup.style.display = initialQrSource === 'custom' ? 'block' : 'none';
             DOMElements.qrUploadGroup.style.display = initialQrSource === 'upload' ? 'block' : 'none';
             DOMElements.qrAutoCardGroup.style.display = initialQrSource === 'auto-card' ? 'block' : 'none';
 
-            
+
             CardManager.updatePhoneButtonsVisibility();
             CardManager.updatePhoneTextStyles();
             DragManager.init();
-            
+
             TabManager.init('.mobile-tabs-nav', '.mobile-tab-btn');
             TabManager.init('.desktop-tabs-nav', '.desktop-tab-btn');
 
             UIManager.announce("محرر بطاقة الأعمال جاهز للاستخدام.");
-            
+
             if (!localStorage.getItem(Config.DND_HINT_SHOWN_KEY)) {
                 setTimeout(() => UIManager.showDragAndDropHints(), 1000);
                 localStorage.setItem(Config.DND_HINT_SHOWN_KEY, 'true');

@@ -275,8 +275,31 @@ const CardManager = {
         wrapper.style.height = 0;
         wrapper.style.borderRadius = shape === 'circle' ? '50%' : '8px';
         wrapper.style.border = `${borderWidth}px solid ${borderColor}`;
-        wrapper.style.backgroundImage = safeUrl ? `url(${safeUrl})` : 'none';
-        wrapper.style.display = safeUrl ? 'block' : 'none';
+        wrapper.style.backgroundImage = 'none'; // clear fallback
+        wrapper.style.overflow = 'hidden';
+
+        let img = wrapper.querySelector('img.personal-photo-img');
+        if (safeUrl) {
+            if (!img) {
+                img = document.createElement('img');
+                img.className = 'personal-photo-img';
+                img.style.position = 'absolute';
+                img.style.top = '0';
+                img.style.left = '0';
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                img.style.display = 'block';
+                wrapper.appendChild(img);
+            }
+            img.crossOrigin = 'anonymous';
+            img.src = safeUrl && safeUrl.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(safeUrl)}` : safeUrl;
+            wrapper.style.display = 'block';
+        } else {
+            if (img) img.remove();
+            wrapper.style.display = 'none';
+        }
+
         wrapper.style.opacity = opacity;
 
         if (preview) {

@@ -704,24 +704,19 @@ summary.secondary-actions-summary {
     aspect-ratio: 330 / 510;
     /* نسبة البطاقة الطولية */
     max-width: 350px;
-    max-height: calc(100vh - 200px);
-    /* حد أقصى للارتفاع */
-    width: auto;
-    height: auto;
+    width: 100%;
 }
 
 /* للشاشات الصغيرة */
 @media (max-width: 768px) {
     .cards-wrapper-viewer.is-vertical {
         max-width: 280px;
-        max-height: calc(100vh - 250px);
     }
 }
 
 @media (max-width: 480px) {
     .cards-wrapper-viewer.is-vertical {
         max-width: 240px;
-        max-height: calc(100vh - 280px);
     }
 }
 

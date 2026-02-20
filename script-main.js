@@ -202,13 +202,41 @@ const ExportManager = {
         }
 
         try {
-            return await html2canvas(element, {
+            // Temporary fix for html2canvas ignoring aspect-ratio and padding-bottom for absolute positioned elements
+            const fixAspectRatios = (area) => {
+                const photos = area.querySelectorAll('#card-photo, .personal-photo-wrapper');
+                const restoreFns = [];
+                photos.forEach(p => {
+                    const cssText = p.style.cssText;
+                    let width = p.offsetWidth || p.getBoundingClientRect().width;
+                    if (!width || width === 0) {
+                        const parentWidth = p.parentElement ? (p.parentElement.offsetWidth || 510) : 510;
+                        const pctStr = p.style.width || p.style.paddingBottom || '25%';
+                        const pct = parseFloat(pctStr);
+                        width = (pct / 100) * parentWidth;
+                    }
+                    if (width > 0) {
+                        p.style.setProperty('width', width + 'px', 'important');
+                        p.style.setProperty('height', width + 'px', 'important');
+                        p.style.setProperty('max-height', width + 'px', 'important');
+                        p.style.setProperty('min-height', width + 'px', 'important');
+                        p.style.setProperty('padding-bottom', '0px', 'important');
+                    }
+                    restoreFns.push(() => p.style.cssText = cssText);
+                });
+                return () => restoreFns.forEach(fn => fn());
+            };
+            const restore = fixAspectRatios(element);
+
+            const result = await html2canvas(element, {
                 backgroundColor: null,
                 scale: scale,
                 useCORS: true,
                 allowTaint: true,
                 logging: false
             });
+            restore();
+            return result;
         }
         finally {
             document.head.removeChild(style);
