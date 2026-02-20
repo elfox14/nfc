@@ -90,19 +90,34 @@ $filepath = $UPLOAD_DIR . $filename;
 
 // === حفظ الملف ===
 if (move_uploaded_file($file['tmp_name'], $filepath)) {
-    // بناء الرابط الكامل
+    // محاولة ضبط صلاحيات الملف ليكون مقروءاً للجميع
+    chmod($filepath, 0644);
+
+    // بناء الرابط الكامل وتصحيحه
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'];
     $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
-    $url = $protocol . '://' . $host . $scriptDir . '/uploads/' . $filename;
     
+    // إزالة أي تكرار للشرطة المائلة (//) في المسار
+    $cleanPath = str_replace('//', '/', $scriptDir . '/uploads/' . $filename);
+    $url = $protocol . '://' . $host . $cleanPath;
+    
+    // تسجيل عملية النجاح في السجل
+    file_put_contents('debug_log.txt', "\n[SUCCESS] " . date('Y-m-d H:i:s') . "\nSaved: $filepath\nURL: $url\n", FILE_APPEND);
+
     echo json_encode([
         'success' => true,
         'url' => $url,
         'filename' => $filename
     ]);
 } else {
+    // تسجيل سبب الفشل بدقة
+    $lastError = error_get_last();
+    $errorMsg = $lastError ? $lastError['message'] : 'Unknown error';
+    
+    file_put_contents('debug_log.txt', "\n[ERROR] " . date('Y-m-d H:i:s') . "\nFailed to move file to: $filepath\nPHP Error: $errorMsg\n", FILE_APPEND);
+
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to save file']);
+    echo json_encode(['error' => 'Failed to save file: ' . $errorMsg]);
 }
 ?>

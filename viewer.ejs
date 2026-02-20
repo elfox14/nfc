@@ -322,7 +322,10 @@
 
                                 <% if (isFront('photo') && images.photo) { %>
                                     <div id="card-photo" class="draggable-element"
-                                        style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; aspect-ratio: 1/1; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; background-image: url('<%= images.photo %>');">
+                                        style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; padding-bottom: <%= inputs['photo-size'] %>%; height: 0; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; opacity: <%= inputs['photo-opacity'] %>; overflow: hidden; position: absolute;">
+                                        <img src="<%= images.photo && images.photo.startsWith('http') ? '/api/proxy-image?url=' + encodeURIComponent(images.photo) : images.photo %>"
+                                            crossorigin="anonymous"
+                                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block;">
                                     </div>
                                     <% } %>
 
@@ -393,7 +396,10 @@
 
                                 <% if (!isFront('photo') && images.photo) { %>
                                     <div id="card-photo" class="draggable-element"
-                                        style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; aspect-ratio: 1/1; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; background-image: url('<%= images.photo %>');">
+                                        style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; padding-bottom: <%= inputs['photo-size'] %>%; height: 0; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; opacity: <%= inputs['photo-opacity'] %>; overflow: hidden; position: absolute;">
+                                        <img src="<%= images.photo && images.photo.startsWith('http') ? '/api/proxy-image?url=' + encodeURIComponent(images.photo) : images.photo %>"
+                                            crossorigin="anonymous"
+                                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block;">
                                     </div>
                                     <% } %>
 
