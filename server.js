@@ -2,7 +2,6 @@
 
 require('dotenv').config();
 const express = require('express');
-const compression = require('compression');
 const { MongoClient } = require('mongodb');
 const path = require('path');
 const cors = require('cors');
@@ -31,7 +30,6 @@ const DOMPurify = DOMPurifyFactory(window);
 const app = express();
 
 // --- START: MIDDLEWARE SETUP ---
-app.use(compression());
 app.use(useragent.express());
 
 const port = process.env.PORT || 3000;
