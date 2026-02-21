@@ -23,6 +23,7 @@
 
         init3DPreview();
         initThemeToggle();
+        initElementSelection(); // New: Allow selecting elements for keyboard control
     }
 
     // ===========================================
@@ -704,8 +705,87 @@
         { keys: ['Ctrl', 'Y'], action: 'Redo', handler: () => document.getElementById('redo-btn')?.click() },
         { keys: ['Ctrl', 'P'], action: 'Full Preview', handler: toggleFullPreview },
         { keys: ['Escape'], action: 'Close Windows', handler: closeModals },
-        { keys: ['?'], action: 'Show Shortcuts', handler: toggleShortcutsModal }
+        { keys: ['?'], action: 'Show Shortcuts', handler: toggleShortcutsModal },
+        { keys: ['Arrows'], action: 'Move Element', handler: () => { } }, // Handled specially in listener
+        { keys: ['Delete'], action: 'Delete Element', handler: deleteSelectedElement }
     ];
+
+    let selectedElement = null;
+
+    function initElementSelection() {
+        const cardElements = [
+            '#card-logo', '#card-personal-photo-wrapper', '#card-name', '#card-tagline', '#qr-code-wrapper',
+            '.phone-button-draggable-wrapper', '.draggable-social-link'
+        ];
+
+        document.addEventListener('mousedown', (e) => {
+            const target = e.target.closest(cardElements.join(','));
+            if (target) {
+                selectElement(target);
+            } else if (!e.target.closest('.pro-sidebar, .pro-toolbar, .shortcuts-modal')) {
+                deselectElement();
+            }
+        });
+    }
+
+    function selectElement(el) {
+        deselectElement();
+        selectedElement = el;
+        selectedElement.classList.add('element-selected');
+        
+        // Add visual indicator style if not exists
+        if (!document.getElementById('selection-styles')) {
+            const style = document.createElement('style');
+            style.id = 'selection-styles';
+            style.textContent = `
+                .element-selected { outline: 2px solid var(--accent-primary) !important; outline-offset: 4px; }
+                .element-selected::after { content: 'Selected'; position: absolute; top: -25px; left: 0; background: var(--accent-primary); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; pointer-events: none; }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    function deselectElement() {
+        if (selectedElement) {
+            selectedElement.classList.remove('element-selected');
+            selectedElement = null;
+        }
+    }
+
+    function deleteSelectedElement() {
+        if (!selectedElement) return;
+        
+        // Logic to find the delete button for this element and click it
+        let deleteBtn = null;
+        if (selectedElement.classList.contains('phone-button-draggable-wrapper')) {
+            const phoneId = selectedElement.id;
+            deleteBtn = document.querySelector(`#phone-control-${phoneId} .btn-delete-phone`);
+        } else if (selectedElement.classList.contains('draggable-social-link')) {
+            const controlId = selectedElement.dataset.controlId;
+            deleteBtn = document.querySelector(`#${controlId} .btn-delete-social`);
+        }
+
+        if (deleteBtn) {
+            deleteBtn.click();
+            deselectElement();
+        }
+    }
+
+    function moveSelectedElement(dx, dy) {
+        if (!selectedElement) return;
+        
+        const x = (parseFloat(selectedElement.getAttribute('data-x')) || 0) + dx;
+        const y = (parseFloat(selectedElement.getAttribute('data-y')) || 0) + dy;
+        
+        selectedElement.style.transform = `translate(${x}px, ${y}px)`;
+        selectedElement.setAttribute('data-x', x);
+        selectedElement.setAttribute('data-y', y);
+        
+        // Trigger save
+        if (window.StateManager && window.StateManager.saveDebounced) {
+            window.StateManager.saveDebounced();
+        }
+    }
 
     function initKeyboardShortcuts() {
         // Create modal
@@ -716,6 +796,19 @@
             // Skip if typing in input
             if (e.target.matches('input, textarea, select')) {
                 if (e.key !== 'Escape') return;
+            }
+
+            // Handle Arrow Keys for moving elements
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && selectedElement) {
+                e.preventDefault();
+                const step = e.shiftKey ? 10 : 1;
+                let dx = 0, dy = 0;
+                if (e.key === 'ArrowUp') dy = -step;
+                if (e.key === 'ArrowDown') dy = step;
+                if (e.key === 'ArrowLeft') dx = -step;
+                if (e.key === 'ArrowRight') dx = step;
+                moveSelectedElement(dx, dy);
+                return;
             }
 
             SHORTCUTS.forEach(shortcut => {
