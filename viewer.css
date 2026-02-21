@@ -703,25 +703,22 @@ summary.secondary-actions-summary {
 .cards-wrapper-viewer.is-vertical {
     aspect-ratio: 330 / 510;
     /* نسبة البطاقة الطولية */
-    max-width: 350px;
-    max-height: calc(100vh - 200px);
-    /* حد أقصى للارتفاع */
-    width: auto;
-    height: auto;
+    width: 100%;
+    max-width: min(350px, calc((100vh - 200px) * 330 / 510));
+    /* يضمن أن العرض لا يتجاوز 350 بكسل وتكون المساحة مناسبة لشاشة الارتفاع */
+    margin: 0 auto;
 }
 
 /* للشاشات الصغيرة */
 @media (max-width: 768px) {
     .cards-wrapper-viewer.is-vertical {
-        max-width: 280px;
-        max-height: calc(100vh - 250px);
+        max-width: min(280px, calc((100vh - 250px) * 330 / 510));
     }
 }
 
 @media (max-width: 480px) {
     .cards-wrapper-viewer.is-vertical {
-        max-width: 240px;
-        max-height: calc(100vh - 280px);
+        max-width: min(240px, calc((100vh - 280px) * 330 / 510));
     }
 }
 
