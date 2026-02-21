@@ -289,14 +289,55 @@
 
     <!-- استخراج البيانات من كائن design -->
     <% const inputs=design.inputs || {}; const dynamic=design.dynamic || {}; const images=design.imageUrls || {}; const
-        positions=design.positions || {}; const placements=design.placements || {}; // استخراج نوع التخطيط (افتراضي:
-        classic) const layout=inputs['layout-select-visual'] || inputs['layout-select'] || 'classic' ; // دالة مساعدة
-        لتوليد ستايل الموقع (Position) function getStyle(id) { const pos=positions[id] || {x:0, y:0}; return `transform:
-        translate(${pos.x}px, ${pos.y}px);`; } // دالة مساعدة لتحديد مكان العنصر (أمامي/خلفي) function
-        isFront(elementName) { const place=placements[elementName]; // الافتراضيات حسب التصميم if (!place) { if
-        (elementName==='logo' ) return true; if (elementName==='photo' ) return true; if (elementName==='name' ) return
-        true; if (elementName==='tagline' ) return true; if (elementName==='qr' ) return false; return true; } return
-        place==='front' ; } %>
+        positions=design.positions || {}; const placements=design.placements || {}; const
+        layout=inputs['layout-select-visual'] || inputs['layout-select'] || 'classic' ; function getStyle(id) { const
+        pos=positions[id] || {x:0, y:0}; return `transform: translate(${pos.x}px, ${pos.y}px);`; } function
+        isFront(elementName) { const place=placements[elementName]; if (!place) { if (elementName==='logo' ) return
+        true; if (elementName==='photo' ) return true; if (elementName==='name' ) return true; if
+        (elementName==='tagline' ) return true; if (elementName==='qr' ) return false; return true; } return
+        place==='front' ; } function getFilterStyle(prefix) { const filters=[]; if
+        (inputs[`${prefix}-filter-grayscale`]) filters.push(`grayscale(${inputs[`${prefix}-filter-grayscale`]}%)`); if
+        (inputs[`${prefix}-filter-sepia`]) filters.push(`sepia(${inputs[`${prefix}-filter-sepia`]}%)`); if
+        (inputs[`${prefix}-filter-blur`]) filters.push(`blur(${inputs[`${prefix}-filter-blur`]}px)`); if
+        (inputs[`${prefix}-filter-invert`]) filters.push(`invert(${inputs[`${prefix}-filter-invert`]}%)`); if
+        (inputs[`${prefix}-filter-brightness`]) filters.push(`brightness(${inputs[`${prefix}-filter-brightness`]}%)`);
+        if (inputs[`${prefix}-filter-contrast`]) filters.push(`contrast(${inputs[`${prefix}-filter-contrast`]}%)`);
+        return filters.length> 0 ? `filter: ${filters.join(' ')};` : '';
+        }
+
+        function getTextStyle(prefix) {
+        let style = '';
+        if (inputs[`${prefix}-letter-spacing`]) style += `letter-spacing: ${inputs[`${prefix}-letter-spacing`]}px; `;
+        if (inputs[`${prefix}-line-height`]) style += `line-height: ${inputs[`${prefix}-line-height`]}; `;
+        if (inputs[`${prefix}-uppercase`]) style += `text-transform: uppercase; `;
+        if (inputs[`${prefix}-glow`]) {
+        const color = inputs[`${prefix}-color`] || '#fff';
+        style += `text-shadow: 0 0 10px ${color}, 0 0 20px ${color}; `;
+        }
+        return style;
+        }
+
+        function getBtnStyle(prefix) {
+        const styleType = inputs[`${prefix}-style`] || 'solid';
+        const radius = inputs[`${prefix}-radius`] !== undefined ? inputs[`${prefix}-radius`] : 50;
+        const bg = inputs[`${prefix}-bg-color`] || inputs[`back-buttons-bg-color`] || '#364f6b';
+        const text = inputs[`${prefix}-text-color`] || inputs[`back-buttons-text-color`] || '#aab8c2';
+
+        let style = `border-radius: ${radius}px; `;
+        if (styleType === 'outline') {
+        style += `background-color: transparent !important; color: ${bg} !important; border: 2px solid ${bg} !important;
+        `;
+        } else if (styleType === 'glass') {
+        style += `background: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter:
+        blur(10px); border: 1px solid rgba(255, 255, 255, 0.3) !important; color: ${text} !important; box-shadow: 0 4px
+        6px rgba(0, 0, 0, 0.1) !important; `;
+        } else {
+        style += `background-color: ${bg} !important; color: ${text} !important; border: 2px solid transparent
+        !important; `;
+        }
+        return style;
+        }
+        %>
 
         <div class="cards-container">
             <!-- تطبيق data-layout لتفعيل CSS الوضع الطولي -->
@@ -317,25 +358,25 @@
                         <!-- العناصر الأساسية (إذا كانت في الأمام) -->
                         <% if (isFront('logo')) { %>
                             <img id="card-logo" src="<%= inputs['input-logo'] %>" class="draggable-element"
-                                style="<%= getStyle('card-logo') %>; max-width: <%= inputs['logo-size'] %>%; opacity: <%= inputs['logo-opacity'] %>;">
+                                style="<%= getStyle('card-logo') %>; max-width: <%= inputs['logo-size'] %>%; opacity: <%= inputs['logo-opacity'] %>; <%= getFilterStyle('logo') %>">
                             <% } %>
 
                                 <% if (isFront('photo') && images.photo) { %>
                                     <div id="card-photo" class="draggable-element"
-                                        style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; aspect-ratio: 1/1; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; background-image: url('<%= images.photo %>');">
+                                        style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; aspect-ratio: 1/1; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; background-image: url('<%= images.photo %>'); <%= getFilterStyle('photo') %> <%= inputs['photo-glass-effect'] ? 'mix-blend-mode: screen; opacity: 0.9;' : '' %>">
                                     </div>
                                     <% } %>
 
                                         <% if (isFront('name')) { %>
                                             <h1 id="card-name" class="draggable-element"
-                                                style="<%= getStyle('card-name') %>; color: <%= inputs['name-color'] %>; font-size: <%= inputs['name-font-size'] %>px; font-family: <%= inputs['name-font'] %>;">
+                                                style="<%= getStyle('card-name') %>; color: <%= inputs['name-color'] %>; font-size: <%= inputs['name-font-size'] %>px; font-family: <%= inputs['name-font'] %>; <%= getTextStyle('name') %>">
                                                 <%= inputs['input-name'] %>
                                             </h1>
                                             <% } %>
 
                                                 <% if (isFront('tagline')) { %>
                                                     <h2 id="card-tagline" class="draggable-element"
-                                                        style="<%= getStyle('card-tagline') %>; color: <%= inputs['tagline-color'] %>; font-size: <%= inputs['tagline-font-size'] %>px; font-family: <%= inputs['tagline-font'] %>;">
+                                                        style="<%= getStyle('card-tagline') %>; color: <%= inputs['tagline-color'] %>; font-size: <%= inputs['tagline-font-size'] %>px; font-family: <%= inputs['tagline-font'] %>; <%= getTextStyle('tagline') %>">
                                                         <%= inputs['input-tagline'] %>
                                                     </h2>
                                                     <% } %>
@@ -356,13 +397,11 @@
                                                                         style="transform: translate(<%= phone.position.x %>px, <%= phone.position.y %>px);">
                                                                         <a href="tel:<%= phone.value %>"
                                                                             class="phone-btn" style="
-                                background-color: <%= inputs['phone-btn-bg-color'] %>;
-                                color: <%= inputs['phone-btn-text-color'] %>;
+                                <%= getBtnStyle('phone-btn') %>
                                 font-size: <%= inputs['phone-btn-font-size'] %>px;
                                 font-family: <%= inputs['phone-btn-font'] %>;
                                 padding: <%= inputs['phone-btn-padding'] %>px <%= inputs['phone-btn-padding']*2 %>px;
-                                border-radius: 50px;
-                                <% if(inputs['toggle-phone-buttons'] === false) { %> background: transparent; padding: 2px; <% } %>
+                                <% if(inputs['toggle-phone-buttons'] === false) { %> background: transparent !important; box-shadow: none !important; border: none !important; padding: 2px !important; <% } %>
                             ">
                                                                             <i class="fas fa-phone-alt"></i>
                                                                             <span>
@@ -388,25 +427,25 @@
                         <!-- العناصر الأساسية (إذا كانت في الخلف) -->
                         <% if (!isFront('logo')) { %>
                             <img id="card-logo" src="<%= inputs['input-logo'] %>" class="draggable-element"
-                                style="<%= getStyle('card-logo') %>; max-width: <%= inputs['logo-size'] %>%; opacity: <%= inputs['logo-opacity'] %>;">
+                                style="<%= getStyle('card-logo') %>; max-width: <%= inputs['logo-size'] %>%; opacity: <%= inputs['logo-opacity'] %>; <%= getFilterStyle('logo') %>">
                             <% } %>
 
                                 <% if (!isFront('photo') && images.photo) { %>
                                     <div id="card-photo" class="draggable-element"
-                                        style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; aspect-ratio: 1/1; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; background-image: url('<%= images.photo %>');">
+                                        style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; aspect-ratio: 1/1; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; background-image: url('<%= images.photo %>'); <%= getFilterStyle('photo') %> <%= inputs['photo-glass-effect'] ? 'mix-blend-mode: screen; opacity: 0.9;' : '' %>">
                                     </div>
                                     <% } %>
 
                                         <% if (!isFront('name')) { %>
                                             <h1 id="card-name" class="draggable-element"
-                                                style="<%= getStyle('card-name') %>; color: <%= inputs['name-color'] %>; font-size: <%= inputs['name-font-size'] %>px; font-family: <%= inputs['name-font'] %>;">
+                                                style="<%= getStyle('card-name') %>; color: <%= inputs['name-color'] %>; font-size: <%= inputs['name-font-size'] %>px; font-family: <%= inputs['name-font'] %>; <%= getTextStyle('name') %>">
                                                 <%= inputs['input-name'] %>
                                             </h1>
                                             <% } %>
 
                                                 <% if (!isFront('tagline')) { %>
                                                     <h2 id="card-tagline" class="draggable-element"
-                                                        style="<%= getStyle('card-tagline') %>; color: <%= inputs['tagline-color'] %>; font-size: <%= inputs['tagline-font-size'] %>px; font-family: <%= inputs['tagline-font'] %>;">
+                                                        style="<%= getStyle('card-tagline') %>; color: <%= inputs['tagline-color'] %>; font-size: <%= inputs['tagline-font-size'] %>px; font-family: <%= inputs['tagline-font'] %>; <%= getTextStyle('tagline') %>">
                                                         <%= inputs['input-tagline'] %>
                                                     </h2>
                                                     <% } %>
@@ -427,12 +466,11 @@
                                                                         style="transform: translate(<%= phone.position.x %>px, <%= phone.position.y %>px);">
                                                                         <a href="tel:<%= phone.value %>"
                                                                             class="phone-btn" style="
-                                background-color: <%= inputs['phone-btn-bg-color'] %>;
-                                color: <%= inputs['phone-btn-text-color'] %>;
+                                <%= getBtnStyle('phone-btn') %>
                                 font-size: <%= inputs['phone-btn-font-size'] %>px;
                                 font-family: <%= inputs['phone-btn-font'] %>;
                                 padding: <%= inputs['phone-btn-padding'] %>px <%= inputs['phone-btn-padding']*2 %>px;
-                                border-radius: 50px;
+                                <% if(inputs['toggle-phone-buttons'] === false) { %> background: transparent !important; box-shadow: none !important; border: none !important; padding: 2px !important; <% } %>
                             ">
                                                                             <i class="fas fa-phone-alt"></i>
                                                                             <span>
@@ -522,19 +560,18 @@
                                                                                     style="transform: translate(<%= item.position.x %>px, <%= item.position.y %>px);">
                                                                                     <a href="<%= url %>" target="_blank"
                                                                                         class="social-btn" style="
-                                background-color: <%= inputs['toggle-social-buttons'] ? btnBg : 'transparent' %>;
-                                color: <%= inputs['toggle-social-buttons'] ? btnColor : (customColor !== btnColor ? customColor : inputs['social-text-color']) %>;
+                                <%= getBtnStyle('back-buttons') %>
+                                color: <%= inputs['toggle-social-buttons'] !== false ? inputs['back-buttons-text-color'] : (customColor !== btnColor ? customColor : inputs['social-text-color']) %> !important;
                                 font-size: <%= inputs['back-buttons-size'] %>px;
                                 padding: <%= inputs['back-buttons-size']*0.5 %>px <%= inputs['back-buttons-size'] %>px;
                                 font-family: <%= inputs['back-buttons-font'] %>;
+                                <% if(inputs['toggle-social-buttons'] === false) { %> background: transparent !important; box-shadow: none !important; border: none !important; padding: 2px !important; <% } %>
                             ">
                                                                                         <i class="<%= platform.icon %>"
-                                                                                            style="font-size: <%= inputs['toggle-social-buttons'] ? '' : (customSize+'px') %>;"></i>
+                                                                                            style="font-size: <%= inputs['toggle-social-buttons'] !== false ? '' : (customSize+'px') %>;"></i>
                                                                                         <span
-                                                                                            style="font-size: <%= inputs['toggle-social-buttons'] ? '' : (customSize+'px') %>; font-family: <%= inputs['toggle-social-buttons'] ? '' : inputs['social-text-font'] %>">
-                                                                                            <%= inputs['toggle-social-buttons']
-                                                                                                ? item.value :
-                                                                                                item.value %>
+                                                                                            style="font-size: <%= inputs['toggle-social-buttons'] !== false ? '' : (customSize+'px') %>; font-family: <%= inputs['toggle-social-buttons'] !== false ? '' : inputs['social-text-font'] %>">
+                                                                                            <%= item.value %>
                                                                                         </span>
                                                                                     </a>
                                                                                 </div>

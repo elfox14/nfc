@@ -536,11 +536,9 @@ app.post('/api/save-design', async (req, res) => {
         // If update has no captured images, keep existing ones
         if (!data.imageUrls.capturedFront && existing.capturedFront) {
           data.imageUrls.capturedFront = existing.capturedFront;
-          data.imageUrls.front = existing.capturedFront;
         }
         if (!data.imageUrls.capturedBack && existing.capturedBack) {
           data.imageUrls.capturedBack = existing.capturedBack;
-          data.imageUrls.back = existing.capturedBack;
         }
       }
     }

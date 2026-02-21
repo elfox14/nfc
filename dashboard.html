@@ -639,7 +639,8 @@
                         const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || 'بدون اسم') : 'بطاقة';
                         const views = design.views || 0;
                         const date = new Date(design.createdAt).toLocaleDateString('ar-EG');
-                        const thumb = design.data?.imageUrls?.front || '';
+                        console.log('Design ImageURLs:', design.data?.imageUrls);
+                        const thumb = design.data?.imageUrls?.capturedFront || design.data?.imageUrls?.front || '';
                         let imgTag = '<i class="fas fa-id-card"></i>';
                         if (thumb) imgTag = `<img src="${thumb}" alt="${name}" loading="lazy">`;
 

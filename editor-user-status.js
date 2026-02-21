@@ -154,8 +154,6 @@ const EditorUserStatus = {
                         if (!state.imageUrls) state.imageUrls = {};
                         state.imageUrls.capturedFront = frontImageUrl;
                         state.imageUrls.capturedBack = backImageUrl;
-                        state.imageUrls.front = frontImageUrl;
-                        state.imageUrls.back = backImageUrl;
 
                         if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Uploading...' : 'جاري الرفع...';
                         console.log('[EditorUserStatus] Images captured successfully');

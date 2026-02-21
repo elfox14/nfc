@@ -397,6 +397,9 @@
 
         <main class="pro-canvas">
             <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
+                <!-- Smart Snapping Guides -->
+                <div id="snap-guide-v" class="snap-guide-vertical"></div>
+                <div id="snap-guide-h" class="snap-guide-horizontal"></div>
                 <div class="card-flipper-container">
                     <div class="card-flipper">
                         <div class="business-card card-face card-front" id="card-front-preview">
@@ -502,6 +505,21 @@
                                     <option value="#000000">Black</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <!-- Image Filters (Phase 3) -->
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="logo-filter">Image Filter</label>
+                            <select id="logo-filter" data-update-target="card-logo-img"
+                                data-update-property="style.filter">
+                                <option value="none" selected>No Filter</option>
+                                <option value="grayscale(100%)">Grayscale</option>
+                                <option value="sepia(100%)">Sepia</option>
+                                <option value="invert(100%)">Invert</option>
+                                <option value="blur(2px)">Blur</option>
+                                <option value="brightness(150%)">Brightness</option>
+                                <option value="contrast(150%)">Contrast</option>
+                            </select>
                         </div>
 
                         <!-- Shadow section -->
@@ -620,6 +638,20 @@
                             </div>
                         </div>
 
+                        <!-- Image Filters (Phase 3) -->
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="photo-filter">Image Filter</label>
+                            <select id="photo-filter">
+                                <option value="none" selected>No Filter</option>
+                                <option value="grayscale(100%)">Grayscale</option>
+                                <option value="sepia(100%)">Sepia</option>
+                                <option value="invert(100%)">Invert</option>
+                                <option value="blur(2px)">Blur</option>
+                                <option value="brightness(150%)">Brightness</option>
+                                <option value="contrast(150%)">Contrast</option>
+                            </select>
+                        </div>
+
                         <!-- Shadow section -->
                         <fieldset class="fieldset" style="margin-top: 15px;">
                             <legend>Photo Shadow</legend>
@@ -684,7 +716,7 @@
                     </div>
                     <div class="control-grid">
                         <div class="form-group"><label for="name-font-size">Font Size</label><input type="range"
-                                id="name-font-size" min="16" max="48" value="22" data-update-target="card-name"
+                                id="name-font-size" min="16" max="64" value="24" data-update-target="card-name"
                                 data-update-property="style.fontSize" data-update-unit="px"></div>
                         <div class="form-group"><label for="name-color">Color</label><input type="color" id="name-color"
                                 value="#e6f0f7" data-update-target="card-name" data-update-property="style.color"></div>
@@ -695,6 +727,55 @@
                             <option value="'Cairo', sans-serif">Cairo</option>
                             <option value="'Lalezar', cursive">Lalezar</option>
                         </select></div>
+
+                    <!-- Advanced Text Controls (Phase 3) -->
+                    <details class="fieldset-accordion"
+                        style="margin-top: 10px; background: transparent; border: 1px dashed var(--accent-secondary);">
+                        <summary
+                            style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                            Advanced Text Properties <i class="fas fa-magic"></i></summary>
+                        <div class="fieldset-content" style="border: none; padding-top: 10px;">
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label for="name-letter-spacing">Letter Spacing</label>
+                                    <input type="range" id="name-letter-spacing" min="-2" max="15" value="0"
+                                        data-update-target="card-name" data-update-property="style.letterSpacing"
+                                        data-update-unit="px">
+                                </div>
+                                <div class="form-group">
+                                    <label for="name-line-height">Line Height</label>
+                                    <input type="range" id="name-line-height" min="0.8" max="2.5" step="0.1" value="1.2"
+                                        data-update-target="card-name" data-update-property="style.lineHeight">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="name-uppercase"
+                                        style="width: auto; margin-inline-end: 10px;" data-update-target="card-name"
+                                        data-update-property="style.textTransform" value="uppercase">
+                                    <span>Uppercase</span>
+                                </label>
+                            </div>
+                            <!-- Text Glow / Shadow -->
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="name-glow-enabled"
+                                        style="width: auto; margin-inline-end: 10px;">
+                                    <span>Enable Text Glow</span>
+                                </label>
+                            </div>
+                            <div class="control-grid" id="name-glow-controls" style="display: none;">
+                                <div class="form-group">
+                                    <label for="name-glow-blur">Glow Intensity</label>
+                                    <input type="range" id="name-glow-blur" min="0" max="40" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="name-glow-color">Glow Color</label>
+                                    <input type="color" id="name-glow-color" value="#4da6ff">
+                                </div>
+                            </div>
+                        </div>
+                    </details>
                     <div class="placement-control">
                         <label>Name Placement</label>
                         <div class="radio-group">
@@ -751,6 +832,56 @@
                             <option value="'Cairo', sans-serif">Cairo</option>
                             <option value="'Lalezar', cursive">Lalezar</option>
                         </select></div>
+
+                    <!-- Advanced Text Controls (Phase 3) -->
+                    <details class="fieldset-accordion"
+                        style="margin-top: 10px; background: transparent; border: 1px dashed var(--accent-secondary);">
+                        <summary
+                            style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                            Advanced Text Properties <i class="fas fa-magic"></i></summary>
+                        <div class="fieldset-content" style="border: none; padding-top: 10px;">
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label for="tagline-letter-spacing">Letter Spacing</label>
+                                    <input type="range" id="tagline-letter-spacing" min="-2" max="15" value="0"
+                                        data-update-target="card-tagline" data-update-property="style.letterSpacing"
+                                        data-update-unit="px">
+                                </div>
+                                <div class="form-group">
+                                    <label for="tagline-line-height">Line Height</label>
+                                    <input type="range" id="tagline-line-height" min="0.8" max="2.5" step="0.1"
+                                        value="1.2" data-update-target="card-tagline"
+                                        data-update-property="style.lineHeight">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="tagline-uppercase"
+                                        style="width: auto; margin-inline-end: 10px;" data-update-target="card-tagline"
+                                        data-update-property="style.textTransform" value="uppercase">
+                                    <span>Uppercase</span>
+                                </label>
+                            </div>
+                            <!-- Text Glow / Shadow -->
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="tagline-glow-enabled"
+                                        style="width: auto; margin-inline-end: 10px;">
+                                    <span>Enable Text Glow</span>
+                                </label>
+                            </div>
+                            <div class="control-grid" id="tagline-glow-controls" style="display: none;">
+                                <div class="form-group">
+                                    <label for="tagline-glow-blur">Glow Intensity</label>
+                                    <input type="range" id="tagline-glow-blur" min="0" max="40" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="tagline-glow-color">Glow Color</label>
+                                    <input type="color" id="tagline-glow-color" value="#4da6ff">
+                                </div>
+                            </div>
+                        </div>
+                    </details>
                     <div class="placement-control">
                         <label>Job Title Placement</label>
                         <div class="radio-group">
@@ -835,6 +966,23 @@
                         <div class="form-group"><label for="phone-btn-text-color">Text Color</label><input type="color"
                                 id="phone-btn-text-color" value="#ffffff"></div>
                     </div>
+
+                    <!-- Advanced Button Styles (Phase 3) -->
+                    <div class="control-grid">
+                        <div class="form-group">
+                            <label for="phone-btn-style">Button Style</label>
+                            <select id="phone-btn-style">
+                                <option value="solid" selected>Solid</option>
+                                <option value="outline">Outline</option>
+                                <option value="glass">Glass</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone-btn-radius">Border Radius (px)</label>
+                            <input type="range" id="phone-btn-radius" min="0" max="30" value="8">
+                        </div>
+                    </div>
+
                     <div class="form-group"><label for="phone-btn-font-size">Button Font Size</label><input type="range"
                             id="phone-btn-font-size" min="10" max="24" value="12"></div>
                     <div class="form-group"><label for="phone-btn-padding">Button Padding</label><input type="range"
