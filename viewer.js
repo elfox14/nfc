@@ -432,7 +432,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const logoOpacity = inputs['logo-opacity'] !== undefined ? inputs['logo-opacity'] : 1;
             const logoPos = getPositionStyle('card-logo');
             const logoPlacement = getPlacement('logo');
-            const logoHTML = `<img src="${inputs['input-logo']}" alt="Logo" style="max-width: ${logoSize}% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; opacity: ${logoOpacity} !important; position: absolute !important; ${logoPos}">`;
+
+            const logoFilterArray = [];
+            if (inputs['logo-filter-grayscale']) logoFilterArray.push(`grayscale(${inputs['logo-filter-grayscale']}%)`);
+            if (inputs['logo-filter-sepia']) logoFilterArray.push(`sepia(${inputs['logo-filter-sepia']}%)`);
+            if (inputs['logo-filter-blur']) logoFilterArray.push(`blur(${inputs['logo-filter-blur']}px)`);
+            if (inputs['logo-filter-invert']) logoFilterArray.push(`invert(${inputs['logo-filter-invert']}%)`);
+            if (inputs['logo-filter-brightness']) logoFilterArray.push(`brightness(${inputs['logo-filter-brightness']}%)`);
+            if (inputs['logo-filter-contrast']) logoFilterArray.push(`contrast(${inputs['logo-filter-contrast']}%)`);
+            const logoFilterStyle = logoFilterArray.length > 0 ? `filter: ${logoFilterArray.join(' ')};` : '';
+
+            const logoHTML = `<img src="${inputs['input-logo']}" alt="Logo" style="max-width: ${logoSize}% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; opacity: ${logoOpacity} !important; position: absolute !important; ${logoFilterStyle} ${logoPos}">`;
             renderElement(logoHTML, logoPlacement, containers);
         }
 
@@ -444,7 +454,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const photoBorder = `${photoBorderWidth}px solid ${photoBorderColor}`;
             const photoPos = getPositionStyle('card-personal-photo-wrapper');
             const photoPlacement = getPlacement('photo');
-            const photoHTML = `<div style="width: ${photoSize}% !important; padding-top: ${photoSize}%; height: 0; background-image: url(${inputs['input-photo-url']}) !important; background-size: cover !important; background-position: center !important; border-radius: ${photoShape} !important; border: ${photoBorder} !important; position: absolute !important; overflow: hidden; ${photoPos}"></div>`;
+
+            const photoFilterArray = [];
+            if (inputs['photo-filter-grayscale']) photoFilterArray.push(`grayscale(${inputs['photo-filter-grayscale']}%)`);
+            if (inputs['photo-filter-sepia']) photoFilterArray.push(`sepia(${inputs['photo-filter-sepia']}%)`);
+            if (inputs['photo-filter-blur']) photoFilterArray.push(`blur(${inputs['photo-filter-blur']}px)`);
+            if (inputs['photo-filter-invert']) photoFilterArray.push(`invert(${inputs['photo-filter-invert']}%)`);
+            if (inputs['photo-filter-brightness']) photoFilterArray.push(`brightness(${inputs['photo-filter-brightness']}%)`);
+            if (inputs['photo-filter-contrast']) photoFilterArray.push(`contrast(${inputs['photo-filter-contrast']}%)`);
+            const photoFilterStyle = photoFilterArray.length > 0 ? `filter: ${photoFilterArray.join(' ')};` : '';
+            const photoGlassStyle = inputs['photo-glass-effect'] ? `mix-blend-mode: screen; opacity: 0.9;` : '';
+
+            const photoHTML = `<div style="width: ${photoSize}% !important; padding-top: ${photoSize}%; height: 0; background-image: url(${inputs['input-photo-url']}) !important; background-size: cover !important; background-position: center !important; border-radius: ${photoShape} !important; border: ${photoBorder} !important; position: absolute !important; overflow: hidden; ${photoFilterStyle} ${photoGlassStyle} ${photoPos}"></div>`;
             renderElement(photoHTML, photoPlacement, containers);
         }
 
@@ -455,7 +476,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const namePos = getPositionStyle('card-name');
             const namePlacement = getPlacement('name');
             const displayName = (inputs['input-name'] || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const nameHTML = `<div id="card-name" style="font-size: ${nameSize}px !important; color: ${nameColor} !important; font-family: ${nameFont} !important; position: absolute !important; white-space: pre-wrap; word-break: break-word; ${namePos}">${displayName}</div>`;
+
+            const nameLetterSpacing = inputs['name-letter-spacing'] ? `letter-spacing: ${inputs['name-letter-spacing']}px !important;` : '';
+            const nameLineHeight = inputs['name-line-height'] ? `line-height: ${inputs['name-line-height']} !important;` : '';
+            const nameTransform = inputs['name-uppercase'] ? `text-transform: uppercase !important;` : '';
+            const nameGlow = inputs['name-glow'] ? `text-shadow: 0 0 10px ${nameColor}, 0 0 20px ${nameColor} !important;` : '';
+
+            const nameHTML = `<div id="card-name" style="font-size: ${nameSize}px !important; color: ${nameColor} !important; font-family: ${nameFont} !important; position: absolute !important; white-space: pre-wrap; word-break: break-word; ${nameLetterSpacing} ${nameLineHeight} ${nameTransform} ${nameGlow} ${namePos}">${displayName}</div>`;
             renderElement(nameHTML, namePlacement, containers);
         }
 
@@ -466,7 +493,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const taglinePos = getPositionStyle('card-tagline');
             const taglinePlacement = getPlacement('tagline');
             const displayTagline = (inputs['input-tagline'] || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const taglineHTML = `<div id="card-tagline" style="font-size: ${taglineSize}px !important; color: ${taglineColor} !important; font-family: ${taglineFont} !important; position: absolute !important; white-space: pre-wrap; word-break: break-word; ${taglinePos}">${displayTagline}</div>`;
+
+            const taglineLetterSpacing = inputs['tagline-letter-spacing'] ? `letter-spacing: ${inputs['tagline-letter-spacing']}px !important;` : '';
+            const taglineLineHeight = inputs['tagline-line-height'] ? `line-height: ${inputs['tagline-line-height']} !important;` : '';
+            const taglineTransform = inputs['tagline-uppercase'] ? `text-transform: uppercase !important;` : '';
+            const taglineGlow = inputs['tagline-glow'] ? `text-shadow: 0 0 10px ${taglineColor}, 0 0 20px ${taglineColor} !important;` : '';
+
+            const taglineHTML = `<div id="card-tagline" style="font-size: ${taglineSize}px !important; color: ${taglineColor} !important; font-family: ${taglineFont} !important; position: absolute !important; white-space: pre-wrap; word-break: break-word; ${taglineLetterSpacing} ${taglineLineHeight} ${taglineTransform} ${taglineGlow} ${taglinePos}">${displayTagline}</div>`;
             renderElement(taglineHTML, taglinePlacement, containers);
         }
 
@@ -482,6 +515,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const phoneTextColor = inputs['phone-text-color'] || '#e6f0f7';
             const phoneTextFont = inputs['phone-text-font'] || 'Tajawal, sans-serif';
 
+            const phoneBtnStyleType = inputs['phone-btn-style'] || 'solid';
+            const phoneBtnRadius = inputs['phone-btn-radius'] !== undefined ? inputs['phone-btn-radius'] : 50;
+
+            let phoneBtnDynamicStyles = `border-radius: ${phoneBtnRadius}px !important;`;
+            if (phoneBtnStyleType === 'outline') {
+                phoneBtnDynamicStyles += `background-color: transparent !important; color: ${phoneBtnBg} !important; border: 2px solid ${phoneBtnBg} !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`;
+            } else if (phoneBtnStyleType === 'glass') {
+                phoneBtnDynamicStyles += `background-color: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; color: ${phoneBtnText} !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;`;
+            } else {
+                phoneBtnDynamicStyles += `background-color: ${phoneBtnBg} !important; color: ${phoneBtnText} !important; border: 2px solid ${phoneBtnBg === 'transparent' || phoneBtnBg.includes('rgba(0,0,0,0)') ? phoneBtnText : 'transparent'} !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`;
+            }
+
             dynamicData.phones.forEach(phone => {
                 if (!phone || !phone.value) return;
                 const pos = phone.position || { x: 0, y: 0 };
@@ -492,7 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let phoneHTML = '';
 
                 if (showAsButtons) {
-                    phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: ${phoneBtnBg} !important; color: ${phoneBtnText} !important; border: 2px solid ${phoneBtnBg === 'transparent' || phoneBtnBg.includes('rgba(0,0,0,0)') ? phoneBtnText : 'transparent'} !important; font-size: ${phoneBtnSize}px !important; font-family: ${phoneBtnFont} !important; padding: ${phoneBtnPadding}px ${phoneBtnPadding * 2}px !important; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="fas fa-phone-alt"></i><span>${sanitizedValue}</span></a></div>`;
+                    phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="${phoneBtnDynamicStyles} font-size: ${phoneBtnSize}px !important; font-family: ${phoneBtnFont} !important; padding: ${phoneBtnPadding}px ${phoneBtnPadding * 2}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="fas fa-phone-alt"></i><span>${sanitizedValue}</span></a></div>`;
                 } else {
                     phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: transparent !important; border: none !important; font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-phone-alt" style="display:none;"></i> <span>${sanitizedValue}</span></a></div>`;
                 }
@@ -542,6 +587,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const socialTextColor = inputs['social-text-color'] || '#e6f0f7';
                 const socialTextFont = inputs['social-text-font'] || 'Tajawal, sans-serif';
 
+                const socialBtnStyleType = inputs['back-buttons-style'] || 'solid';
+                const socialBtnRadius = inputs['back-buttons-radius'] !== undefined ? inputs['back-buttons-radius'] : 50;
+
+                let socialBtnDynamicStyles = `border-radius: ${socialBtnRadius}px !important;`;
+                if (socialBtnStyleType === 'outline') {
+                    socialBtnDynamicStyles += `background-color: transparent !important; color: ${socialBtnBg} !important; border: 2px solid ${socialBtnBg} !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`;
+                } else if (socialBtnStyleType === 'glass') {
+                    socialBtnDynamicStyles += `background-color: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; color: ${socialBtnText} !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;`;
+                } else {
+                    socialBtnDynamicStyles += `background-color: ${socialBtnBg} !important; color: ${socialBtnText} !important; border: 2px solid transparent !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`;
+                }
+
                 allSocialLinks.forEach(link => {
                     const platform = platforms[link.platformKey];
                     if (!platform) return;
@@ -563,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     displayValue = displayValue.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     let socialHTML = '';
                     if (showSocialButtons) {
-                        socialHTML = `<div class="draggable-social-link" style="position: absolute !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="background-color: ${socialBtnBg} !important; color: ${socialBtnText} !important; font-family: ${socialBtnFont} !important; font-size: ${socialBtnSize}px !important; padding: ${socialBtnSize * 0.5}px ${socialBtnSize}px !important; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="${platform.icon}"></i><span>${displayValue}</span></a></div>`;
+                        socialHTML = `<div class="draggable-social-link" style="position: absolute !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="${socialBtnDynamicStyles} font-family: ${socialBtnFont} !important; font-size: ${socialBtnSize}px !important; padding: ${socialBtnSize * 0.5}px ${socialBtnSize}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="${platform.icon}"></i><span>${displayValue}</span></a></div>`;
                     } else {
                         socialHTML = `<div class="draggable-social-link text-only-mode" style="position: absolute !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="background-color: transparent !important; border: none !important; font-family: ${socialTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"><i class="${platform.icon}" style="color: ${socialTextColor} !important; font-size: 1.2em;"></i><span style="font-size: ${socialTextSize}px !important; color: ${socialTextColor} !important;">${displayValue}</span></a></div>`;
                     }

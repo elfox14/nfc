@@ -274,3 +274,43 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Google Analytics Initialized');
     }
 });
+
+/**
+ * Phase 1: Core Interaction - Keyboard Nudging
+ * Allows moving the currently highlighted element using arrow keys.
+ */
+document.addEventListener('keydown', (e) => {
+    // Ignore if typing in an input or textarea
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+
+    // Only proceed if one of the arrow keys is pressed
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        const highlightedEl = document.querySelector('.highlighted');
+        if (!highlightedEl || !highlightedEl.classList.contains('draggable')) return;
+
+        e.preventDefault(); // Prevent page scrolling
+
+        const step = e.shiftKey ? 10 : 1; // 10px with Shift, 1px otherwise
+        let dx = 0;
+        let dy = 0;
+
+        if (e.key === 'ArrowUp') dy = -step;
+        if (e.key === 'ArrowDown') dy = step;
+        if (e.key === 'ArrowLeft') dx = -step;
+        if (e.key === 'ArrowRight') dx = step;
+
+        // Current coordinates
+        let x = (parseFloat(highlightedEl.getAttribute('data-x')) || 0) + dx;
+        let y = (parseFloat(highlightedEl.getAttribute('data-y')) || 0) + dy;
+
+        // Boundaries restriction (prevent moving outside card bounds)
+        // We know cards are standard aspect ratio containers, but CSS takes care of hiding overflow mostly.
+        // We apply the movement to interactjs's data attributes and inline transform.
+        highlightedEl.style.transform = `translate(${x}px, ${y}px)`;
+        highlightedEl.setAttribute('data-x', x);
+        highlightedEl.setAttribute('data-y', y);
+
+        // Trigger auto-save via debouncer
+        if (typeof StateManager !== 'undefined') StateManager.saveDebounced();
+    }
+});

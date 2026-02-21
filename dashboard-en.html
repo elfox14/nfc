@@ -626,7 +626,7 @@
                         const name = design.data?.inputs ? (design.data.inputs['input-name_en'] || design.data.inputs['input-name_ar'] || 'Untitled') : 'Card';
                         const views = design.views || 0;
                         const date = new Date(design.createdAt).toLocaleDateString('en-US');
-                        const thumb = design.data?.imageUrls?.front || '';
+                        const thumb = design.data?.imageUrls?.capturedFront || design.data?.imageUrls?.front || '';
                         let imgTag = '<i class="fas fa-id-card"></i>';
                         if (thumb) imgTag = `<img src="${thumb}" alt="${name}" loading="lazy">`;
                         const card = document.createElement('div');

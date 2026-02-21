@@ -633,8 +633,6 @@ const ShareManager = {
         if (!shareState.imageUrls) shareState.imageUrls = {};
         shareState.imageUrls.capturedFront = frontImageUrl;
         shareState.imageUrls.capturedBack = backImageUrl;
-        shareState.imageUrls.front = frontImageUrl;
-        shareState.imageUrls.back = backImageUrl;
 
         // Ask user if they want to display their design in the gallery
         shareState.sharedToGallery = await customConfirm(i18nMain.galleryPrompt);
@@ -778,6 +776,12 @@ const EventManager = {
                 const vCardFields = ['input-name_ar', 'input-name_en', 'input-tagline_ar', 'input-tagline_en', 'input-email', 'input-website'];
                 if (vCardFields.includes(input.id)) CardManager.generateVCardQrDebounced();
                 if (input.name.startsWith('placement-static-')) CardManager.updateSocialLinks();
+
+                // Phase 3: Advanced Text Controls
+                if (input.id.startsWith('name-uppercase')) CardManager.updateTextTransform('name');
+                if (input.id.startsWith('tagline-uppercase')) CardManager.updateTextTransform('tagline');
+                if (input.id.startsWith('name-text-glow')) CardManager.updateTextGlow('name');
+                if (input.id.startsWith('tagline-text-glow')) CardManager.updateTextGlow('tagline');
             });
             input.addEventListener('focus', () => {
                 let draggableId = input.dataset.updateTarget;

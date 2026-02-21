@@ -243,6 +243,35 @@ html.ltr body {
     display: block;
 }
 
+/* Smart Snapping Guides */
+.snap-guide-vertical,
+.snap-guide-horizontal {
+    position: absolute;
+    background-color: var(--accent-primary);
+    opacity: 0.8;
+    z-index: 999;
+    pointer-events: none;
+    display: none;
+    box-shadow: 0 0 4px var(--accent-primary);
+}
+
+.snap-guide-vertical {
+    width: 1px;
+    top: 0;
+    bottom: 0;
+}
+
+.snap-guide-horizontal {
+    height: 1px;
+    left: 0;
+    right: 0;
+}
+
+.snap-guide-vertical.show,
+.snap-guide-horizontal.show {
+    display: block;
+}
+
 .page-header {
     text-align: center;
     flex-shrink: 0;
