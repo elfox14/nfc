@@ -470,6 +470,43 @@ app.get('/nfc/view/:id', [
   }
 });
 
+// مسار NFC لقراءة الرابط الموقّع القصير
+app.get('/r/:token', [
+  param('token').isString().notEmpty()
+], validateRequest, async (req, res) => {
+  try {
+    const { token } = req.params;
+    const secret = config.JWT_SECRET;
+
+    // التحقق من صحة التوقيع
+    jwt.verify(token, secret, (err, decoded) => {
+      if (err) {
+        console.warn('NFC Token verification failed:', err.message);
+        // نعرض صفحة خطأ أو توجيه للرئيسية في حال العبث بالتوقيع أو انتهائه
+        return res.status(400).send(`
+          <html>
+            <body style="font-family:sans-serif; text-align:center; padding: 20px;">
+              <h2>عذراً، الرابط غير صالح أو منتهي الصلاحية.</h2>
+              <p>قد تكون البطاقة غير مفعلة، أو أن جلسة المشاركة انتهت.</p>
+              <a href="/nfc">العودة للرئيسية</a>
+            </body>
+          </html>
+        `);
+      }
+
+      // التوقيع صحيح نأخذ ID التصميم ونوجهه للصفحة
+      const designId = decoded.designId;
+      if (!designId) return res.status(400).send('Invalid token payload.');
+
+      // توجيه مباشر للصفحة الحقيقية
+      res.redirect(301, `/nfc/viewer.html?id=${designId}`);
+    });
+  } catch (error) {
+    console.error('Error in /r/:token route:', error);
+    res.status(500).send('Server Error');
+  }
+});
+
 // Caching & redirects & uploads (كما كان عندك)
 app.use((req, res, next) => {
   if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/view/')) {
@@ -997,6 +1034,32 @@ app.post('/api/auth/logout', [
   } catch (err) {
     console.error('Logout error:', err);
     res.status(500).json({ error: 'Logout failed' });
+  }
+});
+
+// --- NFC API ---
+app.post('/api/nfc/sign', verifyToken, [
+  body('designId').isString().notEmpty().trim().escape()
+], validateRequest, async (req, res) => {
+  try {
+    const { designId } = req.body;
+
+    // التحقق من أن المستخدم يملك هذا التصميم
+    const design = await db.collection(designsCollectionName).findOne({ shortId: designId, ownerId: req.user.userId });
+    if (!design) {
+      return res.status(403).json({ error: 'عذراً لا تملك الصلاحية لإصدار رابط تنشيط NFC لهذا التصميم.' });
+    }
+
+    // إصدار التوكن طويل الأمد (مثلاً 30 يوم لبرمجة الشرائح المادية بحيث تظل تعمل، أو يمكن زيادتها)
+    const token = jwt.sign({ designId }, config.JWT_SECRET, { expiresIn: '30d' });
+
+    const baseUrl = config.PUBLIC_BASE_URL || absoluteBaseUrl(req);
+    const signedUrl = `${baseUrl.replace(/\/+$/, '')}/r/${token}`;
+
+    return res.json({ success: true, signedUrl });
+  } catch (error) {
+    console.error('Error signing NFC url:', error);
+    res.status(500).json({ error: 'حدث خطأ أثناء إعداد الرابط الموقّع.' });
   }
 });
 

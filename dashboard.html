@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
         rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/nfc/auth.js"></script>
     <script src="/nfc/lang-switcher.js"></script>
     <style>
@@ -656,6 +657,7 @@
                                 </div>
                                 <div class="card-actions">
                                     <a href="/nfc/viewer.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">عرض</a>
+                                    <button class="action-btn btn-view" onclick="openNFCModal('${design.shortId}')" style="background: rgba(46, 204, 113, 0.2); color:#2ecc71;">NFC</button>
                                     <a href="/nfc/editor.html?id=${design.shortId}" class="action-btn btn-edit">تعديل</a>
                                 </div>
                             </div>`;
@@ -850,6 +852,117 @@
                 btn.disabled = false;
             }
         });
+
+        // NFC Writer Logic
+        const nfcModalHTML = `
+        <div id="nfc-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+            <div style="background:var(--surface-color); border: 1px solid rgba(77, 166, 255, 0.1); padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; position:relative;">
+                <button onclick="document.getElementById('nfc-modal').style.display='none'" style="position:absolute; top:15px; right:15px; background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;"><i class="fas fa-times"></i></button>
+                <h2 style="font-family: 'Cairo', sans-serif; color:white; margin-bottom:15px;">كتابة بطاقة NFC</h2>
+                <div id="nfc-loading" style="display:block;">
+                    <i class="fas fa-spinner fa-spin fa-3x" style="color:var(--primary-color); margin: 20px 0;"></i>
+                    <p style="color: var(--text-secondary-color);">جاري تحضير الرابط الآمن...</p>
+                </div>
+                <div id="nfc-ready" style="display:none;">
+                    <i class="fas fa-wifi fa-3x" style="color:#2ecc71; margin: 20px 0; animation: pulse 1.5s infinite;"></i>
+                    <p style="color: white; font-weight:bold;">قم بتقريب بطاقة NFC من جهازك الآن</p>
+                    <p style="color: var(--text-secondary-color); font-size:0.9rem;">(تأكد من تفعيل الـ NFC في إعدادات هاتفك)</p>
+                </div>
+                <div id="nfc-qr-fallback" style="display:none;">
+                    <p style="color: #f39c12; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> جهازك / متصفحك لا يدعم برمجة NFC المباشرة (WebNFC).</p>
+                    <p style="color: var(--text-secondary-color); font-size:0.9rem; margin-bottom:15px;">يمكنك كتابة هذا الرابط يدوياً باستخدام أي تطبيق خارجي مثل (NFC Tools) أو عرض رمز الـ QR أدناه بدلاً من ذلك:</p>
+                    <div id="nfc-qrcode" style="background:white; padding:10px; border-radius:8px; display:inline-block; margin-bottom: 10px;"></div>
+                    <textarea id="nfc-link-copy" readonly style="width:100%; padding:10px; border-radius:6px; background:rgba(0,0,0,0.3); color:white; border:1px solid #555; font-size:0.8rem; margin-bottom:10px;"></textarea>
+                    <button onclick="copyNFCLink()" class="btn btn-secondary" style="width:100%;"><i class="fas fa-copy"></i> نسخ الرابط</button>
+                </div>
+                <div id="nfc-success" style="display:none;">
+                    <i class="fas fa-check-circle fa-3x" style="color:#2ecc71; margin: 20px 0;"></i>
+                    <p style="color: white; font-weight:bold;">تمت كتابة البطاقة بنجاح!</p>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', nfcModalHTML);
+
+        let currentSignedUrl = '';
+
+        async function openNFCModal(designId) {
+            const modal = document.getElementById('nfc-modal');
+            const loading = document.getElementById('nfc-loading');
+            const ready = document.getElementById('nfc-ready');
+            const fallback = document.getElementById('nfc-qr-fallback');
+            const success = document.getElementById('nfc-success');
+
+            modal.style.display = 'flex';
+            loading.style.display = 'block';
+            ready.style.display = 'none';
+            fallback.style.display = 'none';
+            success.style.display = 'none';
+
+            try {
+                // 1. Get signed link
+                const res = await Auth.fetchWithAuth(`${baseUrl}/api/nfc/sign`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ designId })
+                });
+
+                if (!res.ok) throw new Error('فشل جلب الرابط الآمن');
+
+                const data = await res.json();
+                currentSignedUrl = data.signedUrl;
+
+                loading.style.display = 'none';
+
+                // 2. Check Web NFC support
+                if ('NDEFReader' in window) {
+                    ready.style.display = 'block';
+                    try {
+                        const ndef = new NDEFReader();
+                        await ndef.write({
+                            records: [{ recordType: "url", data: currentSignedUrl }]
+                        });
+                        ready.style.display = 'none';
+                        success.style.display = 'block';
+                        setTimeout(() => modal.style.display = 'none', 3000);
+                    } catch (error) {
+                        console.warn('NFC Write Error:', error);
+                        // User denied permission or write failed, show fallback
+                        showFallback();
+                    }
+                } else {
+                    // Not supported (iOS / Unsupported browser)
+                    showFallback();
+                }
+
+            } catch (err) {
+                console.error(err);
+                loading.innerHTML = `<p style="color:#e74c3c;">${err.message || 'حدث خطأ'}</p>`;
+            }
+        }
+
+        function showFallback() {
+            document.getElementById('nfc-ready').style.display = 'none';
+            document.getElementById('nfc-qr-fallback').style.display = 'block';
+            document.getElementById('nfc-link-copy').value = currentSignedUrl;
+
+            const qrContainer = document.getElementById('nfc-qrcode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: currentSignedUrl,
+                width: 150,
+                height: 150,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L
+            });
+        }
+
+        function copyNFCLink() {
+            navigator.clipboard.writeText(currentSignedUrl).then(() => {
+                alert('تم نسخ الرابط بنجاح');
+            });
+        }
     </script>
 </body>
 
