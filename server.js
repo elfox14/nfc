@@ -1,5 +1,17 @@
 // server.js - مدمج مع تحسينات الأمان و WebSocket
 require('dotenv').config();
+
+const { body, query, param, cookie, validationResult } = require('express-validator');
+
+// Validation Middleware
+const validateRequest = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
+};
+
 const config = require('./config');
 
 const express = require('express');
@@ -9,7 +21,7 @@ const path = require('path');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
-const { body, validationResult } = require('express-validator');
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -215,7 +227,9 @@ function sanitizeInputs(inputs) {
 }
 
 // --- Viewer & SEO routes (بقيت كما هي) ---
-app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
+app.get(['/nfc/viewer', '/nfc/viewer.html'], [
+  query('id').optional().isString().trim().escape()
+], validateRequest, async (req, res) => {
   try {
     if (!db) {
       res.setHeader('X-Robots-Tag', 'noindex, noarchive');
@@ -382,7 +396,9 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   }
 });
 
-app.get('/nfc/view/:id', async (req, res) => {
+app.get('/nfc/view/:id', [
+  param('id').optional().isString().trim().escape()
+], validateRequest, async (req, res) => {
   try {
     const id = String(req.params.id);
     if (!id) {
@@ -510,7 +526,12 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
 });
 
 // --- Save design route (مع تنظيف المدخلات والحماية) ---
-app.post('/api/save-design', async (req, res) => {
+app.post('/api/save-design', [
+  body('inputs').optional().isObject(),
+  body('dynamic').optional().isObject(),
+  body('imageUrls').optional().isObject(),
+  query('id').optional().isString().trim().escape()
+], validateRequest, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     let data = req.body || {};
@@ -620,13 +641,11 @@ app.post('/api/save-design', async (req, res) => {
 
 // Register
 app.post('/api/auth/register', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
-  body('name').trim().notEmpty()
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
+  body('email').isEmail().withMessage('Enter a valid email address').normalizeEmail(),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+  body('name').trim().notEmpty().withMessage('Name is required').escape(),
+  body('phone').optional().isString().trim().escape()
+], validateRequest, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
@@ -712,12 +731,9 @@ app.post('/api/auth/register', [
 
 // Login
 app.post('/api/auth/login', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').exists()
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
+  body('email').isEmail().withMessage('Enter a valid email address').normalizeEmail(),
+  body('password').exists().withMessage('Password is required')
+], validateRequest, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
@@ -757,7 +773,9 @@ app.post('/api/auth/login', [
 });
 
 // Refresh Token
-app.post('/api/auth/refresh', async (req, res) => {
+app.post('/api/auth/refresh', [
+  cookie('refreshToken').optional().isString().withMessage('Invalid token format')
+], validateRequest, async (req, res) => {
   try {
     const { refreshToken } = req.cookies;
     if (!refreshToken) return res.status(401).json({ error: 'No refresh token provided' });
@@ -793,7 +811,9 @@ app.post('/api/auth/refresh', async (req, res) => {
 });
 
 // Logout
-app.post('/api/auth/logout', async (req, res) => {
+app.post('/api/auth/logout', [
+  cookie('refreshToken').optional().isString().withMessage('Invalid token format')
+], validateRequest, async (req, res) => {
   try {
     const { refreshToken } = req.cookies;
     if (refreshToken) {
