@@ -1,0 +1,417 @@
+diff --git a/.env.example b/.env.example
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1,20 @@
++# .env.example
++# احفظ هذا في .env على جهازك المحلي (ولا ترفع .env إلى git)
++MONGO_URI=mongodb+srv://...
++JWT_SECRET=replace_with_strong_jwt_secret
++FIELD_ENCRYPTION_KEY=GENERATE_64_HEX_CHARS # 32 bytes hex -> استخدام لتشفير الحقول
++ALLOWED_ORIGINS=https://your-domain.com,https://app.your-domain.com
++CLOUDINARY_CLOUD_NAME=...
++CLOUDINARY_API_KEY=...
++CLOUDINARY_API_SECRET=...
++NODE_ENV=development
++PORT=3000
++TRUST_PROXY=false
++
++# لتوليد مفتاح تشفير آمن:
++# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+diff --git a/utils/field-encryption.js b/utils/field-encryption.js
+new file mode 100644
+index 0000000..2222222
+--- /dev/null
++++ b/utils/field-encryption.js
+@@ -0,0 +1,70 @@
++const crypto = require('crypto');
++const ALGO = 'aes-256-gcm';
++const KEY_HEX = process.env.FIELD_ENCRYPTION_KEY;
++if (!KEY_HEX) throw new Error('Missing FIELD_ENCRYPTION_KEY env var');
++const KEY = Buffer.from(KEY_HEX, 'hex'); // 32 bytes
++
++function encrypt(text) {
++  if (text == null) return text;
++  const iv = crypto.randomBytes(12); // 96-bit iv for GCM
++  const cipher = crypto.createCipheriv(ALGO, KEY, iv);
++  const encrypted = Buffer.concat([cipher.update(String(text), 'utf8'), cipher.final()]);
++  const tag = cipher.getAuthTag();
++  // iv:encrypted:tag, كل جزء في hex
++  return `${iv.toString('hex')}:${encrypted.toString('hex')}:${tag.toString('hex')}`;
++}
++
++function decrypt(payload) {
++  if (!payload) return payload;
++  const [ivHex, encryptedHex, tagHex] = payload.split(':');
++  if (!ivHex || !encryptedHex || !tagHex) return null;
++  const iv = Buffer.from(ivHex, 'hex');
++  const encrypted = Buffer.from(encryptedHex, 'hex');
++  const tag = Buffer.from(tagHex, 'hex');
++  const decipher = crypto.createDecipheriv(ALGO, KEY, iv);
++  decipher.setAuthTag(tag);
++  const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
++  return decrypted.toString('utf8');
++}
++
++module.exports = { encrypt, decrypt };
+diff --git a/middleware/auth-middleware.js b/middleware/auth-middleware.js
+new file mode 100644
+index 0000000..3333333
+--- /dev/null
++++ b/middleware/auth-middleware.js
+@@ -0,0 +1,28 @@
++const jwt = require('jsonwebtoken');
++
++module.exports = function(req, res, next) {
++  try {
++    const authHeader = req.headers.authorization || '';
++    // نحاول أخذ التوكن من Authorization header أو من الكوكي
++    const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : (req.cookies && req.cookies.token);
++    if (!token) return res.status(401).json({ message: 'Unauthorized' });
++
++    const payload = jwt.verify(token, process.env.JWT_SECRET);
++    req.user = payload;
++    next();
++  } catch (err) {
++    return res.status(401).json({ message: 'Invalid or expired token' });
++  }
++};
++
++// ملاحظة: تأكد أن JWT_SECRET مضبوط في بيئتك/Secret Manager
+diff --git a/security.js b/security.js
+new file mode 100644
+index 0000000..4444444
+--- /dev/null
++++ b/security.js
+@@ -0,0 +1,200 @@
++require('dotenv').config();
++const helmet = require('helmet');
++const rateLimit = require('express-rate-limit');
++const cors = require('cors');
++const mongoSanitize = require('express-mongo-sanitize');
++const xss = require('xss-clean');
++const hpp = require('hpp');
++const cookieParser = require('cookie-parser');
++const express = require('express');
++
++module.exports = function applySecurity(app) {
++  // اعتمادًا على env، قد تحتاج لتمكين trust proxy
++  if (String(process.env.TRUST_PROXY || '').toLowerCase() === 'true' ||
++      process.env.TRUST_PROXY === '1') {
++    app.set('trust proxy', 1);
++  }
++
++  // Helmet - رؤوس أمان HTTP
++  app.use(helmet());
++
++  // Content Security Policy - قاعدة أساسية، عدّل المصادر حسب الحاجة
++  try {
++    app.use(
++      helmet.contentSecurityPolicy({
++        useDefaults: true,
++        directives: {
++          "script-src": ["'self'", "'unsafe-inline'"], // قلّل 'unsafe-inline' في الإنتاج إن أمكن
++          "img-src": ["'self'", "data:", "https:"],
++          "connect-src": ["'self'", "https:"],
++        },
++      })
++    );
++  } catch (e) {
++    // بعض إصدارات helmet تتطلب خيارات خاصة؛ إذا واجهت مشكلة تخلص من CSP هنا مؤقتًا
++    console.warn('CSP init warning', e && e.message);
++  }
++
++  // Body parsers مع حدود
++  app.use(express.json({ limit: '10kb' }));
++  app.use(express.urlencoded({ extended: true, limit: '10kb' }));
++  app.use(cookieParser());
++
++  // تنظيف للـ NoSQL Injection
++  app.use(mongoSanitize());
++
++  // تنظيف XSS
++  app.use(xss());
++
++  // منع HTTP Parameter Pollution
++  app.use(hpp());
++
++  // CORS صارمة
++  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
++    .split(',')
++    .map(o => o.trim())
++    .filter(Boolean);
++
++  const corsOptions = {
++    origin: function(origin, callback) {
++      // السماح بالطلبات بدون origin (curl/postman)، غيّر هذا إذا أردت رفضها
++      if (!origin) return callback(null, true);
++      if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
++      return callback(new Error('Not allowed by CORS'));
++    },
++    credentials: true,
++    methods: ['GET','POST','PUT','DELETE','OPTIONS'],
++    allowedHeaders: ['Content-Type','Authorization']
++  };
++
++  app.use(cors(corsOptions));
++
++  // Rate limiting عام
++  const generalLimiter = rateLimit({
++    windowMs: 15 * 60 * 1000,
++    max: 200,
++    standardHeaders: true,
++    legacyHeaders: false
++  });
++  app.use(generalLimiter);
++
++  // HSTS و إعدادات إضافية عبر Helmet
++  try {
++    app.use(helmet.hsts({ maxAge: 90 * 24 * 60 * 60, includeSubDomains: true, preload: true }));
++  } catch (e) {
++    console.warn('HSTS init warning', e && e.message);
++  }
++
++  // ملاحظة: auth-specific rate limiter يُطبّق داخل routes/auth.js
++};
+diff --git a/models/User.js b/models/User.js
+new file mode 100644
+index 0000000..5555555
+--- /dev/null
++++ b/models/User.js
+@@ -0,0 +1,120 @@
++const mongoose = require('mongoose');
++const bcrypt = require('bcrypt');
++const { encrypt, decrypt } = require('../utils/field-encryption');
++
++const userSchema = new mongoose.Schema({
++  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
++  password: { type: String, required: true, select: false },
++  phoneEncrypted: { type: String, select: false },
++  // أي حقول حساسة أخرى يمكنك إضافتها أيضًا
++}, {
++  timestamps: true,
++  toJSON: { getters: true },
++  toObject: { getters: true }
++});
++
++// virtual لحقل phone ليظهر مفكوك التشفير عند toObject/toJSON
++userSchema.virtual('phone')
++  .get(function() {
++    if (!this.phoneEncrypted) return undefined;
++    try { return decrypt(this.phoneEncrypted); } catch (e) { return undefined; }
++  })
++  .set(function(plain) {
++    this.phoneEncrypted = plain ? encrypt(plain) : undefined;
++  });
++
++// Hash password
++userSchema.pre('save', async function(next) {
++  if (!this.isModified('password')) return next();
++  const salt = await bcrypt.genSalt(12);
++  this.password = await bcrypt.hash(this.password, salt);
++  next();
++});
++
++userSchema.methods.comparePassword = async function(plain) {
++  return bcrypt.compare(plain, this.password);
++};
++
++module.exports = mongoose.model('User', userSchema);
+diff --git a/routes/auth.js b/routes/auth.js
+new file mode 100644
+index 0000000..6666666
+--- /dev/null
++++ b/routes/auth.js
+@@ -0,0 +1,200 @@
++const express = require('express');
++const { body, validationResult } = require('express-validator');
++const jwt = require('jsonwebtoken');
++const User = require('../models/User');
++const rateLimit = require('express-rate-limit');
++
++const router = express.Router();
++
++function handleValidationErrors(req, res, next) {
++  const errors = validationResult(req);
++  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
++  next();
++}
++
++// auth-specific rate limiter (apply to this router)
++const authLimiter = rateLimit({
++  windowMs: 15 * 60 * 1000,
++  max: 8,
++  message: 'Too many auth attempts from this IP, please try again later',
++  standardHeaders: true,
++  legacyHeaders: false
++});
++router.use(authLimiter);
++
++// Register
++router.post('/register', [
++  body('email').isEmail().normalizeEmail(),
++  body('password').isLength({ min: 8 }),
++  body('phone').optional().trim().escape()
++], handleValidationErrors, async (req, res) => {
++  try {
++    const { email, password, phone } = req.body;
++    const exists = await User.findOne({ email });
++    if (exists) return res.status(409).json({ message: 'Email already registered' });
++
++    const user = new User({ email, password });
++    if (phone) user.phone = phone; // virtual setter encrypts
++    await user.save();
++    res.status(201).json({ message: 'User created' });
++  } catch (err) {
++    console.error(err);
++    res.status(500).json({ message: 'Server error' });
++  }
++});
++
++// Login
++router.post('/login', [
++  body('email').isEmail().normalizeEmail(),
++  body('password').exists()
++], handleValidationErrors, async (req, res) => {
++  try {
++    const { email, password } = req.body;
++    const user = await User.findOne({ email }).select('+password');
++    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
++
++    const ok = await user.comparePassword(password);
++    if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
++
++    const token = jwt.sign({ sub: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
++    res.cookie('token', token, {
++      httpOnly: true,
++      secure: process.env.NODE_ENV === 'production',
++      sameSite: 'Strict',
++      maxAge: 60 * 60 * 1000
++    });
++    res.json({ token });
++  } catch (err) {
++    console.error(err);
++    res.status(500).json({ message: 'Server error' });
++  }
++});
++
++module.exports = router;
+diff --git a/SECURITY_PATCH_INSTRUCTIONS.md b/SECURITY_PATCH_INSTRUCTIONS.md
+new file mode 100644
+index 0000000..7777777
+--- /dev/null
++++ b/SECURITY_PATCH_INSTRUCTIONS.md
+@@ -0,0 +1,200 @@
++# SECURITY_PATCH_INSTRUCTIONS.md
++
++ملف هذا الـ patch يضيف ملفات أمان مهمة. فيما يلي تعليمات الدمج السريعة مع `server.js` القائم لديك:
++
++1. إنشاء فرع:
++
++```bash
++git checkout -b security/hardening
++```
++
++2. تطبيق الـ patch (إن حفظته كـ security_patch.diff):
++
++```bash
++git apply security_patch.diff
++git add .
++git commit -m "Security: add hardening files"
++```
++
++3. دمج في `server.js` الخاص بك:
++
++- إذا لم يكن لديك `server.js` بعد: أنشئ ملف `server.js` مطابق للمثال التالي:
++
++```js
++// مثال server.js مُدمج مع security.js و auth routes
++require('dotenv').config();
++const express = require('express');
++const mongoose = require('mongoose');
++const applySecurity = require('./security');
++const authRoutes = require('./routes/auth');
++
++const app = express();
++
++applySecurity(app);
++
++mongoose.connect(process.env.MONGO_URI, {
++  useNewUrlParser: true,
++  useUnifiedTopology: true
++}).then(() => console.log('MongoDB connected'))
++  .catch(err => {
++    console.error('MongoDB connection error', err);
++    process.exit(1);
++  });
++
++// ضع هذا السطر لو التطبيق خلف بروكسي مثل Render
++if (String(process.env.TRUST_PROXY || '').toLowerCase() === 'true') app.set('trust proxy', 1);
++
++// روتات auth تم تفعيل auth-specific rate limiter داخل routes/auth.js
++app.use('/api/auth', authRoutes);
++
++// خطأ عام
++app.use((err, req, res, next) => {
++  console.error(err);
++  if (err.message && err.message.includes('CORS')) {
++    return res.status(403).json({ error: 'CORS blocked' });
++  }
++  res.status(500).json({ error: 'Internal server error' });
++});
++
++const PORT = process.env.PORT || 3000;
++app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
++```
++
++- إذا كان لديك `server.js` بالفعل: افتح ملفك وأضف/تأكد من الأسطر التالية في الأعلى (قبل أي middlewares أخرى):
++
++```js
++require('dotenv').config();
++const applySecurity = require('./security');
++const authRoutes = require('./routes/auth');
++// ثم ضمن تهيئة app:
++applySecurity(app);
++// ثم ربط auth routes:
++app.use('/api/auth', authRoutes);
++```
++
++4. تثبيت الاعتماديات:
++
++```bash
++npm install helmet express-rate-limit cors express-validator xss-clean hpp express-mongo-sanitize bcrypt jsonwebtoken dotenv mongoose cookie-parser
++```
++
++5. ضبط متغيرات البيئة:
++- انسخ `.env.example` إلى `.env` واملأ القيم المناسبة. لا ترفع `.env` إلى Git.
++- FIELD_ENCRYPTION_KEY يجب أن يكون 64 hex chars (32 bytes). لتوليده:
++
++```bash
++node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
++```
++
++6. اختبارات سريعة:
++- جرب تسجيل مستخدم جديد عبر POST `/api/auth/register` مع JSON يحتوي على `email`, `password`, `phone` (اختياري).
++- جرب تسجيل الدخول عبر POST `/api/auth/login`.
++- راجع أن الـ phone يظهر مشفراً في قاعدة البيانات (حقل phoneEncrypted) وأن `user.phone` يصل مفكوكاً إن استخرجت الـ document عبر toObject/toJSON.
++
++7. رفع الفرع وفتح PR:
++
++```bash
++git push origin security/hardening
++# ثم افتح PR عبر GitHub UI أو:
++gh pr create --base main --head security/hardening --title "Security: hardening + field encryption" --body "Add security middleware, field encryption, JWT auth middleware and auth routes."
++```
++
++8. الإنتاج (نقاط مهمة بعد الدمج):
++- نقل `JWT_SECRET`, `FIELD_ENCRYPTION_KEY`, `MONGO_URI`, `CLOUDINARY_*` إلى Secret Manager الخاص بمنصة الاستضافة (Render, Heroku, AWS Secrets Manager, GCP Secret Manager...).
++- فعل Branch Protection على `main` وبطلب PR reviews. اشترط CI passing قبل الاندماج.
++- دوّر المفاتيح بشكل دوري، وفكّر في إضافة `tokenVersion` أو list blacklisted tokens إذا أردت تدوير JWT secret دون قطع الخدمة فورًا.
++
++إذا رغبت، أستطيع الآن:
++- توليد ملف `patch` مضغوط ZIP، أو  
++- إعداد GitHub Action يقوم بفتح PR تلقائياً من الملفات، أو  
++- مساعدتك في دمج `server.js` الحالي (انسخ محتوى `server.js` هنا وسأعطي diff دقيقاً).
++
++حظاً موفقاً — أخبرني أي شيء تحتاج مزيداً منه أو إن أردت أن أعدّ `git format-patch` بدلاً من unified diff.
