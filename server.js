@@ -55,7 +55,7 @@ try {
 }
 
 // استخدم middleware auth الموجود في middleware/auth-middleware.js
-const verifyToken = require('./middleware/auth-middleware');
+const verifyToken = require('./auth-middleware');
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
