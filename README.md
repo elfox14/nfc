@@ -50,18 +50,10 @@ npm start
 
 ### متغيرات `.env`
 
-```env
-MONGO_URI=mongodb+srv://...
-JWT_SECRET=your_secret_key
-CLOUDINARY_CLOUD_NAME=your_cloud
-CLOUDINARY_API_KEY=your_key
-CLOUDINARY_API_SECRET=your_secret
-PUBLIC_BASE_URL=https://your-domain.com/nfc
-
-# اختياري - لإرسال البريد
-EMAIL_PROVIDER=sendgrid
-EMAIL_API_KEY=your_sendgrid_key
-EMAIL_FROM_ADDRESS=noreply@your-domain.com
+يرجى الرجوع إلى ملف `.env.example` لمعرفة جميع المتغيرات المطلوبة والاختيارية لتشغيل المشروع. لا تقم أبداً برفع ملف `.env` الفعلي إلى المستودع.
+في بيئة التطوير، يمكنك نسخ الملف وتعبئته بالقيم الخاصة بك:
+```bash
+cp .env.example .env
 ```
 
 ---
@@ -103,7 +95,7 @@ nfc/
 2. اربط مستودع Git
 3. **Build Command:** `npm install`
 4. **Start Command:** `node server.js`
-5. أضف متغيرات البيئة من `.env`
+5. أضف متغيرات البيئة السرية (Environment Variables) المطلوبة من الاستضافة (Dashboard -> Environment). يمكنك مراجعة `.env.example` لمعرفة جميع المتغيرات المطلوبة.
 
 ---
 

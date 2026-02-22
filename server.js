@@ -1,5 +1,6 @@
 // server.js - مدمج مع تحسينات الأمان و WebSocket
 require('dotenv').config();
+const config = require('./config');
 
 const express = require('express');
 const compression = require('compression');
@@ -53,7 +54,7 @@ const app = express();
 // --------------------------------------------------
 
 // إعدادات الثقة بالبروكسي (مهم للـ secure cookies خلف منصات مثل Render)
-if (String(process.env.TRUST_PROXY || '').toLowerCase() === 'true' || process.env.TRUST_PROXY === '1') {
+if (String(config.TRUST_PROXY || '').toLowerCase() === 'true' || config.TRUST_PROXY === '1') {
   app.set('trust proxy', 1);
 }
 
@@ -104,14 +105,14 @@ app.use(helmet.contentSecurityPolicy({
 app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));
 
 // CORS صارمة: استخدم ALLOWED_ORIGINS من env
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+const allowedOrigins = (config.ALLOWED_ORIGINS || '')
   .split(',')
   .map(x => x.trim())
   .filter(Boolean);
 
 // وظيفة origin للتحقق
 const corsOptions = {
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     // السماح لأدوات مثل curl/postman التي لا ترسل Origin
     if (!origin) return callback(null, true);
     // إذا لم نعرّف allowedOrigins فنبقي السماح لكل الأصول (للمطور)
@@ -120,8 +121,8 @@ const corsOptions = {
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 app.use(cors(corsOptions));
 
@@ -142,12 +143,12 @@ app.use('/api/', apiLimiter);
 app.set('view engine', 'ejs');
 
 // --- DATABASE CONNECTION ---
-const port = process.env.PORT || 3000;
-const mongoUrl = process.env.MONGO_URI;
-const dbName = process.env.MONGO_DB || 'nfc_db';
-const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
+const port = config.PORT || 3000;
+const mongoUrl = config.MONGO_URI;
+const dbName = config.MONGO_DB || 'nfc_db';
+const designsCollectionName = config.MONGO_DESIGNS_COLL || 'designs';
 const usersCollectionName = 'users';
-const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
+const backgroundsCollectionName = config.MONGO_BACKGROUNDS_COLL || 'backgrounds';
 const savedCardsCollectionName = 'savedCards';
 const cardRequestsCollectionName = 'cardRequests';
 
@@ -176,7 +177,7 @@ MongoClient.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true 
 
 // --- Utilities & sanitizers (كما كنت تستخدم) ---
 function absoluteBaseUrl(req) {
-  const envBase = process.env.SITE_BASE_URL;
+  const envBase = config.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
   const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'https');
   const host = req.get('host');
@@ -460,8 +461,8 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
       .webp({ quality: 85 })
       .toBuffer();
 
-    const externalUploadUrl = process.env.EXTERNAL_UPLOAD_URL;
-    const uploadSecret = process.env.UPLOAD_SECRET;
+    const externalUploadUrl = config.EXTERNAL_UPLOAD_URL;
+    const uploadSecret = config.UPLOAD_SECRET;
 
     if (externalUploadUrl && uploadSecret) {
       try {
@@ -538,7 +539,7 @@ app.post('/api/save-design', async (req, res) => {
     if (authHeader) {
       try {
         const token = authHeader.split(' ')[1];
-        const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+        const secret = config.JWT_SECRET || 'default_jwt_secret_change_me';
         const decoded = jwt.verify(token, secret);
         ownerId = decoded.userId;
       } catch (err) {
@@ -657,7 +658,7 @@ app.post('/api/auth/register', [
     });
 
     // Generate verification token
-    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const secret = config.JWT_SECRET || 'default_jwt_secret_change_me';
     const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
 
     // Store verification token
@@ -667,7 +668,7 @@ app.post('/api/auth/register', [
     );
 
     // Send verification email (non-blocking)
-    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
+    const baseUrl = config.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
     const verifyUrl = `${baseUrl}/verify-email.html?token=${verificationToken}`;
     try {
       const emailTemplate = EmailService.verificationEmail(name, verifyUrl);
@@ -709,7 +710,7 @@ app.post('/api/auth/login', [
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
-    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const secret = config.JWT_SECRET || 'default_jwt_secret_change_me';
     const token = jwt.sign({ userId: user.userId, email: user.email }, secret, { expiresIn: '7d' });
 
     res.json({ success: true, token, user: { name: user.name, email: user.email, userId: user.userId } });
@@ -729,7 +730,7 @@ app.post('/api/auth/login', [
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.stack || err);
   const statusCode = err.status || 500;
-  const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : (err.message || 'Internal Server Error');
+  const message = config.NODE_ENV === 'production' ? 'Internal Server Error' : (err.message || 'Internal Server Error');
   if (!res.headersSent) {
     res.status(statusCode).json({ error: message });
   }
