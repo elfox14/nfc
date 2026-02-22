@@ -1237,7 +1237,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     });
 
     res.send(`
-      <script>
+      <script nonce="${res.locals.nonce}">
         window.opener.postMessage({
           type: 'google-auth',
           success: true,
@@ -1250,7 +1250,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
   } catch (err) {
     console.error('Google Auth Error:', err);
     res.send(`
-      <script>
+      <script nonce="${res.locals.nonce}">
         window.opener.postMessage({
           type: 'google-auth',
           success: false,
