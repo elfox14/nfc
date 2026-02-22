@@ -548,9 +548,28 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
 
 // --- Save design route (مع تنظيف المدخلات والحماية) ---
 app.post('/api/save-design', [
+  // Object Type Validations
   body('inputs').optional().isObject(),
   body('dynamic').optional().isObject(),
   body('imageUrls').optional().isObject(),
+
+  // Specific inputs limits
+  body('inputs.input-name').optional().isString().isLength({ max: 100 }),
+  body('inputs.input-tagline').optional().isString().isLength({ max: 200 }),
+
+  // Dynamic Arrays Bounds
+  body('dynamic.phones').optional().isArray({ max: 10 }),
+  body('dynamic.phones.*.value').optional().isString().isLength({ max: 50 }),
+
+  body('dynamic.social').optional().isArray({ max: 20 }),
+  body('dynamic.social.*.platform').optional().isString().isLength({ max: 50 }),
+  body('dynamic.social.*.value').optional().isString().isLength({ max: 300 }),
+
+  // Static Social Object Bounds
+  body('dynamic.staticSocial').optional().isObject(),
+  body('dynamic.staticSocial.*.value').optional().isString().isLength({ max: 300 }),
+
+  // ID Param
   query('id').optional().isString().trim().escape()
 ], validateRequest, async (req, res) => {
   try {
