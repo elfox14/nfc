@@ -629,7 +629,7 @@
 
         async function loadMyDesigns() {
             try {
-                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
+                const response = await Auth.fetchWithAuth(Auth.API_USER_DESIGNS);
                 const data = await response.json();
                 const grid = document.getElementById('designs-grid');
                 grid.innerHTML = '';
@@ -678,7 +678,7 @@
 
         async function loadRequestCount() {
             try {
-                const res = await fetch(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
+                const res = await Auth.fetchWithAuth(`${baseUrl}/api/card-requests/count`);
                 const data = await res.json();
                 const badge = document.getElementById('requests-badge');
                 if (data.count > 0) {
@@ -693,7 +693,7 @@
         async function loadSavedCards() {
             const grid = document.getElementById('saved-cards-grid');
             try {
-                const res = await fetch(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
+                const res = await Auth.fetchWithAuth(`${baseUrl}/api/saved-cards`);
 
                 if (!res.ok) {
                     const text = await res.text();
@@ -735,9 +735,8 @@
         async function removeSavedCard(designId) {
             if (!confirm('هل تريد إزالة هذه البطاقة من المحفوظات؟')) return;
             try {
-                await fetch(`${baseUrl}/api/saved-cards/${designId}`, {
-                    method: 'DELETE',
-                    headers: Auth.getHeader()
+                await Auth.fetchWithAuth(`${baseUrl}/api/saved-cards/${designId}`, {
+                    method: 'DELETE'
                 });
                 loadSavedCards();
             } catch (err) { console.error(err); }
@@ -746,7 +745,7 @@
         async function loadCardRequests() {
             const list = document.getElementById('requests-list');
             try {
-                const res = await fetch(`${baseUrl}/api/card-requests`, { headers: Auth.getHeader() });
+                const res = await Auth.fetchWithAuth(`${baseUrl}/api/card-requests`);
                 const data = await res.json();
                 list.innerHTML = '';
 
@@ -794,9 +793,9 @@
 
         async function handleRequest(requestId, action) {
             try {
-                await fetch(`${baseUrl}/api/card-requests/${requestId}`, {
+                await Auth.fetchWithAuth(`${baseUrl}/api/card-requests/${requestId}`, {
                     method: 'PUT',
-                    headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action })
                 });
                 loadCardRequests();
@@ -806,7 +805,7 @@
 
         async function loadPrivacySettings() {
             try {
-                const res = await fetch(`${baseUrl}/api/card-privacy`, { headers: Auth.getHeader() });
+                const res = await Auth.fetchWithAuth(`${baseUrl}/api/card-privacy`);
                 const data = await res.json();
                 const current = data.cardPrivacy || 'require_approval';
                 document.querySelectorAll('.privacy-option').forEach(opt => {
@@ -833,9 +832,9 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
             try {
-                await fetch(`${baseUrl}/api/card-privacy`, {
+                await Auth.fetchWithAuth(`${baseUrl}/api/card-privacy`, {
                     method: 'PUT',
-                    headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cardPrivacy: selected })
                 });
                 btn.innerHTML = '<i class="fas fa-check"></i> تم الحفظ بنجاح';

@@ -23,6 +23,8 @@ const Auth = {
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
     get API_REGISTER() { return `${this.getBaseUrl()}/api/auth/register`; },
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
+    get API_REFRESH() { return `${this.getBaseUrl()}/api/auth/refresh`; },
+    get API_LOGOUT() { return `${this.getBaseUrl()}/api/auth/logout`; },
 
     // State
     token: localStorage.getItem('authToken'),
@@ -122,7 +124,17 @@ const Auth = {
         });
     },
 
-    logout() {
+    async logout() {
+        try {
+            await fetch(this.API_LOGOUT, {
+                method: 'POST',
+                // Important to send credentials so the cookie is cleared on the backend
+                credentials: 'include'
+            });
+        } catch (err) {
+            console.warn('[Auth] Logout API call failed, continuing local clear', err);
+        }
+
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
         this.token = null;
@@ -140,6 +152,58 @@ const Auth = {
 
     getHeader() {
         return this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
+    },
+
+    // Refresh Token Method
+    async refreshToken() {
+        try {
+            const response = await fetch(this.API_REFRESH, {
+                method: 'POST',
+                credentials: 'include' // Important to send the HttpOnly cookie
+            });
+
+            const data = await response.json();
+            if (response.ok && data.success && data.token) {
+                this.token = data.token;
+                localStorage.setItem('authToken', data.token);
+                return { success: true, token: data.token };
+            }
+            return { success: false };
+        } catch (err) {
+            console.error('[Auth] Token refresh error:', err);
+            return { success: false };
+        }
+    },
+
+    /**
+     * Helper to perform authenticated fetches with automatic token refresh.
+     * Use this instead of global fetch whenever passing auth headers.
+     */
+    async fetchWithAuth(url, options = {}) {
+        let headers = {
+            ...options.headers,
+            ...this.getHeader()
+        };
+
+        let response = await fetch(url, { ...options, headers });
+
+        // If access token is expired (401/403)
+        if (response.status === 401 || response.status === 403) {
+            const refreshResult = await this.refreshToken();
+            // If refresh succeeded, retry original request
+            if (refreshResult.success) {
+                headers = {
+                    ...options.headers,
+                    ...this.getHeader() // get the new token
+                };
+                response = await fetch(url, { ...options, headers });
+            } else {
+                // If refresh failed, force logout
+                this.logout();
+            }
+        }
+
+        return response;
     },
 
     // UI Helpers

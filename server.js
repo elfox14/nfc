@@ -13,6 +13,7 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const { createAccessToken, createRefreshToken, hashToken } = require('./utils/tokens');
 const EmailService = require('./email-service');
 const { JSDOM } = require('jsdom');
 const DOMPurifyFactory = require('dompurify');
@@ -677,10 +678,27 @@ app.post('/api/auth/register', [
       console.warn('[Register] Email sending failed (non-blocking):', emailErr.message);
     }
 
-    // Generate login token
-    const token = jwt.sign({ userId, email }, secret, { expiresIn: '7d' });
+    // Generate login tokens
+    const accessToken = createAccessToken({ userId, email });
+    const refreshToken = createRefreshToken();
+    const hashedRefreshToken = hashToken(refreshToken);
 
-    res.status(201).json({ success: true, token, user: { name, email, userId, isVerified: false } });
+    const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
+
+    // Store refresh token in DB
+    await db.collection(usersCollectionName).updateOne(
+      { userId },
+      { $push: { refreshTokens: { tokenHash: hashedRefreshToken, createdAt: new Date(), expiresAt, userAgent: req.useragent.source } } }
+    );
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: config.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 7 * 24 * 3600 * 1000 // 7 days
+    });
+
+    res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
 
   } catch (err) {
     if (err.code === 11000) {
@@ -710,14 +728,94 @@ app.post('/api/auth/login', [
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
-    const secret = config.JWT_SECRET || 'default_jwt_secret_change_me';
-    const token = jwt.sign({ userId: user.userId, email: user.email }, secret, { expiresIn: '7d' });
+    // Generate login tokens
+    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    const refreshToken = createRefreshToken();
+    const hashedRefreshToken = hashToken(refreshToken);
 
-    res.json({ success: true, token, user: { name: user.name, email: user.email, userId: user.userId } });
+    const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
+
+    // Store refresh token in DB
+    await db.collection(usersCollectionName).updateOne(
+      { email },
+      { $push: { refreshTokens: { tokenHash: hashedRefreshToken, createdAt: new Date(), expiresAt, userAgent: req.useragent.source } } }
+    );
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: config.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 7 * 24 * 3600 * 1000 // 7 days
+    });
+
+    res.json({ success: true, token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// Refresh Token
+app.post('/api/auth/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) return res.status(401).json({ error: 'No refresh token provided' });
+
+    const hashedToken = hashToken(refreshToken);
+
+    // Find the user with this specific active refresh token
+    const user = await db.collection(usersCollectionName).findOne({
+      refreshTokens: {
+        $elemMatch: {
+          tokenHash: hashedToken,
+          expiresAt: { $gt: new Date() }
+        }
+      }
+    });
+
+    if (!user) {
+      // Invalid or expired
+      return res.status(403).json({ error: 'Refresh token invalid or expired' });
+    }
+
+    // Issue a new access token
+    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+
+    // Optional: Refresh token rotation can be implemented here by removing the old one and issuing a new one.
+    // For simplicity, we just issue a new access token.
+    res.json({ success: true, token: accessToken });
+
+  } catch (err) {
+    console.error('Refresh token error:', err);
+    res.status(500).json({ error: 'Failed to refresh token' });
+  }
+});
+
+// Logout
+app.post('/api/auth/logout', async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies;
+    if (refreshToken) {
+      const hashedToken = hashToken(refreshToken);
+      // Remove token from DB
+      await db.collection(usersCollectionName).updateOne(
+        { 'refreshTokens.tokenHash': hashedToken },
+        { $pull: { refreshTokens: { tokenHash: hashedToken } } }
+      );
+    }
+
+    // Always clear the cookie regardless
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: config.NODE_ENV === 'production',
+      sameSite: 'Strict'
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Logout error:', err);
+    res.status(500).json({ error: 'Logout failed' });
   }
 });
 
