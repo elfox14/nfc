@@ -1,0 +1,856 @@
+/* ===========================================
+   MC PRIME - Ramadan Theme (Season 2026)
+   Full Theme with All Design Proposals
+   =========================================== */
+
+:root {
+    /* Ramadan Color Palette */
+    --ramadan-bg-dark: #0f172a;
+    --ramadan-bg-light: #1e1b4b;
+    --ramadan-gold: #fbbf24;
+    --ramadan-gold-dark: #d97706;
+    --ramadan-accent: #8b5cf6;
+    --ramadan-text: #f8fafc;
+
+    /* Overrides for existing variables */
+    --primary-color: var(--ramadan-gold);
+    --primary-hover: var(--ramadan-gold-dark);
+    --background-color: var(--ramadan-bg-dark);
+    --surface-color: var(--ramadan-bg-light);
+    --text-primary-color: var(--ramadan-text);
+}
+
+/* ===========================================
+   1. STARRY NIGHT SKY ✨
+   =========================================== */
+body {
+    background-color: var(--ramadan-bg-dark);
+    color: var(--ramadan-text);
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fbbf24' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Starry sky overlay - Homepage hero only */
+.hero-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 25% 35%, rgba(251, 191, 36, 0.6) 50%, transparent 100%),
+        radial-gradient(1px 1px at 40% 10%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 55% 45%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+        radial-gradient(1px 1px at 70% 20%, rgba(251, 191, 36, 0.5) 50%, transparent 100%),
+        radial-gradient(1px 1px at 85% 55%, rgba(255, 255, 255, 0.6) 50%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 15% 65%, rgba(255, 255, 255, 0.4) 50%, transparent 100%),
+        radial-gradient(1px 1px at 50% 75%, rgba(251, 191, 36, 0.4) 50%, transparent 100%),
+        radial-gradient(1px 1px at 80% 80%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 35% 90%, rgba(255, 255, 255, 0.3) 50%, transparent 100%),
+        radial-gradient(1px 1px at 65% 5%, rgba(255, 255, 255, 0.6) 50%, transparent 100%),
+        radial-gradient(1px 1px at 92% 40%, rgba(251, 191, 36, 0.3) 50%, transparent 100%);
+    animation: twinkle 6s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+    0% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.7;
+    }
+}
+
+/* ===========================================
+   2. MOSQUE SILHOUETTE 🕌
+   =========================================== */
+
+/* Section Divider with Mosque */
+.hero-section+section::before,
+section:nth-of-type(3)::before,
+section:nth-of-type(5)::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 80px;
+    margin-bottom: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 100'%3E%3Cpath d='M0 100 L0 60 Q50 60 50 40 Q50 20 70 20 L70 10 L73 10 L73 20 Q93 20 93 40 Q93 60 143 60 L200 60 L200 45 Q230 45 230 30 Q230 15 245 15 L245 5 L248 5 L248 15 Q263 15 263 30 Q263 45 293 45 L400 45 L400 35 Q420 35 420 25 L420 8 L423 8 L423 25 Q423 35 443 35 L500 35 Q520 35 520 25 L520 8 L523 8 L523 25 Q523 35 543 35 L600 45 Q637 45 637 30 Q637 15 652 15 L652 5 L655 5 L655 15 Q670 15 670 30 Q670 45 700 45 L700 60 Q750 60 750 40 Q750 20 770 20 L770 10 L773 10 L773 20 Q793 20 800 40 L800 100 Z' fill='%23fbbf24' fill-opacity='0.08'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: bottom center;
+}
+
+/* Mosque silhouette at bottom of sidebars */
+.pro-sidebar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'%3E%3Cpath d='M0 60 L0 30 Q20 30 20 20 Q20 10 30 10 L30 5 L32 5 L32 10 Q42 10 42 20 Q42 30 62 30 L100 30 Q110 30 110 20 Q110 10 115 10 L115 2 L117 2 L117 10 Q122 10 122 20 Q122 30 132 30 L160 30 Q170 30 170 20 Q170 10 180 10 L180 5 L182 5 L182 10 Q192 10 192 20 Q192 30 200 30 L200 60 Z' fill='%23fbbf24' fill-opacity='0.06'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: bottom center;
+}
+
+/* Trial banner hidden for Ramadan */
+.trial-banner {
+    display: none !important;
+}
+
+/* ===========================================
+   4. ENHANCED SVG LANTERNS 🏮
+   =========================================== */
+
+/* Top Decoration Container */
+.ramadan-header-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 300px;
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
+}
+
+/* Crescent Moon */
+.ramadan-moon {
+    position: absolute;
+    top: 100px;
+    left: 10%;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    box-shadow: 15px 15px 0 0 var(--ramadan-gold);
+    transform: rotate(-15deg);
+    opacity: 0.8;
+    filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.3));
+    animation: moonFloat 6s ease-in-out infinite alternate;
+}
+
+@keyframes moonFloat {
+    from {
+        transform: rotate(-15deg) translateY(0);
+    }
+
+    to {
+        transform: rotate(-10deg) translateY(-10px);
+    }
+}
+
+/* Small Header Lanterns */
+.lantern {
+    position: absolute;
+    top: -20px;
+    background: var(--ramadan-gold-dark);
+    width: 20px;
+    height: 30px;
+    transform-origin: top center;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.lantern::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    width: 2px;
+    height: 50px;
+    background: rgba(251, 191, 36, 0.5);
+    transform: translateX(-50%);
+}
+
+.lantern::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 15px solid var(--ramadan-gold-dark);
+}
+
+.lantern-body {
+    position: absolute;
+    top: 5px;
+    left: 2px;
+    right: 2px;
+    bottom: 5px;
+    background: rgba(255, 235, 59, 0.6);
+    border-radius: 2px;
+    box-shadow: 0 0 15px 5px rgba(251, 191, 36, 0.2);
+    animation: flicker 4s infinite alternate;
+}
+
+@keyframes flicker {
+
+    0%,
+    100% {
+        opacity: 0.8;
+    }
+
+    50% {
+        opacity: 1;
+        box-shadow: 0 0 20px 8px rgba(251, 191, 36, 0.4);
+    }
+}
+
+.lantern:nth-child(1) {
+    right: 10%;
+    animation: swing 3s ease-in-out infinite alternate;
+}
+
+.lantern:nth-child(2) {
+    right: 20%;
+    top: -10px;
+    transform: scale(0.8);
+    animation: swing 4s ease-in-out infinite alternate-reverse;
+}
+
+.lantern:nth-child(3) {
+    right: 5%;
+    top: -30px;
+    transform: scale(0.6);
+    animation: swing 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes swing {
+    from {
+        transform: rotate(3deg);
+    }
+
+    to {
+        transform: rotate(-3deg);
+    }
+}
+
+/* Canvas - no overflow hidden to avoid clipping cards */
+.pro-canvas {
+    position: relative !important;
+}
+
+/* (lantern-bg and pennants-bg CSS removed - HTML elements deleted) */
+
+/* ===========================================
+   5. ISLAMIC BORDER PATTERNS 🔶
+   =========================================== */
+
+/* CTA Section border */
+.cta-section,
+section.cta-section {
+    border: 2px solid rgba(251, 191, 36, 0.3) !important;
+    border-radius: 16px;
+    margin: 20px;
+    position: relative;
+}
+
+/* Corner ornaments for sections */
+.cta-section::before,
+.cta-section::after {
+    content: '✦';
+    position: absolute;
+    font-size: 24px;
+    color: var(--ramadan-gold);
+    opacity: 0.4;
+}
+
+.cta-section::before {
+    top: -12px;
+    right: 20px;
+}
+
+.cta-section::after {
+    bottom: -12px;
+    left: 20px;
+}
+
+/* Feature cards Islamic border on hover */
+.feature-card {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    transition: all 0.4s ease;
+}
+
+.feature-card:hover {
+    border-color: var(--ramadan-gold);
+    box-shadow:
+        0 10px 30px rgba(251, 191, 36, 0.15),
+        inset 0 0 30px rgba(251, 191, 36, 0.05);
+}
+
+.feature-icon {
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+/* Card preview Islamic border glow */
+.business-card {
+    box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+.business-card:hover {
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.1);
+}
+
+/* ===========================================
+   6. GOLD PARTICLE EFFECT 💫
+   =========================================== */
+
+/* Falling gold dust - Hero */
+.hero-section::before {
+    opacity: 0.1;
+}
+
+@keyframes goldFall {
+    0% {
+        transform: translateY(-10px) rotate(0deg);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Gold particle overlay on hero */
+.hero-section {
+    background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===========================================
+   Global Theme Overrides
+   =========================================== */
+
+/* Sections Alternate Backgrounds */
+section:nth-of-type(odd) {
+    background-color: var(--ramadan-bg-light);
+    border-top: 1px solid rgba(251, 191, 36, 0.1);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+}
+
+.navbar.scrolled {
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--ramadan-gold), var(--ramadan-gold-dark));
+    color: #3b0f0f;
+    border: 1px solid var(--ramadan-gold);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--ramadan-gold-dark), var(--ramadan-gold));
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Headings */
+h1,
+h2,
+h3 {
+    color: var(--ramadan-gold) !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Step Numbers */
+.step-number {
+    background: linear-gradient(135deg, var(--ramadan-gold), var(--ramadan-gold-dark));
+    color: #3b0f0f;
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+/* RTL Specifics */
+html[dir="rtl"] .ramadan-moon {
+    left: 10%;
+    right: auto;
+    transform: rotate(15deg) scaleX(-1);
+}
+
+/* ===========================================
+   Editor Specific Enhancements
+   =========================================== */
+
+/* Sidebar & Toolbar */
+.pro-sidebar,
+.pro-toolbar {
+    background-color: var(--ramadan-bg-light) !important;
+    background-image:
+        linear-gradient(rgba(30, 27, 75, 0.95), rgba(30, 27, 75, 0.95)),
+        url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.12l-6.37 6.37-.71-.71L19.3 19.4 12.92 13l.71-.71 6.37 6.37 6.37-6.37.71.71-6.37 6.37 6.37 6.37-.71.71L20 20.12z' fill='%23fbbf24' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+    border-color: var(--ramadan-gold-dark) !important;
+    position: relative;
+}
+
+.pro-toolbar {
+    border-bottom: 2px solid var(--ramadan-gold) !important;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.1);
+}
+
+.pro-sidebar-left {
+    border-left: 1px solid var(--ramadan-gold-dark) !important;
+}
+
+.pro-sidebar-right {
+    border-right: 1px solid var(--ramadan-gold-dark) !important;
+}
+
+/* Canvas Background */
+.pro-canvas {
+    background-color: var(--ramadan-bg-dark) !important;
+    background-image:
+        radial-gradient(circle at center, rgba(251, 191, 36, 0.05) 0%, transparent 70%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fbbf24' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Accordions & Fieldsets */
+.fieldset-accordion {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(251, 191, 36, 0.2) !important;
+    margin-bottom: 15px;
+}
+
+.fieldset-accordion[open] {
+    border-color: var(--ramadan-gold) !important;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.1);
+}
+
+.fieldset-accordion summary {
+    color: var(--ramadan-gold) !important;
+    font-weight: bold;
+}
+
+.fieldset-accordion summary::before {
+    content: '🌙 ';
+    margin-left: 5px;
+}
+
+/* Editor Buttons */
+.btn-secondary {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--ramadan-text) !important;
+    border: 1px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(251, 191, 36, 0.1) !important;
+    border-color: var(--ramadan-gold) !important;
+    color: var(--ramadan-gold) !important;
+}
+
+.btn-icon {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--ramadan-gold) !important;
+    border: 1px solid transparent !important;
+}
+
+.btn-icon:hover {
+    border-color: var(--ramadan-gold) !important;
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+}
+
+/* Form Inputs */
+input,
+select,
+textarea {
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(251, 191, 36, 0.3) !important;
+    color: #e2e8f0 !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--ramadan-gold) !important;
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2) !important;
+}
+
+input[type=range] {
+    accent-color: var(--ramadan-gold);
+}
+
+input[type=checkbox],
+input[type=radio] {
+    accent-color: var(--ramadan-gold);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar-thumb {
+    background: var(--ramadan-gold-dark) !important;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--ramadan-bg-dark) !important;
+}
+
+/* ===========================================
+   Mobile Adjustments
+   =========================================== */
+@media (max-width: 768px) {
+    .ramadan-moon {
+        width: 60px;
+        height: 60px;
+        top: 80px;
+        box-shadow: 10px 10px 0 0 var(--ramadan-gold);
+    }
+
+    .lantern:nth-child(2) {
+        display: none;
+    }
+
+    .lantern-bg {
+        width: 30px;
+        height: 45px;
+    }
+
+    .lantern-bg.left {
+        left: 10px;
+    }
+
+    .lantern-bg.right {
+        right: 10px;
+    }
+
+    .pennants-bg {
+        display: none;
+    }
+
+    .hero-section+section::before,
+    section:nth-of-type(3)::before,
+    section:nth-of-type(5)::before {
+        height: 50px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+/* ===========================================
+   VIEWER PAGE - RAMADAN THEME 🌙
+   =========================================== */
+
+/* --- Viewer Nav Bar --- */
+.viewer-nav {
+    background: linear-gradient(135deg, var(--ramadan-bg-dark), var(--ramadan-bg-light)) !important;
+    border-bottom: 2px solid var(--ramadan-gold) !important;
+    box-shadow: 0 2px 20px rgba(251, 191, 36, 0.15) !important;
+}
+
+.viewer-nav .nav-links a {
+    color: var(--ramadan-text) !important;
+}
+
+.viewer-nav .nav-links a:hover {
+    color: var(--ramadan-gold) !important;
+}
+
+.viewer-nav .nav-cta {
+    background: linear-gradient(135deg, var(--ramadan-gold), var(--ramadan-gold-dark)) !important;
+    color: var(--ramadan-bg-dark) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 12px rgba(251, 191, 36, 0.3);
+}
+
+.viewer-nav #lang-toggle-btn {
+    color: var(--ramadan-gold) !important;
+    border-color: var(--ramadan-gold) !important;
+}
+
+/* --- Viewer Body Background --- */
+.viewer-container {
+    background: transparent;
+}
+
+/* --- Loader Ramadan Theme --- */
+.viewer-loader {
+    background: var(--ramadan-bg-dark) !important;
+    color: var(--ramadan-gold) !important;
+}
+
+.viewer-loader .spinner {
+    border-color: rgba(251, 191, 36, 0.15) !important;
+    border-top-color: var(--ramadan-gold) !important;
+}
+
+.viewer-loader p {
+    color: var(--ramadan-gold);
+}
+
+/* Crescent moon decoration for loader */
+.viewer-loader::before {
+    content: '🌙';
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 15px;
+    animation: moonFloat 3s ease-in-out infinite alternate;
+}
+
+/* --- Side Columns --- */
+.side-column {
+    background: linear-gradient(180deg, rgba(30, 27, 75, 0.95), rgba(15, 23, 42, 0.95)) !important;
+    border: 1px solid rgba(251, 191, 36, 0.2) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 15px rgba(251, 191, 36, 0.05) !important;
+}
+
+.side-column h2 {
+    color: var(--ramadan-gold) !important;
+    border-bottom-color: rgba(251, 191, 36, 0.3) !important;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+}
+
+.side-column h2 i {
+    color: var(--ramadan-gold) !important;
+}
+
+/* --- Contact Links --- */
+.contact-link {
+    background: rgba(251, 191, 36, 0.05) !important;
+    border: 1px solid rgba(251, 191, 36, 0.1) !important;
+    color: var(--ramadan-text) !important;
+    transition: all 0.3s ease !important;
+}
+
+.contact-link:hover {
+    background: rgba(251, 191, 36, 0.12) !important;
+    border-color: var(--ramadan-gold) !important;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.15) !important;
+    transform: translateX(-3px) !important;
+}
+
+html[dir="ltr"] .contact-link:hover {
+    transform: translateX(3px) !important;
+}
+
+.contact-link i {
+    color: var(--ramadan-gold) !important;
+}
+
+/* --- Card Display Area --- */
+.center-column {
+    position: relative;
+}
+
+.cards-wrapper-viewer {
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.15), 0 15px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+.business-card-viewer {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.1) !important;
+}
+
+/* Flip Button */
+#viewer-flip-btn {
+    background: linear-gradient(135deg, var(--ramadan-bg-light), var(--ramadan-bg-dark)) !important;
+    border: 1px solid var(--ramadan-gold) !important;
+    color: var(--ramadan-gold) !important;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.15) !important;
+}
+
+#viewer-flip-btn:hover {
+    background: linear-gradient(135deg, var(--ramadan-gold), var(--ramadan-gold-dark)) !important;
+    color: var(--ramadan-bg-dark) !important;
+}
+
+/* --- Buttons Ramadan Styling --- */
+.save-options .btn-primary {
+    background: linear-gradient(135deg, var(--ramadan-gold), var(--ramadan-gold-dark)) !important;
+    color: var(--ramadan-bg-dark) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.3) !important;
+}
+
+.save-options .btn-primary:hover {
+    box-shadow: 0 6px 25px rgba(251, 191, 36, 0.45) !important;
+}
+
+.save-options .btn-secondary {
+    background: rgba(251, 191, 36, 0.1) !important;
+    color: var(--ramadan-gold) !important;
+    border: 1px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+.save-options .btn-secondary:hover {
+    background: rgba(251, 191, 36, 0.2) !important;
+}
+
+#save-email-sig-btn {
+    background: linear-gradient(135deg, var(--ramadan-accent), #6d28d9) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.25) !important;
+}
+
+/* --- Accordion --- */
+.save-options .fieldset-accordion {
+    background: rgba(251, 191, 36, 0.05) !important;
+    border-color: rgba(251, 191, 36, 0.15) !important;
+}
+
+summary.secondary-actions-summary {
+    color: var(--ramadan-gold) !important;
+}
+
+.secondary-actions-content .btn {
+    background: rgba(251, 191, 36, 0.08) !important;
+    color: var(--ramadan-text) !important;
+    border: 1px solid rgba(251, 191, 36, 0.15) !important;
+}
+
+.secondary-actions-content .btn:hover {
+    background: rgba(251, 191, 36, 0.18) !important;
+    border-color: var(--ramadan-gold) !important;
+}
+
+/* --- Info Box --- */
+.info-box {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(139, 92, 246, 0.05)) !important;
+    border: 1px dashed var(--ramadan-gold) !important;
+}
+
+.info-box-title {
+    color: var(--ramadan-gold) !important;
+}
+
+.info-box-text {
+    color: var(--ramadan-text) !important;
+}
+
+.info-box-text strong {
+    color: var(--ramadan-gold) !important;
+}
+
+.info-box-subtitle {
+    color: var(--ramadan-text) !important;
+    border-top-color: rgba(251, 191, 36, 0.2) !important;
+}
+
+.info-box-list {
+    color: rgba(248, 250, 252, 0.8) !important;
+}
+
+/* --- CTA Button at Bottom --- */
+.save-options>a.btn-secondary[href="editor.html"] {
+    background: linear-gradient(135deg, var(--ramadan-gold), var(--ramadan-gold-dark)) !important;
+    color: var(--ramadan-bg-dark) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.3) !important;
+    border: none !important;
+}
+
+.save-options>a.btn-secondary[href="editor.html"]:hover {
+    box-shadow: 0 6px 30px rgba(251, 191, 36, 0.5) !important;
+}
+
+/* --- Mobile Tabs --- */
+.mobile-viewer-tabs {
+    background: linear-gradient(135deg, var(--ramadan-bg-dark), var(--ramadan-bg-light)) !important;
+    border-color: rgba(251, 191, 36, 0.2) !important;
+}
+
+.mobile-tab-btn {
+    color: rgba(248, 250, 252, 0.6) !important;
+}
+
+.mobile-tab-btn.active {
+    color: var(--ramadan-gold) !important;
+    border-bottom-color: var(--ramadan-gold) !important;
+    background: rgba(251, 191, 36, 0.08) !important;
+}
+
+/* --- Save Card Section --- */
+#save-card-section .btn {
+    background: linear-gradient(135deg, var(--ramadan-accent), #6d28d9) !important;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* --- Theme Toggle for Viewer --- */
+.theme-switch-wrapper .slider {
+    background-color: rgba(251, 191, 36, 0.2) !important;
+}
+
+input:checked+.slider {
+    background-color: var(--ramadan-gold) !important;
+}
+
+/* --- Islamic Corner Ornament for Side Columns --- */
+.side-column::before {
+    content: '✦';
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.2rem;
+    color: var(--ramadan-gold);
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.side-column::after {
+    content: '✦';
+    position: absolute;
+    bottom: 8px;
+    left: 12px;
+    font-size: 1.2rem;
+    color: var(--ramadan-gold);
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.side-column {
+    position: relative !important;
+}
+
+/* --- Profile Header --- */
+#profile-name {
+    color: var(--ramadan-gold) !important;
+}
+
+#profile-tagline {
+    color: rgba(248, 250, 252, 0.7) !important;
+}
+
+/* --- Greeting text under card area --- */
+.center-column::after {
+    content: '🌙 رمضان كريم';
+    display: block;
+    text-align: center;
+    color: var(--ramadan-gold);
+    font-size: 0.85rem;
+    opacity: 0.5;
+    margin-top: -5px;
+    font-family: 'Tajawal', sans-serif;
+}

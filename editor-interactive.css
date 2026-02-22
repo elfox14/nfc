@@ -1,0 +1,782 @@
+/* ================================================================
+   MC PRIME Editor Interactive Enhancements v1.0
+   ================================================================ */
+
+/* ================================================================
+   1. FLOATING PROPERTY TOOLBAR
+   ================================================================ */
+.floating-prop-bar {
+    position: fixed;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: linear-gradient(135deg, rgba(30, 40, 55, 0.97), rgba(40, 52, 70, 0.97));
+    border: 1px solid rgba(77, 166, 255, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(77, 166, 255, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}
+
+.floating-prop-bar.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.floating-prop-bar::before {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    background: rgba(35, 46, 62, 0.97);
+    border-right: 1px solid rgba(77, 166, 255, 0.3);
+    border-bottom: 1px solid rgba(77, 166, 255, 0.3);
+}
+
+.floating-prop-bar.above::before {
+    bottom: auto;
+    top: -6px;
+    border-right: none;
+    border-bottom: none;
+    border-left: 1px solid rgba(77, 166, 255, 0.3);
+    border-top: 1px solid rgba(77, 166, 255, 0.3);
+}
+
+.fpb-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(77, 166, 255, 0.2);
+    margin: 0 4px;
+}
+
+.fpb-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #c8d6e5;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.fpb-btn:hover {
+    background: rgba(77, 166, 255, 0.15);
+    color: #4da6ff;
+    transform: scale(1.1);
+}
+
+.fpb-btn.active {
+    background: rgba(77, 166, 255, 0.2);
+    color: #4da6ff;
+}
+
+.fpb-color-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.fpb-color-swatch:hover {
+    transform: scale(1.15);
+    border-color: #4da6ff;
+}
+
+.fpb-color-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.fpb-size-display {
+    font-size: 11px;
+    color: #8fa7c0;
+    min-width: 30px;
+    text-align: center;
+    font-weight: 600;
+    font-family: monospace;
+}
+
+.fpb-label {
+    font-size: 10px;
+    color: #6b8299;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ================================================================
+   2. INLINE TEXT EDITING
+   ================================================================ */
+.inline-editing {
+    outline: 2px dashed #4da6ff !important;
+    outline-offset: 4px;
+    cursor: text !important;
+    min-width: 50px;
+    min-height: 1em;
+    position: relative;
+}
+
+.inline-editing::after {
+    content: 'تعديل مباشر ✏️';
+    position: absolute;
+    top: -28px;
+    right: 0;
+    background: linear-gradient(135deg, #4da6ff, #357abd);
+    color: white;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    pointer-events: none;
+    white-space: nowrap;
+    font-family: 'Tajawal', sans-serif;
+    direction: rtl;
+    z-index: 100;
+    animation: fadeInDown 0.3s ease;
+}
+
+html[lang="en"] .inline-editing::after {
+    content: 'Editing ✏️';
+    right: auto;
+    left: 0;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ================================================================
+   3. DRAG HANDLES & SNAP GUIDES
+   ================================================================ */
+.ei-drag-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #4da6ff;
+    border: 2px solid white;
+    border-radius: 50%;
+    z-index: 100;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.ei-drag-handle:hover {
+    transform: scale(1.3);
+    background: #357abd;
+}
+
+.ei-drag-handle:active {
+    cursor: grabbing;
+}
+
+.ei-selected .ei-drag-handle {
+    opacity: 1;
+}
+
+.ei-drag-handle.top {
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.ei-drag-handle.bottom {
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.ei-drag-handle.left {
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.ei-drag-handle.right {
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Snap guides */
+.ei-snap-guide {
+    position: absolute;
+    background: #ff4757;
+    z-index: 99;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.ei-snap-guide.visible {
+    opacity: 0.7;
+}
+
+.ei-snap-guide.horizontal {
+    height: 1px;
+    left: 0;
+    right: 0;
+}
+
+.ei-snap-guide.vertical {
+    width: 1px;
+    top: 0;
+    bottom: 0;
+}
+
+/* ================================================================
+   4. SLIDER LIVE PREVIEW (TOOLTIP)
+   ================================================================ */
+.ei-slider-wrapper {
+    position: relative;
+}
+
+.ei-slider-tooltip {
+    position: absolute;
+    top: -32px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    background: linear-gradient(135deg, #4da6ff, #357abd);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    white-space: nowrap;
+    font-family: monospace;
+    z-index: 10;
+    box-shadow: 0 3px 10px rgba(77, 166, 255, 0.3);
+}
+
+.ei-slider-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: #357abd;
+}
+
+.ei-slider-wrapper:hover .ei-slider-tooltip,
+.ei-slider-wrapper.active .ei-slider-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+.ei-numeric-input {
+    width: 48px;
+    height: 26px;
+    border: 1px solid rgba(77, 166, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(30, 40, 55, 0.8);
+    color: #c8d6e5;
+    text-align: center;
+    font-size: 11px;
+    font-family: monospace;
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-inline-start: 6px;
+    flex-shrink: 0;
+}
+
+.ei-numeric-input:focus {
+    border-color: #4da6ff;
+    box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.2);
+}
+
+/* ================================================================
+   5. ENHANCED COLOR PICKER
+   ================================================================ */
+.ei-color-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ei-color-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px solid rgba(77, 166, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(30, 40, 55, 0.6);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.ei-color-trigger:hover {
+    border-color: rgba(77, 166, 255, 0.5);
+}
+
+.ei-color-preview {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.ei-color-trigger:hover .ei-color-preview {
+    transform: scale(1.1);
+}
+
+.ei-color-hex {
+    font-size: 11px;
+    font-family: monospace;
+    color: #8fa7c0;
+    min-width: 58px;
+}
+
+.ei-color-popup {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    width: 240px;
+    background: linear-gradient(135deg, rgba(30, 40, 55, 0.98), rgba(40, 52, 70, 0.98));
+    border: 1px solid rgba(77, 166, 255, 0.3);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(16px);
+    z-index: 10001;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.25s ease;
+    pointer-events: none;
+}
+
+.ei-color-popup.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.ei-color-popup-title {
+    font-size: 10px;
+    color: #6b8299;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.ei-swatches-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.ei-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.ei-swatch:hover {
+    transform: scale(1.2);
+    border-color: white;
+}
+
+.ei-swatch.active {
+    border-color: #4da6ff;
+    box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.3);
+}
+
+.ei-recent-colors {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.ei-color-popup hr {
+    border: none;
+    border-top: 1px solid rgba(77, 166, 255, 0.15);
+    margin: 8px 0;
+}
+
+.ei-color-custom-btn {
+    width: 100%;
+    padding: 6px;
+    border: 1px dashed rgba(77, 166, 255, 0.3);
+    border-radius: 8px;
+    background: transparent;
+    color: #8fa7c0;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Tajawal', 'Cairo', sans-serif;
+}
+
+.ei-color-custom-btn:hover {
+    background: rgba(77, 166, 255, 0.1);
+    border-color: #4da6ff;
+    color: #4da6ff;
+}
+
+/* ================================================================
+   6. AUTO-OPEN PANEL HIGHLIGHT
+   ================================================================ */
+.ei-panel-highlight {
+    animation: panelGlow 1.5s ease;
+}
+
+@keyframes panelGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 15px 3px rgba(77, 166, 255, 0.3);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0);
+    }
+}
+
+/* Enhanced selection outline (replaces old one) */
+.ei-selected {
+    outline: 2px solid #4da6ff !important;
+    outline-offset: 4px;
+    position: relative;
+    z-index: 50;
+    transition: outline-color 0.2s ease;
+}
+
+.ei-selected::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border: 1px dashed rgba(77, 166, 255, 0.3);
+    border-radius: 4px;
+    pointer-events: none;
+    animation: selectionPulse 2s ease infinite;
+}
+
+@keyframes selectionPulse {
+
+    0%,
+    100% {
+        border-color: rgba(77, 166, 255, 0.2);
+    }
+
+    50% {
+        border-color: rgba(77, 166, 255, 0.5);
+    }
+}
+
+/* ================================================================
+   7. QUICK ACTION BUTTONS
+   ================================================================ */
+.ei-quick-actions {
+    position: absolute;
+    top: -36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 3px;
+    padding: 3px;
+    background: rgba(25, 35, 50, 0.95);
+    border: 1px solid rgba(77, 166, 255, 0.25);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+}
+
+.ei-quick-actions.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.ei-qa-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #8fa7c0;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ei-qa-btn:hover {
+    background: rgba(77, 166, 255, 0.2);
+    color: #4da6ff;
+}
+
+.ei-qa-btn.danger:hover {
+    background: rgba(255, 71, 87, 0.2);
+    color: #ff4757;
+}
+
+.ei-qa-btn[title]::after {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.ei-qa-btn:hover[title]::after {
+    opacity: 1;
+}
+
+/* ================================================================
+   8. SIDEBAR TAB NAVIGATION
+   ================================================================ */
+.ei-sidebar-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 6px;
+    background: rgba(20, 30, 45, 0.8);
+    border-bottom: 1px solid rgba(77, 166, 255, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-radius: 0 0 12px 12px;
+    margin-bottom: 10px;
+}
+
+.ei-sidebar-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 4px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #6b8299;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 0;
+    font-family: 'Tajawal', 'Cairo', sans-serif;
+}
+
+.ei-sidebar-tab i {
+    font-size: 16px;
+    transition: transform 0.2s ease;
+}
+
+.ei-sidebar-tab span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.ei-sidebar-tab:hover {
+    background: rgba(77, 166, 255, 0.1);
+    color: #a8c4db;
+}
+
+.ei-sidebar-tab:hover i {
+    transform: scale(1.1);
+}
+
+.ei-sidebar-tab.active {
+    background: rgba(77, 166, 255, 0.15);
+    color: #4da6ff;
+}
+
+/* ================================================================
+   9. UNDO INDICATOR / CHANGE COUNTER
+   ================================================================ */
+.ei-change-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(255, 107, 107, 0.4);
+    animation: badgePop 0.3s ease;
+    pointer-events: none;
+}
+
+@keyframes badgePop {
+    0% {
+        transform: scale(0);
+    }
+
+    70% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ================================================================
+   10. GROUPED PROPERTY CONTROLS
+   ================================================================ */
+.ei-prop-group {
+    background: rgba(30, 40, 55, 0.5);
+    border: 1px solid rgba(77, 166, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.2s ease;
+}
+
+.ei-prop-group:hover {
+    border-color: rgba(77, 166, 255, 0.25);
+}
+
+.ei-prop-group-title {
+    font-size: 10px;
+    color: #6b8299;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ei-prop-group-title i {
+    font-size: 12px;
+    color: #4da6ff;
+}
+
+/* Inline font controls row */
+.ei-font-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ei-font-row select {
+    flex: 1;
+    min-width: 100px;
+}
+
+.ei-font-row .ei-numeric-input {
+    width: 52px;
+}
+
+/* ================================================================
+   11. CONTEXTUAL PANEL (SMART SIDEBAR)
+   ================================================================ */
+.pro-sidebar-right .fieldset-accordion {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.pro-sidebar-right .fieldset-accordion.ei-active-panel {
+    display: block;
+}
+
+.ei-empty-selection-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary, #8fa7c0);
+    border: 2px dashed rgba(77, 166, 255, 0.2);
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+.ei-empty-selection-placeholder i {
+    font-size: 32px;
+    color: rgba(77, 166, 255, 0.5);
+    margin-bottom: 15px;
+}
+
+.ei-empty-selection-placeholder.hidden {
+    display: none;
+}
+
+/* ================================================================
+   RESPONSIVE — Hide floating toolbar on very small screens
+   ================================================================ */
+@media (max-width: 768px) {
+    .floating-prop-bar {
+        left: 10px !important;
+        right: 10px !important;
+        width: auto !important;
+        justify-content: center;
+    }
+
+    .ei-sidebar-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .ei-sidebar-tab span {
+        display: none;
+    }
+
+    .ei-sidebar-tab {
+        padding: 8px;
+    }
+}
