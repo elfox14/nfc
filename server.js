@@ -213,28 +213,60 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// --- Redis Setup (Ticket 10) ---
+const redis = require('redis');
+let redisClient = null;
+if (process.env.REDIS_URL) {
+  redisClient = redis.createClient({ url: process.env.REDIS_URL });
+  redisClient.on('error', (err) => console.error('Redis Client Error', err));
+  redisClient.connect()
+    .then(() => console.log('Redis connected successfully'))
+    .catch(err => console.error('Redis connection failed:', err));
+} else {
+  console.warn('REDIS_URL not set. Caching will gracefully bypass.');
+}
+
+const { RedisStore } = require('rate-limit-redis');
+
+// Helper to easily inject Redis store if available
+const getRedisStore = (prefix) => {
+  if (redisClient) {
+    return new RedisStore({
+      sendCommand: (...args) => redisClient.sendCommand(args),
+      prefix: prefix
+    });
+  }
+  return undefined;
+};
+
 // Rate limiting عام لمسارات /api
-const apiLimiter = rateLimit({
+const apiLimiterOpts = {
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: 'Too many requests from this IP, please try again after 15 minutes'
-});
+};
+if (redisClient) apiLimiterOpts.store = getRedisStore('rl:api:');
+const apiLimiter = rateLimit(apiLimiterOpts);
 app.use('/api/', apiLimiter);
 
 // Rate limiting خاص لمصادقة المستخدمين (أكثر صرامة)
-const authLimiter = rateLimit({
+const authLimiterOpts = {
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: 'محاولات دخول/تسجيل كثيرة جداً، الرجاء الانتظار قليلاً. / Too many auth attempts, please try again later.'
-});
+};
+if (redisClient) authLimiterOpts.store = getRedisStore('rl:auth:');
+const authLimiter = rateLimit(authLimiterOpts);
 app.use('/api/auth/', authLimiter);
 
 // Rate limiting خاص لرفع الملفات تجنباً لاستنزاف مساحة التخزين أو الباندويث
-const uploadLimiter = rateLimit({
+const uploadLimiterOpts = {
   windowMs: 15 * 60 * 1000,
   max: 30,
   message: 'عمليات رفع كثيرة جداً، الرجاء المحاولة لاحقاً. / Too many upload attempts, please try again later.'
-});
+};
+if (redisClient) uploadLimiterOpts.store = getRedisStore('rl:upload:');
+const uploadLimiter = rateLimit(uploadLimiterOpts);
 app.use('/api/upload-image', uploadLimiter);
 
 // --- انتهى إعداد الأمن ---
@@ -282,19 +314,6 @@ MongoClient.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true 
     }
   })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
-
-// --- Redis Setup (Ticket 10) ---
-const redis = require('redis');
-let redisClient = null;
-if (process.env.REDIS_URL) {
-  redisClient = redis.createClient({ url: process.env.REDIS_URL });
-  redisClient.on('error', (err) => console.error('Redis Client Error', err));
-  redisClient.connect()
-    .then(() => console.log('Redis connected successfully'))
-    .catch(err => console.error('Redis connection failed:', err));
-} else {
-  console.warn('REDIS_URL not set. Caching will gracefully bypass.');
-}
 
 // --- Utilities & sanitizers (كما كنت تستخدم) ---
 function absoluteBaseUrl(req) {
@@ -650,7 +669,32 @@ if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINA
   });
 }
 
-// Image upload route
+// Cloudinary Signature Route (Ticket 5)
+app.get('/api/upload-signature', verifyToken, (req, res) => {
+  try {
+    if (!config.CLOUDINARY_API_SECRET && !process.env.CLOUDINARY_API_SECRET) {
+      return res.status(500).json({ error: 'Cloudinary is not configured on the server.' });
+    }
+
+    const timestamp = Math.round((new Date()).getTime() / 1000);
+    const signature = cloudinary.utils.api_sign_request(
+      { timestamp, folder: 'nfc/designs' },
+      config.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_API_SECRET
+    );
+
+    res.json({
+      signature,
+      timestamp,
+      cloudName: config.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME,
+      apiKey: config.CLOUDINARY_API_KEY || process.env.CLOUDINARY_API_KEY
+    });
+  } catch (error) {
+    console.error('Signature generation error', error);
+    res.status(500).json({ error: 'Failed to generate upload signature.' });
+  }
+});
+
+// Image upload route (Legacy proxy functionality)
 app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
