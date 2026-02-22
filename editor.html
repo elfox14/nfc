@@ -1,1817 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>محرر بطاقات العمل الذكية | MC PRIME</title>
-    <meta name="description"
-        content="استخدم محرر MC PRIME لتصميم وتخصيص بطاقة عملك الذكية (NFC) مجاناً. تحكم كامل في الألوان، الخطوط، الشعار، ومعلومات الاتصال.">
-
-    <meta name="robots" content="noindex, nofollow">
-    <link rel="canonical" href="https://www.mcprim.com/nfc/editor.html">
-    <link rel="icon" id="favicon" href="mcprime-logo-transparent.png" type="image/png">
-
-    <!-- Google Tag Manager -->
-    <script>(function (w, d, s, l, i) {
-            w[l] = w[l] || []; w[l].push({
-                'gtm.start':
-                    new Date().getTime(), event: 'gtm.js'
-            }); var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
-    <!-- End Google Tag Manager -->
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Cropper.js CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
-
-    <!-- ملفات التنسيق الخاصة بالمشروع -->
-    <link rel="stylesheet" href="style.css?v=2.0">
-    <link rel="stylesheet" href="mobile.css?v=2.0">
-    <link rel="stylesheet" href="toast.css">
-    <link rel="stylesheet" href="editor-enhancements.css?v=1.0">
-    <link rel="stylesheet" href="toolbar-enhancements.css?v=1.0">
-
-    <!-- المكتبات الخارجية -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
-
-    <!-- ملفات الجافاسكريبت الخاصة بالمشروع (الترتيب مهم) -->
-    <script src="lang-switcher.js" defer></script>
-    <script src="/nfc/auth.js" defer></script>
-    <script src="security-utils.js" defer></script>
-    <script src="mobile.js" defer></script>
-    <script src="script-core.js" defer></script>
-    <script src="state-manager-proxy.js" defer></script>
-    <script src="script-ui.js" defer></script>
-    <script src="script-card.js" defer></script>
-    <script src="script-main.js" defer></script>
-
-    <script src="editor-enhancements.js" defer></script>
-    <script src="editor-user-status.js" defer></script>
-
-    <style>
-        /* =============================================================== */
-        /* == START: DESKTOP FIX FOR FLIP CARD STRUCTURE                == */
-        /* =============================================================== */
-
-        /* This code block undoes the flip effect on screens wider than 1024px */
-        @media (min-width: 1025px) {
-
-            /* 1. Make the flipper a flex container to arrange cards side-by-side */
-            .card-flipper {
-                display: flex;
-                flex-direction: column;
-                gap: 30px;
-                /* <<< THIS IS THE SPACE BETWEEN CARDS ON DESKTOP */
-
-                /* 2. Reset 3D properties so it behaves like a normal container */
-                transform-style: flat;
-                position: relative;
-                transform: none;
-            }
-
-            /* 3. Make each card face a normal, non-overlapping block */
-            .card-face {
-                position: relative !important;
-                /* Override absolute positioning */
-                transform: none !important;
-                /* Remove any rotation */
-                backface-visibility: visible !important;
-                /* Reset visibility */
-                pointer-events: auto !important;
-                /* Ensure both are clickable */
-            }
-
-            /* 4. The main card wrapper now just centers the flipper container */
-            .cards-wrapper {
-                transform: none;
-                /* Ensure no scaling is applied from old styles */
-                gap: 0;
-                /* The gap is now handled by .card-flipper */
-            }
-
-            /* 5. Hide the mobile-only flip button on desktop */
-            #flip-card-btn-mobile {
-                display: none !important;
-            }
-        }
-    </style>
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
-        crossorigin="anonymous"></script>
-</head>
-
-<body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
-            style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-
-    <!-- Trial Period Banner -->
-    <div class="trial-banner" id="trial-banner">
-        <span class="trial-banner__icon">🎉</span>
-        <div class="trial-banner__text">
-            <span>فترة تجريبية مجانية</span>
-            <span class="trial-banner__highlight">جميع الميزات متاحة حتى 1 أبريل 2026</span>
-        </div>
-        <button class="trial-banner__close" id="close-trial-banner" title="إغلاق">&times;</button>
-    </div>
-
-    <header class="pro-toolbar">
-        <div class="toolbar-group toolbar-start">
-            <a href="index.html"
-                style="color: var(--text-primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px;"
-                title="العودة إلى الرئيسية">
-                <img src="https://www.mcprim.com/nfc/mcprime-logo-transparent.png" alt="MC PRIME Logo"
-                    style="height: 32px; width: auto;">
-                <span class="toolbar-title-desktop" style="font-size: 0.9rem;">MC PRIME</span>
-            </a>
-
-            <!-- روابط التنقل -->
-            <nav class="toolbar-nav"
-                style="display: flex; gap: 5px; margin-right: 15px; padding-right: 15px; border-right: 1px solid rgba(77,166,255,0.2);">
-                <a href="index.html" class="btn-icon" title="الرئيسية" style="font-size: 12px;"><i
-                        class="fas fa-home"></i></a>
-                <a href="gallery.html" class="btn-icon" title="المعرض" style="font-size: 12px;"><i
-                        class="fas fa-images"></i></a>
-                <a href="blog.html" class="btn-icon" title="المدونة" style="font-size: 12px;"><i
-                        class="fas fa-blog"></i></a>
-            </nav>
-            <!-- Promoted Editor Guide Button -->
-            <a href="how-to-use-editor.html" class="btn btn-primary editor-guide-promoted" id="editor-guide-btn-mobile"
-                style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); border: none; margin: 0;">
-                <i class="fas fa-book-open"></i> <span>شرح المحرر</span>
-            </a>
-
-            <div class="undo-redo-container">
-                <button id="redo-btn" class="btn-icon btn-compact" title="إعادة (Ctrl+Y)" aria-label="إعادة" disabled><i
-                        class="fas fa-redo"></i></button>
-                <button id="undo-btn" class="btn-icon btn-compact" title="تراجع (Ctrl+Z)" aria-label="تراجع" disabled><i
-                        class="fas fa-undo"></i></button>
-            </div>
-            <!-- NEW: Language & Preview Buttons -->
-            <button id="theme-toggle-btn" class="btn-icon btn-compact" title="تبديل المظهر (Dark/Light)"
-                aria-label="Toggle Theme"><i class="fas fa-sun"></i></button>
-            <button id="lang-toggle-btn" class="btn-icon btn-compact" title="تبديل اللغة / Toggle Language"
-                aria-label="Toggle Language" style="font-size: 11px;">EN</button>
-            <button id="preview-mode-btn" class="btn-icon btn-compact" title="وضع المعاينة"
-                aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
-
-            <!-- Mobile More Menu Button -->
-            <div class="toolbar-more-container">
-                <button id="toolbar-more-btn" class="btn-icon btn-compact" title="المزيد" aria-label="More Options"
-                    style="display: none;">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-
-            </div>
-
-        </div>
-        <div class="toolbar-group toolbar-end">
-            <div class="download-container">
-                <button id="download-options-btn" class="btn btn-secondary">
-                    <span>تنزيل</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
-                </button>
-                <ul id="download-menu" class="dropdown-menu">
-                    <li><button id="download-png-front" aria-controls="export-modal-overlay" aria-expanded="false"><i
-                                class="fas fa-image" aria-hidden="true"></i> صورة الواجهة (PNG)</button></li>
-                    <li><button id="download-png-back" aria-controls="export-modal-overlay" aria-expanded="false"><i
-                                class="fas fa-image" aria-hidden="true"></i> صورة الخلفية (PNG)</button></li>
-                    <li><button id="download-pdf"><i class="fas fa-file-pdf" aria-hidden="true"></i> ملف PDF</button>
-                    </li>
-                    <li><button id="download-vcf"><i class="fas fa-address-card" aria-hidden="true"></i> جهة اتصال
-                            (VCF)</button></li>
-                    <li><button id="download-qrcode"><i class="fas fa-qrcode" aria-hidden="true"></i> رمز QR
-                            Code</button>
-                    </li>
-                </ul>
-            </div>
-            <button id="share-card-btn" class="btn btn-success" aria-controls="share-fallback-modal-overlay"
-                aria-expanded="false" title="مشاركة الكارت">
-                <span>مشاركة</span><i class="fas fa-share-alt" aria-hidden="true"></i>
-            </button>
-
-            <!-- Toolbar buttons as icons with keyboard shortcuts -->
-            <button id="start-collab-btn" class="btn btn-secondary" title="تحرير جماعي (Ctrl+Shift+C)">
-                <i class="fas fa-users"></i>
-            </button>
-            <button id="show-gallery-btn" class="btn btn-secondary" title="عرض المعرض (Ctrl+G)"
-                aria-controls="gallery-modal-overlay">
-                <i class="fas fa-images"></i>
-            </button>
-            <button id="save-to-gallery-btn" class="btn btn-secondary" title="حفظ بالمعرض (Ctrl+S)">
-                <i class="fas fa-bookmark"></i>
-            </button>
-            <button id="share-editor-btn" class="btn btn-secondary" title="مشاركة رابط الموقع (Ctrl+Shift+L)">
-                <i class="fas fa-link"></i>
-            </button>
-            <button id="reset-design-btn" class="btn btn-secondary" title="إعادة تعيين (Ctrl+Shift+R)"
-                style="color: #dc3545;">
-                <i class="fas fa-undo"></i>
-            </button>
-
-            <!-- Auto-save indicator -->
-            <div id="autosave-indicator" class="autosave-indicator" title="حالة الحفظ التلقائي">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <span id="autosave-status">محفوظ</span>
-            </div>
-
-            <!-- User Status & Save Button -->
-            <div class="user-status-bar" id="user-status-bar"
-                style="display: flex; align-items: center; gap: 8px; margin-right: 10px; padding: 4px 10px; background: rgba(77,166,255,0.1); border-radius: 8px;">
-                <span id="user-status-text" style="font-size: 12px; color: var(--text-secondary);">غير مسجل</span>
-                <a href="login.html" id="user-login-link" class="btn btn-secondary"
-                    style="padding: 4px 10px; font-size: 11px;">تسجيل دخول</a>
-                <button id="user-logout-btn" class="btn btn-secondary"
-                    style="padding: 4px 10px; font-size: 11px; display: none;">خروج</button>
-            </div>
-            <button id="save-to-cloud-btn" class="btn btn-primary"
-                style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                <span id="save-btn-text">حفظ التصميم</span>
-                <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
-            </button>
-        </div>
-    </header>
-
-    <div class="pro-layout">
-
-        <aside class="pro-sidebar pro-sidebar-left" id="panel-design">
-
-            <fieldset class="fieldset" id="layout-fieldset-source">
-                <legend>التخطيط</legend>
-                <div class="layout-selector-grid">
-                    <label class="layout-option">
-                        <input type="radio" name="layout-select-visual" value="classic" checked>
-                        <div class="layout-preview-box">
-                            <i class="far fa-id-card"></i>
-                            <span>كلاسيكي</span>
-                        </div>
-                    </label>
-                    <label class="layout-option">
-                        <input type="radio" name="layout-select-visual" value="modern">
-                        <div class="layout-preview-box">
-                            <i class="fas fa-columns"></i>
-                            <span>عصري</span>
-                        </div>
-                    </label>
-                    <label class="layout-option">
-                        <input type="radio" name="layout-select-visual" value="vertical">
-                        <div class="layout-preview-box">
-                            <i class="fas fa-mobile-alt"></i>
-                            <span>طولي</span>
-                        </div>
-                    </label>
-                </div>
-                <input type="hidden" id="layout-select" value="classic">
-            </fieldset>
-
-            <fieldset class="fieldset" id="designs-fieldset-source">
-                <legend>التصاميم الجاهزة</legend>
-                <div class="form-group">
-                    <label>اختر تصميمًا جاهزًا</label>
-                    <div id="theme-gallery" class="theme-gallery-grid"></div>
-                    <input type="hidden" id="theme-select-input">
-                </div>
-            </fieldset>
-
-            <details class="fieldset-accordion" id="backgrounds-accordion">
-                <summary>الخلفيات والألوان</summary>
-                <div class="fieldset-content">
-                    <fieldset class="fieldset" style="padding: 10px;">
-                        <legend>الواجهة الأمامية</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <div class="form-group"><label>لون الخلفية</label>
-                            <div class="control-grid"><input type="color" id="front-bg-start" value="#2a3d54"><input
-                                    type="color" id="front-bg-end" value="#223246"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="front-bg-upload">رفع صورة للخلفية</label>
-                            <div class="file-input-group">
-                                <input type="file" id="front-bg-upload" accept="image/*">
-                                <button type="button" class="remove-image-btn" id="remove-front-bg-btn"
-                                    style="display: none;" title="إزالة الصورة"
-                                    aria-label="إزالة صورة الخلفية الأمامية"><i class="fas fa-times"
-                                        aria-hidden="true"></i></button>
-                                <div class="spinner" id="front-bg-spinner" style="display: none;"></div>
-                            </div>
-                        </div>
-                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">شفافية اللون فوق
-                                الصورة</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
-                                value="0"></div>
-                    </fieldset>
-                    <fieldset class="fieldset" style="padding: 10px; margin-top: 15px;">
-                        <legend>الواجهة الخلفية</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <div class="form-group"><label>لون الخلفية</label>
-                            <div class="control-grid"><input type="color" id="back-bg-start" value="#2a3d54"><input
-                                    type="color" id="back-bg-end" value="#223246"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="back-bg-upload">رفع صورة للخلفية</label>
-                            <div class="file-input-group">
-                                <input type="file" id="back-bg-upload" accept="image/*">
-                                <button type="button" class="remove-image-btn" id="remove-back-bg-btn"
-                                    style="display: none;" title="إزالة الصورة"
-                                    aria-label="إزالة صورة الخلفية الخلفية"><i class="fas fa-times"
-                                        aria-hidden="true"></i></button>
-                                <div class="spinner" id="back-bg-spinner" style="display: none;"></div>
-                            </div>
-                        </div>
-                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">شفافية اللون فوق
-                                الصورة</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
-                                value="0"></div>
-                    </fieldset>
-                </div>
-            </details>
-
-        </aside>
-
-        <main class="pro-canvas">
-            <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
-                <div class="card-flipper-container">
-                    <div class="card-flipper">
-                        <div class="business-card card-face card-front" id="card-front-preview">
-                            <div class="card-background-layer" id="front-bg-image-layer"></div>
-                            <div class="card-background-layer" id="front-bg-gradient-layer"></div>
-                            <div class="card-content-layer card-front-content-layer" id="card-front-content">
-
-                                <div id="card-logo" data-input-target-id="logo-drop-zone">
-                                    <img src="mcprime-logo-transparent.png"
-                                        alt="شعار MC PRIME لتصميم بطاقات العمل الذكية" class="logo-front"
-                                        id="card-logo-img">
-                                </div>
-
-                                <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
-                                </div>
-                                <h1 id="card-name" data-input-target-id="name-tagline-accordion"
-                                    style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;">
-                                </h1>
-                                <h2 class="tagline" id="card-tagline" data-input-target-id="name-tagline-accordion"
-                                    style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">
-                                </h2>
-                                <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
-                                <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
-                                    data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
-                            </div>
-                        </div>
-
-                        <div class="business-card card-face card-back" id="card-back-preview">
-                            <div class="card-background-layer" id="back-bg-image-layer"></div>
-                            <div class="card-background-layer" id="back-bg-gradient-layer"></div>
-                            <div class="card-content-layer card-back-content-layer" id="card-back-content">
-                                <!-- JS will populate this -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <button id="flip-card-btn-mobile" class="btn btn-secondary" title="تقليب الكارت">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>تقليب الكارت</span>
-                </button>
-
-            </main>
-        </main>
-
-        <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
-
-            <details class="fieldset-accordion">
-                <summary>الشعار</summary>
-                <div class="fieldset-content">
-                    <fieldset class="fieldset" id="logo-drop-zone">
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <legend>الشعار (Logo)</legend>
-
-                        <!-- قسم الرفع والرابط -->
-                        <div class="form-group">
-                            <label for="input-logo">رابط الشعار</label>
-                            <input type="text" id="input-logo" value="mcprime-logo-transparent.png"
-                                data-update-target="card-logo-img" data-update-property="src">
-                        </div>
-                        <div class="form-group">
-                            <label for="input-logo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
-                            <div class="logo-upload-group">
-                                <img id="logo-preview" src="mcprime-logo-transparent.png" alt="معاينة الشعار المرفوع">
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="input-logo-upload" accept="image/*">
-                                    <div class="input-error-msg" id="logo-upload-error"></div>
-                                </div>
-                                <div class="spinner" id="logo-spinner" style="display: none;"></div>
-                            </div>
-                        </div>
-
-                        <!-- قسم الحجم والمحاذاة -->
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="logo-size">حجم الشعار</label>
-                                <input type="range" id="logo-size" min="10" max="80" value="25"
-                                    data-update-target="card-logo-img" data-update-property="style.maxWidth"
-                                    data-update-unit="%">
-                            </div>
-                            <div class="form-group">
-                                <label for="logo-align-group">محاذاة الشعار</label>
-                                <div class="radio-group" id="logo-align-group">
-                                    <label><input type="radio" name="logo-align" value="flex-start"> يسار</label>
-                                    <label><input type="radio" name="logo-align" value="center" checked> وسط</label>
-                                    <label><input type="radio" name="logo-align" value="flex-end"> يمين</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- قسم الخلفية والشفافية -->
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="logo-opacity">شفافية الشعار</label>
-                                <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
-                                    data-update-target="card-logo-img" data-update-property="style.opacity">
-                            </div>
-                            <div class="form-group">
-                                <label for="logo-bg-color">خلفية الشعار</label>
-                                <select id="logo-bg-color">
-                                    <option value="transparent">بدون</option>
-                                    <option value="#ffffff">أبيض</option>
-                                    <option value="#000000">أسود</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- قسم الظل -->
-                        <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>ظل الشعار</legend>
-                            <div class="form-group">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="logo-shadow-enabled"
-                                        style="width: auto; margin-inline-end: 10px;">
-                                    <span>تفعيل الظل</span>
-                                </label>
-                            </div>
-                            <div class="control-grid" id="logo-shadow-controls" style="display: none;">
-                                <div class="form-group">
-                                    <label for="logo-shadow-blur">حدة الظل</label>
-                                    <input type="range" id="logo-shadow-blur" min="0" max="40" value="10">
-                                </div>
-                                <div class="form-group">
-                                    <label for="logo-shadow-color">لون الظل</label>
-                                    <input type="color" id="logo-shadow-color" value="#000000">
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <!-- قسم الموضع والتحريك -->
-                        <div class="placement-control">
-                            <label>مكان العنصر</label>
-                            <div class="radio-group">
-                                <label><input type="radio" name="placement-logo" value="front" checked> أمامي</label>
-                                <label><input type="radio" name="placement-logo" value="back"> خلفي</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="margin-top: 15px;">
-                            <label>تحريك دقيق (بالبكسل)</label>
-                            <div class="position-controls-grid" data-target-id="card-logo">
-                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i
-                                        class="fas fa-arrow-up"></i></button>
-                                <div class="controls-row">
-                                    <button type="button" class="btn-icon move-btn" data-direction="left"
-                                        title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                    <button type="button" class="btn-icon move-btn" data-direction="right"
-                                        title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                </div>
-                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i
-                                        class="fas fa-arrow-down"></i></button>
-                            </div>
-                        </div>
-                    </fieldset>
-                </div>
-            </details>
-
-            <details class="fieldset-accordion">
-                <summary>الصورة الشخصية</summary>
-                <div class="fieldset-content">
-                    <fieldset class="fieldset" id="photo-controls-fieldset">
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <legend>الصورة الشخصية</legend>
-
-                        <!-- قسم الرفع والرابط -->
-                        <div class="form-group">
-                            <label for="input-photo-url">رابط الصورة</label>
-                            <input type="url" id="input-photo-url">
-                        </div>
-                        <div class="form-group">
-                            <label for="input-photo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
-                            <div class="logo-upload-group">
-                                <img id="photo-preview" src="" alt="معاينة الصورة الشخصية"
-                                    style="display: none; background-color: var(--accent-secondary); border-radius: 50%; object-fit: cover; width: 50px; height: 50px;">
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="input-photo-upload" accept="image/*">
-                                    <div class="input-error-msg" id="photo-upload-error"></div>
-                                </div>
-                                <div class="spinner" id="photo-spinner" style="display: none;"></div>
-                            </div>
-                        </div>
-
-                        <!-- قسم الحجم والشكل والمحاذاة -->
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="photo-size">حجم الصورة</label>
-                                <input type="range" id="photo-size" min="15" max="50" value="25">
-                            </div>
-                            <div class="form-group">
-                                <label>شكل الصورة</label>
-                                <div class="radio-group">
-                                    <label><input type="radio" name="photo-shape" value="circle" checked> دائري</label>
-                                    <label><input type="radio" name="photo-shape" value="square"> مربع</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="photo-align-group">محاذاة الصورة</label>
-                            <div class="radio-group" id="photo-align-group">
-                                <label><input type="radio" name="photo-align" value="flex-start"> يسار</label>
-                                <label><input type="radio" name="photo-align" value="center" checked> وسط</label>
-                                <label><input type="radio" name="photo-align" value="flex-end"> يمين</label>
-                            </div>
-                        </div>
-
-
-                        <!-- قسم الإطار والشفافية -->
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="photo-opacity">شفافية الصورة</label>
-                                <input type="range" id="photo-opacity" min="0" max="1" step="0.05" value="1">
-                            </div>
-                            <div class="form-group">
-                                <label for="photo-border-width">عرض الإطار (px)</label>
-                                <input type="range" id="photo-border-width" min="0" max="10" value="2">
-                            </div>
-                            <div class="form-group">
-                                <label for="photo-border-color">لون الإطار</label>
-                                <input type="color" id="photo-border-color" value="#ffffff">
-                            </div>
-                        </div>
-
-                        <!-- قسم الظل -->
-                        <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>ظل الصورة</legend>
-                            <div class="form-group">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="photo-shadow-enabled"
-                                        style="width: auto; margin-inline-end: 10px;">
-                                    <span>تفعيل الظل</span>
-                                </label>
-                            </div>
-                            <div class="control-grid" id="photo-shadow-controls" style="display: none;">
-                                <div class="form-group">
-                                    <label for="photo-shadow-blur">حدة الظل</label>
-                                    <input type="range" id="photo-shadow-blur" min="0" max="40" value="10">
-                                </div>
-                                <div class="form-group">
-                                    <label for="photo-shadow-color">لون الظل</label>
-                                    <input type="color" id="photo-shadow-color" value="#000000">
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <!-- قسم الموضع والتحريك -->
-                        <div class="placement-control">
-                            <label>مكان الصورة</label>
-                            <div class="radio-group">
-                                <label><input type="radio" name="placement-photo" value="front" checked> أمامي</label>
-                                <label><input type="radio" name="placement-photo" value="back"> خلفي</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="margin-top: 15px;">
-                            <label>تحريك دقيق (بالبكسل)</label>
-                            <div class="position-controls-grid" data-target-id="card-personal-photo-wrapper">
-                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i
-                                        class="fas fa-arrow-up"></i></button>
-                                <div class="controls-row">
-                                    <button type="button" class="btn-icon move-btn" data-direction="left"
-                                        title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                    <button type="button" class="btn-icon move-btn" data-direction="right"
-                                        title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                </div>
-                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i
-                                        class="fas fa-arrow-down"></i></button>
-                            </div>
-                        </div>
-                    </fieldset>
-                </div>
-            </details>
-
-            <details class="fieldset-accordion" id="name-tagline-accordion">
-                <summary>الاسم والمسمى الوظيفي</summary>
-                <div class="fieldset-content">
-                    <div class="form-group">
-                        <label for="input-name_ar">الاسم الكامل</label>
-                        <!-- UPDATED: Dual language fields -->
-                        <textarea id="input-name_ar" rows="2" data-lang="ar" data-update-target="card-name"
-                            data-update-property="innerText"></textarea>
-                        <textarea id="input-name_en" rows="2" data-lang="en" style="display:none;"
-                            data-update-target="card-name" data-update-property="innerText"
-                            placeholder="Full Name"></textarea>
-                    </div>
-                    <div class="control-grid">
-                        <div class="form-group"><label for="name-font-size">حجم الخط</label><input type="range"
-                                id="name-font-size" min="16" max="48" value="22" data-update-target="card-name"
-                                data-update-property="style.fontSize" data-update-unit="px"></div>
-                        <div class="form-group"><label for="name-color">اللون</label><input type="color" id="name-color"
-                                value="#e6f0f7" data-update-target="card-name" data-update-property="style.color"></div>
-                    </div>
-                    <div class="form-group"><label for="name-font">الخط</label><select id="name-font"
-                            data-update-target="card-name" data-update-property="style.fontFamily">
-                            <option value="'Tajawal', sans-serif">Tajawal</option>
-                            <option value="'Cairo', sans-serif">Cairo</option>
-                            <option value="'Lalezar', cursive">Lalezar</option>
-                        </select></div>
-                    <div class="placement-control">
-                        <label>مكان الاسم</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="placement-name" value="front" checked> أمامي</label>
-                            <label><input type="radio" name="placement-name" value="back"> خلفي</label>
-                        </div>
-                    </div>
-
-                    <details class="fieldset-accordion"
-                        style="margin-top: 10px; background: transparent; border: none;">
-                        <summary
-                            style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                            خيارات متقدمة (تحريك دقيق)</summary>
-                        <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                            <div class="form-group">
-                                <label>تحريك دقيق (بالبكسل)</label>
-                                <div class="position-controls-grid" data-target-id="card-name">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up"
-                                        title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                    <div class="controls-row">
-                                        <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                        <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                    </div>
-                                    <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-
-                    <hr style="border-color: var(--accent-secondary); margin: 20px 0;">
-                    <div class="form-group">
-                        <label for="input-tagline_ar">النشاط/المسمى الوظيفي</label>
-                        <!-- UPDATED: Dual language fields -->
-                        <textarea id="input-tagline_ar" rows="2" data-lang="ar" data-update-target="card-tagline"
-                            data-update-property="innerText"></textarea>
-                        <textarea id="input-tagline_en" rows="2" data-lang="en" style="display:none;"
-                            data-update-target="card-tagline" data-update-property="innerText"
-                            placeholder="Job Title / Company"></textarea>
-                    </div>
-                    <div class="control-grid">
-                        <div class="form-group"><label for="tagline-font-size">حجم الخط</label><input type="range"
-                                id="tagline-font-size" min="12" max="32" value="14" data-update-target="card-tagline"
-                                data-update-property="style.fontSize" data-update-unit="px"></div>
-                        <div class="form-group"><label for="tagline-color">اللون</label><input type="color"
-                                id="tagline-color" value="#4da6ff" data-update-target="card-tagline"
-                                data-update-property="style.color"></div>
-                    </div>
-                    <div class="form-group"><label for="tagline-font">الخط</label><select id="tagline-font"
-                            data-update-target="card-tagline" data-update-property="style.fontFamily">
-                            <option value="'Tajawal', sans-serif">Tajawal</option>
-                            <option value="'Cairo', sans-serif">Cairo</option>
-                            <option value="'Lalezar', cursive">Lalezar</option>
-                        </select></div>
-                    <div class="placement-control">
-                        <label>مكان المسمى الوظيفي</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="placement-tagline" value="front" checked> أمامي</label>
-                            <label><input type="radio" name="placement-tagline" value="back"> خلفي</label>
-                        </div>
-                    </div>
-
-                    <details class="fieldset-accordion"
-                        style="margin-top: 10px; background: transparent; border: none;">
-                        <summary
-                            style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                            خيارات متقدمة (تحريك دقيق)</summary>
-                        <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                            <div class="form-group">
-                                <label>تحريك دقيق (بالبكسل)</label>
-                                <div class="position-controls-grid" data-target-id="card-tagline">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up"
-                                        title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                    <div class="controls-row">
-                                        <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                        <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                    </div>
-                                    <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-                </div>
-            </details>
-
-            <details class="fieldset-accordion" id="phones-accordion">
-                <summary>أرقام الهواتف</summary>
-                <div class="fieldset-content">
-                    <div class="form-group">
-                        <label for="toggle-phone-buttons" style="display: flex; align-items: center; cursor: pointer;">
-                            <input type="checkbox" id="toggle-phone-buttons" checked
-                                style="width: auto; margin-inline-end: 10px;">
-                            <span>إظهار كأزرار</span>
-                        </label>
-                    </div>
-                    <div id="phone-text-controls">
-                        <h4>تنسيق الأرقام كنص</h4>
-                        <div class="form-group">
-                            <label>شكل العرض</label>
-                            <div class="radio-group">
-                                <label><input type="radio" name="phone-text-layout" value="row" checked> أفقي</label>
-                                <label><input type="radio" name="phone-text-layout" value="column"> رأسي</label>
-                            </div>
-                        </div>
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="phone-text-size">حجم الخط</label>
-                                <input type="range" id="phone-text-size" min="10" max="24" value="14">
-                            </div>
-                            <div class="form-group">
-                                <label for="phone-text-color">لون الخط</label>
-                                <input type="color" id="phone-text-color" value="#e6f0f7">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="phone-text-font">الخط</label>
-                            <select id="phone-text-font">
-                                <option value="'Tajawal', sans-serif">Tajawal</option>
-                                <option value="'Cairo', sans-serif">Cairo</option>
-                                <option value="'Lalezar', cursive">Lalezar</option>
-                            </select>
-                        </div>
-                    </div>
-                    <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
-                    <div id="phone-numbers-container"></div>
-                    <button id="add-phone-btn" class="btn btn-secondary"><i class="fas fa-plus" aria-hidden="true"></i>
-                        إضافة رقم هاتف</button>
-                    <h4>تصميم الأزرار</h4>
-                    <div class="control-grid">
-                        <div class="form-group"><label for="phone-btn-bg-color">لون الزر</label><input type="color"
-                                id="phone-btn-bg-color" value="#4da6ff"></div>
-                        <div class="form-group"><label for="phone-btn-text-color">لون النص</label><input type="color"
-                                id="phone-btn-text-color" value="#ffffff"></div>
-                    </div>
-                    <div class="form-group"><label for="phone-btn-font-size">حجم خط الزر</label><input type="range"
-                            id="phone-btn-font-size" min="10" max="24" value="12"></div>
-                    <div class="form-group"><label for="phone-btn-padding">حجم حشو الزر (Padding)</label><input
-                            type="range" id="phone-btn-padding" min="4" max="16" value="6"></div>
-                    <div class="form-group"><label for="phone-btn-font">خط الزر</label><select id="phone-btn-font">
-                            <option value="'Poppins', sans-serif">Poppins</option>
-                            <option value="'Tajawal', sans-serif">Tajawal</option>
-                            <option value="'Cairo', sans-serif">Cairo</option>
-                        </select></div>
-                </div>
-            </details>
-
-            <details class="fieldset-accordion" id="qr-code-accordion">
-                <summary>رمز الاستجابة السريعة (QR)</summary>
-                <div class="fieldset-content">
-                    <div class="placement-control" style="border-top: none; padding-top: 0; margin-top: 0;">
-                        <label>مكان رمز QR</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="placement-qr" value="front"> أمامي</label>
-                            <label><input type="radio" name="placement-qr" value="back" checked> خلفي</label>
-                        </div>
-                    </div>
-                    <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
-                    <div class="form-group">
-                        <label>مصدر QR Code</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="qr-source" value="auto-card" checked> رابط البطاقة (مُوصى
-                                به)</label>
-                            <label><input type="radio" name="qr-source" value="auto-vcard"> بيانات الاتصال
-                                (vCard)</label>
-                            <label><input type="radio" name="qr-source" value="custom"> استخدام رابط</label>
-                            <label><input type="radio" name="qr-source" value="upload"> رفع صورة</label>
-                        </div>
-                    </div>
-
-                    <div id="qr-auto-card-group" style="display: block;">
-                        <button id="generate-auto-qr-btn" class="btn btn-primary"><i class="fas fa-qrcode"></i>
-                            إنشاء/تحديث QR Code</button>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">يقوم هذا الخيار بحفظ
-                            تصميمك وإنشاء QR Code لرابط المشاركة الخاص ببطاقتك.</p>
-                    </div>
-
-                    <!-- تخصيص QR Code -->
-                    <div id="qr-customization-group"
-                        style="margin-top: 15px; border-top: 1px dashed var(--accent-secondary); padding-top: 15px;">
-                        <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-primary);">تخصيص المظهر</h4>
-
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="qr-dots-color">لون الرمز</label>
-                                <div class="color-input-wrapper"
-                                    style="display: flex; align-items: center; border: 1px solid var(--accent-secondary); border-radius: 6px; padding: 0 5px;">
-                                    <input type="color" id="qr-dots-color" value="#000000"
-                                        style="border: none; padding: 0; height: 35px; width: 40px;">
-                                    <span style="font-size: 12px; margin-right: 5px;">اختر اللون</span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="qr-bg-color">لون الخلفية</label>
-                                <div class="color-input-wrapper"
-                                    style="display: flex; align-items: center; border: 1px solid var(--accent-secondary); border-radius: 6px; padding: 0 5px;">
-                                    <input type="color" id="qr-bg-color" value="#ffffff"
-                                        style="border: none; padding: 0; height: 35px; width: 40px;">
-                                    <span style="font-size: 12px; margin-right: 5px;">اختر اللون</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="qr-dots-type">شكل النقاط</label>
-                            <select id="qr-dots-type">
-                                <option value="square">مربعات (Square)</option>
-                                <option value="dots">نقاط (Dots)</option>
-                                <option value="rounded" selected>دائري (Rounded)</option>
-                                <option value="classy">أنيق (Classy)</option>
-                                <option value="classy-rounded">أنيق دائري (Classy Rounded)</option>
-                                <option value="extra-rounded">دائري جداً (Extra Rounded)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="qr-corners-type">شكل الزوايا</label>
-                            <select id="qr-corners-type">
-                                <option value="square">مربعات (Square)</option>
-                                <option value="dot">نقاط (Dot)</option>
-                                <option value="extra-rounded" selected>دائري (Extra Rounded)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label style="display: flex; align-items: center; cursor: pointer;">
-                                <input type="checkbox" id="qr-use-logo" checked
-                                    style="width: auto; margin-inline-end: 10px;">
-                                تضمين الشعار في المنتصف
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-group" id="qr-url-group" style="display: none;">
-                        <label for="input-qr-url">رابط صورة QR Code</label>
-                        <input type="url" id="input-qr-url" value="mcprime_qr.png">
-                    </div>
-
-                    <div class="form-group" id="qr-upload-group" style="display: none;">
-                        <label for="input-qr-upload">ارفع صورة QR Code (أقل من 2MB)</label>
-                        <div class="file-input-wrapper">
-                            <input type="file" id="input-qr-upload" accept="image/*">
-                            <div class="input-error-msg" id="qr-upload-error"></div>
-                        </div>
-                        <div class="spinner" id="qr-spinner" style="display: none;"></div>
-                    </div>
-
-                    <hr style="border-color: var(--accent-secondary); margin: 20px 0;">
-
-                    <div class="form-group">
-                        <label for="qr-size">حجم QR Code</label>
-                        <input type="range" id="qr-size" min="15" max="50" value="30">
-                    </div>
-
-                    <details class="fieldset-accordion"
-                        style="margin-top: 10px; background: transparent; border: none;">
-                        <summary
-                            style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                            خيارات متقدمة (تحريك دقيق)</summary>
-                        <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                            <div class="form-group">
-                                <label>تحريك دقيق (بالبكسل)</label>
-                                <div class="position-controls-grid" data-target-id="qr-code-wrapper">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up"
-                                        title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                    <div class="controls-row">
-                                        <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                        <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                    </div>
-                                    <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-                </div>
-            </details>
-
-            <details class="fieldset-accordion" id="contact-info-accordion">
-                <summary>بيانات التواصل</summary>
-                <div class="fieldset-content">
-
-                    <div class="form-group">
-                        <label for="toggle-master-social" style="display: flex; align-items: center; cursor: pointer;">
-                            <input type="checkbox" id="toggle-master-social" checked
-                                style="width: auto; margin-inline-end: 10px;">
-                            <span>إظهار قسم التواصل (الروابط)</span>
-                        </label>
-                    </div>
-                    <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
-
-                    <div id="social-controls-wrapper">
-
-                        <div class="form-group">
-                            <label for="toggle-social-buttons"
-                                style="display: flex; align-items: center; cursor: pointer;">
-                                <input type="checkbox" id="toggle-social-buttons" checked
-                                    style="width: auto; margin-inline-end: 10px;">
-                                <span>إظهار كأزرار</span>
-                            </label>
-                        </div>
-                        <div id="social-text-controls" style="display: none;">
-                            <h4>تنسيق الروابط كنص (عام)</h4>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label for="social-text-size">حجم الخط (الافتراضي)</label>
-                                    <input type="range" id="social-text-size" min="10" max="24" value="12">
-                                </div>
-                                <div class="form-group">
-                                    <label for="social-text-color">لون الخط (الافتراضي)</label>
-                                    <input type="color" id="social-text-color" value="#e6f0f7">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="social-text-font">الخط (الافتراضي)</label>
-                                <select id="social-text-font">
-                                    <option value="'Tajawal', sans-serif">Tajawal</option>
-                                    <option value="'Cairo', sans-serif">Cairo</option>
-                                    <option value="'Poppins', sans-serif">Poppins</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <h4>تصميم أزرار التواصل</h4>
-                        <div class="form-group">
-                            <label for="back-buttons-size">حجم الأيقونات</label>
-                            <input type="range" id="back-buttons-size" min="10" max="20" value="10">
-                        </div>
-                        <div class="control-grid">
-                            <div class="form-group"><label for="back-buttons-bg-color">لون الزر</label><input
-                                    type="color" id="back-buttons-bg-color" value="#364f6b"></div>
-                            <div class="form-group"><label for="back-buttons-text-color">لون النص</label><input
-                                    type="color" id="back-buttons-text-color" value="#aab8c2"></div>
-                        </div>
-                        <div class="form-group"><label for="back-buttons-font">خط الأزرار</label><select
-                                id="back-buttons-font">
-                                <option value="'Poppins', sans-serif">Poppins</option>
-                                <option value="'Tajawal', sans-serif">Tajawal</option>
-                                <option value="'Cairo', sans-serif">Cairo</option>
-                            </select></div>
-
-                        <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
-
-                        <div class="form-group" id="form-group-static-email">
-                            <label for="input-email">البريد الإلكتروني</label>
-                            <input type="email" id="input-email" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-email" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-email" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background: transparent; border: none;">
-                                <summary
-                                    style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
-                                <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                    <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
-                                        <div class="position-controls-grid" data-target-id="social-link-static-email">
-                                            <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                            <div class="controls-row">
-                                                <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                                <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                            </div>
-                                            <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-                                <div class="fieldset-content" style="padding: 10px;">
-                                    <div class="control-grid">
-                                        <div class="form-group">
-                                            <label for="input-static-email-color">لون الخط</label>
-                                            <input type="color" id="input-static-email-color" value="#e6f0f7"
-                                                data-input-type="static-social-style">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="input-static-email-size">حجم الخط</label>
-                                            <input type="range" id="input-static-email-size" min="10" max="24"
-                                                value="12" data-input-type="static-social-style">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-                        <div class="form-group" id="form-group-static-website">
-                            <label for="input-website">الموقع الإلكتروني</label>
-                            <input type="url" id="input-website" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-website" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-website" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background: transparent; border: none;">
-                                <summary
-                                    style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
-                                <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                    <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
-                                        <div class="position-controls-grid" data-target-id="social-link-static-website">
-                                            <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                            <div class="controls-row">
-                                                <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                                <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                            </div>
-                                            <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-                                <div class="fieldset-content" style="padding: 10px;">
-                                    <div class="control-grid">
-                                        <div class="form-group">
-                                            <label for="input-static-website-color">لون الخط</label>
-                                            <input type="color" id="input-static-website-color" value="#e6f0f7"
-                                                data-input-type="static-social-style">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="input-static-website-size">حجم الخط</label>
-                                            <input type="range" id="input-static-website-size" min="10" max="24"
-                                                value="12" data-input-type="static-social-style">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-                        <div class="form-group" id="form-group-static-whatsapp">
-                            <label for="input-whatsapp">واتساب</label>
-                            <input type="text" id="input-whatsapp" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-whatsapp" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-whatsapp" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background: transparent; border: none;">
-                                <summary
-                                    style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
-                                <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                    <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
-                                        <div class="position-controls-grid"
-                                            data-target-id="social-link-static-whatsapp">
-                                            <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                            <div class="controls-row">
-                                                <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                                <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                            </div>
-                                            <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-                                <div class="fieldset-content" style="padding: 10px;">
-                                    <div class="control-grid">
-                                        <div class="form-group">
-                                            <label for="input-static-whatsapp-color">لون الخط</label>
-                                            <input type="color" id="input-static-whatsapp-color" value="#e6f0f7"
-                                                data-input-type="static-social-style">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="input-static-whatsapp-size">حجم الخط</label>
-                                            <input type="range" id="input-static-whatsapp-size" min="10" max="24"
-                                                value="12" data-input-type="static-social-style">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-                        <div class="form-group" id="form-group-static-facebook">
-                            <label for="input-facebook">فيسبوك</label>
-                            <input type="url" id="input-facebook" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-facebook" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-facebook" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background: transparent; border: none;">
-                                <summary
-                                    style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
-                                <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                    <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
-                                        <div class="position-controls-grid"
-                                            data-target-id="social-link-static-facebook">
-                                            <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                            <div class="controls-row">
-                                                <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                                <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                            </div>
-                                            <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-                                <div class="fieldset-content" style="padding: 10px;">
-                                    <div class="control-grid">
-                                        <div class="form-group">
-                                            <label for="input-static-facebook-color">لون الخط</label>
-                                            <input type="color" id="input-static-facebook-color" value="#e6f0f7"
-                                                data-input-type="static-social-style">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="input-static-facebook-size">حجم الخط</label>
-                                            <input type="range" id="input-static-facebook-size" min="10" max="24"
-                                                value="12" data-input-type="static-social-style">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-                        <div class="form-group" id="form-group-static-linkedin">
-                            <label for="input-linkedin">لينكدإن</label>
-                            <input type="url" id="input-linkedin" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-linkedin" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-linkedin" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background: transparent; border: none;">
-                                <summary
-                                    style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
-                                <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                    <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
-                                        <div class="position-controls-grid"
-                                            data-target-id="social-link-static-linkedin">
-                                            <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                            <div class="controls-row">
-                                                <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                                <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                            </div>
-                                            <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-                                <div class="fieldset-content" style="padding: 10px;">
-                                    <div class="control-grid">
-                                        <div class="form-group">
-                                            <label for="input-static-linkedin-color">لون الخط</label>
-                                            <input type="color" id="input-static-linkedin-color" value="#e6f0f7"
-                                                data-input-type="static-social-style">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="input-static-linkedin-size">حجم الخط</label>
-                                            <input type="range" id="input-static-linkedin-size" min="10" max="24"
-                                                value="12" data-input-type="static-social-style">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-                        <hr>
-                        <h4>سحب وإفلات الأيقونات</h4>
-                        <p style="font-size:12px; color:var(--text-secondary); margin-top:-10px; margin-bottom:10px;">
-                            اسحب أيقونة وأفلتها على البطاقة لإضافتها.</p>
-                        <!-- NEW: Social Icon Palette for Drag & Drop -->
-                        <div id="social-icon-palette" class="social-icon-palette-grid">
-                            <!-- Populated by JavaScript -->
-                        </div>
-                        <hr>
-                        <h4>إضافة روابط أخرى</h4>
-                        <div class="add-social-group">
-                            <div class="form-group">
-                                <label for="social-media-type">اختر المنصة</label>
-                                <select id="social-media-type"></select>
-                            </div>
-                            <button id="add-social-btn" class="btn btn-secondary" title="إضافة رابط"
-                                aria-label="إضافة رابط تواصل اجتماعي"><i class="fas fa-plus"
-                                    aria-hidden="true"></i></button>
-                        </div>
-                        <div class="form-group">
-                            <label for="social-media-input">ادخل الرابط أو المعرف</label>
-                            <input type="text" id="social-media-input" placeholder="الرابط هنا...">
-                        </div>
-                        <div id="dynamic-social-links-container"></div>
-
-
-                    </div>
-                </div>
-            </details>
-
-        </aside>
-
-        <aside class="pro-sidebar pro-sidebar-right" id="panel-share" style="display: none;">
-            <fieldset class="fieldset">
-                <legend>الحفظ والمشاركة</legend>
-                <div class="form-group">
-                    <button class="btn btn-primary mobile-action-btn" data-trigger-id="save-to-cloud-btn"
-                        style="width: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; font-weight: 600;">
-                        <i class="fas fa-cloud-upload-alt"></i> حفظ التصميم
-                    </button>
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-success mobile-action-btn" data-trigger-id="share-card-btn"
-                        style="width: 100%;">
-                        <i class="fas fa-share-alt"></i> مشاركة الكارت
-                    </button>
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="save-to-gallery-btn"
-                        style="width: 100%;">
-                        <i class="fas fa-save"></i> حفظ بالمعرض
-                    </button>
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn"
-                        style="width: 100%;">
-                        <i class="fas fa-images"></i> عرض المعرض
-                    </button>
-                </div>
-            </fieldset>
-
-            <fieldset class="fieldset">
-                <legend>التنزيل</legend>
-                <div class="control-grid">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-front">
-                        <i class="fas fa-image"></i> واجهة (PNG)
-                    </button>
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-back">
-                        <i class="fas fa-image"></i> خلفية (PNG)
-                    </button>
-                </div>
-                <div class="control-grid" style="margin-top: 10px;">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-pdf">
-                        <i class="fas fa-file-pdf"></i> PDF
-                    </button>
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-vcf">
-                        <i class="fas fa-address-card"></i> جهة اتصال (VCF)
-                    </button>
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-html"
-                        style="width: 100%;">
-                        <i class="fas fa-globe"></i> ملف ويب (HTML)
-                    </button>
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-qrcode"
-                        style="width: 100%;">
-                        <i class="fas fa-qrcode"></i> رمز QR Code
-                    </button>
-                </div>
-            </fieldset>
-
-            <fieldset class="fieldset">
-                <legend>أخرى</legend>
-                <div class="form-group">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="share-editor-btn"
-                        style="width: 100%;">
-                        <i class="fas fa-edit"></i> مشاركة رابط المحرر
-                    </button>
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-danger mobile-action-btn" data-trigger-id="reset-design-btn"
-                        style="width: 100%;">
-                        <i class="fas fa-undo"></i> إعادة تعيين التصميم
-                    </button>
-                </div>
-            </fieldset>
-
-            <fieldset class="fieldset mobile-user-section">
-                <legend>الحساب</legend>
-                <div class="form-group">
-                    <a href="login.html" class="btn btn-secondary mobile-action-btn"
-                        style="width: 100%; text-decoration: none; text-align: center;">
-                        <i class="fas fa-sign-in-alt"></i> تسجيل دخول
-                    </a>
-                </div>
-                <div class="form-group">
-                    <a href="signup.html" class="btn btn-primary mobile-action-btn"
-                        style="width: 100%; text-decoration: none; text-align: center; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white;">
-                        <i class="fas fa-user-plus"></i> إنشاء حساب
-                    </a>
-                </div>
-                <div class="form-group">
-                    <a href="dashboard.html" class="btn btn-secondary mobile-action-btn"
-                        style="width: 100%; text-decoration: none; text-align: center;">
-                        <i class="fas fa-tachometer-alt"></i> لوحة التحكم
-                    </a>
-                </div>
-            </fieldset>
-        </aside>
-
-    </div>
-
-    <div class="visually-hidden" aria-live="polite" id="live-announcer"></div>
-    <div id="save-toast" class="toast"></div>
-    <div id="export-loading-overlay" class="modal-overlay">
-        <div class="modal-content" style="text-align: center;">
-            <div class="spinner" style="margin: 0 auto 15px auto;"></div>
-            <p>جاري تجهيز الصورة عالية الجودة، قد يستغرق الأمر بضع لحظات...</p>
-        </div>
-    </div>
-
-    <div id="export-modal-overlay" class="modal-overlay">
-        <div class="modal-content">
-            <h3>خيارات التصدير</h3>
-            <button id="export-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
-            <div class="form-group">
-                <label for="export-format">نوع الملف</label>
-                <select id="export-format">
-                    <option value="png">PNG (جودة عالية)</option>
-                    <option value="jpeg">JPEG (حجم أصغر)</option>
-                </select>
-            </div>
-            <div class="form-group" id="export-quality-group" style="display: none;">
-                <label for="export-quality">الجودة (1-100)</label>
-                <div class="quality-slider-wrapper">
-                    <input type="range" id="export-quality" min="10" max="100" value="92">
-                    <span id="export-quality-value">92</span>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>حجم الصورة (الدقة) <i class="fas fa-question-circle"
-                        data-tooltip="اختر 2x أو 3x للحصول على جودة مناسبة للطباعة." aria-hidden="true"></i></label>
-                <div class="scale-buttons">
-                    <button class="scale-btn" data-scale="1">1x (ويب)</button>
-                    <button class="scale-btn selected" data-scale="2">2x (طباعة)</button>
-                    <button class="scale-btn" data-scale="3">3x (فائقة)</button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="confirm-export-btn" class="modal-confirm">تأكيد الحفظ</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="gallery-modal-overlay" class="modal-overlay">
-        <div class="modal-content gallery-modal">
-            <h3>معرض التصاميم المحفوظة</h3>
-            <button id="gallery-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
-            <div id="gallery-grid" class="gallery-grid">
-            </div>
-            <div class="modal-footer">
-                <button id="gallery-select-all">تحديد الكل</button>
-                <button id="gallery-deselect-all">إلغاء تحديد الكل</button>
-                <button id="gallery-download-zip" class="modal-confirm" disabled><i class="fas fa-file-archive"
-                        aria-hidden="true"></i> تحميل المحددات (ZIP)</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="share-fallback-modal-overlay" class="modal-overlay">
-        <div class="modal-content">
-            <h3>مشاركة الرابط</h3>
-            <button id="share-fallback-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
-            <p>متصفحك لا يدعم المشاركة المباشرة. استخدم أحد الخيارات التالية:</p>
-            <div class="share-fallback-buttons">
-                <a id="share-email" target="_blank"><i class="fas fa-envelope" aria-hidden="true"></i> بريد
-                    إلكتروني</a>
-                <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> واتساب</a>
-                <a id="share-twitter" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i> تويتر</a>
-                <button id="share-copy-link"><i class="fas fa-copy" aria-hidden="true"></i> نسخ الرابط</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- === مودال التحرير الجماعي الجديد === -->
-    <div id="collab-modal-overlay" class="modal-overlay">
-        <div class="modal-content">
-            <h3>جلسة التحرير الجماعي</h3>
-            <button id="collab-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
-            <p>شارك هذا الرابط مع الآخرين لدعوتهم للتحرير معك في الوقت الفعلي.</p>
-            <div class="form-group">
-                <label for="collab-link-input">رابط الجلسة</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="collab-link-input" readonly style="flex-grow: 1;">
-                    <button id="copy-collab-link-btn" class="btn btn-secondary"
-                        style="width: auto; margin-top: 0;">نسخ</button>
-                </div>
-            </div>
-            <p style="font-size: 0.8rem; color: var(--text-secondary);">ملاحظة: أي شخص لديه هذا الرابط يمكنه تعديل
-                تصميمك. ستنتهي الجلسة عند إغلاق الصفحة.</p>
-            <div id="collab-status" style="margin-top: 15px; font-weight: bold;">الحالة: غير متصل</div>
-        </div>
-    </div>
-
-    <audio id="audio-success"
-        src="data:audio/mpeg;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhBQAAAAgAAgA="></audio>
-    <audio id="audio-error"
-        src="data:audio/mpeg;base64,UklGRkYAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YSIBAAD2/v3//vj79/77/P/8/f7/+Pn49/b19fXz9PLu8erw6+7k6uTm5+Th49/f3tna2tXW1dvT1tHX0dnP0c/NzczGxcTDwsHCwsHCwsHCAgA="></audio>
-
-    <div id="qrcode-container" class="visually-hidden"></div>
-    <div id="qr-code-temp-generator"></div>
-
-    <button id="back-to-top-btn" title="الرجوع للأعلى" aria-label="الرجوع إلى أعلى الصفحة"><i class="fas fa-arrow-up"
-            aria-hidden="true"></i></button>
-
-    <div id="help-modal-overlay" class="modal-overlay">
-        <div class="modal-content" style="max-width: 700px;">
-            <h3 style="text-align: center; margin-top: 0;">مركز المساعدة</h3>
-            <button id="help-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
-
-            <nav class="help-tabs-nav">
-                <button class="help-tab-btn active" data-tab-target="tab-video-tutorial">
-                    <i class="fas fa-play-circle"></i> شرح بالفيديو
-                </button>
-                <button class="help-tab-btn" data-tab-target="tab-faq">
-                    <i class="fas fa-question-circle"></i> أسئلة شائعة
-                </button>
-            </nav>
-
-            <div class="help-tabs-content">
-                <div id="tab-video-tutorial" class="help-tab-pane active">
-                    <h4>شرح سريع لوظائف المحرر</h4>
-                    <p>شاهد هذا الفيديو القصير (دقيقة واحدة) لمعرفة كيفية استخدام أهم الميزات.</p>
-                    <div class="video-container">
-                        <iframe src="" title="YouTube video player" frameborder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen></iframe>
-                    </div>
-                    <hr>
-                    <h4>شروحات متحركة (GIFs)</h4>
-                    <div class="gif-grid">
-                        <div>
-                            <p><strong>1. تغيير مكان العناصر</strong></p>
-                            <img src="https://media.giphy.com/media/3o7TKSjRrfIPjeI6e4/giphy.gif"
-                                alt="شرح متحرك لكيفية سحب وإفلات العناصر">
-                        </div>
-                        <div>
-                            <p><strong>2. رفع شعار خاص بك</strong></p>
-                            <img src="https://media.giphy.com/media/l41lUj1oeHo1h2b1S/giphy.gif"
-                                alt="شرح متحرك لكيفية رفع شعار">
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-faq" class="help-tab-pane">
-                    <details class="fieldset-accordion" open>
-                        <summary>كيف أغير مكان الشعار أو الاسم؟</summary>
-                        <div class="fieldset-content">
-                            <p>ببساطة، اضغط على العنصر الذي تريد تحريكه (مثل الشعار أو مربع النص) واستمر بالضغط مع
-                                سحبه
-                                إلى المكان الجديد على البطاقة.</p>
-                        </div>
-                    </details>
-                    <details class="fieldset-accordion">
-                        <summary>لا يظهر رمز الـ QR، ماذا أفعل؟</summary>
-                        <div class="fieldset-content">
-                            <p>تأكد من اختيار مصدر للرمز من قسم "رمز الاستجابة السريعة (QR)". الخيار الموصى به هو
-                                "رابط
-                                البطاقة"، وبعد اختياره اضغط على زر "إنشاء/تحديث QR Code".</p>
-                        </div>
-                    </details>
-                    <details class="fieldset-accordion">
-                        <summary>كيف أحفظ التصميم كصورة؟</summary>
-                        <div class="fieldset-content">
-                            <p>من شريط الأدوات العلوي، اضغط على زر "تنزيل" واختر "صورة الواجهة" أو "صورة الخلفية".
-                            </p>
-                        </div>
-                    </details>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- مودال قص الصور الجديد -->
-    <div id="crop-modal-overlay" class="modal-overlay">
-        <div class="modal-content crop-modal-content">
-            <h3>قص الصورة</h3>
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 15px;">
-                حرّك الصورة لتحديد الجزء المطلوب ثم اضغط "تأكيد".
-            </p>
-
-            <!-- الحاوية الجديدة التي سيتم تعبئتها بواسطة JavaScript -->
-            <div id="crop-image-container">
-                <!-- سيتم إنشاء عنصر IMG هنا ديناميكياً -->
-            </div>
-
-            <div class="modal-footer" style="justify-content: flex-end;">
-                <button id="cancel-crop-btn" class="btn btn-secondary" style="width: auto;">إلغاء</button>
-                <button id="confirm-crop-btn" class="modal-confirm" style="width: auto; flex-grow: 1;">تأكيد
-                    القص</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- AI Backgrounds Modal -->
-    <div id="ai-backgrounds-modal" class="ai-modal-overlay" style="display: none;">
-        <div class="ai-modal">
-            <div class="ai-modal-header">
-                <h3><i class="fas fa-magic"></i> خلفيات بالذكاء الاصطناعي</h3>
-                <button id="close-ai-modal" class="ai-modal-close">&times;</button>
-            </div>
-            <div class="ai-modal-body">
-                <p class="ai-modal-subtitle">اختر نوع الخلفية التي تفضلها:</p>
-
-                <div class="ai-patterns-grid">
-                    <!-- Geometric Pattern -->
-                    <div class="ai-pattern-card" data-pattern="geometric">
-                        <div class="ai-pattern-preview"
-                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <div class="pattern-overlay geometric-pattern"></div>
-                            <i class="fas fa-shapes"></i>
-                        </div>
-                        <span>هندسي</span>
-                    </div>
-
-                    <!-- Gradient Pattern -->
-                    <div class="ai-pattern-card" data-pattern="gradient">
-                        <div class="ai-pattern-preview"
-                            style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                            <i class="fas fa-fill-drip"></i>
-                        </div>
-                        <span>تدرج لوني</span>
-                    </div>
-
-                    <!-- Abstract Pattern -->
-                    <div class="ai-pattern-card" data-pattern="abstract">
-                        <div class="ai-pattern-preview"
-                            style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                            <div class="pattern-overlay abstract-pattern"></div>
-                            <i class="fas fa-paint-brush"></i>
-                        </div>
-                        <span>تجريدي</span>
-                    </div>
-
-                    <!-- Waves Pattern -->
-                    <div class="ai-pattern-card" data-pattern="waves">
-                        <div class="ai-pattern-preview"
-                            style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
-                            <div class="pattern-overlay waves-pattern"></div>
-                            <i class="fas fa-water"></i>
-                        </div>
-                        <span>موجات</span>
-                    </div>
-
-                    <!-- Dots Pattern -->
-                    <div class="ai-pattern-card" data-pattern="dots">
-                        <div class="ai-pattern-preview"
-                            style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
-                            <div class="pattern-overlay dots-pattern"></div>
-                            <i class="fas fa-braille"></i>
-                        </div>
-                        <span>نقاط</span>
-                    </div>
-
-                    <!-- Lines Pattern -->
-                    <div class="ai-pattern-card" data-pattern="lines">
-                        <div class="ai-pattern-preview"
-                            style="background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);">
-                            <div class="pattern-overlay lines-pattern"></div>
-                            <i class="fas fa-grip-lines"></i>
-                        </div>
-                        <span>خطوط</span>
-                    </div>
-
-                    <!-- Triangles Pattern -->
-                    <div class="ai-pattern-card" data-pattern="triangles">
-                        <div class="ai-pattern-preview"
-                            style="background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);">
-                            <div class="pattern-overlay triangles-pattern"></div>
-                            <i class="fas fa-play"></i>
-                        </div>
-                        <span>مثلثات</span>
-                    </div>
-
-                    <!-- Noise Pattern -->
-                    <div class="ai-pattern-card" data-pattern="noise">
-                        <div class="ai-pattern-preview"
-                            style="background: linear-gradient(135deg, #c471f5 0%, #fa71cd 100%);">
-                            <div class="pattern-overlay noise-pattern"></div>
-                            <i class="fas fa-random"></i>
-                        </div>
-                        <span>ضوضاء</span>
-                    </div>
-                </div>
-
-                <div class="ai-color-picker-section">
-                    <h4><i class="fas fa-palette"></i> اختر اللون الأساسي</h4>
-                    <div class="ai-color-options">
-                        <button class="ai-color-btn" data-color="#667eea" style="background: #667eea;"
-                            title="بنفسجي"></button>
-                        <button class="ai-color-btn" data-color="#f5576c" style="background: #f5576c;"
-                            title="وردي"></button>
-                        <button class="ai-color-btn" data-color="#4facfe" style="background: #4facfe;"
-                            title="أزرق"></button>
-                        <button class="ai-color-btn" data-color="#00f2fe" style="background: #00f2fe;"
-                            title="سماوي"></button>
-                        <button class="ai-color-btn" data-color="#43e97b" style="background: #43e97b;"
-                            title="أخضر"></button>
-                        <button class="ai-color-btn" data-color="#fa709a" style="background: #fa709a;"
-                            title="فوشيا"></button>
-                        <button class="ai-color-btn" data-color="#fee140" style="background: #fee140;"
-                            title="أصفر"></button>
-                        <button class="ai-color-btn" data-color="#30cfd0" style="background: #30cfd0;"
-                            title="تركواز"></button>
-                    </div>
-                </div>
-
-                <div class="ai-apply-section">
-                    <button id="ai-apply-front" class="btn btn-primary">
-                        <i class="fas fa-check"></i> تطبيق على الواجهة الأمامية
-                    </button>
-                    <button id="ai-apply-back" class="btn btn-secondary">
-                        <i class="fas fa-check"></i> تطبيق على الواجهة الخلفية
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- NEW: Floating button to exit preview mode -->
-    <button id="exit-preview-btn" class="btn btn-secondary"
-        style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">
-        <i class="fas fa-times"></i> الخروج من المعاينة
-    </button>
-
-    <nav class="mobile-bottom-nav">
-        <button class="mobile-nav-item active" data-target="panel-elements">
-            <i class="fas fa-pen"></i>
-            <span>المحتوى</span>
-        </button>
-        <button class="mobile-nav-item" data-target="panel-design">
-            <i class="fas fa-palette"></i>
-            <span>التصميم</span>
-        </button>
-        <button class="mobile-nav-item" data-target="panel-share">
-            <i class="fas fa-share-square"></i>
-            <span>حفظ ومشاركة</span>
-        </button>
-    </nav>
-    <!-- Footer -->
-    <footer class="site-footer" role="contentinfo">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>MC PRIME</h3>
-                    <p>نقدم حلول بطاقات العمل الذكية NFC للأفراد والشركات.</p>
-                </div>
-                <div class="footer-section">
-                    <h3>روابط سريعة</h3>
-                    <ul role="list">
-                        <li><a href="index.html#features">المميزات</a></li>
-                        <li><a href="gallery.html">المعرض</a></li>
-                        <li><a href="blog.html">المدونة</a></li>
-                        <li><a href="dashboard.html">لوحة التحكم</a></li>
-                        <li><a href="editor.html">محرر التصميم</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>الدعم</h3>
-                    <ul role="list">
-                        <li><a href="index.html#faq">الأسئلة الشائعة</a></li>
-                        <li><a href="contact.html">اتصل بنا</a></li>
-                        <li><a href="privacy.html">سياسة الخصوصية</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>تابعنا</h3>
-                    <div class="social-links">
-                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="فيسبوك" title="زر صفحتنا على فيسبوك">
-                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="إنستغرام" title="تابعنا على إنستغرام">
-                            <i class="fab fa-instagram" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="لينكد إن" title="تواصل معنا على لينكد إن">
-                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener noreferrer"
-                            aria-label="واتساب" title="تواصل معنا على واتساب">
-                            <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 MC PRIME. جميع الحقوق محفوظة.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Mobile More Menu (Moved to body to avoid overflow issues) -->
-    <div id="toolbar-more-menu-floating" class="toolbar-more-menu">
-        <!-- Navigation Links (Mobile Only) -->
-        <a href="index.html" class="menu-item-link"><i class="fas fa-home"></i> الرئيسية</a>
-        <a href="dashboard.html" class="menu-item-link"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a>
-        <a href="gallery.html" class="menu-item-link"><i class="fas fa-images"></i> المعرض</a>
-        <a href="blog.html" class="menu-item-link"><i class="fas fa-blog"></i> المدونة</a>
-        <hr class="mobile-only-hr">
-
-        <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> المظهر</button>
-        <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> المعرض</button>
-        <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> حفظ بالمعرض</button>
-        <button id="start-collab-btn-menu"><i class="fas fa-users"></i> تعاون</button>
-        <button id="share-editor-btn-menu"><i class="fas fa-link"></i> مشاركة الرابط</button>
-        <hr>
-        <a href="login.html" class="menu-item-link"><i class="fas fa-sign-in-alt"></i> تسجيل دخول</a>
-        <hr>
-        <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> إعادة تعيين</button>
-    </div>
-</body>
-
-</html>
