@@ -142,12 +142,26 @@ app.use(cors(corsOptions));
 // Rate limiting عام لمسارات /api
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
+  max: 100,
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api/', apiLimiter);
+
+// Rate limiting خاص لمصادقة المستخدمين (أكثر صرامة)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'محاولات دخول/تسجيل كثيرة جداً، الرجاء الانتظار قليلاً. / Too many auth attempts, please try again later.'
+});
+app.use('/api/auth/', authLimiter);
+
+// Rate limiting خاص لرفع الملفات تجنباً لاستنزاف مساحة التخزين أو الباندويث
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: 'عمليات رفع كثيرة جداً، الرجاء المحاولة لاحقاً. / Too many upload attempts, please try again later.'
+});
+app.use('/api/upload-image', uploadLimiter);
 
 // --- انتهى إعداد الأمن ---
 
