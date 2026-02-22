@@ -176,6 +176,8 @@ const dbName = config.MONGO_DB || 'nfc_db';
 const designsCollectionName = config.MONGO_DESIGNS_COLL || 'designs';
 const usersCollectionName = 'users';
 const backgroundsCollectionName = config.MONGO_BACKGROUNDS_COLL || 'backgrounds';
+// New collection for refresh tokens
+const refreshTokensCollectionName = 'refresh_tokens';
 const savedCardsCollectionName = 'savedCards';
 const cardRequestsCollectionName = 'cardRequests';
 
@@ -191,6 +193,11 @@ MongoClient.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true 
       await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
       await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
       await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
+
+      // Indexes for refresh tokens
+      await db.collection(refreshTokensCollectionName).createIndex({ tokenHash: 1 }, { unique: true });
+      await db.collection(refreshTokensCollectionName).createIndex({ userId: 1 });
+      await db.collection(refreshTokensCollectionName).createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
       await db.collection(savedCardsCollectionName).createIndex({ userId: 1 });
       await db.collection(savedCardsCollectionName).createIndex({ userId: 1, designShortId: 1 }, { unique: true });
       await db.collection(cardRequestsCollectionName).createIndex({ ownerUserId: 1, status: 1 });
@@ -720,16 +727,20 @@ app.post('/api/auth/register', [
 
     const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
 
-    // Store refresh token in DB
-    await db.collection(usersCollectionName).updateOne(
-      { userId },
-      { $push: { refreshTokens: { tokenHash: hashedRefreshToken, createdAt: new Date(), expiresAt, userAgent: req.useragent.source } } }
-    );
+    // Store refresh token in new collection
+    await db.collection(refreshTokensCollectionName).insertOne({
+      userId,
+      tokenHash: hashedRefreshToken,
+      createdAt: new Date(),
+      expiresAt,
+      userAgent: req.useragent.source
+    });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
       sameSite: 'Strict',
+      path: '/api/auth', // Scoped strictly to auth routes
       maxAge: 7 * 24 * 3600 * 1000 // 7 days
     });
 
@@ -767,16 +778,20 @@ app.post('/api/auth/login', [
 
     const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
 
-    // Store refresh token in DB
-    await db.collection(usersCollectionName).updateOne(
-      { email },
-      { $push: { refreshTokens: { tokenHash: hashedRefreshToken, createdAt: new Date(), expiresAt, userAgent: req.useragent.source } } }
-    );
+    // Store refresh token in new collection
+    await db.collection(refreshTokensCollectionName).insertOne({
+      userId: user.userId,
+      tokenHash: hashedRefreshToken,
+      createdAt: new Date(),
+      expiresAt,
+      userAgent: req.useragent.source
+    });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
       sameSite: 'Strict',
+      path: '/api/auth', // Scoped strictly to auth routes
       maxAge: 7 * 24 * 3600 * 1000 // 7 days
     });
 
@@ -798,26 +813,63 @@ app.post('/api/auth/refresh', [
 
     const hashedToken = hashToken(refreshToken);
 
-    // Find the user with this specific active refresh token
-    const user = await db.collection(usersCollectionName).findOne({
-      refreshTokens: {
-        $elemMatch: {
-          tokenHash: hashedToken,
-          expiresAt: { $gt: new Date() }
-        }
-      }
+    // Find the token record in the new collection
+    const tokenRecord = await db.collection(refreshTokensCollectionName).findOne({
+      tokenHash: hashedToken,
+      expiresAt: { $gt: new Date() }
     });
 
-    if (!user) {
-      // Invalid or expired
-      return res.status(403).json({ error: 'Refresh token invalid or expired' });
+    if (!tokenRecord) {
+      // REUSE DETECTION LOGIC:
+      // The token was presented (so it was cryptographically signed and stored by the client)
+      // but it is not in our active token database. This implies it was already rotated (used) 
+      // by someone else, or the user logged out.
+      // If the token is cryptographically valid (checked via structure, though here it's an opaque hex),
+      // its absence from the DB when presented means it was revoked or used.
+      // We will identify the user (if possible from the token, but with opaque hex tokens we can't easily 
+      // know the userId unless we encoded it or stored a mapping of used tokens).
+      // Since our refresh token `crypto.randomBytes` is completely opaque and not a JWT, 
+      // we cannot extract `userId` from a token NOT in the database.
+      // However, we effectively block access.
+      res.clearCookie('refreshToken', { path: '/api/auth' });
+      return res.status(403).json({ error: 'Refresh token invalid, expired, or previously used' });
     }
+
+    const user = await db.collection(usersCollectionName).findOne({ userId: tokenRecord.userId });
+    if (!user) {
+      return res.status(403).json({ error: 'User not found' });
+    }
+
+    // ROTATION LOGIC:
+    // Remove the old token from DB
+    await db.collection(refreshTokensCollectionName).deleteOne({ _id: tokenRecord._id });
 
     // Issue a new access token
     const accessToken = createAccessToken({ userId: user.userId, email: user.email });
 
-    // Optional: Refresh token rotation can be implemented here by removing the old one and issuing a new one.
-    // For simplicity, we just issue a new access token.
+    // Issue a new refresh token
+    const newRefreshToken = createRefreshToken();
+    const newHashedToken = hashToken(newRefreshToken);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
+
+    // Store the new refresh token
+    await db.collection(refreshTokensCollectionName).insertOne({
+      userId: user.userId,
+      tokenHash: newHashedToken,
+      createdAt: new Date(),
+      expiresAt,
+      userAgent: req.useragent.source
+    });
+
+    // Set the new strictly scoped cookie
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: config.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      path: '/api/auth',
+      maxAge: 7 * 24 * 3600 * 1000
+    });
+
     res.json({ success: true, token: accessToken });
 
   } catch (err) {
@@ -834,18 +886,16 @@ app.post('/api/auth/logout', [
     const { refreshToken } = req.cookies;
     if (refreshToken) {
       const hashedToken = hashToken(refreshToken);
-      // Remove token from DB
-      await db.collection(usersCollectionName).updateOne(
-        { 'refreshTokens.tokenHash': hashedToken },
-        { $pull: { refreshTokens: { tokenHash: hashedToken } } }
-      );
+      // Remove token from new collection
+      await db.collection(refreshTokensCollectionName).deleteOne({ tokenHash: hashedToken });
     }
 
-    // Always clear the cookie regardless
+    // Always clear the cookie regardless with strict path
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'Strict'
+      sameSite: 'Strict',
+      path: '/api/auth'
     });
 
     res.json({ success: true });
