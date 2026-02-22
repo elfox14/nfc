@@ -1,15 +1,16 @@
 // sitemap_generator.js
 require('dotenv').config();
+const config = require('./config');
 const { MongoClient } = require('mongodb');
 const fs = require('fs');
 const path = require('path');
 
 // --- إعدادات ---
 // يجب أن يكون هذا هو النطاق الفعلي للموقع
-const SITE_BASE_URL = 'https://www.mcprim.com/nfc'; 
-const MONGO_URI = process.env.MONGO_URI;
-const DB_NAME = process.env.MONGO_DB || 'nfc_db';
-const COLLECTION_NAME = process.env.MONGO_DESIGNS_COLL || 'designs';
+const SITE_BASE_URL = 'https://www.mcprim.com/nfc';
+const MONGO_URI = config.MONGO_URI;
+const DB_NAME = config.MONGO_DB || 'nfc_db';
+const COLLECTION_NAME = config.MONGO_DESIGNS_COLL || 'designs';
 
 // مسار حفظ الملف (يفترض أن الملف يتم تشغيله في الجذر ويتم الحفظ في المجلد الحالي الذي يخدمه السيرفر)
 const OUTPUT_PATH = path.join(__dirname, 'sitemap.xml');
@@ -49,7 +50,7 @@ function generateSitemapXml(ids) {
         xml += `    <priority>${page.priority}</priority>\n`;
         xml += `  </url>\n`;
     });
-    
+
     // 2. إضافة صفحات البطاقات الديناميكية
     // نستخدم viewer.html?id=ID لأنه الطريقة التي يعمل بها السيرفر حالياً
     ids.forEach(id => {
@@ -78,10 +79,10 @@ async function main() {
         console.log('Fetching card IDs from the database...');
         // جلب أحدث 5000 تصميم فقط لتجنب ملفات ضخمة جداً في البداية
         const designs = await collection.find({}, { projection: { shortId: 1, _id: 0 } })
-                                      .sort({ createdAt: -1 })
-                                      .limit(5000)
-                                      .toArray();
-        
+            .sort({ createdAt: -1 })
+            .limit(5000)
+            .toArray();
+
         const ids = designs.map(d => d.shortId).filter(id => id);
 
         if (ids.length === 0) {

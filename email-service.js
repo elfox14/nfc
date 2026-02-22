@@ -7,14 +7,15 @@
  * Currently supports console logging for development.
  * For production, configure with SendGrid, Resend, or Mailgun.
  */
+const appConfig = require('./config');
 
 const EmailService = {
     // Configuration
     config: {
-        provider: process.env.EMAIL_PROVIDER || 'console', // 'console', 'sendgrid', 'resend'
-        apiKey: process.env.EMAIL_API_KEY || '',
-        fromEmail: process.env.EMAIL_FROM_ADDRESS || 'noreply@mcprim.com',
-        fromName: process.env.EMAIL_FROM_NAME || 'MC PRIME NFC'
+        provider: appConfig.EMAIL_PROVIDER || 'console', // 'console', 'sendgrid', 'resend'
+        apiKey: appConfig.EMAIL_API_KEY || '',
+        fromEmail: appConfig.EMAIL_FROM_ADDRESS || 'noreply@mcprim.com',
+        fromName: appConfig.EMAIL_FROM_NAME || 'MC PRIME NFC'
     },
 
     /**
