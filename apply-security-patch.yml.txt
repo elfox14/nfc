@@ -1,0 +1,320 @@
+name: Apply Security Patch
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  apply_patch:
+    name: Create security/hardening branch and open PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create directory structure
+        run: |
+          mkdir -p utils middleware models routes
+
+      - name: Add .env.example
+        run: |
+          cat <<'EOF' > .env.example
+# .env.example
+# احفظ هذا في .env على جهازك المحلي (ولا ترفع .env إلى git)
+MONGO_URI=mongodb+srv://...
+JWT_SECRET=replace_with_strong_jwt_secret
+FIELD_ENCRYPTION_KEY=GENERATE_64_HEX_CHARS # 32 bytes hex -> استخدام لتشفير الحقول
+ALLOWED_ORIGINS=https://your-domain.com,https://app.your-domain.com
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+NODE_ENV=development
+PORT=3000
+TRUST_PROXY=false
+
+# لتوليد مفتاح تشفير آمن:
+# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+EOF
+
+      - name: Add utils/field-encryption.js
+        run: |
+          cat <<'EOF' > utils/field-encryption.js
+const crypto = require('crypto');
+const ALGO = 'aes-256-gcm';
+const KEY_HEX = process.env.FIELD_ENCRYPTION_KEY;
+if (!KEY_HEX) throw new Error('Missing FIELD_ENCRYPTION_KEY env var');
+const KEY = Buffer.from(KEY_HEX, 'hex'); // 32 bytes
+
+function encrypt(text) {
+  if (text == null) return text;
+  const iv = crypto.randomBytes(12); // 96-bit iv for GCM
+  const cipher = crypto.createCipheriv(ALGO, KEY, iv);
+  const encrypted = Buffer.concat([cipher.update(String(text), 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `${iv.toString('hex')}:${encrypted.toString('hex')}:${tag.toString('hex')}`;
+}
+
+function decrypt(payload) {
+  if (!payload) return payload;
+  const [ivHex, encryptedHex, tagHex] = payload.split(':');
+  if (!ivHex || !encryptedHex || !tagHex) return null;
+  const iv = Buffer.from(ivHex, 'hex');
+  const encrypted = Buffer.from(encryptedHex, 'hex');
+  const tag = Buffer.from(tagHex, 'hex');
+  const decipher = crypto.createDecipheriv(ALGO, KEY, iv);
+  decipher.setAuthTag(tag);
+  const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+  return decrypted.toString('utf8');
+}
+
+module.exports = { encrypt, decrypt };
+EOF
+
+      - name: Add middleware/auth-middleware.js
+        run: |
+          cat <<'EOF' > middleware/auth-middleware.js
+const jwt = require('jsonwebtoken');
+
+module.exports = function(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : (req.cookies && req.cookies.token);
+    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = payload;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+};
+EOF
+
+      - name: Add security.js
+        run: |
+          cat <<'EOF' > security.js
+require('dotenv').config();
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
+const express = require('express');
+
+module.exports = function applySecurity(app) {
+  if (String(process.env.TRUST_PROXY || '').toLowerCase() === 'true' ||
+      process.env.TRUST_PROXY === '1') {
+    app.set('trust proxy', 1);
+  }
+
+  app.use(helmet());
+
+  try {
+    app.use(
+      helmet.contentSecurityPolicy({
+        useDefaults: true,
+        directives: {
+          "script-src": ["'self'", "'unsafe-inline'"],
+          "img-src": ["'self'", "data:", "https:"],
+          "connect-src": ["'self'", "https:"],
+        },
+      })
+    );
+  } catch (e) {
+    console.warn('CSP init warning', e && e.message);
+  }
+
+  app.use(express.json({ limit: '10kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+  app.use(cookieParser());
+
+  app.use(mongoSanitize());
+  app.use(xss());
+  app.use(hpp());
+
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean);
+
+  const corsOptions = {
+    origin: function(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type','Authorization']
+  };
+
+  app.use(cors(corsOptions));
+
+  const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false
+  });
+  app.use(generalLimiter);
+
+  try {
+    app.use(helmet.hsts({ maxAge: 90 * 24 * 60 * 60, includeSubDomains: true, preload: true }));
+  } catch (e) {
+    console.warn('HSTS init warning', e && e.message);
+  }
+};
+EOF
+
+      - name: Add models/User.js
+        run: |
+          cat <<'EOF' > models/User.js
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const { encrypt, decrypt } = require('../utils/field-encryption');
+
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  password: { type: String, required: true, select: false },
+  phoneEncrypted: { type: String, select: false },
+}, {
+  timestamps: true,
+  toJSON: { getters: true },
+  toObject: { getters: true }
+});
+
+userSchema.virtual('phone')
+  .get(function() {
+    if (!this.phoneEncrypted) return undefined;
+    try { return decrypt(this.phoneEncrypted); } catch (e) { return undefined; }
+  })
+  .set(function(plain) {
+    this.phoneEncrypted = plain ? encrypt(plain) : undefined;
+  });
+
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  const salt = await bcrypt.genSalt(12);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+userSchema.methods.comparePassword = async function(plain) {
+  return bcrypt.compare(plain, this.password);
+};
+
+module.exports = mongoose.model('User', userSchema);
+EOF
+
+      - name: Add routes/auth.js
+        run: |
+          cat <<'EOF' > routes/auth.js
+const express = require('express');
+const { body, validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const rateLimit = require('express-rate-limit');
+
+const router = express.Router();
+
+function handleValidationErrors(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  next();
+}
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 8,
+  message: 'Too many auth attempts from this IP, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false
+});
+router.use(authLimiter);
+
+router.post('/register', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 8 }),
+  body('phone').optional().trim().escape()
+], handleValidationErrors, async (req, res) => {
+  try {
+    const { email, password, phone } = req.body;
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(409).json({ message: 'Email already registered' });
+
+    const user = new User({ email, password });
+    if (phone) user.phone = phone;
+    await user.save();
+    res.status(201).json({ message: 'User created' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.post('/login', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').exists()
+], handleValidationErrors, async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+
+    const ok = await user.comparePassword(password);
+    if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
+
+    const token = jwt.sign({ sub: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 60 * 60 * 1000
+    });
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+module.exports = router;
+EOF
+
+      - name: Add SECURITY_PATCH_INSTRUCTIONS.md
+        run: |
+          cat <<'EOF' > SECURITY_PATCH_INSTRUCTIONS.md
+# SECURITY_PATCH_INSTRUCTIONS.md
+
+ملف هذا الـ patch يضيف ملفات أمان مهمة. اتبع التعليمات لمراجعة ودمج التغييرات:
+
+1. بعد تشغيل هذا الـ Workflow سيتم فتح PR باسم "Security: hardening + field encryption".
+2. راجع التغييرات في PR، ثم ادمجها إلى الفرع الرئيسي بعد المراجعة.
+3. تأكد من ضبط الأسرار (JWT_SECRET, FIELD_ENCRYPTION_KEY, MONGO_URI, CLOUDINARY_*) في GitHub Secrets أو Secret Manager.
+4. قم بتثبيت التبعيات محليًا واختبر قبل النشر:
+   npm install helmet express-rate-limit cors express-validator xss-clean hpp express-mongo-sanitize cookie-parser compression express-useragent mongodb nanoid bcryptjs jsonwebtoken multer sharp ejs jsdom dompurify ws dotenv
+EOF
+
+      - name: Create Pull Request with changes
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Security: add hardening files"
+          branch: security/hardening
+          title: "Security: hardening + field encryption"
+          body: |
+            This PR adds security hardening files:
+            - .env.example
+            - utils/field-encryption.js
+            - middleware/auth-middleware.js
+            - security.js
+            - models/User.js
+            - routes/auth.js
+            - SECURITY_PATCH_INSTRUCTIONS.md
+
+            **Please review before merging.**
+          labels: security, automated
