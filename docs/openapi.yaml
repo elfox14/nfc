@@ -1,0 +1,103 @@
+openapi: 3.0.0
+info:
+  title: Digital Business Card NFC API
+  version: 2.0.0
+  description: NFC Business Card API Endpoints covering Authentication, Token Refresh, and Design Access.
+servers:
+  - url: http://localhost:3000/api
+    description: Local development environment
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /auth/login:
+    post:
+      summary: User Login
+      description: Logs an existing user into the platform. Issues an access token and an HTTPOnly refresh cookie.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Successfully Authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  token:
+                    type: string
+                  user:
+                    type: object
+        '400':
+          description: Invalid Credentials
+
+  /auth/refresh:
+    post:
+      summary: Refresh Access Token
+      description: Retrieves a new short-lived JWT using the stored HTTPOnly refresh token.
+      responses:
+        '200':
+          description: Successfully Responded with a new JWT Token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  token:
+                    type: string
+        '401':
+          description: Token mismatch or rotation violation.
+
+  /nfc/sign:
+    post:
+      summary: Encode a 30d NFC Token
+      description: Returns a secure JWT proxy token linked to an associated NFC physical card identifier.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - designId
+              properties:
+                designId:
+                  type: string
+      responses:
+        '200':
+          description: Successfully created the NFC link redirect token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  signedUrl:
+                    type: string
+                    format: uri

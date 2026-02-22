@@ -283,6 +283,19 @@ MongoClient.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true 
   })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
+// --- Redis Setup (Ticket 10) ---
+const redis = require('redis');
+let redisClient = null;
+if (process.env.REDIS_URL) {
+  redisClient = redis.createClient({ url: process.env.REDIS_URL });
+  redisClient.on('error', (err) => console.error('Redis Client Error', err));
+  redisClient.connect()
+    .then(() => console.log('Redis connected successfully'))
+    .catch(err => console.error('Redis connection failed:', err));
+} else {
+  console.warn('REDIS_URL not set. Caching will gracefully bypass.');
+}
+
 // --- Utilities & sanitizers (كما كنت تستخدم) ---
 function absoluteBaseUrl(req) {
   const envBase = config.SITE_BASE_URL;
@@ -338,11 +351,40 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], [
       return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
     }
 
-    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    let doc = null;
+    let fromCache = false;
+
+    // 1. Try serving from Redis Cache
+    if (redisClient && redisClient.isReady) {
+      try {
+        const cachedDoc = await redisClient.get(`design:${id}`);
+        if (cachedDoc) {
+          doc = JSON.parse(cachedDoc);
+          fromCache = true;
+        }
+      } catch (err) {
+        console.warn('Redis GET failed:', err.message);
+      }
+    }
+
+    // 2. Fallback to MongoDB if not cached
+    if (!doc) {
+      doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    }
 
     if (!doc || !doc.data) {
       res.setHeader('X-Robots-Tag', 'noindex, noarchive');
       return res.status(404).send('Design not found or data is missing');
+    }
+
+    // 3. Populate Redis Cache if fetched directly from Mongo
+    if (!fromCache && redisClient && redisClient.isReady) {
+      try {
+        // Cache for 60 seconds
+        await redisClient.setEx(`design:${id}`, 60, JSON.stringify(doc));
+      } catch (err) {
+        console.warn('Redis SET failed:', err.message);
+      }
     }
 
     db.collection(designsCollectionName).updateOne(
@@ -351,6 +393,8 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], [
     ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
 
     res.setHeader('X-Robots-Tag', 'index, follow');
+    // Set HTTP Cache Headers for CDN/Browsers (Ticket 10)
+    res.setHeader('Cache-Control', 'public, max-age=60');
 
     const base = absoluteBaseUrl(req);
     const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
@@ -1173,7 +1217,12 @@ wss.on('connection', (ws, req) => {
 });
 
 // --- Start server ---
-server.listen(port, () => {
-  console.log(`Server running on port: ${port}`);
-  console.log('WebSocket server is also running.');
-});
+if (require.main === module) {
+  server.listen(port, () => {
+    console.log(`Server running on port: ${port}`);
+    console.log('WebSocket server is also running.');
+  });
+}
+
+// Export Express App for Testing
+module.exports = app;

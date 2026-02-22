@@ -6,6 +6,8 @@
 
 **منصة متكاملة لإنشاء ومشاركة بطاقات الأعمال الرقمية باستخدام تقنية NFC**
 
+[![Node.js CI](https://github.com/your-username/nfc/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/nfc/actions/workflows/ci.yml)
+
 [العرض التجريبي](https://mcprim.com/nfc) | [التوثيق](#التثبيت) | [المساهمة](./CONTRIBUTING.md)
 
 </div>
@@ -100,7 +102,8 @@ nfc/
 5. **إعداد الأسرار (Secrets Manager)**:
    - اذهب إلى لوحة التحكم الخاصة باستضافتك (Environment variables / Secrets).
    - قم بإضافة جميع المتغيرات المذكورة في ملف `.env.example` يدويًا هناك بدلاً من رفع الملف.
-   - من أهم المتغيرات التي يجب إضافتها: `MONGO_URI`، `JWT_SECRET`، `CLOUDINARY_CLOUD_NAME`، `CLOUDINARY_API_KEY`، `CLOUDINARY_API_SECRET` وغيرها من المفاتيح الحساسة. لن يعمل الخادم بدون قيم صحيحة لهذه المتغيرات نظرًا لأن النظام يفرض التحقق من وجودها لحماية تطبيقك من العمل بكلمات مرور افتراضية ولتفعيل الرفع المباشر والآمن للصور على Cloudinary.
+   - من أهم المتغيرات التي يجب إضافتها: `MONGO_URI`، `JWT_SECRET`، `CLOUDINARY_CLOUD_NAME`، `CLOUDINARY_API_KEY`، `CLOUDINARY_API_SECRET` وغيرها من المفاتيح الحساسة. لن يعمل الخادم بدون قيم صحيحة لهذه المتغيرات نظرًا لأن النظام يفرض التحقق من وجودها لحماية تطبيقك من العمل بكلمات مرور افتراضية ולتفعيل الرفع المباشر والآمن للصور على Cloudinary.
+   - **تقنيات المراقبة والأداء (اختياري ولكنه مفضل)**: لتفعيل خدمة التقاط الأخطاء ضع مفتاح `SENTRY_DSN`. ولتفعيل ذاكرة التخزينة المؤقتة السريعة العشوائية (Cache) ضع رابط خدمة التشغيل السريع `REDIS_URL`.
 
 ---
 
