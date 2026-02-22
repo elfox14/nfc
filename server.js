@@ -522,7 +522,18 @@ function handleMulterErrors(err, req, res, next) {
   next();
 }
 
-// Image upload route (كما كان لديك)
+const cloudinary = require('cloudinary').v2;
+
+// Configure Cloudinary if credentials exist
+if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
+  cloudinary.config({
+    cloud_name: config.CLOUDINARY_CLOUD_NAME,
+    api_key: config.CLOUDINARY_API_KEY,
+    api_secret: config.CLOUDINARY_API_SECRET
+  });
+}
+
+// Image upload route
 app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
@@ -537,6 +548,32 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
       .webp({ quality: 85 })
       .toBuffer();
 
+    // 1. Try Cloudinary First
+    if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
+      try {
+        const uploadResult = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: 'nfc/designs',
+              resource_type: 'image',
+              format: 'webp' // Force webp extension since our buffer is webp
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          uploadStream.end(processedBuffer);
+        });
+
+        console.log('[Upload] Image saved to Cloudinary:', uploadResult.secure_url);
+        return res.json({ success: true, url: uploadResult.secure_url });
+      } catch (cloudErr) {
+        console.warn('[Upload] Cloudinary upload failed, falling back to external/local:', cloudErr.message);
+      }
+    }
+
+    // 2. Try External PHP Fallback (existing logic)
     const externalUploadUrl = config.EXTERNAL_UPLOAD_URL;
     const uploadSecret = config.UPLOAD_SECRET;
 
@@ -568,6 +605,7 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
       }
     }
 
+    // 3. Ultimate Fallback: Local Disk
     const filename = nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
     fs.writeFileSync(out, processedBuffer);
@@ -579,7 +617,7 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
   } catch (e) {
     console.error('Image upload processing error:', e);
     if (!res.headersSent) {
-      return res.status(500).json({ error: 'فشل معالجة الصورة بعد الرفع.' });
+      res.status(500).json({ error: 'حدث خطأ غير متوقع أثناء معالجة الصورة.' });
     }
   }
 });
