@@ -1117,6 +1117,107 @@ app.post('/api/auth/logout', [
   }
 });
 
+// --- Google Auth ---
+const { OAuth2Client } = require('google-auth-library');
+
+app.get('/api/auth/google', (req, res) => {
+  const redirectUri = `${absoluteBaseUrl(req)}/api/auth/google/callback`;
+  const oauth2Client = new OAuth2Client(
+    config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
+    config.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri
+  );
+
+  const url = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
+  });
+
+  res.redirect(url);
+});
+
+app.get('/api/auth/google/callback', async (req, res) => {
+  try {
+    const redirectUri = `${absoluteBaseUrl(req)}/api/auth/google/callback`;
+    const oauth2Client = new OAuth2Client(
+      config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
+      config.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET,
+      redirectUri
+    );
+
+    const { tokens } = await oauth2Client.getToken(req.query.code);
+    oauth2Client.setCredentials(tokens);
+
+    const ticket = await oauth2Client.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    const email = payload.email;
+    const name = payload.name || 'مستخدم جوجل';
+    const googleId = payload.sub;
+
+    let user = await db.collection(usersCollectionName).findOne({ email });
+    if (!user) {
+      user = {
+        userId: nanoid(10),
+        email,
+        name,
+        isVerified: true,
+        createdAt: new Date(),
+        googleId
+      };
+      await db.collection(usersCollectionName).insertOne(user);
+    }
+
+    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    const refreshToken = createRefreshToken();
+    const hashedRefreshToken = hashToken(refreshToken);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+
+    await db.collection(refreshTokensCollectionName).insertOne({
+      userId: user.userId,
+      tokenHash: hashedRefreshToken,
+      createdAt: new Date(),
+      expiresAt,
+      userAgent: req.useragent ? req.useragent.source : 'google-auth'
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: config.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      path: '/api/auth',
+      maxAge: 7 * 24 * 3600 * 1000
+    });
+
+    res.send(`
+      <script>
+        window.opener.postMessage({
+          type: 'google-auth',
+          success: true,
+          token: '${accessToken}',
+          user: { name: '${user.name.replace(/'/g, "\\'")}', email: '${user.email}', userId: '${user.userId}' }
+        }, '*');
+        window.close();
+      </script>
+    `);
+  } catch (err) {
+    console.error('Google Auth Error:', err);
+    res.send(`
+      <script>
+        window.opener.postMessage({
+          type: 'google-auth',
+          success: false,
+          error: 'فشل تسجيل الدخول بواسطة جوجل'
+        }, '*');
+        window.close();
+      </script>
+    `);
+  }
+});
+
 // --- NFC API ---
 app.post('/api/nfc/sign', verifyToken, [
   body('designId').isString().notEmpty().trim().escape()
