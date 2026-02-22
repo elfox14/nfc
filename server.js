@@ -93,22 +93,60 @@ app.use(xss());
 // Prevent HTTP Parameter Pollution
 app.use(hpp());
 
+const crypto = require('crypto');
+
+// Middleware to generate a unique nonce per request
+app.use((req, res, next) => {
+  res.locals.nonce = crypto.randomBytes(16).toString('base64');
+  next();
+});
+
 // Helmet - رؤوس أمان HTTP (نطبق CSP مفصّل يدعم WebSocket كما في كودك)
 app.use(helmet({
   // إعدادات عامة من helmet
 }));
 
+// Determine base WS/WSS URL from configuration
+const publicBaseUrl = config.PUBLIC_BASE_URL || 'https://mcprim.com';
+let wsOrigin = '';
+try {
+  const parsedUrl = new URL(publicBaseUrl);
+  wsOrigin = `ws://${parsedUrl.host} wss://${parsedUrl.host}`;
+} catch (e) {
+  wsOrigin = "ws: wss:"; // Fallback if URL is invalid
+}
+
 // CSP مفصل كما كان لديك سابقاً (يتضمن ws: و wss:)
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
-    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+    scriptSrc: [
+      "'self'",
+      (req, res) => `'nonce-${res.locals.nonce}'`,
+      "https://cdnjs.cloudflare.com",
+      "https://cdn.jsdelivr.net",
+      "https://www.youtube.com"
+    ],
+    styleSrc: [
+      "'self'",
+      (req, res) => `'nonce-${res.locals.nonce}'`,
+      "https://cdnjs.cloudflare.com",
+      "https://fonts.googleapis.com"
+    ],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
     imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
     mediaSrc: ["'self'", "data:"],
     frameSrc: ["'self'", "https://www.youtube.com"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com", "ws:", "wss:"],
+    connectSrc: [
+      "'self'",
+      "https://cdnjs.cloudflare.com",
+      "https://cdn.jsdelivr.net",
+      "https://www.youtube.com",
+      "https://www.mcprim.com",
+      "https://media.giphy.com",
+      "https://nfc-vjy6.onrender.com",
+      wsOrigin
+    ].join(' ').split(' '), // split/join to handle the wsOrigin fallback cleanly
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
   },
@@ -135,7 +173,7 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 };
 app.use(cors(corsOptions));
 
