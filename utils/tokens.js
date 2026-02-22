@@ -9,8 +9,8 @@ const config = require('../config');
  * @returns {string} JWT Token
  */
 function createAccessToken(payload) {
-    // Use a default config fallback if needed, but config.js handles envalid
-    const secret = config.JWT_SECRET || 'default_jwt_secret_change_me';
+    const secret = config.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET is not configured in environment variables.');
     return jwt.sign(payload, secret, { expiresIn: '15m' });
 }
 

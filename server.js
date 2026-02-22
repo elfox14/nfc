@@ -575,7 +575,8 @@ app.post('/api/save-design', [
     if (authHeader) {
       try {
         const token = authHeader.split(' ')[1];
-        const secret = config.JWT_SECRET || 'default_jwt_secret_change_me';
+        const secret = config.JWT_SECRET;
+        if (!secret) throw new Error('JWT_SECRET is not configured.');
         const decoded = jwt.verify(token, secret);
         ownerId = decoded.userId;
       } catch (err) {
@@ -692,7 +693,8 @@ app.post('/api/auth/register', [
     });
 
     // Generate verification token
-    const secret = config.JWT_SECRET || 'default_jwt_secret_change_me';
+    const secret = config.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: 'Server configuration error' });
     const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
 
     // Store verification token
