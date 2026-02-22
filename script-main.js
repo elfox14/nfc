@@ -549,7 +549,12 @@ const ShareManager = {
                 url += `?id=${Config.currentDesignId}`;
             }
 
-            const response = await fetch(url, {
+            // Using Auth.fetchWithAuth if available to handle token refreshes automatically
+            const fetchFn = (typeof Auth !== 'undefined' && Auth.fetchWithAuth)
+                ? Auth.fetchWithAuth.bind(Auth)
+                : fetch;
+
+            const response = await fetchFn(url, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(state),
