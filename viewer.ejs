@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= name %> - بطاقة عمل رقمية
+    </title>
+
+    <!-- Meta Tags for SEO & Sharing -->
+    <meta name="description" content="<%= tagline || 'بطاقة عمل رقمية ذكية' %>">
+    <meta property="og:title" content="<%= name %>">
+    <meta property="og:description" content="<%= tagline %>">
+    <meta property="og:image" content="<%= ogImage %>">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<%= pageUrl %>">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&family=Poppins:wght@400;600&family=Tajawal:wght@400;700&family=Lalezar&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Tajawal', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 20px;
+            color: #fff;
+        }
+
+        /* --- حاوية الكارت (الأساسية) --- */
+        .cards-container {
+            perspective: 1000px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .cards-wrapper {
+            position: relative;
+            width: 100%;
+            /* الأبعاد الافتراضية (كلاسيك / عرضي) */
+            max-width: 510px;
+            aspect-ratio: 51 / 33;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        /* --- التعديل الخاص بالوضع الطولي (Vertical) --- */
+        .cards-wrapper[data-layout="vertical"] {
+            max-width: 330px;
+            /* عرض أقل للهاتف */
+            aspect-ratio: 33 / 51;
+            /* عكس النسبة لتصبح طولية */
+        }
+
+        .cards-wrapper.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* --- وجه الكارت (عام) --- */
+        .business-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            box-shadow: var(--card-shadow);
+            background-color: #000;
+            /* Fallback */
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* --- الطبقات الداخلية --- */
+        .card-background-layer,
+        .card-gradient-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+
+        .card-gradient-layer {
+            z-index: 2;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            height: 100%;
+            padding: 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* هام: لضمان عمل الإحداثيات المطلقة */
+            /* لكن العناصر المحفوظة تستخدم translate، لذا لا نحتاج position:relative للعناصر الأبناء بالضرورة */
+        }
+
+        /* --- العناصر المتحركة (المحفوظة بالإحداثيات) --- */
+        .draggable-element {
+            position: absolute;
+            top: 0;
+            left: 0;
+            /* يتم تطبيق translate عبر inline-style */
+            touch-action: none;
+            /* لمنع التفاعل الخاطئ */
+        }
+
+        /* تنسيقات خاصة للعناصر */
+        #card-logo {
+            object-fit: contain;
+        }
+
+        #card-photo {
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #card-name,
+        #card-tagline {
+            white-space: pre-wrap;
+            text-align: center;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* أزرار الهاتف */
+        .phone-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: transform 0.2s;
+        }
+
+        .phone-btn:active {
+            transform: scale(0.95);
+        }
+
+        .phone-btn i {
+            margin-inline-end: 8px;
+        }
+
+        /* أيقونات التواصل */
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: transform 0.2s;
+        }
+
+        .social-btn:active {
+            transform: scale(0.95);
+        }
+
+        .social-btn i {
+            margin-inline-end: 5px;
+        }
+
+        /* QR Code */
+        .qr-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+            background: #fff;
+            padding: 2px;
+        }
+
+        /* --- أزرار التحكم أسفل الكارت --- */
+        .actions-bar {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .action-btn {
+            background: #243447;
+            color: #fff;
+            border: 1px solid #364f6b;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: #4da6ff;
+            border-color: #4da6ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(77, 166, 255, 0.3);
+        }
+
+        .action-btn.primary {
+            background: #4da6ff;
+            border-color: #4da6ff;
+        }
+
+        .action-btn.primary:hover {
+            background: #3a8ecc;
+        }
+
+        /* تلميح للتقليب */
+        .flip-hint {
+            margin-top: 15px;
+            color: #888;
+            font-size: 0.9rem;
+            animation: bounce 2s infinite;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-5px);
+            }
+
+            60% {
+                transform: translateY(-3px);
+            }
+        }
+
+        /* إخفاء الروابط المباشرة لمحركات البحث في العرض البصري (موجودة في السيرفر للـ SEO) */
+        .seo-links {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- استخراج البيانات من كائن design -->
+    <% const inputs=design.inputs || {}; const dynamic=design.dynamic || {}; const images=design.imageUrls || {}; const
+        positions=design.positions || {}; const placements=design.placements || {}; const
+        layout=inputs['layout-select-visual'] || inputs['layout-select'] || 'classic' ; function getStyle(id) { const
+        pos=positions[id] || {x:0, y:0}; return `transform: translate(${pos.x}px, ${pos.y}px);`; } function
+        isFront(elementName) { const place=placements[elementName]; if (!place) { if (elementName==='logo' ) return
+        true; if (elementName==='photo' ) return true; if (elementName==='name' ) return true; if
+        (elementName==='tagline' ) return true; if (elementName==='qr' ) return false; return true; } return
+        place==='front' ; } function getFilterStyle(prefix) { const filters=[]; if
+        (inputs[`${prefix}-filter-grayscale`]) filters.push(`grayscale(${inputs[`${prefix}-filter-grayscale`]}%)`); if
+        (inputs[`${prefix}-filter-sepia`]) filters.push(`sepia(${inputs[`${prefix}-filter-sepia`]}%)`); if
+        (inputs[`${prefix}-filter-blur`]) filters.push(`blur(${inputs[`${prefix}-filter-blur`]}px)`); if
+        (inputs[`${prefix}-filter-invert`]) filters.push(`invert(${inputs[`${prefix}-filter-invert`]}%)`); if
+        (inputs[`${prefix}-filter-brightness`]) filters.push(`brightness(${inputs[`${prefix}-filter-brightness`]}%)`);
+        if (inputs[`${prefix}-filter-contrast`]) filters.push(`contrast(${inputs[`${prefix}-filter-contrast`]}%)`);
+        return filters.length> 0 ? `filter: ${filters.join(' ')};` : '';
+        }
+
+        function getTextStyle(prefix) {
+        let style = '';
+        if (inputs[`${prefix}-letter-spacing`]) style += `letter-spacing: ${inputs[`${prefix}-letter-spacing`]}px; `;
+        if (inputs[`${prefix}-line-height`]) style += `line-height: ${inputs[`${prefix}-line-height`]}; `;
+        if (inputs[`${prefix}-uppercase`]) style += `text-transform: uppercase; `;
+        if (inputs[`${prefix}-glow`]) {
+        const color = inputs[`${prefix}-color`] || '#fff';
+        style += `text-shadow: 0 0 10px ${color}, 0 0 20px ${color}; `;
+        }
+        return style;
+        }
+
+        function getBtnStyle(prefix) {
+        const styleType = inputs[`${prefix}-style`] || 'solid';
+        const radius = inputs[`${prefix}-radius`] !== undefined ? inputs[`${prefix}-radius`] : 50;
+        const bg = inputs[`${prefix}-bg-color`] || inputs[`back-buttons-bg-color`] || '#364f6b';
+        const text = inputs[`${prefix}-text-color`] || inputs[`back-buttons-text-color`] || '#aab8c2';
+
+        let style = `border-radius: ${radius}px; `;
+        if (styleType === 'outline') {
+        style += `background-color: transparent !important; color: ${bg} !important; border: 2px solid ${bg} !important;
+        `;
+        } else if (styleType === 'glass') {
+        style += `background: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter:
+        blur(10px); border: 1px solid rgba(255, 255, 255, 0.3) !important; color: ${text} !important; box-shadow: 0 4px
+        6px rgba(0, 0, 0, 0.1) !important; `;
+        } else {
+        style += `background-color: ${bg} !important; color: ${text} !important; border: 2px solid transparent
+        !important; `;
+        }
+        return style;
+        }
+        %>
+
+        <div class="cards-container">
+            <!-- تطبيق data-layout لتفعيل CSS الوضع الطولي -->
+            <div class="cards-wrapper" id="card" onclick="this.classList.toggle('is-flipped')"
+                data-layout="<%= layout %>">
+
+                <!-- === الوجه الأمامي === -->
+                <div class="business-card card-front">
+                    <!-- الخلفية -->
+                    <div class="card-background-layer"
+                        style="background-image: url('<%= images.front || '' %>'); display: <%= images.front ? 'block' : 'none' %>;">
+                    </div>
+                    <div class="card-gradient-layer"
+                        style="background: linear-gradient(135deg, <%= inputs['front-bg-start'] || '#2a3d54' %>, <%= inputs['front-bg-end'] || '#223246' %>); opacity: <%= images.front ? (inputs['front-bg-opacity'] || 0.3) : 1 %>;">
+                    </div>
+
+                    <div class="card-content">
+                        <!-- العناصر الأساسية (إذا كانت في الأمام) -->
+                        <% if (isFront('logo')) { %>
+                            <img id="card-logo" src="<%= inputs['input-logo'] %>" class="draggable-element"
+                                style="<%= getStyle('card-logo') %>; max-width: <%= inputs['logo-size'] %>%; opacity: <%= inputs['logo-opacity'] %>; <%= getFilterStyle('logo') %>">
+                            <% } %>
+
+                                <% if (isFront('photo') && images.photo) { %>
+                                    <div id="card-photo" class="draggable-element"
+                                        style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; aspect-ratio: 1/1; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; background-image: url('<%= images.photo %>'); <%= getFilterStyle('photo') %> <%= inputs['photo-glass-effect'] ? 'mix-blend-mode: screen; opacity: 0.9;' : '' %>">
+                                    </div>
+                                    <% } %>
+
+                                        <% if (isFront('name')) { %>
+                                            <h1 id="card-name" class="draggable-element"
+                                                style="<%= getStyle('card-name') %>; color: <%= inputs['name-color'] %>; font-size: <%= inputs['name-font-size'] %>px; font-family: <%= inputs['name-font'] %>; <%= getTextStyle('name') %>">
+                                                <%= inputs['input-name'] %>
+                                            </h1>
+                                            <% } %>
+
+                                                <% if (isFront('tagline')) { %>
+                                                    <h2 id="card-tagline" class="draggable-element"
+                                                        style="<%= getStyle('card-tagline') %>; color: <%= inputs['tagline-color'] %>; font-size: <%= inputs['tagline-font-size'] %>px; font-family: <%= inputs['tagline-font'] %>; <%= getTextStyle('tagline') %>">
+                                                        <%= inputs['input-tagline'] %>
+                                                    </h2>
+                                                    <% } %>
+
+                                                        <% if (isFront('qr') && inputs['qr-source'] !=='none' ) { %>
+                                                            <div class="draggable-element qr-wrapper"
+                                                                style="<%= getStyle('qr-code-wrapper') %>; width: <%= inputs['qr-size'] %>%;">
+                                                                <img
+                                                                    src="<%= images.qrCode || 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' + encodeURIComponent(pageUrl) %>">
+                                                            </div>
+                                                            <% } %>
+
+                                                                <!-- الهواتف (ديناميكي) -->
+                                                                <% if (dynamic.phones) { dynamic.phones.forEach(phone=>
+                                                                    {
+                                                                    if (phone.placement === 'front' && phone.value) { %>
+                                                                    <div class="draggable-element"
+                                                                        style="transform: translate(<%= phone.position.x %>px, <%= phone.position.y %>px);">
+                                                                        <a href="tel:<%= phone.value %>"
+                                                                            class="phone-btn" style="
+                                <%= getBtnStyle('phone-btn') %>
+                                font-size: <%= inputs['phone-btn-font-size'] %>px;
+                                font-family: <%= inputs['phone-btn-font'] %>;
+                                padding: <%= inputs['phone-btn-padding'] %>px <%= inputs['phone-btn-padding']*2 %>px;
+                                <% if(inputs['toggle-phone-buttons'] === false) { %> background: transparent !important; box-shadow: none !important; border: none !important; padding: 2px !important; <% } %>
+                            ">
+                                                                            <i class="fas fa-phone-alt"></i>
+                                                                            <span>
+                                                                                <%= phone.value %>
+                                                                            </span>
+                                                                        </a>
+                                                                    </div>
+                                                                    <% }}); } %>
+                    </div>
+                </div>
+
+                <!-- === الوجه الخلفي === -->
+                <div class="business-card card-back">
+                    <!-- الخلفية -->
+                    <div class="card-background-layer"
+                        style="background-image: url('<%= images.back || '' %>'); display: <%= images.back ? 'block' : 'none' %>;">
+                    </div>
+                    <div class="card-gradient-layer"
+                        style="background: linear-gradient(135deg, <%= inputs['back-bg-start'] || '#2a3d54' %>, <%= inputs['back-bg-end'] || '#223246' %>); opacity: <%= images.back ? (inputs['back-bg-opacity'] || 0.3) : 1 %>;">
+                    </div>
+
+                    <div class="card-content">
+                        <!-- العناصر الأساسية (إذا كانت في الخلف) -->
+                        <% if (!isFront('logo')) { %>
+                            <img id="card-logo" src="<%= inputs['input-logo'] %>" class="draggable-element"
+                                style="<%= getStyle('card-logo') %>; max-width: <%= inputs['logo-size'] %>%; opacity: <%= inputs['logo-opacity'] %>; <%= getFilterStyle('logo') %>">
+                            <% } %>
+
+                                <% if (!isFront('photo') && images.photo) { %>
+                                    <div id="card-photo" class="draggable-element"
+                                        style="<%= getStyle('card-personal-photo-wrapper') %>; width: <%= inputs['photo-size'] %>%; aspect-ratio: 1/1; border-radius: <%= inputs['photo-shape'] === 'circle' ? '50%' : '8px' %>; border: <%= inputs['photo-border-width'] %>px solid <%= inputs['photo-border-color'] %>; background-image: url('<%= images.photo %>'); <%= getFilterStyle('photo') %> <%= inputs['photo-glass-effect'] ? 'mix-blend-mode: screen; opacity: 0.9;' : '' %>">
+                                    </div>
+                                    <% } %>
+
+                                        <% if (!isFront('name')) { %>
+                                            <h1 id="card-name" class="draggable-element"
+                                                style="<%= getStyle('card-name') %>; color: <%= inputs['name-color'] %>; font-size: <%= inputs['name-font-size'] %>px; font-family: <%= inputs['name-font'] %>; <%= getTextStyle('name') %>">
+                                                <%= inputs['input-name'] %>
+                                            </h1>
+                                            <% } %>
+
+                                                <% if (!isFront('tagline')) { %>
+                                                    <h2 id="card-tagline" class="draggable-element"
+                                                        style="<%= getStyle('card-tagline') %>; color: <%= inputs['tagline-color'] %>; font-size: <%= inputs['tagline-font-size'] %>px; font-family: <%= inputs['tagline-font'] %>; <%= getTextStyle('tagline') %>">
+                                                        <%= inputs['input-tagline'] %>
+                                                    </h2>
+                                                    <% } %>
+
+                                                        <% if (!isFront('qr') && inputs['qr-source'] !=='none' ) { %>
+                                                            <div class="draggable-element qr-wrapper"
+                                                                style="<%= getStyle('qr-code-wrapper') %>; width: <%= inputs['qr-size'] %>%;">
+                                                                <img
+                                                                    src="<%= images.qrCode || 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' + encodeURIComponent(pageUrl) %>">
+                                                            </div>
+                                                            <% } %>
+
+                                                                <!-- الهواتف (إذا كانت في الخلف) -->
+                                                                <% if (dynamic.phones) { dynamic.phones.forEach(phone=>
+                                                                    {
+                                                                    if (phone.placement === 'back' && phone.value) { %>
+                                                                    <div class="draggable-element"
+                                                                        style="transform: translate(<%= phone.position.x %>px, <%= phone.position.y %>px);">
+                                                                        <a href="tel:<%= phone.value %>"
+                                                                            class="phone-btn" style="
+                                <%= getBtnStyle('phone-btn') %>
+                                font-size: <%= inputs['phone-btn-font-size'] %>px;
+                                font-family: <%= inputs['phone-btn-font'] %>;
+                                padding: <%= inputs['phone-btn-padding'] %>px <%= inputs['phone-btn-padding']*2 %>px;
+                                <% if(inputs['toggle-phone-buttons'] === false) { %> background: transparent !important; box-shadow: none !important; border: none !important; padding: 2px !important; <% } %>
+                            ">
+                                                                            <i class="fas fa-phone-alt"></i>
+                                                                            <span>
+                                                                                <%= phone.value %>
+                                                                            </span>
+                                                                        </a>
+                                                                    </div>
+                                                                    <% }}); } %>
+
+                                                                        <!-- روابط التواصل الاجتماعي (Static & Dynamic) -->
+                                                                        <% const platforms={ whatsapp: {
+                                                                            icon: 'fab fa-whatsapp' ,
+                                                                            prefix: 'https://wa.me/' }, email: {
+                                                                            icon: 'fas fa-envelope' , prefix: 'mailto:'
+                                                                            }, website: { icon: 'fas fa-globe' ,
+                                                                            prefix: '' }, facebook: {
+                                                                            icon: 'fab fa-facebook-f' , prefix: '' },
+                                                                            linkedin: { icon: 'fab fa-linkedin-in' ,
+                                                                            prefix: '' }, instagram: {
+                                                                            icon: 'fab fa-instagram' , prefix: '' }, x:
+                                                                            { icon: 'fab fa-xing' , prefix: '' },
+                                                                            telegram: { icon: 'fab fa-telegram' ,
+                                                                            prefix: '' }, tiktok: {
+                                                                            icon: 'fab fa-tiktok' , prefix: '' },
+                                                                            snapchat: { icon: 'fab fa-snapchat' ,
+                                                                            prefix: '' }, youtube: {
+                                                                            icon: 'fab fa-youtube' , prefix: '' },
+                                                                            pinterest: { icon: 'fab fa-pinterest' ,
+                                                                            prefix: '' } }; // دمج القوائم (Static +
+                                                                            Dynamic) const allSocials=[]; // إضافة
+                                                                            الروابط الثابتة if(dynamic.staticSocial) {
+                                                                            Object.entries(dynamic.staticSocial).forEach(([key,
+                                                                            data])=> {
+                                                                            if(data && data.value) {
+                                                                            allSocials.push({ ...data, type: key,
+                                                                            isStatic: true });
+                                                                            }
+                                                                            });
+                                                                            }
+                                                                            // إضافة الروابط الديناميكية
+                                                                            if(dynamic.social) {
+                                                                            dynamic.social.forEach(item => {
+                                                                            if(item && item.value) {
+                                                                            allSocials.push({ ...item, type:
+                                                                            item.platform, isStatic: false });
+                                                                            }
+                                                                            });
+                                                                            }
+                                                                            %>
+
+                                                                            <% allSocials.forEach(item=> {
+                                                                                const platform = platforms[item.type] ||
+                                                                                { icon: 'fas fa-link', prefix: '' };
+                                                                                const btnBg =
+                                                                                inputs['back-buttons-bg-color'];
+                                                                                const btnColor =
+                                                                                inputs['back-buttons-text-color'];
+                                                                                // التحقق مما إذا كان هناك ألوان مخصصة
+                                                                                const customColor = item.color ||
+                                                                                inputs[`input-static-${item.type}-color`]
+                                                                                || btnColor;
+                                                                                const customSize = item.size ||
+                                                                                inputs[`input-static-${item.type}-size`]
+                                                                                || inputs['social-text-size'];
+
+                                                                                let url = item.value;
+                                                                                if (item.type === 'email' &&
+                                                                                !url.startsWith('mailto:')) url =
+                                                                                'mailto:' + url;
+                                                                                else if (item.type === 'whatsapp') url =
+                                                                                'https://wa.me/' +
+                                                                                url.replace(/\D/g,'');
+                                                                                else if (!url.startsWith('http')) url =
+                                                                                'https://' + url;
+
+                                                                                // التحقق من مكان العنصر (الافتراضي
+                                                                                خلفي)
+                                                                                const itemPlacement = item.placement ||
+                                                                                'back';
+
+                                                                                // عرض العنصر فقط إذا كان في الوجه
+                                                                                الخلفي (أو الأمامي إذا أردت دعم ذلك
+                                                                                للروابط)
+                                                                                if (itemPlacement === 'back') {
+                                                                                %>
+                                                                                <div class="draggable-element"
+                                                                                    style="transform: translate(<%= item.position.x %>px, <%= item.position.y %>px);">
+                                                                                    <a href="<%= url %>" target="_blank"
+                                                                                        class="social-btn" style="
+                                <%= getBtnStyle('back-buttons') %>
+                                color: <%= inputs['toggle-social-buttons'] !== false ? inputs['back-buttons-text-color'] : (customColor !== btnColor ? customColor : inputs['social-text-color']) %> !important;
+                                font-size: <%= inputs['back-buttons-size'] %>px;
+                                padding: <%= inputs['back-buttons-size']*0.5 %>px <%= inputs['back-buttons-size'] %>px;
+                                font-family: <%= inputs['back-buttons-font'] %>;
+                                <% if(inputs['toggle-social-buttons'] === false) { %> background: transparent !important; box-shadow: none !important; border: none !important; padding: 2px !important; <% } %>
+                            ">
+                                                                                        <i class="<%= platform.icon %>"
+                                                                                            style="font-size: <%= inputs['toggle-social-buttons'] !== false ? '' : (customSize+'px') %>;"></i>
+                                                                                        <span
+                                                                                            style="font-size: <%= inputs['toggle-social-buttons'] !== false ? '' : (customSize+'px') %>; font-family: <%= inputs['toggle-social-buttons'] !== false ? '' : inputs['social-text-font'] %>">
+                                                                                            <%= item.value %>
+                                                                                        </span>
+                                                                                    </a>
+                                                                                </div>
+                                                                                <% } }); %>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-hint">
+                <i class="fas fa-hand-pointer"></i> اضغط على البطاقة لقلبها
+            </div>
+
+            <div class="actions-bar">
+                <button class="action-btn primary" onclick="saveContact()">
+                    <i class="fas fa-user-plus"></i> حفظ جهة الاتصال
+                </button>
+                <a href="tel:<%= (dynamic.phones && dynamic.phones[0]) ? dynamic.phones[0].value : '' %>"
+                    class="action-btn">
+                    <i class="fas fa-phone"></i> اتصال
+                </a>
+                <button class="action-btn" onclick="shareCard()">
+                    <i class="fas fa-share-alt"></i> مشاركة
+                </button>
+            </div>
+        </div>
+
+        <div class="seo-links">
+            <%- contactLinksHtml %>
+        </div>
+
+        <script>
+            // VCF Generation Logic
+            function saveContact() {
+                const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:<%= inputs['input-name'] %>
+TITLE:<%= inputs['input-tagline'] %>
+<% if (dynamic.phones) { dynamic.phones.forEach(p => { %>TEL;TYPE=CELL:<%= p.value %>
+<% }) } %>
+<% if (dynamic.staticSocial && dynamic.staticSocial.email) { %>EMAIL:<%= dynamic.staticSocial.email.value %>
+<% } %>
+<% if (dynamic.staticSocial && dynamic.staticSocial.website) { %>URL:<%= dynamic.staticSocial.website.value %>
+<% } %>
+END:VCARD`;
+
+                const blob = new Blob([vcard], { type: 'text/vcard' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'contact.vcf';
+                a.click();
+            }
+
+            async function shareCard() {
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: '<%= name %>',
+                            text: 'تفضل بطاقة عملي الرقمية',
+                            url: window.location.href
+                        });
+                    } catch (err) {
+                        console.log('Share failed', err);
+                    }
+                } else {
+                    // Fallback: Copy to clipboard
+                    navigator.clipboard.writeText(window.location.href).then(() => {
+                        alert('تم نسخ رابط البطاقة!');
+                    });
+                }
+            }
+        </script>
+</body>
+
+</html>

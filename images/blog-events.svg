@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="400" height="225">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#364f6b"/>
+      <stop offset="100%" style="stop-color:#243447"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="225" fill="url(#bgGrad)"/>
+  <circle cx="320" cy="60" r="80" fill="rgba(77,166,255,0.1)"/>
+  <circle cx="80" cy="180" r="60" fill="rgba(77,166,255,0.08)"/>
+  <!-- NFC Card Icon -->
+  <rect x="140" y="70" width="120" height="75" rx="8" fill="#4da6ff" opacity="0.9"/>
+  <rect x="150" y="80" width="40" height="25" rx="4" fill="#243447"/>
+  <line x1="200" y1="90" x2="250" y2="90" stroke="#243447" stroke-width="3" stroke-linecap="round"/>
+  <line x1="200" y1="100" x2="240" y2="100" stroke="#243447" stroke-width="2" stroke-linecap="round"/>
+  <!-- Signal waves -->
+  <path d="M270 85 Q285 95 270 105" stroke="#e6f0f7" stroke-width="2" fill="none" opacity="0.6"/>
+  <path d="M280 80 Q300 95 280 110" stroke="#e6f0f7" stroke-width="2" fill="none" opacity="0.4"/>
+  <path d="M290 75 Q315 95 290 115" stroke="#e6f0f7" stroke-width="2" fill="none" opacity="0.2"/>
+  <!-- People icons -->
+  <circle cx="120" cy="170" r="12" fill="#e6f0f7"/>
+  <rect x="108" y="185" width="24" height="20" rx="4" fill="#e6f0f7"/>
+  <circle cx="160" cy="175" r="10" fill="#bcc9d4"/>
+  <rect x="150" y="188" width="20" height="16" rx="3" fill="#bcc9d4"/>
+  <!-- Text -->
+  <text x="200" y="200" fill="#e6f0f7" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold">NFC في المعارض</text>
+</svg>

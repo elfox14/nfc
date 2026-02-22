@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Card Editor Guide | MC PRIME</title>
+    <meta name="description"
+        content="Complete guide to using the MC PRIME smart business card editor. Learn how to design and customize your digital card step by step.">
+
+    <link rel="canonical" href="https://www.mcprim.com/nfc/how-to-use-editor-en.html">
+    <link rel="icon" href="mcprime-logo-transparent.png" type="image/png">
+
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
+    <!-- End Google Tag Manager -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Use only tutorial-specific styles, not homepage.css which has the watermark -->
+    <script src="lang-switcher.js" defer></script>
+
+    <style>
+        /* Tutorial Page Specific Styles */
+
+        /* Reset and Base Styles */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Override any body backgrounds/watermarks */
+        body {
+            background: linear-gradient(180deg, #1c2a3b 0%, #0f1922 100%);
+            color: #e6f0f7;
+            font-family: 'Inter', 'Poppins', sans-serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 15px 0;
+            background: rgba(28, 42, 59, 0.95);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(28, 42, 59, 0.98);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            padding: 10px 0;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #e6f0f7;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #a8c0d8;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 8px 0;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #4da6ff;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4da6ff, #2d86ff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(77, 166, 255, 0.3);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .nav-toggle span {
+            width: 25px;
+            height: 3px;
+            background: #e6f0f7;
+            border-radius: 3px;
+        }
+
+        .tutorial-hero {
+            background: linear-gradient(135deg, #1c2a3b 0%, #0f1922 100%);
+            padding: 120px 0 60px;
+            text-align: center;
+        }
+
+        .tutorial-hero h1 {
+            font-size: 2.5rem;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .tutorial-hero h1 i {
+            font-size: 1.5rem;
+        }
+
+        .tutorial-hero p {
+            font-size: 1.2rem;
+            color: #a8c0d8;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .tutorial-content {
+            padding: 60px 0;
+            background: linear-gradient(180deg, #1c2a3b 0%, #0f1922 100%);
+            min-height: 100vh;
+        }
+
+        .tutorial-section {
+            background: linear-gradient(145deg, #253444, #1f2d3d);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(77, 166, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .tutorial-section:hover {
+            border-color: rgba(77, 166, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .tutorial-section h2 {
+            color: #4da6ff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tutorial-section h2 i {
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tutorial-section h3 {
+            color: #e6f0f7;
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.8rem;
+            padding-left: 1rem;
+            border-left: 3px solid #4da6ff;
+        }
+
+        .tutorial-section p,
+        .tutorial-section li {
+            color: #a8c0d8;
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .tutorial-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .tutorial-section ul li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 0.7rem;
+        }
+
+        .tutorial-section ul li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4da6ff;
+            font-weight: bold;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, rgba(77, 166, 255, 0.15), rgba(102, 126, 234, 0.1));
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid #4da6ff;
+        }
+
+        .tip-box h4 {
+            color: #4da6ff;
+            margin: 0 0 0.5rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tip-box p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.1));
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid #ffc107;
+        }
+
+        .warning-box h4 {
+            color: #ffc107;
+            margin: 0 0 0.5rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .warning-box p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .steps-list {
+            counter-reset: step-counter;
+        }
+
+        .steps-list li {
+            counter-increment: step-counter;
+            padding-left: 45px !important;
+        }
+
+        .steps-list li::before {
+            content: counter(step-counter) !important;
+            position: absolute;
+            left: 0;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .keyboard-shortcut {
+            background: rgba(77, 166, 255, 0.2);
+            border: 1px solid rgba(77, 166, 255, 0.3);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-family: 'Poppins', monospace;
+            font-size: 0.85rem;
+            color: #4da6ff;
+            white-space: nowrap;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-item {
+            background: rgba(77, 166, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: center;
+            border: 1px solid rgba(77, 166, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            border-color: rgba(77, 166, 255, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .feature-item i {
+            font-size: 2rem;
+            color: #4da6ff;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+
+        .feature-item h4 {
+            color: #e6f0f7;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-item p {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .cta-section {
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .cta-section .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .cta-section .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .toc-nav {
+            background: rgba(77, 166, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(77, 166, 255, 0.1);
+        }
+
+        .toc-nav h3 {
+            color: #4da6ff;
+            margin: 0 0 1rem;
+            font-size: 1.1rem;
+        }
+
+        .toc-nav ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-nav ul li::before {
+            display: none;
+        }
+
+        .toc-nav a {
+            display: inline-block;
+            color: #a8c0d8;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(77, 166, 255, 0.1);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .toc-nav a:hover {
+            background: rgba(77, 166, 255, 0.25);
+            color: #4da6ff;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(28, 42, 59, 0.98);
+                flex-direction: column;
+                padding: 20px;
+                gap: 10px;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-toggle {
+                display: flex;
+            }
+
+            .tutorial-hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .tutorial-hero p {
+                font-size: 1rem;
+                padding: 0 15px;
+            }
+
+            .tutorial-section {
+                padding: 1.5rem;
+            }
+
+            .tutorial-section h2 {
+                font-size: 1.3rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index-en.html" class="logo">
+                    <img src="mcprime-logo-transparent.png" alt="MC PRIME Logo">
+                    <span>MC PRIME</span>
+                </a>
+                <div class="nav-links">
+                    <a href="index-en.html">Home</a>
+                    <a href="gallery-en.html">Gallery</a>
+                    <a href="blog-en.html">Blog</a>
+                    <a href="dashboard-en.html">Dashboard</a>
+                    <a href="how-to-use-editor-en.html" class="active">Editor Guide</a>
+                    <a href="editor-en.html" class="btn btn-primary btn-sm">Start Designing</a>
+                </div>
+                <div class="nav-toggle" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="tutorial-hero">
+        <div class="container">
+            <h1><i class="fas fa-book-open"></i> Card Editor User Guide</h1>
+            <p>Learn how to design a professional digital business card in minutes using the free MC PRIME editor</p>
+        </div>
+    </section>
+
+    <!-- Tutorial Content -->
+    <section class="tutorial-content">
+        <div class="container">
+
+            <!-- Table of Contents -->
+            <nav class="toc-nav">
+                <h3><i class="fas fa-list"></i> Guide Contents</h3>
+                <ul>
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#layout">Choose Layout</a></li>
+                    <li><a href="#backgrounds">Backgrounds & Colors</a></li>
+                    <li><a href="#logo">Adding Logo</a></li>
+                    <li><a href="#photo">Profile Photo</a></li>
+                    <li><a href="#info">Personal Info</a></li>
+                    <li><a href="#phones">Phone Numbers</a></li>
+                    <li><a href="#qr">QR Code</a></li>
+                    <li><a href="#social">Social Links</a></li>
+                    <li><a href="#save">Save & Share</a></li>
+                    <li><a href="#shortcuts">Keyboard Shortcuts</a></li>
+                </ul>
+            </nav>
+
+            <!-- Overview Section -->
+            <article class="tutorial-section" id="overview">
+                <h2><i class="fas fa-info-circle"></i> Editor Overview</h2>
+                <p>The MC PRIME editor is a free and powerful tool for designing smart digital business cards (NFC). It
+                    features an easy-to-use interface that allows you to create a fully professional card without any
+                    technical experience.</p>
+
+                <h3>Editor Interface Components</h3>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-columns"></i>
+                        <h4>Left Panel</h4>
+                        <p>Control layout, backgrounds, and ready-made designs</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-id-card"></i>
+                        <h4>Preview Area</h4>
+                        <p>Live preview with ability to flip between front and back</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-sliders-h"></i>
+                        <h4>Right Panel</h4>
+                        <p>Control elements: logo, photo, info, social links</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-tools"></i>
+                        <h4>Toolbar</h4>
+                        <p>Save, share, download, and undo buttons</p>
+                    </div>
+                </div>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-lightbulb"></i> Tip</h4>
+                    <p>Your design is automatically saved while you work. You can see the save status in the top
+                        toolbar.</p>
+                </div>
+            </article>
+
+            <!-- Layout Section -->
+            <article class="tutorial-section" id="layout">
+                <h2><i class="fas fa-th-large"></i> Choosing Layout</h2>
+                <p>The editor provides three basic layouts for your card:</p>
+
+                <ul>
+                    <li><strong>Classic:</strong> Traditional business card layout with balanced element distribution
+                    </li>
+                    <li><strong>Modern:</strong> Contemporary design with vertical content division</li>
+                    <li><strong>Vertical:</strong> Perfect for extensive content with vertical element arrangement</li>
+                </ul>
+
+                <h3>Ready-made Designs</h3>
+                <p>You can start from one of the ready-made designs and modify it according to your needs. Click on any
+                    design in the design gallery and it will be applied instantly.</p>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-magic"></i> Smart Suggestion</h4>
+                    <p>Use the "Suggest Smart Design" button to get a random color-coordinated design!</p>
+                </div>
+            </article>
+
+            <!-- Backgrounds Section -->
+            <article class="tutorial-section" id="backgrounds">
+                <h2><i class="fas fa-palette"></i> Backgrounds & Colors</h2>
+                <p>Full control over the background of each side of the card:</p>
+
+                <h3>Front Side</h3>
+                <ul>
+                    <li>Choose two colors to create a beautiful gradient</li>
+                    <li>Or upload an image to use as background</li>
+                    <li>Control color overlay transparency</li>
+                </ul>
+
+                <h3>Back Side</h3>
+                <ul>
+                    <li>Same customization options available for the back</li>
+                    <li>You can use different colors for each side</li>
+                </ul>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-lightbulb"></i> Image Tip</h4>
+                    <p>For best results, use images with dimensions 1050×600 pixels. You can drag and drop images
+                        directly onto the upload area.</p>
+                </div>
+            </article>
+
+            <!-- Logo Section -->
+            <article class="tutorial-section" id="logo">
+                <h2><i class="fas fa-crown"></i> Adding Logo</h2>
+                <p>Add your company logo or brand to the card:</p>
+
+                <ul class="steps-list">
+                    <li>Click on the "Logo" section in the right panel</li>
+                    <li>Upload your logo image (automatically cropped)</li>
+                    <li>Control logo size using the slider</li>
+                    <li>Choose logo alignment (left, center, right)</li>
+                    <li>Add background to logo if needed</li>
+                </ul>
+
+                <h3>Advanced Settings</h3>
+                <ul>
+                    <li><strong>Opacity:</strong> Control logo transparency</li>
+                    <li><strong>Shadow:</strong> Add shadow to make logo stand out</li>
+                    <li><strong>Position:</strong> Choose to display on front or back</li>
+                    <li><strong>Fine Movement:</strong> Use arrows to move logo by pixel</li>
+                </ul>
+            </article>
+
+            <!-- Photo Section -->
+            <article class="tutorial-section" id="photo">
+                <h2><i class="fas fa-user-circle"></i> Profile Photo</h2>
+                <p>Add your personal photo to give your card a personal touch:</p>
+
+                <ul>
+                    <li>Upload your photo or enter image URL</li>
+                    <li>Choose photo shape (circular or square)</li>
+                    <li>Control photo size and border</li>
+                    <li>Add border color and control width</li>
+                    <li>Enable shadow to highlight the photo</li>
+                </ul>
+
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Note</h4>
+                    <p>It's recommended to use a high-quality photo with a clear background. The image will be
+                        automatically cropped on upload.</p>
+                </div>
+            </article>
+
+            <!-- Info Section -->
+            <article class="tutorial-section" id="info">
+                <h2><i class="fas fa-id-badge"></i> Personal Information</h2>
+                <p>Enter your name and job title:</p>
+
+                <h3>Full Name</h3>
+                <ul>
+                    <li>Write your name in Arabic or English</li>
+                    <li>Control font size and color</li>
+                    <li>Choose font type (Tajawal, Cairo, Lalezar)</li>
+                    <li>Set name position (front or back)</li>
+                </ul>
+
+                <h3>Job Title / Business</h3>
+                <ul>
+                    <li>Write your position or field of work</li>
+                    <li>Same formatting options available</li>
+                    <li>You can write multiple lines</li>
+                </ul>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-globe"></i> Bilingual Support</h4>
+                    <p>You can enter name and job title in both Arabic and English. Use the language toggle button in
+                        the toolbar to switch between languages.</p>
+                </div>
+            </article>
+
+            <!-- Phones Section -->
+            <article class="tutorial-section" id="phones">
+                <h2><i class="fas fa-phone-alt"></i> Phone Numbers</h2>
+                <p>Add phone numbers for direct contact:</p>
+
+                <ul>
+                    <li>Click "Add Phone Number" to add a new number</li>
+                    <li>Enter number with country code (e.g., +1234567890)</li>
+                    <li>Choose display method: as buttons or as text</li>
+                    <li>You can add multiple numbers</li>
+                </ul>
+
+                <h3>Button Customization</h3>
+                <ul>
+                    <li>Control button color and text color</li>
+                    <li>Adjust font size and padding</li>
+                    <li>Choose font type</li>
+                </ul>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-touch"></i> Interactive Buttons</h4>
+                    <p>When viewing the card on a phone, recipients can tap the button to call directly!</p>
+                </div>
+            </article>
+
+            <!-- QR Section -->
+            <article class="tutorial-section" id="qr">
+                <h2><i class="fas fa-qrcode"></i> QR Code</h2>
+                <p>Add a QR code for quick access to your card:</p>
+
+                <h3>QR Source Options</h3>
+                <ul>
+                    <li><strong>Card Link (Recommended):</strong> Creates QR for your card's share link</li>
+                    <li><strong>Contact Data (vCard):</strong> Contains your info for direct contact saving</li>
+                    <li><strong>Use Link:</strong> Enter any link you want</li>
+                    <li><strong>Upload Image:</strong> Use your own ready-made QR code</li>
+                </ul>
+
+                <h3>Appearance Customization</h3>
+                <ul>
+                    <li>Change code color and background color</li>
+                    <li>Choose dot shape (squares, dots, rounded)</li>
+                    <li>Choose corner shape</li>
+                    <li>Include your logo in the center of the code</li>
+                </ul>
+            </article>
+
+            <!-- Social Section -->
+            <article class="tutorial-section" id="social">
+                <h2><i class="fas fa-share-alt"></i> Contact & Social Links</h2>
+                <p>Add all ways to contact you:</p>
+
+                <h3>Fixed Data</h3>
+                <ul>
+                    <li><strong>Email:</strong> For email contact</li>
+                    <li><strong>Website:</strong> Your website or portfolio link</li>
+                    <li><strong>WhatsApp:</strong> For direct WhatsApp contact</li>
+                    <li><strong>Facebook:</strong> Your Facebook page link</li>
+                    <li><strong>Instagram:</strong> Your Instagram account</li>
+                    <li><strong>Twitter/X:</strong> Your Twitter account</li>
+                    <li><strong>LinkedIn:</strong> Your professional profile</li>
+                    <li><strong>TikTok:</strong> Your TikTok account</li>
+                    <li><strong>YouTube:</strong> Your YouTube channel</li>
+                    <li><strong>Snapchat:</strong> Your Snapchat account</li>
+                    <li><strong>Location:</strong> Google Maps link to your location</li>
+                </ul>
+
+                <h3>Custom Links</h3>
+                <p>You can add additional links with appropriate icons.</p>
+
+                <h3>Display Settings</h3>
+                <ul>
+                    <li>Display as buttons with icons</li>
+                    <li>Or display as plain text</li>
+                    <li>Control button colors and sizes</li>
+                    <li>Choose position for each link (front or back)</li>
+                </ul>
+            </article>
+
+            <!-- Save Section -->
+            <article class="tutorial-section" id="save">
+                <h2><i class="fas fa-cloud-upload-alt"></i> Save & Share</h2>
+
+                <h3>Save Design</h3>
+                <ul class="steps-list">
+                    <li>Click "Save Design" button in the toolbar</li>
+                    <li>Your design will be saved to the cloud</li>
+                    <li>You'll get a unique share link for your card</li>
+                    <li>You can return to edit the design anytime</li>
+                </ul>
+
+                <h3>Download Options</h3>
+                <ul>
+                    <li><strong>PNG Image:</strong> High-quality image of front or back</li>
+                    <li><strong>PDF File:</strong> For professional printing</li>
+                    <li><strong>VCF Contact:</strong> To save data to phone</li>
+                    <li><strong>QR Code:</strong> Download QR code as image</li>
+                </ul>
+
+                <h3>Sharing</h3>
+                <ul>
+                    <li>Click "Share" button to get card link</li>
+                    <li>Share link via any messaging app</li>
+                    <li>Or copy link to paste anywhere</li>
+                </ul>
+
+                <div class="tip-box">
+                    <h4><i class="fas fa-bookmark"></i> Save to Gallery</h4>
+                    <p>Use "Save to Gallery" button to save your design locally and access it from the gallery page.
+                    </p>
+                </div>
+            </article>
+
+            <!-- Shortcuts Section -->
+            <article class="tutorial-section" id="shortcuts">
+                <h2><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h2>
+                <p>Use these shortcuts to speed up your work:</p>
+
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + S</span>
+                        <h4>Save to Gallery</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + Z</span>
+                        <h4>Undo</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + Y</span>
+                        <h4>Redo</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + G</span>
+                        <h4>Show Gallery</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + Shift + C</span>
+                        <h4>Collaborative Edit</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + Shift + R</span>
+                        <h4>Reset Design</h4>
+                    </div>
+                    <div class="feature-item">
+                        <span class="keyboard-shortcut">Ctrl + Shift + L</span>
+                        <h4>Share Site Link</h4>
+                    </div>
+                </div>
+            </article>
+
+            <!-- CTA Section -->
+            <div class="cta-section">
+                <h2 style="color: #e6f0f7; margin-bottom: 1.5rem;">Ready to Create Your Card?</h2>
+                <a href="editor-en.html" class="btn-primary">
+                    <i class="fas fa-rocket"></i>
+                    Start Designing Now for Free
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: #0f1922; padding: 40px 0; border-top: 1px solid rgba(77, 166, 255, 0.1);">
+        <div class="container" style="text-align: center;">
+            <div style="margin-bottom: 20px;">
+                <a href="index-en.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">Home</a>
+                <a href="editor-en.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">Editor</a>
+                <a href="gallery-en.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">Gallery</a>
+                <a href="blog-en.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">Blog</a>
+                <a href="contact-en.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">Contact Us</a>
+                <a href="privacy-en.html" style="color: #a8c0d8; text-decoration: none; margin: 0 15px;">Privacy</a>
+            </div>
+            <p style="color: #657d95; font-size: 0.9rem; margin: 0;">
+                © 2026 MC PRIME. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function () {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('active');
+        }
+    </script>
+</body>
+
+</html>
