@@ -57,10 +57,29 @@ try {
 // استخدم middleware auth الموجود في middleware/auth-middleware.js
 const verifyToken = require('./auth-middleware');
 
+// --- Sentry Integration (Ticket 8) ---
+const Sentry = require('@sentry/node');
+const { nodeProfilingIntegration } = require('@sentry/profiling-node');
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    integrations: [
+      nodeProfilingIntegration(),
+    ],
+    tracesSampleRate: 1.0,
+    profilesSampleRate: 1.0,
+  });
+}
+
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
 
 const app = express();
+
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.requestHandler());
+}
 
 // --------------------------------------------------
 // ========== Security & Middleware Setup ===========
@@ -94,6 +113,23 @@ app.use(xss());
 app.use(hpp());
 
 const crypto = require('crypto');
+
+// --- Health Check Endpoint (Ticket 8) ---
+app.get('/health', async (req, res) => {
+  try {
+    if (db) {
+      await db.command({ ping: 1 });
+    }
+    res.status(200).json({
+      status: 'OK',
+      uptime: process.uptime(),
+      database: db ? 'connected' : 'connecting'
+    });
+  } catch (error) {
+    console.error('Health Check Database Failure:', error);
+    res.status(503).json({ status: 'Service Unavailable', error: 'Database ping failed' });
+  }
+});
 
 // Middleware to generate a unique nonce per request
 app.use((req, res, next) => {
@@ -227,8 +263,8 @@ MongoClient.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true 
 
     try {
       await db.collection(designsCollectionName).createIndex({ shortId: 1 }, { unique: true });
-      await db.collection(designsCollectionName).createIndex({ ownerId: 1 });
-      await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
+      // Compound Index for fast retrieval of User Designs (Ticket 7)
+      await db.collection(designsCollectionName).createIndex({ ownerId: 1, createdAt: -1 });
       await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
       await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
 
@@ -1067,6 +1103,11 @@ app.post('/api/nfc/sign', verifyToken, [
 // (لقد أبقيت المسارات كما هي في ملفك الأصلي - لم أغيرها عدا استخدام encrypt عند الحاجة)
 // .. بقية الشيفرة موجودة (forgot-password, reset-password, verify-email, user/designs, card privacy, save-card, saved-cards, card-requests, gallery, robots, sitemap, healthz etc.)
 // (لأجل الإيجاز لم أعِد تكرار كامل الشيفرة هنا لأنك زودتني بها بالكامل — إن رغبت أدرجتها كاملة)
+
+// --- Sentry ErrorHandler (Must be before custom error handler) ---
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 
 // ----- Error handler -----
 app.use((err, req, res, next) => {
