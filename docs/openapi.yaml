@@ -1,24 +1,56 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  title: Digital Business Card NFC API
-  version: 2.0.0
-  description: NFC Business Card API Endpoints covering Authentication, Token Refresh, and Design Access.
+  title: MC PRIME NFC API
+  version: 1.0.0
+  description: >
+    Core REST APIs powering the NFC Digital Business Card platform.
+    Features Native Authentications, Caching optimizations, and Social Object validations.
 servers:
-  - url: http://localhost:3000/api
-    description: Local development environment
-
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+  - url: https://api.mcprim.com
+    description: Production Server
+  - url: http://localhost:3000
+    description: Localhost Development Development
 
 paths:
-  /auth/login:
+  /api/auth/register:
     post:
-      summary: User Login
-      description: Logs an existing user into the platform. Issues an access token and an HTTPOnly refresh cookie.
+      summary: Reigster a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  minLength: 6
+                  example: "securePassword123"
+                phone:
+                  type: string
+                  example: "+123456789"
+      responses:
+        '201':
+          description: Created successfully (JWT + Refresh Cookie issued)
+        '400':
+          description: Validation Error or Email already exists
+        '500':
+          description: Internal Server Error
+
+  /api/auth/login:
+    post:
+      summary: Authenticate user using Email & Password
       requestBody:
         required: true
         content:
@@ -34,70 +66,130 @@ paths:
                   format: email
                 password:
                   type: string
-                  format: password
       responses:
         '200':
-          description: Successfully Authenticated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  token:
-                    type: string
-                  user:
-                    type: object
+          description: Success (JWT issued, HttpOnly Refresh Cookie sent)
         '400':
           description: Invalid Credentials
 
-  /auth/refresh:
+  /api/auth/refresh:
     post:
-      summary: Refresh Access Token
-      description: Retrieves a new short-lived JWT using the stored HTTPOnly refresh token.
+      summary: Renew Access Token securely via HttpOnly Cookie Payload
       responses:
         '200':
-          description: Successfully Responded with a new JWT Token.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  token:
-                    type: string
+          description: Refreshed Access Token
         '401':
-          description: Token mismatch or rotation violation.
+          description: No refresh token provided
+        '403':
+          description: Token rotated or revoked previously
 
-  /nfc/sign:
+  /api/auth/logout:
     post:
-      summary: Encode a 30d NFC Token
-      description: Returns a secure JWT proxy token linked to an associated NFC physical card identifier.
+      summary: Logout securely revoking Refresh Token states
+      responses:
+        '200':
+          description: Logged out effectively clearing HttpOnly Cookies.
+
+  /api/save-design:
+    post:
+      summary: Create or optionally update a Digital Card profile JSON definition
       security:
-        - bearerAuth: []
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          description: Target ShortId (for updating)
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - designId
               properties:
-                designId:
-                  type: string
+                inputs:
+                  type: object
+                  properties:
+                    input-name:
+                      type: string
+                    input-tagline:
+                      type: string
+                dynamic:
+                  type: object
+                imageUrls:
+                  type: object
       responses:
         '200':
-          description: Successfully created the NFC link redirect token.
+          description: Saved Configuration Object successfully.
+        '403':
+          description: Unauthorized update or Quota Maximum reached (>10 Designs).
+        '500':
+          description: Database Insert Failure
+
+  /api/get-design/{id}:
+    get:
+      summary: Retrieve Digital Card Design Document by ShortId (Redis Cached)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Found Document Definition. `X-Cache` sets HIT/MISS Header natively.
+        '404':
+          description: ShortId matching 0 DB Elements.
+
+  /api/upload-image:
+    post:
+      summary: Process Profile Images generating WEBP structures resolving to CDNs
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Return `url` mapping Cloudinary or CDN endpoint
+        '400':
+          description: Limits Exceeded (10MB Buffer).
+
+  /api/upload-signature:
+    get:
+      summary: Pre-sign Client Native Cloudinary File Submissions mapping AppSecrets.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cryptographic Return Object.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                  signedUrl:
+                  signature:
                     type: string
-                    format: uri
+                  timestamp:
+                    type: integer
+                  cloudName:
+                    type: string
+                  apiKey:
+                    type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: refreshToken

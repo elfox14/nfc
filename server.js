@@ -913,6 +913,50 @@ app.post('/api/save-design', [
   }
 });
 
+// --- Get Design Data (Ticket 10 - Redis Cached Route) ---
+app.get('/api/get-design/:id', [
+  param('id').isString().notEmpty().trim().escape()
+], validateRequest, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const { id } = req.params;
+
+    // 1. Try reading from Redis Native Cache (300s TTL)
+    if (redisClient && redisClient.isReady) {
+      try {
+        const cachedPayload = await redisClient.get(`api:design:${id}`);
+        if (cachedPayload) {
+          res.setHeader('X-Cache', 'HIT');
+          return res.json(JSON.parse(cachedPayload));
+        }
+      } catch (redisErr) {
+        console.warn('Redis Cache Read Failed:', redisErr.message);
+      }
+    }
+
+    // 2. Fallback to MongoDB Query
+    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    if (!doc) return res.status(404).json({ error: 'Design not found' });
+
+    const payload = { success: true, design: doc.data };
+
+    // 3. Populate Redis Cache asynchronously (300 seconds TTL)
+    res.setHeader('X-Cache', 'MISS');
+    if (redisClient && redisClient.isReady) {
+      try {
+        await redisClient.setEx(`api:design:${id}`, 300, JSON.stringify(payload));
+      } catch (redisSetErr) {
+        console.warn('Redis Cache Write Failed:', redisSetErr.message);
+      }
+    }
+
+    return res.json(payload);
+  } catch (err) {
+    console.error('Fetch design error:', err);
+    res.status(500).json({ error: 'Failed to retrieve design data' });
+  }
+});
+
 // -------------------------
 // === AUTH ROUTES (كما لديك) ===
 // -------------------------
