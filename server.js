@@ -924,7 +924,7 @@ app.get('/api/get-design/:id', [
     // 1. Try reading from Redis Native Cache (300s TTL)
     if (redisClient && redisClient.isReady) {
       try {
-        const cachedPayload = await redisClient.get(`api:design:${id}`);
+        const cachedPayload = await redisClient.get(`api:design_v2:${id}`);
         if (cachedPayload) {
           res.setHeader('X-Cache', 'HIT');
           return res.json(JSON.parse(cachedPayload));
@@ -938,13 +938,13 @@ app.get('/api/get-design/:id', [
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
     if (!doc) return res.status(404).json({ error: 'Design not found' });
 
-    const payload = { success: true, design: doc.data };
+    const payload = doc.data;
 
     // 3. Populate Redis Cache asynchronously (300 seconds TTL)
     res.setHeader('X-Cache', 'MISS');
     if (redisClient && redisClient.isReady) {
       try {
-        await redisClient.setEx(`api:design:${id}`, 300, JSON.stringify(payload));
+        await redisClient.setEx(`api:design_v2:${id}`, 300, JSON.stringify(payload));
       } catch (redisSetErr) {
         console.warn('Redis Cache Write Failed:', redisSetErr.message);
       }
