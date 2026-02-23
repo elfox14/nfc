@@ -1233,10 +1233,16 @@ app.get('/api/auth/google', (req, res) => {
 
     const scope = encodeURIComponent('openid email profile');
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}&prompt=select_account`;
+
+    // Prevent browsers from caching the old 302 redirects lacking the 'state' parameters
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     return res.redirect(authUrl);
   } catch (err) {
     console.error('[Google OAuth] initiation error:', err);
-    return res.status(500).send('OAuth initiation failed.');
+    return res.status(500).send('OAuth initiation failed: ' + String(err));
   }
 });
 

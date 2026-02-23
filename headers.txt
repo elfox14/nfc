@@ -1,0 +1,33 @@
+HTTP/1.1 200 OK
+Date: Mon, 23 Feb 2026 01:56:22 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+CF-RAY: 9d231b354885e160-MRS
+access-control-allow-credentials: true
+Cache-Control: public, max-age=604800, immutable
+content-security-policy: default-src 'self';script-src 'self' 'nonce-r06r8JsIsdW5rkMqqMuD6g==' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.youtube.com;style-src 'self' 'nonce-r06r8JsIsdW5rkMqqMuD6g==' https://cdnjs.cloudflare.com https://fonts.googleapis.com;font-src 'self' https://fonts.gstatic.com;img-src 'self' data: https: https://i.imgur.com https://www.mcprim.com https://media.giphy.com https://nfc-vjy6.onrender.com;media-src 'self' data:;frame-src 'self' https://www.youtube.com;connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.youtube.com https://www.mcprim.com https://media.giphy.com https://nfc-vjy6.onrender.com ws://nfc-vjy6.onrender.com wss://nfc-vjy6.onrender.com;object-src 'none';upgrade-insecure-requests;base-uri 'self';form-action 'self';frame-ancestors 'self';script-src-attr 'none'
+cross-origin-opener-policy: same-origin-allow-popups
+cross-origin-resource-policy: same-origin
+etag: W/"e1-iKyGOh5VCSWiGte/GAmIXdndFy0"
+origin-agent-cluster: ?1
+referrer-policy: no-referrer
+rndr-id: 3e8efb73-8a0b-4026
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Origin, Accept-Encoding
+vary: Accept-Encoding
+x-content-type-options: nosniff
+x-dns-prefetch-control: off
+x-download-options: noopen
+x-frame-options: SAMEORIGIN
+x-permitted-cross-domain-policies: none
+x-ratelimit-limit: 10
+x-ratelimit-remaining: 8
+x-ratelimit-reset: 1771812654
+x-render-origin-server: Render
+x-xss-protection: 0
+cf-cache-status: DYNAMIC
+Server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+<html><body><script nonce="r06r8JsIsdW5rkMqqMuD6g==">window.opener.postMessage({ type: 'google-auth', success: false, error: "Invalid OAuth state or missing authorization code." }, '*'); window.close();</script></body></html>
