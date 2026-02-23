@@ -1,5 +1,30 @@
 'use strict';
 
+/**
+ * ==========================================
+ * Editor Enhancements Implementation Details
+ * ==========================================
+ * 
+ * 1. Undo/Redo (HistoryManager):
+ *    - Located in script-core.js -> HistoryManager.
+ *    - Records state changes and limits history to MAX_HISTORY (100).
+ *    - Triggered via shortcuts (Ctrl+Z, Ctrl+Y) and buttons (#undo-btn, #redo-btn).
+ * 
+ * 2. Autosave (StateManager.saveDebounced):
+ *    - Located in script-core.js -> StateManager.
+ *    - Debounces save operations to automatically persist changes to localStorage.
+ *    - Displays a "Saving..." toast notification to the user.
+ * 
+ * 3. Snap-to-Grid (DragManager):
+ *    - Located in script-main.js -> DragManager.
+ *    - Dynamically aligns elements to a 20px grid when `enableSnap` is active.
+ *    - Displays vertical/horizontal visual guides when elements align.
+ * 
+ * To test Undo/Redo from console:
+ *    HistoryManager.undo() // reverts state
+ *    HistoryManager.redo() // reapplies state
+ */
+
 
 const Config = {
     // ... existing config ...
@@ -283,3 +308,12 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Google Analytics Initialized');
     }
 });
+
+// For Jest unit testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        Config,
+        HistoryManager,
+        StateManager
+    };
+}

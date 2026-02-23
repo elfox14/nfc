@@ -1,5 +1,20 @@
 'use strict';
 
+/**
+ * ==========================================
+ * Editor Enhancements Implementation Details
+ * ==========================================
+ * 
+ * 1. Snap-to-Grid (DragManager):
+ *    - Located in script-main.js -> DragManager.
+ *    - Elements automatically align to grid lines (default 20px) when dragged.
+ *    - Vertical and horizontal guides visually indicate alignment.
+ * 
+ * 2. Undo/Redo & Autosave:
+ *    - Handled by HistoryManager and StateManager in script-core.js.
+ *    - Keybindings Ctrl+Z and Ctrl+Y are intercepted in script-main.js (App.init).
+ */
+
 // Language detection and i18n for script-main.js (computed once at load)
 const _isEnglishPage = document.documentElement.lang === 'en';
 
