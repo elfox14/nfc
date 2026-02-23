@@ -1,5 +1,7 @@
 // server.js - مدمج مع تحسينات الأمان و WebSocket
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 const { body, query, param, cookie, validationResult } = require('express-validator');
 
@@ -51,7 +53,9 @@ try {
   // إن لم يكن موجوداً فلا نكسر التطبيق — لكن من الأفضل إضافته في الإنتاج
   encrypt = (v) => v;
   decrypt = (v) => v;
-  console.warn('Field encryption util not found — sensitive-field encryption will be skipped unless utils/field-encryption.js is added.');
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('Field encryption util not found — sensitive-field encryption will be skipped unless utils/field-encryption.js is added.');
+  }
 }
 
 // استخدم middleware auth الموجود في middleware/auth-middleware.js
@@ -223,7 +227,9 @@ if (process.env.REDIS_URL) {
     .then(() => console.log('Redis connected successfully'))
     .catch(err => console.error('Redis connection failed:', err));
 } else {
-  console.warn('REDIS_URL not set. Caching will gracefully bypass.');
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('REDIS_URL not set. Caching will gracefully bypass.');
+  }
 }
 
 const { RedisStore } = require('rate-limit-redis');
@@ -288,7 +294,7 @@ const savedCardsCollectionName = 'savedCards';
 const cardRequestsCollectionName = 'cardRequests';
 
 let db;
-MongoClient.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true })
+MongoClient.connect(mongoUrl)
   .then(async client => {
     db = client.db(dbName);
     console.log('MongoDB connected');
