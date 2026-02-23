@@ -109,7 +109,9 @@ const Config = {
             name: 'front',
             tagline: 'front',
             qr: 'back'
-        }
+        },
+        enableSnap: true,
+        gridSize: 8
     },
 
     THEMES: {
@@ -212,7 +214,7 @@ const Utils = {
 const HistoryManager = {
     history: [],
     currentIndex: -1,
-    // maxHistory: 20, // REMOVED: No limit for undo/redo history
+    MAX_HISTORY: 100, // Limit to prevent memory leaks
 
     pushState(state) {
         // Cut future history if we push new state after undoing
@@ -227,7 +229,14 @@ const HistoryManager = {
         if (newStateStr === currentStateStr) return;
 
         this.history.push(JSON.parse(newStateStr));
-        this.currentIndex++; // UPDATED: Always increment index
+        this.currentIndex++;
+
+        // Trim oldest entries if we exceed the limit
+        if (this.history.length > this.MAX_HISTORY) {
+            const excess = this.history.length - this.MAX_HISTORY;
+            this.history.splice(0, excess);
+            this.currentIndex -= excess;
+        }
 
         this.updateButtonStates();
     },

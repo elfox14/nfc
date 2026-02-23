@@ -188,6 +188,8 @@
                         class="fas fa-tachometer-alt"></i></a>
                 <a href="gallery-en.html" class="btn-icon" title="Gallery" style="font-size: 12px;"><i
                         class="fas fa-images"></i></a>
+                <button id="open-templates-btn" class="btn-icon" title="Templates Library"
+                    style="font-size: 12px; cursor: pointer;"><i class="fas fa-layer-group"></i></button>
                 <a href="blog-en.html" class="btn-icon" title="Blog" style="font-size: 12px;"><i
                         class="fas fa-blog"></i></a>
             </nav>
@@ -322,6 +324,23 @@
                     </label>
                 </div>
                 <input type="hidden" id="layout-select" value="classic">
+
+                <h4 style="margin-top:20px; border-bottom:1px solid var(--accent-secondary); padding-bottom:5px;">Grid &
+                    Guides</h4>
+                <div class="form-group" style="display: flex; align-items: center; justify-content: space-between;">
+                    <label style="margin-bottom: 0; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="enable-grid-snap" checked style="width: auto;">
+                        Enable Snap-to-Grid
+                    </label>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; justify-content: space-between;">
+                    <label for="grid-size-select" style="margin-bottom: 0;">Grid Size</label>
+                    <select id="grid-size-select" style="width: 100px; padding: 5px;">
+                        <option value="4">4px</option>
+                        <option value="8" selected>8px</option>
+                        <option value="16">16px</option>
+                    </select>
+                </div>
             </fieldset>
 
             <fieldset class="fieldset" id="designs-fieldset-source">
@@ -1511,6 +1530,12 @@
                         <i class="fas fa-save"></i> Save to Gallery
                     </button>
                 </div>
+                <!-- NEW: Save as Template Button -->
+                <div class="form-group">
+                    <button class="btn btn-secondary mobile-action-btn" id="save-as-template-btn" style="width: 100%;">
+                        <i class="fas fa-layer-group"></i> Save as Template
+                    </button>
+                </div>
                 <div class="form-group">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn"
                         style="width: 100%;">
@@ -1875,13 +1900,57 @@
 
         <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> Theme</button>
         <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> Gallery</button>
+        <button id="open-templates-btn-menu"><i class="fas fa-layer-group"></i> Templates</button>
         <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> Save to Gallery</button>
+        <button id="save-as-template-btn-menu"><i class="fas fa-layer-group"></i> Save Template</button>
         <button id="start-collab-btn-menu"><i class="fas fa-users"></i> Collaborate</button>
         <button id="share-editor-btn-menu"><i class="fas fa-link"></i> Share Link</button>
         <hr>
         <a href="login-en.html" class="menu-item-link"><i class="fas fa-sign-in-alt"></i> Login</a>
         <hr>
         <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> Reset</button>
+    </div>
+    </div>
+
+    <!-- NEW: Templates Library Modal -->
+    <div id="templates-library-modal-overlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Templates Library <i class="fas fa-layer-group"></i></h3>
+                <button id="close-templates-library-btn" class="modal-close" aria-label="Close"
+                    style="top:25px; right:20px;">&times;</button>
+            </div>
+            <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 20px;">
+                Choose a template to quickly apply its layout, styling, and background to your current design.
+            </p>
+            <div id="templates-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+                <!-- Dynamically populated by templates.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Save as Template Modal -->
+    <div id="save-template-modal-overlay" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h3 style="margin-bottom: 15px;">Save as Template</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px;">
+                Save your current design layout as a reusable template.
+            </p>
+            <div class="form-group" style="text-align: left;">
+                <label for="template-name-input">Template Name</label>
+                <input type="text" id="template-name-input" placeholder="e.g. Elegant Dark Theme">
+            </div>
+            <div class="form-group" style="text-align: left; margin-top:15px; display: flex; align-items: center;">
+                <input type="checkbox" id="template-public-checkbox" style="width: auto; margin-right: 10px;">
+                <label for="template-public-checkbox" style="margin: 0; cursor: pointer;">Make Public (Visible to all
+                    users)</label>
+            </div>
+            <div class="modal-footer" style="margin-top: 25px;">
+                <button id="cancel-save-template-btn" class="btn btn-secondary">Cancel</button>
+                <button id="confirm-save-template-btn" class="btn btn-primary">Save Template</button>
+            </div>
+        </div>
     </div>
 </body>
 

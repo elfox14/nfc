@@ -292,6 +292,7 @@ const backgroundsCollectionName = config.MONGO_BACKGROUNDS_COLL || 'backgrounds'
 const refreshTokensCollectionName = 'refresh_tokens';
 const savedCardsCollectionName = 'savedCards';
 const cardRequestsCollectionName = 'cardRequests';
+const templatesCollectionName = config.MONGO_TEMPLATES_COLL || 'templates';
 
 let db;
 MongoClient.connect(mongoUrl)
@@ -314,6 +315,8 @@ MongoClient.connect(mongoUrl)
       await db.collection(savedCardsCollectionName).createIndex({ userId: 1, designShortId: 1 }, { unique: true });
       await db.collection(cardRequestsCollectionName).createIndex({ ownerUserId: 1, status: 1 });
       await db.collection(cardRequestsCollectionName).createIndex({ requesterId: 1, designShortId: 1 });
+      await db.collection(templatesCollectionName).createIndex({ ownerId: 1 });
+      await db.collection(templatesCollectionName).createIndex({ isPublic: 1 });
       console.log('MongoDB indexes created');
     } catch (indexErr) {
       console.warn('Some indexes may already exist:', indexErr.message);
@@ -789,6 +792,84 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
   }
 });
 
+// --- Templates API ---
+app.post('/api/templates', [
+  body('name').isString().isLength({ min: 1, max: 100 }),
+  body('state').isObject(),
+  body('isPublic').optional().isBoolean()
+], validateRequest, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    // Check for authenticated user
+    let ownerId = null;
+    const authHeader = req.headers['authorization'];
+    if (authHeader) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const secret = config.JWT_SECRET;
+        const decoded = jwt.verify(token, secret);
+        ownerId = decoded.userId;
+      } catch (err) { }
+    }
+
+    if (!ownerId) {
+      return res.status(401).json({ error: 'يجب تسجيل الدخول لحفظ القوالب' }); // Must be logged in
+    }
+
+    const newTemplate = {
+      name: DOMPurify.sanitize(req.body.name),
+      state: req.body.state,
+      isPublic: req.body.isPublic || false,
+      ownerId: ownerId,
+      createdAt: new Date()
+    };
+
+    const templatesCollection = config.MONGO_TEMPLATES_COLL || 'templates';
+    const result = await db.collection(templatesCollection).insertOne(newTemplate);
+    res.json({ success: true, message: 'تم حفظ القالب بنجاح', templateId: result.insertedId });
+  } catch (error) {
+    console.error('Save template error:', error);
+    res.status(500).json({ error: 'حدث خطأ أثناء حفظ القالب' });
+  }
+});
+
+app.get('/api/templates', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    // Check for authenticated user
+    let ownerId = null;
+    const authHeader = req.headers['authorization'];
+    if (authHeader) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const secret = config.JWT_SECRET;
+        const decoded = jwt.verify(token, secret);
+        ownerId = decoded.userId;
+      } catch (err) { }
+    }
+
+    // Build query: public templates OR templates owned by this user
+    const query = { $or: [{ isPublic: true }] };
+    if (ownerId) {
+      query.$or.push({ ownerId: ownerId });
+    }
+
+    const templatesCollection = config.MONGO_TEMPLATES_COLL || 'templates';
+    const templates = await db.collection(templatesCollection)
+      .find(query)
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray();
+
+    res.json({ templates });
+  } catch (error) {
+    console.error('Get templates error:', error);
+    res.status(500).json({ error: 'حدث خطأ أثناء جلب القوالب' });
+  }
+});
+
 // --- Save design route (مع تنظيف المدخلات والحماية) ---
 app.post('/api/save-design', [
   // Object Type Validations
@@ -960,6 +1041,92 @@ app.get('/api/get-design/:id', [
   } catch (err) {
     console.error('Fetch design error:', err);
     res.status(500).json({ error: 'Failed to retrieve design data' });
+  }
+});
+
+// -------------------------
+// === TEMPLATES API ===
+// -------------------------
+
+app.post('/api/templates', verifyToken, [
+  body('name').isString().trim().notEmpty().withMessage('Name is required').escape(),
+  body('state').isObject().withMessage('State is required'),
+  body('thumbnailUrl').optional().isString().trim(),
+  body('isPublic').optional().isBoolean()
+], validateRequest, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const userId = req.user.userId;
+    const { name, state, thumbnailUrl, isPublic } = req.body;
+
+    const templateId = nanoid(10);
+    const template = {
+      templateId,
+      ownerId: userId,
+      name,
+      state,
+      thumbnailUrl: thumbnailUrl || '',
+      isPublic: !!isPublic,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    await db.collection(templatesCollectionName).insertOne(template);
+    res.status(201).json({ success: true, template });
+  } catch (error) {
+    console.error('Save template error:', error);
+    res.status(500).json({ error: 'Failed to save template.' });
+  }
+});
+
+app.get('/api/templates', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const userId = req.user.userId;
+    const filter = {
+      $or: [
+        { ownerId: userId },
+        { isPublic: true }
+      ]
+    };
+
+    const templates = await db.collection(templatesCollectionName)
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray();
+
+    res.json({ success: true, templates });
+  } catch (error) {
+    console.error('Fetch templates error:', error);
+    res.status(500).json({ error: 'Failed to fetch templates.' });
+  }
+});
+
+app.delete('/api/templates/:id', verifyToken, [
+  param('id').isString().trim().escape()
+], validateRequest, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const templateId = req.params.id;
+    const userId = req.user.userId;
+
+    const result = await db.collection(templatesCollectionName).deleteOne({
+      templateId,
+      ownerId: userId
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Template not found or unauthorized' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete template error:', error);
+    res.status(500).json({ error: 'Failed to delete template.' });
   }
 });
 

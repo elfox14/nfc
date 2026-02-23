@@ -2341,3 +2341,47 @@ body.collaboration-active #start-collab-btn:hover {
         display: block;
     }
 }
+
+/* ===========================================
+   SNAP-TO-GRID & ALIGNMENT GUIDES
+   =========================================== */
+.card-grid-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background-image: radial-gradient(var(--accent-primary) 1px, transparent 1px);
+    /* default grid size is 8px, overridable by inline styles */
+    background-size: 8px 8px; 
+}
+
+.cards-wrapper.show-grid .card-grid-overlay {
+    opacity: 0.3;
+}
+
+.alignment-guide {
+    position: absolute;
+    background-color: #ff3d00;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+.alignment-guide.visible {
+    opacity: 1;
+}
+
+.alignment-guide.horizontal {
+    height: 1px;
+    left: 0;
+    right: 0;
+}
+
+.alignment-guide.vertical {
+    width: 1px;
+    top: 0;
+    bottom: 0;
+}
