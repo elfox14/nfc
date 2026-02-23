@@ -1236,7 +1236,7 @@ app.get('/api/auth/google', (req, res) => {
     return res.redirect(authUrl);
   } catch (err) {
     console.error('[Google OAuth] initiation error:', err);
-    return res.status(500).send('OAuth initiation failed.');
+    return res.status(500).send('OAuth initiation failed: ' + String(err));
   }
 });
 
