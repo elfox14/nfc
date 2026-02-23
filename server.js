@@ -139,7 +139,7 @@ app.use((req, res, next) => {
 
 // Helmet - رؤوس أمان HTTP (نطبق CSP مفصّل يدعم WebSocket كما في كودك)
 app.use(helmet({
-  // إعدادات عامة من helmet
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
 }));
 
 // Determine base WS/WSS URL from configuration
