@@ -1205,104 +1205,137 @@ app.post('/api/auth/logout', [
   }
 });
 
-// --- Google Auth ---
-const { OAuth2Client } = require('google-auth-library');
-
+// ---------- Google OAuth2 (popup flow) ----------
 app.get('/api/auth/google', (req, res) => {
-  const redirectUri = `${absoluteBaseUrl(req)}/api/auth/google/callback`;
-  const oauth2Client = new OAuth2Client(
-    config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
-    config.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET,
-    redirectUri
-  );
+  try {
+    const clientId = config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      console.error('[Google OAuth] GOOGLE_CLIENT_ID not configured');
+      return res.status(500).send('Google OAuth is not configured on the server.');
+    }
 
-  const url = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
-  });
+    const redirectUri = `${publicBaseUrl}/api/auth/google/callback`;
+    const state = nanoid(16);
 
-  res.redirect(url);
+    // Save state in HttpOnly cookie to validate on callback
+    res.cookie('oauth_state', state, {
+      httpOnly: true,
+      secure: config.NODE_ENV === 'production',
+      sameSite: 'Lax', // Lax allows top-level navigation from popup to send cookie
+      maxAge: 5 * 60 * 1000
+    });
+
+    const scope = encodeURIComponent('openid email profile');
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}&prompt=select_account`;
+    return res.redirect(authUrl);
+  } catch (err) {
+    console.error('[Google OAuth] initiation error:', err);
+    return res.status(500).send('OAuth initiation failed.');
+  }
 });
 
 app.get('/api/auth/google/callback', async (req, res) => {
   try {
-    const redirectUri = `${absoluteBaseUrl(req)}/api/auth/google/callback`;
-    const oauth2Client = new OAuth2Client(
-      config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
-      config.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET,
-      redirectUri
-    );
+    console.log('[Google OAuth] callback hit, query:', req.query);
+    const { code, state } = req.query;
+    const savedState = req.cookies && req.cookies.oauth_state;
 
-    const { tokens } = await oauth2Client.getToken(req.query.code);
-    oauth2Client.setCredentials(tokens);
-
-    const ticket = await oauth2Client.verifyIdToken({
-      idToken: tokens.id_token,
-      audience: config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-
-    const email = payload.email;
-    const name = payload.name || 'مستخدم جوجل';
-    const googleId = payload.sub;
-
-    let user = await db.collection(usersCollectionName).findOne({ email });
-    if (!user) {
-      user = {
-        userId: nanoid(10),
-        email,
-        name,
-        isVerified: true,
-        createdAt: new Date(),
-        googleId
-      };
-      await db.collection(usersCollectionName).insertOne(user);
+    if (!code || !state || !savedState || state !== savedState) {
+      const errMsg = 'Invalid OAuth state or missing authorization code.';
+      console.warn('[Google OAuth] state validation failed', { codeExists: !!code, stateMatch: state === savedState });
+      return res.send(`<html><body><script>window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*'); window.close();</script></body></html>`);
     }
 
+    // Exchange code for tokens
+    const tokenResp = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
+        client_secret: config.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: `${publicBaseUrl}/api/auth/google/callback`,
+        grant_type: 'authorization_code'
+      })
+    });
+    const tokenJson = await tokenResp.json();
+    console.log('[Google OAuth] token exchange response:', tokenJson);
+
+    if (!tokenJson || tokenJson.error) {
+      const errMsg = tokenJson?.error_description || tokenJson?.error || 'Token exchange failed';
+      console.error('[Google OAuth] token exchange failed', tokenJson);
+      return res.send(`<html><body><script>window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*'); window.close();</script></body></html>`);
+    }
+
+    const idToken = tokenJson.id_token;
+    if (!idToken) {
+      const errMsg = 'Missing id_token from Google.';
+      console.error('[Google OAuth] no id_token in token response');
+      return res.send(`<html><body><script>window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*'); window.close();</script></body></html>`);
+    }
+
+    // Validate id_token
+    const infoResp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+    const userInfo = await infoResp.json();
+    console.log('[Google OAuth] id_token info:', userInfo);
+
+    const expectedClientId = config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+    if (!userInfo || userInfo.error_description || userInfo.aud !== expectedClientId) {
+      console.error('[Google OAuth] Invalid id_token info', userInfo);
+      return res.send(`<html><body><script>window.opener.postMessage({ type: 'google-auth', success: false, error: 'Invalid id_token' }, '*'); window.close();</script></body></html>`);
+    }
+
+    // userInfo contains email, email_verified, name, picture, sub
+    const email = String(userInfo.email).toLowerCase();
+    let user = await db.collection(usersCollectionName).findOne({ email });
+
+    if (!user) {
+      // Create new user
+      const newUser = {
+        userId: nanoid(10),
+        email,
+        name: userInfo.name || '',
+        picture: userInfo.picture || '',
+        isVerified: true,
+        createdAt: new Date()
+      };
+      await db.collection(usersCollectionName).insertOne(newUser);
+      user = newUser;
+      console.log('[Google OAuth] created new user', user.userId);
+    } else {
+      console.log('[Google OAuth] found user', user.userId);
+    }
+
+    // Issue access token + refresh token (store hashed refresh token)
     const accessToken = createAccessToken({ userId: user.userId, email: user.email });
     const refreshToken = createRefreshToken();
-    const hashedRefreshToken = hashToken(refreshToken);
+    const hashed = hashToken(refreshToken);
     const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
 
     await db.collection(refreshTokensCollectionName).insertOne({
+      tokenHash: hashed,
       userId: user.userId,
-      tokenHash: hashedRefreshToken,
       createdAt: new Date(),
       expiresAt,
-      userAgent: req.useragent ? req.useragent.source : 'google-auth'
+      userAgent: req.useragent ? req.useragent.source : '',
+      ip: req.ip
     });
 
+    // Set HttpOnly cookie for refresh token
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'Strict',
-      path: '/api/auth',
+      sameSite: 'Lax',
       maxAge: 7 * 24 * 3600 * 1000
     });
 
-    res.send(`
-      <script nonce="${res.locals.nonce}">
-        window.opener.postMessage({
-          type: 'google-auth',
-          success: true,
-          token: '${accessToken}',
-          user: { name: '${user.name.replace(/'/g, "\\'")}', email: '${user.email}', userId: '${user.userId}' }
-        }, '*');
-        window.close();
-      </script>
-    `);
+    // Send success message back to popup opener and close popup
+    const safeUser = { name: user.name, email: user.email, userId: user.userId, picture: user.picture };
+    const payload = { type: 'google-auth', success: true, token: accessToken, user: safeUser };
+    return res.send(`<html><body><script>try{window.opener.postMessage(${JSON.stringify(payload)}, '*');}catch(e){} window.close();</script></body></html>`);
   } catch (err) {
-    console.error('Google Auth Error:', err);
-    res.send(`
-      <script nonce="${res.locals.nonce}">
-        window.opener.postMessage({
-          type: 'google-auth',
-          success: false,
-          error: 'فشل تسجيل الدخول بواسطة جوجل'
-        }, '*');
-        window.close();
-      </script>
-    `);
+    console.error('[Google OAuth] callback error:', err);
+    return res.send(`<html><body><script>window.opener.postMessage({ type: 'google-auth', success: false, error: 'Internal server error' }, '*'); window.close();</script></body></html>`);
   }
 });
 
