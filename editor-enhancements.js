@@ -22,6 +22,9 @@
 
         init3DPreview();
         initThemeToggle();
+
+        // Initialize Properties Panel
+        PropertiesPanel.init();
     }
 
     // ===========================================
@@ -491,12 +494,20 @@
             `;
             document.head.appendChild(style);
         }
+
+        if (typeof PropertiesPanel !== 'undefined') {
+            PropertiesPanel.show(el);
+        }
     }
 
     function deselectElement() {
         if (selectedElement) {
             selectedElement.classList.remove('element-selected');
             selectedElement = null;
+        }
+
+        if (typeof PropertiesPanel !== 'undefined') {
+            PropertiesPanel.hide();
         }
     }
 
@@ -811,5 +822,326 @@
         }
     `;
     document.head.appendChild(style);
+
+    // ===========================================
+    // PROPERTIES PANEL
+    // ===========================================
+    window.PropertiesPanel = {
+        panel: null,
+        currentElement: null,
+        debounceMap: new Map(),
+        pendingChanges: {},
+
+        init() {
+            this.panel = document.getElementById('properties-panel');
+            if (!this.panel) return;
+
+            document.getElementById('close-properties-panel')?.addEventListener('click', () => this.hide());
+
+            // Tabs
+            const tabs = document.querySelectorAll('.prop-tab-btn');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.prop-tab-pane').forEach(p => p.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.getElementById(e.target.dataset.tab)?.classList.add('active');
+                });
+            });
+
+            // Generic Map bindings
+            this.bindInput('prop-x', 'x', 'px');
+            this.bindInput('prop-y', 'y', 'px');
+            this.bindInput('prop-w', 'width', 'px');
+            this.bindInput('prop-h', 'height', 'px');
+            this.bindInput('prop-rotation', 'rotation', 'deg');
+            this.bindInput('prop-zindex', 'zIndex', '');
+
+            // Text Styles
+            this.bindInput('prop-fontFamily', 'fontFamily', '');
+            this.bindInput('prop-fontSize', 'fontSize', 'px');
+            this.bindInput('prop-color', 'color', '');
+            this.bindInput('prop-lineHeight', 'lineHeight', '');
+            this.bindInput('prop-letterSpacing', 'letterSpacing', 'px');
+
+            // Image Styles
+            this.bindInput('prop-objectFit', 'objectFit', '');
+            this.bindInput('prop-borderRadius', 'borderRadius', 'px');
+            this.bindInput('prop-borderWidth', 'borderWidth', 'px');
+            // Filter
+            const filterGrayscale = document.getElementById('prop-filter-grayscale');
+            if (filterGrayscale) {
+                filterGrayscale.addEventListener('input', (e) => this.updateProperty('filter', `grayscale(${e.target.value}%)`, ''));
+            }
+
+            // Button Styles
+            this.bindInput('prop-btn-bg', 'backgroundColor', '');
+            this.bindInput('prop-btn-radius', 'borderRadius', 'px');
+            this.bindInput('prop-btn-padding', 'padding', 'px');
+
+            // Button Action
+            this.bindInput('prop-btn-actionType', 'actionType', '');
+            this.bindInput('prop-btn-actionValue', 'actionValue', '');
+
+            // Toggles
+            document.getElementById('prop-visible')?.addEventListener('change', (e) => {
+                this.updateProperty('visible', e.target.checked);
+            });
+            document.getElementById('prop-lock')?.addEventListener('change', (e) => {
+                this.updateProperty('locked', e.target.checked);
+            });
+
+            // Radio Groups
+            document.querySelectorAll('#prop-textAlign .prop-icon-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('#prop-textAlign .prop-icon-btn').forEach(b => b.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    this.updateProperty('textAlign', e.currentTarget.dataset.value);
+                });
+            });
+        },
+
+        show(element) {
+            this.currentElement = element;
+            if (this.panel) this.panel.classList.remove('hidden');
+            this.populate();
+        },
+
+        hide() {
+            this.currentElement = null;
+            if (this.panel) this.panel.classList.add('hidden');
+        },
+
+        populate() {
+            if (!this.currentElement) return;
+            const el = this.currentElement;
+            const computedStyles = window.getComputedStyle(el);
+
+            // Position/Size fallback
+            let x = parseFloat(el.getAttribute('data-x')) || 0;
+            let y = parseFloat(el.getAttribute('data-y')) || 0;
+
+            // Check translation in transform if data attributes don't exist
+            if (x === 0 && y === 0 && el.style.transform.includes('translate')) {
+                const match = el.style.transform.match(/translate\(([^p]+)px,\s*([^p]+)px\)/);
+                if (match) {
+                    x = parseFloat(match[1]);
+                    y = parseFloat(match[2]);
+                }
+            }
+
+            // Populate generic inputs safely
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = val; };
+
+            setVal('prop-x', Math.round(x));
+            setVal('prop-y', Math.round(y));
+            setVal('prop-w', el.offsetWidth);
+            setVal('prop-h', el.offsetHeight);
+            setVal('prop-zindex', computedStyles.zIndex === 'auto' ? 1 : computedStyles.zIndex);
+
+            let rotation = 0;
+            const rotMatch = el.style.transform.match(/rotate\(([^d]+)deg\)/);
+            if (rotMatch) rotation = parseFloat(rotMatch[1]);
+            setVal('prop-rotation', rotation);
+
+            setCheck('prop-visible', computedStyles.display !== 'none');
+            setCheck('prop-lock', el.classList.contains('locked'));
+
+            // Reset Sub-groups
+            document.querySelectorAll('.style-group').forEach(g => g.classList.add('hidden'));
+
+            // Determine Element Type
+            const isImage = el.tagName === 'IMG' || el.querySelector('img');
+            const isButton = el.tagName === 'BUTTON' || el.classList.contains('btn') || el.classList.contains('phone-button-draggable-wrapper');
+
+            if (isImage) {
+                document.getElementById('style-image-controls')?.classList.remove('hidden');
+
+                const targetImg = el.tagName === 'IMG' ? el : el.querySelector('img');
+                if (targetImg) {
+                    const imgComputed = window.getComputedStyle(targetImg);
+                    setVal('prop-objectFit', imgComputed.objectFit);
+                    setVal('prop-borderRadius', parseInt(imgComputed.borderRadius) || 0);
+                    setVal('prop-borderWidth', parseInt(imgComputed.borderWidth) || 0);
+
+                    const filter = imgComputed.filter;
+                    if (filter.includes('grayscale')) {
+                        const m = filter.match(/grayscale\(([^%]+)%\)/);
+                        setVal('prop-filter-grayscale', m ? parseFloat(m[1]) : 0);
+                    } else {
+                        setVal('prop-filter-grayscale', 0);
+                    }
+                }
+            } else if (isButton) {
+                document.getElementById('style-button-controls')?.classList.remove('hidden');
+
+                // Fetch button specific styling
+                const targetBtn = el.tagName === 'BUTTON' ? el : (el.querySelector('button') || el.querySelector('.btn') || el);
+                const btnComputed = window.getComputedStyle(targetBtn);
+                setVal('prop-btn-bg', this.rgbToHex(btnComputed.backgroundColor));
+                setVal('prop-btn-radius', parseInt(btnComputed.borderRadius) || 0);
+                setVal('prop-btn-padding', parseInt(btnComputed.padding) || 0);
+
+                // Fallbacks for action types
+                setVal('prop-btn-actionType', el.dataset.actionType || 'link');
+                setVal('prop-btn-actionValue', el.dataset.actionValue || el.href || '');
+            } else {
+                // Must be Text-focused Element
+                document.getElementById('style-text-controls')?.classList.remove('hidden');
+
+                const fontFamilyRaw = computedStyles.fontFamily;
+                setVal('prop-fontFamily', fontFamilyRaw.includes('Tajawal') ? "'Tajawal', sans-serif" :
+                    fontFamilyRaw.includes('Cairo') ? "'Cairo', sans-serif" :
+                        fontFamilyRaw.includes('Lalezar') ? "'Lalezar', cursive" :
+                            fontFamilyRaw.includes('Poppins') ? "'Poppins', sans-serif" : "'Tajawal', sans-serif");
+
+                setVal('prop-fontSize', parseInt(computedStyles.fontSize) || 16);
+                setVal('prop-color', this.rgbToHex(computedStyles.color));
+                setVal('prop-lineHeight', parseFloat(computedStyles.lineHeight) || 1.5);
+                setVal('prop-letterSpacing', parseInt(computedStyles.letterSpacing) || 0);
+
+                const align = computedStyles.textAlign || 'center';
+                document.querySelectorAll('#prop-textAlign .prop-icon-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.value === align);
+                });
+            }
+        },
+
+        bindInput(id, property, unit) {
+            const input = document.getElementById(id);
+            if (!input) return;
+            input.addEventListener('input', (e) => {
+                this.updateProperty(property, e.target.value, unit);
+            });
+        },
+
+        updateProperty(property, value, unit = '') {
+            if (!this.currentElement) return;
+            const el = this.currentElement;
+            const targetEl = (el.tagName === 'IMG' || el.tagName === 'BUTTON' || el.classList.contains('phone-button-draggable-wrapper')) && property !== 'x' && property !== 'y' && property !== 'rotation' && property !== 'zIndex' && property !== 'visible' && property !== 'locked' ? (el.querySelector('img') || el.querySelector('button') || el.querySelector('.btn') || el) : el;
+
+            let changes = {};
+
+            if (property === 'x' || property === 'y') {
+                const x = property === 'x' ? value : (parseFloat(el.getAttribute('data-x')) || 0);
+                const y = property === 'y' ? value : (parseFloat(el.getAttribute('data-y')) || 0);
+
+                const rotMatch = el.style.transform.match(/rotate\(([^d]+)deg\)/);
+                const rotation = rotMatch ? `rotate(${rotMatch[1]}deg)` : '';
+
+                el.style.transform = `translate(${x}px, ${y}px) ${rotation}`;
+                el.setAttribute('data-x', x);
+                el.setAttribute('data-y', y);
+                changes.position = { x: parseFloat(x), y: parseFloat(y) };
+            } else if (property === 'rotation') {
+                const x = parseFloat(el.getAttribute('data-x')) || 0;
+                const y = parseFloat(el.getAttribute('data-y')) || 0;
+                el.style.transform = `translate(${x}px, ${y}px) rotate(${value}deg)`;
+                changes.rotation = parseFloat(value);
+            } else if (property === 'width' || property === 'height' || property === 'fontSize' || property === 'fontFamily' || property === 'color' || property === 'backgroundColor' || property === 'textAlign' || property === 'zIndex' || property === 'lineHeight' || property === 'letterSpacing' || property === 'objectFit' || property === 'borderRadius' || property === 'borderWidth' || property === 'padding' || property === 'filter') {
+
+                targetEl.style[property] = `${value}${unit}`;
+                changes.style = changes.style || {};
+                changes.style[property] = property === 'zIndex' || property.includes('Width') || property.includes('Radius') || property.includes('Height') || property.includes('padding') || property.includes('Size') ? parseFloat(value) : value;
+
+                // RTL auto-detect logic for text changes
+                if (property === 'innerText' || property === 'textContent') {
+                    if (/[\u0600-\u06FF]/.test(value)) {
+                        targetEl.style.direction = 'rtl';
+                        targetEl.style.textAlign = 'right';
+                        changes.style.direction = 'rtl';
+                        changes.style.textAlign = 'right';
+                    } else {
+                        targetEl.style.direction = 'ltr';
+                        targetEl.style.textAlign = 'left';
+                        changes.style.direction = 'ltr';
+                        changes.style.textAlign = 'left';
+                    }
+                }
+            } else if (property === 'visible') {
+                el.style.display = value ? '' : 'none';
+                el.style.opacity = value ? '1' : '0.5'; // visual cue for editor
+                changes.visible = value;
+            } else if (property === 'locked') {
+                if (value) el.classList.add('locked');
+                else el.classList.remove('locked');
+                changes.locked = value;
+            } else if (property === 'actionType' || property === 'actionValue') {
+                targetEl.dataset[property] = value;
+                changes.settings = changes.settings || {};
+                changes.settings[property] = value;
+            }
+
+            const elementId = el.id || el.dataset.controlId || el.dataset.elementId;
+            if (elementId) {
+                this.debouncedSaveElement(elementId, changes);
+            }
+        },
+
+        debouncedSaveElement(elementId, changes) {
+            // merge pending changes
+            if (!this.pendingChanges[elementId]) this.pendingChanges[elementId] = {};
+            this.pendingChanges[elementId] = {
+                ...this.pendingChanges[elementId],
+                ...changes,
+                style: { ...(this.pendingChanges[elementId]?.style || {}), ...(changes.style || {}) },
+                settings: { ...(this.pendingChanges[elementId]?.settings || {}), ...(changes.settings || {}) }
+            };
+
+            if (this.debounceMap.has(elementId)) {
+                clearTimeout(this.debounceMap.get(elementId));
+            }
+
+            const timer = setTimeout(() => {
+                this.saveElementToBackend(elementId, this.pendingChanges[elementId]);
+                delete this.pendingChanges[elementId];
+                this.debounceMap.delete(elementId);
+            }, 800);
+
+            this.debounceMap.set(elementId, timer);
+        },
+
+        async saveElementToBackend(elementId, changes) {
+            // Check if fallback save exists, call it to keep full UI state healthy mapping
+            if (window.StateManager && window.StateManager.saveDebounced) {
+                window.StateManager.saveDebounced();
+            }
+
+            const getDesignId = () => typeof window.Config !== 'undefined' ? window.Config.currentDesignId : new URLSearchParams(window.location.search).get('id');
+            const designId = getDesignId() || 'draft';
+
+            if (designId === 'draft') return;
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                const res = await fetch(`/ api / design / ${designId} / element / ${elementId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(changes)
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    console.error('PATCH element failed', data);
+                }
+            } catch (e) {
+                console.error('Network Error PATCHing element:', e);
+            }
+        },
+
+        rgbToHex(rgb) {
+            if (!rgb) return '#000000';
+            if (rgb.startsWith('#')) return rgb;
+            const result = rgb.match(/\d+/g);
+            if (!result || result.length < 3) return '#000000';
+            return "#" + ((1 << 24) + (parseInt(result[0]) << 16) + (parseInt(result[1]) << 8) + parseInt(result[2])).toString(16).slice(1);
+        }
+    };
 
 })();

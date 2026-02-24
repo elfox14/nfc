@@ -2354,7 +2354,7 @@ body.collaboration-active #start-collab-btn:hover {
     transition: opacity 0.3s ease;
     background-image: radial-gradient(var(--accent-primary) 1px, transparent 1px);
     /* default grid size is 8px, overridable by inline styles */
-    background-size: 8px 8px; 
+    background-size: 8px 8px;
 }
 
 .cards-wrapper.show-grid .card-grid-overlay {
@@ -2384,4 +2384,197 @@ body.collaboration-active #start-collab-btn:hover {
     width: 1px;
     top: 0;
     bottom: 0;
+}
+
+/* ===========================================
+   PROPERTIES PANEL (Floating Contextual Sidebar)
+   =========================================== */
+.properties-panel {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    width: 320px;
+    background: var(--form-bg);
+    border: 1px solid var(--accent-secondary);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.properties-panel.hidden {
+    opacity: 0;
+    transform: translateX(20px);
+    pointer-events: none;
+}
+
+.properties-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: var(--surface-color);
+    border-bottom: 1px solid var(--accent-secondary);
+}
+
+.properties-panel-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.properties-tabs {
+    display: flex;
+    background: var(--page-bg);
+    border-bottom: 1px solid var(--accent-secondary);
+}
+
+.prop-tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.prop-tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.prop-tab-btn.active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+    background: var(--form-bg);
+}
+
+.properties-content {
+    padding: 15px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.prop-tab-pane {
+    display: none;
+}
+
+.prop-tab-pane.active {
+    display: block;
+    animation: fade-in 0.3s ease;
+}
+
+.prop-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.prop-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.prop-row .prop-group {
+    margin-bottom: 0;
+}
+
+.prop-group label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.prop-input {
+    width: 100%;
+    padding: 6px 8px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.prop-input:focus {
+    border-color: var(--accent-primary);
+    outline: none;
+}
+
+.prop-input[type="color"] {
+    padding: 2px;
+    height: 32px;
+    cursor: pointer;
+}
+
+.prop-toggles {
+    justify-content: space-around;
+    padding-top: 10px;
+    border-top: 1px solid var(--accent-secondary);
+}
+
+.prop-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.prop-toggle-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.prop-radio-group {
+    display: flex;
+    gap: 5px;
+    background: var(--input-bg);
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid var(--input-border);
+}
+
+.prop-icon-btn {
+    flex: 1;
+    padding: 6px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.prop-icon-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.prop-icon-btn.active {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.style-group {
+    animation: fade-in 0.3s;
+}
+
+.style-group.hidden {
+    display: none;
+}
+
+html.ltr .properties-panel {
+    right: auto;
+    left: 20px;
 }

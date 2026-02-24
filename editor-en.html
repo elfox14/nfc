@@ -1688,6 +1688,166 @@
         </div>
     </div>
 
+    <!-- === Properties Panel (Floating/Contextual Sidebar) === -->
+    <div id="properties-panel" class="properties-panel hidden">
+        <div class="properties-panel-header">
+            <h3>Element Properties</h3>
+            <button id="close-properties-panel" class="btn-icon" title="Close">&times;</button>
+        </div>
+
+        <div class="properties-tabs">
+            <button class="prop-tab-btn active" data-tab="prop-general">General</button>
+            <button class="prop-tab-btn" data-tab="prop-style" id="prop-tab-style">Style</button>
+        </div>
+
+        <div class="properties-content">
+            <!-- General properties (applicable to all elements) -->
+            <div id="prop-general" class="prop-tab-pane active">
+                <div class="prop-row">
+                    <div class="prop-group">
+                        <label>X (px)</label>
+                        <input type="number" id="prop-x" class="prop-input">
+                    </div>
+                    <div class="prop-group">
+                        <label>Y (px)</label>
+                        <input type="number" id="prop-y" class="prop-input">
+                    </div>
+                </div>
+                <div class="prop-row">
+                    <div class="prop-group">
+                        <label>Width</label>
+                        <input type="number" id="prop-w" class="prop-input">
+                    </div>
+                    <div class="prop-group">
+                        <label>Height</label>
+                        <input type="number" id="prop-h" class="prop-input">
+                    </div>
+                </div>
+                <div class="prop-row">
+                    <div class="prop-group">
+                        <label>Rotation (°)</label>
+                        <input type="number" id="prop-rotation" class="prop-input" title="Degrees">
+                    </div>
+                    <div class="prop-group">
+                        <label>Z-Index</label>
+                        <input type="number" id="prop-zindex" class="prop-input">
+                    </div>
+                </div>
+                <div class="prop-row prop-toggles">
+                    <label class="prop-toggle-label">
+                        <input type="checkbox" id="prop-visible">
+                        Visible
+                    </label>
+                    <label class="prop-toggle-label">
+                        <input type="checkbox" id="prop-lock">
+                        Locked
+                    </label>
+                </div>
+            </div>
+
+            <!-- Style properties (context-dependent) -->
+            <div id="prop-style" class="prop-tab-pane">
+                <!-- Text Controls -->
+                <div id="style-text-controls" class="style-group hidden">
+                    <div class="prop-group">
+                        <label>Font Family</label>
+                        <select id="prop-fontFamily" class="prop-input">
+                            <option value="'Tajawal', sans-serif">Tajawal</option>
+                            <option value="'Cairo', sans-serif">Cairo</option>
+                            <option value="'Poppins', sans-serif">Poppins</option>
+                            <option value="'Lalezar', cursive">Lalezar</option>
+                        </select>
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-group">
+                            <label>Size (px)</label>
+                            <input type="number" id="prop-fontSize" class="prop-input">
+                        </div>
+                        <div class="prop-group">
+                            <label>Color</label>
+                            <input type="color" id="prop-color" class="prop-input">
+                        </div>
+                    </div>
+                    <div class="prop-group">
+                        <label>Alignment</label>
+                        <div class="prop-radio-group" id="prop-textAlign">
+                            <button class="prop-icon-btn" data-value="left"><i class="fas fa-align-left"></i></button>
+                            <button class="prop-icon-btn" data-value="center"><i
+                                    class="fas fa-align-center"></i></button>
+                            <button class="prop-icon-btn" data-value="right"><i class="fas fa-align-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-group">
+                            <label>Line Height</label>
+                            <input type="number" step="0.1" id="prop-lineHeight" class="prop-input">
+                        </div>
+                        <div class="prop-group">
+                            <label>Letter Spacing</label>
+                            <input type="number" id="prop-letterSpacing" class="prop-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Controls -->
+                <div id="style-image-controls" class="style-group hidden">
+                    <div class="prop-group">
+                        <label>Object Fit</label>
+                        <select id="prop-objectFit" class="prop-input">
+                            <option value="cover">Cover</option>
+                            <option value="contain">Contain</option>
+                            <option value="fill">Fill</option>
+                        </select>
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-group">
+                            <label>Border Radius</label>
+                            <input type="number" id="prop-borderRadius" class="prop-input">
+                        </div>
+                        <div class="prop-group">
+                            <label>Border Width</label>
+                            <input type="number" id="prop-borderWidth" class="prop-input">
+                        </div>
+                    </div>
+                    <div class="prop-group">
+                        <label>Grayscale Filter</label>
+                        <input type="range" id="prop-filter-grayscale" min="0" max="100" value="0">
+                    </div>
+                </div>
+
+                <!-- Button Controls -->
+                <div id="style-button-controls" class="style-group hidden">
+                    <div class="prop-group">
+                        <label>Background Color</label>
+                        <input type="color" id="prop-btn-bg" class="prop-input">
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-group">
+                            <label>Border Radius</label>
+                            <input type="number" id="prop-btn-radius" class="prop-input">
+                        </div>
+                        <div class="prop-group">
+                            <label>Padding</label>
+                            <input type="number" id="prop-btn-padding" class="prop-input">
+                        </div>
+                    </div>
+                    <div class="prop-group">
+                        <label>Action Type</label>
+                        <select id="prop-btn-actionType" class="prop-input">
+                            <option value="link">Website Link</option>
+                            <option value="phone">Phone Call</option>
+                            <option value="email">Email</option>
+                        </select>
+                    </div>
+                    <div class="prop-group">
+                        <label>Action Value</label>
+                        <input type="text" id="prop-btn-actionValue" class="prop-input" placeholder="https://...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- === Collaborative Editing Modal === -->
     <div id="collab-modal-overlay" class="modal-overlay">
         <div class="modal-content">
