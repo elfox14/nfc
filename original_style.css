@@ -2009,7 +2009,10 @@ html.ltr .testimonial-card {
     margin-bottom: 10px;
 }
 
-/* Removed broken and redundant .draggable-on-card block */
+.draggable-on-card {
+    position: relative !important;
+    transform: true !important;
+}
 
 .glass-card {
     background: rgba(255, 255, 255, 0.1);
@@ -2638,13 +2641,7 @@ html.ltr .properties-panel {
 .draggable-on-card,
 .phone-button-draggable-wrapper,
 .draggable-social-link {
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) translate(0px, 0px);
-    transition: opacity 0.2s, background-color 0.2s, box-shadow 0.2s;
-    transform-origin: center center;
-    z-index: 10;
+    will-change: transform;
 }
 
 .dragging {

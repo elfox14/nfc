@@ -410,8 +410,8 @@
 
         </aside>
 
-        <main class="pro-canvas">
-            <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
+        <div class="pro-canvas">
+            <div class="cards-wrapper" id="cards-wrapper" tabindex="0">
                 <div class="card-flipper-container">
                     <div class="card-flipper">
                         <div class="business-card card-face card-front" id="card-front-preview">
@@ -454,8 +454,8 @@
                     <span>تقليب الكارت</span>
                 </button>
 
-            </main>
-        </main>
+            </div>
+        </div>
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-properties">
 
@@ -468,7 +468,8 @@
             <!-- Container for contextual properties -->
             <div id="contextual-properties-container" style="display: none;">
                 <h3 id="prop-panel-title"
-                    style="margin-top:0; border-bottom: 1px solid var(--accent-secondary); padding-bottom:10px;">خصائص
+                    style="margin-top:0; border-bottom: 1px solid var(--accent-secondary); padding-bottom:10px;">
+                    خصائص
                     العنصر</h3>
 
                 <!-- Shared Transformation Properties -->
@@ -516,10 +517,12 @@
 
                                 <!-- 1. المصدر والصورة -->
                                 <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                                    <legend style="font-size: 0.9em; color: var(--accent-primary);">المصدر والصورة
+                                    <legend style="font-size: 0.9em; color: var(--accent-primary);">المصدر
+                                        والصورة
                                     </legend>
                                     <div class="form-group">
-                                        <label for="input-logo-upload">رفع صورة (يدعم SVG وصور عالية الدقة)</label>
+                                        <label for="input-logo-upload">رفع صورة (يدعم SVG وصور عالية
+                                            الدقة)</label>
                                         <div class="logo-upload-group">
                                             <img id="logo-preview" src="mcprime-logo-transparent.png"
                                                 alt="معاينة الشعار المرفوع">
@@ -549,7 +552,8 @@
 
                                 <!-- 2. الأبعاد والإطار -->
                                 <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                                    <legend style="font-size: 0.9em; color: var(--accent-primary);">الأبعاد والإطار
+                                    <legend style="font-size: 0.9em; color: var(--accent-primary);">الأبعاد
+                                        والإطار
                                     </legend>
                                     <div class="control-grid">
                                         <div class="form-group">
@@ -579,14 +583,16 @@
 
                                 <!-- 3. الموضع والمحاذاة -->
                                 <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                                    <legend style="font-size: 0.9em; color: var(--accent-primary);">الموضع والمحاذاة
+                                    <legend style="font-size: 0.9em; color: var(--accent-primary);">الموضع
+                                        والمحاذاة
                                     </legend>
                                     <div class="placement-control">
                                         <label>مكان العنصر</label>
                                         <div class="radio-group">
                                             <label><input type="radio" name="placement-logo" value="front" checked>
                                                 أمامي</label>
-                                            <label><input type="radio" name="placement-logo" value="back"> خلفي</label>
+                                            <label><input type="radio" name="placement-logo" value="back">
+                                                خلفي</label>
                                         </div>
                                     </div>
                                     <div class="form-group" style="margin-top: 10px;">
@@ -596,7 +602,8 @@
                                                 يسار</label>
                                             <label><input type="radio" name="logo-align" value="center" checked>
                                                 وسط</label>
-                                            <label><input type="radio" name="logo-align" value="flex-end"> يمين</label>
+                                            <label><input type="radio" name="logo-align" value="flex-end">
+                                                يمين</label>
                                         </div>
                                     </div>
                                     <div class="form-group" style="margin-top: 10px;">
@@ -618,7 +625,8 @@
 
                                 <!-- 4. المظهر والتأثيرات -->
                                 <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                                    <legend style="font-size: 0.9em; color: var(--accent-primary);">المظهر والتأثيرات
+                                    <legend style="font-size: 0.9em; color: var(--accent-primary);">المظهر
+                                        والتأثيرات
                                     </legend>
                                     <div class="control-grid">
                                         <div class="form-group">
@@ -639,7 +647,8 @@
 
                                 <!-- 5. الإعدادات المتقدمة -->
                                 <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                                    <legend style="font-size: 0.9em; color: var(--accent-primary);">الإعدادات المتقدمة
+                                    <legend style="font-size: 0.9em; color: var(--accent-primary);">الإعدادات
+                                        المتقدمة
                                     </legend>
                                     <div class="control-grid">
                                         <div class="form-group">
@@ -721,17 +730,20 @@
                                                 دائري</label>
                                             <label><input type="radio" name="photo-shape" value="rounded"> زوايا
                                                 ناعمة</label>
-                                            <label><input type="radio" name="photo-shape" value="square"> مربع</label>
+                                            <label><input type="radio" name="photo-shape" value="square">
+                                                مربع</label>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="photo-align-group">محاذاة الصورة</label>
                                     <div class="radio-group" id="photo-align-group">
-                                        <label><input type="radio" name="photo-align" value="flex-start"> يسار</label>
+                                        <label><input type="radio" name="photo-align" value="flex-start">
+                                            يسار</label>
                                         <label><input type="radio" name="photo-align" value="center" checked>
                                             وسط</label>
-                                        <label><input type="radio" name="photo-align" value="flex-end"> يمين</label>
+                                        <label><input type="radio" name="photo-align" value="flex-end">
+                                            يمين</label>
                                     </div>
                                 </div>
 
@@ -857,7 +869,8 @@
                                     <div class="radio-group">
                                         <label><input type="radio" name="placement-photo" value="front" checked>
                                             أمامي</label>
-                                        <label><input type="radio" name="placement-photo" value="back"> خلفي</label>
+                                        <label><input type="radio" name="placement-photo" value="back">
+                                            خلفي</label>
                                     </div>
                                 </div>
 
@@ -956,7 +969,8 @@
                                         data-update-unit="px"></div>
                                 <div class="form-group"><label for="tagline-color">اللون</label><input type="color"
                                         id="tagline-color" value="#4da6ff" data-update-target="card-tagline"
-                                        data-update-property="style.color"></div>
+                                        data-update-property="style.color">
+                                </div>
                             </div>
                             <div class="form-group"><label for="tagline-font">الخط</label><select id="tagline-font"
                                     data-update-target="card-tagline" data-update-property="style.fontFamily">
@@ -969,7 +983,8 @@
                                 <div class="radio-group">
                                     <label><input type="radio" name="placement-tagline" value="front" checked>
                                         أمامي</label>
-                                    <label><input type="radio" name="placement-tagline" value="back"> خلفي</label>
+                                    <label><input type="radio" name="placement-tagline" value="back">
+                                        خلفي</label>
                                 </div>
                             </div>
 
@@ -1017,7 +1032,8 @@
                                     <div class="radio-group">
                                         <label><input type="radio" name="phone-text-layout" value="row" checked>
                                             أفقي</label>
-                                        <label><input type="radio" name="phone-text-layout" value="column"> رأسي</label>
+                                        <label><input type="radio" name="phone-text-layout" value="column">
+                                            رأسي</label>
                                     </div>
                                 </div>
                                 <div class="control-grid">
@@ -1053,8 +1069,9 @@
                             </div>
                             <div class="form-group"><label for="phone-btn-font-size">حجم خط الزر</label><input
                                     type="range" id="phone-btn-font-size" min="10" max="24" value="12"></div>
-                            <div class="form-group"><label for="phone-btn-padding">حجم حشو الزر (Padding)</label><input
-                                    type="range" id="phone-btn-padding" min="4" max="16" value="6"></div>
+                            <div class="form-group"><label for="phone-btn-padding">حجم حشو الزر
+                                    (Padding)</label><input type="range" id="phone-btn-padding" min="4" max="16"
+                                    value="6"></div>
                             <div class="form-group"><label for="phone-btn-font">خط الزر</label><select
                                     id="phone-btn-font">
                                     <option value="'Poppins', sans-serif">Poppins</option>
@@ -1071,19 +1088,23 @@
                                 <label>مكان رمز QR</label>
                                 <div class="radio-group">
                                     <label><input type="radio" name="placement-qr" value="front"> أمامي</label>
-                                    <label><input type="radio" name="placement-qr" value="back" checked> خلفي</label>
+                                    <label><input type="radio" name="placement-qr" value="back" checked>
+                                        خلفي</label>
                                 </div>
                             </div>
                             <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
                             <div class="form-group">
                                 <label>مصدر QR Code</label>
                                 <div class="radio-group">
-                                    <label><input type="radio" name="qr-source" value="auto-card" checked> رابط البطاقة
+                                    <label><input type="radio" name="qr-source" value="auto-card" checked> رابط
+                                        البطاقة
                                         (مُوصى
                                         به)</label>
-                                    <label><input type="radio" name="qr-source" value="auto-vcard"> بيانات الاتصال
+                                    <label><input type="radio" name="qr-source" value="auto-vcard"> بيانات
+                                        الاتصال
                                         (vCard)</label>
-                                    <label><input type="radio" name="qr-source" value="custom"> استخدام رابط</label>
+                                    <label><input type="radio" name="qr-source" value="custom"> استخدام
+                                        رابط</label>
                                     <label><input type="radio" name="qr-source" value="upload"> رفع صورة</label>
                                 </div>
                             </div>
@@ -1091,7 +1112,8 @@
                             <div id="qr-auto-card-group" style="display: block;">
                                 <button id="generate-auto-qr-btn" class="btn btn-primary"><i class="fas fa-qrcode"></i>
                                     إنشاء/تحديث QR Code</button>
-                                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">يقوم هذا
+                                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">يقوم
+                                    هذا
                                     الخيار بحفظ
                                     تصميمك وإنشاء QR Code لرابط المشاركة الخاص ببطاقتك.</p>
                             </div>
@@ -1099,7 +1121,8 @@
                             <!-- تخصيص QR Code -->
                             <div id="qr-customization-group"
                                 style="margin-top: 15px; border-top: 1px dashed var(--accent-secondary); padding-top: 15px;">
-                                <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-primary);">تخصيص
+                                <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-primary);">
+                                    تخصيص
                                     المظهر</h4>
 
                                 <div class="control-grid">
@@ -1252,10 +1275,12 @@
                                     <input type="range" id="back-buttons-size" min="10" max="20" value="10">
                                 </div>
                                 <div class="control-grid">
-                                    <div class="form-group"><label for="back-buttons-bg-color">لون الزر</label><input
-                                            type="color" id="back-buttons-bg-color" value="#364f6b"></div>
-                                    <div class="form-group"><label for="back-buttons-text-color">لون النص</label><input
-                                            type="color" id="back-buttons-text-color" value="#aab8c2"></div>
+                                    <div class="form-group"><label for="back-buttons-bg-color">لون
+                                            الزر</label><input type="color" id="back-buttons-bg-color" value="#364f6b">
+                                    </div>
+                                    <div class="form-group"><label for="back-buttons-text-color">لون
+                                            النص</label><input type="color" id="back-buttons-text-color"
+                                            value="#aab8c2"></div>
                                 </div>
                                 <div class="form-group"><label for="back-buttons-font">خط الأزرار</label><select
                                         id="back-buttons-font">
@@ -1309,7 +1334,8 @@
 
                                     <details class="fieldset-accordion"
                                         style="margin-top: 10px; background-color: var(--page-bg);">
-                                        <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)
+                                        <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة
+                                            (للنص)
                                         </summary>
                                         <div class="fieldset-content" style="padding: 10px;">
                                             <div class="control-grid">
@@ -1370,7 +1396,8 @@
 
                                     <details class="fieldset-accordion"
                                         style="margin-top: 10px; background-color: var(--page-bg);">
-                                        <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)
+                                        <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة
+                                            (للنص)
                                         </summary>
                                         <div class="fieldset-content" style="padding: 10px;">
                                             <div class="control-grid">
@@ -1431,7 +1458,8 @@
 
                                     <details class="fieldset-accordion"
                                         style="margin-top: 10px; background-color: var(--page-bg);">
-                                        <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)
+                                        <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة
+                                            (للنص)
                                         </summary>
                                         <div class="fieldset-content" style="padding: 10px;">
                                             <div class="control-grid">
@@ -1492,7 +1520,8 @@
 
                                     <details class="fieldset-accordion"
                                         style="margin-top: 10px; background-color: var(--page-bg);">
-                                        <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)
+                                        <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة
+                                            (للنص)
                                         </summary>
                                         <div class="fieldset-content" style="padding: 10px;">
                                             <div class="control-grid">
@@ -1553,7 +1582,8 @@
 
                                     <details class="fieldset-accordion"
                                         style="margin-top: 10px; background-color: var(--page-bg);">
-                                        <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)
+                                        <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة
+                                            (للنص)
                                         </summary>
                                         <div class="fieldset-content" style="padding: 10px;">
                                             <div class="control-grid">

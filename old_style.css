@@ -105,15 +105,15 @@ html.ltr body {
 
 .pro-layout {
     display: grid;
-    /* V2 Layout: Left Icons (60px) | Left Panel (260px) | Canvas (1fr) | Right Properties (350px) */
-    grid-template-columns: 60px 260px 1fr 350px;
+    grid-template-columns: 320px 1fr 350px;
+    /* Desktop default */
     height: calc(100vh - var(--toolbar-height));
     position: relative;
     flex-grow: 1;
 }
 
 .pro-canvas {
-    grid-column: 3 / 4;
+    grid-column: 2 / 3;
     grid-row: 1;
     display: flex;
     flex-direction: column;
@@ -128,75 +128,35 @@ html.ltr body {
 .pro-sidebar {
     background-color: var(--form-bg);
     overflow-y: auto;
+    padding: 20px;
     display: block;
+    /* Desktop default */
     height: 100%;
 }
 
 .pro-sidebar::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
 
 .pro-sidebar::-webkit-scrollbar-track {
-    background: transparent;
+    background: var(--accent-secondary);
 }
 
 .pro-sidebar::-webkit-scrollbar-thumb {
-    background: var(--accent-secondary);
+    background: var(--accent-primary);
     border-radius: 4px;
 }
 
-/* 1. Leftmost Icon Bar */
-.pro-icon-bar {
+.pro-sidebar-left {
+    grid-column: 3 / 4;
+    grid-row: 1;
+    border-left: 1px solid var(--accent-secondary);
+}
+
+.pro-sidebar-right {
     grid-column: 1 / 2;
     grid-row: 1;
-    border-left: 1px solid var(--accent-secondary);
-    /* Assuming RTL */
-    background-color: var(--form-bg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 15px;
-    gap: 15px;
-    border-left: 1px solid var(--accent-secondary);
-    /* For RTL */
-}
-
-.icon-bar-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.icon-bar-btn:hover,
-.icon-bar-btn.active {
-    background-color: rgba(77, 166, 255, 0.1);
-    color: var(--accent-primary);
-}
-
-/* 2. Left Panel (Elements/Layers) */
-.pro-sidebar-left {
-    grid-column: 2 / 3;
-    grid-row: 1;
-    border-left: 1px solid var(--accent-secondary);
-    padding: 20px 15px;
-}
-
-/* 3. Right Panel (Properties) */
-.pro-sidebar-right {
-    grid-column: 4 / 5;
-    grid-row: 1;
     border-right: 1px solid var(--accent-secondary);
-    padding: 20px;
 }
 
 .pro-toolbar .btn-success {
@@ -1033,7 +993,7 @@ html.ltr .dynamic-social-link span {
 }
 
 .logo-front {
-    max-width: 100%;
+    max-width: 25%;
     object-fit: contain;
     transition: all 0.3s ease;
 }
@@ -2009,7 +1969,10 @@ html.ltr .testimonial-card {
     margin-bottom: 10px;
 }
 
-/* Removed broken and redundant .draggable-on-card block */
+.draggable-on-card {
+    position: relative !important;
+    transform: true !important;
+}
 
 .glass-card {
     background: rgba(255, 255, 255, 0.1);
@@ -2600,54 +2563,4 @@ body.collaboration-active #start-collab-btn:hover {
 html.ltr .properties-panel {
     right: auto;
     left: 20px;
-}
-
-/* ========================================= */
-/* Alignment Guides for Drag & Drop Snapping */
-/* ========================================= */
-.alignment-guide {
-    position: absolute;
-    background-color: var(--accent-primary);
-    z-index: 10000;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s ease-out;
-}
-
-.alignment-guide.visible {
-    opacity: 0.7;
-}
-
-.alignment-guide.horizontal {
-    height: 1px;
-    left: 0;
-    right: 0;
-    width: 100%;
-}
-
-.alignment-guide.vertical {
-    width: 1px;
-    top: 0;
-    bottom: 0;
-    height: 100%;
-}
-
-/* ========================================= */
-/* Drag and Drop 60FPS Performance Optims    */
-/* ========================================= */
-.draggable-on-card,
-.phone-button-draggable-wrapper,
-.draggable-social-link {
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) translate(0px, 0px);
-    transition: opacity 0.2s, background-color 0.2s, box-shadow 0.2s;
-    transform-origin: center center;
-    z-index: 10;
-}
-
-.dragging {
-    opacity: 0.8 !important;
-    z-index: 9999 !important;
 }
