@@ -424,24 +424,53 @@
                                 data-update-target="card-logo-img" data-update-property="src">
                         </div>
                         <div class="form-group">
-                            <label for="input-logo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
+                            <label for="input-logo-upload">أو ارفع صورة (يدعم SVG وصور عالية الدقة)</label>
                             <div class="logo-upload-group">
                                 <img id="logo-preview" src="mcprime-logo-transparent.png" alt="معاينة الشعار المرفوع">
                                 <div class="file-input-wrapper">
-                                    <input type="file" id="input-logo-upload" accept="image/*">
+                                    <input type="file" id="input-logo-upload"
+                                        accept="image/png, image/jpeg, image/webp, image/svg+xml">
                                     <div class="input-error-msg" id="logo-upload-error"></div>
                                 </div>
                                 <div class="spinner" id="logo-spinner" style="display: none;"></div>
                             </div>
                         </div>
 
+                        <!-- قسم التباينات (Variants) وتوفير النسخ -->
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label for="logo-variant-select">نسخة الشعار (Variant)</label>
+                            <select id="logo-variant-select">
+                                <option value="full" selected>كامل (Full)</option>
+                                <option value="icon">أيقونة (Icon)</option>
+                                <option value="mono_light">أحادي فاتح (Mono Light)</option>
+                                <option value="mono_dark">أحادي داكن (Mono Dark)</option>
+                            </select>
+                        </div>
+
                         <!-- قسم الحجم والمحاذاة -->
                         <div class="control-grid">
                             <div class="form-group">
-                                <label for="logo-size">حجم الشعار</label>
-                                <input type="range" id="logo-size" min="10" max="80" value="25"
-                                    data-update-target="card-logo-img" data-update-property="style.maxWidth"
-                                    data-update-unit="%">
+                                <label for="logo-width">العرض (px)</label>
+                                <div style="display: flex; gap: 5px; align-items: center;">
+                                    <input type="number" id="logo-width" value="120" style="width: 100%;">
+                                    <button class="btn-icon btn-compact active" id="logo-aspect-lock"
+                                        title="قفل الأبعاد"><i class="fas fa-link"></i></button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="logo-height">الطول (px)</label>
+                                <input type="number" id="logo-height" value="60" style="width: 100%;">
+                            </div>
+                        </div>
+
+                        <div class="control-grid">
+                            <div class="form-group">
+                                <label for="logo-object-fit">طريقة الاحتواء</label>
+                                <select id="logo-object-fit">
+                                    <option value="contain" selected>احتواء (Contain)</option>
+                                    <option value="cover">تغطية (Cover)</option>
+                                    <option value="fill">ملء (Fill)</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="logo-align-group">محاذاة الشعار</label>
@@ -453,47 +482,49 @@
                             </div>
                         </div>
 
-                        <!-- قسم الخلفية والشفافية -->
+                        <!-- قسم الألوان الدقيقة والتأثيرات -->
                         <div class="control-grid">
                             <div class="form-group">
-                                <label for="logo-opacity">شفافية الشعار</label>
-                                <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
-                                    data-update-target="card-logo-img" data-update-property="style.opacity">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="logo-svg-color-enabled"
+                                        style="width: auto; margin-inline-end: 5px;">
+                                    <span>تخصيص لون SVG</span>
+                                </label>
+                                <input type="color" id="logo-svg-color" value="#ffffff" disabled style="opacity: 0.5;">
                             </div>
                             <div class="form-group">
-                                <label for="logo-bg-color">خلفية الشعار</label>
-                                <select id="logo-bg-color">
-                                    <option value="transparent">بدون</option>
-                                    <option value="#ffffff">أبيض</option>
-                                    <option value="#000000">أسود</option>
-                                </select>
+                                <label for="logo-brightness">سطوع الشعار</label>
+                                <input type="range" id="logo-brightness" min="0" max="200" value="100">
                             </div>
                         </div>
 
-                        <!-- قسم الظل -->
-                        <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>ظل الشعار</legend>
-                            <div class="form-group">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="logo-shadow-enabled"
-                                        style="width: auto; margin-inline-end: 10px;">
-                                    <span>تفعيل الظل</span>
-                                </label>
+                        <!-- الخيارات المتقدمة -->
+                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
+                            <legend>إعدادات متقدمة</legend>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="logo-lazy-load" checked
+                                            style="width: auto; margin-inline-end: 10px;">
+                                        <span>تأخير التحميل (Lazy Load)</span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="logo-retina" checked
+                                            style="width: auto; margin-inline-end: 10px;">
+                                        <span>عالي الدقة (Retina 2x)</span>
+                                    </label>
+                                </div>
                             </div>
-                            <div class="control-grid" id="logo-shadow-controls" style="display: none;">
-                                <div class="form-group">
-                                    <label for="logo-shadow-blur">حدة الظل</label>
-                                    <input type="range" id="logo-shadow-blur" min="0" max="40" value="10">
-                                </div>
-                                <div class="form-group">
-                                    <label for="logo-shadow-color">لون الظل</label>
-                                    <input type="color" id="logo-shadow-color" value="#000000">
-                                </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label for="logo-alt-text">نص بديل (وصف الشعار لـ SEO / الاحتياجات الخاصة)</label>
+                                <input type="text" id="logo-alt-text" value="شعار الشركة (Logo)">
                             </div>
                         </fieldset>
 
                         <!-- قسم الموضع والتحريك -->
-                        <div class="placement-control">
+                        <div class="placement-control" style="margin-top: 15px;">
                             <label>مكان العنصر</label>
                             <div class="radio-group">
                                 <label><input type="radio" name="placement-logo" value="front" checked> أمامي</label>

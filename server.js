@@ -669,6 +669,124 @@ function handleMulterErrors(err, req, res, next) {
 
 const cloudinary = require('cloudinary').v2;
 
+// --- Logo Upload Endpoint (with Variant Generation) ---
+app.post('/api/upload-logo', verifyToken, upload.single('logo'), handleMulterErrors, async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No logo file provided.' });
+    }
+
+    const mimeType = req.file.mimetype;
+    const isSvg = mimeType === 'image/svg+xml';
+    const variants = {};
+
+    // 1. Process variants locally in memory
+    if (isSvg) {
+      // Decode, Sanitize and Store SVG
+      let svgContent = req.file.buffer.toString('utf-8');
+      const createDOMPurify = require('isomorphic-dompurify');
+      svgContent = createDOMPurify.sanitize(svgContent, {
+        USE_PROFILES: { svg: true },
+        FORBID_TAGS: ['script', 'style', 'ForeignObject'], // strict svg rules
+        FORBID_ATTR: ['on*']
+      });
+
+      const processedSvgBuffer = Buffer.from(svgContent, 'utf-8');
+
+      // Rasterize for fallbacks (PNG 1x, 2x, Webp) using sharp from SVG buffer
+      const png1xBuffer = await sharp(processedSvgBuffer).png().toBuffer();
+      const png2xBuffer = await sharp(processedSvgBuffer).resize({ width: 1000, withoutEnlargement: true }).png().toBuffer();
+      const webpBuffer = await sharp(processedSvgBuffer).webp({ quality: 90 }).toBuffer();
+
+      variants.svg = { buffer: processedSvgBuffer, format: 'svg' };
+      variants.png_1x = { buffer: png1xBuffer, format: 'png' };
+      variants.png_2x = { buffer: png2xBuffer, format: 'png' };
+      variants.webp = { buffer: webpBuffer, format: 'webp' };
+
+    } else {
+      // Raster image (PNG/JPG/WEBP)
+      const image = sharp(req.file.buffer);
+      const metadata = await image.metadata();
+
+      const png1xBuffer = await sharp(req.file.buffer)
+        .resize({ width: Math.min(metadata.width, 500) })
+        .png().toBuffer();
+
+      const png2xBuffer = await sharp(req.file.buffer)
+        .resize({ width: Math.min(metadata.width, 1000) })
+        .png().toBuffer();
+
+      const webpBuffer = await sharp(req.file.buffer).webp({ quality: 90 }).toBuffer();
+
+      variants.png_1x = { buffer: png1xBuffer, format: 'png' };
+      variants.png_2x = { buffer: png2xBuffer, format: 'png' };
+      variants.webp = { buffer: webpBuffer, format: 'webp' };
+    }
+
+    // 2. Upload Variants to Cloudinary
+    const uploadedUrls = {};
+    const baseId = `logo_${nanoid(10)}`;
+
+    if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
+      const uploadPromises = Object.keys(variants).map(async (key) => {
+        const variantData = variants[key];
+        return new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: 'nfc/logos',
+              public_id: `${baseId}_${key}`,
+              resource_type: variantData.format === 'svg' ? 'raw' : 'image',
+              format: variantData.format
+            },
+            (error, result) => {
+              if (error) {
+                console.warn(`[Upload Logo] Cloudinary variant ${key} failed:`, error.message);
+                reject(error);
+              } else resolve({ key, url: result.secure_url });
+            }
+          );
+          uploadStream.end(variantData.buffer);
+        });
+      });
+
+      const results = await Promise.allSettled(uploadPromises);
+      results.forEach(res => {
+        if (res.status === 'fulfilled') {
+          uploadedUrls[res.value.key] = res.value.url;
+        }
+      });
+
+      if (Object.keys(uploadedUrls).length === 0) {
+        throw new Error('All Cloudinary variant uploads failed');
+      }
+
+    } else {
+      // Fallback: Local Storage
+      const base = absoluteBaseUrl(req);
+      for (const [key, variantData] of Object.entries(variants)) {
+        const tempName = `${baseId}_${key}.${variantData.format}`;
+        const tempOut = path.join(uploadDir, tempName);
+        fs.writeFileSync(tempOut, variantData.buffer);
+        uploadedUrls[key] = `${base}/uploads/${tempName}`;
+      }
+    }
+
+    // 3. Return Variant Map
+    return res.json({
+      success: true,
+      id: baseId,
+      variants: {
+        full: uploadedUrls
+      },
+      activeVariant: 'full' // Default active variant group
+    });
+
+  } catch (err) {
+    console.error('[Upload Logo] Error:', err);
+    res.status(500).json({ error: 'Failed to process logo upload.' });
+  }
+});
+
 // Configure Cloudinary if credentials exist
 if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
   cloudinary.config({

@@ -87,7 +87,7 @@ class ComponentLibraryManager {
     this.templates = [];
     this.categories = new Set();
     this.storageKey = options.storageKey || 'component_library';
-    
+
     this.initializeDefaultComponents();
     this.loadFromStorage();
   }
@@ -136,6 +136,32 @@ class ComponentLibraryManager {
           fontWeight: '500',
           color: '#666666'
         }
+      }
+    ));
+
+    // مكون الشعار (Logo)
+    this.addComponent(new Component(
+      'logo_main',
+      'شعار الشركة',
+      'logo',
+      {
+        tags: ['صورة', 'شعار', 'علامة تجارية'],
+        content: '<div class="element-placeholder"><i class="fas fa-crown"></i><span>أضف الشعار</span></div>',
+        styles: {
+          width: '120px',
+          height: '60px',
+          objectFit: 'contain'
+        },
+        responsive: {
+          mobile: { width: 90, height: 40 },
+          tablet: { width: 110, height: 55 }
+        },
+        variants: {},
+        activeVariant: 'full',
+        svgColorOverride: null, // e.g. { fill: '#ffffff' }
+        retina: true,
+        lazyLoad: true,
+        altText: 'Company Logo'
       }
     ));
 
@@ -259,7 +285,7 @@ class ComponentLibraryManager {
   searchComponents(query) {
     return this.components.filter(c => {
       return c.name.includes(query) ||
-             c.tags.some(tag => tag.includes(query));
+        c.tags.some(tag => tag.includes(query));
     }).map(c => c.getInfo());
   }
 
@@ -286,7 +312,7 @@ class ComponentLibraryManager {
       console.error('❌ المكون غير موجود');
       return false;
     }
-    
+
     this.components.splice(index, 1);
     this.saveToStorage();
     console.log('✅ تم حذف المكون');
@@ -331,7 +357,7 @@ class ComponentLibraryManager {
       console.error('❌ القالب غير موجود');
       return false;
     }
-    
+
     this.templates.splice(index, 1);
     this.saveToStorage();
     console.log('✅ تم حذف القالب');

@@ -473,34 +473,63 @@
                                 here</span></div>
                         <legend>Logo</legend>
 
-                        <!-- Upload and URL section -->
+                        <!-- Upload and Link -->
                         <div class="form-group">
                             <label for="input-logo">Logo URL</label>
                             <input type="text" id="input-logo" value="mcprime-logo-transparent.png"
                                 data-update-target="card-logo-img" data-update-property="src">
                         </div>
                         <div class="form-group">
-                            <label for="input-logo-upload">Or upload image (will be cropped)</label>
+                            <label for="input-logo-upload">Or Upload Image (SVG and High-Res supported)</label>
                             <div class="logo-upload-group">
-                                <img id="logo-preview" src="mcprime-logo-transparent.png" alt="Uploaded logo preview">
+                                <img id="logo-preview" src="mcprime-logo-transparent.png" alt="Uploaded Logo Preview">
                                 <div class="file-input-wrapper">
-                                    <input type="file" id="input-logo-upload" accept="image/*">
+                                    <input type="file" id="input-logo-upload"
+                                        accept="image/png, image/jpeg, image/webp, image/svg+xml">
                                     <div class="input-error-msg" id="logo-upload-error"></div>
                                 </div>
                                 <div class="spinner" id="logo-spinner" style="display: none;"></div>
                             </div>
                         </div>
 
-                        <!-- Size and Alignment section -->
+                        <!-- Variants -->
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label for="logo-variant-select">Logo Variant</label>
+                            <select id="logo-variant-select">
+                                <option value="full" selected>Full</option>
+                                <option value="icon">Icon</option>
+                                <option value="mono_light">Mono Light</option>
+                                <option value="mono_dark">Mono Dark</option>
+                            </select>
+                        </div>
+
+                        <!-- Size & Alignment -->
                         <div class="control-grid">
                             <div class="form-group">
-                                <label for="logo-size">Logo Size</label>
-                                <input type="range" id="logo-size" min="10" max="80" value="25"
-                                    data-update-target="card-logo-img" data-update-property="style.maxWidth"
-                                    data-update-unit="%">
+                                <label for="logo-width">Width (px)</label>
+                                <div style="display: flex; gap: 5px; align-items: center;">
+                                    <input type="number" id="logo-width" value="120" style="width: 100%;">
+                                    <button class="btn-icon btn-compact active" id="logo-aspect-lock"
+                                        title="Lock Aspect Ratio"><i class="fas fa-link"></i></button>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label for="logo-align-group">Logo Alignment</label>
+                                <label for="logo-height">Height (px)</label>
+                                <input type="number" id="logo-height" value="60" style="width: 100%;">
+                            </div>
+                        </div>
+
+                        <div class="control-grid">
+                            <div class="form-group">
+                                <label for="logo-object-fit">Object Fit</label>
+                                <select id="logo-object-fit">
+                                    <option value="contain" selected>Contain</option>
+                                    <option value="cover">Cover</option>
+                                    <option value="fill">Fill</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="logo-align-group">Alignment</label>
                                 <div class="radio-group" id="logo-align-group">
                                     <label><input type="radio" name="logo-align" value="flex-start"> Left</label>
                                     <label><input type="radio" name="logo-align" value="center" checked> Center</label>
@@ -509,63 +538,50 @@
                             </div>
                         </div>
 
-                        <!-- Background and Opacity section -->
+                        <!-- Colors and Effects -->
                         <div class="control-grid">
                             <div class="form-group">
-                                <label for="logo-opacity">Logo Opacity</label>
-                                <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
-                                    data-update-target="card-logo-img" data-update-property="style.opacity">
-                            </div>
-                            <div class="form-group">
-                                <label for="logo-bg-color">Logo Background</label>
-                                <select id="logo-bg-color">
-                                    <option value="transparent">None</option>
-                                    <option value="#ffffff">White</option>
-                                    <option value="#000000">Black</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Image Filters (Phase 3) -->
-                        <div class="form-group" style="margin-top: 15px;">
-                            <label for="logo-filter">Image Filter</label>
-                            <select id="logo-filter" data-update-target="card-logo-img"
-                                data-update-property="style.filter">
-                                <option value="none" selected>No Filter</option>
-                                <option value="grayscale(100%)">Grayscale</option>
-                                <option value="sepia(100%)">Sepia</option>
-                                <option value="invert(100%)">Invert</option>
-                                <option value="blur(2px)">Blur</option>
-                                <option value="brightness(150%)">Brightness</option>
-                                <option value="contrast(150%)">Contrast</option>
-                            </select>
-                        </div>
-
-                        <!-- Shadow section -->
-                        <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>Logo Shadow</legend>
-                            <div class="form-group">
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="logo-shadow-enabled"
-                                        style="width: auto; margin-inline-end: 10px;">
-                                    <span>Enable Shadow</span>
+                                    <input type="checkbox" id="logo-svg-color-enabled"
+                                        style="width: auto; margin-right: 5px;">
+                                    <span>Override SVG Color</span>
                                 </label>
+                                <input type="color" id="logo-svg-color" value="#ffffff" disabled style="opacity: 0.5;">
                             </div>
-                            <div class="control-grid" id="logo-shadow-controls" style="display: none;">
+                            <div class="form-group">
+                                <label for="logo-brightness">Brightness</label>
+                                <input type="range" id="logo-brightness" min="0" max="200" value="100">
+                            </div>
+                        </div>
+
+                        <!-- Advanced settings -->
+                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
+                            <legend>Advanced Settings</legend>
+                            <div class="control-grid">
                                 <div class="form-group">
-                                    <label for="logo-shadow-blur">Shadow Blur</label>
-                                    <input type="range" id="logo-shadow-blur" min="0" max="40" value="10">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="logo-lazy-load" checked
+                                            style="width: auto; margin-right: 10px;">
+                                        <span>Lazy Load</span>
+                                    </label>
                                 </div>
                                 <div class="form-group">
-                                    <label for="logo-shadow-color">Shadow Color</label>
-                                    <input type="color" id="logo-shadow-color" value="#000000">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="logo-retina" checked
+                                            style="width: auto; margin-right: 10px;">
+                                        <span>Retina 2x</span>
+                                    </label>
                                 </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label for="logo-alt-text">Alt Text (Screen readers & SEO)</label>
+                                <input type="text" id="logo-alt-text" value="Company Logo">
                             </div>
                         </fieldset>
 
-                        <!-- Position and Movement section -->
-                        <div class="placement-control">
-                            <label>Element Placement</label>
+                        <!-- Placement and Position -->
+                        <div class="placement-control" style="margin-top: 15px;">
+                            <label>Logo Placement</label>
                             <div class="radio-group">
                                 <label><input type="radio" name="placement-logo" value="front" checked> Front</label>
                                 <label><input type="radio" name="placement-logo" value="back"> Back</label>
