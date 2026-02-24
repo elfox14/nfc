@@ -870,6 +870,128 @@ app.get('/api/templates', async (req, res) => {
   }
 });
 
+// --- Partial Element Update Route ---
+app.patch('/api/design/:id/element/:elementId', [
+  param('id').isString().trim(),
+  param('elementId').isString().trim(),
+  body().isObject()
+], validateRequest, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    // Check for authenticated user to enforce ownership (Must be owner to patch)
+    let ownerId = null;
+    const authHeader = req.headers['authorization'];
+    if (authHeader) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const secret = config.JWT_SECRET;
+        const decoded = jwt.verify(token, secret);
+        ownerId = decoded.userId;
+      } catch (err) { }
+    }
+
+    if (!ownerId) {
+      return res.status(401).json({ error: 'يجب تسجيل الدخول لتعديل التصميم / You must be logged in' });
+    }
+
+    const designId = req.params.id;
+    const elementId = req.params.elementId;
+    const changes = req.body;
+
+    // Remove immutable fields if mistakenly sent
+    delete changes._id;
+    delete changes.id;
+
+    // Filter allowed properties (whitelist) to prevent malicious injection
+    const allowedKeys = ['style', 'position', 'content', 'src', 'contentHtml', 'classes', 'value', 'color', 'placement'];
+    const filteredChanges = {};
+    for (const key of Object.keys(changes)) {
+      if (allowedKeys.includes(key) || allowedKeys.includes(key.split('.')[0])) {
+        filteredChanges[key] = changes[key];
+      }
+    }
+
+    if (Object.keys(filteredChanges).length === 0) {
+      return res.status(400).json({ error: 'No valid properties to update' });
+    }
+
+    // Adapt to common structure, matching elements array inside data if it exists
+    // The user example provided `elements.$.${k}`
+    const updateKeys = Object.fromEntries(
+      Object.entries(filteredChanges).map(([k, v]) => [`data.elements.$.${k}`, v])
+    );
+    // Also include a fallback for the direct elements array if used
+    const fallbackUpdateKeys = Object.fromEntries(
+      Object.entries(filteredChanges).map(([k, v]) => [`elements.$.${k}`, v])
+    );
+
+    // Try updating data.elements first
+    let updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
+      { shortId: designId, 'data.elements.id': elementId, ownerId: ownerId },
+      { $set: updateKeys }
+    );
+
+    // Try fallback structure if data.elements array doesn't match
+    if (updateResult.matchedCount === 0) {
+      updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
+        { shortId: designId, 'elements.id': elementId, ownerId: ownerId },
+        { $set: fallbackUpdateKeys }
+      );
+    }
+
+    // Try adaptive update for current dynamic structures if elements array doesn't exist
+    if (updateResult.matchedCount === 0) {
+      // Find document first
+      const doc = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').findOne({ shortId: designId, ownerId: ownerId });
+      if (!doc) {
+        return res.status(404).json({ error: 'التصميم غير موجود أو لا تملك صلاحية تعديله / Design not found or no permission' });
+      }
+
+      const adaptiveUpdate = { $set: {} };
+      let found = false;
+
+      // Try mapping to data.dynamic.phones
+      if (doc.data?.dynamic?.phones?.some(p => p.id === elementId)) {
+        Object.entries(filteredChanges).forEach(([k, v]) => adaptiveUpdate.$set[`data.dynamic.phones.$[elem].${k}`] = v);
+        updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
+          { shortId: designId, ownerId: ownerId },
+          adaptiveUpdate,
+          { arrayFilters: [{ "elem.id": elementId }] }
+        );
+        found = true;
+      }
+      // Try mapping to data.dynamic.social
+      else if (doc.data?.dynamic?.social?.some(s => s.id === elementId)) {
+        Object.entries(filteredChanges).forEach(([k, v]) => adaptiveUpdate.$set[`data.dynamic.social.$[elem].${k}`] = v);
+        updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
+          { shortId: designId, ownerId: ownerId },
+          adaptiveUpdate,
+          { arrayFilters: [{ "elem.id": elementId }] }
+        );
+        found = true;
+      }
+      // Try mapping to data.positions
+      else if (doc.data?.positions && doc.data.positions[elementId]) {
+        if (filteredChanges.position) {
+          adaptiveUpdate.$set[`data.positions.${elementId}`] = filteredChanges.position;
+          updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne({ shortId: designId, ownerId: ownerId }, adaptiveUpdate);
+          found = true;
+        }
+      }
+
+      if (!found) {
+        return res.status(404).json({ error: 'العنصر غير موجود في هذا التصميم / Element not found in this design' });
+      }
+    }
+
+    res.json({ success: true, message: 'تم تحديث العنصر بنجاح / Element updated successfully' });
+  } catch (error) {
+    console.error('Patch element error:', error);
+    res.status(500).json({ error: 'حدث خطأ أثناء تحديث العنصر / Error updating element' });
+  }
+});
+
 // --- Save design route (مع تنظيف المدخلات والحماية) ---
 app.post('/api/save-design', [
   // Object Type Validations
