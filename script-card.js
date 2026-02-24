@@ -244,7 +244,7 @@ const DragManager = {
         vGuide.classList.remove('visible');
 
         const stateObj = typeof StateManager !== 'undefined' ? StateManager.getStateObject() : null;
-        const configEnableSnap = stateObj?.enableSnap ?? true; // Default to true if missing
+        const configEnableSnap = false; // Disabled per user request
         const configGridSize = stateObj?.gridSize ? parseInt(stateObj.gridSize) : 8;
 
         if (configEnableSnap) {
