@@ -457,53 +457,56 @@
                                 here</span></div>
                         <legend>Logo</legend>
 
-                        <!-- Upload and Link -->
-                        <div class="form-group">
-                            <label for="input-logo">Logo URL</label>
-                            <input type="text" id="input-logo" value="mcprime-logo-transparent.png"
-                                data-update-target="card-logo-img" data-update-property="src">
-                        </div>
-                        <div class="form-group">
-                            <label for="input-logo-upload">Or Upload Image (SVG and High-Res supported)</label>
-                            <div class="logo-upload-group">
-                                <img id="logo-preview" src="mcprime-logo-transparent.png" alt="Uploaded Logo Preview">
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="input-logo-upload"
-                                        accept="image/png, image/jpeg, image/webp, image/svg+xml">
-                                    <div class="input-error-msg" id="logo-upload-error"></div>
-                                </div>
-                                <div class="spinner" id="logo-spinner" style="display: none;"></div>
-                            </div>
-                        </div>
-
-                        <!-- Variants -->
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label for="logo-variant-select">Logo Variant</label>
-                            <select id="logo-variant-select">
-                                <option value="full" selected>Full</option>
-                                <option value="icon">Icon</option>
-                                <option value="mono_light">Mono Light</option>
-                                <option value="mono_dark">Mono Dark</option>
-                            </select>
-                        </div>
-
-                        <!-- Size & Alignment -->
-                        <div class="control-grid">
+                        <!-- 1. Source & Image -->
+                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
+                            <legend style="font-size: 0.9em; color: var(--accent-primary);">Source & Image</legend>
                             <div class="form-group">
-                                <label for="logo-width">Width (px)</label>
-                                <div style="display: flex; gap: 5px; align-items: center;">
-                                    <input type="number" id="logo-width" value="120" style="width: 100%;">
-                                    <button class="btn-icon btn-compact active" id="logo-aspect-lock"
-                                        title="Lock Aspect Ratio"><i class="fas fa-link"></i></button>
+                                <label for="input-logo-upload">Upload Image (SVG and High-Res supported)</label>
+                                <div class="logo-upload-group">
+                                    <img id="logo-preview" src="mcprime-logo-transparent.png"
+                                        alt="Uploaded Logo Preview">
+                                    <div class="file-input-wrapper">
+                                        <input type="file" id="input-logo-upload"
+                                            accept="image/png, image/jpeg, image/webp, image/svg+xml">
+                                        <div class="input-error-msg" id="logo-upload-error"></div>
+                                    </div>
+                                    <div class="spinner" id="logo-spinner" style="display: none;"></div>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="logo-height">Height (px)</label>
-                                <input type="number" id="logo-height" value="60" style="width: 100%;">
+                                <label for="input-logo">Logo URL</label>
+                                <input type="text" id="input-logo" value="mcprime-logo-transparent.png"
+                                    data-update-target="card-logo-img" data-update-property="src">
                             </div>
-                        </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label for="logo-variant-select">Logo Variant</label>
+                                <select id="logo-variant-select">
+                                    <option value="full" selected>Full</option>
+                                    <option value="icon">Icon</option>
+                                    <option value="mono_light">Mono Light</option>
+                                    <option value="mono_dark">Mono Dark</option>
+                                </select>
+                            </div>
+                        </fieldset>
 
-                        <div class="control-grid">
+                        <!-- 2. Dimensions & Framing -->
+                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
+                            <legend style="font-size: 0.9em; color: var(--accent-primary);">Dimensions & Framing
+                            </legend>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label for="logo-width">Width (px)</label>
+                                    <div style="display: flex; gap: 5px; align-items: center;">
+                                        <input type="number" id="logo-width" value="120" style="width: 100%;">
+                                        <button class="btn-icon btn-compact active" id="logo-aspect-lock"
+                                            title="Lock Aspect Ratio"><i class="fas fa-link"></i></button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="logo-height">Height (px)</label>
+                                    <input type="number" id="logo-height" value="60" style="width: 100%;">
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label for="logo-object-fit">Object Fit</label>
                                 <select id="logo-object-fit">
@@ -512,7 +515,21 @@
                                     <option value="fill">Fill</option>
                                 </select>
                             </div>
-                            <div class="form-group">
+                        </fieldset>
+
+                        <!-- 3. Position & Alignment -->
+                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
+                            <legend style="font-size: 0.9em; color: var(--accent-primary);">Position & Alignment
+                            </legend>
+                            <div class="placement-control">
+                                <label>Logo Placement</label>
+                                <div class="radio-group">
+                                    <label><input type="radio" name="placement-logo" value="front" checked>
+                                        Front</label>
+                                    <label><input type="radio" name="placement-logo" value="back"> Back</label>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
                                 <label for="logo-align-group">Alignment</label>
                                 <div class="radio-group" id="logo-align-group">
                                     <label><input type="radio" name="logo-align" value="flex-start"> Left</label>
@@ -520,27 +537,47 @@
                                     <label><input type="radio" name="logo-align" value="flex-end"> Right</label>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Colors and Effects -->
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="logo-svg-color-enabled"
-                                        style="width: auto; margin-right: 5px;">
-                                    <span>Override SVG Color</span>
-                                </label>
-                                <input type="color" id="logo-svg-color" value="#ffffff" disabled style="opacity: 0.5;">
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label>Fine Position (pixels)</label>
+                                <div class="position-controls-grid" data-target-id="card-logo">
+                                    <button type="button" class="btn-icon move-btn" data-direction="up" title="Up"><i
+                                            class="fas fa-arrow-up"></i></button>
+                                    <div class="controls-row">
+                                        <button type="button" class="btn-icon move-btn" data-direction="left"
+                                            title="Left"><i class="fas fa-arrow-left"></i></button>
+                                        <button type="button" class="btn-icon move-btn" data-direction="right"
+                                            title="Right"><i class="fas fa-arrow-right"></i></button>
+                                    </div>
+                                    <button type="button" class="btn-icon move-btn" data-direction="down"
+                                        title="Down"><i class="fas fa-arrow-down"></i></button>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="logo-brightness">Brightness</label>
-                                <input type="range" id="logo-brightness" min="0" max="200" value="100">
-                            </div>
-                        </div>
+                        </fieldset>
 
-                        <!-- Advanced settings -->
+                        <!-- 4. Appearance & Effects -->
                         <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend>Advanced Settings</legend>
+                            <legend style="font-size: 0.9em; color: var(--accent-primary);">Appearance & Effects
+                            </legend>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="logo-svg-color-enabled"
+                                            style="width: auto; margin-right: 5px;">
+                                        <span>Override SVG Color</span>
+                                    </label>
+                                    <input type="color" id="logo-svg-color" value="#ffffff" disabled
+                                        style="opacity: 0.5;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="logo-brightness">Brightness</label>
+                                    <input type="range" id="logo-brightness" min="0" max="200" value="100">
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- 5. Advanced Settings -->
+                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
+                            <legend style="font-size: 0.9em; color: var(--accent-primary);">Advanced Settings</legend>
                             <div class="control-grid">
                                 <div class="form-group">
                                     <label style="display: flex; align-items: center; cursor: pointer;">
@@ -562,31 +599,6 @@
                                 <input type="text" id="logo-alt-text" value="Company Logo">
                             </div>
                         </fieldset>
-
-                        <!-- Placement and Position -->
-                        <div class="placement-control" style="margin-top: 15px;">
-                            <label>Logo Placement</label>
-                            <div class="radio-group">
-                                <label><input type="radio" name="placement-logo" value="front" checked> Front</label>
-                                <label><input type="radio" name="placement-logo" value="back"> Back</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="margin-top: 15px;">
-                            <label>Fine Position (pixels)</label>
-                            <div class="position-controls-grid" data-target-id="card-logo">
-                                <button type="button" class="btn-icon move-btn" data-direction="up" title="Up"><i
-                                        class="fas fa-arrow-up"></i></button>
-                                <div class="controls-row">
-                                    <button type="button" class="btn-icon move-btn" data-direction="left"
-                                        title="Left"><i class="fas fa-arrow-left"></i></button>
-                                    <button type="button" class="btn-icon move-btn" data-direction="right"
-                                        title="Right"><i class="fas fa-arrow-right"></i></button>
-                                </div>
-                                <button type="button" class="btn-icon move-btn" data-direction="down" title="Down"><i
-                                        class="fas fa-arrow-down"></i></button>
-                            </div>
-                        </div>
                     </fieldset>
                 </div>
             </details>
