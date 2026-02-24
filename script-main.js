@@ -912,6 +912,8 @@ const EventManager = {
                 if (input.name === 'logo-align') CardManager.updateLogoAlignment();
                 if (input.id === 'logo-bg-color') CardManager.updateLogoBackground();
                 if (input.id.startsWith('logo-shadow-')) CardManager.updateLogoShadow();
+                if (input.id === 'logo-width' || input.id === 'logo-height' || input.id === 'logo-object-fit') CardManager.updateLogoDimensions();
+                if (input.id === 'logo-lazy-load' || input.id === 'logo-alt-text') CardManager.updateLogoAdvanced();
 
                 if (input.name === 'photo-align') CardManager.updatePersonalPhotoAlignment();
                 if (input.id.startsWith('photo-shadow-') || input.id === 'photo-opacity') CardManager.updatePersonalPhotoStyles();
@@ -1177,6 +1179,25 @@ const EventManager = {
         DOMElements.draggable.name.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('name-tagline-accordion'); });
         DOMElements.draggable.tagline.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('name-tagline-accordion'); });
         DOMElements.draggable.qr.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('qr-code-accordion'); });
+
+        const logoAspectLockBtn = document.getElementById('logo-aspect-lock');
+        const logoAspectCheckbox = document.getElementById('logo-aspect-lock-checkbox');
+        if (logoAspectLockBtn) {
+            logoAspectLockBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const isActive = logoAspectLockBtn.classList.toggle('active');
+                if (logoAspectCheckbox) logoAspectCheckbox.checked = isActive;
+                CardManager.updateLogoDimensions();
+                StateManager.saveDebounced();
+            });
+        }
+        if (logoAspectCheckbox) {
+            logoAspectCheckbox.addEventListener('change', () => {
+                if (logoAspectLockBtn) {
+                    logoAspectLockBtn.classList.toggle('active', logoAspectCheckbox.checked);
+                }
+            });
+        }
 
         DOMElements.buttons.togglePhone.addEventListener('input', () => { CardManager.updatePhoneButtonsVisibility(); });
 

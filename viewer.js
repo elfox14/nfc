@@ -442,7 +442,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (inputs['logo-filter-contrast']) logoFilterArray.push(`contrast(${inputs['logo-filter-contrast']}%)`);
             const logoFilterStyle = logoFilterArray.length > 0 ? `filter: ${logoFilterArray.join(' ')};` : '';
 
-            const logoHTML = `<img src="${inputs['input-logo']}" alt="Logo" style="max-width: ${logoSize}% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; opacity: ${logoOpacity} !important; position: absolute !important; ${logoFilterStyle} ${logoPos}">`;
+            // Handle New Advanced Properties
+            let customWidth = inputs['logo-width'] ? `${inputs['logo-width']}px` : `max-width: ${logoSize}% !important;`;
+            if (inputs['logo-width']) customWidth = `width: ${inputs['logo-width']}px !important;`;
+
+            const isAspectLocked = inputs['logo-aspect-lock-checkbox'] !== undefined ? inputs['logo-aspect-lock-checkbox'] : true;
+            let customHeight = `max-height: ${logoSize * 1.5}% !important;`;
+            if (inputs['logo-width']) {
+                customHeight = isAspectLocked ? 'height: auto !important;' : `height: ${inputs['logo-height'] || 60}px !important;`;
+            }
+
+            const customFit = inputs['logo-object-fit'] || 'contain';
+            const customLoading = (inputs['logo-lazy-load'] !== false) ? 'lazy' : 'eager';
+            const customAlt = inputs['logo-alt-text'] || 'Logo';
+
+            const logoHTML = `<img src="${inputs['input-logo']}" alt="${customAlt}" loading="${customLoading}" style="${customWidth} ${customHeight} object-fit: ${customFit}; opacity: ${logoOpacity} !important; position: absolute !important; ${logoFilterStyle} ${logoPos}">`;
             renderElement(logoHTML, logoPlacement, containers);
         }
 

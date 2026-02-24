@@ -327,6 +327,35 @@ const CardManager = {
         }
     },
 
+    updateLogoDimensions() {
+        const logoImg = document.getElementById('card-logo-img');
+        if (!logoImg) return;
+
+        const width = document.getElementById('logo-width')?.value || 120;
+        const height = document.getElementById('logo-height')?.value || 60;
+        const objectFit = document.getElementById('logo-object-fit')?.value || 'contain';
+        const aspectLock = document.getElementById('logo-aspect-lock')?.classList.contains('active');
+
+        logoImg.style.width = `${width}px`;
+        if (aspectLock) {
+            logoImg.style.height = 'auto'; // Let width control height proportionally
+        } else {
+            logoImg.style.height = `${height}px`;
+        }
+        logoImg.style.objectFit = objectFit;
+    },
+
+    updateLogoAdvanced() {
+        const logoImg = document.getElementById('card-logo-img');
+        if (!logoImg) return;
+
+        const lazyLoad = document.getElementById('logo-lazy-load')?.checked ?? true;
+        const altText = document.getElementById('logo-alt-text')?.value || 'شعار الشركة (Logo)';
+
+        logoImg.loading = lazyLoad ? 'lazy' : 'eager';
+        logoImg.alt = altText;
+    },
+
     updateLogoBackground() {
         const bgColor = document.getElementById('logo-bg-color').value;
         const logoImg = document.getElementById('card-logo-img');
