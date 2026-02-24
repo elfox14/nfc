@@ -691,6 +691,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+        if (state.zIndexes) {
+            for (const [id, z] of Object.entries(state.zIndexes)) {
+                let elementId = id;
+                if (id.startsWith('form-group-static-') && !containers.front.querySelector(`#${id}`) && !containers.back.querySelector(`#${id}`)) {
+                    elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
+                }
+                const el = containers.front.querySelector(`#${elementId}`) || containers.back.querySelector(`#${elementId}`);
+                if (el) el.style.setProperty('z-index', z, 'important');
+            }
+        }
+
+        if (state.hiddenElements) {
+            state.hiddenElements.forEach(id => {
+                let elementId = id;
+                if (id.startsWith('form-group-static-') && !containers.front.querySelector(`#${id}`) && !containers.back.querySelector(`#${id}`)) {
+                    elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
+                }
+                const el = containers.front.querySelector(`#${elementId}`) || containers.back.querySelector(`#${elementId}`);
+                if (el) el.style.setProperty('display', 'none', 'important');
+            });
+        }
 
         const allRenderedImages = [...containers.front.querySelectorAll('img'), ...containers.back.querySelectorAll('img')];
         await Promise.all(allRenderedImages.map(img => {

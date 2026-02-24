@@ -2634,3 +2634,17 @@ html.ltr .properties-panel {
     bottom: 0;
     height: 100%;
 }
+
+/* ========================================= */
+/* Drag and Drop 60FPS Performance Optims    */
+/* ========================================= */
+.draggable-on-card,
+.phone-button-draggable-wrapper,
+.draggable-social-link {
+    will-change: transform;
+}
+
+.dragging {
+    opacity: 0.8 !important;
+    z-index: 9999 !important;
+}

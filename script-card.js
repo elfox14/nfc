@@ -1283,6 +1283,66 @@ const CardManager = {
     },
 };
 
+const HistoryManager = {
+    stack: [],
+    currentIndex: -1,
+    maxLimit: 100,
+
+    pushState(state) {
+        // Only push if it's different from current
+        if (this.currentIndex >= 0 && JSON.stringify(this.stack[this.currentIndex]) === JSON.stringify(state)) {
+            return;
+        }
+
+        // If we're not at the latest state and we push, erase futures
+        if (this.currentIndex < this.stack.length - 1) {
+            this.stack = this.stack.slice(0, this.currentIndex + 1);
+        }
+
+        this.stack.push(JSON.parse(JSON.stringify(state)));
+        if (this.stack.length > this.maxLimit) {
+            this.stack.shift();
+        } else {
+            this.currentIndex++;
+        }
+
+        this.updateButtons();
+    },
+
+    undo() {
+        if (this.currentIndex > 0) {
+            this.currentIndex--;
+            StateManager.applyState(this.stack[this.currentIndex], false);
+            this.updateButtons();
+
+            // Sync with backend on undo
+            if (typeof CardManager !== 'undefined' && CardManager._debouncedElementUpdater) {
+                StateManager.saveDebounced();
+            }
+        }
+    },
+
+    redo() {
+        if (this.currentIndex < this.stack.length - 1) {
+            this.currentIndex++;
+            StateManager.applyState(this.stack[this.currentIndex], false);
+            this.updateButtons();
+
+            // Sync with backend on redo
+            if (typeof CardManager !== 'undefined' && CardManager._debouncedElementUpdater) {
+                StateManager.saveDebounced();
+            }
+        }
+    },
+
+    updateButtons() {
+        const undoBtn = document.getElementById('undo-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        if (undoBtn) undoBtn.disabled = this.currentIndex <= 0;
+        if (redoBtn) redoBtn.disabled = this.currentIndex >= this.stack.length - 1;
+    }
+};
+
 const StateManager = {
     isApplyingState: false,
 
@@ -1293,7 +1353,9 @@ const StateManager = {
             dynamic: { phones: [], social: [], staticSocial: {} },
             imageUrls: {},
             positions: {},
-            placements: {}
+            placements: {},
+            zIndexes: {},
+            hiddenElements: []
         };
 
         document.querySelectorAll('input, select, textarea').forEach(input => {
@@ -1379,6 +1441,18 @@ const StateManager = {
             const checkedRadio = document.querySelector(`input[name="placement-${elName}"]:checked`);
             if (checkedRadio) {
                 state.placements[elName] = checkedRadio.value;
+            }
+        });
+
+        document.querySelectorAll('.draggable-on-card, .phone-button-draggable-wrapper, .draggable-social-link').forEach(el => {
+            if (el.id) {
+                const zIndex = window.getComputedStyle(el).zIndex;
+                if (zIndex !== 'auto') {
+                    state.zIndexes[el.id] = parseInt(zIndex);
+                }
+                if (el.style.display === 'none' || el.style.visibility === 'hidden') {
+                    state.hiddenElements.push(el.id);
+                }
             }
         });
 
@@ -1505,6 +1579,28 @@ const StateManager = {
             }
         } else {
             // DragManager.resetPositions(); // You might need to implement this
+        }
+
+        if (state.zIndexes) {
+            for (const [id, z] of Object.entries(state.zIndexes)) {
+                let elementId = id;
+                if (id.startsWith('form-group-static-') && !document.getElementById(id)) {
+                    elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
+                }
+                const el = document.getElementById(elementId);
+                if (el) el.style.zIndex = z;
+            }
+        }
+
+        if (state.hiddenElements) {
+            state.hiddenElements.forEach(id => {
+                let elementId = id;
+                if (id.startsWith('form-group-static-') && !document.getElementById(id)) {
+                    elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
+                }
+                const el = document.getElementById(elementId);
+                if (el) el.style.display = 'none';
+            });
         }
 
         if (state.inputs && state.inputs['theme-select-input']) {
