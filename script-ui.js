@@ -256,6 +256,123 @@ const UIManager = {
         this.populateThemeThumbnails();
         this.populateSocialMediaOptions();
         this.populateDraggableIcons(); // NEW: Call this
+
+        // V2: Icon Bar sidebar switching logic
+        const iconBtns = document.querySelectorAll('.icon-bar-btn');
+        iconBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Remove active from all
+                iconBtns.forEach(b => b.classList.remove('active'));
+                // Add active to clicked
+                e.currentTarget.classList.add('active');
+
+                // Hide all panels
+                document.querySelectorAll('#main-left-panel .panel-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+
+                // Show target panel
+                const targetId = e.currentTarget.dataset.target;
+                const targetPanel = document.getElementById(targetId);
+                if (targetPanel) {
+                    targetPanel.style.display = 'block';
+                }
+            });
+        });
+
+        // V2: Canvas click selection logic
+        const cardsWrapper = document.getElementById('cards-wrapper');
+        const emptySelection = document.getElementById('empty-selection');
+        const contextualProps = document.getElementById('contextual-properties-container');
+
+        if (cardsWrapper) {
+            cardsWrapper.addEventListener('click', (e) => {
+                // Find closest selectable element
+                const selectable = e.target.closest('.draggable-on-card, .phone-button-draggable-wrapper, .draggable-social-link');
+
+                // Clear active states on all elements
+                document.querySelectorAll('.card-content-layer *').forEach(el => {
+                    if (el.classList) {
+                        el.classList.remove('element-selected-v2');
+                    }
+                });
+
+                if (selectable) {
+                    // Highlight selected element
+                    selectable.classList.add('element-selected-v2');
+
+                    // Show properties pane
+                    if (emptySelection) emptySelection.style.display = 'none';
+                    if (contextualProps) contextualProps.style.display = 'block';
+
+                    // Switch right sidebar to contextual properties if it's currently showing share panel
+                    document.getElementById('panel-properties').style.display = 'block';
+                    document.getElementById('panel-share').style.display = 'none';
+
+                    // Logic to configure Right Properties Panel depending on the selected element
+                    this._configurePropertiesPanel(selectable);
+
+                } else {
+                    // Clicked on empty space (background)
+                    if (emptySelection) emptySelection.style.display = 'block';
+                    if (contextualProps) contextualProps.style.display = 'none';
+                }
+            });
+        }
+    },
+
+    // V2: Helper method to setup Right Sidebar Properties based on selected element
+    _configurePropertiesPanel(element) {
+        const titleEl = document.getElementById('prop-panel-title');
+        const dynamicArea = document.getElementById('dynamic-properties-area');
+        if (!dynamicArea) return;
+
+        // Hide all accordions inside dynamic area first
+        const allAccordions = dynamicArea.querySelectorAll('.fieldset-accordion');
+        allAccordions.forEach(acc => { acc.style.display = 'none'; });
+
+        // Helper to show a specific panel
+        const showPanel = (targetId, title) => {
+            if (titleEl) titleEl.innerText = title;
+            const targetPanel = document.getElementById(targetId);
+            if (targetPanel) {
+                // Find parent accordion if it exists
+                const parentAcc = targetPanel.closest('details.fieldset-accordion');
+                if (parentAcc) {
+                    parentAcc.style.display = 'block';
+                    parentAcc.open = true;
+                }
+            }
+        };
+
+        const id = element.id || '';
+        const isClass = (cls) => element.classList.contains(cls);
+
+        // Determine which element type was selected and show its panel
+        if (id === 'card-logo') {
+            showPanel('logo-drop-zone', 'خصائص الشعار (Logo)');
+        } else if (id === 'card-personal-photo-wrapper') {
+            showPanel('photo-controls-fieldset', 'خصائص الصورة (Photo)');
+        } else if (id === 'card-name') {
+            showPanel('name-tagline-accordion', 'خصائص الاسم (Name)');
+        } else if (id === 'card-tagline') {
+            showPanel('name-tagline-accordion', 'خصائص الوصف (Tagline)');
+        } else if (id === 'qr-code-wrapper') {
+            showPanel('qr-code-accordion', 'خصائص الباركود (QR Code)');
+        } else if (isClass('phone-button-draggable-wrapper')) {
+            showPanel('phone-numbers-container', 'إعدادات الأزرار (Buttons)');
+        } else if (isClass('draggable-social-link')) {
+            showPanel('dynamic-social-links-container', 'इعدادات الروابط (Social Links)');
+        } else {
+            if (titleEl) titleEl.innerText = `خصائص: ${id || 'عنصر مجهول'}`;
+        }
+
+        // Setup the Top Transform Properties (Width, x, y, rotation)
+        const rect = element.getBoundingClientRect();
+        document.getElementById('prop-width').value = Math.round(rect.width);
+        document.getElementById('prop-height').value = Math.round(rect.height);
+        document.getElementById('prop-x').value = Math.round(parseFloat(element.getAttribute('data-x') || 0));
+        document.getElementById('prop-y').value = Math.round(parseFloat(element.getAttribute('data-y') || 0));
     },
     announce: (message) => {
         if (DOMElements.liveAnnouncer)
