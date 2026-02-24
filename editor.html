@@ -438,21 +438,21 @@
                             <legend style="font-size: 0.9em; color: var(--accent-primary);">الأبعاد والإطار</legend>
                             <div class="control-grid">
                                 <div class="form-group">
-                                    <label for="logo-width">العرض (px)</label>
+                                    <label for="logo-size-w">العرض (px)</label>
                                     <div style="display: flex; gap: 5px; align-items: center;">
-                                        <input type="number" id="logo-width" value="120" style="width: 100%;">
+                                        <input type="number" id="logo-size-w" value="120" style="width: 100%;">
                                         <button class="btn-icon btn-compact active" id="logo-aspect-lock"
                                             title="قفل الأبعاد"><i class="fas fa-link"></i></button>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="logo-height">الطول (px)</label>
-                                    <input type="number" id="logo-height" value="60" style="width: 100%;">
+                                    <label for="logo-size-h">الطول (px)</label>
+                                    <input type="number" id="logo-size-h" value="60" style="width: 100%;">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="logo-object-fit">طريقة الاحتواء</label>
-                                <select id="logo-object-fit">
+                                <label for="logo-fit">طريقة الاحتواء</label>
+                                <select id="logo-fit">
                                     <option value="contain" selected>احتواء (Contain)</option>
                                     <option value="cover">تغطية (Cover)</option>
                                     <option value="fill">ملء (Fill)</option>
@@ -522,7 +522,7 @@
                             <div class="control-grid">
                                 <div class="form-group">
                                     <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="logo-lazy-load" checked
+                                        <input type="checkbox" id="logo-lazy" checked
                                             style="width: auto; margin-inline-end: 10px;">
                                         <span>تأخير التحميل (Lazy Load)</span>
                                     </label>
@@ -536,8 +536,8 @@
                                 </div>
                             </div>
                             <div class="form-group" style="margin-top: 10px;">
-                                <label for="logo-alt-text">نص بديل (وصف الشعار لـ SEO)</label>
-                                <input type="text" id="logo-alt-text" value="شعار الشركة (Logo)">
+                                <label for="logo-alt">نص بديل (وصف الشعار لـ SEO)</label>
+                                <input type="text" id="logo-alt" value="شعار الشركة (Logo)">
                             </div>
                         </fieldset>
                     </fieldset>
