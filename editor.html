@@ -265,7 +265,6 @@
         <!-- 2. Left Panel -->
         <aside class="pro-sidebar pro-sidebar-left" id="main-left-panel">
 
-            <!-- A. Elements Tab -->
             <div id="panel-elements-v2" class="panel-section active">
                 <h3 style="margin-top:0; border-bottom: 1px solid var(--accent-secondary); padding-bottom:10px;">إضافة
                     عناصر</h3>
@@ -281,6 +280,36 @@
                     <button class="btn btn-secondary add-el-btn" style="grid-column: 1 / 3;" data-type="button"><i
                             class="fas fa-plus-circle"></i> زر تفاعلي (Links)</button>
                 </div>
+            </div>
+
+            <!-- B. Layers & Snap Settings -->
+            <div id="panel-layers-v2" class="panel-section" style="display: none;">
+                <h3 style="margin-top:0; border-bottom: 1px solid var(--accent-secondary); padding-bottom:10px;">الطبقات
+                    والمحاذاة</h3>
+
+                <fieldset class="fieldset" style="margin-bottom: 20px;">
+                    <legend>الشبكة والمحاذاة الذكية</legend>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="toggle-snap-grid">
+                            <span>تفعيل المحاذاة الذكية (Snap)</span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="snap-grid-settings" style="display: none; opacity: 0.5;">
+                        <label>حجم الشبكة (px)</label>
+                        <input type="number" id="snap-grid-size" value="8" min="2" max="50">
+                    </div>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend>ترتيب الطبقات</legend>
+                    <div id="layers-list" class="layers-list-container">
+                        <!-- JS Will populate elements here -->
+                        <div
+                            style="text-align: center; color: var(--text-secondary); padding: 10px; font-size: 0.85rem;">
+                            جارٍ تحميل الطبقات...</div>
+                    </div>
+                </fieldset>
             </div>
 
             <!-- B. Old Layout / Design Stuff (Will move here) -->

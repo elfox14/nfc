@@ -1148,45 +1148,64 @@ app.patch('/api/design/:id/element/:elementId', [
     delete changes.id;
     delete changes.type;
 
-    // Filter allowed properties (whitelist) for element v2
-    const allowedKeys = ['name', 'visible', 'locked', 'zIndex', 'transform', 'style', 'effects', 'action', 'a11y', 'src', 'content'];
-    const filteredChanges = {};
-    for (const key of Object.keys(changes)) {
-      if (allowedKeys.includes(key) || allowedKeys.includes(key.split('.')[0])) {
-        filteredChanges[key] = changes[key];
+    // The client sends { properties: { color: 'red' }, position: { x: 10, y: 10 }, text: 'Hello' }
+    // We need to map this to the V1 schema that script-card.js uses since the full V2 migration on the server side is not complete.
+    const updateKeys = {};
+
+    // 1. Text changes usually go to data.inputs[`input-${elementId.replace('card-', '')}`] except it uses `input-name_ar` etc.
+    // It's safer to just let the global save handle text changes, but if we want to handle it:
+    // This partial PATCH is primarily for rapid visual changes (position, color, font size).
+
+    // 2. Position changes
+    if (changes.position) {
+      if (changes.position.x !== undefined) updateKeys[`data.positions.${elementId}.x`] = changes.position.x;
+      if (changes.position.y !== undefined) updateKeys[`data.positions.${elementId}.y`] = changes.position.y;
+    }
+
+    // 3. Properties changes (colors, fonts, etc) usually map to `data.inputs` in V1 schema
+    if (changes.properties) {
+      for (const [key, value] of Object.entries(changes.properties)) {
+        // Map frontend DOM style property keys to input IDs used in V1 schema
+        // e.g. color of name -> 'name-color'
+        let targetInputId = null;
+
+        if (elementId === 'card-name') {
+          if (key === 'color') targetInputId = 'name-color';
+          if (key === 'fontSize') targetInputId = 'name-font-size';
+          if (key === 'fontFamily') targetInputId = 'name-font';
+        } else if (elementId === 'card-tagline') {
+          if (key === 'color') targetInputId = 'tagline-color';
+          if (key === 'fontSize') targetInputId = 'tagline-font-size';
+          if (key === 'fontFamily') targetInputId = 'tagline-font';
+        } else if (elementId === 'card-logo-img') {
+          if (key === 'width') targetInputId = 'logo-width';
+          if (key === 'height') targetInputId = 'logo-height';
+          if (key === 'objectFit') targetInputId = 'logo-object-fit';
+        } else if (elementId === 'card-personal-photo-wrapper') {
+          if (key === 'width') targetInputId = 'photo-size';
+          if (key === 'opacity') targetInputId = 'photo-opacity';
+        }
+
+        if (targetInputId) {
+          updateKeys[`data.inputs.${targetInputId}`] = value;
+        }
       }
     }
 
-    if (Object.keys(filteredChanges).length === 0) {
-      return res.status(400).json({ error: 'No valid properties to update' });
+    if (Object.keys(updateKeys).length === 0) {
+      return res.status(400).json({ error: 'No valid properties to update mapped for V1 schema' });
     }
 
-    const updateKeysFront = Object.fromEntries(
-      Object.entries(filteredChanges).map(([k, v]) => [`data.elements.front.$.${k}`, v])
+    const updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
+      { shortId: designId, ownerId: ownerId },
+      { $set: updateKeys }
     );
-    const updateKeysBack = Object.fromEntries(
-      Object.entries(filteredChanges).map(([k, v]) => [`data.elements.back.$.${k}`, v])
-    );
-
-    // Try modifying front element
-    let updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
-      { shortId: designId, 'data.elements.front.id': elementId, ownerId: ownerId },
-      { $set: updateKeysFront }
-    );
-
-    // Try modifying back element if not found
-    if (updateResult.matchedCount === 0) {
-      updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
-        { shortId: designId, 'data.elements.back.id': elementId, ownerId: ownerId },
-        { $set: updateKeysBack }
-      );
-    }
 
     if (updateResult.matchedCount === 0) {
-      return res.status(404).json({ error: 'العنصر غير موجود في هذا التصميم أو لا تملك الصلاحية / Element not found or unauthorized' });
+      return res.status(404).json({ error: 'Design not found or unauthorized' });
     }
 
-    res.json({ success: true, message: 'تم تحديث العنصر بنجاح / Element updated successfully' });
+    res.json({ success: true, message: 'Element properties updated successfully' });
   } catch (error) {
     console.error('Patch element error:', error);
     res.status(500).json({ error: 'حدث خطأ أثناء تحديث العنصر / Error updating element' });

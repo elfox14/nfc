@@ -280,6 +280,22 @@ const UIManager = {
             });
         });
 
+        // V2: Snap Grid toggle logic
+        const snapToggle = document.getElementById('toggle-snap-grid');
+        const snapGridSettings = document.getElementById('snap-grid-settings');
+        if (snapToggle && snapGridSettings) {
+            snapToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    snapGridSettings.style.display = 'block';
+                    setTimeout(() => snapGridSettings.style.opacity = '1', 10);
+                } else {
+                    snapGridSettings.style.display = 'none';
+                    snapGridSettings.style.opacity = '0.5';
+                }
+                if (typeof StateManager !== 'undefined') StateManager.saveDebounced();
+            });
+        }
+
         // V2: Canvas click selection logic
         const cardsWrapper = document.getElementById('cards-wrapper');
         const emptySelection = document.getElementById('empty-selection');
@@ -369,10 +385,92 @@ const UIManager = {
 
         // Setup the Top Transform Properties (Width, x, y, rotation)
         const rect = element.getBoundingClientRect();
-        document.getElementById('prop-width').value = Math.round(rect.width);
-        document.getElementById('prop-height').value = Math.round(rect.height);
-        document.getElementById('prop-x').value = Math.round(parseFloat(element.getAttribute('data-x') || 0));
-        document.getElementById('prop-y').value = Math.round(parseFloat(element.getAttribute('data-y') || 0));
+        const widthInput = document.getElementById('prop-width');
+        const heightInput = document.getElementById('prop-height');
+        const xInput = document.getElementById('prop-x');
+        const yInput = document.getElementById('prop-y');
+        const rotInput = document.getElementById('prop-rotation');
+
+        // Remove old listeners to prevent duplicates (by replacing the nodes)
+        const replaceNodeWithClone = (node) => {
+            const clone = node.cloneNode(true);
+            node.parentNode.replaceChild(clone, node);
+            return clone;
+        };
+
+        const newWidthInput = replaceNodeWithClone(widthInput);
+        const newHeightInput = replaceNodeWithClone(heightInput);
+        const newXInput = replaceNodeWithClone(xInput);
+        const newYInput = replaceNodeWithClone(yInput);
+        const newRotInput = replaceNodeWithClone(rotInput);
+
+        // Enable inputs
+        [newWidthInput, newHeightInput, newXInput, newYInput, newRotInput].forEach(inp => {
+            inp.disabled = false;
+        });
+
+        // Set initial values
+        newWidthInput.value = Math.round(rect.width);
+        newHeightInput.value = Math.round(rect.height);
+        newXInput.value = Math.round(parseFloat(element.getAttribute('data-x') || 0));
+        newYInput.value = Math.round(parseFloat(element.getAttribute('data-y') || 0));
+        newRotInput.value = Math.round(parseFloat(element.getAttribute('data-rotation') || 0));
+
+        // Create debounced partial update handler
+        const updateTransformProperty = Utils.debounce(async (property, value) => {
+            if (!Config.currentDesignId) return;
+
+            // Immediately visually update it on canvas (if X or Y or Rotation)
+            if (property === 'x' || property === 'y') {
+                element.setAttribute(`data-${property}`, value);
+                const x = parseFloat(element.getAttribute('data-x')) || 0;
+                const y = parseFloat(element.getAttribute('data-y')) || 0;
+                const rot = parseFloat(element.getAttribute('data-rotation')) || 0;
+                element.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+            } else if (property === 'rotation') {
+                element.setAttribute('data-rotation', value);
+                const x = parseFloat(element.getAttribute('data-x')) || 0;
+                const y = parseFloat(element.getAttribute('data-y')) || 0;
+                element.style.transform = `translate(${x}px, ${y}px) rotate(${value}deg)`;
+            }
+
+            // Fire to backend
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                try {
+                    const payload = {};
+                    if (property === 'x' || property === 'y') {
+                        payload.position = {};
+                        payload.position[property] = value;
+                    } else if (property === 'rotation') {
+                        payload.rotation = value;
+                    }
+                    else {
+                        payload[property] = value;
+                    }
+
+                    await fetch(`${Config.API_BASE_URL}/api/design/${Config.currentDesignId}/element/${element.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saved');
+                } catch (err) {
+                    console.error('Partial element update failed:', err);
+                    if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('error');
+                }
+            }
+        }, 500);
+
+        // Bind input listeners
+        newWidthInput.addEventListener('input', (e) => updateTransformProperty('width', parseFloat(e.target.value)));
+        newHeightInput.addEventListener('input', (e) => updateTransformProperty('height', parseFloat(e.target.value)));
+        newXInput.addEventListener('input', (e) => updateTransformProperty('x', parseFloat(e.target.value)));
+        newYInput.addEventListener('input', (e) => updateTransformProperty('y', parseFloat(e.target.value)));
+        newRotInput.addEventListener('input', (e) => updateTransformProperty('rotation', parseFloat(e.target.value)));
     },
     announce: (message) => {
         if (DOMElements.liveAnnouncer)

@@ -244,8 +244,12 @@ const DragManager = {
         vGuide.classList.remove('visible');
 
         const stateObj = typeof StateManager !== 'undefined' ? StateManager.getStateObject() : null;
-        const configEnableSnap = false; // Disabled per user request
-        const configGridSize = stateObj?.gridSize ? parseInt(stateObj.gridSize) : 8;
+
+        const snapToggleNode = document.getElementById('toggle-snap-grid');
+        const snapSizeNode = document.getElementById('snap-grid-size');
+
+        const configEnableSnap = snapToggleNode ? snapToggleNode.checked : false;
+        const configGridSize = snapSizeNode ? parseInt(snapSizeNode.value) || 8 : (stateObj?.gridSize ? parseInt(stateObj.gridSize) : 8);
 
         if (configEnableSnap) {
             // 1. Grid Snap (Base level)
@@ -290,6 +294,18 @@ const DragManager = {
         event.target.classList.remove('dragging');
         this.clearAlignmentGuides();
         StateManager.saveDebounced();
+
+        // V2 Backend Sync for Position
+        if (typeof CardManager !== 'undefined' && CardManager._debouncedElementUpdater) {
+            const target = event.target;
+            // Ensure it has an ID to target with PATCH route
+            if (target.id) {
+                const finalX = parseFloat(target.getAttribute('data-x')) || 0;
+                const finalY = parseFloat(target.getAttribute('data-y')) || 0;
+                CardManager._debouncedElementUpdater(target.id, 'x', finalX);
+                CardManager._debouncedElementUpdater(target.id, 'y', finalY);
+            }
+        }
     }
 };
 
@@ -299,12 +315,58 @@ const CardManager = {
     updateElementFromInput(input) {
         const { updateTarget, updateProperty, updateUnit = '' } = input.dataset;
         if (!updateTarget || !updateProperty) return;
+
         const targetElement = document.getElementById(updateTarget);
         if (!targetElement) return;
+
+        // Visual update
         const properties = updateProperty.split('.');
         let current = targetElement;
         for (let i = 0; i < properties.length - 1; i++) { current = current[properties[i]]; }
-        current[properties[properties.length - 1]] = input.value + updateUnit;
+        const finalValue = input.value + updateUnit;
+        current[properties[properties.length - 1]] = finalValue;
+
+        // V2 Debounced Backend Sync
+        if (!this._debouncedElementUpdater) {
+            this._debouncedElementUpdater = Utils.debounce(async (elementId, propertyPath, value) => {
+                if (!Config.currentDesignId) return;
+                const token = localStorage.getItem('authToken');
+                if (!token) return;
+
+                try {
+                    let payload = {};
+
+                    if (propertyPath === 'x' || propertyPath === 'y') {
+                        payload.position = { [propertyPath]: value };
+                    } else if (propertyPath === 'innerText') {
+                        payload.text = value; // Typically handled by full save for translation support
+                    } else {
+                        // Convert propertyPath from DOM style (style.color) to Backend Style:
+                        let payloadKey = propertyPath;
+                        if (propertyPath.includes('style.')) {
+                            payloadKey = propertyPath.replace('style.', '');
+                        }
+                        payload.properties = { [payloadKey]: value };
+                    }
+
+                    await fetch(`${Config.API_BASE_URL}/api/design/${Config.currentDesignId}/element/${elementId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saved');
+                } catch (e) {
+                    console.error('Failed partial property sync', e);
+                    if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('error');
+                }
+            }, 600);
+        }
+
+        // Call debouncer
+        this._debouncedElementUpdater(updateTarget, updateProperty, finalValue);
     },
 
     updateCardForLanguageChange(lang) {
@@ -324,6 +386,7 @@ const CardManager = {
         const logoContainer = DOMElements.draggable.logo;
         if (logoContainer) {
             logoContainer.style.justifyContent = alignValue;
+            if (this._debouncedElementUpdater) this._debouncedElementUpdater('card-logo', 'style.justifyContent', alignValue);
         }
     },
 
@@ -346,6 +409,12 @@ const CardManager = {
             logoImg.style.height = `${height}px`;
         }
         logoImg.style.objectFit = objectFit;
+
+        if (this._debouncedElementUpdater) {
+            this._debouncedElementUpdater('card-logo-img', 'style.width', `${width}px`);
+            this._debouncedElementUpdater('card-logo-img', 'style.height', aspectLock ? 'auto' : `${height}px`);
+            this._debouncedElementUpdater('card-logo-img', 'style.objectFit', objectFit);
+        }
     },
 
     updateLogoAdvanced() {
@@ -435,8 +504,10 @@ const CardManager = {
         wrapper.style.width = `${size}%`;
         wrapper.style.paddingBottom = `${size}%`;
         wrapper.style.height = 0;
-        wrapper.style.borderRadius = shape === 'circle' ? '50%' : '8px';
-        wrapper.style.border = `${borderWidth}px solid ${borderColor}`;
+        const finalBorderRadius = shape === 'circle' ? '50%' : '8px';
+        wrapper.style.borderRadius = finalBorderRadius;
+        const finalBorder = `${borderWidth}px solid ${borderColor}`;
+        wrapper.style.border = finalBorder;
         wrapper.style.backgroundImage = safeUrl ? `url(${safeUrl})` : 'none';
         wrapper.style.display = safeUrl ? 'block' : 'none';
         wrapper.style.opacity = opacity;
@@ -451,11 +522,21 @@ const CardManager = {
 
         this.updatePersonalPhotoAlignment();
         this.updatePersonalPhotoShadow();
+
+        if (this._debouncedElementUpdater && wrapper.id) {
+            this._debouncedElementUpdater(wrapper.id, 'style.width', `${size}%`);
+            this._debouncedElementUpdater(wrapper.id, 'style.borderRadius', finalBorderRadius);
+            this._debouncedElementUpdater(wrapper.id, 'style.border', finalBorder);
+            this._debouncedElementUpdater(wrapper.id, 'style.opacity', opacity);
+        }
     },
 
     updatePhoneButtonStyles() {
         const bgColor = DOMElements.phoneBtnBgColor.value; const textColor = DOMElements.phoneBtnTextColor.value; const fontSize = DOMElements.phoneBtnFontSize.value; const fontFamily = DOMElements.phoneBtnFont.value; const padding = DOMElements.phoneBtnPadding.value;
         document.querySelectorAll('.phone-button').forEach(button => { button.style.backgroundColor = bgColor; button.style.color = textColor; button.style.borderColor = (bgColor === 'transparent' || bgColor.includes('rgba(0,0,0,0)')) ? textColor : 'transparent'; button.style.fontSize = `${fontSize}px`; button.style.fontFamily = fontFamily; button.style.padding = `${padding}px ${padding * 2}px`; });
+
+        // Since phone button styling (global) changes state, trigger a full debounced save
+        StateManager.saveDebounced();
     },
     updatePhoneButtonsVisibility() {
         const isVisible = DOMElements.buttons.togglePhone.checked;
@@ -474,6 +555,8 @@ const CardManager = {
                 button.style.fontSize = `${size}px`; button.style.color = color; button.style.fontFamily = font;
             }
         });
+        // Call full global save since this applies to all elements simultaneously
+        StateManager.saveDebounced();
     },
 
     renderPhoneButtons() {
@@ -705,6 +788,7 @@ const CardManager = {
         document.querySelectorAll('.draggable-social-link').forEach(wrapper => {
             wrapper.classList.toggle('text-only-mode', !isVisibleAsButtons);
         });
+        StateManager.saveDebounced();
     },
 
     updateSocialButtonStyles() {
@@ -726,6 +810,8 @@ const CardManager = {
             if (icon) icon.style.color = '';
             if (span) { span.style.color = ''; span.style.fontSize = ''; span.style.fontFamily = ''; }
         });
+
+        StateManager.saveDebounced();
     },
 
     updateSocialTextStyles() {
@@ -761,6 +847,8 @@ const CardManager = {
             if (icon) icon.style.color = finalColor;
             if (span) { span.style.fontSize = `${finalSize}px`; span.style.color = finalColor; span.style.fontFamily = generalFont; }
         });
+
+        StateManager.saveDebounced();
     },
 
     updateSocialLinks() {
