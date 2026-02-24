@@ -1018,29 +1018,6 @@ const EventManager = {
             });
         });
 
-        const gridSnapToggle = document.getElementById('enable-grid-snap');
-        if (gridSnapToggle) {
-            gridSnapToggle.addEventListener('change', (e) => {
-                if (window.StateManager) {
-                    const state = window.StateManager.getStateObject();
-                    state.enableSnap = e.target.checked;
-                    window.StateManager.applyState(state, false);
-                    window.StateManager.saveDebounced();
-                }
-            });
-        }
-
-        const gridSizeSelect = document.getElementById('grid-size-select');
-        if (gridSizeSelect) {
-            gridSizeSelect.addEventListener('change', (e) => {
-                if (window.StateManager) {
-                    const state = window.StateManager.getStateObject();
-                    state.gridSize = parseInt(e.target.value, 10);
-                    window.StateManager.applyState(state, false);
-                    window.StateManager.saveDebounced();
-                }
-            });
-        }
 
         document.querySelectorAll('.position-controls-grid').forEach(grid => {
             grid.querySelectorAll('.move-btn').forEach(button => {

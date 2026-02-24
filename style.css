@@ -2345,21 +2345,7 @@ body.collaboration-active #start-collab-btn:hover {
 /* ===========================================
    SNAP-TO-GRID & ALIGNMENT GUIDES
    =========================================== */
-.card-grid-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 100;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    background-image: radial-gradient(var(--accent-primary) 1px, transparent 1px);
-    /* default grid size is 8px, overridable by inline styles */
-    background-size: 8px 8px;
-}
 
-.cards-wrapper.show-grid .card-grid-overlay {
-    opacity: 0.3;
-}
 
 .alignment-guide {
     position: absolute;

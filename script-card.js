@@ -618,34 +618,6 @@ const CardManager = {
         this.updatePersonalPhotoStyles();
         this.renderPhoneButtons();
         this.updateSocialLinks();
-
-        // Ensure Grid Overlays are present and configured
-        this.renderGridOverlays(state);
-    },
-
-    renderGridOverlays(state) {
-        ['front', 'back'].forEach(side => {
-            const container = side === 'front' ? document.getElementById('card-front-preview') : document.getElementById('card-back-preview');
-            if (!container) return;
-
-            let gridOverlay = container.querySelector('.card-grid-overlay');
-            if (!gridOverlay) {
-                gridOverlay = document.createElement('div');
-                gridOverlay.className = 'card-grid-overlay';
-                // Insert as the first child so it sits above backgrounds but below content
-                container.insertBefore(gridOverlay, container.querySelector('.card-content-layer'));
-            }
-
-            const enableSnap = state.enableSnap ?? true;
-            const gridSize = state.gridSize ? parseInt(state.gridSize) : 8;
-
-            if (enableSnap) {
-                gridOverlay.style.backgroundSize = `${gridSize}px ${gridSize}px`;
-                gridOverlay.style.opacity = '0.4'; // Visible when enabled
-            } else {
-                gridOverlay.style.opacity = '0'; // Hidden when disabled
-            }
-        });
     },
 
     updateQrCodeDisplay() {
