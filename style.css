@@ -2604,3 +2604,33 @@ html.ltr .properties-panel {
     right: auto;
     left: 20px;
 }
+
+/* ========================================= */
+/* Alignment Guides for Drag & Drop Snapping */
+/* ========================================= */
+.alignment-guide {
+    position: absolute;
+    background-color: var(--accent-primary);
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+}
+
+.alignment-guide.visible {
+    opacity: 0.7;
+}
+
+.alignment-guide.horizontal {
+    height: 1px;
+    left: 0;
+    right: 0;
+    width: 100%;
+}
+
+.alignment-guide.vertical {
+    width: 1px;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+}

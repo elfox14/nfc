@@ -276,6 +276,9 @@ const UIManager = {
                 const targetPanel = document.getElementById(targetId);
                 if (targetPanel) {
                     targetPanel.style.display = 'block';
+                    if (targetId === 'panel-layers-v2') {
+                        UIManager.renderLayersList();
+                    }
                 }
             });
         });
@@ -784,6 +787,158 @@ const UIManager = {
             if (span) span.textContent = button.dataset.originalText;
         }
     },
+
+    renderLayersList() {
+        const layersList = document.getElementById('layers-list');
+        if (!layersList) return;
+
+        layersList.innerHTML = ''; // clear
+
+        const faceItems = [
+            { id: 'card-front-content', label: 'الواجهة الأمامية' },
+            { id: 'card-back-content', label: 'الواجهة الخلفية' }
+        ];
+
+        faceItems.forEach(face => {
+            const container = document.getElementById(face.id);
+            if (!container) return;
+
+            // Group Label
+            const groupHeader = document.createElement('div');
+            groupHeader.className = 'layer-group-header';
+            groupHeader.textContent = face.label;
+            groupHeader.style.cssText = 'padding: 5px; font-weight: bold; background: rgba(0,0,0,0.05); margin-top: 10px; font-size: 0.9rem; border-radius: 4px;';
+            layersList.appendChild(groupHeader);
+
+            // Get children that are draggable
+            const children = Array.from(container.querySelectorAll('.draggable-on-card, .phone-button-draggable-wrapper, .draggable-social-link'));
+
+            // Sort children by z-index descending (top layers first)
+            children.sort((a, b) => {
+                const zA = parseInt(window.getComputedStyle(a).zIndex) || 0;
+                const zB = parseInt(window.getComputedStyle(b).zIndex) || 0;
+                return zB - zA;
+            });
+
+            if (children.length === 0) {
+                const empty = document.createElement('div');
+                empty.textContent = 'لا توجد عناصر';
+                empty.style.cssText = 'padding: 5px 15px; font-size: 0.8rem; color: #888;';
+                layersList.appendChild(empty);
+            }
+
+            children.forEach(el => {
+                const layerItem = document.createElement('div');
+                layerItem.className = 'layer-item';
+                layerItem.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; background: #fff; margin-bottom: 2px; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; transition: 0.2s;';
+
+                // Active State (highlight if selected)
+                if (el.classList.contains('element-selected-v2')) {
+                    layerItem.style.borderColor = 'var(--accent-primary)';
+                    layerItem.style.boxShadow = '0 0 0 1px var(--accent-primary)';
+                }
+
+                layerItem.onmouseover = () => { layerItem.style.background = '#f9fafb'; };
+                layerItem.onmouseout = () => { layerItem.style.background = '#fff'; };
+
+                // Name/Type
+                let name = el.id || 'عنصر';
+                if (el.id === 'card-name') name = 'الاسم';
+                if (el.id === 'card-tagline') name = 'المسمى الوظيفي';
+                if (el.id === 'card-logo') name = 'الشعار';
+                if (el.id === 'card-personal-photo-wrapper') name = 'الصورة الشخصية';
+                if (el.id === 'qr-code-wrapper') name = 'QR Code';
+                if (el.classList.contains('phone-button-draggable-wrapper')) name = 'زر اتصال';
+                if (el.classList.contains('draggable-social-link')) name = 'رابط تواصل';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = name;
+                nameSpan.style.flex = '1';
+
+                layerItem.onclick = () => {
+                    // trigger click on the element to select it!
+                    el.click();
+                    // trigger re-render of layers so the selection border updates here
+                    setTimeout(() => this.renderLayersList(), 50);
+                };
+
+                // Controls (Up, Down, Hide)
+                const controls = document.createElement('div');
+                controls.style.display = 'flex';
+                controls.style.gap = '5px';
+
+                // up
+                const upBtn = document.createElement('button');
+                upBtn.innerHTML = '<i class="fas fa-chevron-up"></i>';
+                upBtn.className = 'btn-icon btn-compact';
+                upBtn.title = 'إلى الأمام';
+                upBtn.style.padding = '2px 4px';
+                upBtn.style.fontSize = '10px';
+                upBtn.onclick = (e) => { e.stopPropagation(); this.moveLayer(el, 1); };
+
+                // down
+                const downBtn = document.createElement('button');
+                downBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                downBtn.className = 'btn-icon btn-compact';
+                downBtn.title = 'إلى الخلف';
+                downBtn.style.padding = '2px 4px';
+                downBtn.style.fontSize = '10px';
+                downBtn.onclick = (e) => { e.stopPropagation(); this.moveLayer(el, -1); };
+
+                // hide toggle
+                const hideBtn = document.createElement('button');
+                const isHidden = el.style.display === 'none' || el.style.visibility === 'hidden';
+                hideBtn.innerHTML = isHidden ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+                hideBtn.className = 'btn-icon btn-compact';
+                hideBtn.title = 'إخفاء / إظهار';
+                hideBtn.style.padding = '2px 4px';
+                hideBtn.style.fontSize = '10px';
+                hideBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (el.style.display === 'none' || el.style.visibility === 'hidden') {
+                        el.style.display = '';
+                        el.style.visibility = ''; // clear hidden
+                    } else {
+                        el.style.display = 'none';
+                    }
+                    this.renderLayersList(); // re-render to update icon
+                    if (typeof StateManager !== 'undefined') StateManager.saveDebounced();
+
+                    // Trigger backend update
+                    if (typeof CardManager !== 'undefined' && CardManager._debouncedElementUpdater && el.id) {
+                        CardManager._debouncedElementUpdater(el.id, 'visible', el.style.display !== 'none');
+                    }
+                };
+
+                controls.appendChild(upBtn);
+                controls.appendChild(downBtn);
+                controls.appendChild(hideBtn);
+
+                layerItem.appendChild(nameSpan);
+                layerItem.appendChild(controls);
+                layersList.appendChild(layerItem);
+            });
+        });
+    },
+
+    moveLayer(element, direction) {
+        let currentZIndex = parseInt(window.getComputedStyle(element).zIndex) || 1;
+
+        // Simple z-index bump for now
+        let newZIndex = currentZIndex + direction;
+        if (newZIndex < 0) newZIndex = 0;
+
+        element.style.zIndex = newZIndex;
+
+        this.renderLayersList(); // re-render list order
+
+        if (typeof StateManager !== 'undefined') StateManager.saveDebounced();
+
+        // V2 PATCH Sync for zIndex
+        if (typeof CardManager !== 'undefined' && CardManager._debouncedElementUpdater && element.id) {
+            CardManager._debouncedElementUpdater(element.id, 'zIndex', newZIndex);
+        }
+    }
 };
 
 const SuggestionEngine = {
