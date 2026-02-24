@@ -621,15 +621,22 @@
                             <input type="url" id="input-photo-url">
                         </div>
                         <div class="form-group">
-                            <label for="input-photo-upload">Or upload image (will be cropped)</label>
+                            <label for="input-photo-upload">Or upload image (supports high-res WebP)</label>
                             <div class="logo-upload-group">
                                 <img id="photo-preview" src="" alt="Personal photo preview"
                                     style="display: none; background-color: var(--accent-secondary); border-radius: 50%; object-fit: cover; width: 50px; height: 50px;">
                                 <div class="file-input-wrapper">
-                                    <input type="file" id="input-photo-upload" accept="image/*">
+                                    <input type="file" id="input-photo-upload"
+                                        accept="image/png, image/jpeg, image/webp">
                                     <div class="input-error-msg" id="photo-upload-error"></div>
                                 </div>
                                 <div class="spinner" id="photo-spinner" style="display: none;"></div>
+                            </div>
+                            <div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px;">
+                                <label style="display: flex; align-items: flex-start; gap: 5px; cursor: pointer;">
+                                    <input type="checkbox" id="photo-privacy-consent" checked>
+                                    <span>I agree to process and store this photo (can be removed anytime).</span>
+                                </label>
                             </div>
                         </div>
 
@@ -637,12 +644,18 @@
                         <div class="control-grid">
                             <div class="form-group">
                                 <label for="photo-size">Photo Size</label>
-                                <input type="range" id="photo-size" min="15" max="50" value="25">
+                                <div style="display: flex; gap: 5px; align-items: center;">
+                                    <input type="range" id="photo-size" min="15" max="100" value="25"
+                                        style="width: 100%;">
+                                    <button class="btn-icon btn-compact active" id="photo-aspect-lock"
+                                        title="Lock Aspect Ratio"><i class="fas fa-link"></i></button>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Photo Shape</label>
-                                <div class="radio-group">
+                                <div class="radio-group" style="flex-direction: column; gap: 5px;">
                                     <label><input type="radio" name="photo-shape" value="circle" checked> Circle</label>
+                                    <label><input type="radio" name="photo-shape" value="rounded"> Rounded</label>
                                     <label><input type="radio" name="photo-shape" value="square"> Square</label>
                                 </div>
                             </div>
@@ -656,11 +669,62 @@
                             </div>
                         </div>
 
+                        <!-- Cropping & Focal Point (Advanced) -->
+                        <fieldset class="fieldset" style="margin-top: 15px;">
+                            <legend>Crop & Focal Point</legend>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label for="photo-object-fit">Object Fit</label>
+                                    <select id="photo-object-fit">
+                                        <option value="cover" selected>Cover (Recommended)</option>
+                                        <option value="contain">Contain</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Focal Point (X% / Y%)</label>
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="number" id="photo-focal-x" min="0" max="100" value="50"
+                                            style="width: 50%;" title="Horizontal %">
+                                        <input type="number" id="photo-focal-y" min="0" max="100" value="50"
+                                            style="width: 50%;" title="Vertical %">
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Styling & Filters -->
+                        <fieldset class="fieldset" style="margin-top: 15px;">
+                            <legend>Colors & Effects</legend>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label for="photo-bg-color">Background Color</label>
+                                    <div style="display: flex; gap: 5px; align-items: center;">
+                                        <input type="checkbox" id="photo-bg-enabled" title="Enable Background">
+                                        <input type="color" id="photo-bg-color" value="#ffffff" disabled
+                                            style="opacity: 0.5;">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="photo-brightness">Brightness</label>
+                                    <input type="range" id="photo-brightness" min="0" max="200" value="100">
+                                </div>
+                            </div>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label for="photo-contrast">Contrast</label>
+                                    <input type="range" id="photo-contrast" min="0" max="200" value="100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="photo-grayscale">Grayscale</label>
+                                    <input type="range" id="photo-grayscale" min="0" max="100" value="0">
+                                </div>
+                            </div>
+                        </fieldset>
 
                         <!-- Border and Opacity section -->
-                        <div class="control-grid">
+                        <div class="control-grid" style="margin-top: 15px;">
                             <div class="form-group">
-                                <label for="photo-opacity">Photo Opacity</label>
+                                <label for="photo-opacity">Opacity</label>
                                 <input type="range" id="photo-opacity" min="0" max="1" step="0.05" value="1">
                             </div>
                             <div class="form-group">
@@ -669,23 +733,10 @@
                             </div>
                             <div class="form-group">
                                 <label for="photo-border-color">Border Color</label>
-                                <input type="color" id="photo-border-color" value="#ffffff">
+                                <input type="color" id="photo-border-color" value="#ffffff" style="margin-top: 8px;">
                             </div>
                         </div>
 
-                        <!-- Image Filters (Phase 3) -->
-                        <div class="form-group" style="margin-top: 15px;">
-                            <label for="photo-filter">Image Filter</label>
-                            <select id="photo-filter">
-                                <option value="none" selected>No Filter</option>
-                                <option value="grayscale(100%)">Grayscale</option>
-                                <option value="sepia(100%)">Sepia</option>
-                                <option value="invert(100%)">Invert</option>
-                                <option value="blur(2px)">Blur</option>
-                                <option value="brightness(150%)">Brightness</option>
-                                <option value="contrast(150%)">Contrast</option>
-                            </select>
-                        </div>
 
                         <!-- Shadow section -->
                         <fieldset class="fieldset" style="margin-top: 15px;">
@@ -709,7 +760,32 @@
                             </div>
                         </fieldset>
 
-                        <!-- Position and Movement section -->
+                        <!-- Advanced Settings for Avatar -->
+                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
+                            <legend>Advanced Settings</legend>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="photo-lazy-load" checked
+                                            style="width: auto; margin-right: 10px;">
+                                        <span>Lazy Load</span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="photo-retina" checked
+                                            style="width: auto; margin-right: 10px;">
+                                        <span>Retina 2x</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label for="photo-alt-text">Alt Text (Accessibility)</label>
+                                <input type="text" id="photo-alt-text" value="Avatar">
+                            </div>
+                        </fieldset>
+
+                        <!-- Placement and Position -->
                         <div class="placement-control">
                             <label>Photo Placement</label>
                             <div class="radio-group">

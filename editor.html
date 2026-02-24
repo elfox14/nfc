@@ -565,15 +565,22 @@
                             <input type="url" id="input-photo-url">
                         </div>
                         <div class="form-group">
-                            <label for="input-photo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
+                            <label for="input-photo-upload">أو ارفع صورة (يدعم WebP، سيتم التحسين تلقائياً)</label>
                             <div class="logo-upload-group">
                                 <img id="photo-preview" src="" alt="معاينة الصورة الشخصية"
                                     style="display: none; background-color: var(--accent-secondary); border-radius: 50%; object-fit: cover; width: 50px; height: 50px;">
                                 <div class="file-input-wrapper">
-                                    <input type="file" id="input-photo-upload" accept="image/*">
+                                    <input type="file" id="input-photo-upload"
+                                        accept="image/png, image/jpeg, image/webp">
                                     <div class="input-error-msg" id="photo-upload-error"></div>
                                 </div>
                                 <div class="spinner" id="photo-spinner" style="display: none;"></div>
+                            </div>
+                            <div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px;">
+                                <label style="display: flex; align-items: flex-start; gap: 5px; cursor: pointer;">
+                                    <input type="checkbox" id="photo-privacy-consent" checked>
+                                    <span>أوافق على معالجة الصورة الشخصية وتخزينها (يمكنك الإزالة لاحقاً).</span>
+                                </label>
                             </div>
                         </div>
 
@@ -581,12 +588,18 @@
                         <div class="control-grid">
                             <div class="form-group">
                                 <label for="photo-size">حجم الصورة</label>
-                                <input type="range" id="photo-size" min="15" max="50" value="25">
+                                <div style="display: flex; gap: 5px; align-items: center;">
+                                    <input type="range" id="photo-size" min="15" max="100" value="25"
+                                        style="width: 100%;">
+                                    <button class="btn-icon btn-compact active" id="photo-aspect-lock"
+                                        title="قفل الأبعاد"><i class="fas fa-link"></i></button>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>شكل الصورة</label>
-                                <div class="radio-group">
+                                <div class="radio-group" style="flex-direction: column; gap: 5px;">
                                     <label><input type="radio" name="photo-shape" value="circle" checked> دائري</label>
+                                    <label><input type="radio" name="photo-shape" value="rounded"> زوايا ناعمة</label>
                                     <label><input type="radio" name="photo-shape" value="square"> مربع</label>
                                 </div>
                             </div>
@@ -600,20 +613,71 @@
                             </div>
                         </div>
 
+                        <!-- القص التركيز (Focal Point) -->
+                        <fieldset class="fieldset" style="margin-top: 15px;">
+                            <legend>القص والتركيز</legend>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label for="photo-object-fit">طريقة الاحتواء</label>
+                                    <select id="photo-object-fit">
+                                        <option value="cover" selected>تغطية (Cover)</option>
+                                        <option value="contain">احتواء (Contain)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>نقطة التركيز (X% / Y%)</label>
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="number" id="photo-focal-x" min="0" max="100" value="50"
+                                            style="width: 50%;" title="أفقي %">
+                                        <input type="number" id="photo-focal-y" min="0" max="100" value="50"
+                                            style="width: 50%;" title="عمودي %">
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
 
-                        <!-- قسم الإطار والشفافية -->
-                        <div class="control-grid">
+                        <!-- الألوان والشفافية -->
+                        <fieldset class="fieldset" style="margin-top: 15px;">
+                            <legend>التأثيرات والألوان</legend>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label for="photo-bg-color">لون الخلفية</label>
+                                    <div style="display: flex; gap: 5px; align-items: center;">
+                                        <input type="checkbox" id="photo-bg-enabled" title="تفعيل اللون">
+                                        <input type="color" id="photo-bg-color" value="#ffffff" disabled
+                                            style="opacity: 0.5;">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="photo-brightness">سطوع</label>
+                                    <input type="range" id="photo-brightness" min="0" max="200" value="100">
+                                </div>
+                            </div>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label for="photo-contrast">تباين</label>
+                                    <input type="range" id="photo-contrast" min="0" max="200" value="100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="photo-grayscale">أبيض وأسود</label>
+                                    <input type="range" id="photo-grayscale" min="0" max="100" value="0">
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- قسم الإطار -->
+                        <div class="control-grid" style="margin-top: 15px;">
                             <div class="form-group">
-                                <label for="photo-opacity">شفافية الصورة</label>
+                                <label for="photo-opacity">الشفافية الكاملة</label>
                                 <input type="range" id="photo-opacity" min="0" max="1" step="0.05" value="1">
                             </div>
                             <div class="form-group">
-                                <label for="photo-border-width">عرض الإطار (px)</label>
+                                <label for="photo-border-width">عرض الإطار</label>
                                 <input type="range" id="photo-border-width" min="0" max="10" value="2">
                             </div>
                             <div class="form-group">
-                                <label for="photo-border-color">لون الإطار</label>
-                                <input type="color" id="photo-border-color" value="#ffffff">
+                                <label for="photo-border-color">اللون</label>
+                                <input type="color" id="photo-border-color" value="#ffffff" style="margin-top: 8px;">
                             </div>
                         </div>
 
@@ -636,6 +700,31 @@
                                     <label for="photo-shadow-color">لون الظل</label>
                                     <input type="color" id="photo-shadow-color" value="#000000">
                                 </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- الخيارات المتقدمة للصورة الشخصية -->
+                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
+                            <legend>إعدادات متقدمة</legend>
+                            <div class="control-grid">
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="photo-lazy-load" checked
+                                            style="width: auto; margin-inline-end: 10px;">
+                                        <span>تأخير التحميل (Lazy Load)</span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="photo-retina" checked
+                                            style="width: auto; margin-inline-end: 10px;">
+                                        <span>عالي الدقة (Retina 2x)</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label for="photo-alt-text">نص بديل (وصف للصورة)</label>
+                                <input type="text" id="photo-alt-text" value="صورة شخصية (Avatar)">
                             </div>
                         </fieldset>
 

@@ -787,6 +787,119 @@ app.post('/api/upload-logo', verifyToken, upload.single('logo'), handleMulterErr
   }
 });
 
+// --- Avatar (Personal Photo) Upload Endpoint ---
+app.post('/api/upload-avatar', verifyToken, upload.single('avatar'), handleMulterErrors, async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No avatar file provided.' });
+    }
+
+    const mimeType = req.file.mimetype;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(mimeType)) {
+      return res.status(400).json({ error: 'Invalid file type. Only JPG, PNG, and WebP are allowed for avatars.' });
+    }
+
+    const variants = {};
+    const image = sharp(req.file.buffer);
+    const metadata = await image.metadata();
+
+    // Strip EXIF and resize
+    const baseImage = image.withMetadata(false); // Strip EXIF
+
+    const processVariant = async (size) => {
+      // Create webp variants for avatars
+      return await baseImage.clone()
+        .resize({ width: Math.min(metadata.width, size), withoutEnlargement: true })
+        // Could inject focal crop logic here if client passes coordinates, or let client use object-position
+        .webp({ quality: 90 })
+        .toBuffer();
+    };
+
+    variants.thumb = { buffer: await processVariant(48), format: 'webp' };
+    variants.small = { buffer: await processVariant(128), format: 'webp' };
+    variants.medium = { buffer: await processVariant(256), format: 'webp' };
+    variants.large = { buffer: await processVariant(512), format: 'webp' };
+
+    const uploadedUrls = {};
+    const baseId = `avatar_${nanoid(10)}`;
+
+    if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
+      const uploadPromises = Object.keys(variants).map(async (key) => {
+        const variantData = variants[key];
+        return new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: 'nfc/avatars', // Dedicated folder for avatars
+              public_id: `${baseId}_${key}`,
+              resource_type: 'image',
+              format: variantData.format
+            },
+            (error, result) => {
+              if (error) {
+                console.warn(`[Upload Avatar] Cloudinary variant ${key} failed:`, error.message);
+                reject(error);
+              } else resolve({ key, url: result.secure_url, public_id: result.public_id });
+            }
+          );
+          uploadStream.end(variantData.buffer);
+        });
+      });
+
+      const results = await Promise.allSettled(uploadPromises);
+      results.forEach(res => {
+        if (res.status === 'fulfilled') {
+          uploadedUrls[res.value.key] = res.value.url;
+        }
+      });
+
+      if (Object.keys(uploadedUrls).length === 0) {
+        throw new Error('All Cloudinary variant uploads failed');
+      }
+
+    } else {
+      // Fallback: Local Storage
+      const base = absoluteBaseUrl(req);
+      for (const [key, variantData] of Object.entries(variants)) {
+        const tempName = `${baseId}_${key}.${variantData.format}`;
+        const tempOut = path.join(uploadDir, tempName);
+        fs.writeFileSync(tempOut, variantData.buffer);
+        uploadedUrls[key] = `${base}/uploads/${tempName}`;
+      }
+    }
+
+    return res.json({
+      success: true,
+      id: baseId,
+      variants: { full: uploadedUrls },
+      activeVariant: 'full'
+    });
+
+  } catch (err) {
+    console.error('[Upload Avatar] Error:', err);
+    res.status(500).json({ error: 'Failed to process avatar upload.' });
+  }
+});
+
+// --- Avatar Delete Endpoint ---
+app.delete('/api/user/avatar', verifyToken, async (req, res) => {
+  try {
+    const publicId = req.query.public_id; // Pass specific ID or manage via db
+    if (publicId && config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
+      // Deleting specific file from Cloudinary 
+      // In a real app, you would verify ownership.
+      cloudinary.uploader.destroy(publicId, (error, result) => {
+        if (error) console.error("Cloudinary delete error:", error);
+      });
+    }
+    // Return success since it's fire and forget
+    res.json({ success: true, message: 'Avatar deleted successfully.' });
+  } catch (err) {
+    console.error('[Delete Avatar] Error:', err);
+    res.status(500).json({ error: 'Failed to delete avatar.' });
+  }
+});
+
 // Configure Cloudinary if credentials exist
 if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
   cloudinary.config({

@@ -482,6 +482,58 @@
             }
         },
 
+        async handleAvatarUpload(event, { maxSizeMB, errorEl, spinnerEl, onSuccess }) {
+            const file = event.target.files[0];
+            errorEl.textContent = ''; errorEl.style.display = 'none';
+            if (!file) return;
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                errorEl.textContent = 'الرجاء اختيار ملف صالح (PNG, JPG, WebP).';
+                errorEl.style.display = 'block';
+                Utils.playSound('error');
+                return;
+            }
+
+            if (file.size > maxSizeMB * 1024 * 1024) {
+                errorEl.textContent = `يجب أن يكون حجم الملف أقل من ${maxSizeMB} ميجابايت.`;
+                errorEl.style.display = 'block';
+                Utils.playSound('error');
+                return;
+            }
+
+            spinnerEl.style.display = 'block';
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const response = await fetch(`${Config.API_BASE_URL}/api/upload-avatar`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Server error uploading avatar');
+                }
+
+                const result = await response.json();
+                Utils.playSound('success');
+                onSuccess(result);
+                this.announce("تم رفع الصورة الشخصية ومعالجتها بنجاح.");
+            } catch (error) {
+                console.error('[handleAvatarUpload] Error:', error);
+                errorEl.textContent = 'فشل رفع الصورة. حاول مرة أخرى.';
+                errorEl.style.display = 'block';
+                Utils.playSound('error');
+            } finally {
+                spinnerEl.style.display = 'none';
+            }
+        },
+
         showSaveNotification() {
             const toast = DOMElements.saveToast; if (!toast) return;
             toast.textContent = 'جاري الحفظ...'; toast.classList.add('show');
@@ -634,6 +686,7 @@
         updateElementFromInput(input) { const { updateTarget, updateProperty, updateUnit = '' } = input.dataset; if (!updateTarget || !updateProperty) return; const targetElement = document.getElementById(updateTarget); if (!targetElement) return; const properties = updateProperty.split('.'); let current = targetElement; for (let i = 0; i < properties.length - 1; i++) { current = current[properties[i]]; } current[properties[properties.length - 1]] = input.value + updateUnit; },
 
         logoData: null, // Stores current logo variants and state
+        photoData: null, // Stores current avatar variants and state
 
         updateLogoStyles() {
             const wrapper = DOMElements.draggable.logo;
@@ -759,18 +812,140 @@
             const wrapper = DOMElements.draggable.photo;
             if (!wrapper) return;
 
-            const imageUrl = DOMElements.photoControls.url.value;
-            const size = DOMElements.photoControls.size.value;
-            const shape = document.querySelector('input[name="photo-shape"]:checked').value;
-            const borderColor = DOMElements.photoControls.borderColor.value;
-            const borderWidth = DOMElements.photoControls.borderWidth.value;
+            const manualUrl = document.getElementById('input-photo-url')?.value;
+            const size = document.getElementById('photo-size')?.value || 25;
+            const shapeRadio = document.querySelector('input[name="photo-shape"]:checked');
+            const shape = shapeRadio ? shapeRadio.value : 'circle';
+            const alignRadio = document.querySelector('input[name="photo-align"]:checked');
+            const alignment = alignRadio ? alignRadio.value : 'center';
 
-            wrapper.style.width = `${size}%`;
-            wrapper.style.height = `${size}%`;
-            wrapper.style.borderRadius = shape === 'circle' ? '50%' : '8px';
-            wrapper.style.border = `${borderWidth}px solid ${borderColor}`;
-            wrapper.style.backgroundImage = imageUrl ? `url(${imageUrl})` : 'none';
-            wrapper.style.display = imageUrl ? 'block' : 'none';
+            // Advanced controls
+            const objectFit = document.getElementById('photo-object-fit')?.value || 'cover';
+            const focalX = document.getElementById('photo-focal-x')?.value || 50;
+            const focalY = document.getElementById('photo-focal-y')?.value || 50;
+
+            // Background & Filters
+            const bgEnabled = document.getElementById('photo-bg-enabled')?.checked || false;
+            const bgColor = document.getElementById('photo-bg-color')?.value || '#ffffff';
+            const brightness = document.getElementById('photo-brightness')?.value || 100;
+            const contrast = document.getElementById('photo-contrast')?.value || 100;
+            const grayscale = document.getElementById('photo-grayscale')?.value || 0;
+
+            // styling
+            const opacity = document.getElementById('photo-opacity')?.value || 1;
+            const borderWidth = document.getElementById('photo-border-width')?.value || 2;
+            const borderColor = document.getElementById('photo-border-color')?.value || '#ffffff';
+            const shadowEnabled = document.getElementById('photo-shadow-enabled')?.checked || false;
+            const shadowBlur = document.getElementById('photo-shadow-blur')?.value || 10;
+            const shadowColor = document.getElementById('photo-shadow-color')?.value || '#000000';
+
+            // Other settings
+            const lazyLoad = document.getElementById('photo-lazy-load')?.checked ?? true;
+            const useRetina = document.getElementById('photo-retina')?.checked ?? true;
+            const altText = document.getElementById('photo-alt-text')?.value || 'Avatar';
+            const isAspectLocked = document.getElementById('photo-aspect-lock')?.classList.contains('active') ?? true;
+
+            // Set wrapper styling
+            wrapper.style.display = 'flex';
+            wrapper.style.width = '100%';
+            wrapper.style.maxWidth = '100%';
+            wrapper.style.justifyContent = alignment === 'left' ? 'flex-start' : (alignment === 'right' ? 'flex-end' : 'center');
+
+            // Clean up old styling
+            wrapper.style.backgroundImage = 'none';
+            wrapper.style.border = 'none';
+            wrapper.style.borderRadius = '0';
+            wrapper.innerHTML = ''; // Start fresh
+
+            const picture = document.createElement('picture');
+
+            // Container for image features like border/shadow/bg
+            const imgContainer = document.createElement('div');
+            imgContainer.style.width = `${size}%`;
+            if (isAspectLocked) {
+                imgContainer.style.aspectRatio = '1 / 1';
+                imgContainer.style.height = 'auto'; // Width dictates height
+            } else {
+                imgContainer.style.height = `${size}%`;
+            }
+            imgContainer.style.position = 'relative';
+            imgContainer.style.overflow = 'hidden';
+            imgContainer.style.display = 'flex';
+            imgContainer.style.alignItems = 'center';
+            imgContainer.style.justifyContent = 'center';
+            imgContainer.style.flexShrink = '0';
+
+            // Shape
+            if (shape === 'circle') imgContainer.style.borderRadius = '50%';
+            else if (shape === 'rounded') imgContainer.style.borderRadius = '15%';
+            else imgContainer.style.borderRadius = '0';
+
+            // Borders & Shadows
+            imgContainer.style.border = `${borderWidth}px solid ${borderColor}`;
+            if (shadowEnabled) {
+                imgContainer.style.boxShadow = `0px 4px ${shadowBlur}px ${shadowColor}`;
+            }
+            if (bgEnabled) {
+                imgContainer.style.backgroundColor = bgColor;
+            }
+            imgContainer.style.opacity = opacity;
+
+            // Generate Image
+            let imgEl = document.createElement('img');
+            imgEl.style.width = '100%';
+            imgEl.style.height = '100%';
+            imgEl.style.objectFit = objectFit;
+            imgEl.style.objectPosition = `${focalX}% ${focalY}%`;
+            imgEl.style.filter = `brightness(${brightness}%) contrast(${contrast}%) grayscale(${grayscale}%)`;
+            imgEl.loading = lazyLoad ? 'lazy' : 'eager';
+            imgEl.alt = altText;
+            imgEl.crossOrigin = "anonymous";
+
+            if (!this.photoData || !this.photoData.variants) {
+                if (manualUrl) {
+                    imgEl.src = (typeof sanitizeURL === 'function') ? sanitizeURL(manualUrl) : manualUrl;
+                    imgContainer.appendChild(imgEl);
+                    wrapper.appendChild(imgContainer);
+                } else {
+                    wrapper.style.display = 'none';
+                }
+                return;
+            }
+
+            // We have variants!
+            const variantGroup = this.photoData.variants['full'] || this.photoData.variants;
+            if (variantGroup) {
+                const sourceWebp = document.createElement('source');
+                sourceWebp.type = 'image/webp';
+
+                let srcsetString = '';
+                if (useRetina && variantGroup.large && variantGroup.medium) {
+                    srcsetString = `${variantGroup.medium} 1x, ${variantGroup.large} 2x`;
+                } else {
+                    srcsetString = variantGroup.medium || variantGroup.large || variantGroup.small;
+                }
+
+                if (srcsetString) {
+                    sourceWebp.srcset = (typeof sanitizeURL === 'function') ? sanitizeURL(srcsetString) : srcsetString;
+                    picture.appendChild(sourceWebp);
+                }
+
+                const fallbackImgSrc = variantGroup.medium || variantGroup.large || variantGroup.small || Object.values(variantGroup)[0];
+                imgEl.src = (typeof sanitizeURL === 'function') ? sanitizeURL(fallbackImgSrc) : fallbackImgSrc;
+
+                picture.appendChild(imgEl);
+                picture.style.width = '100%';
+                picture.style.height = '100%';
+                picture.style.display = 'block';
+
+                imgContainer.appendChild(picture);
+                imgContainer.style.display = 'block';
+
+                wrapper.appendChild(imgContainer);
+                wrapper.style.display = 'flex';
+            } else {
+                wrapper.style.display = 'none';
+            }
         },
 
         updatePhoneButtonStyles() {
@@ -1362,6 +1537,7 @@
             state.imageUrls.qrCode = CardManager.qrCodeImageUrl;
             state.imageUrls.photo = CardManager.personalPhotoUrl;
             state.logoData = CardManager.logoData;
+            state.photoData = CardManager.photoData;
 
             const coreElements = ['card-logo', 'card-personal-photo-wrapper', 'card-name', 'card-tagline', 'qr-code-wrapper'];
             coreElements.forEach(id => {
@@ -1446,6 +1622,12 @@
                 CardManager.logoData = state.logoData;
             } else {
                 CardManager.logoData = null;
+            }
+
+            if (state.photoData) {
+                CardManager.photoData = state.photoData;
+            } else {
+                CardManager.photoData = null;
             }
 
             if (state.placements) {
@@ -1924,12 +2106,24 @@
                 }
             }));
 
-            DOMElements.fileInputs.photo.addEventListener('change', e => UIManager.handleImageUpload(e, {
+            DOMElements.fileInputs.photo.addEventListener('change', e => UIManager.handleAvatarUpload(e, {
                 maxSizeMB: Config.MAX_LOGO_SIZE_MB, errorEl: DOMElements.errors.photoUpload, spinnerEl: DOMElements.spinners.photo,
-                onSuccess: imageUrl => {
-                    CardManager.personalPhotoUrl = imageUrl;
-                    DOMElements.photoControls.url.value = imageUrl;
-                    DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
+                onSuccess: result => {
+                    if (result && result.variants) {
+                        CardManager.photoData = {
+                            id: result.id,
+                            variants: result.variants,
+                            activeVariant: result.activeVariant
+                        };
+                        const fallbackUrl = result.variants.full?.medium || result.variants.full?.large || Object.values(result.variants.full || {})[0] || '';
+                        if (DOMElements.photoControls.url) DOMElements.photoControls.url.value = fallbackUrl;
+                        CardManager.personalPhotoUrl = fallbackUrl;
+                    } else if (typeof result === 'string') {
+                        if (DOMElements.photoControls.url) DOMElements.photoControls.url.value = result;
+                        CardManager.personalPhotoUrl = result;
+                        CardManager.photoData = null;
+                    }
+                    CardManager.updatePersonalPhotoStyles();
                     StateManager.saveDebounced();
                 }
             }));
