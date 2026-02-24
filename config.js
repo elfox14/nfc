@@ -8,6 +8,7 @@ const env = cleanEnv(process.env, {
     MONGO_DB: str({ default: 'nfc_db' }),
     MONGO_DESIGNS_COLL: str({ default: 'designs' }),
     MONGO_BACKGROUNDS_COLL: str({ default: 'backgrounds' }),
+    MONGO_TEMPLATES_COLL: str({ default: 'templates' }),
     JWT_SECRET: str(),
     CLOUDINARY_CLOUD_NAME: str({ default: '' }), // Optional per README but kept for structure
     CLOUDINARY_API_KEY: str({ default: '' }),
