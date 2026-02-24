@@ -1547,7 +1547,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     if (!code || !state || !savedState || state !== savedState) {
       const errMsg = 'Invalid OAuth state or missing authorization code.';
       console.warn('[Google OAuth] state validation failed', { codeExists: !!code, stateMatch: state === savedState });
-      return res.send(`<html><body><script nonce="${res.locals.nonce}">window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*'); window.close();</script></body></html>`);
+      return res.send(`<html><body><script nonce="${res.locals.nonce}">try{window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*');}catch(e){} window.close();</script></body></html>`);
     }
 
     // Exchange code for tokens
@@ -1568,14 +1568,14 @@ app.get('/api/auth/google/callback', async (req, res) => {
     if (!tokenJson || tokenJson.error) {
       const errMsg = tokenJson?.error_description || tokenJson?.error || 'Token exchange failed';
       console.error('[Google OAuth] token exchange failed', tokenJson);
-      return res.send(`<html><body><script nonce="${res.locals.nonce}">window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*'); window.close();</script></body></html>`);
+      return res.send(`<html><body><script nonce="${res.locals.nonce}">try{window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*');}catch(e){} window.close();</script></body></html>`);
     }
 
     const idToken = tokenJson.id_token;
     if (!idToken) {
       const errMsg = 'Missing id_token from Google.';
       console.error('[Google OAuth] no id_token in token response');
-      return res.send(`<html><body><script nonce="${res.locals.nonce}">window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*'); window.close();</script></body></html>`);
+      return res.send(`<html><body><script nonce="${res.locals.nonce}">try{window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*');}catch(e){} window.close();</script></body></html>`);
     }
 
     // Validate id_token
@@ -1586,7 +1586,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const expectedClientId = config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
     if (!userInfo || userInfo.error_description || userInfo.aud !== expectedClientId) {
       console.error('[Google OAuth] Invalid id_token info', userInfo);
-      return res.send(`<html><body><script nonce="${res.locals.nonce}">window.opener.postMessage({ type: 'google-auth', success: false, error: 'Invalid id_token' }, '*'); window.close();</script></body></html>`);
+      return res.send(`<html><body><script nonce="${res.locals.nonce}">try{window.opener.postMessage({ type: 'google-auth', success: false, error: 'Invalid id_token' }, '*');}catch(e){} window.close();</script></body></html>`);
     }
 
     // userInfo contains email, email_verified, name, picture, sub
@@ -1639,7 +1639,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     return res.send(`<html><body><script nonce="${res.locals.nonce}">try{window.opener.postMessage(${JSON.stringify(payload)}, '*');}catch(e){} window.close();</script></body></html>`);
   } catch (err) {
     console.error('[Google OAuth] callback error:', err);
-    return res.send(`<html><body><script nonce="${res.locals.nonce}">window.opener.postMessage({ type: 'google-auth', success: false, error: 'Internal server error' }, '*'); window.close();</script></body></html>`);
+    return res.send(`<html><body><script nonce="${res.locals.nonce}">try{window.opener.postMessage({ type: 'google-auth', success: false, error: 'Internal server error' }, '*');}catch(e){} window.close();</script></body></html>`);
   }
 });
 
