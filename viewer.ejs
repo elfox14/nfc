@@ -356,9 +356,17 @@
 
                     <div class="card-content">
                         <!-- العناصر الأساسية (إذا كانت في الأمام) -->
-                        <% if (isFront('logo')) { %>
+                        <% if (isFront('logo')) { const logoWidth=inputs['logo-width'] ? `width:
+                            ${inputs['logo-width']}px;` : `max-width: 25%;`; const
+                            isAspectLocked=inputs['logo-aspect-lock-checkbox'] !==undefined ?
+                            inputs['logo-aspect-lock-checkbox'] : true; const logoHeight=inputs['logo-width'] ?
+                            (isAspectLocked ? 'height: auto;' : `height: ${inputs['logo-height'] || 60}px;`) : '' ;
+                            const logoObjectFit=inputs['logo-object-fit'] ? `object-fit: ${inputs['logo-object-fit']};`
+                            : 'object-fit: contain;' ; const logoLazyLoad=(inputs['logo-lazy-load'] !==false) ? 'lazy'
+                            : 'eager' ; const logoAltText=inputs['logo-alt-text'] || 'Logo' ; %>
                             <img id="card-logo" src="<%= inputs['input-logo'] %>" class="draggable-element"
-                                style="<%= getStyle('card-logo') %>; max-width: <%= inputs['logo-size'] %>%; opacity: <%= inputs['logo-opacity'] %>; <%= getFilterStyle('logo') %>">
+                                alt="<%= logoAltText %>" loading="<%= logoLazyLoad %>"
+                                style="<%= getStyle('card-logo') %>; <%= logoWidth %> <%= logoHeight %> <%= logoObjectFit %> opacity: <%= inputs['logo-opacity'] %>; <%= getFilterStyle('logo') %>">
                             <% } %>
 
                                 <% if (isFront('photo') && images.photo) { %>
@@ -425,9 +433,17 @@
 
                     <div class="card-content">
                         <!-- العناصر الأساسية (إذا كانت في الخلف) -->
-                        <% if (!isFront('logo')) { %>
+                        <% if (!isFront('logo')) { const logoWidth=inputs['logo-width'] ? `width:
+                            ${inputs['logo-width']}px;` : `max-width: 25%;`; const
+                            isAspectLocked=inputs['logo-aspect-lock-checkbox'] !==undefined ?
+                            inputs['logo-aspect-lock-checkbox'] : true; const logoHeight=inputs['logo-width'] ?
+                            (isAspectLocked ? 'height: auto;' : `height: ${inputs['logo-height'] || 60}px;`) : '' ;
+                            const logoObjectFit=inputs['logo-object-fit'] ? `object-fit: ${inputs['logo-object-fit']};`
+                            : 'object-fit: contain;' ; const logoLazyLoad=(inputs['logo-lazy-load'] !==false) ? 'lazy'
+                            : 'eager' ; const logoAltText=inputs['logo-alt-text'] || 'Logo' ; %>
                             <img id="card-logo" src="<%= inputs['input-logo'] %>" class="draggable-element"
-                                style="<%= getStyle('card-logo') %>; max-width: <%= inputs['logo-size'] %>%; opacity: <%= inputs['logo-opacity'] %>; <%= getFilterStyle('logo') %>">
+                                alt="<%= logoAltText %>" loading="<%= logoLazyLoad %>"
+                                style="<%= getStyle('card-logo') %>; <%= logoWidth %> <%= logoHeight %> <%= logoObjectFit %> opacity: <%= inputs['logo-opacity'] %>; <%= getFilterStyle('logo') %>">
                             <% } %>
 
                                 <% if (!isFront('photo') && images.photo) { %>

@@ -423,13 +423,14 @@ const ExportManager = {
 
     getVCardString() {
         const state = StateManager.getStateObject();
-        const lang = state.currentLanguage || 'ar';
-        const nameInput = document.getElementById(`input-name_${lang}`);
-        const taglineInput = document.getElementById(`input-tagline_${lang}`);
+        const nameInput = document.getElementById('input-name');
+        const taglineInput = document.getElementById('input-tagline');
+
+        if (!nameInput || !taglineInput) return '';
 
         const name = nameInput.value.replace(/\n/g, ' ').split(' ');
-        const firstName = name.slice(0, -1).join(' ');
-        const lastName = name.slice(-1).join(' ');
+        const firstName = name.length > 1 ? name.slice(0, -1).join(' ') : name[0];
+        const lastName = name.length > 1 ? name.slice(-1).join(' ') : '';
         let vCard = `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${nameInput.value}\nORG:${taglineInput.value.replace(/\n/g, ' ')}\nTITLE:${taglineInput.value.replace(/\n/g, ' ')}\n`;
 
         if (state.dynamic.staticSocial.email && state.dynamic.staticSocial.email.value) {

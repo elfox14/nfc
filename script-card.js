@@ -331,6 +331,9 @@ const CardManager = {
         const logoImg = document.getElementById('card-logo-img');
         if (!logoImg) return;
 
+        const logoWrapper = document.getElementById('card-logo');
+        if (logoWrapper) logoWrapper.style.maxWidth = 'none';
+
         const width = document.getElementById('logo-width')?.value || 120;
         const height = document.getElementById('logo-height')?.value || 60;
         const objectFit = document.getElementById('logo-object-fit')?.value || 'contain';
