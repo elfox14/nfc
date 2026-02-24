@@ -322,7 +322,10 @@ MongoClient.connect(mongoUrl)
       console.warn('Some indexes may already exist:', indexErr.message);
     }
   })
-  .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
+  .catch(err => {
+    console.error('Mongo connect error', err);
+    console.warn('Server will continue running, but database features will be unavailable.');
+  });
 
 // --- Utilities & sanitizers (كما كنت تستخدم) ---
 function absoluteBaseUrl(req) {
