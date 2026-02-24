@@ -143,7 +143,7 @@ app.use((req, res, next) => {
 
 // Helmet - رؤوس أمان HTTP (نطبق CSP مفصّل يدعم WebSocket كما في كودك)
 app.use(helmet({
-  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+  crossOriginOpenerPolicy: { policy: "unsafe-none" } // Changed from same-origin-allow-popups to allow cross-origin window.opener for Google Auth popup
 }));
 
 // Determine base WS/WSS URL from configuration
@@ -1334,7 +1334,7 @@ app.post('/api/auth/register', [
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/api/auth', // Scoped strictly to auth routes
       maxAge: 7 * 24 * 3600 * 1000 // 7 days
     });
@@ -1385,7 +1385,7 @@ app.post('/api/auth/login', [
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/api/auth', // Scoped strictly to auth routes
       maxAge: 7 * 24 * 3600 * 1000 // 7 days
     });
@@ -1460,7 +1460,7 @@ app.post('/api/auth/refresh', [
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/api/auth',
       maxAge: 7 * 24 * 3600 * 1000
     });
@@ -1489,7 +1489,7 @@ app.post('/api/auth/logout', [
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/api/auth'
     });
 
@@ -1516,7 +1516,7 @@ app.get('/api/auth/google', (req, res) => {
     res.cookie('oauth_state', state, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'Lax', // Lax allows top-level navigation from popup to send cookie
+      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax', // Lax allows top-level navigation from popup to send cookie, None allows cross-site
       maxAge: 5 * 60 * 1000
     });
 
@@ -1626,7 +1626,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
       maxAge: 7 * 24 * 3600 * 1000
     });
 
