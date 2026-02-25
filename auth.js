@@ -16,8 +16,10 @@ const Auth = {
             return 'http://localhost:3000';
         }
 
-        // Production - use Render backend
-        return 'https://nfc-vjy6.onrender.com';
+        // Dynamic base URL for production: respect the /nfc subpath if present
+        const path = window.location.pathname;
+        const subfolder = path.startsWith('/nfc') ? '/nfc' : '';
+        return window.location.origin + subfolder;
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },

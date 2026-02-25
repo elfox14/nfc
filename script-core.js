@@ -30,7 +30,14 @@ const Config = {
     // ... existing config ...
     GTM_CONTAINER_ID: 'GTM-PLL5SLNM', // GTM Container ID
 
-    API_BASE_URL: 'https://nfc-vjy6.onrender.com',
+    API_BASE_URL: (() => {
+        if (window.location.protocol === 'file:') return 'https://nfc-vjy6.onrender.com';
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') return 'http://localhost:3000';
+        const path = window.location.pathname;
+        const subfolder = path.startsWith('/nfc') ? '/nfc' : '';
+        return window.location.origin + subfolder;
+    })(),
     LOCAL_STORAGE_KEY: 'digitalCardEditorState_v20',
     GALLERY_STORAGE_KEY: 'digitalCardGallery_v2',
     MAX_LOGO_SIZE_MB: 10,

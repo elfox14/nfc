@@ -30,7 +30,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     const viewerContainer = document.querySelector('.viewer-container');
-    const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
+    const API_BASE_URL = (() => {
+        if (window.location.protocol === 'file:') return 'https://nfc-vjy6.onrender.com';
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') return 'http://localhost:3000';
+        const path = window.location.pathname;
+        const subfolder = path.startsWith('/nfc') ? '/nfc' : '';
+        return window.location.origin + subfolder;
+    })();
     let cardData = null;
     let cardId = null; // Store card ID for tracking
 

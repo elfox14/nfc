@@ -177,7 +177,7 @@ app.use(helmet.contentSecurityPolicy({
       "https://fonts.googleapis.com"
     ],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com"],
     mediaSrc: ["'self'", "data:"],
     frameSrc: ["'self'", "https://www.youtube.com"],
     connectSrc: [
@@ -187,7 +187,6 @@ app.use(helmet.contentSecurityPolicy({
       "https://www.youtube.com",
       "https://www.mcprim.com",
       "https://media.giphy.com",
-      "https://nfc-vjy6.onrender.com",
       wsOrigin
     ].join(' ').split(' '), // split/join to handle the wsOrigin fallback cleanly
     objectSrc: ["'none'"],
@@ -283,6 +282,10 @@ app.use('/api/upload-image', uploadLimiter);
 
 // عرض القوالب
 app.set('view engine', 'ejs');
+
+// Static files
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 // --- DATABASE CONNECTION ---
 const port = config.PORT || 3000;

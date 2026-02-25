@@ -413,42 +413,131 @@ body {
 /* Responsive (Mobile view adaptation for V2 Editor) */
 @media (max-width: 900px) {
     :root {
-        --sidebar-left-width: 60px;
+        --sidebar-left-width: 0px;
         --sidebar-right-width: 0px;
     }
 
+    body {
+        padding-bottom: 70px;
+        /* Space for the tools bar */
+    }
+
+    .v2-header .header-right .btn span {
+        display: none;
+    }
+
+    .v2-header .header-right .btn {
+        padding: 8px 12px;
+    }
+
+    /* tools-sidebar becomes a bottom bar */
+    .v2-tools-sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100% !important;
+        height: 70px;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 0 10px;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        background: rgba(18, 26, 36, 0.95);
+        z-index: 1500;
+    }
+
+    .tool-group {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .group-label {
+        display: none;
+    }
+
+    .tool-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    /* Properties Sidebar becomes a Bottom Sheet */
     .v2-properties-sidebar {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100% !important;
-        height: 50vh;
+        height: 60vh;
         z-index: 2000;
         border-top: 1px solid var(--border-color);
-        border-radius: 20px 20px 0 0;
+        border-radius: 24px 24px 0 0;
         transform: translateY(100%);
         transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         padding: 30px 20px;
+        background: #1c2a3b;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
     }
 
-    .v2-properties-sidebar:not(.hidden) {
+    .v2-properties-sidebar.active {
         transform: translateY(0);
     }
 
     .v2-properties-sidebar::before {
         content: '';
         position: absolute;
-        top: 10px;
+        top: 12px;
         left: 50%;
         transform: translateX(-50%);
-        width: 40px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 2px;
+        width: 50px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
     }
 
     .canvas-viewport {
-        padding: 40px 10px;
+        padding: 60px 20px;
+    }
+
+    #mobile-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1900;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    #mobile-backdrop.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .mobile-only-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        color: var(--text-secondary);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        margin-right: auto;
+    }
+}
+
+/* Larger hit areas for handles on mobile */
+@media (pointer: coarse) {
+    .handle::after {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
     }
 }
 

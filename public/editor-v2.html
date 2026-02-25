@@ -64,6 +64,7 @@
 
         <!-- Center: Canvas Area -->
         <section class="v2-canvas-area">
+            <div id="mobile-backdrop" class="hidden"></div>
             <div class="canvas-viewport" id="canvas-viewport">
                 <div class="v2-card-canvas" id="v2-card-canvas">
                     <div class="canvas-bg-layer" id="canvas-bg-layer"></div>
@@ -78,6 +79,7 @@
             <div class="sidebar-tabs">
                 <button class="tab-link active" data-tab="properties">الخصائص</button>
                 <button class="tab-link" data-tab="layers">الطبقات</button>
+                <button id="close-sheet-btn" class="mobile-only-btn"><i class="fas fa-times"></i></button>
             </div>
 
             <div id="tab-properties" class="tab-content">

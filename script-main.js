@@ -830,7 +830,7 @@ const ShareManager = {
         // If we are on editor.html or editor-en.html, redirect to editor-v2.html
         const isLegacyEditor = window.location.pathname.includes('editor.html') || window.location.pathname.includes('editor-en.html');
         if (isLegacyEditor) {
-            const v2Url = new URL('editor-v2.html', window.location.href);
+            const v2Url = new URL('editor-v2', window.location.href);
             params.forEach((value, key) => v2Url.searchParams.set(key, value));
             window.location.href = v2Url.href;
             return true;
