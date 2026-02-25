@@ -515,7 +515,7 @@ deleteSelected() {
             if (!isAutosave) alert('Saved!');
             if (!this.designId && res.id) {
                 this.designId = res.id;
-                window.history.pushState({}, '', `/editor-v2?id=${this.designId}`);
+                window.history.pushState({}, '', `editor-v2.html?id=${this.designId}`);
             }
         }
     } catch (e) { console.error(e); }

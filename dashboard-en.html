@@ -471,7 +471,7 @@
                         <i class="fas fa-shield-alt"></i>
                         <span>Privacy Settings</span>
                     </a>
-                    <a href="/editor-v2" class="sidebar-item">
+                    <a href="editor-v2.html" class="sidebar-item">
                         <i class="fas fa-magic"></i>
                         <span>Create New Card</span>
                     </a>
@@ -643,13 +643,13 @@
                                 <div class="card-actions">
                                     <a href="/nfc/viewer-en.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">View</a>
                                     <button class="action-btn btn-view" onclick="openNFCModal('${design.shortId}')" style="background: rgba(46, 204, 113, 0.2); color:#2ecc71;">NFC</button>
-                                    <a href="/editor-v2?id=${design.shortId}" class="action-btn btn-edit">Edit</a>
+                                    <a href="editor-v2.html?id=${design.shortId}" class="action-btn btn-edit">Edit</a>
                                 </div>
                             </div>`;
                         grid.appendChild(card);
                     });
                 } else {
-                    grid.innerHTML = `<div class="empty-state"><i class="far fa-folder-open"></i><h3>No saved designs yet</h3><p>Start creating your first digital business card now</p><a href="/editor-v2" class="btn btn-primary" style="margin-top: 20px;">Create Card</a></div>`;
+                    grid.innerHTML = `<div class="empty-state"><i class="far fa-folder-open"></i><h3>No saved designs yet</h3><p>Start creating your first digital business card now</p><a href="editor-v2.html" class="btn btn-primary" style="margin-top: 20px;">Create Card</a></div>`;
                 }
             } catch (err) {
                 console.error(err);
