@@ -141,8 +141,9 @@ export default function Home() {
                       </div>
                     </div>
                     <ChevronDown
-                      className={`w-6 h-6 text-blue-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''
-                        }`}
+                      className={`w-6 h-6 text-blue-400 transition-transform duration-300 ${
+                        isExpanded ? 'rotate-180' : ''
+                      }`}
                     />
                   </button>
 
@@ -191,10 +192,7 @@ export default function Home() {
               اختبر جميع الميزات الجديدة والتحسينات التقنية المتقدمة في محرر بطاقات الأعمال NFC.
             </p>
             <div className="flex gap-4 justify-center">
-              <Button
-                className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg font-semibold"
-                onClick={() => window.location.href = 'editor.html'}
-              >
+              <Button className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg font-semibold">
                 ابدأ الآن
               </Button>
               <Button variant="outline" className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg">

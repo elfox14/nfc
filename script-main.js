@@ -1,20 +1,5 @@
 'use strict';
 
-/**
- * ==========================================
- * Editor Enhancements Implementation Details
- * ==========================================
- * 
- * 1. Snap-to-Grid (DragManager):
- *    - Located in script-main.js -> DragManager.
- *    - Elements automatically align to grid lines (default 20px) when dragged.
- *    - Vertical and horizontal guides visually indicate alignment.
- * 
- * 2. Undo/Redo & Autosave:
- *    - Handled by HistoryManager and StateManager in script-core.js.
- *    - Keybindings Ctrl+Z and Ctrl+Y are intercepted in script-main.js (App.init).
- */
-
 // Language detection and i18n for script-main.js (computed once at load)
 const _isEnglishPage = document.documentElement.lang === 'en';
 
@@ -63,133 +48,6 @@ const i18nMain = {
     copyLinkFailed: _isEnglishPage ? 'Could not copy link automatically. Please copy it manually.' : 'لم نتمكن من نسخ الرابط تلقائياً. يرجى نسخه يدوياً.',
 };
 
-/**
- * Show brief visual feedback when Undo/Redo is performed.
- * @param {'undo'|'redo'} action
- */
-function _showUndoRedoFeedback(action) {
-    // Update autosave indicator
-    if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saving');
-    setTimeout(() => { if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saved'); }, 600);
-
-    // Show a brief toast notification
-    const message = action === 'undo'
-        ? (_isEnglishPage ? '↩ Undo' : '↩ تراجع')
-        : (_isEnglishPage ? '↪ Redo' : '↪ إعادة');
-
-    const toast = document.createElement('div');
-    toast.textContent = message;
-    Object.assign(toast.style, {
-        position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
-        background: 'rgba(30,30,40,0.92)', color: '#fff', padding: '8px 22px',
-        borderRadius: '8px', fontSize: '14px', fontWeight: '500',
-        zIndex: '99999', pointerEvents: 'none', opacity: '0',
-        transition: 'opacity 0.2s ease', boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-        fontFamily: "'Tajawal', 'Poppins', sans-serif"
-    });
-    document.body.appendChild(toast);
-    requestAnimationFrame(() => { toast.style.opacity = '1'; });
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 250);
-    }, 1000);
-}
-
-/**
- * Update the global autosave status indicator.
- * @param {'saving'|'saved'|'error'} status 
- */
-window.updateAutoSaveIndicator = function (status) {
-    let indicator = document.getElementById('global-autosave-indicator');
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'global-autosave-indicator';
-        Object.assign(indicator.style, {
-            position: 'fixed', bottom: '20px', right: '20px',
-            background: 'rgba(30,30,40,0.92)', color: '#fff', padding: '8px 16px',
-            borderRadius: '8px', fontSize: '14px', fontWeight: '500',
-            zIndex: '99999', pointerEvents: 'none', opacity: '0',
-            transition: 'opacity 0.3s ease', display: 'flex', alignItems: 'center', gap: '8px',
-            fontFamily: "'Tajawal', 'Poppins', sans-serif"
-        });
-        document.body.appendChild(indicator);
-    }
-
-    indicator.style.opacity = '1';
-
-    if (status === 'saving') {
-        indicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>' + (_isEnglishPage ? 'Saving...' : 'جاري الحفظ...') + '</span>';
-    } else if (status === 'saved') {
-        indicator.innerHTML = '<i class="fas fa-check" style="color:#00e676"></i> <span>' + (_isEnglishPage ? 'Saved' : 'تم الحفظ') + '</span>';
-        setTimeout(() => { indicator.style.opacity = '0'; }, 2000);
-    } else if (status === 'error') {
-        indicator.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ff3d00"></i> <span>' + (_isEnglishPage ? 'Save failed/Offline' : 'فشل الحفظ/دون اتصال') + '</span>';
-        setTimeout(() => { indicator.style.opacity = '0'; }, 3000);
-    }
-};
-
-/**
- * Check if a local draft exists and prompt the user to restore it.
- */
-window.checkAndRestoreDraft = function () {
-    const designId = Config.currentDesignId || new URLSearchParams(window.location.search).get('id') || 'draft';
-    const storageKey = `mcprime_autosave_${designId}`;
-
-    try {
-        const saved = localStorage.getItem(storageKey);
-        if (!saved) return;
-
-        const { timestamp, state } = JSON.parse(saved);
-        if (!state) return;
-
-        const timeString = new Date(timestamp).toLocaleTimeString(_isEnglishPage ? 'en-US' : 'ar-EG');
-        const prompt = document.createElement('div');
-        prompt.className = 'autosave-restore-prompt';
-
-        prompt.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-                <i class="fas fa-history" style="font-size: 2rem; color: var(--accent-primary); margin-bottom: 10px;"></i>
-                <div style="margin-bottom: 15px;">
-                    <strong style="display: block; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 5px;">
-                        ${_isEnglishPage ? 'Unsaved draft found' : 'تم العثور على مسودة غير محفوظة'}
-                    </strong>
-                    <span style="font-size: 0.9rem; color: var(--text-secondary);">
-                        ${_isEnglishPage ? 'Last local edit:' : 'آخر تعديل محلي:'} ${timeString}
-                    </span>
-                </div>
-                <div style="display: flex; gap: 10px; width: 100%;">
-                    <button class="btn btn-primary restore-yes" style="flex: 1; margin:0;">${_isEnglishPage ? 'Restore Draft' : 'استعادة المسودة'}</button>
-                    <button class="btn btn-secondary restore-no" style="flex: 1; margin:0;">${_isEnglishPage ? 'Discard' : 'تجاهل'}</button>
-                </div>
-            </div>
-        `;
-
-        Object.assign(prompt.style, {
-            position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)',
-            background: 'var(--form-bg, #243447)', border: '1px solid var(--accent-primary, #4da6ff)',
-            borderRadius: '12px', padding: '20px', zIndex: '99999', boxShadow: '0 10px 40px rgba(0,0,0,0.6)',
-            maxWidth: '400px', width: '90%', fontFamily: "'Tajawal', 'Poppins', sans-serif"
-        });
-
-        document.body.appendChild(prompt);
-
-        prompt.querySelector('.restore-yes').addEventListener('click', () => {
-            StateManager.applyState(state, false);
-            HistoryManager.pushState(state);
-            prompt.remove();
-            localStorage.removeItem(storageKey);
-            UIManager.announce(_isEnglishPage ? 'Draft restored' : 'تمت استعادة المسودة');
-        });
-
-        prompt.querySelector('.restore-no').addEventListener('click', () => {
-            localStorage.removeItem(storageKey);
-            prompt.remove();
-        });
-    } catch (e) {
-        console.error('Failed to parse autosave draft:', e);
-    }
-};
-
 const CollaborationManager = {
     ws: null,
     collabId: null,
@@ -203,7 +61,7 @@ const CollaborationManager = {
         if (this.collabId) {
             // قم بإزالة معرف التصميم العادي لمنع التعارض
             params.delete('id');
-            const newUrl = `${window.location.pathname}?${params.toString()} `;
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
             window.history.replaceState({}, '', newUrl);
 
             this.connect(this.collabId);
@@ -233,7 +91,7 @@ const CollaborationManager = {
 
             // 4. أنشئ الرابط واعرضه في المودال
             const collabUrl = new URL(window.location.origin + window.location.pathname);
-            collabUrl.search = `? collabId = ${this.collabId} `;
+            collabUrl.search = `?collabId=${this.collabId}`;
 
             document.getElementById('collab-link-input').value = collabUrl.href;
             UIManager.showModal(document.getElementById('collab-modal-overlay'));
@@ -423,14 +281,13 @@ const ExportManager = {
 
     getVCardString() {
         const state = StateManager.getStateObject();
-        const nameInput = document.getElementById('input-name');
-        const taglineInput = document.getElementById('input-tagline');
-
-        if (!nameInput || !taglineInput) return '';
+        const lang = state.currentLanguage || 'ar';
+        const nameInput = document.getElementById(`input-name_${lang}`);
+        const taglineInput = document.getElementById(`input-tagline_${lang}`);
 
         const name = nameInput.value.replace(/\n/g, ' ').split(' ');
-        const firstName = name.length > 1 ? name.slice(0, -1).join(' ') : name[0];
-        const lastName = name.length > 1 ? name.slice(-1).join(' ') : '';
+        const firstName = name.slice(0, -1).join(' ');
+        const lastName = name.slice(-1).join(' ');
         let vCard = `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${nameInput.value}\nORG:${taglineInput.value.replace(/\n/g, ' ')}\nTITLE:${taglineInput.value.replace(/\n/g, ' ')}\n`;
 
         if (state.dynamic.staticSocial.email && state.dynamic.staticSocial.email.value) {
@@ -692,12 +549,7 @@ const ShareManager = {
                 url += `?id=${Config.currentDesignId}`;
             }
 
-            // Using Auth.fetchWithAuth if available to handle token refreshes automatically
-            const fetchFn = (typeof Auth !== 'undefined' && Auth.fetchWithAuth)
-                ? Auth.fetchWithAuth.bind(Auth)
-                : fetch;
-
-            const response = await fetchFn(url, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(state),
@@ -826,8 +678,6 @@ const ShareManager = {
         const params = new URLSearchParams(window.location.search);
         const designId = params.get('id');
 
-
-
         // لا تقم بالتحميل إذا كان هناك معرف جلسة تحرير جماعي
         if (params.has('collabId')) {
             return false;
@@ -839,9 +689,6 @@ const ShareManager = {
                 if (!response.ok) throw new Error('Design not found or server error');
 
                 const state = await response.json();
-
-
-
                 StateManager.applyState(state, false);
                 Config.currentDesignId = designId; // Store loaded ID
                 UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
@@ -918,8 +765,6 @@ const EventManager = {
                 if (input.name === 'logo-align') CardManager.updateLogoAlignment();
                 if (input.id === 'logo-bg-color') CardManager.updateLogoBackground();
                 if (input.id.startsWith('logo-shadow-')) CardManager.updateLogoShadow();
-                if (input.id === 'logo-width' || input.id === 'logo-height' || input.id === 'logo-object-fit') CardManager.updateLogoDimensions();
-                if (input.id === 'logo-lazy-load' || input.id === 'logo-alt-text') CardManager.updateLogoAdvanced();
 
                 if (input.name === 'photo-align') CardManager.updatePersonalPhotoAlignment();
                 if (input.id.startsWith('photo-shadow-') || input.id === 'photo-opacity') CardManager.updatePersonalPhotoStyles();
@@ -953,24 +798,18 @@ const EventManager = {
 
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey || e.metaKey) {
-                const activeTag = document.activeElement.tagName;
-                const isInInput = activeTag === 'INPUT' || activeTag === 'TEXTAREA';
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                    if (['z', 'y', 'a', 'c', 'x', 'v'].includes(e.key.toLowerCase())) {
+                        if (e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y') return;
+                    }
+                }
 
-                // When focused in an input/textarea, let the browser handle native undo/redo
-                if (isInInput) return;
-
-                const key = e.key.toLowerCase();
-
-                if (key === 'z' && !e.shiftKey) {
-                    // Ctrl+Z / Cmd+Z → Undo
+                if (e.key === 'z') {
                     e.preventDefault();
                     HistoryManager.undo();
-                    _showUndoRedoFeedback('undo');
-                } else if (key === 'y' || (key === 'z' && e.shiftKey)) {
-                    // Ctrl+Y / Cmd+Y / Ctrl+Shift+Z / Cmd+Shift+Z → Redo
+                } else if (e.key === 'y') {
                     e.preventDefault();
                     HistoryManager.redo();
-                    _showUndoRedoFeedback('redo');
                 }
             }
         });
@@ -1013,6 +852,7 @@ const EventManager = {
             });
         }
 
+        // NEW: Download HTML
         const downloadHtmlBtn = document.querySelector('[data-trigger-id="download-html"]');
         if (downloadHtmlBtn) {
             downloadHtmlBtn.addEventListener('click', () => ExportManager.downloadHtmlPackage());
@@ -1025,7 +865,6 @@ const EventManager = {
                 if (hiddenInput) hiddenInput.value = e.target.value;
             });
         });
-
 
         document.querySelectorAll('.position-controls-grid').forEach(grid => {
             grid.querySelectorAll('.move-btn').forEach(button => {
@@ -1186,25 +1025,6 @@ const EventManager = {
         DOMElements.draggable.tagline.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('name-tagline-accordion'); });
         DOMElements.draggable.qr.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('qr-code-accordion'); });
 
-        const logoAspectLockBtn = document.getElementById('logo-aspect-lock');
-        const logoAspectCheckbox = document.getElementById('logo-aspect-lock-checkbox');
-        if (logoAspectLockBtn) {
-            logoAspectLockBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const isActive = logoAspectLockBtn.classList.toggle('active');
-                if (logoAspectCheckbox) logoAspectCheckbox.checked = isActive;
-                CardManager.updateLogoDimensions();
-                StateManager.saveDebounced();
-            });
-        }
-        if (logoAspectCheckbox) {
-            logoAspectCheckbox.addEventListener('change', () => {
-                if (logoAspectLockBtn) {
-                    logoAspectLockBtn.classList.toggle('active', logoAspectCheckbox.checked);
-                }
-            });
-        }
-
         DOMElements.buttons.togglePhone.addEventListener('input', () => { CardManager.updatePhoneButtonsVisibility(); });
 
         DOMElements.buttons.toggleSocial.addEventListener('input', () => {
@@ -1337,7 +1157,8 @@ const EventManager = {
             });
         }
 
-        // Undo/Redo button handlers are bound in App.init() to include autosave indicator updates
+        DOMElements.buttons.undoBtn.addEventListener('click', () => HistoryManager.undo());
+        DOMElements.buttons.redoBtn.addEventListener('click', () => HistoryManager.redo());
 
         DOMElements.helpModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.helpModal.overlay));
         DOMElements.helpModal.overlay.addEventListener('click', e => {
@@ -1357,189 +1178,6 @@ const EventManager = {
                 targetPane.classList.add('active');
             }
         });
-    }
-};
-
-const UserTemplateManager = {
-    init() {
-        this.bindEvents();
-    },
-
-    bindEvents() {
-        const btnOpenTemplate = document.getElementById('open-templates-btn');
-        const btnOpenTemplateMenu = document.getElementById('open-templates-btn-menu');
-        if (btnOpenTemplate) btnOpenTemplate.addEventListener('click', () => this.openLibraryModal());
-        if (btnOpenTemplateMenu) btnOpenTemplateMenu.addEventListener('click', () => {
-            document.getElementById('toolbar-more-menu-floating')?.classList.remove('show');
-            this.openLibraryModal();
-        });
-
-        const btnSaveTemplate = document.getElementById('save-as-template-btn');
-        const btnSaveTemplateMenu = document.getElementById('save-as-template-btn-menu');
-        if (btnSaveTemplate) btnSaveTemplate.addEventListener('click', () => this.openSaveModal());
-        if (btnSaveTemplateMenu) btnSaveTemplateMenu.addEventListener('click', () => {
-            document.getElementById('toolbar-more-menu-floating')?.classList.remove('show');
-            this.openSaveModal();
-        });
-
-        const closeLibraryBtn = document.getElementById('close-templates-library-btn');
-        if (closeLibraryBtn) closeLibraryBtn.addEventListener('click', () => this.closeLibraryModal());
-
-        const closeSaveBtn = document.getElementById('cancel-save-template-btn');
-        if (closeSaveBtn) closeSaveBtn.addEventListener('click', () => this.closeSaveModal());
-
-        const confirmSaveBtn = document.getElementById('confirm-save-template-btn');
-        if (confirmSaveBtn) confirmSaveBtn.addEventListener('click', () => this.saveCurrentAsTemplate());
-    },
-
-    async openLibraryModal() {
-        const modal = document.getElementById('templates-library-modal-overlay');
-        const grid = document.getElementById('templates-grid');
-        UIManager.showModal(modal);
-        if (grid) grid.innerHTML = '<div class="spinner" style="margin:20px auto;"></div>';
-
-        try {
-            const token = localStorage.getItem('accessToken');
-            const headers = {};
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            const response = await fetch('/api/templates', { headers });
-            if (!response.ok) throw new Error('إرجاع القوالب فشل / Failed to fetch templates');
-            const data = await response.json();
-            this.renderTemplates(data.templates || []);
-        } catch (error) {
-            console.error('Fetch templates error:', error);
-            if (grid) grid.innerHTML = '<p style="color:var(--text-secondary); text-align:center;">تعذر تحميل القوالب. / Failed to load templates.</p>';
-        }
-    },
-
-    renderTemplates(templates) {
-        const grid = document.getElementById('templates-grid');
-        if (!grid) return;
-        grid.innerHTML = '';
-        if (templates.length === 0) {
-            grid.innerHTML = '<p style="text-align:center; color:var(--text-secondary); grid-column: 1 / -1;">لا توجد قوالب متاحة حالياً. / No templates available.</p>';
-            return;
-        }
-
-        templates.forEach(template => {
-            const item = document.createElement('div');
-            item.className = 'gallery-item';
-            item.style.cursor = 'pointer';
-            item.style.position = 'relative';
-
-            const bgColor = template.state?.frontBgColor || '#ffffff';
-            const primaryColor = template.state?.nameColor || '#333333';
-            const taglineColor = template.state?.taglineColor || '#666666';
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            const borderColor = isDarkMode ? '#444' : '#e2e8f0';
-
-            item.innerHTML = `
-                <div class="gallery-item-preview" style="background:${bgColor}; padding: 15px; border-radius: 8px; border: 1px solid ${borderColor}; height: 120px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-                    <div style="width:40px; height:40px; background:${primaryColor}; border-radius:50%; margin-bottom:10px;"></div>
-                    <div style="width:60%; height:8px; background:${primaryColor}; margin-bottom:5px; border-radius:4px;"></div>
-                    <div style="width:40%; height:6px; background:${taglineColor}; border-radius:4px;"></div>
-                </div>
-                <div class="gallery-item-details" style="padding:10px 5px; text-align:center;">
-                    <h4 style="margin:0; font-size:0.9rem;">${template.name || 'قالب بدون اسم'}</h4>
-                    <span style="font-size:0.75rem; color:var(--text-secondary);">${template.isPublic ? 'عام / Public' : 'خاص / Private'}</span>
-                </div>
-            `;
-            item.addEventListener('click', () => {
-                const isArabic = document.documentElement.lang === 'ar' || !document.documentElement.lang;
-                const msg = isArabic ? 'هل أنت متأكد من تطبيق هذا القالب؟ سيتم تغيير تصميمك الحالي.' : 'Are you sure you want to apply this template? Your current design will be changed.';
-                if (confirm(msg)) {
-                    this.applyTemplate(template);
-                }
-            });
-            grid.appendChild(item);
-        });
-    },
-
-    applyTemplate(template) {
-        if (!template || !template.state) return;
-        StateManager.applyState(template.state, true);
-        this.closeLibraryModal();
-        const isArabic = document.documentElement.lang === 'ar' || !document.documentElement.lang;
-        UIManager.announce(isArabic ? 'تم تطبيق القالب بنجاح.' : 'Template applied successfully.');
-        Utils.showToast(isArabic ? 'تم تطبيق القالب!' : 'Template applied!');
-        // Update History to recognize this as a new significant state
-        HistoryManager.pushState(template.state);
-        window.StateManager.saveDebounced();
-    },
-
-    openSaveModal() {
-        const token = localStorage.getItem('accessToken');
-        const isArabic = document.documentElement.lang === 'ar' || !document.documentElement.lang;
-        if (!token) {
-            alert(isArabic ? 'يجب تسجيل الدخول لحفظ قالب جديد.' : 'You must log in to save a new template.');
-            window.location.href = isArabic ? 'login.html' : 'login-en.html';
-            return;
-        }
-        document.getElementById('template-name-input').value = '';
-        document.getElementById('template-public-checkbox').checked = false;
-        const modal = document.getElementById('save-template-modal-overlay');
-        UIManager.showModal(modal);
-    },
-
-    closeLibraryModal() {
-        UIManager.hideModal(document.getElementById('templates-library-modal-overlay'));
-    },
-
-    closeSaveModal() {
-        UIManager.hideModal(document.getElementById('save-template-modal-overlay'));
-    },
-
-    async saveCurrentAsTemplate() {
-        const nameInput = document.getElementById('template-name-input');
-        const name = nameInput ? nameInput.value.trim() : '';
-        const isArabic = document.documentElement.lang === 'ar' || !document.documentElement.lang;
-
-        if (!name) {
-            alert(isArabic ? 'يرجى إدخال اسم القالب.' : 'Please enter a template name.');
-            return;
-        }
-
-        const isPublic = document.getElementById('template-public-checkbox') ? document.getElementById('template-public-checkbox').checked : false;
-        const confirmBtn = document.getElementById('confirm-save-template-btn');
-        UIManager.setButtonLoadingState(confirmBtn, true, isArabic ? 'جاري الحفظ...' : 'Saving...');
-
-        try {
-            const token = localStorage.getItem('accessToken');
-            if (!token) throw new Error('Unauthorized');
-
-            const state = StateManager.getStateObject();
-
-            const payload = {
-                name: name,
-                state: state,
-                isPublic: isPublic
-            };
-
-            const response = await fetch('/api/templates', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.error || (isArabic ? 'فشل حفظ القالب' : 'Failed to save template.'));
-            }
-
-            this.closeSaveModal();
-            UIManager.announce(isArabic ? 'تم حفظ القالب بنجاح.' : 'Template saved successfully.');
-            Utils.showToast(isArabic ? 'تم حفظ القالب الخاص بك!' : 'Your template has been saved!');
-
-        } catch (error) {
-            console.error('Save template error:', error);
-            alert((isArabic ? 'خطأ أثناء حفظ القالب: ' : 'Error saving template: ') + error.message);
-        } finally {
-            UIManager.setButtonLoadingState(confirmBtn, false);
-        }
     }
 };
 
@@ -1652,7 +1290,6 @@ const App = {
         UIManager.init();
         UIManager.fetchAndPopulateBackgrounds();
         GalleryManager.init();
-        UserTemplateManager.init();
         CollaborationManager.init();
         EventManager.bindEvents();
 
@@ -1660,18 +1297,15 @@ const App = {
         if (loadedFromUrl) {
             HistoryManager.pushState(StateManager.getStateObject());
             UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
-            window.checkAndRestoreDraft();
         } else if (!CollaborationManager.isActive) {
             const loadedFromStorage = StateManager.load();
             if (loadedFromStorage) {
                 HistoryManager.pushState(StateManager.getStateObject());
                 UIManager.announce("تم استعادة التصميم المحفوظ.");
-                window.checkAndRestoreDraft();
             } else {
                 StateManager.applyState(Config.defaultState, false);
                 HistoryManager.pushState(Config.defaultState);
                 UIManager.announce("تم تحميل التصميم الافتراضي.");
-                window.checkAndRestoreDraft();
             }
         }
 
@@ -1689,21 +1323,39 @@ const App = {
 
         TourManager.init();
 
-        // Initialize Undo/Redo buttons (single binding point)
+        // Initialize Undo/Redo buttons
         if (DOMElements.buttons.undoBtn) {
             DOMElements.buttons.undoBtn.addEventListener('click', () => {
                 HistoryManager.undo();
-                _showUndoRedoFeedback('undo');
+                // Update autosave indicator if available
+                if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saving');
+                setTimeout(() => { if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saved'); }, 500);
             });
         }
         if (DOMElements.buttons.redoBtn) {
             DOMElements.buttons.redoBtn.addEventListener('click', () => {
                 HistoryManager.redo();
-                _showUndoRedoFeedback('redo');
+                // Update autosave indicator if available
+                if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saving');
+                setTimeout(() => { if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saved'); }, 500);
             });
         }
 
-        // StateManager.saveDebounced handles history push and autosave internally now.
+        // Hook into StateManager to push history on changes
+        const originalSaveDebounced = StateManager.saveDebounced;
+        StateManager.saveDebounced = function () {
+            HistoryManager.pushState(StateManager.getStateObject());
+            originalSaveDebounced.apply(this, arguments);
+            // Update indicator
+            if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saving');
+            setTimeout(() => { if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saved'); }, 1000);
+        };
+
+        setInterval(() => {
+            if (HistoryManager.currentIndex >= 0) {
+                StateManager.saveDebounced();
+            }
+        }, 30000);
     }
 };
 document.addEventListener('DOMContentLoaded', () => App.init());

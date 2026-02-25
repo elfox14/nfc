@@ -30,14 +30,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     const viewerContainer = document.querySelector('.viewer-container');
-    const API_BASE_URL = (() => {
-        if (window.location.protocol === 'file:') return 'https://nfc-vjy6.onrender.com';
-        const hostname = window.location.hostname;
-        if (hostname === 'localhost' || hostname === '127.0.0.1') return 'http://localhost:3000';
-        const path = window.location.pathname;
-        const subfolder = path.startsWith('/nfc') ? '/nfc' : '';
-        return window.location.origin + subfolder;
-    })();
+    const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
     let cardData = null;
     let cardId = null; // Store card ID for tracking
 
@@ -449,21 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (inputs['logo-filter-contrast']) logoFilterArray.push(`contrast(${inputs['logo-filter-contrast']}%)`);
             const logoFilterStyle = logoFilterArray.length > 0 ? `filter: ${logoFilterArray.join(' ')};` : '';
 
-            // Handle New Advanced Properties
-            let customWidth = inputs['logo-width'] ? `${inputs['logo-width']}px` : `max-width: ${logoSize}% !important;`;
-            if (inputs['logo-width']) customWidth = `width: ${inputs['logo-width']}px !important;`;
-
-            const isAspectLocked = inputs['logo-aspect-lock-checkbox'] !== undefined ? inputs['logo-aspect-lock-checkbox'] : true;
-            let customHeight = `max-height: ${logoSize * 1.5}% !important;`;
-            if (inputs['logo-width']) {
-                customHeight = isAspectLocked ? 'height: auto !important;' : `height: ${inputs['logo-height'] || 60}px !important;`;
-            }
-
-            const customFit = inputs['logo-object-fit'] || 'contain';
-            const customLoading = (inputs['logo-lazy-load'] !== false) ? 'lazy' : 'eager';
-            const customAlt = inputs['logo-alt-text'] || 'Logo';
-
-            const logoHTML = `<img src="${inputs['input-logo']}" alt="${customAlt}" loading="${customLoading}" style="${customWidth} ${customHeight} object-fit: ${customFit}; opacity: ${logoOpacity} !important; position: absolute !important; ${logoFilterStyle} ${logoPos}">`;
+            const logoHTML = `<img src="${inputs['input-logo']}" alt="Logo" style="max-width: ${logoSize}% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; opacity: ${logoOpacity} !important; position: absolute !important; ${logoFilterStyle} ${logoPos}">`;
             renderElement(logoHTML, logoPlacement, containers);
         }
 
@@ -697,27 +676,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderElement(qrHTML, qrPlacement, containers);
                 }
             }
-        }
-        if (state.zIndexes) {
-            for (const [id, z] of Object.entries(state.zIndexes)) {
-                let elementId = id;
-                if (id.startsWith('form-group-static-') && !containers.front.querySelector(`#${id}`) && !containers.back.querySelector(`#${id}`)) {
-                    elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
-                }
-                const el = containers.front.querySelector(`#${elementId}`) || containers.back.querySelector(`#${elementId}`);
-                if (el) el.style.setProperty('z-index', z, 'important');
-            }
-        }
-
-        if (state.hiddenElements) {
-            state.hiddenElements.forEach(id => {
-                let elementId = id;
-                if (id.startsWith('form-group-static-') && !containers.front.querySelector(`#${id}`) && !containers.back.querySelector(`#${id}`)) {
-                    elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
-                }
-                const el = containers.front.querySelector(`#${elementId}`) || containers.back.querySelector(`#${elementId}`);
-                if (el) el.style.setProperty('display', 'none', 'important');
-            });
         }
 
         const allRenderedImages = [...containers.front.querySelectorAll('img'), ...containers.back.querySelectorAll('img')];

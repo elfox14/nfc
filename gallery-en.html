@@ -94,7 +94,6 @@
 
     <!-- Language Switcher -->
     <script src="/nfc/lang-switcher.js" defer></script>
-    <script src="/nfc/renderer-v2.js"></script>
 
     <style>
         body {
@@ -183,10 +182,6 @@
             </button>
             <button class="filter-chip" data-category="education">
                 <i class="fas fa-graduation-cap"></i> Education
-            </button>
-            <button class="filter-chip" data-category="templates"
-                style="background: var(--accent-primary); color: white;">
-                <i class="fas fa-star"></i> Templates
             </button>
         </div>
 
@@ -313,14 +308,7 @@
             const gridViewBtn = document.getElementById('grid-view-btn');
             const listViewBtn = document.getElementById('list-view-btn');
 
-            const API_BASE_URL = (() => {
-                if (window.location.protocol === 'file:') return 'https://nfc-vjy6.onrender.com';
-                const hostname = window.location.hostname;
-                if (hostname === 'localhost' || hostname === '127.0.0.1') return 'http://localhost:3000';
-                const path = window.location.pathname;
-                const subfolder = path.startsWith('/nfc') ? '/nfc' : '';
-                return window.location.origin + subfolder;
-            })();
+            const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
             const CACHE_KEY = 'mcprime_gallery_cache';
             const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -413,40 +401,17 @@
             }
 
             // Create Card Element
-            function createCardElement(design, isDemo = false, isTemplate = false) {
+            function createCardElement(design, isDemo = false) {
                 const inputs = design.data.inputs || {};
                 const cardElement = document.createElement('div');
                 cardElement.className = 'gallery-card';
-                if (isTemplate) cardElement.classList.add('template-card');
 
-                const viewUrl = isTemplate ? '#' : (isDemo ? '#' : `/nfc/viewer.html?id=${design.shortId}`);
-                const editUrl = isTemplate ? `editor-en.html?id=${design.shortId}` : (isDemo ? 'editor-en.html' : `editor-en.html?id=${design.shortId}`);
-                const shareUrl = (isDemo || isTemplate) ? '' : `${window.location.origin}/nfc/viewer.html?id=${design.shortId}`;
-
-                // Add template badge
-                if (isTemplate) {
-                    const badge = document.createElement('span');
-                    badge.className = 'card-badge template';
-                    badge.innerHTML = '<i class="fas fa-star"></i> Template';
-                    cardElement.appendChild(badge);
-                }
+                const viewUrl = isDemo ? '#' : `/nfc/viewer.html?id=${design.shortId}`;
+                const editUrl = isDemo ? '/nfc/editor-en.html' : `/nfc/editor-en.html?id=${design.shortId}`;
+                const shareUrl = isDemo ? '' : `${window.location.origin}/nfc/viewer.html?id=${design.shortId}`;
 
                 const name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || 'Unnamed';
                 const tagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || 'No description';
-
-                // PR-1: Pull from V2 data if legacy is missing
-                if (design.data.schemaVersion === 2 && design.data.v2) {
-                    const frontSide = design.data.v2.sides.front;
-                    const nameEl = frontSide.elements.find(e => e.id === 'name' || e.type === 'text');
-                    const titleEl = frontSide.elements.find(e => e.id === 'title' || (e.type === 'text' && e.id !== 'name'));
-
-                    if (nameEl) {
-                        name = nameEl.bilingual ? nameEl.contentEN : (nameEl.content || name);
-                    }
-                    if (titleEl) {
-                        tagline = titleEl.bilingual ? titleEl.contentEN : (titleEl.content || tagline);
-                    }
-                }
 
                 const isNew = design.createdAt && (Date.now() - new Date(design.createdAt).getTime() < 7 * 24 * 60 * 60 * 1000);
                 if (isNew && !isDemo) {
@@ -467,6 +432,8 @@
                     bgLayer.style.background = design.gradient;
                     thumbnailContainer.appendChild(bgLayer);
                 } else {
+                    const capturedUrl = imageUrls.capturedFront || imageUrls.front;
+
                     if (capturedUrl) {
                         const cardImg = document.createElement('img');
                         cardImg.className = 'card-thumb-img';
@@ -474,20 +441,6 @@
                         cardImg.alt = name;
                         cardImg.loading = 'lazy';
                         thumbnailContainer.appendChild(cardImg);
-                    } else if (design.data.schemaVersion === 2 && design.data.v2) {
-                        // Live V2 Preview Fallback
-                        const previewDiv = document.createElement('div');
-                        previewDiv.className = 'v2-preview-container';
-                        previewDiv.style.width = '100%';
-                        previewDiv.style.height = '100%';
-                        previewDiv.style.position = 'relative';
-                        previewDiv.style.overflow = 'hidden';
-                        previewDiv.style.background = '#fff';
-                        thumbnailContainer.appendChild(previewDiv);
-
-                        setTimeout(() => {
-                            RendererV2.render(design.data.v2.sides.front, previewDiv, { baseWidth: 510 });
-                        }, 0);
                     } else {
                         const bgLayer = document.createElement('div');
                         bgLayer.className = 'thumb-bg-layer loaded';
@@ -596,12 +549,6 @@
                 isLoading = true;
                 usingFallback = false;
                 demoNotice.style.display = 'none';
-
-                if (searchTerm === 'templates' || sortBy === 'templates') {
-                    showPreMadeTemplates();
-                    isLoading = false;
-                    return;
-                }
 
                 if (!append) {
                     showSkeletons(8);
@@ -749,57 +696,6 @@
                 }
             }
 
-            function showPreMadeTemplates() {
-                grid.innerHTML = '';
-                const templates = [
-                    {
-                        shortId: 'modern-business',
-                        data: {
-                            inputs: { 'input-name': 'Modern Business', 'input-tagline': 'Professional V2 Template' },
-                            schemaVersion: 2,
-                            v2: {
-                                sides: {
-                                    front: {
-                                        elements: [
-                                            { type: 'shape', transform: { x: 0, y: 0, w: 510, h: 330 }, style: { backgroundColor: '#1a2a3b' } },
-                                            { id: 'name', type: 'text', content: 'Modern Business', transform: { x: 40, y: 100, w: 400, h: 40 }, style: { color: '#ffffff', fontSize: 32, fontWeight: 'bold' } }
-                                        ]
-                                    }
-                                }
-                            }
-                        },
-                        views: 1250,
-                        createdAt: new Date().toISOString()
-                    },
-                    {
-                        shortId: 'creative-dark',
-                        data: {
-                            inputs: { 'input-name': 'Creative Dark', 'input-tagline': 'Artistic V2 Design' },
-                            schemaVersion: 2,
-                            v2: {
-                                sides: {
-                                    front: {
-                                        elements: [
-                                            { type: 'shape', transform: { x: 0, y: 0, w: 510, h: 330 }, style: { backgroundColor: '#0f172a' } },
-                                            { id: 'name', type: 'avatar', src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop', transform: { x: 40, y: 65, w: 200, h: 200 }, style: { borderRadius: '50%' } }
-                                        ]
-                                    }
-                                }
-                            }
-                        },
-                        views: 980,
-                        createdAt: new Date().toISOString()
-                    }
-                ];
-
-                templates.forEach(design => {
-                    const card = createCardElement(design, false, true);
-                    grid.appendChild(card);
-                });
-
-                loadMoreContainer.style.display = 'none';
-            }
-
             // Event Handlers
             function handleFilterChange() {
                 currentPage = 1;
@@ -807,19 +703,6 @@
                 currentSearchTerm = searchInput.value;
                 fetchGalleryCards(currentPage, currentSortBy, currentSearchTerm, false);
             }
-
-            document.querySelectorAll('.filter-chip').forEach(chip => {
-                chip.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-                    chip.classList.add('active');
-                    const cat = chip.dataset.category;
-                    if (cat === 'templates') {
-                        showPreMadeTemplates();
-                    } else {
-                        fetchGalleryCards(1, 'createdAt', cat === 'all' ? '' : cat, false);
-                    }
-                });
-            });
 
             sortBySelect.addEventListener('change', handleFilterChange);
             searchBtn.addEventListener('click', handleFilterChange);
