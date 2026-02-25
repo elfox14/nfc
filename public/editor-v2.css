@@ -592,3 +592,50 @@ body {
     font-size: 0.8rem;
     font-weight: 600;
 }
+
+/* --- Identity Tab & Field Grouping --- */
+#identity-fields-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.identity-field-group {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.identity-field-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--accent-primary);
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.identity-field-group input,
+.identity-field-group textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: white;
+    padding: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.prop-group {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.prop-group h4 {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}

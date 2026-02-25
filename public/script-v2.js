@@ -25,6 +25,7 @@ class EditorV2 {
         await this.loadDesign();
         this.saveHistory();
         this.render();
+        this.renderIdentityTab();
         this.startAutosave();
         this.showWelcomeHint();
         this.autoOptimizeMobileZoom();
@@ -90,6 +91,7 @@ class EditorV2 {
                 document.getElementById(`tab-${e.target.dataset.tab}`).classList.remove('hidden');
                 if (e.target.dataset.tab === 'layers') this.renderLayers();
                 if (e.target.dataset.tab === 'templates') this.renderTemplates();
+                if (e.target.dataset.tab === 'identity') this.renderIdentityTab();
             });
         });
 
@@ -110,7 +112,7 @@ class EditorV2 {
         document.getElementById('btn-redo').onclick = () => this.redo();
 
         // Tools
-        const tools = ['text', 'image', 'avatar', 'qr', 'social', 'shape'];
+        const tools = ['add-name', 'add-job', 'text', 'image', 'avatar', 'qr', 'social', 'shape'];
         tools.forEach(t => {
             const btn = document.querySelector(`[data-tool="${t}"]`);
             if (btn) btn.onclick = () => this.addElement(t);
@@ -425,21 +427,26 @@ class EditorV2 {
     addElement(type) {
         const id = 'el_' + Math.random().toString(36).substr(2, 9);
         const defaults = {
+            'add-name': { preset: 'name', content: 'الاسم الكريم', contentEN: 'Your Name', bilingual: true, style: { color: '#ffffff', fontSize: 28, fontWeight: 'bold' }, transform: { w: 300, h: 45 } },
+            'add-job': { preset: 'job', content: 'المسمى الوظيفي', contentEN: 'Job Title', bilingual: true, style: { color: '#4da6ff', fontSize: 18 }, transform: { w: 250, h: 30 } },
             text: { content: 'نص جديد', style: { color: '#000000', fontSize: 20 }, transform: { w: 150, h: 40 } },
             image: { src: '/placeholder.png', transform: { w: 100, h: 100 } },
-            avatar: { src: '/placeholder-user.png', transform: { w: 80, h: 80 } },
-            qr: { content: 'https://mcprim.com', transform: { w: 80, h: 80 } },
+            avatar: { preset: 'avatar', src: '/placeholder-user.png', transform: { w: 100, h: 100 }, style: { borderRadius: '50%' } },
+            qr: { preset: 'qr', content: 'https://mcprim.com', transform: { w: 80, h: 80 } },
             social: { platform: 'whatsapp', content: 'https://wa.me/xxx', style: { backgroundColor: '#25D366', color: '#ffffff' }, transform: { w: 40, h: 40 } },
             shape: { style: { backgroundColor: '#4da6ff' }, transform: { w: 100, h: 100 } }
         };
+        const typeMap = { 'add-name': 'text', 'add-job': 'text' };
+        const newType = typeMap[type] || type;
+
         const newEl = {
-            id, type, visible: true,
-            transform: { x: 100, y: 100, rotation: 0, ...(defaults[type]?.transform || {}) },
+            id, type: newType, preset: defaults[type]?.preset, visible: true,
+            transform: { x: 50, y: 50, rotation: 0, ...(defaults[type]?.transform || {}) },
             style: defaults[type]?.style || {},
             content: defaults[type]?.content || '',
             contentAR: defaults[type]?.content || '',
-            contentEN: 'New Text',
-            bilingual: false,
+            contentEN: defaults[type]?.contentEN || 'New Item',
+            bilingual: defaults[type]?.bilingual || false,
             src: defaults[type]?.src || '',
             platform: defaults[type]?.platform || '',
             action: { type: 'url', value: defaults[type]?.content || '' }
@@ -498,8 +505,11 @@ class EditorV2 {
     renderDynamicProperties(el) {
         const container = document.getElementById('dynamic-properties');
         container.innerHTML = '';
+
         if (el.type === 'text') {
-            container.innerHTML = `<div class="panel-section"><h3>خصائص النص</h3>
+            const contentGroup = document.createElement('div');
+            contentGroup.className = 'prop-group';
+            contentGroup.innerHTML = `<h4>المحتوى</h4>
                 <div class="prop-row"><label><input type="checkbox" id="prop-bilingual" ${el.bilingual ? 'checked' : ''}> ثنائي اللغة (AR/EN)</label></div>
                 <div id="text-inputs">
                     ${el.bilingual ? `
@@ -508,35 +518,52 @@ class EditorV2 {
                     ` : `
                         <div class="prop-row"><label>المحتوى</label><textarea id="prop-content">${el.content || ''}</textarea></div>
                     `}
-                </div>
-                <div class="prop-row"><label>اللون</label><input type="color" id="prop-color" value="${el.style.color || '#000000'}"></div>
-            </div>`;
+                </div>`;
+            container.appendChild(contentGroup);
 
-            const cb = container.querySelector('#prop-bilingual');
-            cb.onchange = (e) => { el.bilingual = e.target.checked; this.renderDynamicProperties(el); this.render(); this.saveHistory(); };
+            const styleGroup = document.createElement('div');
+            styleGroup.className = 'prop-group';
+            styleGroup.innerHTML = `<h4>التنسيق</h4>
+                <div class="prop-row"><label>اللون</label><input type="color" id="prop-color" value="${el.style.color || '#000000'}"></div>
+                <div class="prop-row"><label>حجم الخط</label><input type="number" id="prop-font-size" value="${el.style.fontSize || 20}"></div>`;
+            container.appendChild(styleGroup);
+
+            const cb = contentGroup.querySelector('#prop-bilingual');
+            cb.onchange = (e) => { el.bilingual = e.target.checked; this.renderDynamicProperties(el); this.render(); this.saveHistory(); this.renderIdentityTab(); };
 
             if (el.bilingual) {
-                container.querySelector('#prop-content-ar').oninput = (e) => { el.contentAR = e.target.value; this.render(); };
-                container.querySelector('#prop-content-ar').onchange = () => this.saveHistory();
-                container.querySelector('#prop-content-en').oninput = (e) => { el.contentEN = e.target.value; this.render(); };
-                container.querySelector('#prop-content-en').onchange = () => this.saveHistory();
+                contentGroup.querySelector('#prop-content-ar').oninput = (e) => { el.contentAR = e.target.value; this.render(); this.renderIdentityTab(); };
+                contentGroup.querySelector('#prop-content-ar').onchange = () => this.saveHistory();
+                contentGroup.querySelector('#prop-content-en').oninput = (e) => { el.contentEN = e.target.value; this.render(); this.renderIdentityTab(); };
+                contentGroup.querySelector('#prop-content-en').onchange = () => this.saveHistory();
             } else {
-                container.querySelector('#prop-content').oninput = (e) => { el.content = e.target.value; this.render(); };
-                container.querySelector('#prop-content').onchange = () => this.saveHistory();
+                contentGroup.querySelector('#prop-content').oninput = (e) => { el.content = e.target.value; this.render(); this.renderIdentityTab(); };
+                contentGroup.querySelector('#prop-content').onchange = () => this.saveHistory();
             }
-            container.querySelector('#prop-color').oninput = (e) => { el.style.color = e.target.value; this.render(); };
-            container.querySelector('#prop-color').onchange = () => this.saveHistory();
+            styleGroup.querySelector('#prop-color').oninput = (e) => { el.style.color = e.target.value; this.render(); };
+            styleGroup.querySelector('#prop-color').onchange = () => this.saveHistory();
+            styleGroup.querySelector('#prop-font-size').oninput = (e) => { el.style.fontSize = parseInt(e.target.value); this.render(); };
+            styleGroup.querySelector('#prop-font-size').onchange = () => this.saveHistory();
         } else if (['image', 'avatar', 'logo'].includes(el.type)) {
-            container.innerHTML = `<div class="panel-section"><h3>خصائص الصورة</h3>
-                <div class="prop-row"><label>الرابط</label><input type="text" id="prop-src" value="${el.src}"></div>
+            const contentGroup = document.createElement('div');
+            contentGroup.className = 'prop-group';
+            contentGroup.innerHTML = `<h4>المحتوى</h4>
+                <div class="prop-row"><label>الرابط (URL)</label><input type="text" id="prop-src" value="${el.src}"></div>
                 <div class="prop-row"><button class="btn-primary" id="btn-upload-image" style="width:100%; padding:8px;"><i class="fas fa-upload"></i> رفع صورة</button></div>
-                <input type="file" id="image-file-input" style="display:none" accept="image/*">
-            </div>`;
-            container.querySelector('#prop-src').oninput = (e) => { el.src = e.target.value; this.render(); };
-            container.querySelector('#prop-src').onchange = () => this.saveHistory();
+                <input type="file" id="image-file-input" style="display:none" accept="image/*">`;
+            container.appendChild(contentGroup);
 
-            const uploadBtn = container.querySelector('#btn-upload-image');
-            const fileInput = container.querySelector('#image-file-input');
+            const styleGroup = document.createElement('div');
+            styleGroup.className = 'prop-group';
+            styleGroup.innerHTML = `<h4>المظهر</h4>
+                <div class="prop-row"><label>استدارة الأطراف</label><input type="number" id="prop-radius" value="${parseInt(el.style.borderRadius) || 0}"></div>`;
+            container.appendChild(styleGroup);
+
+            contentGroup.querySelector('#prop-src').oninput = (e) => { el.src = e.target.value; this.render(); this.renderIdentityTab(); };
+            contentGroup.querySelector('#prop-src').onchange = () => this.saveHistory();
+
+            const uploadBtn = contentGroup.querySelector('#btn-upload-image');
+            const fileInput = contentGroup.querySelector('#image-file-input');
             uploadBtn.onclick = () => fileInput.click();
             fileInput.onchange = async (e) => {
                 const file = e.target.files[0];
@@ -546,47 +573,60 @@ class EditorV2 {
                 try {
                     const formData = new FormData();
                     formData.append('image', file);
-                    const res = await fetch('/api/upload', {
-                        method: 'POST',
-                        body: formData
-                    });
+                    const res = await fetch('/api/upload', { method: 'POST', body: formData });
                     const data = await res.json();
                     if (data.url) {
                         el.src = data.url;
                         this.render();
                         this.renderDynamicProperties(el);
                         this.saveHistory();
+                        this.renderIdentityTab();
                     }
                 } catch (err) { console.error(err); alert('فشل الرفع'); }
                 uploadBtn.disabled = false;
                 uploadBtn.innerHTML = '<i class="fas fa-upload"></i> رفع صورة';
             };
+
+            styleGroup.querySelector('#prop-radius').oninput = (e) => { el.style.borderRadius = e.target.value + 'px'; this.render(); };
+            styleGroup.querySelector('#prop-radius').onchange = () => this.saveHistory();
         } else if (el.type === 'qr') {
-            container.innerHTML = `<div class="panel-section"><h3>خصائص QR</h3><div class="prop-row"><label>المحتوى</label><input type="text" id="prop-qr-content" value="${el.content}"></div></div>`;
-            container.querySelector('#prop-qr-content').oninput = (e) => { el.content = e.target.value; this.render(); };
-            container.querySelector('#prop-qr-content').onchange = () => this.saveHistory();
+            const contentGroup = document.createElement('div');
+            contentGroup.className = 'prop-group';
+            contentGroup.innerHTML = `<h4>محتوى الرمز</h4><div class="prop-row"><label>الرابط وجهة الاتصال</label><input type="text" id="prop-qr-content" value="${el.content}"></div>`;
+            container.appendChild(contentGroup);
+
+            contentGroup.querySelector('#prop-qr-content').oninput = (e) => { el.content = e.target.value; this.render(); this.renderIdentityTab(); };
+            contentGroup.querySelector('#prop-qr-content').onchange = () => this.saveHistory();
         } else if (el.type === 'social') {
             const platforms = ['WhatsApp', 'Facebook', 'Instagram', 'Twitter', 'LinkedIn', 'TikTok', 'YouTube', 'Email', 'Website'];
-            container.innerHTML = `<div class="panel-section"><h3>خصائص التواصل</h3>
+
+            const contentGroup = document.createElement('div');
+            contentGroup.className = 'prop-group';
+            contentGroup.innerHTML = `<h4>الرابط</h4>
                 <div class="prop-row"><label>المنصة</label>
                     <select id="prop-platform">
                         ${platforms.map(p => `<option value="${p.toLowerCase()}" ${el.platform === p.toLowerCase() ? 'selected' : ''}>${p}</option>`).join('')}
                     </select>
                 </div>
-                <div class="prop-row"><label>الرابط</label><input type="text" id="prop-social-url" value="${el.action?.value || ''}"></div>
-                <div class="prop-row"><label>اللون</label><input type="color" id="prop-social-color" value="${el.style.backgroundColor || '#000000'}"></div>
-            </div>`;
-            container.querySelector('#prop-platform').onchange = (e) => {
+                <div class="prop-row"><label>الرابط</label><input type="text" id="prop-social-url" value="${el.action?.value || ''}"></div>`;
+            container.appendChild(contentGroup);
+
+            const styleGroup = document.createElement('div');
+            styleGroup.className = 'prop-group';
+            styleGroup.innerHTML = `<h4>المظهر</h4>
+                <div class="prop-row"><label>اللون</label><input type="color" id="prop-social-color" value="${el.style.backgroundColor || '#000000'}"></div>`;
+            container.appendChild(styleGroup);
+
+            contentGroup.querySelector('#prop-platform').onchange = (e) => {
                 el.platform = e.target.value;
-                // Auto-color based on platform
                 const colors = { whatsapp: '#25D366', facebook: '#1877F2', instagram: '#E4405F', twitter: '#1DA1F2', linkedin: '#0077B5', tiktok: '#000000', youtube: '#FF0000' };
                 if (colors[el.platform]) el.style.backgroundColor = colors[el.platform];
                 this.render(); this.renderDynamicProperties(el); this.saveHistory();
             };
-            container.querySelector('#prop-social-url').oninput = (e) => { if (!el.action) el.action = {}; el.action.value = e.target.value; this.render(); };
-            container.querySelector('#prop-social-url').onchange = () => this.saveHistory();
-            container.querySelector('#prop-social-color').oninput = (e) => { el.style.backgroundColor = e.target.value; this.render(); };
-            container.querySelector('#prop-social-color').onchange = () => this.saveHistory();
+            contentGroup.querySelector('#prop-social-url').oninput = (e) => { if (!el.action) el.action = {}; el.action.value = e.target.value; this.render(); };
+            contentGroup.querySelector('#prop-social-url').onchange = () => this.saveHistory();
+            styleGroup.querySelector('#prop-social-color').oninput = (e) => { el.style.backgroundColor = e.target.value; this.render(); };
+            styleGroup.querySelector('#prop-social-color').onchange = () => this.saveHistory();
         }
     }
 
@@ -597,6 +637,56 @@ class EditorV2 {
         if (this.isGridActive && (e.target.id === 'prop-x' || e.target.id === 'prop-y')) val = Math.round(val / this.snapSize) * this.snapSize;
         el.transform[e.target.id.split('-')[1]] = val;
         this.render();
+    }
+
+    renderIdentityTab() {
+        const container = document.getElementById('identity-fields-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const primaryElements = [
+            { id: 'name', label: 'الاسم الكامل', icon: 'user' },
+            { id: 'job', label: 'المسمى الوظيفي', icon: 'briefcase' },
+            { id: 'qr', label: 'رابط QR Code', icon: 'qrcode' }
+        ];
+
+        primaryElements.forEach(item => {
+            const el = this.designData.v2.sides.front.elements.find(e => e.preset === item.id) ||
+                this.designData.v2.sides.back.elements.find(e => e.preset === item.id);
+
+            if (!el) return;
+
+            const group = document.createElement('div');
+            group.className = 'identity-field-group';
+            group.innerHTML = `
+                <label><i class="fas fa-${item.icon}"></i> ${item.label}</label>
+                ${el.bilingual ? `
+                    <input type="text" data-field="ar" placeholder="العربية" value="${el.contentAR || ''}" style="margin-bottom:8px">
+                    <input type="text" data-field="en" placeholder="English" value="${el.contentEN || ''}">
+                ` : `
+                    <input type="text" data-field="val" value="${el.content || el.src || ''}">
+                `}
+            `;
+
+            const inputs = group.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.oninput = (e) => {
+                    const field = e.target.dataset.field;
+                    if (field === 'ar') el.contentAR = e.target.value;
+                    else if (field === 'en') el.contentEN = e.target.value;
+                    else el.content = e.target.value;
+
+                    this.render();
+                };
+                input.onchange = () => this.saveHistory();
+            });
+
+            container.appendChild(group);
+        });
+
+        if (container.innerHTML === '') {
+            container.innerHTML = '<p style="text-align:center; opacity:0.6; padding:20px;">أضف عناصر "الاسم" أو "المنصب" من القائمة اليمنى لتظهر هنا.</p>';
+        }
     }
 
     deleteSelected() {

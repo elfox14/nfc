@@ -44,15 +44,21 @@
         <!-- Left Sidebar: Tools -->
         <aside class="v2-tools-sidebar">
             <div class="tool-group">
-                <p class="group-label">إضافة عناصر</p>
-                <button class="tool-btn" data-tool="text" title="نص"><i class="fas fa-font"></i></button>
-                <button class="tool-btn" data-tool="image" title="صورة"><i class="fas fa-image"></i></button>
+                <p class="group-label">بيانات الهوية</p>
+                <button class="tool-btn" data-tool="add-name" title="إضافة اسم"><i class="fas fa-user"></i></button>
+                <button class="tool-btn" data-tool="add-job" title="إضافة منصب"><i
+                        class="fas fa-briefcase"></i></button>
                 <button class="tool-btn" data-tool="avatar" title="صورة شخصية"><i
                         class="fas fa-user-circle"></i></button>
+            </div>
+            <div class="tool-group">
+                <p class="group-label">الروابط والوسائط</p>
+                <button class="tool-btn" data-tool="text" title="نص حر"><i class="fas fa-font"></i></button>
+                <button class="tool-btn" data-tool="image" title="صورة"><i class="fas fa-image"></i></button>
                 <button class="tool-btn" data-tool="qr" title="QR Code"><i class="fas fa-qrcode"></i></button>
                 <button class="tool-btn" data-tool="social" title="روابط التواصل"><i
                         class="fas fa-share-alt"></i></button>
-                <button class="tool-btn" data-tool="shape" title="شكل"><i class="fas fa-shapes"></i></button>
+                <button class="tool-btn" data-tool="shape" title="شكل هندسي"><i class="fas fa-shapes"></i></button>
             </div>
             <div class="tool-group">
                 <p class="group-label">تأثيرات</p>
@@ -77,13 +83,25 @@
         <!-- Right Sidebar: Properties & Layers -->
         <aside class="v2-properties-sidebar">
             <div class="sidebar-tabs">
-                <button class="tab-link" data-tab="templates">القوالب</button>
-                <button class="tab-link active" data-tab="properties">الخصائص</button>
+                <button class="tab-link active" data-tab="identity">الهوية</button>
+                <button class="tab-link" data-tab="properties">الخصائص</button>
                 <button class="tab-link" data-tab="layers">الطبقات</button>
+                <button class="tab-link" data-tab="templates">القوالب</button>
                 <button id="close-sheet-btn" class="mobile-only-btn"><i class="fas fa-times"></i></button>
             </div>
 
-            <div id="tab-properties" class="tab-content">
+            <div id="tab-identity" class="tab-content">
+                <div class="panel-section">
+                    <h3>بيانات البطاقة الأساسية</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 15px;">عدل بياناتك هنا
+                        لتحديثها في كافة أنحاء التصميم.</p>
+                    <div id="identity-fields-container">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-properties" class="tab-content hidden">
                 <div id="no-selection-msg">قم باختيار عنصر لتعديل خصائصه</div>
                 <div id="properties-panel" class="hidden">
                     <div class="panel-section">
