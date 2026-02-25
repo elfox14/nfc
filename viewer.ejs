@@ -619,7 +619,28 @@
             <%- contactLinksHtml %>
         </div>
 
+        <script src="/renderer-v2.js"></script>
         <script>
+            // V2 Rendering Initialization
+            document.addEventListener('DOMContentLoaded', () => {
+                const v2Data = <% - v2 ? JSON.stringify(v2) : 'null' %>;
+                if (v2Data && v2Data.sides) {
+                    console.log('Initializing V2 Renderer...');
+
+                    const frontContainer = document.querySelector('.card-front .card-content');
+                    const backContainer = document.querySelector('.card-back .card-content');
+
+                    if (frontContainer && v2Data.sides.front) {
+                        frontContainer.innerHTML = '';
+                        RendererV2.render(v2Data.sides.front, frontContainer, v2Data.canvas);
+                    }
+                    if (backContainer && v2Data.sides.back) {
+                        backContainer.innerHTML = '';
+                        RendererV2.render(v2Data.sides.back, backContainer, v2Data.canvas);
+                    }
+                }
+            });
+
             // VCF Generation Logic
             function saveContact() {
                 const vcard = `BEGIN:VCARD

@@ -598,6 +598,10 @@ app.get('/nfc/view/:id', [
   }
 });
 
+app.get('/editor-v2', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'editor-v2.html'));
+});
+
 // مسار NFC لقراءة الرابط الموقّع القصير
 app.get('/r/:token', [
   param('token').isString().notEmpty()
@@ -1424,8 +1428,18 @@ app.get('/api/get-design/:id', [
         if (cachedPayload) {
           res.setHeader('X-Cache', 'HIT');
           let parsed = JSON.parse(cachedPayload);
+          const isV2Request = req.query.v2 === 'true';
+
           if (parsed && parsed.schemaVersion !== 2) {
             parsed = convertOldToV2(parsed);
+          }
+
+          if (parsed.schemaVersion === 2 && !isV2Request) {
+            // Serve legacy portion for V1 requests
+            const responsePayload = (parsed.legacy) ? parsed.legacy : parsed;
+            responsePayload.isV2 = true;
+            responsePayload.schemaVersion = 2;
+            return res.json(responsePayload);
           }
           return res.json(parsed);
         }
@@ -1448,12 +1462,22 @@ app.get('/api/get-design/:id', [
       );
     }
 
-    // PR-1: For the editor (V1), return the legacy portion as if it was the full state
-    const responsePayload = (payload.schemaVersion === 2 && payload.legacy) ? payload.legacy : payload;
+    // PR-4: Support requesting full V2 data for the V2 editor
+    const isV2Request = req.query.v2 === 'true';
+
+    // PR-1: For the legacy editor (default), return the legacy portion
+    // PR-4: For the V2 editor (?v2=true), return the full object
+    let responsePayload;
     if (payload.schemaVersion === 2) {
-      // Add a flag so the frontend knows it's a V2 design
-      responsePayload.isV2 = true;
-      responsePayload.schemaVersion = 2;
+      if (isV2Request) {
+        responsePayload = payload;
+      } else {
+        responsePayload = JSON.parse(JSON.stringify(payload.legacy || payload));
+        responsePayload.isV2 = true;
+        responsePayload.schemaVersion = 2;
+      }
+    } else {
+      responsePayload = payload;
     }
 
     // 3. Populate Redis Cache asynchronously (300 seconds TTL)
