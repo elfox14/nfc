@@ -420,6 +420,10 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], [
       ).catch(err => console.error('Migration save failed:', err));
     }
 
+    // PR-1: Extract legacy data for rendering in legacy viewer.ejs
+    const renderDesign = (doc.data.schemaVersion === 2 && doc.data.legacy) ? doc.data.legacy : doc.data;
+    const v2Data = (doc.data.schemaVersion === 2) ? doc.data.v2 : null;
+
     // 3. Populate Redis Cache if fetched directly from Mongo
     if (!fromCache && redisClient && redisClient.isReady) {
       try {
@@ -567,7 +571,8 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], [
       tagline: tagline,
       ogImage,
       keywords,
-      design: doc.data,
+      design: renderDesign,
+      v2: v2Data, // Pass v2 data if needed later
       canonical: pageUrl,
       contactLinksHtml: contactLinksHtml
     });
@@ -1065,7 +1070,7 @@ app.post('/api/templates', [
 
     const newTemplate = {
       name: DOMPurify.sanitize(req.body.name),
-      state: req.body.state,
+      state: convertOldToV2(req.body.state),
       isPublic: req.body.isPublic || false,
       ownerId: ownerId,
       createdAt: new Date()
@@ -1109,7 +1114,15 @@ app.get('/api/templates', async (req, res) => {
       .limit(50)
       .toArray();
 
-    res.json({ templates });
+    // PR-1: Backward compatibility for templates
+    const processedTemplates = templates.map(t => {
+      if (t.state && t.state.schemaVersion === 2 && t.state.legacy) {
+        return { ...t, state: { ...t.state.legacy, schemaVersion: 2, isV2: true } };
+      }
+      return t;
+    });
+
+    res.json({ templates: processedTemplates });
   } catch (error) {
     console.error('Get templates error:', error);
     res.status(500).json({ error: 'حدث خطأ أثناء جلب القوالب' });
@@ -1358,8 +1371,11 @@ app.post('/api/save-design', [
       }
     }
 
+    // PR-1: Convert to V2 structure on save if not already
+    const finalData = (data.schemaVersion === 2) ? data : convertOldToV2(data);
+
     const updateDoc = {
-      data,
+      data: finalData,
       lastModified: new Date()
     };
     if (ownerId && !isUpdate) updateDoc.ownerId = ownerId;
@@ -1432,6 +1448,14 @@ app.get('/api/get-design/:id', [
       );
     }
 
+    // PR-1: For the editor (V1), return the legacy portion as if it was the full state
+    const responsePayload = (payload.schemaVersion === 2 && payload.legacy) ? payload.legacy : payload;
+    if (payload.schemaVersion === 2) {
+      // Add a flag so the frontend knows it's a V2 design
+      responsePayload.isV2 = true;
+      responsePayload.schemaVersion = 2;
+    }
+
     // 3. Populate Redis Cache asynchronously (300 seconds TTL)
     res.setHeader('X-Cache', 'MISS');
     if (redisClient && redisClient.isReady) {
@@ -1442,7 +1466,7 @@ app.get('/api/get-design/:id', [
       }
     }
 
-    return res.json(payload);
+    return res.json(responsePayload);
   } catch (err) {
     console.error('Fetch design error:', err);
     res.status(500).json({ error: 'Failed to retrieve design data' });
@@ -1470,7 +1494,7 @@ app.post('/api/templates', verifyToken, [
       templateId,
       ownerId: userId,
       name,
-      state,
+      state: convertOldToV2(state),
       thumbnailUrl: thumbnailUrl || '',
       isPublic: !!isPublic,
       createdAt: new Date(),
@@ -1503,7 +1527,15 @@ app.get('/api/templates', verifyToken, async (req, res) => {
       .limit(50)
       .toArray();
 
-    res.json({ success: true, templates });
+    // PR-1: Backward compatibility for templates
+    const processedTemplates = templates.map(t => {
+      if (t.state && t.state.schemaVersion === 2 && t.state.legacy) {
+        return { ...t, state: { ...t.state.legacy, schemaVersion: 2, isV2: true } };
+      }
+      return t;
+    });
+
+    res.json({ success: true, templates: processedTemplates });
   } catch (error) {
     console.error('Fetch templates error:', error);
     res.status(500).json({ error: 'Failed to fetch templates.' });

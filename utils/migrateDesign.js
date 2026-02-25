@@ -14,150 +14,176 @@ function convertOldToV2(data) {
 
     const v2 = {
         schemaVersion: 2,
-        originalLegacyData: JSON.parse(JSON.stringify(data)), // keep a backup
-        elements: {
-            front: [],
-            back: []
+        v2: {
+            canvas: {
+                width: 510,
+                height: 330,
+                baseWidth: 510
+            },
+            sides: {
+                front: { elements: [] },
+                back: { elements: [] }
+            }
         },
-        background: {
-            front: { type: 'color', value: '#ffffff' },
-            back: { type: 'color', value: '#ffffff' }
-        }
+        legacy: JSON.parse(JSON.stringify(data))
     };
 
     const placements = data.placements || {};
     const positions = data.positions || {};
     const inputs = data.inputs || {};
-    const styles = data.styles || {};
     const imageUrls = data.imageUrls || {};
     const dynamic = data.dynamic || {};
 
-    // Helper to add an element
-    const addElement = (side, el) => {
-        if (side === 'front' || side === 'back') {
-            v2.elements[side].push(el);
-        } else {
-            v2.elements.front.push(el); // default
-        }
+    // Helper: Map Filters
+    const getFilters = (prefix) => {
+        const filters = {};
+        if (inputs[`${prefix}-filter-grayscale`]) filters.grayscale = inputs[`${prefix}-filter-grayscale`];
+        if (inputs[`${prefix}-filter-blur`]) filters.blur = inputs[`${prefix}-filter-blur`];
+        if (inputs[`${prefix}-filter-sepia`]) filters.sepia = inputs[`${prefix}-filter-sepia`];
+        if (inputs[`${prefix}-filter-invert`]) filters.invert = inputs[`${prefix}-filter-invert`];
+        if (inputs[`${prefix}-filter-brightness`]) filters.brightness = inputs[`${prefix}-filter-brightness`];
+        if (inputs[`${prefix}-filter-contrast`]) filters.contrast = inputs[`${prefix}-filter-contrast`];
+        return filters;
     };
 
-    // 1. Text Elements (Name, Tagline)
-    if (inputs['input-name']) {
-        addElement(placements.name, {
+    // Helper: Map Text Effects
+    const getTextEffects = (prefix) => {
+        return {
+            letterSpacing: inputs[`${prefix}-letter-spacing`] || 0,
+            lineHeight: inputs[`${prefix}-line-height`] || 1.4,
+            uppercase: !!inputs[`${prefix}-uppercase`],
+            glow: !!inputs[`${prefix}-glow`]
+        };
+    };
+
+    const addElement = (side, el) => {
+        const targetSide = (side === 'front' || side === 'back') ? side : 'front';
+        v2.v2.sides[targetSide].elements.push(el);
+    };
+
+    // 1. Name
+    const nameVal = inputs['input-name_ar'] || inputs['input-name_en'] || inputs['input-name'];
+    if (nameVal) {
+        addElement(placements.name || 'front', {
             id: generateId('text'),
             type: 'text',
             name: 'Name',
-            content: inputs['input-name'],
+            content: nameVal,
             visible: true,
-            locked: false,
             zIndex: 10,
             transform: {
-                x: positions.name?.x || 0,
-                y: positions.name?.y || 0,
-                w: 200, h: 40, rotation: 0, opacity: 1
+                x: positions.name?.x || positions['card-name']?.x || 50,
+                y: positions.name?.y || positions['card-name']?.y || 100,
+                w: 250, h: 40, rotation: 0, opacity: 1
             },
             style: {
-                color: styles.nameColor || '#000000',
-                fontSize: styles.nameSize || 24,
-                fontFamily: styles.nameFont || 'Arial'
-            }
+                color: inputs['name-color'] || '#ffffff',
+                fontSize: parseInt(inputs['name-font-size']) || 22,
+                fontFamily: inputs['name-font'] || 'Tajawal, sans-serif'
+            },
+            effects: getTextEffects('name')
         });
     }
 
-    if (inputs['input-tagline']) {
-        addElement(placements.tagline, {
+    // 2. Tagline
+    const taglineVal = inputs['input-tagline_ar'] || inputs['input-tagline_en'] || inputs['input-tagline'];
+    if (taglineVal) {
+        addElement(placements.tagline || 'front', {
             id: generateId('text'),
             type: 'text',
             name: 'Tagline',
-            content: inputs['input-tagline'],
+            content: taglineVal,
             visible: true,
-            locked: false,
             zIndex: 9,
             transform: {
-                x: positions.tagline?.x || 0,
-                y: positions.tagline?.y || 0,
-                w: 200, h: 30, rotation: 0, opacity: 1
+                x: positions.tagline?.x || positions['card-tagline']?.x || 50,
+                y: positions.tagline?.y || positions['card-tagline']?.y || 130,
+                w: 250, h: 30, rotation: 0, opacity: 1
             },
             style: {
-                color: styles.taglineColor || '#666666',
-                fontSize: styles.taglineSize || 16,
-                fontFamily: styles.taglineFont || 'Arial'
-            }
+                color: inputs['tagline-color'] || '#4da6ff',
+                fontSize: parseInt(inputs['tagline-font-size']) || 14,
+                fontFamily: inputs['tagline-font'] || 'Tajawal, sans-serif'
+            },
+            effects: getTextEffects('tagline')
         });
     }
 
-    // 2. Logo
-    if (imageUrls.front && placements.logo) { // Logo was often called 'front' or 'logo'
-        addElement(placements.logo, {
+    // 3. Logo
+    const logoSrc = imageUrls.front || inputs['input-logo'];
+    if (logoSrc) {
+        addElement(placements.logo || 'front', {
             id: generateId('logo'),
             type: 'logo',
             name: 'Logo',
-            src: imageUrls.front, // assuming front was used for logo
+            src: logoSrc,
             visible: true,
-            locked: false,
             zIndex: 5,
             transform: {
-                x: positions.logo?.x || 0,
-                y: positions.logo?.y || 0,
-                w: 120, h: 60, rotation: 0, opacity: 1
+                x: positions.logo?.x || positions['card-logo']?.x || 350,
+                y: positions.logo?.y || positions['card-logo']?.y || 40,
+                w: parseInt(inputs['logo-width']) || 120,
+                h: parseInt(inputs['logo-height']) || 60,
+                rotation: 0, opacity: parseFloat(inputs['logo-opacity']) || 1
             },
-            style: {
-                objectFit: 'contain'
-            }
+            style: { objectFit: inputs['logo-object-fit'] || 'contain' },
+            effects: getFilters('logo')
         });
     }
 
-    // 3. Personal Photo (Avatar)
-    if (imageUrls.personalPhoto) {
-        addElement(placements.photo, {
+    // 4. Photo
+    const photoSrc = imageUrls.photo || imageUrls.personalPhoto;
+    if (photoSrc) {
+        const photoSize = (parseInt(inputs['photo-size']) || 25) * 5.1; // mapping percentage to baseWidth
+        addElement(placements.photo || 'front', {
             id: generateId('avatar'),
             type: 'avatar',
-            name: 'Personal Photo',
-            src: imageUrls.personalPhoto,
+            name: 'Photo',
+            src: photoSrc,
             visible: true,
-            locked: false,
             zIndex: 6,
             transform: {
-                x: positions.photo?.x || 0,
-                y: positions.photo?.y || 0,
-                w: 100, h: 100, rotation: 0, opacity: 1
+                x: positions.photo?.x || positions['card-personal-photo-wrapper']?.x || 50,
+                y: positions.photo?.y || positions['card-personal-photo-wrapper']?.y || 150,
+                w: photoSize, h: photoSize, rotation: 0, opacity: 1
             },
             style: {
-                borderRadius: '50%'
-            }
+                borderRadius: inputs['photo-shape'] === 'circle' ? '50%' : '8px',
+                border: `${inputs['photo-border-width'] || 2}px solid ${inputs['photo-border-color'] || '#ffffff'}`
+            },
+            effects: { ...getFilters('photo'), glassEffect: !!inputs['photo-glass-effect'] }
         });
     }
 
-    // 4. QR Code
-    if (imageUrls.qrCode || placements.qr) {
-        addElement(placements.qr, {
+    // 5. QR
+    if (inputs['qr-source'] !== 'none') {
+        const qrSize = (parseInt(inputs['qr-size']) || 30) * 5.1;
+        addElement(placements.qr || 'back', {
             id: generateId('qr'),
             type: 'qr',
             name: 'QR Code',
             src: imageUrls.qrCode || '',
             visible: true,
-            locked: false,
             zIndex: 7,
             transform: {
-                x: positions.qr?.x || 0,
-                y: positions.qr?.y || 0,
-                w: 100, h: 100, rotation: 0, opacity: 1
+                x: positions.qr?.x || positions['qr-code-wrapper']?.x || 350,
+                y: positions.qr?.y || positions['qr-code-wrapper']?.y || 200,
+                w: qrSize, h: qrSize, rotation: 0, opacity: 1
             },
             style: {}
         });
     }
 
-    // 5. Dynamic Phones
+    // 6. Phones
     if (Array.isArray(dynamic.phones)) {
         dynamic.phones.forEach(phone => {
             addElement(phone.placement, {
                 id: phone.id || generateId('button'),
                 type: 'button',
-                name: 'Phone ' + phone.value,
-                content: phone.value,
+                name: 'Phone',
+                content: phone.value || '',
                 action: { type: 'tel', value: phone.value },
                 visible: true,
-                locked: false,
                 zIndex: 15,
                 transform: {
                     x: phone.position?.x || 0,
@@ -165,64 +191,49 @@ function convertOldToV2(data) {
                     w: 150, h: 40, rotation: 0, opacity: 1
                 },
                 style: {
-                    backgroundColor: styles.phoneBtnBgColor || '#007bff',
-                    color: styles.phoneBtnTextColor || '#ffffff'
+                    backgroundColor: inputs['phone-btn-bg-color'] || '#4da6ff',
+                    color: inputs['phone-btn-text-color'] || '#ffffff',
+                    fontSize: parseInt(inputs['phone-btn-font-size']) || 12,
+                    fontFamily: inputs['phone-btn-font'] || 'Poppins, sans-serif'
                 }
             });
         });
     }
 
-    // 6. Dynamic Social
-    if (Array.isArray(dynamic.social)) {
-        dynamic.social.forEach(social => {
-            addElement(social.placement, {
-                id: social.id || generateId('social'),
-                type: 'social',
-                name: social.platform,
-                platform: social.platform,
-                value: social.value,
-                action: { type: 'url', value: social.value },
-                visible: true,
-                locked: false,
-                zIndex: 16,
-                transform: {
-                    x: social.position?.x || 0,
-                    y: social.position?.y || 0,
-                    w: 40, h: 40, rotation: 0, opacity: 1
-                },
-                style: {}
-            });
-        });
-    }
-
-    // 7. Static Social
-    if (dynamic.staticSocial) {
-        Object.entries(dynamic.staticSocial).forEach(([platform, item]) => {
-            if (item && item.value) {
-                addElement(item.placement, {
-                    id: generateId('social'),
-                    type: 'social',
-                    name: platform,
-                    platform: platform,
-                    value: item.value,
-                    action: { type: 'url', value: item.value },
-                    visible: true,
-                    locked: false,
-                    zIndex: 17,
-                    transform: {
-                        x: item.position?.x || 0,
-                        y: item.position?.y || 0,
-                        w: 40, h: 40, rotation: 0, opacity: 1
-                    },
-                    style: {}
-                });
+    // 7. Social
+    const processSocial = (social) => {
+        addElement(social.placement || 'back', {
+            id: social.id || generateId('social'),
+            type: 'social',
+            platform: social.platform || social.type,
+            value: social.value,
+            visible: true,
+            zIndex: 16,
+            transform: {
+                x: social.position?.x || 0,
+                y: social.position?.y || 0,
+                w: 40, h: 40, rotation: 0, opacity: 1
+            },
+            style: {
+                fontSize: parseInt(inputs['social-text-size']) || 12,
+                color: inputs['social-text-color'] || '#ffffff'
             }
+        });
+    };
+
+    if (Array.isArray(dynamic.social)) dynamic.social.forEach(processSocial);
+    if (dynamic.staticSocial) {
+        Object.entries(dynamic.staticSocial).forEach(([type, data]) => {
+            if (data.value) processSocial({ ...data, type });
         });
     }
 
     return v2;
 }
 
+const convertLegacyToV2 = convertOldToV2;
+
 module.exports = {
-    convertOldToV2
+    convertOldToV2,
+    convertLegacyToV2
 };
