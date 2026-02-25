@@ -1,0 +1,149 @@
+diff --git a/auth-middleware.js b/auth-middleware.js
+index e69de29..f7d3c4a 100644
+--- a/auth-middleware.js
++++ b/auth-middleware.js
+@@ -1,25 +1,38 @@
+-const jwt = require('jsonwebtoken');
+-
+-const verifyToken = (req, res, next) => {
+-    const authHeader = req.headers['authorization'];
+-    const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+-
+-    if (!token) {
+-        return res.status(401).json({ error: 'Access denied. No token provided.' });
+-    }
+-
+-    try {
+-        const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+-        const decoded = jwt.verify(token, secret);
+-        req.user = decoded; // { userId: "...", email: "..." }
+-        next();
+-    } catch (err) {
+-        return res.status(403).json({ error: 'Invalid token.' });
+-    }
+-};
+-
+-module.exports = verifyToken;
++const jwt = require('jsonwebtoken');
++
++const verifyToken = (req, res, next) => {
++  const authHeader = req.headers['authorization'];
++  const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
++
++  if (!token) {
++    return res.status(401).json({ error: 'Access denied. No token provided.' });
++  }
++
++  // لا نستخدم قيمة افتراضية هنا — نطلب وجود متغير البيئة
++  const secret = process.env.JWT_SECRET;
++  if (!secret) {
++    console.error('JWT_SECRET is not set. This is a server configuration error.');
++    return res.status(500).json({ error: 'Server misconfiguration: JWT secret not set.' });
++  }
++
++  try {
++    const decoded = jwt.verify(token, secret);
++    req.user = decoded; // { userId: "...", email: "..." }
++    next();
++  } catch (err) {
++    return res.status(403).json({ error: 'Invalid token.' });
++  }
++};
++
++module.exports = verifyToken;
+diff --git a/server.js b/server.js
+index 3f4c0b1..a1b2c3d 100644
+--- a/server.js
++++ b/server.js
+@@ -1,6 +1,22 @@
+-require('dotenv').config();
++require('dotenv').config();
++
++// ===== Startup checks =====
++if (process.env.NODE_ENV === 'production') {
++  if (!process.env.JWT_SECRET) {
++    console.error('FATAL: JWT_SECRET is not set. Aborting startup.');
++    process.exit(1);
++  }
++  // ALLOWED_ORIGINS يجب أن يعطى في الإنتاج لتقييد CORS
++  const allowedOriginsEnv = (process.env.ALLOWED_ORIGINS || '').trim();
++  if (!allowedOriginsEnv) {
++    console.error('FATAL: ALLOWED_ORIGINS is not set. Aborting startup.');
++    process.exit(1);
++  }
++}
+ 
+ const express = require('express');
+ const compression = require('compression');
+ const { MongoClient } = require('mongodb');
+@@
+ const url = require('url');
++const crypto = require('crypto');
+ 
+ const mongoSanitize = require('express-mongo-sanitize');
+ const xss = require('xss-clean');
+ const hpp = require('hpp');
+ const cors = require('cors');
+@@
+-app.use(helmet({
+-  // إعدادات عامة من helmet
+-}));
+-
+-// CSP مفصل كما كان لديك سابقاً (يتضمن ws: و wss:)
+-app.use(helmet.contentSecurityPolicy({
+-  directives: {
+-    defaultSrc: ["'self'"],
+-    scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
+-    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+-    fontSrc: ["'self'", "https://fonts.gstatic.com"],
+-    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+-    mediaSrc: ["'self'", "data:"],
+-    frameSrc: ["'self'", "https://www.youtube.com"],
+-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com", "ws:", "wss:"],
+-    objectSrc: ["'none'"],
+-    upgradeInsecureRequests: [],
+-  },
+-}));
++app.use(helmet({
++  // إعدادات عامة من helmet
++}));
++
++// Middleware يولّد nonce ويطبّق CSP آمن (بديل عن unsafe-inline)
++app.use((req, res, next) => {
++  const nonce = crypto.randomBytes(16).toString('base64');
++  res.locals.nonce = nonce;
++
++  helmet.contentSecurityPolicy({
++    directives: {
++      defaultSrc: ["'self'"],
++      scriptSrc: ["'self'", `'nonce-${nonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
++      styleSrc: ["'self'", "https://fonts.googleapis.com"],
++      fontSrc: ["'self'", "https://fonts.gstatic.com"],
++      imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
++      connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com", "wss://nfc-vjy6.onrender.com"],
++      frameSrc: ["'self'", "https://www.youtube.com"],
++      objectSrc: ["'none'"]
++    }
++  })(req, res, next);
++});
+@@
+ // Rate limiting عام لمسارات /api
+ const apiLimiter = rateLimit({
+   windowMs: 15 * 60 * 1000,
+   max: 200,
+   standardHeaders: true,
+   legacyHeaders: false,
+   message: 'Too many requests from this IP, please try again after 15 minutes'
+ });
+ app.use('/api/', apiLimiter);
+ 
++// limiter خاص بتسجيل الدخول (قاسي لمنع التخمين)
++const loginLimiter = rateLimit({
++  windowMs: 15 * 60 * 1000, // 15 minutes
++  max: 5,
++  standardHeaders: true,
++  legacyHeaders: false,
++  message: 'Too many login attempts, please try again after 15 minutes'
++});
++ 
+*** End of Patch

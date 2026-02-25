@@ -1,0 +1,284 @@
+diff --git a/script-card.js b/script-card.js
+index 3aac602..df33a37 100644
+--- a/script-card.js
++++ b/script-card.js
+@@ -1283,6 +1283,66 @@ const CardManager = {
+     },
+ };
+ 
++const HistoryManager = {
++    stack: [],
++    currentIndex: -1,
++    maxLimit: 100,
++
++    pushState(state) {
++        // Only push if it's different from current
++        if (this.currentIndex >= 0 && JSON.stringify(this.stack[this.currentIndex]) === JSON.stringify(state)) {
++            return;
++        }
++
++        // If we're not at the latest state and we push, erase futures
++        if (this.currentIndex < this.stack.length - 1) {
++            this.stack = this.stack.slice(0, this.currentIndex + 1);
++        }
++
++        this.stack.push(JSON.parse(JSON.stringify(state)));
++        if (this.stack.length > this.maxLimit) {
++            this.stack.shift();
++        } else {
++            this.currentIndex++;
++        }
++
++        this.updateButtons();
++    },
++
++    undo() {
++        if (this.currentIndex > 0) {
++            this.currentIndex--;
++            StateManager.applyState(this.stack[this.currentIndex], false);
++            this.updateButtons();
++
++            // Sync with backend on undo
++            if (typeof CardManager !== 'undefined' && CardManager._debouncedElementUpdater) {
++                StateManager.saveDebounced();
++            }
++        }
++    },
++
++    redo() {
++        if (this.currentIndex < this.stack.length - 1) {
++            this.currentIndex++;
++            StateManager.applyState(this.stack[this.currentIndex], false);
++            this.updateButtons();
++
++            // Sync with backend on redo
++            if (typeof CardManager !== 'undefined' && CardManager._debouncedElementUpdater) {
++                StateManager.saveDebounced();
++            }
++        }
++    },
++
++    updateButtons() {
++        const undoBtn = document.getElementById('undo-btn');
++        const redoBtn = document.getElementById('redo-btn');
++        if (undoBtn) undoBtn.disabled = this.currentIndex <= 0;
++        if (redoBtn) redoBtn.disabled = this.currentIndex >= this.stack.length - 1;
++    }
++};
++
+ const StateManager = {
+     isApplyingState: false,
+ 
+diff --git a/script-ui.js b/script-ui.js
+index 1e293ef..34d4e62 100644
+--- a/script-ui.js
++++ b/script-ui.js
+@@ -276,6 +276,9 @@ const UIManager = {
+                 const targetPanel = document.getElementById(targetId);
+                 if (targetPanel) {
+                     targetPanel.style.display = 'block';
++                    if (targetId === 'panel-layers-v2') {
++                        UIManager.renderLayersList();
++                    }
+                 }
+             });
+         });
+@@ -784,6 +787,158 @@ const UIManager = {
+             if (span) span.textContent = button.dataset.originalText;
+         }
+     },
++
++    renderLayersList() {
++        const layersList = document.getElementById('layers-list');
++        if (!layersList) return;
++
++        layersList.innerHTML = ''; // clear
++
++        const faceItems = [
++            { id: 'card-front-content', label: 'الواجهة الأمامية' },
++            { id: 'card-back-content', label: 'الواجهة الخلفية' }
++        ];
++
++        faceItems.forEach(face => {
++            const container = document.getElementById(face.id);
++            if (!container) return;
++
++            // Group Label
++            const groupHeader = document.createElement('div');
++            groupHeader.className = 'layer-group-header';
++            groupHeader.textContent = face.label;
++            groupHeader.style.cssText = 'padding: 5px; font-weight: bold; background: rgba(0,0,0,0.05); margin-top: 10px; font-size: 0.9rem; border-radius: 4px;';
++            layersList.appendChild(groupHeader);
++
++            // Get children that are draggable
++            const children = Array.from(container.querySelectorAll('.draggable-on-card, .phone-button-draggable-wrapper, .draggable-social-link'));
++
++            // Sort children by z-index descending (top layers first)
++            children.sort((a, b) => {
++                const zA = parseInt(window.getComputedStyle(a).zIndex) || 0;
++                const zB = parseInt(window.getComputedStyle(b).zIndex) || 0;
++                return zB - zA;
++            });
++
++            if (children.length === 0) {
++                const empty = document.createElement('div');
++                empty.textContent = 'لا توجد عناصر';
++                empty.style.cssText = 'padding: 5px 15px; font-size: 0.8rem; color: #888;';
++                layersList.appendChild(empty);
++            }
++
++            children.forEach(el => {
++                const layerItem = document.createElement('div');
++                layerItem.className = 'layer-item';
++                layerItem.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; background: #fff; margin-bottom: 2px; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; transition: 0.2s;';
++
++                // Active State (highlight if selected)
++                if (el.classList.contains('element-selected-v2')) {
++                    layerItem.style.borderColor = 'var(--accent-primary)';
++                    layerItem.style.boxShadow = '0 0 0 1px var(--accent-primary)';
++                }
++
++                layerItem.onmouseover = () => { layerItem.style.background = '#f9fafb'; };
++                layerItem.onmouseout = () => { layerItem.style.background = '#fff'; };
++
++                // Name/Type
++                let name = el.id || 'عنصر';
++                if (el.id === 'card-name') name = 'الاسم';
++                if (el.id === 'card-tagline') name = 'المسمى الوظيفي';
++                if (el.id === 'card-logo') name = 'الشعار';
++                if (el.id === 'card-personal-photo-wrapper') name = 'الصورة الشخصية';
++                if (el.id === 'qr-code-wrapper') name = 'QR Code';
++                if (el.classList.contains('phone-button-draggable-wrapper')) name = 'زر اتصال';
++                if (el.classList.contains('draggable-social-link')) name = 'رابط تواصل';
++
++                const nameSpan = document.createElement('span');
++                nameSpan.textContent = name;
++                nameSpan.style.flex = '1';
++
++                layerItem.onclick = () => {
++                    // trigger click on the element to select it!
++                    el.click();
++                    // trigger re-render of layers so the selection border updates here
++                    setTimeout(() => this.renderLayersList(), 50);
++                };
++
++                // Controls (Up, Down, Hide)
++                const controls = document.createElement('div');
++                controls.style.display = 'flex';
++                controls.style.gap = '5px';
++
++                // up
++                const upBtn = document.createElement('button');
++                upBtn.innerHTML = '<i class="fas fa-chevron-up"></i>';
++                upBtn.className = 'btn-icon btn-compact';
++                upBtn.title = 'إلى الأمام';
++                upBtn.style.padding = '2px 4px';
++                upBtn.style.fontSize = '10px';
++                upBtn.onclick = (e) => { e.stopPropagation(); this.moveLayer(el, 1); };
++
++                // down
++                const downBtn = document.createElement('button');
++                downBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
++                downBtn.className = 'btn-icon btn-compact';
++                downBtn.title = 'إلى الخلف';
++                downBtn.style.padding = '2px 4px';
++                downBtn.style.fontSize = '10px';
++                downBtn.onclick = (e) => { e.stopPropagation(); this.moveLayer(el, -1); };
++
++                // hide toggle
++                const hideBtn = document.createElement('button');
++                const isHidden = el.style.display === 'none' || el.style.visibility === 'hidden';
++                hideBtn.innerHTML = isHidden ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
++                hideBtn.className = 'btn-icon btn-compact';
++                hideBtn.title = 'إخفاء / إظهار';
++                hideBtn.style.padding = '2px 4px';
++                hideBtn.style.fontSize = '10px';
++                hideBtn.onclick = (e) => {
++                    e.stopPropagation();
++                    if (el.style.display === 'none' || el.style.visibility === 'hidden') {
++                        el.style.display = '';
++                        el.style.visibility = ''; // clear hidden
++                    } else {
++                        el.style.display = 'none';
++                    }
++                    this.renderLayersList(); // re-render to update icon
++                    if (typeof StateManager !== 'undefined') StateManager.saveDebounced();
++
++                    // Trigger backend update
++                    if (typeof CardManager !== 'undefined' && CardManager._debouncedElementUpdater && el.id) {
++                        CardManager._debouncedElementUpdater(el.id, 'visible', el.style.display !== 'none');
++                    }
++                };
++
++                controls.appendChild(upBtn);
++                controls.appendChild(downBtn);
++                controls.appendChild(hideBtn);
++
++                layerItem.appendChild(nameSpan);
++                layerItem.appendChild(controls);
++                layersList.appendChild(layerItem);
++            });
++        });
++    },
++
++    moveLayer(element, direction) {
++        let currentZIndex = parseInt(window.getComputedStyle(element).zIndex) || 1;
++
++        // Simple z-index bump for now
++        let newZIndex = currentZIndex + direction;
++        if (newZIndex < 0) newZIndex = 0;
++
++        element.style.zIndex = newZIndex;
++
++        this.renderLayersList(); // re-render list order
++
++        if (typeof StateManager !== 'undefined') StateManager.saveDebounced();
++
++        // V2 PATCH Sync for zIndex
++        if (typeof CardManager !== 'undefined' && CardManager._debouncedElementUpdater && element.id) {
++            CardManager._debouncedElementUpdater(element.id, 'zIndex', newZIndex);
++        }
++    }
+ };
+ 
+ const SuggestionEngine = {
+diff --git a/style.css b/style.css
+index be140b5..b583b80 100644
+--- a/style.css
++++ b/style.css
+@@ -2603,4 +2603,34 @@ body.collaboration-active #start-collab-btn:hover {
+ html.ltr .properties-panel {
+     right: auto;
+     left: 20px;
++}
++
++/* ========================================= */
++/* Alignment Guides for Drag & Drop Snapping */
++/* ========================================= */
++.alignment-guide {
++    position: absolute;
++    background-color: var(--accent-primary);
++    z-index: 10000;
++    pointer-events: none;
++    opacity: 0;
++    transition: opacity 0.15s ease-out;
++}
++
++.alignment-guide.visible {
++    opacity: 0.7;
++}
++
++.alignment-guide.horizontal {
++    height: 1px;
++    left: 0;
++    right: 0;
++    width: 100%;
++}
++
++.alignment-guide.vertical {
++    width: 1px;
++    top: 0;
++    bottom: 0;
++    height: 100%;
+ }
+\ No newline at end of file

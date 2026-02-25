@@ -1,0 +1,79 @@
+Launching browser...
+Navigating to file://C:\Users\TheFo\Downloads\nfc\editor.html...
+[CONSOLE] ERROR: Failed to load resource: net::ERR_FILE_NOT_FOUND
+[CONSOLE] LOG: Mobile Mode Initialized
+[CONSOLE] LOG: [EditorUserStatus] Initialized
+Page loaded. Waiting 2 seconds for JS execution...
+Element Rectangles: {
+  "wrapper": {
+    "width": 510,
+    "height": 249.5,
+    "top": 150.390625,
+    "left": 720,
+    "display": "flex",
+    "opacity": "1",
+    "visibility": "visible",
+    "zIndex": "auto"
+  },
+  "flipperContainer": {
+    "width": 169.625,
+    "height": 249.5,
+    "top": 150.390625,
+    "left": 890.1875,
+    "display": "block",
+    "opacity": "1",
+    "visibility": "visible",
+    "zIndex": "auto"
+  },
+  "flipper": {
+    "width": 169.625,
+    "height": 249.5,
+    "top": 150.390625,
+    "left": 890.1875,
+    "display": "flex",
+    "opacity": "1",
+    "visibility": "visible",
+    "zIndex": "auto"
+  },
+  "frontPreview": {
+    "width": 169.625,
+    "height": 109.75,
+    "top": 150.390625,
+    "left": 890.1875,
+    "display": "block",
+    "opacity": "1",
+    "visibility": "visible",
+    "zIndex": "auto"
+  },
+  "backPreview": {
+    "width": 169.625,
+    "height": 109.75,
+    "top": 290.140625,
+    "left": 890.1875,
+    "display": "block",
+    "opacity": "1",
+    "visibility": "visible",
+    "zIndex": "auto"
+  },
+  "frontLayer": {
+    "width": 169.625,
+    "height": 109.75,
+    "top": 150.390625,
+    "left": 890.1875,
+    "display": "flex",
+    "opacity": "1",
+    "visibility": "visible",
+    "zIndex": "2"
+  },
+  "backLayer": {
+    "width": 169.625,
+    "height": 109.75,
+    "top": 290.140625,
+    "left": 890.1875,
+    "display": "flex",
+    "opacity": "1",
+    "visibility": "visible",
+    "zIndex": "2"
+  }
+}
+Done.
