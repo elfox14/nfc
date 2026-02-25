@@ -77,6 +77,7 @@
         <!-- Right Sidebar: Properties & Layers -->
         <aside class="v2-properties-sidebar">
             <div class="sidebar-tabs">
+                <button class="tab-link" data-tab="templates">القوالب</button>
                 <button class="tab-link active" data-tab="properties">الخصائص</button>
                 <button class="tab-link" data-tab="layers">الطبقات</button>
                 <button id="close-sheet-btn" class="mobile-only-btn"><i class="fas fa-times"></i></button>
@@ -115,12 +116,24 @@
                     <div id="layers-list" class="layers-list"></div>
                 </div>
             </div>
+
+            <div id="tab-templates" class="tab-content hidden">
+                <div class="panel-section">
+                    <h3>قوالب جاهزة</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 15px;">اختر قالباً للبدء
+                        بسرعة. سيتم استبدال التصميم الحالي.</p>
+                    <div id="templates-v2-grid" class="templates-v2-grid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
         </aside>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="renderer-v2.js"></script>
+    <script src="v2-templates.js"></script>
     <script src="script-v2.js"></script>
 </body>
 

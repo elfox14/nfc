@@ -556,3 +556,39 @@ body {
 .panel-section {
     animation: fadeIn 0.3s ease-out;
 }
+
+/* --- Templates V2 Grid --- */
+.templates-v2-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.template-v2-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.template-v2-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-primary);
+    transform: translateY(-3px);
+}
+
+.template-v2-card .thumb {
+    font-size: 2rem;
+}
+
+.template-v2-card span {
+    font-size: 0.8rem;
+    font-weight: 600;
+}

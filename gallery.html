@@ -178,6 +178,10 @@
             <button class="filter-chip" data-category="education">
                 <i class="fas fa-graduation-cap"></i> تعليم
             </button>
+            <button class="filter-chip" data-category="templates"
+                style="background: var(--accent-primary); color: white;">
+                <i class="fas fa-star"></i> قوالب جاهزة
+            </button>
         </div>
 
         <!-- Controls -->
@@ -409,18 +413,23 @@
             }
 
             // Create Card Element - Enhanced with flip thumbnails and badges
-            function createCardElement(design, isDemo = false) {
+            function createCardElement(design, isDemo = false, isTemplate = false) {
                 const inputs = design.data.inputs || {};
                 const cardElement = document.createElement('div');
                 cardElement.className = 'gallery-card';
+                if (isTemplate) cardElement.classList.add('template-card');
 
-                const viewUrl = isDemo ? '#' : `/nfc/viewer.html?id=${design.shortId}`;
-                const editUrl = isDemo ? '/nfc/editor.html' : `/nfc/editor.html?id=${design.shortId}`;
-                const shareUrl = isDemo ? '' : `${window.location.origin}/nfc/viewer.html?id=${design.shortId}`;
+                const viewUrl = isTemplate ? '#' : (isDemo ? '#' : `/nfc/viewer.html?id=${design.shortId}`);
+                const editUrl = isTemplate ? `editor-v2?id=${design.shortId}` : (isDemo ? 'editor-v2' : `editor-v2?id=${design.shortId}`);
+                const shareUrl = (isDemo || isTemplate) ? '' : `${window.location.origin}/nfc/viewer.html?id=${design.shortId}`;
 
-                // Get name (support bilingual)
-                let name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || 'اسم غير محدد';
-                let tagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || 'وصف غير محدد';
+                // Add template badge
+                if (isTemplate) {
+                    const badge = document.createElement('span');
+                    badge.className = 'card-badge template';
+                    badge.innerHTML = '<i class="fas fa-star"></i> قالب';
+                    cardElement.appendChild(badge);
+                }
 
                 // PR-1: Pull from V2 data if legacy is missing
                 if (design.data.schemaVersion === 2 && design.data.v2) {
@@ -603,6 +612,12 @@
                 usingFallback = false;
                 demoNotice.style.display = 'none';
 
+                if (searchTerm === 'templates' || sortBy === 'templates') {
+                    showPreMadeTemplates();
+                    isLoading = false;
+                    return;
+                }
+
                 if (!append) {
                     showSkeletons(8);
                     loadMoreContainer.style.display = 'none';
@@ -754,6 +769,58 @@
                 }
             }
 
+            function showPreMadeTemplates() {
+                grid.innerHTML = '';
+                // Hardcoded V2 Templates for Discovery
+                const templates = [
+                    {
+                        shortId: 'modern-business',
+                        data: {
+                            inputs: { 'input-name': 'أعمال عصري', 'input-tagline': 'قالب احترافي V2' },
+                            schemaVersion: 2,
+                            v2: {
+                                sides: {
+                                    front: {
+                                        elements: [
+                                            { type: 'shape', transform: { x: 0, y: 0, w: 510, h: 330 }, style: { backgroundColor: '#1a2a3b' } },
+                                            { id: 'name', type: 'text', content: 'أعمال عصري', transform: { x: 40, y: 100, w: 400, h: 40 }, style: { color: '#ffffff', fontSize: 32, fontWeight: 'bold' } }
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        views: 1250,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        shortId: 'creative-dark',
+                        data: {
+                            inputs: { 'input-name': 'إبداعي داكن', 'input-tagline': 'تصميم فني V2' },
+                            schemaVersion: 2,
+                            v2: {
+                                sides: {
+                                    front: {
+                                        elements: [
+                                            { type: 'shape', transform: { x: 0, y: 0, w: 510, h: 330 }, style: { backgroundColor: '#0f172a' } },
+                                            { id: 'name', type: 'avatar', src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop', transform: { x: 40, y: 65, w: 200, h: 200 }, style: { borderRadius: '50%' } }
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        views: 980,
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+
+                templates.forEach(design => {
+                    const card = createCardElement(design, false, true);
+                    grid.appendChild(card);
+                });
+
+                loadMoreContainer.style.display = 'none';
+            }
+
             // Event Handlers
             function handleFilterChange() {
                 currentPage = 1;
@@ -761,6 +828,19 @@
                 currentSearchTerm = searchInput.value;
                 fetchGalleryCards(currentPage, currentSortBy, currentSearchTerm, false);
             }
+
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    const cat = chip.dataset.category;
+                    if (cat === 'templates') {
+                        showPreMadeTemplates();
+                    } else {
+                        fetchGalleryCards(1, 'createdAt', cat === 'all' ? '' : cat, false);
+                    }
+                });
+            });
 
             sortBySelect.addEventListener('change', handleFilterChange);
             searchBtn.addEventListener('click', handleFilterChange);

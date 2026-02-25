@@ -58,6 +58,20 @@ class EditorV2 {
             this.lastSavedData = JSON.stringify(this.designData);
             return;
         }
+
+        // Check if it's a pre-made template ID
+        if (window.V2_TEMPLATES && window.V2_TEMPLATES.some(t => t.id === this.designId)) {
+            const template = window.V2_TEMPLATES.find(t => t.id === this.designId);
+            this.designData = {
+                schemaVersion: 2,
+                v2: {
+                    canvas: { width: 510, height: 330, baseWidth: 510 },
+                    ...JSON.parse(JSON.stringify(template.data))
+                }
+            };
+            this.lastSavedData = JSON.stringify(this.designData);
+            return;
+        }
         try {
             const response = await fetch(`api/get-design/${this.designId}?v2=true`);
             const data = await response.json();
@@ -75,6 +89,7 @@ class EditorV2 {
                 e.target.classList.add('active');
                 document.getElementById(`tab-${e.target.dataset.tab}`).classList.remove('hidden');
                 if (e.target.dataset.tab === 'layers') this.renderLayers();
+                if (e.target.dataset.tab === 'templates') this.renderTemplates();
             });
         });
 
@@ -316,6 +331,58 @@ class EditorV2 {
         document.getElementById('prop-y').value = Math.round(el.transform.y);
         document.getElementById('prop-w').value = Math.round(el.transform.w);
         document.getElementById('prop-h').value = Math.round(el.transform.h);
+    }
+
+    renderTemplates() {
+        const grid = document.getElementById('templates-v2-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        if (!window.V2_TEMPLATES) return;
+
+        window.V2_TEMPLATES.forEach(tmp => {
+            const card = document.createElement('div');
+            card.className = 'template-v2-card';
+            card.innerHTML = `
+                <div class="thumb">${tmp.thumbnail}</div>
+                <span>${tmp.name}</span>
+            `;
+            card.onclick = () => this.confirmApplyTemplate(tmp.id);
+            grid.appendChild(card);
+        });
+    }
+
+    confirmApplyTemplate(id) {
+        if (confirm('هل أنت متأكد؟ سيتم استبدال التصميم الحالي بالقالب المختار.')) {
+            this.applyTemplate(id);
+        }
+    }
+
+    applyTemplate(id) {
+        const template = window.V2_TEMPLATES.find(t => t.id === id);
+        if (!template) return;
+
+        // Deep clone template data
+        const newData = JSON.parse(JSON.stringify(template.data));
+
+        // Preserve core metadata if editing existing
+        if (this.designData && this.designData.v2) {
+            this.designData.v2.sides = newData.sides;
+        } else {
+            this.designData = {
+                schemaVersion: 2,
+                v2: {
+                    canvas: { width: 510, height: 330, baseWidth: 510 },
+                    ...newData
+                }
+            };
+        }
+
+        this.saveHistory();
+        this.render();
+
+        // Switch to properties tab after applying
+        document.querySelector('[data-tab="properties"]').click();
     }
 
     updateSelectionUI() {
