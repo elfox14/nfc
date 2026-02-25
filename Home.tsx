@@ -193,7 +193,7 @@ export default function Home() {
             <div className="flex gap-4 justify-center">
               <Button
                 className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg font-semibold"
-                onClick={() => window.location.href = 'editor-v2'}
+                onClick={() => window.location.href = 'editor.html'}
               >
                 ابدأ الآن
               </Button>

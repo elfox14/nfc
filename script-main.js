@@ -826,15 +826,7 @@ const ShareManager = {
         const params = new URLSearchParams(window.location.search);
         const designId = params.get('id');
 
-        // Aggressive Redirection: Direct all legacy editor access to V2
-        // If we are on editor.html or editor-en.html, redirect to editor-v2.html
-        const isLegacyEditor = window.location.pathname.includes('editor.html') || window.location.pathname.includes('editor-en.html');
-        if (isLegacyEditor) {
-            const v2Url = new URL('editor-v2', window.location.href);
-            params.forEach((value, key) => v2Url.searchParams.set(key, value));
-            window.location.href = v2Url.href;
-            return true;
-        }
+
 
         // لا تقم بالتحميل إذا كان هناك معرف جلسة تحرير جماعي
         if (params.has('collabId')) {
@@ -848,12 +840,7 @@ const ShareManager = {
 
                 const state = await response.json();
 
-                // PR-1: Redirect Spec V2 designs to the new editor
-                if (state.schemaVersion === 2 || state.v2) {
-                    const editorPage = _isEnglishPage ? 'editor-v2.html' : 'editor-v2.html'; // Both are the same for now, but keeping structure
-                    window.location.href = `${editorPage}?id=${designId}`;
-                    return true;
-                }
+
 
                 StateManager.applyState(state, false);
                 Config.currentDesignId = designId; // Store loaded ID

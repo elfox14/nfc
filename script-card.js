@@ -579,10 +579,10 @@ const CardManager = {
             wrapper.id = phoneId;
             wrapper.className = 'phone-button-draggable-wrapper draggable-on-card';
             wrapper.dataset.controlId = group.id;
-            wrapper.style.position = 'absolute';
-            wrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
-            wrapper.setAttribute('data-x', pos.x);
-            wrapper.setAttribute('data-y', pos.y);
+            wrapper.style.position = 'relative';
+            wrapper.style.transform = '';
+            wrapper.setAttribute('data-x', 0);
+            wrapper.setAttribute('data-y', 0);
 
             const phoneLink = document.createElement('a');
             phoneLink.href = `tel:${phoneData.value.replace(/[^0-9+]/g, '')}`;
@@ -723,7 +723,11 @@ const CardManager = {
 
         for (const [key, side] of Object.entries(state.placements)) {
             if (elements[key] && containers[side]) {
-                elements[key].style.position = 'absolute';
+                // Clear inline styles so CSS rules position elements properly in the flex layout
+                elements[key].style.position = '';
+                elements[key].style.top = '';
+                elements[key].style.left = '';
+                elements[key].style.transform = '';
                 containers[side].appendChild(elements[key]);
             }
         }
@@ -873,10 +877,10 @@ const CardManager = {
             linkWrapper.id = elementId;
             linkWrapper.className = 'draggable-social-link draggable-on-card';
             linkWrapper.dataset.controlId = controlId;
-            linkWrapper.style.position = 'absolute';
-            linkWrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
-            linkWrapper.setAttribute('data-x', pos.x);
-            linkWrapper.setAttribute('data-y', pos.y);
+            linkWrapper.style.position = 'relative';
+            linkWrapper.style.transform = '';
+            linkWrapper.setAttribute('data-x', 0);
+            linkWrapper.setAttribute('data-y', 0);
 
             let fullUrl = value, displayText = value;
             if (platform.prefix) {

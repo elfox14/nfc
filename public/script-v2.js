@@ -54,7 +54,22 @@ class EditorV2 {
         if (!this.designId) {
             this.designData = {
                 schemaVersion: 2,
-                v2: { canvas: { width: 510, height: 330, baseWidth: 510 }, sides: { front: { elements: [] }, back: { elements: [] } } }
+                v2: {
+                    canvas: { width: 510, height: 330, baseWidth: 510 },
+                    sides: {
+                        front: {
+                            elements: [
+                                {
+                                    id: 'default-name', type: 'text', preset: 'name',
+                                    contentAR: 'إسمك هنا', contentEN: 'Your Name Here', bilingual: true,
+                                    transform: { x: 50, y: 140, w: 300, h: 50 },
+                                    style: { color: '#000000', fontSize: 28, fontWeight: 'bold', textAlign: 'center' }
+                                }
+                            ]
+                        },
+                        back: { elements: [] }
+                    }
+                }
             };
             this.lastSavedData = JSON.stringify(this.designData);
             return;
@@ -75,10 +90,153 @@ class EditorV2 {
         }
         try {
             const response = await fetch(`api/get-design/${this.designId}?v2=true`);
+            if (!response.ok) throw new Error('Design not found');
             const data = await response.json();
-            this.designData = data;
-            this.lastSavedData = JSON.stringify(data);
-        } catch (err) { console.error(err); }
+
+            if (data && !data.v2 && data.state) {
+                console.log('Legacy V1 design detected, migrating...');
+                this.designData = this.migrateV1toV2(data);
+            } else if (data && data.v2) {
+                this.designData = data;
+            } else {
+                throw new Error('Invalid design data');
+            }
+
+            this.lastSavedData = JSON.stringify(this.designData);
+            this.render();
+        } catch (err) {
+            console.error('Load Error:', err);
+            // Fallback to default if load fails
+            this.designId = null;
+            await this.loadDesign();
+            this.render();
+        }
+    }
+
+    migrateV1toV2(oldData) {
+        const state = oldData.state || {};
+        const inputs = state.inputs || {};
+        const isVertical = inputs['layout-select-visual'] === 'vertical';
+
+        const v2Design = {
+            schemaVersion: 2,
+            v2: {
+                canvas: {
+                    width: isVertical ? 330 : 510,
+                    height: isVertical ? 510 : 330,
+                    baseWidth: isVertical ? 330 : 510
+                },
+                sides: {
+                    front: { elements: [] },
+                    back: { elements: [] }
+                }
+            }
+        };
+
+        const bgW = isVertical ? 330 : 510;
+        const bgH = isVertical ? 510 : 330;
+
+        // Migrate Backgrounds
+        if (inputs['front-bg-start']) {
+            v2Design.v2.sides.front.elements.push({
+                id: 'bg-front', type: 'shape',
+                transform: { x: 0, y: 0, w: bgW, h: bgH },
+                style: { backgroundColor: inputs['front-bg-start'] }
+            });
+        }
+        if (inputs['back-bg-start']) {
+            v2Design.v2.sides.back.elements.push({
+                id: 'bg-back', type: 'shape',
+                transform: { x: 0, y: 0, w: bgW, h: bgH },
+                style: { backgroundColor: inputs['back-bg-start'] }
+            });
+        }
+
+        // Migrate Name
+        if (inputs['input-name_ar'] || inputs['input-name_en']) {
+            v2Design.v2.sides.front.elements.push({
+                id: 'migrated-name', type: 'text', preset: 'name',
+                contentAR: inputs['input-name_ar'] || '',
+                contentEN: inputs['input-name_en'] || '',
+                bilingual: true,
+                transform: { x: 40, y: 100, w: 400, h: 50 },
+                style: { color: inputs['name-color'] || '#000000', fontSize: inputs['name-font-size'] || 28, fontWeight: 'bold' }
+            });
+        }
+
+        // Migrate Job Title
+        if (inputs['input-tagline_ar'] || inputs['input-tagline_en']) {
+            v2Design.v2.sides.front.elements.push({
+                id: 'migrated-job', type: 'text', preset: 'job',
+                contentAR: inputs['input-tagline_ar'] || '',
+                contentEN: inputs['input-tagline_en'] || '',
+                bilingual: true,
+                transform: { x: 40, y: 155, w: 400, h: 30 },
+                style: { color: inputs['tagline-color'] || '#666666', fontSize: inputs['tagline-font-size'] || 16 }
+            });
+        }
+
+        // Migrate Logo
+        if (inputs['input-logo']) {
+            v2Design.v2.sides.front.elements.push({
+                id: 'migrated-logo', type: 'image',
+                src: inputs['input-logo'],
+                transform: { x: 40, y: 30, w: inputs['logo-size'] ? inputs['logo-size'] * 4 : 80, h: inputs['logo-size'] ? inputs['logo-size'] * 4 : 80 }
+            });
+        }
+
+        // Migrate Photo
+        if (inputs['input-photo-url']) {
+            v2Design.v2.sides.front.elements.push({
+                id: 'migrated-photo', type: 'avatar', preset: 'avatar',
+                src: inputs['input-photo-url'],
+                transform: { x: 380, y: 30, w: inputs['photo-size'] ? inputs['photo-size'] * 3 : 80, h: inputs['photo-size'] ? inputs['photo-size'] * 3 : 80 },
+                style: { borderRadius: inputs['photo-shape'] === 'circle' ? '50%' : '8px' }
+            });
+        }
+
+        // Migrate Social & Contacts
+        let contactY = 220;
+        const dynamic = state.dynamic || {};
+
+        // Phones
+        if (dynamic.phones) {
+            dynamic.phones.forEach((p, idx) => {
+                v2Design.v2.sides.front.elements.push({
+                    id: `migrated-phone-${idx}`, type: 'text',
+                    content: p.value,
+                    transform: { x: 40, y: contactY, w: 200, h: 25 },
+                    style: { fontSize: 14, color: '#000000' }
+                });
+                contactY += 30;
+            });
+        }
+
+        // Static Social (Email, Website)
+        if (dynamic.staticSocial) {
+            Object.entries(dynamic.staticSocial).forEach(([key, data]) => {
+                if (data.value) {
+                    v2Design.v2.sides.front.elements.push({
+                        id: `migrated-${key}`, type: 'text',
+                        content: data.value,
+                        transform: { x: 40, y: contactY, w: 300, h: 25 },
+                        style: { fontSize: 14, color: '#000000' }
+                    });
+                    contactY += 30;
+                }
+            });
+        }
+
+        // Add default QR to back
+        v2Design.v2.sides.back.elements.push({
+            id: 'migrated-qr', type: 'qr', preset: 'qr',
+            transform: { x: 180, y: 90, w: 150, h: 150 },
+            content: `https://mcprim.com/v/${oldData.shortId || this.designId}`
+        });
+
+        // Merge rest of old data (except state and public things that moved to v2)
+        const migrated = { ...oldData, ...v2Design };
+        return migrated;
     }
 
     bindEvents() {

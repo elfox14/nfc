@@ -64,46 +64,33 @@
 
     <style>
         /* =============================================================== */
-        /* == START: DESKTOP FIX FOR FLIP CARD STRUCTURE                == */
+        /* == DESKTOP: Single Face Display with Toggle                   == */
         /* =============================================================== */
-
-        /* This code block undoes the flip effect on screens wider than 1024px */
         @media (min-width: 1025px) {
-
-            /* 1. Make the flipper a flex container to arrange cards side-by-side */
             .card-flipper {
-                display: flex;
-                flex-direction: column;
-                gap: 30px;
-                /* <<< THIS IS THE SPACE BETWEEN CARDS ON DESKTOP */
-
-                /* 2. Reset 3D properties so it behaves like a normal container */
                 transform-style: flat;
                 position: relative;
                 transform: none;
             }
 
-            /* 3. Make each card face a normal, non-overlapping block */
             .card-face {
                 position: relative !important;
-                /* Override absolute positioning */
                 transform: none !important;
-                /* Remove any rotation */
                 backface-visibility: visible !important;
-                /* Reset visibility */
                 pointer-events: auto !important;
-                /* Ensure both are clickable */
             }
 
-            /* 4. The main card wrapper now just centers the flipper container */
+            /* Hide back face by default on desktop */
+            .card-face.card-back {
+                display: none;
+            }
+
             .cards-wrapper {
                 transform: none;
-                /* Ensure no scaling is applied from old styles */
                 gap: 0;
-                /* The gap is now handled by .card-flipper */
             }
 
-            /* 5. Hide the mobile-only flip button on desktop */
+            /* Hide the mobile-only flip button on desktop */
             #flip-card-btn-mobile {
                 display: none !important;
             }
@@ -449,12 +436,51 @@
                     </div>
                 </div>
 
+                <!-- Face Toggle Tabs -->
+                <div class="face-toggle-tabs" id="face-toggle-tabs">
+                    <button class="face-tab active" data-face="front">
+                        <i class="fas fa-id-card"></i> الوجه الأمامي
+                    </button>
+                    <button class="face-tab" data-face="back">
+                        <i class="fas fa-address-card"></i> الوجه الخلفي
+                    </button>
+                </div>
+
                 <button id="flip-card-btn-mobile" class="btn btn-secondary" title="تقليب الكارت">
                     <i class="fas fa-sync-alt"></i>
                     <span>تقليب الكارت</span>
                 </button>
 
             </div>
+
+            <!-- Face Toggle JS -->
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const tabs = document.getElementById('face-toggle-tabs');
+                    if (!tabs) return;
+
+                    tabs.addEventListener('click', (e) => {
+                        const tab = e.target.closest('.face-tab');
+                        if (!tab) return;
+
+                        const face = tab.dataset.face;
+                        const front = document.getElementById('card-front-preview');
+                        const back = document.getElementById('card-back-preview');
+
+                        // Update active tab
+                        tabs.querySelectorAll('.face-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+
+                        if (face === 'front') {
+                            front.style.display = 'block';
+                            back.style.display = 'none';
+                        } else {
+                            front.style.display = 'none';
+                            back.style.display = 'block';
+                        }
+                    });
+                });
+            </script>
         </div>
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-properties">

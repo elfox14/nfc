@@ -420,7 +420,7 @@
                 if (isTemplate) cardElement.classList.add('template-card');
 
                 const viewUrl = isTemplate ? '#' : (isDemo ? '#' : `/nfc/viewer.html?id=${design.shortId}`);
-                const editUrl = isTemplate ? `editor-v2?id=${design.shortId}` : (isDemo ? 'editor-v2' : `editor-v2?id=${design.shortId}`);
+                const editUrl = isTemplate ? `editor-en.html?id=${design.shortId}` : (isDemo ? 'editor-en.html' : `editor-en.html?id=${design.shortId}`);
                 const shareUrl = (isDemo || isTemplate) ? '' : `${window.location.origin}/nfc/viewer.html?id=${design.shortId}`;
 
                 // Add template badge

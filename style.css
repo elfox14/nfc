@@ -880,6 +880,60 @@ html.ltr .dynamic-social-link span {
     box-shadow: 0 0 15px var(--accent-primary);
 }
 
+.card-flipper-container {
+    width: 100%;
+}
+
+.card-flipper {
+    width: 100%;
+}
+
+/* === Face Toggle Tabs === */
+.face-toggle-tabs {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--accent-secondary);
+    background: var(--form-bg);
+}
+
+.face-toggle-tabs .face-tab {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0;
+    border-radius: 0;
+}
+
+.face-toggle-tabs .face-tab:hover {
+    background: rgba(77, 166, 255, 0.1);
+    color: var(--text-primary);
+    transform: none;
+}
+
+.face-toggle-tabs .face-tab.active {
+    background: var(--accent-primary);
+    color: #fff;
+    box-shadow: none;
+}
+
+.face-toggle-tabs .face-tab i {
+    font-size: 0.85rem;
+}
+
 .business-card {
     width: 100%;
     aspect-ratio: 51 / 33;
@@ -959,7 +1013,8 @@ html.ltr .dynamic-social-link span {
 .card-content-layer #card-logo,
 .card-content-layer #card-personal-photo-wrapper,
 .card-content-layer #card-name,
-.card-content-layer #card-tagline {
+.card-content-layer #card-tagline,
+.card-content-layer .phone-buttons-wrapper {
     cursor: grab;
     position: relative;
     top: auto;
@@ -981,7 +1036,7 @@ html.ltr .dynamic-social-link span {
 
 .phone-button-draggable-wrapper,
 .draggable-social-link {
-    position: absolute;
+    position: relative;
     z-index: 5;
     cursor: grab;
     touch-action: none;

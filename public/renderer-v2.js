@@ -12,22 +12,31 @@ const RendererV2 = {
     render(sideData, container, canvasConfig) {
         if (!sideData || !container) return;
 
-        // Clear existing v2 elements (keep legacy if needed, but here we replace)
-        // We look for elements with class 'v2-element' to be selective
-        const existing = container.querySelectorAll('.v2-element');
-        existing.forEach(el => el.remove());
+        try {
+            // Clear existing v2 elements (keep legacy if needed, but here we replace)
+            // We look for elements with class 'v2-element' to be selective
+            const existing = container.querySelectorAll('.v2-element');
+            existing.forEach(el => el.remove());
 
-        const baseWidth = canvasConfig?.baseWidth || 510;
-        const currentWidth = container.offsetWidth || baseWidth;
-        const scale = currentWidth / baseWidth;
+            const baseWidth = canvasConfig?.baseWidth || 510;
+            const rect = container.getBoundingClientRect();
+            const currentWidth = rect.width || container.offsetWidth || baseWidth;
+            const scale = currentWidth / baseWidth;
 
-        if (!sideData.elements) return;
+            if (!sideData.elements) return;
 
-        sideData.elements.forEach(el => {
-            if (el.visible === false) return;
-            const domEl = this.createElement(el, scale);
-            if (domEl) container.appendChild(domEl);
-        });
+            sideData.elements.forEach(el => {
+                if (el.visible === false) return;
+                try {
+                    const domEl = this.createElement(el, scale);
+                    if (domEl) container.appendChild(domEl);
+                } catch (e) {
+                    console.error('Failed to render element:', el, e);
+                }
+            });
+        } catch (err) {
+            console.error('V2 Render error:', err);
+        }
     },
 
     /**
@@ -90,6 +99,14 @@ const RendererV2 = {
                 el.href = data.action?.value || '#';
                 el.target = '_blank';
                 this.applySocialStyle(el, data, scale);
+                break;
+            case 'shape':
+                el = document.createElement('div');
+                el.className = 'v2-shape';
+                el.style.display = 'block';
+                if (data.style?.backgroundColor) el.style.backgroundColor = data.style.backgroundColor;
+                if (data.style?.borderRadius) el.style.borderRadius = (parseFloat(data.style.borderRadius) * scale) + 'px';
+                if (data.style?.border) el.style.border = data.style.border;
                 break;
             default:
                 console.warn('Unknown element type:', data.type);
