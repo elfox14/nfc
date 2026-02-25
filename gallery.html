@@ -95,6 +95,7 @@
 
     <!-- Language Switcher -->
     <script src="/nfc/lang-switcher.js" defer></script>
+    <script src="/nfc/renderer-v2.js"></script>
 
     <style>
         .lang-btn {
@@ -411,8 +412,22 @@
                 const shareUrl = isDemo ? '' : `${window.location.origin}/nfc/viewer.html?id=${design.shortId}`;
 
                 // Get name (support bilingual)
-                const name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || 'اسم غير محدد';
-                const tagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || 'وصف غير محدد';
+                let name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || 'اسم غير محدد';
+                let tagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || 'وصف غير محدد';
+
+                // PR-1: Pull from V2 data if legacy is missing
+                if (design.data.schemaVersion === 2 && design.data.v2) {
+                    const frontSide = design.data.v2.sides.front;
+                    const nameEl = frontSide.elements.find(e => e.id === 'name' || e.type === 'text');
+                    const titleEl = frontSide.elements.find(e => e.id === 'title' || (e.type === 'text' && e.id !== 'name'));
+
+                    if (nameEl) {
+                        name = nameEl.bilingual ? nameEl.contentAR : (nameEl.content || name);
+                    }
+                    if (titleEl) {
+                        tagline = titleEl.bilingual ? titleEl.contentAR : (titleEl.content || tagline);
+                    }
+                }
 
                 // Badge for new cards (less than 7 days old)
                 const isNew = design.createdAt && (Date.now() - new Date(design.createdAt).getTime() < 7 * 24 * 60 * 60 * 1000);
@@ -437,8 +452,6 @@
                     thumbnailContainer.appendChild(bgLayer);
                 } else {
                     // Real cards - show captured front image
-                    const capturedUrl = imageUrls.capturedFront || imageUrls.front;
-
                     if (capturedUrl) {
                         // Use img element for better quality display
                         const cardImg = document.createElement('img');
@@ -447,6 +460,27 @@
                         cardImg.alt = name;
                         cardImg.loading = 'lazy';
                         thumbnailContainer.appendChild(cardImg);
+                    } else if (design.data.schemaVersion === 2 && design.data.v2) {
+                        // Live V2 Preview Fallback
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'v2-preview-container';
+                        previewDiv.style.width = '100%';
+                        previewDiv.style.height = '100%';
+                        previewDiv.style.position = 'relative';
+                        previewDiv.style.overflow = 'hidden';
+                        previewDiv.style.background = '#fff';
+                        thumbnailContainer.appendChild(previewDiv);
+
+                        // We use a small timeout to ensure DOM is ready
+                        setTimeout(() => {
+                            RendererV2.render(design.data.v2.sides.front, previewDiv, { baseWidth: 510 });
+                            // Apply scaling to the container to fit thumbnail
+                            const scale = previewDiv.offsetWidth / 510;
+                            previewDiv.querySelectorAll('.v2-element').forEach(el => {
+                                // RendererV2 already applies scale if we pass it, 
+                                // but here we might need to re-scale the whole thing if container is different
+                            });
+                        }, 0);
                     } else {
                         // Fallback gradient
                         const bgLayer = document.createElement('div');

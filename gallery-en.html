@@ -94,6 +94,7 @@
 
     <!-- Language Switcher -->
     <script src="/nfc/lang-switcher.js" defer></script>
+    <script src="/nfc/renderer-v2.js"></script>
 
     <style>
         body {
@@ -413,6 +414,20 @@
                 const name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || 'Unnamed';
                 const tagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || 'No description';
 
+                // PR-1: Pull from V2 data if legacy is missing
+                if (design.data.schemaVersion === 2 && design.data.v2) {
+                    const frontSide = design.data.v2.sides.front;
+                    const nameEl = frontSide.elements.find(e => e.id === 'name' || e.type === 'text');
+                    const titleEl = frontSide.elements.find(e => e.id === 'title' || (e.type === 'text' && e.id !== 'name'));
+
+                    if (nameEl) {
+                        name = nameEl.bilingual ? nameEl.contentEN : (nameEl.content || name);
+                    }
+                    if (titleEl) {
+                        tagline = titleEl.bilingual ? titleEl.contentEN : (titleEl.content || tagline);
+                    }
+                }
+
                 const isNew = design.createdAt && (Date.now() - new Date(design.createdAt).getTime() < 7 * 24 * 60 * 60 * 1000);
                 if (isNew && !isDemo) {
                     const badge = document.createElement('span');
@@ -432,8 +447,6 @@
                     bgLayer.style.background = design.gradient;
                     thumbnailContainer.appendChild(bgLayer);
                 } else {
-                    const capturedUrl = imageUrls.capturedFront || imageUrls.front;
-
                     if (capturedUrl) {
                         const cardImg = document.createElement('img');
                         cardImg.className = 'card-thumb-img';
@@ -441,6 +454,20 @@
                         cardImg.alt = name;
                         cardImg.loading = 'lazy';
                         thumbnailContainer.appendChild(cardImg);
+                    } else if (design.data.schemaVersion === 2 && design.data.v2) {
+                        // Live V2 Preview Fallback
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'v2-preview-container';
+                        previewDiv.style.width = '100%';
+                        previewDiv.style.height = '100%';
+                        previewDiv.style.position = 'relative';
+                        previewDiv.style.overflow = 'hidden';
+                        previewDiv.style.background = '#fff';
+                        thumbnailContainer.appendChild(previewDiv);
+
+                        setTimeout(() => {
+                            RendererV2.render(design.data.v2.sides.front, previewDiv, { baseWidth: 510 });
+                        }, 0);
                     } else {
                         const bgLayer = document.createElement('div');
                         bgLayer.className = 'thumb-bg-layer loaded';

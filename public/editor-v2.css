@@ -412,8 +412,58 @@ body {
 
 /* Responsive (Mobile view adaptation for V2 Editor) */
 @media (max-width: 900px) {
-    .v2-properties-sidebar {
-        display: none;
-        /* We'll handle bottom drawer in PR-5 */
+    :root {
+        --sidebar-left-width: 60px;
+        --sidebar-right-width: 0px;
     }
+
+    .v2-properties-sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100% !important;
+        height: 50vh;
+        z-index: 2000;
+        border-top: 1px solid var(--border-color);
+        border-radius: 20px 20px 0 0;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 30px 20px;
+    }
+
+    .v2-properties-sidebar:not(.hidden) {
+        transform: translateY(0);
+    }
+
+    .v2-properties-sidebar::before {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+    }
+
+    .canvas-viewport {
+        padding: 40px 10px;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel-section {
+    animation: fadeIn 0.3s ease-out;
 }
