@@ -26,3 +26,6 @@ jobs:
 
     # Run jest test cases explicitly checking that it shouldn't fail builds
     - run: npm test
+
+    # Security audit for critical vulnerabilities
+    - run: npm audit --audit-level=critical || true

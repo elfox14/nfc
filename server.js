@@ -59,8 +59,16 @@ app.use(helmet.contentSecurityPolicy({
 }));
 // --- END: SECURITY HEADERS (HELMET) ---
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 app.use(cors({
-  origin: true, // Allow all origins (for development)
+  origin: (origin, cb) => {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -504,7 +512,8 @@ app.post('/api/save-design', async (req, res) => {
     if (authHeader) {
       try {
         const token = authHeader.split(' ')[1];
-        const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+        const secret = process.env.JWT_SECRET;
+        if (!secret) throw new Error('JWT_SECRET not configured');
         const decoded = jwt.verify(token, secret);
         ownerId = decoded.userId;
       } catch (err) {
@@ -621,7 +630,8 @@ app.post('/api/auth/register', [
     });
 
     // Generate verification token
-    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
 
     // Store verification token
@@ -680,7 +690,8 @@ app.post('/api/auth/login', [
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     const token = jwt.sign({ userId: user.userId, email: user.email }, secret, { expiresIn: '7d' });
 
     res.json({ success: true, token, user: { name: user.name, email: user.email, userId: user.userId } });
@@ -703,10 +714,9 @@ app.get('/api/auth/google', (req, res) => {
   const host = req.get('host');
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
-  console.log('------------------------------------------------');
-  console.log('DEBUG: Google OAuth Redirect URI:', redirectUri);
-  console.log('DEBUG: Please ensure this EXACT URL is added to Authorized redirect URIs in Google Cloud Console');
-  console.log('------------------------------------------------');
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('DEBUG: Google OAuth Redirect URI:', redirectUri);
+  }
 
   const scope = 'email profile';
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
@@ -719,9 +729,11 @@ app.get('/api/auth/google/callback', async (req, res) => {
   const { code, error } = req.query;
 
   if (error || !code) {
+    const safeError = String(error || 'Authorization failed').replace(/[^a-zA-Z0-9_ -]/g, '');
+    const targetOrigin = process.env.SITE_BASE_URL || '*';
     return res.send(`
       <script>
-        window.opener.postMessage({ type: 'google-auth', success: false, error: '${error || 'Authorization failed'}' }, '*');
+        window.opener.postMessage({ type: 'google-auth', success: false, error: '${safeError}' }, '${targetOrigin}');
         window.close();
       </script>
     `);
@@ -777,10 +789,12 @@ app.get('/api/auth/google/callback', async (req, res) => {
     }
 
     // Generate JWT
-    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET not configured');
     const jwtToken = jwt.sign({ userId: user.userId, email: user.email }, secret, { expiresIn: '7d' });
 
     // Send success back to opener
+    const targetOrigin = process.env.SITE_BASE_URL || '*';
     res.send(`
       <script>
         window.opener.postMessage({
@@ -788,7 +802,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
           success: true,
           token: '${jwtToken}',
           user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
-        }, '*');
+        }, '${targetOrigin}');
         window.close();
       </script>
     `);
@@ -797,7 +811,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     console.error('Google OAuth error:', err);
     res.send(`
       <script>
-        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '*');
+        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '${process.env.SITE_BASE_URL || '*'}');
         window.close();
       </script>
     `);
@@ -826,7 +840,8 @@ app.post('/api/auth/forgot-password', [
     }
 
     // Generate reset token
-    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     const resetToken = jwt.sign({ userId: user.userId, email: user.email, type: 'password-reset' }, secret, { expiresIn: '1h' });
 
     // Store reset token in DB
@@ -865,7 +880,8 @@ app.post('/api/auth/reset-password/:token', [
     const { password } = req.body;
 
     // Verify token
-    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     let decoded;
     try {
       decoded = jwt.verify(token, secret);
@@ -912,7 +928,8 @@ app.get('/api/auth/verify-email/:token', async (req, res) => {
     const { token } = req.params;
 
     // Verify token
-    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     let decoded;
     try {
       decoded = jwt.verify(token, secret);
@@ -1304,7 +1321,8 @@ app.get('/api/gallery', async (req, res) => {
     // Build search query - only show designs shared to gallery
     const query = { 'data.sharedToGallery': true };
     if (searchTerm) {
-      const regex = new RegExp(searchTerm, 'i'); // Case-insensitive search
+      const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escaped, 'i'); // Case-insensitive search (escaped)
       query['$or'] = [
         { 'data.inputs.input-name_ar': regex },
         { 'data.inputs.input-name_en': regex },
