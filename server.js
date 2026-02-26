@@ -1,33 +1,18 @@
-// server.js - مدمج مع تحسينات الأمان و WebSocket
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
+// server.js (الكود الكامل والنهائي مع ميزة التحرير الجماعي)
 
-const { body, query, param, cookie, validationResult } = require('express-validator');
-
-// Validation Middleware
-const validateRequest = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  next();
-};
-
-const config = require('./config');
-
+require('dotenv').config();
 const express = require('express');
 const compression = require('compression');
 const { MongoClient } = require('mongodb');
 const path = require('path');
+const cors = require('cors');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
-
+const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser');
-const { createAccessToken, createRefreshToken, hashToken } = require('./utils/tokens');
+const verifyToken = require('./auth-middleware');
 const EmailService = require('./email-service');
 const { JSDOM } = require('jsdom');
 const DOMPurifyFactory = require('dompurify');
@@ -36,287 +21,78 @@ const sharp = require('sharp');
 const ejs = require('ejs');
 const helmet = require('helmet');
 const useragent = require('express-useragent');
-const http = require('http');
-const { WebSocketServer } = require('ws');
-const url = require('url');
-
-const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
-const hpp = require('hpp');
-const cors = require('cors');
-
-// لو أعددت الملف utils/field-encryption.js استخدمه عند الحاجة
-let encrypt, decrypt;
-try {
-  ({ encrypt, decrypt } = require('./utils/field-encryption'));
-} catch (e) {
-  // إن لم يكن موجوداً فلا نكسر التطبيق — لكن من الأفضل إضافته في الإنتاج
-  encrypt = (v) => v;
-  decrypt = (v) => v;
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn('Field encryption util not found — sensitive-field encryption will be skipped unless utils/field-encryption.js is added.');
-  }
-}
-
-// استخدم middleware auth الموجود في middleware/auth-middleware.js
-const verifyToken = require('./auth-middleware');
-
-// --- Sentry Integration (Ticket 8) ---
-const Sentry = require('@sentry/node');
-const { nodeProfilingIntegration } = require('@sentry/profiling-node');
-
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    integrations: [
-      nodeProfilingIntegration(),
-    ],
-    tracesSampleRate: 1.0,
-    profilesSampleRate: 1.0,
-  });
-}
+const http = require('http'); // **جديد: استيراد http**
+const { WebSocketServer } = require('ws'); // **جديد: استيراد WebSocketServer**
+const url = require('url'); // **جديد: استيراد url**
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
 
 const app = express();
 
-if (process.env.SENTRY_DSN) {
-  app.use(Sentry.Handlers.requestHandler());
-}
-
-// --------------------------------------------------
-// ========== Security & Middleware Setup ===========
-// --------------------------------------------------
-
-// إعدادات الثقة بالبروكسي (مهم للـ secure cookies خلف منصات مثل Render)
-if (String(config.TRUST_PROXY || '').toLowerCase() === 'true' || config.TRUST_PROXY === '1') {
-  app.set('trust proxy', 1);
-}
-
-// ضغط الاستجابات
+// --- START: MIDDLEWARE SETUP ---
 app.use(compression());
-
-// User-Agent
 app.use(useragent.express());
 
-// Body parsers مع حدود (لتقليل خطر DoS عبر bodies كبيرة)
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+const port = process.env.PORT || 3000;
+app.set('trust proxy', 1);
+app.disable('x-powered-by');
 
-// Cookies (مُهم للـ auth middleware الذي يحاول قراءة الكوكي)
-app.use(cookieParser());
-
-// Prevent NoSQL injection (express-mongo-sanitize)
-app.use(mongoSanitize());
-
-// Prevent XSS (xss-clean) - تنظيف القيم النصية الواردة
-app.use(xss());
-
-// Prevent HTTP Parameter Pollution
-app.use(hpp());
-
-const crypto = require('crypto');
-
-// --- Health Check Endpoint (Ticket 8) ---
-app.get('/health', async (req, res) => {
-  try {
-    if (db) {
-      await db.command({ ping: 1 });
-    }
-    res.status(200).json({
-      status: 'OK',
-      uptime: process.uptime(),
-      database: db ? 'connected' : 'connecting'
-    });
-  } catch (error) {
-    console.error('Health Check Database Failure:', error);
-    res.status(503).json({ status: 'Service Unavailable', error: 'Database ping failed' });
-  }
-});
-
-// Middleware to generate a unique nonce per request
-app.use((req, res, next) => {
-  res.locals.nonce = crypto.randomBytes(16).toString('base64');
-  next();
-});
-
-// Helmet - رؤوس أمان HTTP (نطبق CSP مفصّل يدعم WebSocket كما في كودك)
-app.use(helmet({
-  crossOriginOpenerPolicy: { policy: "unsafe-none" } // Changed from same-origin-allow-popups to allow cross-origin window.opener for Google Auth popup
-}));
-
-// Determine base WS/WSS URL from configuration
-const publicBaseUrl = config.PUBLIC_BASE_URL || 'https://mcprim.com';
-let wsOrigin = '';
-try {
-  const parsedUrl = new URL(publicBaseUrl);
-  wsOrigin = `ws://${parsedUrl.host} wss://${parsedUrl.host}`;
-} catch (e) {
-  wsOrigin = "ws: wss:"; // Fallback if URL is invalid
-}
-
-// CSP مفصل كما كان لديك سابقاً (يتضمن ws: و wss:)
+// --- START: SECURITY HEADERS (HELMET) ---
+app.use(helmet.frameguard({ action: 'deny' }));
+app.use(helmet.xssFilter());
+app.use(helmet.noSniff());
+app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc: [
-      "'self'",
-      (req, res) => `'nonce-${res.locals.nonce}'`,
-      "https://cdnjs.cloudflare.com",
-      "https://cdn.jsdelivr.net",
-      "https://www.youtube.com"
-    ],
-    styleSrc: [
-      "'self'",
-      (req, res) => `'nonce-${res.locals.nonce}'`,
-      "https://cdnjs.cloudflare.com",
-      "https://fonts.googleapis.com"
-    ],
+    scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
+    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
     imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
     mediaSrc: ["'self'", "data:"],
     frameSrc: ["'self'", "https://www.youtube.com"],
-    connectSrc: [
-      "'self'",
-      "https://cdnjs.cloudflare.com",
-      "https://cdn.jsdelivr.net",
-      "https://www.youtube.com",
-      "https://www.mcprim.com",
-      "https://media.giphy.com",
-      "https://nfc-vjy6.onrender.com",
-      wsOrigin
-    ].join(' ').split(' '), // split/join to handle the wsOrigin fallback cleanly
+    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com", "ws:", "wss:"], // **جديد: السماح باتصالات WebSocket**
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
   },
 }));
+// --- END: SECURITY HEADERS (HELMET) ---
 
-// HSTS
-app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));
-
-// CORS صارمة: استخدم ALLOWED_ORIGINS من env
-const allowedOrigins = (config.ALLOWED_ORIGINS || '')
-  .split(',')
-  .map(x => x.trim())
-  .filter(Boolean);
-
-// وظيفة origin للتحقق
-const corsOptions = {
-  origin: function (origin, callback) {
-    // السماح لأدوات مثل curl/postman التي لا ترسل Origin
-    if (!origin) return callback(null, true);
-    // إذا لم نعرّف allowedOrigins فنبقي السماح لكل الأصول (للمطور)
-    if (allowedOrigins.length === 0) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
-};
-app.use(cors(corsOptions));
-
-// --- Redis Setup (Ticket 10) ---
-const redis = require('redis');
-let redisClient = null;
-if (process.env.REDIS_URL) {
-  redisClient = redis.createClient({ url: process.env.REDIS_URL });
-  redisClient.on('error', (err) => console.error('Redis Client Error', err));
-  redisClient.connect()
-    .then(() => console.log('Redis connected successfully'))
-    .catch(err => console.error('Redis connection failed:', err));
-} else {
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn('REDIS_URL not set. Caching will gracefully bypass.');
-  }
-}
-
-const { RedisStore } = require('rate-limit-redis');
-
-// Helper to easily inject Redis store if available
-const getRedisStore = (prefix) => {
-  if (redisClient) {
-    return new RedisStore({
-      sendCommand: (...args) => redisClient.sendCommand(args),
-      prefix: prefix
-    });
-  }
-  return undefined;
-};
-
-// Rate limiting عام لمسارات /api
-const apiLimiterOpts = {
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again after 15 minutes'
-};
-if (redisClient) apiLimiterOpts.store = getRedisStore('rl:api:');
-const apiLimiter = rateLimit(apiLimiterOpts);
-app.use('/api/', apiLimiter);
-
-// Rate limiting خاص لمصادقة المستخدمين (أكثر صرامة)
-const authLimiterOpts = {
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: 'محاولات دخول/تسجيل كثيرة جداً، الرجاء الانتظار قليلاً. / Too many auth attempts, please try again later.'
-};
-if (redisClient) authLimiterOpts.store = getRedisStore('rl:auth:');
-const authLimiter = rateLimit(authLimiterOpts);
-app.use('/api/auth/', authLimiter);
-
-// Rate limiting خاص لرفع الملفات تجنباً لاستنزاف مساحة التخزين أو الباندويث
-const uploadLimiterOpts = {
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  message: 'عمليات رفع كثيرة جداً، الرجاء المحاولة لاحقاً. / Too many upload attempts, please try again later.'
-};
-if (redisClient) uploadLimiterOpts.store = getRedisStore('rl:upload:');
-const uploadLimiter = rateLimit(uploadLimiterOpts);
-app.use('/api/upload-image', uploadLimiter);
-
-// --- انتهى إعداد الأمن ---
-
-
-// عرض القوالب
+app.use(cors({
+  origin: true, // Allow all origins (for development)
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
 app.set('view engine', 'ejs');
 
 // --- DATABASE CONNECTION ---
-const port = config.PORT || 3000;
-const mongoUrl = config.MONGO_URI;
-const dbName = config.MONGO_DB || 'nfc_db';
-const designsCollectionName = config.MONGO_DESIGNS_COLL || 'designs';
-const usersCollectionName = 'users';
-const backgroundsCollectionName = config.MONGO_BACKGROUNDS_COLL || 'backgrounds';
-// New collection for refresh tokens
-const refreshTokensCollectionName = 'refresh_tokens';
+const mongoUrl = process.env.MONGO_URI;
+const dbName = process.env.MONGO_DB || 'nfc_db';
+const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
+const usersCollectionName = 'users'; // New Users Collection
+const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
 const savedCardsCollectionName = 'savedCards';
 const cardRequestsCollectionName = 'cardRequests';
-const templatesCollectionName = config.MONGO_TEMPLATES_COLL || 'templates';
-
 let db;
+
 MongoClient.connect(mongoUrl)
   .then(async client => {
     db = client.db(dbName);
     console.log('MongoDB connected');
 
+    // Create indexes for better performance
     try {
       await db.collection(designsCollectionName).createIndex({ shortId: 1 }, { unique: true });
-      // Compound Index for fast retrieval of User Designs (Ticket 7)
-      await db.collection(designsCollectionName).createIndex({ ownerId: 1, createdAt: -1 });
+      await db.collection(designsCollectionName).createIndex({ ownerId: 1 });
+      await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
       await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
       await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
-
-      // Indexes for refresh tokens
-      await db.collection(refreshTokensCollectionName).createIndex({ tokenHash: 1 }, { unique: true });
-      await db.collection(refreshTokensCollectionName).createIndex({ userId: 1 });
-      await db.collection(refreshTokensCollectionName).createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+      // Indexes for card save feature
       await db.collection(savedCardsCollectionName).createIndex({ userId: 1 });
       await db.collection(savedCardsCollectionName).createIndex({ userId: 1, designShortId: 1 }, { unique: true });
       await db.collection(cardRequestsCollectionName).createIndex({ ownerUserId: 1, status: 1 });
       await db.collection(cardRequestsCollectionName).createIndex({ requesterId: 1, designShortId: 1 });
-      await db.collection(templatesCollectionName).createIndex({ ownerId: 1 });
-      await db.collection(templatesCollectionName).createIndex({ isPublic: 1 });
       console.log('MongoDB indexes created');
     } catch (indexErr) {
       console.warn('Some indexes may already exist:', indexErr.message);
@@ -324,9 +100,11 @@ MongoClient.connect(mongoUrl)
   })
   .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
-// --- Utilities & sanitizers (كما كنت تستخدم) ---
+const rootDir = __dirname;
+
+// --- UTILITY FUNCTIONS ---
 function absoluteBaseUrl(req) {
-  const envBase = config.SITE_BASE_URL;
+  const envBase = process.env.SITE_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
   const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'https');
   const host = req.get('host');
@@ -362,10 +140,8 @@ function sanitizeInputs(inputs) {
   return sanitized;
 }
 
-// --- Viewer & SEO routes (بقيت كما هي) ---
-app.get(['/nfc/viewer', '/nfc/viewer.html'], [
-  query('id').optional().isString().trim().escape()
-], validateRequest, async (req, res) => {
+// --- VIEWER & SEO ROUTES ---
+app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
   try {
     if (!db) {
       res.setHeader('X-Robots-Tag', 'noindex, noarchive');
@@ -379,40 +155,11 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], [
       return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
     }
 
-    let doc = null;
-    let fromCache = false;
-
-    // 1. Try serving from Redis Cache
-    if (redisClient && redisClient.isReady) {
-      try {
-        const cachedDoc = await redisClient.get(`design:${id}`);
-        if (cachedDoc) {
-          doc = JSON.parse(cachedDoc);
-          fromCache = true;
-        }
-      } catch (err) {
-        console.warn('Redis GET failed:', err.message);
-      }
-    }
-
-    // 2. Fallback to MongoDB if not cached
-    if (!doc) {
-      doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-    }
+    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
     if (!doc || !doc.data) {
       res.setHeader('X-Robots-Tag', 'noindex, noarchive');
       return res.status(404).send('Design not found or data is missing');
-    }
-
-    // 3. Populate Redis Cache if fetched directly from Mongo
-    if (!fromCache && redisClient && redisClient.isReady) {
-      try {
-        // Cache for 60 seconds
-        await redisClient.setEx(`design:${id}`, 60, JSON.stringify(doc));
-      } catch (err) {
-        console.warn('Redis SET failed:', err.message);
-      }
     }
 
     db.collection(designsCollectionName).updateOne(
@@ -421,8 +168,6 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], [
     ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
 
     res.setHeader('X-Robots-Tag', 'index, follow');
-    // Set HTTP Cache Headers for CDN/Browsers (Ticket 10)
-    res.setHeader('Cache-Control', 'public, max-age=60');
 
     const base = absoluteBaseUrl(req);
     const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
@@ -546,7 +291,7 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], [
       ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])
     ].filter(Boolean).join(', ');
 
-    res.render(path.join(__dirname, 'viewer.ejs'), {
+    res.render(path.join(rootDir, 'viewer.ejs'), {
       pageUrl,
       name: name,
       tagline: tagline,
@@ -563,9 +308,7 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], [
   }
 });
 
-app.get('/nfc/view/:id', [
-  param('id').optional().isString().trim().escape()
-], validateRequest, async (req, res) => {
+app.get('/nfc/view/:id', async (req, res) => {
   try {
     const id = String(req.params.id);
     if (!id) {
@@ -578,44 +321,7 @@ app.get('/nfc/view/:id', [
   }
 });
 
-// مسار NFC لقراءة الرابط الموقّع القصير
-app.get('/r/:token', [
-  param('token').isString().notEmpty()
-], validateRequest, async (req, res) => {
-  try {
-    const { token } = req.params;
-    const secret = config.JWT_SECRET;
-
-    // التحقق من صحة التوقيع
-    jwt.verify(token, secret, (err, decoded) => {
-      if (err) {
-        console.warn('NFC Token verification failed:', err.message);
-        // نعرض صفحة خطأ أو توجيه للرئيسية في حال العبث بالتوقيع أو انتهائه
-        return res.status(400).send(`
-          <html>
-            <body style="font-family:sans-serif; text-align:center; padding: 20px;">
-              <h2>عذراً، الرابط غير صالح أو منتهي الصلاحية.</h2>
-              <p>قد تكون البطاقة غير مفعلة، أو أن جلسة المشاركة انتهت.</p>
-              <a href="/nfc">العودة للرئيسية</a>
-            </body>
-          </html>
-        `);
-      }
-
-      // التوقيع صحيح نأخذ ID التصميم ونوجهه للصفحة
-      const designId = decoded.designId;
-      if (!designId) return res.status(400).send('Invalid token payload.');
-
-      // توجيه مباشر للصفحة الحقيقية
-      res.redirect(301, `/nfc/viewer.html?id=${designId}`);
-    });
-  } catch (error) {
-    console.error('Error in /r/:token route:', error);
-    res.status(500).send('Server Error');
-  }
-});
-
-// Caching & redirects & uploads (كما كان عندك)
+// --- CACHING & REDIRECT MIDDLEWARE ---
 app.use((req, res, next) => {
   if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/view/')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -635,11 +341,34 @@ app.use((req, res, next) => {
 });
 app.get('/', (req, res) => { res.redirect(301, '/nfc/'); });
 
+// --- UPLOADS FOLDER ---
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 
-// Multer config
+// --- API ROUTES ---
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api/', apiLimiter);
+
+// Stricter rate limiting for auth endpoints (5 attempts per 15 minutes)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'محاولات كثيرة جداً. حاول مرة أخرى بعد 15 دقيقة.' },
+  skipSuccessfulRequests: true // Don't count successful logins
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -647,8 +376,11 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     if (file.mimetype && file.mimetype.startsWith('image/')) {
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-      if (allowedTypes.includes(file.mimetype)) cb(null, true);
-      else cb(new Error('نوع الصورة غير مدعوم.'), false);
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('نوع الصورة غير مدعوم.'), false);
+      }
     } else {
       cb(new Error('الرجاء رفع ملف صورة.'), false);
     }
@@ -667,274 +399,16 @@ function handleMulterErrors(err, req, res, next) {
   next();
 }
 
-const cloudinary = require('cloudinary').v2;
-
-// --- Logo Upload Endpoint (with Variant Generation) ---
-app.post('/api/upload-logo', verifyToken, upload.single('logo'), handleMulterErrors, async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No logo file provided.' });
-    }
-
-    const mimeType = req.file.mimetype;
-    const isSvg = mimeType === 'image/svg+xml';
-    const variants = {};
-
-    // 1. Process variants locally in memory
-    if (isSvg) {
-      // Decode, Sanitize and Store SVG
-      let svgContent = req.file.buffer.toString('utf-8');
-      const createDOMPurify = require('isomorphic-dompurify');
-      svgContent = createDOMPurify.sanitize(svgContent, {
-        USE_PROFILES: { svg: true },
-        FORBID_TAGS: ['script', 'style', 'ForeignObject'], // strict svg rules
-        FORBID_ATTR: ['on*']
-      });
-
-      const processedSvgBuffer = Buffer.from(svgContent, 'utf-8');
-
-      // Rasterize for fallbacks (PNG 1x, 2x, Webp) using sharp from SVG buffer
-      const png1xBuffer = await sharp(processedSvgBuffer).png().toBuffer();
-      const png2xBuffer = await sharp(processedSvgBuffer).resize({ width: 1000, withoutEnlargement: true }).png().toBuffer();
-      const webpBuffer = await sharp(processedSvgBuffer).webp({ quality: 90 }).toBuffer();
-
-      variants.svg = { buffer: processedSvgBuffer, format: 'svg' };
-      variants.png_1x = { buffer: png1xBuffer, format: 'png' };
-      variants.png_2x = { buffer: png2xBuffer, format: 'png' };
-      variants.webp = { buffer: webpBuffer, format: 'webp' };
-
-    } else {
-      // Raster image (PNG/JPG/WEBP)
-      const image = sharp(req.file.buffer);
-      const metadata = await image.metadata();
-
-      const png1xBuffer = await sharp(req.file.buffer)
-        .resize({ width: Math.min(metadata.width, 500) })
-        .png().toBuffer();
-
-      const png2xBuffer = await sharp(req.file.buffer)
-        .resize({ width: Math.min(metadata.width, 1000) })
-        .png().toBuffer();
-
-      const webpBuffer = await sharp(req.file.buffer).webp({ quality: 90 }).toBuffer();
-
-      variants.png_1x = { buffer: png1xBuffer, format: 'png' };
-      variants.png_2x = { buffer: png2xBuffer, format: 'png' };
-      variants.webp = { buffer: webpBuffer, format: 'webp' };
-    }
-
-    // 2. Upload Variants to Cloudinary
-    const uploadedUrls = {};
-    const baseId = `logo_${nanoid(10)}`;
-
-    if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
-      const uploadPromises = Object.keys(variants).map(async (key) => {
-        const variantData = variants[key];
-        return new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            {
-              folder: 'nfc/logos',
-              public_id: `${baseId}_${key}`,
-              resource_type: variantData.format === 'svg' ? 'raw' : 'image',
-              format: variantData.format
-            },
-            (error, result) => {
-              if (error) {
-                console.warn(`[Upload Logo] Cloudinary variant ${key} failed:`, error.message);
-                reject(error);
-              } else resolve({ key, url: result.secure_url });
-            }
-          );
-          uploadStream.end(variantData.buffer);
-        });
-      });
-
-      const results = await Promise.allSettled(uploadPromises);
-      results.forEach(res => {
-        if (res.status === 'fulfilled') {
-          uploadedUrls[res.value.key] = res.value.url;
-        }
-      });
-
-      if (Object.keys(uploadedUrls).length === 0) {
-        throw new Error('All Cloudinary variant uploads failed');
-      }
-
-    } else {
-      // Fallback: Local Storage
-      const base = absoluteBaseUrl(req);
-      for (const [key, variantData] of Object.entries(variants)) {
-        const tempName = `${baseId}_${key}.${variantData.format}`;
-        const tempOut = path.join(uploadDir, tempName);
-        fs.writeFileSync(tempOut, variantData.buffer);
-        uploadedUrls[key] = `${base}/uploads/${tempName}`;
-      }
-    }
-
-    // 3. Return Variant Map
-    return res.json({
-      success: true,
-      id: baseId,
-      variants: {
-        full: uploadedUrls
-      },
-      activeVariant: 'full' // Default active variant group
-    });
-
-  } catch (err) {
-    console.error('[Upload Logo] Error:', err);
-    res.status(500).json({ error: 'Failed to process logo upload.' });
+function assertAdmin(req, res) {
+  const expected = process.env.ADMIN_TOKEN || '';
+  const provided = req.headers['x-admin-token'] || '';
+  if (!expected || expected !== provided) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return false;
   }
-});
-
-// --- Avatar (Personal Photo) Upload Endpoint ---
-app.post('/api/upload-avatar', verifyToken, upload.single('avatar'), handleMulterErrors, async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No avatar file provided.' });
-    }
-
-    const mimeType = req.file.mimetype;
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(mimeType)) {
-      return res.status(400).json({ error: 'Invalid file type. Only JPG, PNG, and WebP are allowed for avatars.' });
-    }
-
-    const variants = {};
-    const image = sharp(req.file.buffer);
-    const metadata = await image.metadata();
-
-    // Strip EXIF and resize
-    const baseImage = image.withMetadata(false); // Strip EXIF
-
-    const processVariant = async (size) => {
-      // Create webp variants for avatars
-      return await baseImage.clone()
-        .resize({ width: Math.min(metadata.width, size), withoutEnlargement: true })
-        // Could inject focal crop logic here if client passes coordinates, or let client use object-position
-        .webp({ quality: 90 })
-        .toBuffer();
-    };
-
-    variants.thumb = { buffer: await processVariant(48), format: 'webp' };
-    variants.small = { buffer: await processVariant(128), format: 'webp' };
-    variants.medium = { buffer: await processVariant(256), format: 'webp' };
-    variants.large = { buffer: await processVariant(512), format: 'webp' };
-
-    const uploadedUrls = {};
-    const baseId = `avatar_${nanoid(10)}`;
-
-    if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
-      const uploadPromises = Object.keys(variants).map(async (key) => {
-        const variantData = variants[key];
-        return new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            {
-              folder: 'nfc/avatars', // Dedicated folder for avatars
-              public_id: `${baseId}_${key}`,
-              resource_type: 'image',
-              format: variantData.format
-            },
-            (error, result) => {
-              if (error) {
-                console.warn(`[Upload Avatar] Cloudinary variant ${key} failed:`, error.message);
-                reject(error);
-              } else resolve({ key, url: result.secure_url, public_id: result.public_id });
-            }
-          );
-          uploadStream.end(variantData.buffer);
-        });
-      });
-
-      const results = await Promise.allSettled(uploadPromises);
-      results.forEach(res => {
-        if (res.status === 'fulfilled') {
-          uploadedUrls[res.value.key] = res.value.url;
-        }
-      });
-
-      if (Object.keys(uploadedUrls).length === 0) {
-        throw new Error('All Cloudinary variant uploads failed');
-      }
-
-    } else {
-      // Fallback: Local Storage
-      const base = absoluteBaseUrl(req);
-      for (const [key, variantData] of Object.entries(variants)) {
-        const tempName = `${baseId}_${key}.${variantData.format}`;
-        const tempOut = path.join(uploadDir, tempName);
-        fs.writeFileSync(tempOut, variantData.buffer);
-        uploadedUrls[key] = `${base}/uploads/${tempName}`;
-      }
-    }
-
-    return res.json({
-      success: true,
-      id: baseId,
-      variants: { full: uploadedUrls },
-      activeVariant: 'full'
-    });
-
-  } catch (err) {
-    console.error('[Upload Avatar] Error:', err);
-    res.status(500).json({ error: 'Failed to process avatar upload.' });
-  }
-});
-
-// --- Avatar Delete Endpoint ---
-app.delete('/api/user/avatar', verifyToken, async (req, res) => {
-  try {
-    const publicId = req.query.public_id; // Pass specific ID or manage via db
-    if (publicId && config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
-      // Deleting specific file from Cloudinary 
-      // In a real app, you would verify ownership.
-      cloudinary.uploader.destroy(publicId, (error, result) => {
-        if (error) console.error("Cloudinary delete error:", error);
-      });
-    }
-    // Return success since it's fire and forget
-    res.json({ success: true, message: 'Avatar deleted successfully.' });
-  } catch (err) {
-    console.error('[Delete Avatar] Error:', err);
-    res.status(500).json({ error: 'Failed to delete avatar.' });
-  }
-});
-
-// Configure Cloudinary if credentials exist
-if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
-  cloudinary.config({
-    cloud_name: config.CLOUDINARY_CLOUD_NAME,
-    api_key: config.CLOUDINARY_API_KEY,
-    api_secret: config.CLOUDINARY_API_SECRET
-  });
+  return true;
 }
 
-// Cloudinary Signature Route (Ticket 5)
-app.get('/api/upload-signature', verifyToken, (req, res) => {
-  try {
-    if (!config.CLOUDINARY_API_SECRET && !process.env.CLOUDINARY_API_SECRET) {
-      return res.status(500).json({ error: 'Cloudinary is not configured on the server.' });
-    }
-
-    const timestamp = Math.round((new Date()).getTime() / 1000);
-    const signature = cloudinary.utils.api_sign_request(
-      { timestamp, folder: 'nfc/designs' },
-      config.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_API_SECRET
-    );
-
-    res.json({
-      signature,
-      timestamp,
-      cloudName: config.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME,
-      apiKey: config.CLOUDINARY_API_KEY || process.env.CLOUDINARY_API_KEY
-    });
-  } catch (error) {
-    console.error('Signature generation error', error);
-    res.status(500).json({ error: 'Failed to generate upload signature.' });
-  }
-});
-
-// Image upload route (Legacy proxy functionality)
 app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
@@ -944,42 +418,19 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
       return;
     }
 
+    // Process image with sharp
     const processedBuffer = await sharp(req.file.buffer)
       .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 85 })
       .toBuffer();
 
-    // 1. Try Cloudinary First
-    if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
-      try {
-        const uploadResult = await new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            {
-              folder: 'nfc/designs',
-              resource_type: 'image',
-              format: 'webp' // Force webp extension since our buffer is webp
-            },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          );
-          uploadStream.end(processedBuffer);
-        });
-
-        console.log('[Upload] Image saved to Cloudinary:', uploadResult.secure_url);
-        return res.json({ success: true, url: uploadResult.secure_url });
-      } catch (cloudErr) {
-        console.warn('[Upload] Cloudinary upload failed, falling back to external/local:', cloudErr.message);
-      }
-    }
-
-    // 2. Try External PHP Fallback (existing logic)
-    const externalUploadUrl = config.EXTERNAL_UPLOAD_URL;
-    const uploadSecret = config.UPLOAD_SECRET;
+    // Try to upload to external hosting (persistent storage)
+    const externalUploadUrl = process.env.EXTERNAL_UPLOAD_URL; // e.g. https://mcprim.com/nfc/upload.php
+    const uploadSecret = process.env.UPLOAD_SECRET;
 
     if (externalUploadUrl && uploadSecret) {
       try {
+        // Use Node.js built-in FormData and Blob (available in Node 18+)
         const blob = new Blob([processedBuffer], { type: 'image/webp' });
         const formData = new FormData();
         formData.append('image', blob, nanoid(10) + '.webp');
@@ -1006,7 +457,7 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
       }
     }
 
-    // 3. Ultimate Fallback: Local Disk
+    // Fallback: save locally (will be lost on Render restart)
     const filename = nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
     fs.writeFileSync(out, processedBuffer);
@@ -1018,237 +469,12 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
   } catch (e) {
     console.error('Image upload processing error:', e);
     if (!res.headersSent) {
-      res.status(500).json({ error: 'حدث خطأ غير متوقع أثناء معالجة الصورة.' });
+      return res.status(500).json({ error: 'فشل معالجة الصورة بعد الرفع.' });
     }
   }
 });
 
-// --- Templates API ---
-app.post('/api/templates', [
-  body('name').isString().isLength({ min: 1, max: 100 }),
-  body('state').isObject(),
-  body('isPublic').optional().isBoolean()
-], validateRequest, async (req, res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-    // Check for authenticated user
-    let ownerId = null;
-    const authHeader = req.headers['authorization'];
-    if (authHeader) {
-      try {
-        const token = authHeader.split(' ')[1];
-        const secret = config.JWT_SECRET;
-        const decoded = jwt.verify(token, secret);
-        ownerId = decoded.userId;
-      } catch (err) { }
-    }
-
-    if (!ownerId) {
-      return res.status(401).json({ error: 'يجب تسجيل الدخول لحفظ القوالب' }); // Must be logged in
-    }
-
-    const newTemplate = {
-      name: DOMPurify.sanitize(req.body.name),
-      state: req.body.state,
-      isPublic: req.body.isPublic || false,
-      ownerId: ownerId,
-      createdAt: new Date()
-    };
-
-    const templatesCollection = config.MONGO_TEMPLATES_COLL || 'templates';
-    const result = await db.collection(templatesCollection).insertOne(newTemplate);
-    res.json({ success: true, message: 'تم حفظ القالب بنجاح', templateId: result.insertedId });
-  } catch (error) {
-    console.error('Save template error:', error);
-    res.status(500).json({ error: 'حدث خطأ أثناء حفظ القالب' });
-  }
-});
-
-app.get('/api/templates', async (req, res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-    // Check for authenticated user
-    let ownerId = null;
-    const authHeader = req.headers['authorization'];
-    if (authHeader) {
-      try {
-        const token = authHeader.split(' ')[1];
-        const secret = config.JWT_SECRET;
-        const decoded = jwt.verify(token, secret);
-        ownerId = decoded.userId;
-      } catch (err) { }
-    }
-
-    // Build query: public templates OR templates owned by this user
-    const query = { $or: [{ isPublic: true }] };
-    if (ownerId) {
-      query.$or.push({ ownerId: ownerId });
-    }
-
-    const templatesCollection = config.MONGO_TEMPLATES_COLL || 'templates';
-    const templates = await db.collection(templatesCollection)
-      .find(query)
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .toArray();
-
-    res.json({ templates });
-  } catch (error) {
-    console.error('Get templates error:', error);
-    res.status(500).json({ error: 'حدث خطأ أثناء جلب القوالب' });
-  }
-});
-
-// --- Partial Element Update Route ---
-app.patch('/api/design/:id/element/:elementId', [
-  param('id').isString().trim(),
-  param('elementId').isString().trim(),
-  body().isObject()
-], validateRequest, async (req, res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-    // Check for authenticated user to enforce ownership (Must be owner to patch)
-    let ownerId = null;
-    const authHeader = req.headers['authorization'];
-    if (authHeader) {
-      try {
-        const token = authHeader.split(' ')[1];
-        const secret = config.JWT_SECRET;
-        const decoded = jwt.verify(token, secret);
-        ownerId = decoded.userId;
-      } catch (err) { }
-    }
-
-    if (!ownerId) {
-      return res.status(401).json({ error: 'يجب تسجيل الدخول لتعديل التصميم / You must be logged in' });
-    }
-
-    const designId = req.params.id;
-    const elementId = req.params.elementId;
-    const changes = req.body;
-
-    // Remove immutable fields if mistakenly sent
-    delete changes._id;
-    delete changes.id;
-
-    // Filter allowed properties (whitelist) to prevent malicious injection
-    const allowedKeys = ['style', 'position', 'content', 'src', 'contentHtml', 'classes', 'value', 'color', 'placement'];
-    const filteredChanges = {};
-    for (const key of Object.keys(changes)) {
-      if (allowedKeys.includes(key) || allowedKeys.includes(key.split('.')[0])) {
-        filteredChanges[key] = changes[key];
-      }
-    }
-
-    if (Object.keys(filteredChanges).length === 0) {
-      return res.status(400).json({ error: 'No valid properties to update' });
-    }
-
-    // Adapt to common structure, matching elements array inside data if it exists
-    // The user example provided `elements.$.${k}`
-    const updateKeys = Object.fromEntries(
-      Object.entries(filteredChanges).map(([k, v]) => [`data.elements.$.${k}`, v])
-    );
-    // Also include a fallback for the direct elements array if used
-    const fallbackUpdateKeys = Object.fromEntries(
-      Object.entries(filteredChanges).map(([k, v]) => [`elements.$.${k}`, v])
-    );
-
-    // Try updating data.elements first
-    let updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
-      { shortId: designId, 'data.elements.id': elementId, ownerId: ownerId },
-      { $set: updateKeys }
-    );
-
-    // Try fallback structure if data.elements array doesn't match
-    if (updateResult.matchedCount === 0) {
-      updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
-        { shortId: designId, 'elements.id': elementId, ownerId: ownerId },
-        { $set: fallbackUpdateKeys }
-      );
-    }
-
-    // Try adaptive update for current dynamic structures if elements array doesn't exist
-    if (updateResult.matchedCount === 0) {
-      // Find document first
-      const doc = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').findOne({ shortId: designId, ownerId: ownerId });
-      if (!doc) {
-        return res.status(404).json({ error: 'التصميم غير موجود أو لا تملك صلاحية تعديله / Design not found or no permission' });
-      }
-
-      const adaptiveUpdate = { $set: {} };
-      let found = false;
-
-      // Try mapping to data.dynamic.phones
-      if (doc.data?.dynamic?.phones?.some(p => p.id === elementId)) {
-        Object.entries(filteredChanges).forEach(([k, v]) => adaptiveUpdate.$set[`data.dynamic.phones.$[elem].${k}`] = v);
-        updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
-          { shortId: designId, ownerId: ownerId },
-          adaptiveUpdate,
-          { arrayFilters: [{ "elem.id": elementId }] }
-        );
-        found = true;
-      }
-      // Try mapping to data.dynamic.social
-      else if (doc.data?.dynamic?.social?.some(s => s.id === elementId)) {
-        Object.entries(filteredChanges).forEach(([k, v]) => adaptiveUpdate.$set[`data.dynamic.social.$[elem].${k}`] = v);
-        updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne(
-          { shortId: designId, ownerId: ownerId },
-          adaptiveUpdate,
-          { arrayFilters: [{ "elem.id": elementId }] }
-        );
-        found = true;
-      }
-      // Try mapping to data.positions
-      else if (doc.data?.positions && doc.data.positions[elementId]) {
-        if (filteredChanges.position) {
-          adaptiveUpdate.$set[`data.positions.${elementId}`] = filteredChanges.position;
-          updateResult = await db.collection(config.MONGO_DESIGNS_COLL || 'designs').updateOne({ shortId: designId, ownerId: ownerId }, adaptiveUpdate);
-          found = true;
-        }
-      }
-
-      if (!found) {
-        return res.status(404).json({ error: 'العنصر غير موجود في هذا التصميم / Element not found in this design' });
-      }
-    }
-
-    res.json({ success: true, message: 'تم تحديث العنصر بنجاح / Element updated successfully' });
-  } catch (error) {
-    console.error('Patch element error:', error);
-    res.status(500).json({ error: 'حدث خطأ أثناء تحديث العنصر / Error updating element' });
-  }
-});
-
-// --- Save design route (مع تنظيف المدخلات والحماية) ---
-app.post('/api/save-design', [
-  // Object Type Validations
-  body('inputs').optional().isObject(),
-  body('dynamic').optional().isObject(),
-  body('imageUrls').optional().isObject(),
-
-  // Specific inputs limits
-  body('inputs.input-name').optional().isString().isLength({ max: 100 }),
-  body('inputs.input-tagline').optional().isString().isLength({ max: 200 }),
-
-  // Dynamic Arrays Bounds
-  body('dynamic.phones').optional().isArray({ max: 10 }),
-  body('dynamic.phones.*.value').optional().isString().isLength({ max: 50 }),
-
-  body('dynamic.social').optional().isArray({ max: 20 }),
-  body('dynamic.social.*.platform').optional().isString().isLength({ max: 50 }),
-  body('dynamic.social.*.value').optional().isString().isLength({ max: 300 }),
-
-  // Static Social Object Bounds
-  body('dynamic.staticSocial').optional().isObject(),
-  body('dynamic.staticSocial.*.value').optional().isString().isLength({ max: 300 }),
-
-  // ID Param
-  query('id').optional().isString().trim().escape()
-], validateRequest, async (req, res) => {
+app.post('/api/save-design', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     let data = req.body || {};
@@ -1278,8 +504,7 @@ app.post('/api/save-design', [
     if (authHeader) {
       try {
         const token = authHeader.split(' ')[1];
-        const secret = config.JWT_SECRET;
-        if (!secret) throw new Error('JWT_SECRET is not configured.');
+        const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
         const decoded = jwt.verify(token, secret);
         ownerId = decoded.userId;
       } catch (err) {
@@ -1303,10 +528,12 @@ app.post('/api/save-design', [
     }
 
     if (isUpdate) {
+      // Preserve captured card images during auto-save (which doesn't capture images)
       const existingDoc = await db.collection(designsCollectionName).findOne({ shortId: shortId });
       if (existingDoc?.data?.imageUrls) {
         if (!data.imageUrls) data.imageUrls = {};
         const existing = existingDoc.data.imageUrls;
+        // If update has no captured images, keep existing ones
         if (!data.imageUrls.capturedFront && existing.capturedFront) {
           data.imageUrls.capturedFront = existing.capturedFront;
           data.imageUrls.front = existing.capturedFront;
@@ -1331,6 +558,7 @@ app.post('/api/save-design', [
         { $set: updateDoc }
       );
     } else {
+      // Enforce max 10 designs per user
       if (ownerId) {
         const designCount = await db.collection(designsCollectionName).countDocuments({ ownerId });
         if (designCount >= 10) {
@@ -1353,165 +581,33 @@ app.post('/api/save-design', [
   }
 });
 
-// --- Get Design Data (Ticket 10 - Redis Cached Route) ---
-app.get('/api/get-design/:id', [
-  param('id').isString().notEmpty().trim().escape()
-], validateRequest, async (req, res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const { id } = req.params;
-
-    // 1. Try reading from Redis Native Cache (300s TTL)
-    if (redisClient && redisClient.isReady) {
-      try {
-        const cachedPayload = await redisClient.get(`api:design_v2:${id}`);
-        if (cachedPayload) {
-          res.setHeader('X-Cache', 'HIT');
-          return res.json(JSON.parse(cachedPayload));
-        }
-      } catch (redisErr) {
-        console.warn('Redis Cache Read Failed:', redisErr.message);
-      }
-    }
-
-    // 2. Fallback to MongoDB Query
-    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-    if (!doc) return res.status(404).json({ error: 'Design not found' });
-
-    const payload = doc.data;
-
-    // 3. Populate Redis Cache asynchronously (300 seconds TTL)
-    res.setHeader('X-Cache', 'MISS');
-    if (redisClient && redisClient.isReady) {
-      try {
-        await redisClient.setEx(`api:design_v2:${id}`, 300, JSON.stringify(payload));
-      } catch (redisSetErr) {
-        console.warn('Redis Cache Write Failed:', redisSetErr.message);
-      }
-    }
-
-    return res.json(payload);
-  } catch (err) {
-    console.error('Fetch design error:', err);
-    res.status(500).json({ error: 'Failed to retrieve design data' });
-  }
-});
-
-// -------------------------
-// === TEMPLATES API ===
-// -------------------------
-
-app.post('/api/templates', verifyToken, [
-  body('name').isString().trim().notEmpty().withMessage('Name is required').escape(),
-  body('state').isObject().withMessage('State is required'),
-  body('thumbnailUrl').optional().isString().trim(),
-  body('isPublic').optional().isBoolean()
-], validateRequest, async (req, res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-    const userId = req.user.userId;
-    const { name, state, thumbnailUrl, isPublic } = req.body;
-
-    const templateId = nanoid(10);
-    const template = {
-      templateId,
-      ownerId: userId,
-      name,
-      state,
-      thumbnailUrl: thumbnailUrl || '',
-      isPublic: !!isPublic,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    await db.collection(templatesCollectionName).insertOne(template);
-    res.status(201).json({ success: true, template });
-  } catch (error) {
-    console.error('Save template error:', error);
-    res.status(500).json({ error: 'Failed to save template.' });
-  }
-});
-
-app.get('/api/templates', verifyToken, async (req, res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-    const userId = req.user.userId;
-    const filter = {
-      $or: [
-        { ownerId: userId },
-        { isPublic: true }
-      ]
-    };
-
-    const templates = await db.collection(templatesCollectionName)
-      .find(filter)
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .toArray();
-
-    res.json({ success: true, templates });
-  } catch (error) {
-    console.error('Fetch templates error:', error);
-    res.status(500).json({ error: 'Failed to fetch templates.' });
-  }
-});
-
-app.delete('/api/templates/:id', verifyToken, [
-  param('id').isString().trim().escape()
-], validateRequest, async (req, res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-    const templateId = req.params.id;
-    const userId = req.user.userId;
-
-    const result = await db.collection(templatesCollectionName).deleteOne({
-      templateId,
-      ownerId: userId
-    });
-
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ error: 'Template not found or unauthorized' });
-    }
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Delete template error:', error);
-    res.status(500).json({ error: 'Failed to delete template.' });
-  }
-});
-
-// -------------------------
-// === AUTH ROUTES (كما لديك) ===
-// -------------------------
+// --- AUTHENTICATION ROUTES ---
 
 // Register
 app.post('/api/auth/register', [
-  body('email').isEmail().withMessage('Enter a valid email address').normalizeEmail(),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-  body('name').trim().notEmpty().withMessage('Name is required').escape(),
-  body('phone').optional().isString().trim().escape()
-], validateRequest, async (req, res) => {
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 6 }),
+  body('name').trim().notEmpty()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
-    const { email, password, name, phone } = req.body;
+    const { email, password, name } = req.body;
 
     // Check if user exists
     const existingUser = await db.collection(usersCollectionName).findOne({ email });
-    if (existingUser) return res.status(400).json({ error: 'User already exists' });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Encrypt sensitive phone if present
-    let phoneEncrypted = undefined;
-    if (phone) {
-      try { phoneEncrypted = encrypt(phone); } catch (e) { console.warn('Phone encryption failed:', e.message); }
-    }
 
     // Create user
     const userId = nanoid(10);
@@ -1520,14 +616,12 @@ app.post('/api/auth/register', [
       email,
       password: hashedPassword,
       name,
-      phoneEncrypted,
       isVerified: false,
       createdAt: new Date()
     });
 
     // Generate verification token
-    const secret = config.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: 'Server configuration error' });
+    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
     const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
 
     // Store verification token
@@ -1537,7 +631,7 @@ app.post('/api/auth/register', [
     );
 
     // Send verification email (non-blocking)
-    const baseUrl = config.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
+    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
     const verifyUrl = `${baseUrl}/verify-email.html?token=${verificationToken}`;
     try {
       const emailTemplate = EmailService.verificationEmail(name, verifyUrl);
@@ -1546,31 +640,10 @@ app.post('/api/auth/register', [
       console.warn('[Register] Email sending failed (non-blocking):', emailErr.message);
     }
 
-    // Generate login tokens
-    const accessToken = createAccessToken({ userId, email });
-    const refreshToken = createRefreshToken();
-    const hashedRefreshToken = hashToken(refreshToken);
+    // Generate login token
+    const token = jwt.sign({ userId, email }, secret, { expiresIn: '7d' });
 
-    const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
-
-    // Store refresh token in new collection
-    await db.collection(refreshTokensCollectionName).insertOne({
-      userId,
-      tokenHash: hashedRefreshToken,
-      createdAt: new Date(),
-      expiresAt,
-      userAgent: req.useragent.source
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: config.NODE_ENV === 'production',
-      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
-      path: '/api/auth', // Scoped strictly to auth routes
-      maxAge: 7 * 24 * 3600 * 1000 // 7 days
-    });
-
-    res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
+    res.status(201).json({ success: true, token, user: { name, email, userId, isVerified: false } });
 
   } catch (err) {
     if (err.code === 11000) {
@@ -1584,44 +657,33 @@ app.post('/api/auth/register', [
 
 // Login
 app.post('/api/auth/login', [
-  body('email').isEmail().withMessage('Enter a valid email address').normalizeEmail(),
-  body('password').exists().withMessage('Password is required')
-], validateRequest, async (req, res) => {
+  body('email').isEmail().normalizeEmail(),
+  body('password').exists()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
     const { email, password } = req.body;
+
     const user = await db.collection(usersCollectionName).findOne({ email });
-    if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
 
-    // Generate login tokens
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
-    const refreshToken = createRefreshToken();
-    const hashedRefreshToken = hashToken(refreshToken);
+    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const token = jwt.sign({ userId: user.userId, email: user.email }, secret, { expiresIn: '7d' });
 
-    const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
-
-    // Store refresh token in new collection
-    await db.collection(refreshTokensCollectionName).insertOne({
-      userId: user.userId,
-      tokenHash: hashedRefreshToken,
-      createdAt: new Date(),
-      expiresAt,
-      userAgent: req.useragent.source
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: config.NODE_ENV === 'production',
-      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
-      path: '/api/auth', // Scoped strictly to auth routes
-      maxAge: 7 * 24 * 3600 * 1000 // 7 days
-    });
-
-    res.json({ success: true, token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } });
+    res.json({ success: true, token, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Login error:', err);
@@ -1629,304 +691,779 @@ app.post('/api/auth/login', [
   }
 });
 
-// Refresh Token
-app.post('/api/auth/refresh', [
-  cookie('refreshToken').optional().isString().withMessage('Invalid token format')
-], validateRequest, async (req, res) => {
-  try {
-    const { refreshToken } = req.cookies;
-    if (!refreshToken) return res.status(401).json({ error: 'No refresh token provided' });
-
-    const hashedToken = hashToken(refreshToken);
-
-    // Find the token record in the new collection
-    const tokenRecord = await db.collection(refreshTokensCollectionName).findOne({
-      tokenHash: hashedToken,
-      expiresAt: { $gt: new Date() }
-    });
-
-    if (!tokenRecord) {
-      // REUSE DETECTION LOGIC:
-      // The token was presented (so it was cryptographically signed and stored by the client)
-      // but it is not in our active token database. This implies it was already rotated (used) 
-      // by someone else, or the user logged out.
-      // If the token is cryptographically valid (checked via structure, though here it's an opaque hex),
-      // its absence from the DB when presented means it was revoked or used.
-      // We will identify the user (if possible from the token, but with opaque hex tokens we can't easily 
-      // know the userId unless we encoded it or stored a mapping of used tokens).
-      // Since our refresh token `crypto.randomBytes` is completely opaque and not a JWT, 
-      // we cannot extract `userId` from a token NOT in the database.
-      // However, we effectively block access.
-      res.clearCookie('refreshToken', { path: '/api/auth' });
-      return res.status(403).json({ error: 'Refresh token invalid, expired, or previously used' });
-    }
-
-    const user = await db.collection(usersCollectionName).findOne({ userId: tokenRecord.userId });
-    if (!user) {
-      return res.status(403).json({ error: 'User not found' });
-    }
-
-    // ROTATION LOGIC:
-    // Remove the old token from DB
-    await db.collection(refreshTokensCollectionName).deleteOne({ _id: tokenRecord._id });
-
-    // Issue a new access token
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
-
-    // Issue a new refresh token
-    const newRefreshToken = createRefreshToken();
-    const newHashedToken = hashToken(newRefreshToken);
-    const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
-
-    // Store the new refresh token
-    await db.collection(refreshTokensCollectionName).insertOne({
-      userId: user.userId,
-      tokenHash: newHashedToken,
-      createdAt: new Date(),
-      expiresAt,
-      userAgent: req.useragent.source
-    });
-
-    // Set the new strictly scoped cookie
-    res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
-      secure: config.NODE_ENV === 'production',
-      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
-      path: '/api/auth',
-      maxAge: 7 * 24 * 3600 * 1000
-    });
-
-    res.json({ success: true, token: accessToken });
-
-  } catch (err) {
-    console.error('Refresh token error:', err);
-    res.status(500).json({ error: 'Failed to refresh token' });
-  }
-});
-
-// Logout
-app.post('/api/auth/logout', [
-  cookie('refreshToken').optional().isString().withMessage('Invalid token format')
-], validateRequest, async (req, res) => {
-  try {
-    const { refreshToken } = req.cookies;
-    if (refreshToken) {
-      const hashedToken = hashToken(refreshToken);
-      // Remove token from new collection
-      await db.collection(refreshTokensCollectionName).deleteOne({ tokenHash: hashedToken });
-    }
-
-    // Always clear the cookie regardless with strict path
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: config.NODE_ENV === 'production',
-      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
-      path: '/api/auth'
-    });
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error('Logout error:', err);
-    res.status(500).json({ error: 'Logout failed' });
-  }
-});
-
-// ---------- Google OAuth2 (popup flow) ----------
+// Google OAuth - Initiate Flow
 app.get('/api/auth/google', (req, res) => {
-  try {
-    const clientId = config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
-    if (!clientId) {
-      console.error('[Google OAuth] GOOGLE_CLIENT_ID not configured');
-      return res.status(500).send('Google OAuth is not configured on the server.');
-    }
-
-    const redirectUri = `${publicBaseUrl}/api/auth/google/callback`;
-    const state = nanoid(16);
-
-    // Save state in HttpOnly cookie to validate on callback
-    res.cookie('oauth_state', state, {
-      httpOnly: true,
-      secure: config.NODE_ENV === 'production',
-      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax', // Lax allows top-level navigation from popup to send cookie, None allows cross-site
-      maxAge: 5 * 60 * 1000
-    });
-
-    const scope = encodeURIComponent('openid email profile');
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}&prompt=select_account`;
-
-    // Prevent browsers from caching the old 302 redirects lacking the 'state' parameters
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-
-    return res.redirect(authUrl);
-  } catch (err) {
-    console.error('[Google OAuth] initiation error:', err);
-    return res.status(500).send('OAuth initiation failed: ' + String(err));
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) {
+    return res.status(500).send('Google OAuth not configured');
   }
+
+  // Use dynamic host for redirect URI to support both localhost and production
+  const proto = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.get('host');
+  const redirectUri = `${proto}://${host}/api/auth/google/callback`;
+
+  console.log('------------------------------------------------');
+  console.log('DEBUG: Google OAuth Redirect URI:', redirectUri);
+  console.log('DEBUG: Please ensure this EXACT URL is added to Authorized redirect URIs in Google Cloud Console');
+  console.log('------------------------------------------------');
+
+  const scope = 'email profile';
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
+
+  res.redirect(authUrl);
 });
 
+// Google OAuth - Callback Handler
 app.get('/api/auth/google/callback', async (req, res) => {
-  try {
-    console.log('[Google OAuth] callback hit, query:', req.query);
-    const { code, state } = req.query;
-    const savedState = req.cookies && req.cookies.oauth_state;
+  const { code, error } = req.query;
 
-    if (!code || !state || !savedState || state !== savedState) {
-      const errMsg = 'Invalid OAuth state or missing authorization code.';
-      console.warn('[Google OAuth] state validation failed', { codeExists: !!code, stateMatch: state === savedState });
-      return res.send(`<html><body><script nonce="${res.locals.nonce}">window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*'); window.close();</script></body></html>`);
-    }
+  if (error || !code) {
+    return res.send(`
+      <script>
+        window.opener.postMessage({ type: 'google-auth', success: false, error: '${error || 'Authorization failed'}' }, '*');
+        window.close();
+      </script>
+    `);
+  }
+
+  try {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    // Use dynamic host for redirect URI to support both localhost and production
+    const proto = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.get('host');
+    const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
     // Exchange code for tokens
-    const tokenResp = await fetch('https://oauth2.googleapis.com/token', {
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code,
-        client_id: config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
-        client_secret: config.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${publicBaseUrl}/api/auth/google/callback`,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
         grant_type: 'authorization_code'
       })
     });
-    const tokenJson = await tokenResp.json();
-    console.log('[Google OAuth] token exchange response:', tokenJson);
 
-    if (!tokenJson || tokenJson.error) {
-      const errMsg = tokenJson?.error_description || tokenJson?.error || 'Token exchange failed';
-      console.error('[Google OAuth] token exchange failed', tokenJson);
-      return res.send(`<html><body><script nonce="${res.locals.nonce}">window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*'); window.close();</script></body></html>`);
-    }
+    const tokens = await tokenResponse.json();
+    if (!tokens.access_token) throw new Error('No access token');
 
-    const idToken = tokenJson.id_token;
-    if (!idToken) {
-      const errMsg = 'Missing id_token from Google.';
-      console.error('[Google OAuth] no id_token in token response');
-      return res.send(`<html><body><script nonce="${res.locals.nonce}">window.opener.postMessage({ type: 'google-auth', success: false, error: ${JSON.stringify(errMsg)} }, '*'); window.close();</script></body></html>`);
-    }
+    // Get user info
+    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` }
+    });
+    const googleUser = await userInfoResponse.json();
 
-    // Validate id_token
-    const infoResp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
-    const userInfo = await infoResp.json();
-    console.log('[Google OAuth] id_token info:', userInfo);
+    if (!googleUser.email) throw new Error('No email from Google');
 
-    const expectedClientId = config.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
-    if (!userInfo || userInfo.error_description || userInfo.aud !== expectedClientId) {
-      console.error('[Google OAuth] Invalid id_token info', userInfo);
-      return res.send(`<html><body><script nonce="${res.locals.nonce}">window.opener.postMessage({ type: 'google-auth', success: false, error: 'Invalid id_token' }, '*'); window.close();</script></body></html>`);
-    }
-
-    // userInfo contains email, email_verified, name, picture, sub
-    const email = String(userInfo.email).toLowerCase();
-    let user = await db.collection(usersCollectionName).findOne({ email });
+    // Find or create user
+    let user = await db.collection(usersCollectionName).findOne({ email: googleUser.email });
 
     if (!user) {
       // Create new user
-      const newUser = {
-        userId: nanoid(10),
-        email,
-        name: userInfo.name || '',
-        picture: userInfo.picture || '',
-        isVerified: true,
+      const userId = nanoid(10);
+      await db.collection(usersCollectionName).insertOne({
+        userId,
+        email: googleUser.email,
+        name: googleUser.name || googleUser.email.split('@')[0],
+        googleId: googleUser.id,
+        isVerified: true, // Google accounts are pre-verified
         createdAt: new Date()
-      };
-      await db.collection(usersCollectionName).insertOne(newUser);
-      user = newUser;
-      console.log('[Google OAuth] created new user', user.userId);
-    } else {
-      console.log('[Google OAuth] found user', user.userId);
+      });
+      user = { userId, email: googleUser.email, name: googleUser.name };
     }
 
-    // Issue access token + refresh token (store hashed refresh token)
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
-    const refreshToken = createRefreshToken();
-    const hashed = hashToken(refreshToken);
-    const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+    // Generate JWT
+    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const jwtToken = jwt.sign({ userId: user.userId, email: user.email }, secret, { expiresIn: '7d' });
 
-    await db.collection(refreshTokensCollectionName).insertOne({
-      tokenHash: hashed,
-      userId: user.userId,
-      createdAt: new Date(),
-      expiresAt,
-      userAgent: req.useragent ? req.useragent.source : '',
-      ip: req.ip
-    });
+    // Send success back to opener
+    res.send(`
+      <script>
+        window.opener.postMessage({
+          type: 'google-auth',
+          success: true,
+          token: '${jwtToken}',
+          user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
+        }, '*');
+        window.close();
+      </script>
+    `);
 
-    // Set HttpOnly cookie for refresh token
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: config.NODE_ENV === 'production',
-      sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
-      maxAge: 7 * 24 * 3600 * 1000
-    });
-
-    // Send success message back to popup opener and close popup
-    const safeUser = { name: user.name, email: user.email, userId: user.userId, picture: user.picture };
-    const payload = { type: 'google-auth', success: true, token: accessToken, user: safeUser };
-    return res.send(`<html><body><script nonce="${res.locals.nonce}">try{window.opener.postMessage(${JSON.stringify(payload)}, '*');}catch(e){} window.close();</script></body></html>`);
   } catch (err) {
-    console.error('[Google OAuth] callback error:', err);
-    return res.send(`<html><body><script nonce="${res.locals.nonce}">window.opener.postMessage({ type: 'google-auth', success: false, error: 'Internal server error' }, '*'); window.close();</script></body></html>`);
+    console.error('Google OAuth error:', err);
+    res.send(`
+      <script>
+        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '*');
+        window.close();
+      </script>
+    `);
   }
 });
 
-// --- NFC API ---
-app.post('/api/nfc/sign', verifyToken, [
-  body('designId').isString().notEmpty().trim().escape()
-], validateRequest, async (req, res) => {
-  try {
-    const { designId } = req.body;
+// Forgot Password - Request Reset Link
+app.post('/api/auth/forgot-password', [
+  body('email').isEmail().normalizeEmail()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-    // التحقق من أن المستخدم يملك هذا التصميم
-    const design = await db.collection(designsCollectionName).findOne({ shortId: designId, ownerId: req.user.userId });
-    if (!design) {
-      return res.status(403).json({ error: 'عذراً لا تملك الصلاحية لإصدار رابط تنشيط NFC لهذا التصميم.' });
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const { email } = req.body;
+    const user = await db.collection(usersCollectionName).findOne({ email });
+
+    // Always return success to prevent email enumeration
+    if (!user) {
+      console.log(`[ForgotPassword] Email not found: ${email}`);
+      return res.json({ success: true });
     }
 
-    // إصدار التوكن طويل الأمد (مثلاً 30 يوم لبرمجة الشرائح المادية بحيث تظل تعمل، أو يمكن زيادتها)
-    const token = jwt.sign({ designId }, config.JWT_SECRET, { expiresIn: '30d' });
+    // Generate reset token
+    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    const resetToken = jwt.sign({ userId: user.userId, email: user.email, type: 'password-reset' }, secret, { expiresIn: '1h' });
 
-    const baseUrl = config.PUBLIC_BASE_URL || absoluteBaseUrl(req);
-    const signedUrl = `${baseUrl.replace(/\/+$/, '')}/r/${token}`;
+    // Store reset token in DB
+    await db.collection(usersCollectionName).updateOne(
+      { userId: user.userId },
+      { $set: { resetToken, resetTokenExpiry: new Date(Date.now() + 3600000) } }
+    );
 
-    return res.json({ success: true, signedUrl });
-  } catch (error) {
-    console.error('Error signing NFC url:', error);
-    res.status(500).json({ error: 'حدث خطأ أثناء إعداد الرابط الموقّع.' });
+    // TODO: Send email with reset link
+    // For now, log the reset link (in production, use email service)
+    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
+    const resetLink = `${baseUrl}/reset-password.html?token=${resetToken}`;
+    console.log(`[ForgotPassword] Reset link for ${email}: ${resetLink}`);
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ error: 'Failed to process request' });
   }
 });
 
-// --- بقية مسارات الـ auth (forgot/reset/verify) كذلك كما في كودك الأصلي ---
-// (لقد أبقيت المسارات كما هي في ملفك الأصلي - لم أغيرها عدا استخدام encrypt عند الحاجة)
-// .. بقية الشيفرة موجودة (forgot-password, reset-password, verify-email, user/designs, card privacy, save-card, saved-cards, card-requests, gallery, robots, sitemap, healthz etc.)
-// (لأجل الإيجاز لم أعِد تكرار كامل الشيفرة هنا لأنك زودتني بها بالكامل — إن رغبت أدرجتها كاملة)
+// Reset Password - Set New Password
+app.post('/api/auth/reset-password/:token', [
+  body('password').isLength({ min: 6 })
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-// --- Sentry ErrorHandler (Must be before custom error handler) ---
-if (process.env.SENTRY_DSN) {
-  app.use(Sentry.Handlers.errorHandler());
-}
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
 
-// ----- Error handler -----
+    const { token } = req.params;
+    const { password } = req.body;
+
+    // Verify token
+    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    let decoded;
+    try {
+      decoded = jwt.verify(token, secret);
+      if (decoded.type !== 'password-reset') throw new Error('Invalid token type');
+    } catch (tokenErr) {
+      return res.status(400).json({ error: 'رابط غير صالح أو منتهي الصلاحية' });
+    }
+
+    // Find user and verify token matches
+    const user = await db.collection(usersCollectionName).findOne({ userId: decoded.userId, resetToken: token });
+    if (!user) {
+      return res.status(400).json({ error: 'رابط غير صالح أو منتهي الصلاحية' });
+    }
+
+    // Check token expiry
+    if (new Date() > new Date(user.resetTokenExpiry)) {
+      return res.status(400).json({ error: 'انتهت صلاحية الرابط، اطلب رابطاً جديداً' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Update password and clear reset token
+    await db.collection(usersCollectionName).updateOne(
+      { userId: user.userId },
+      { $set: { password: hashedPassword }, $unset: { resetToken: '', resetTokenExpiry: '' } }
+    );
+
+    console.log(`[ResetPassword] Password updated for user: ${user.email}`);
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+// Verify Email
+app.get('/api/auth/verify-email/:token', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const { token } = req.params;
+
+    // Verify token
+    const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+    let decoded;
+    try {
+      decoded = jwt.verify(token, secret);
+      if (decoded.type !== 'email-verify') throw new Error('Invalid token type');
+    } catch (tokenErr) {
+      return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
+    }
+
+    // Find user and verify token matches
+    const user = await db.collection(usersCollectionName).findOne({ userId: decoded.userId, verificationToken: token });
+    if (!user) {
+      return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
+    }
+
+    // Check if already verified
+    if (user.isVerified) {
+      return res.json({ success: true, message: 'البريد مُتحقق مسبقاً' });
+    }
+
+    // Update user as verified
+    await db.collection(usersCollectionName).updateOne(
+      { userId: user.userId },
+      { $set: { isVerified: true }, $unset: { verificationToken: '' } }
+    );
+
+    console.log(`[VerifyEmail] Email verified for user: ${user.email}`);
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('Verify email error:', err);
+    res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
+// Get User Profile/Designs
+app.get('/api/user/designs', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const designs = await db.collection(designsCollectionName)
+      .find({ ownerId: req.user.userId })
+      .project({
+        'data.inputs.input-name_ar': 1,
+        'data.inputs.input-name_en': 1,
+        'shortId': 1,
+        'createdAt': 1,
+        'views': 1,
+        'data.imageUrls.front': 1
+      })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.json({ success: true, designs });
+  } catch (err) {
+    console.error('Get user designs error:', err);
+    res.status(500).json({ error: 'Failed to fetch designs' });
+  }
+});
+
+// ===== CARD SAVE WITH CONSENT FEATURE =====
+
+// Get card privacy setting
+app.get('/api/card-privacy', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const user = await db.collection(usersCollectionName).findOne(
+      { userId: req.user.userId },
+      { projection: { cardPrivacy: 1 } }
+    );
+    res.json({ success: true, cardPrivacy: user?.cardPrivacy || 'require_approval' });
+  } catch (err) {
+    console.error('Get card privacy error:', err);
+    res.status(500).json({ error: 'Failed to get privacy setting' });
+  }
+});
+
+// Update card privacy setting
+app.put('/api/card-privacy', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const { cardPrivacy } = req.body;
+    if (!['allow_all', 'require_approval', 'deny_all'].includes(cardPrivacy)) {
+      return res.status(400).json({ error: 'Invalid privacy setting' });
+    }
+    await db.collection(usersCollectionName).updateOne(
+      { userId: req.user.userId },
+      { $set: { cardPrivacy } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Update card privacy error:', err);
+    res.status(500).json({ error: 'Failed to update privacy setting' });
+  }
+});
+
+// Request to save someone's card
+app.post('/api/save-card/:designId', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const designId = String(req.params.designId);
+    const requesterId = req.user.userId;
+
+    // Find the design
+    const design = await db.collection(designsCollectionName).findOne({ shortId: designId });
+    if (!design) return res.status(404).json({ error: 'Design not found' });
+
+    // Can't save your own card
+    if (design.ownerId === requesterId) {
+      return res.status(400).json({ error: 'Cannot save your own card' });
+    }
+
+    // Check if already saved
+    const existing = await db.collection(savedCardsCollectionName).findOne({
+      userId: requesterId, designShortId: designId
+    });
+    if (existing) return res.json({ success: true, status: 'already_saved' });
+
+    // Check if request already pending
+    const pendingRequest = await db.collection(cardRequestsCollectionName).findOne({
+      requesterId, designShortId: designId, status: 'pending'
+    });
+    if (pendingRequest) return res.json({ success: true, status: 'already_requested' });
+
+    // Get owner's privacy setting
+    let ownerPrivacy = 'require_approval';
+    if (design.ownerId) {
+      const owner = await db.collection(usersCollectionName).findOne(
+        { userId: design.ownerId },
+        { projection: { cardPrivacy: 1, email: 1, name: 1 } }
+      );
+      ownerPrivacy = owner?.cardPrivacy || 'require_approval';
+    }
+
+    // Get requester info
+    const requester = await db.collection(usersCollectionName).findOne(
+      { userId: requesterId },
+      { projection: { name: 1, email: 1 } }
+    );
+
+    const cardName = design.data?.inputs?.['input-name_ar'] || design.data?.inputs?.['input-name_en'] || 'بطاقة';
+
+    if (ownerPrivacy === 'deny_all') {
+      return res.status(403).json({ error: 'Card owner does not allow saving', status: 'denied' });
+    }
+
+    if (ownerPrivacy === 'allow_all' || !design.ownerId) {
+      // Save directly
+      await db.collection(savedCardsCollectionName).insertOne({
+        userId: requesterId,
+        designShortId: designId,
+        ownerName: cardName,
+        cardThumb: design.data?.imageUrls?.front || null,
+        savedAt: new Date()
+      });
+      return res.json({ success: true, status: 'saved' });
+    }
+
+    // require_approval: create a request
+    await db.collection(cardRequestsCollectionName).insertOne({
+      requesterId,
+      requesterName: requester?.name || 'مستخدم',
+      requesterEmail: requester?.email || '',
+      designShortId: designId,
+      cardName,
+      cardThumb: design.data?.imageUrls?.front || null,
+      ownerUserId: design.ownerId,
+      status: 'pending',
+      createdAt: new Date()
+    });
+
+    // Send email notification to owner
+    if (owner && owner.email) {
+      const link = 'https://mcprim.com/nfc/dashboard.html?tab=card-requests'; // Or dynamic host
+      const emailContent = EmailService.cardRequestEmail(
+        owner.name || 'مستخدم',
+        requester?.name || 'مستخدم',
+        cardName,
+        link
+      );
+      // Fire and forget (don't await to avoid delaying response)
+      EmailService.send({
+        to: owner.email,
+        subject: emailContent.subject,
+        html: emailContent.html
+      }).catch(err => console.error('Failed to send request email:', err));
+    }
+
+    res.json({ success: true, status: 'requested' });
+  } catch (err) {
+    console.error('Save card error:', err);
+    res.status(500).json({ error: 'Failed to process save request' });
+  }
+});
+
+// Get user's saved cards
+app.get('/api/saved-cards', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const savedCards = await db.collection(savedCardsCollectionName)
+      .find({ userId: req.user.userId })
+      .sort({ savedAt: -1 })
+      .toArray();
+    res.json({ success: true, savedCards });
+  } catch (err) {
+    console.error('Get saved cards error:', err);
+    res.status(500).json({ error: 'Failed to fetch saved cards' });
+  }
+});
+
+// Remove a saved card
+app.delete('/api/saved-cards/:designId', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    await db.collection(savedCardsCollectionName).deleteOne({
+      userId: req.user.userId,
+      designShortId: String(req.params.designId)
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete saved card error:', err);
+    res.status(500).json({ error: 'Failed to remove saved card' });
+  }
+});
+
+// Get pending card requests count (for badge)
+app.get('/api/card-requests/count', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const count = await db.collection(cardRequestsCollectionName).countDocuments({
+      ownerUserId: req.user.userId,
+      status: 'pending'
+    });
+    res.json({ success: true, count });
+  } catch (err) {
+    console.error('Get card requests count error:', err);
+    res.status(500).json({ error: 'Failed to get request count' });
+  }
+});
+
+// Get card requests for card owner
+app.get('/api/card-requests', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const requests = await db.collection(cardRequestsCollectionName)
+      .find({ ownerUserId: req.user.userId })
+      .sort({ createdAt: -1 })
+      .toArray();
+    res.json({ success: true, requests });
+  } catch (err) {
+    console.error('Get card requests error:', err);
+    res.status(500).json({ error: 'Failed to fetch requests' });
+  }
+});
+
+// Approve or reject a card request
+app.put('/api/card-requests/:requestId', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const { ObjectId } = require('mongodb');
+    const requestId = req.params.requestId;
+    const { action } = req.body; // 'approve' or 'reject'
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    const request = await db.collection(cardRequestsCollectionName).findOne({
+      _id: new ObjectId(requestId),
+      ownerUserId: req.user.userId
+    });
+
+    if (!request) return res.status(404).json({ error: 'Request not found' });
+    if (request.status !== 'pending') return res.status(400).json({ error: 'Request already processed' });
+
+    // Update request status
+    await db.collection(cardRequestsCollectionName).updateOne(
+      { _id: new ObjectId(requestId) },
+      { $set: { status: action === 'approve' ? 'approved' : 'rejected', processedAt: new Date() } }
+    );
+
+    // If approved, add to saved cards
+    if (action === 'approve') {
+      try {
+        await db.collection(savedCardsCollectionName).insertOne({
+          userId: request.requesterId,
+          designShortId: request.designShortId,
+          ownerName: request.cardName,
+          cardThumb: request.cardThumb,
+          savedAt: new Date()
+        });
+      } catch (dupErr) {
+        // Already saved, ignore duplicate key error
+        if (dupErr.code !== 11000) throw dupErr;
+      }
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Process card request error:', err);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+});
+
+// Get design owner info (for viewer save button)
+app.get('/api/design-owner/:designId', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const designId = String(req.params.designId);
+    const design = await db.collection(designsCollectionName).findOne(
+      { shortId: designId },
+      { projection: { ownerId: 1 } }
+    );
+    if (!design) return res.status(404).json({ error: 'Design not found' });
+
+    let cardPrivacy = 'require_approval';
+    if (design.ownerId) {
+      const owner = await db.collection(usersCollectionName).findOne(
+        { userId: design.ownerId },
+        { projection: { cardPrivacy: 1 } }
+      );
+      cardPrivacy = owner?.cardPrivacy || 'require_approval';
+    }
+
+    res.json({
+      success: true,
+      ownerId: design.ownerId || null,
+      cardPrivacy
+    });
+  } catch (err) {
+    console.error('Get design owner error:', err);
+    res.status(500).json({ error: 'Failed to get design info' });
+  }
+});
+
+app.get('/api/get-design/:id', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const id = String(req.params.id);
+    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    if (!doc || !doc.data) return res.status(404).json({ error: 'Design not found or data missing' });
+
+    res.json(doc.data);
+  } catch (e) {
+    console.error('Get design error:', e);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Fetch failed' });
+    }
+  }
+});
+
+// Get Card Statistics
+app.get('/api/card-stats/:id', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const id = String(req.params.id);
+    const doc = await db.collection(designsCollectionName).findOne(
+      { shortId: id },
+      { projection: { views: 1, createdAt: 1, lastModified: 1, shortId: 1 } }
+    );
+
+    if (!doc) return res.status(404).json({ error: 'Design not found' });
+
+    res.json({
+      success: true,
+      stats: {
+        id: doc.shortId,
+        views: doc.views || 0,
+        createdAt: doc.createdAt,
+        lastModified: doc.lastModified
+      }
+    });
+  } catch (e) {
+    console.error('Get card stats error:', e);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+// START: NEW GALLERY API ENDPOINT
+app.get('/api/gallery', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'Database not connected' });
+
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 20; // 5 columns * 4 rows
+    const skip = (page - 1) * limit;
+    const sortBy = req.query.sortBy || 'createdAt';
+    const searchTerm = req.query.search ? String(req.query.search).trim() : '';
+
+    // Build search query - only show designs shared to gallery
+    const query = { 'data.sharedToGallery': true };
+    if (searchTerm) {
+      const regex = new RegExp(searchTerm, 'i'); // Case-insensitive search
+      query['$or'] = [
+        { 'data.inputs.input-name_ar': regex },
+        { 'data.inputs.input-name_en': regex },
+        { 'data.inputs.input-tagline_ar': regex },
+        { 'data.inputs.input-tagline_en': regex }
+      ];
+    }
+
+    // Build sort options
+    const sortOptions = {};
+    if (sortBy === 'views') {
+      sortOptions.views = -1; // Descending
+    } else {
+      sortOptions.createdAt = -1; // Default to newest
+    }
+
+    // Get total count for pagination
+    const totalDesigns = await db.collection(designsCollectionName).countDocuments(query);
+    const totalPages = Math.ceil(totalDesigns / limit);
+
+    // Fetch paginated designs with projection
+    const designs = await db.collection(designsCollectionName)
+      .find(query)
+      .project({
+        'data.inputs.input-name_ar': 1,
+        'data.inputs.input-name_en': 1,
+        'data.inputs.input-tagline_ar': 1,
+        'data.inputs.input-tagline_en': 1,
+        'data.imageUrls.capturedFront': 1,
+        'data.imageUrls.front': 1,
+        'shortId': 1,
+        'createdAt': 1,
+        'views': 1
+      })
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    res.json({
+      success: true,
+      designs,
+      pagination: {
+        page,
+        totalPages,
+        totalDesigns
+      }
+    });
+
+  } catch (e) {
+    console.error('Gallery fetch error:', e);
+    res.status(500).json({ success: false, error: 'Failed to fetch gallery designs' });
+  }
+});
+// END: NEW GALLERY API ENDPOINT
+
+app.get('/robots.txt', (req, res) => {
+  const base = absoluteBaseUrl(req);
+  const txt = [
+    'User-agent: *',
+    'Allow: /nfc/',
+    'Allow: /nfc/viewer.html',
+    'Disallow: /nfc/view/',
+    'Disallow: /nfc/editor',
+    'Disallow: /nfc/editor.html',
+    'Disallow: /nfc/viewer.ejs',
+    `Sitemap: ${base}/sitemap.xml`
+  ].join('\n');
+  res.type('text/plain').send(txt);
+});
+
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const base = absoluteBaseUrl(req);
+    const staticPages = ['/nfc/', '/nfc/gallery', '/nfc/blog', '/nfc/privacy'];
+    const blogPosts = [];
+    let designUrls = [];
+    if (db) {
+      const docs = await db.collection(designsCollectionName)
+        .find({})
+        .project({ shortId: 1, createdAt: 1 })
+        .sort({ createdAt: -1 })
+        .limit(5000)
+        .toArray();
+      designUrls = docs.map(d => ({
+        loc: `${base}/nfc/viewer.html?id=${d.shortId}`,
+        lastmod: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : undefined,
+        changefreq: 'monthly',
+        priority: '0.8'
+      }));
+    }
+    function urlTag(loc, { lastmod, changefreq = 'weekly', priority = '0.7' } = {}) {
+      if (!loc) return '';
+      const lastmodTag = lastmod ? `<lastmod>${lastmod}</lastmod>` : '';
+      const changefreqTag = changefreq ? `<changefreq>${changefreq}</changefreq>` : '';
+      const priorityTag = priority ? `<priority>${priority}</priority>` : '';
+      return `
+  <url>
+    <loc>${loc}</loc>${lastmodTag}${changefreqTag}${priorityTag}
+  </url>`;
+    }
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${staticPages.map(p => urlTag(`${base}${p}`, { priority: '0.9', changefreq: 'weekly' })).join('')}
+${blogPosts.map(p => urlTag(`${base}${p}`, { priority: '0.7', changefreq: 'monthly' })).join('')}
+${designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefreq, priority: u.priority })).join('')}
+</urlset>`;
+    res.type('application/xml').send(xml);
+  } catch (e) {
+    console.error('Sitemap generation error:', e);
+    res.status(500).send('Sitemap failed');
+  }
+});
+
+app.get('/healthz', (req, res) => {
+  if (db && db.client.topology && db.client.topology.isConnected()) {
+    res.json({ ok: true, db_status: 'connected' });
+  } else {
+    res.status(500).json({ ok: false, db_status: 'disconnected' });
+  }
+});
+
+app.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
+  if (req.useragent.isMobile) {
+    res.sendFile(path.join(rootDir, 'editor-mobile.html'));
+  } else {
+    res.sendFile(path.join(rootDir, 'editor.html'));
+  }
+});
+
+// --- STATIC FILE HANDLER ---
+app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
+
+// --- GENERAL ERROR HANDLER ---
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.stack || err);
   const statusCode = err.status || 500;
-  const message = config.NODE_ENV === 'production' ? 'Internal Server Error' : (err.message || 'Internal Server Error');
+  const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message;
   if (!res.headersSent) {
     res.status(statusCode).json({ error: message });
   }
 });
 
 // =================================================================
-// === WEBSOCKET SERVER (Real-time collaboration)                ===
+// === START: WEBSOCKET SERVER FOR REAL-TIME COLLABORATION       ===
 // =================================================================
 
+// 1. إنشاء خادم HTTP من تطبيق Express
 const server = http.createServer(app);
+
+// 2. إنشاء خادم WebSocket وربطه بخادم HTTP
 const wss = new WebSocketServer({ server });
 
+// 3. هيكل بيانات لتخزين الغرف والعملاء المتصلين
+// Map<collabId, Set<WebSocket>>
 const rooms = new Map();
 
 wss.on('connection', (ws, req) => {
+  // 4. استخراج `collabId` من رابط الاتصال
   const parameters = new url.URL(req.url, `ws://${req.headers.host}`).searchParams;
   const collabId = parameters.get('collabId');
 
@@ -1936,14 +1473,19 @@ wss.on('connection', (ws, req) => {
     return;
   }
 
-  if (!rooms.has(collabId)) rooms.set(collabId, new Set());
+  // 5. الانضمام إلى الغرفة
+  if (!rooms.has(collabId)) {
+    rooms.set(collabId, new Set());
+  }
   const room = rooms.get(collabId);
   room.add(ws);
 
   console.log(`Client connected to room: ${collabId}. Room size: ${room.size}`);
 
+  // 6. التعامل مع الرسائل الواردة من العميل
   ws.on('message', (message) => {
     try {
+      // بث الرسالة (حالة التصميم الجديدة) إلى جميع العملاء الآخرين في نفس الغرفة
       room.forEach(client => {
         if (client !== ws && client.readyState === ws.OPEN) {
           client.send(message.toString());
@@ -1954,10 +1496,12 @@ wss.on('connection', (ws, req) => {
     }
   });
 
+  // 7. التعامل مع انقطاع الاتصال (تنظيف)
   ws.on('close', () => {
     if (room) {
       room.delete(ws);
       console.log(`Client disconnected from room: ${collabId}. Room size: ${room.size}`);
+      // إذا كانت الغرفة فارغة، قم بإزالتها لتوفير الذاكرة
       if (room.size === 0) {
         rooms.delete(collabId);
         console.log(`Room ${collabId} is now empty and has been closed.`);
@@ -1970,13 +1514,13 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-// --- Start server ---
-if (require.main === module) {
-  server.listen(port, () => {
-    console.log(`Server running on port: ${port}`);
-    console.log('WebSocket server is also running.');
-  });
-}
+// =================================================================
+// === END: WEBSOCKET SERVER                                     ===
+// =================================================================
 
-// Export Express App for Testing
-module.exports = app;
+
+// --- START SERVER (تغيير app.listen إلى server.listen) ---
+server.listen(port, () => {
+  console.log(`Server running on port: ${port}`);
+  console.log('WebSocket server is also running.');
+});
