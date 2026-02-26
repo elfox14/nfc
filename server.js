@@ -163,6 +163,12 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
       return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
     }
 
+    // Validate ID format (nanoid produces alphanumeric + _- chars, length 8)
+    if (!/^[a-zA-Z0-9_-]{4,30}$/.test(id)) {
+      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+      return res.status(400).send('Invalid card ID format.');
+    }
+
     const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
 
     if (!doc || !doc.data) {
@@ -383,7 +389,7 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype && file.mimetype.startsWith('image/')) {
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
       } else {
@@ -1481,13 +1487,30 @@ const wss = new WebSocketServer({ server });
 const rooms = new Map();
 
 wss.on('connection', (ws, req) => {
-  // 4. استخراج `collabId` من رابط الاتصال
+  // 4. استخراج `collabId` و `token` من رابط الاتصال
   const parameters = new url.URL(req.url, `ws://${req.headers.host}`).searchParams;
   const collabId = parameters.get('collabId');
+  const token = parameters.get('token');
 
   if (!collabId) {
     console.log('Connection rejected: No collabId provided.');
     ws.close(1008, 'collabId is required');
+    return;
+  }
+
+  // Verify JWT token for WebSocket authentication
+  const secret = process.env.JWT_SECRET;
+  if (secret && token) {
+    try {
+      jwt.verify(token, secret);
+    } catch (err) {
+      console.log('WebSocket connection rejected: Invalid token.');
+      ws.close(1008, 'Invalid authentication token');
+      return;
+    }
+  } else if (secret && !token) {
+    console.log('WebSocket connection rejected: No token provided.');
+    ws.close(1008, 'Authentication token required');
     return;
   }
 

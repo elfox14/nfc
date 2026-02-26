@@ -255,7 +255,8 @@ const CollaborationManager = {
         }
 
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}?collabId=${collabId}`;
+        const authToken = localStorage.getItem('authToken') || '';
+        const wsUrl = `${protocol}//${window.location.host}?collabId=${collabId}${authToken ? '&token=' + encodeURIComponent(authToken) : ''}`;
 
         this.ws = new WebSocket(wsUrl);
 
