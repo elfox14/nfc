@@ -779,7 +779,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
   if (error || !code) {
     const safeError = String(error || 'Authorization failed').replace(/[^a-zA-Z0-9_ -]/g, '');
-    const targetOrigin = process.env.SITE_BASE_URL || '*';
+    const targetOrigin = '*';
     return res.send(`
       <script nonce="${res.locals.cspNonce}">
         window.opener.postMessage({ type: 'google-auth', success: false, error: '${safeError}' }, '${targetOrigin}');
@@ -858,7 +858,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     });
 
     // Send success back to opener
-    const targetOrigin = process.env.SITE_BASE_URL || '*';
+    const targetOrigin = '*';
     res.send(`
       <script nonce="${res.locals.cspNonce}">
         window.opener.postMessage({
@@ -875,7 +875,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     console.error('Google OAuth error:', err);
     res.send(`
       <script nonce="${res.locals.cspNonce}">
-        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '${process.env.SITE_BASE_URL || '*'}');
+        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '*');
         window.close();
       </script>
     `);
