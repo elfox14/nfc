@@ -20,10 +20,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
     
     # Install both normal and dev dependencies
-    - run: npm ci
+    - run: npm install
 
     # Run jest test cases explicitly checking that it shouldn't fail builds
     - run: npm test
