@@ -7,12 +7,15 @@ const { MongoClient } = require('mongodb');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const { nanoid } = require('nanoid');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const verifyToken = require('./auth-middleware');
+const { createAccessToken, createRefreshToken, hashToken } = require('./utils/tokens');
 const EmailService = require('./email-service');
 const { JSDOM } = require('jsdom');
 const DOMPurifyFactory = require('dompurify');
@@ -21,9 +24,9 @@ const sharp = require('sharp');
 const ejs = require('ejs');
 const helmet = require('helmet');
 const useragent = require('express-useragent');
-const http = require('http'); // **جديد: استيراد http**
-const { WebSocketServer } = require('ws'); // **جديد: استيراد WebSocketServer**
-const url = require('url'); // **جديد: استيراد url**
+const http = require('http');
+const { WebSocketServer } = require('ws');
+const url = require('url');
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
@@ -35,7 +38,7 @@ app.use(compression());
 app.use(useragent.express());
 
 const port = process.env.PORT || 3000;
-app.set('trust proxy', 1);
+app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : 0);
 app.disable('x-powered-by');
 
 // --- START: SECURITY HEADERS (HELMET) ---
@@ -43,16 +46,22 @@ app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
 app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));
+// CSP nonce middleware — generates a unique nonce per request
+app.use((req, res, next) => {
+  res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
+  next();
+});
+
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
+    scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
     styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
     imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
     mediaSrc: ["'self'", "data:"],
     frameSrc: ["'self'", "https://www.youtube.com"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com", "ws:", "wss:"], // **جديد: السماح باتصالات WebSocket**
+    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com", "ws:", "wss:"],
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
   },
@@ -72,6 +81,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
 app.set('view engine', 'ejs');
 
 // --- DATABASE CONNECTION ---
@@ -656,10 +666,27 @@ app.post('/api/auth/register', [
       console.warn('[Register] Email sending failed (non-blocking):', emailErr.message);
     }
 
-    // Generate login token
-    const token = jwt.sign({ userId, email }, secret, { expiresIn: '7d' });
+    // Generate short-lived access token + HttpOnly refresh cookie
+    const accessToken = createAccessToken({ userId, email });
+    const refreshTokenValue = createRefreshToken();
+    const hashedRefresh = hashToken(refreshTokenValue);
 
-    res.status(201).json({ success: true, token, user: { name, email, userId, isVerified: false } });
+    // Store hashed refresh token in DB
+    await db.collection(usersCollectionName).updateOne(
+      { userId },
+      { $set: { refreshTokenHash: hashedRefresh } }
+    );
+
+    // Set refresh token as HttpOnly Secure cookie
+    res.cookie('refreshToken', refreshTokenValue, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/auth'
+    });
+
+    res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
 
   } catch (err) {
     if (err.code === 11000) {
@@ -696,11 +723,27 @@ app.post('/api/auth/login', [
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
-    const token = jwt.sign({ userId: user.userId, email: user.email }, secret, { expiresIn: '7d' });
+    // Generate short-lived access token + HttpOnly refresh cookie
+    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    const refreshTokenValue = createRefreshToken();
+    const hashedRefresh = hashToken(refreshTokenValue);
 
-    res.json({ success: true, token, user: { name: user.name, email: user.email, userId: user.userId } });
+    // Store hashed refresh token in DB
+    await db.collection(usersCollectionName).updateOne(
+      { userId: user.userId },
+      { $set: { refreshTokenHash: hashedRefresh } }
+    );
+
+    // Set refresh token as HttpOnly Secure cookie
+    res.cookie('refreshToken', refreshTokenValue, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/auth'
+    });
+
+    res.json({ success: true, token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Login error:', err);
@@ -967,6 +1010,82 @@ app.get('/api/auth/verify-email/:token', async (req, res) => {
   } catch (err) {
     console.error('Verify email error:', err);
     res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
+// --- REFRESH TOKEN ROUTE ---
+app.post('/api/auth/refresh', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const tokenFromCookie = req.cookies?.refreshToken;
+    if (!tokenFromCookie) {
+      return res.status(401).json({ error: 'No refresh token provided' });
+    }
+
+    // Find user by hashed refresh token
+    const hashedToken = hashToken(tokenFromCookie);
+    const user = await db.collection(usersCollectionName).findOne({ refreshTokenHash: hashedToken });
+
+    if (!user) {
+      return res.status(403).json({ error: 'Invalid refresh token' });
+    }
+
+    // Rotate: generate new tokens
+    const newAccessToken = createAccessToken({ userId: user.userId, email: user.email });
+    const newRefreshToken = createRefreshToken();
+    const newHashedRefresh = hashToken(newRefreshToken);
+
+    // Update DB with new hashed refresh token (invalidates old one)
+    await db.collection(usersCollectionName).updateOne(
+      { userId: user.userId },
+      { $set: { refreshTokenHash: newHashedRefresh } }
+    );
+
+    // Set new refresh token cookie
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/api/auth'
+    });
+
+    res.json({ success: true, token: newAccessToken });
+
+  } catch (err) {
+    console.error('Token refresh error:', err);
+    res.status(500).json({ error: 'Token refresh failed' });
+  }
+});
+
+// --- LOGOUT ROUTE ---
+app.post('/api/auth/logout', async (req, res) => {
+  try {
+    const tokenFromCookie = req.cookies?.refreshToken;
+
+    if (tokenFromCookie && db) {
+      // Remove refresh token from DB
+      const hashedToken = hashToken(tokenFromCookie);
+      await db.collection(usersCollectionName).updateOne(
+        { refreshTokenHash: hashedToken },
+        { $unset: { refreshTokenHash: '' } }
+      );
+    }
+
+    // Clear the cookie
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+      path: '/api/auth'
+    });
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('Logout error:', err);
+    res.status(500).json({ error: 'Logout failed' });
   }
 });
 
