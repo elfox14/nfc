@@ -10,7 +10,8 @@
     document.addEventListener('DOMContentLoaded', initEditorEnhancements);
 
     function initEditorEnhancements() {
-        // createProgressBar();
+        createProgressBar();
+        initAutoSave();
         initKeyboardShortcuts();
         initFullPreviewMode();
         initZoomControls();
@@ -153,6 +154,256 @@
             }
         });
         currentStep = newStep;
+    }
+
+    // ===========================================
+    // AUTO-SAVE
+    // ===========================================
+    const AUTOSAVE_KEY = 'mcprime_editor_autosave';
+    const AUTOSAVE_INTERVAL = 30000; // 30 seconds
+    let autosaveTimer = null;
+    let hasUnsavedChanges = false;
+
+    function initAutoSave() {
+        // Create indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'autosave-indicator';
+        indicator.id = 'autosave-indicator';
+        indicator.innerHTML = '<i class="fas fa-check"></i><span>Saved automatically</span>';
+        document.body.appendChild(indicator);
+
+        // Check for existing autosave
+        restoreAutosave();
+
+        // Track changes
+        trackChanges();
+
+        // Start autosave timer
+        startAutosaveTimer();
+
+        // Save before leaving
+        window.addEventListener('beforeunload', (e) => {
+            // Don't block intentional redirects (e.g., to login page)
+            if (window._intentionalRedirect) return;
+            if (hasUnsavedChanges) {
+                performAutosave();
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    }
+
+    function trackChanges() {
+        // Track input changes
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.addEventListener('change', () => {
+                hasUnsavedChanges = true;
+                markSaveButtonUnsaved(true);
+            });
+            input.addEventListener('input', () => {
+                hasUnsavedChanges = true;
+                markSaveButtonUnsaved(true);
+            });
+        });
+
+        // Track when save is complete
+        const saveBtn = document.getElementById('save-to-gallery-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                setTimeout(() => {
+                    hasUnsavedChanges = false;
+                    markSaveButtonUnsaved(false);
+                    clearAutosave();
+                }, 1000);
+            });
+        }
+    }
+
+    function markSaveButtonUnsaved(unsaved) {
+        const saveBtn = document.getElementById('save-to-gallery-btn');
+        if (saveBtn) {
+            saveBtn.classList.toggle('unsaved', unsaved);
+        }
+    }
+
+    function startAutosaveTimer() {
+        autosaveTimer = setInterval(() => {
+            if (hasUnsavedChanges) {
+                performAutosave();
+            }
+        }, AUTOSAVE_INTERVAL);
+    }
+
+    function performAutosave() {
+        const indicator = document.getElementById('autosave-indicator');
+
+        // Show saving state
+        indicator.innerHTML = '<i class="fas fa-spinner"></i><span>Saving...</span>';
+        indicator.classList.add('show', 'saving');
+
+        // Collect current state
+        const state = collectEditorState();
+
+        // Save to localStorage
+        try {
+            localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+                timestamp: Date.now(),
+                state: state
+            }));
+
+            // Show success
+            setTimeout(() => {
+                indicator.innerHTML = '<i class="fas fa-check"></i><span>Saved automatically</span>';
+                indicator.classList.remove('saving');
+
+                // Hide after 2 seconds
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000);
+            }, 500);
+
+            hasUnsavedChanges = false;
+            markSaveButtonUnsaved(false);
+
+        } catch (e) {
+            console.error('Autosave failed:', e);
+            indicator.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Save failed</span>';
+            indicator.classList.remove('saving');
+            setTimeout(() => indicator.classList.remove('show'), 3000);
+        }
+    }
+
+    function collectEditorState() {
+        const state = {};
+
+        // Collect all input values
+        const inputs = document.querySelectorAll('input:not([type="file"]), textarea, select');
+        inputs.forEach(input => {
+            if (input.id) {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    if (input.checked) {
+                        state[input.id] = input.value;
+                    }
+                } else {
+                    state[input.id] = input.value;
+                }
+            }
+        });
+
+        return state;
+    }
+
+    function restoreAutosave() {
+        try {
+            const saved = localStorage.getItem(AUTOSAVE_KEY);
+            if (saved) {
+                const { timestamp, state } = JSON.parse(saved);
+                const age = Date.now() - timestamp;
+
+                // Only restore if less than 1 hour old
+                if (age < 3600000) {
+                    showRestorePrompt(timestamp, state);
+                } else {
+                    clearAutosave();
+                }
+            }
+        } catch (e) {
+            console.error('Failed to restore autosave:', e);
+        }
+    }
+
+    function showRestorePrompt(timestamp, state) {
+        const time = new Date(timestamp).toLocaleTimeString('en-US');
+
+        // Create prompt
+        const prompt = document.createElement('div');
+        prompt.className = 'autosave-restore-prompt';
+        prompt.innerHTML = `
+            <div class="restore-content">
+                <i class="fas fa-history"></i>
+                <div class="restore-text">
+                    <strong>Saved design found</strong>
+                    <span>Last saved: ${time}</span>
+                </div>
+                <div class="restore-actions">
+                    <button class="btn btn-primary restore-yes">Restore</button>
+                    <button class="btn btn-secondary restore-no">Dismiss</button>
+                </div>
+            </div>
+        `;
+
+        // Add styles
+        prompt.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--form-bg, #243447);
+            border: 1px solid var(--accent-primary, #4da6ff);
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 2000;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            max-width: 400px;
+            width: 90%;
+        `;
+
+        document.body.appendChild(prompt);
+
+        // Handle restore
+        prompt.querySelector('.restore-yes').addEventListener('click', () => {
+            applyState(state);
+            prompt.remove();
+            showNotification('Design restored', 'success');
+        });
+
+        // Handle dismiss
+        prompt.querySelector('.restore-no').addEventListener('click', () => {
+            clearAutosave();
+            prompt.remove();
+        });
+    }
+
+    function applyState(state) {
+        Object.entries(state).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                if (element.type === 'checkbox') {
+                    element.checked = value === element.value;
+                } else if (element.type === 'radio') {
+                    element.checked = value === element.value;
+                } else {
+                    element.value = value;
+                    // Trigger change event
+                    element.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+        });
+    }
+
+    function clearAutosave() {
+        localStorage.removeItem(AUTOSAVE_KEY);
+    }
+
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `editor-notification ${type}`;
+        notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'info'}-circle"></i> ${message}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? 'var(--success-color)' : 'var(--accent-primary)'};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: fadeInOut 3s ease forwards;
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
     }
 
     // ===========================================

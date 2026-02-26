@@ -188,8 +188,6 @@
                         class="fas fa-tachometer-alt"></i></a>
                 <a href="gallery-en.html" class="btn-icon" title="Gallery" style="font-size: 12px;"><i
                         class="fas fa-images"></i></a>
-                <button id="open-templates-btn" class="btn-icon" title="Templates Library"
-                    style="font-size: 12px; cursor: pointer;"><i class="fas fa-layer-group"></i></button>
                 <a href="blog-en.html" class="btn-icon" title="Blog" style="font-size: 12px;"><i
                         class="fas fa-blog"></i></a>
             </nav>
@@ -324,7 +322,6 @@
                     </label>
                 </div>
                 <input type="hidden" id="layout-select" value="classic">
-
             </fieldset>
 
             <fieldset class="fieldset" id="designs-fieldset-source">
@@ -457,150 +454,120 @@
                                 here</span></div>
                         <legend>Logo</legend>
 
-                        <!-- 1. Source & Image -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend style="font-size: 0.9em; color: var(--accent-primary);">Source & Image</legend>
-                            <div class="form-group">
-                                <label for="input-logo-upload">Upload Image (SVG and High-Res supported)</label>
-                                <div class="logo-upload-group">
-                                    <img id="logo-preview" src="mcprime-logo-transparent.png"
-                                        alt="Uploaded Logo Preview">
-                                    <div class="file-input-wrapper">
-                                        <input type="file" id="input-logo-upload"
-                                            accept="image/png, image/jpeg, image/webp, image/svg+xml">
-                                        <div class="input-error-msg" id="logo-upload-error"></div>
-                                    </div>
-                                    <div class="spinner" id="logo-spinner" style="display: none;"></div>
+                        <!-- Upload and URL section -->
+                        <div class="form-group">
+                            <label for="input-logo">Logo URL</label>
+                            <input type="text" id="input-logo" value="mcprime-logo-transparent.png"
+                                data-update-target="card-logo-img" data-update-property="src">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-logo-upload">Or upload image (will be cropped)</label>
+                            <div class="logo-upload-group">
+                                <img id="logo-preview" src="mcprime-logo-transparent.png" alt="Uploaded logo preview">
+                                <div class="file-input-wrapper">
+                                    <input type="file" id="input-logo-upload" accept="image/*">
+                                    <div class="input-error-msg" id="logo-upload-error"></div>
                                 </div>
+                                <div class="spinner" id="logo-spinner" style="display: none;"></div>
                             </div>
-                            <div class="form-group">
-                                <label for="input-logo">Logo URL</label>
-                                <input type="text" id="input-logo" value="mcprime-logo-transparent.png"
-                                    data-update-target="card-logo-img" data-update-property="src">
-                            </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label for="logo-variant-select">Logo Variant</label>
-                                <select id="logo-variant-select">
-                                    <option value="full" selected>Full</option>
-                                    <option value="icon">Icon</option>
-                                    <option value="mono_light">Mono Light</option>
-                                    <option value="mono_dark">Mono Dark</option>
-                                </select>
-                            </div>
-                        </fieldset>
+                        </div>
 
-                        <!-- 2. Dimensions & Framing -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend style="font-size: 0.9em; color: var(--accent-primary);">Dimensions & Framing
-                            </legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label for="logo-width">Width (px)</label>
-                                    <div style="display: flex; gap: 5px; align-items: center;">
-                                        <input type="number" id="logo-width" value="120" style="width: 100%;">
-                                        <button class="btn-icon btn-compact active" id="logo-aspect-lock"
-                                            title="Lock Aspect Ratio"><i class="fas fa-link"></i></button>
-                                        <input type="checkbox" id="logo-aspect-lock-checkbox" checked
-                                            style="display:none;">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="logo-height">Height (px)</label>
-                                    <input type="number" id="logo-height" value="60" style="width: 100%;">
-                                </div>
+                        <!-- Size and Alignment section -->
+                        <div class="control-grid">
+                            <div class="form-group">
+                                <label for="logo-size">Logo Size</label>
+                                <input type="range" id="logo-size" min="10" max="80" value="25"
+                                    data-update-target="card-logo-img" data-update-property="style.maxWidth"
+                                    data-update-unit="%">
                             </div>
                             <div class="form-group">
-                                <label for="logo-object-fit">Object Fit</label>
-                                <select id="logo-object-fit">
-                                    <option value="contain" selected>Contain</option>
-                                    <option value="cover">Cover</option>
-                                    <option value="fill">Fill</option>
-                                </select>
-                            </div>
-                        </fieldset>
-
-                        <!-- 3. Position & Alignment -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend style="font-size: 0.9em; color: var(--accent-primary);">Position & Alignment
-                            </legend>
-                            <div class="placement-control">
-                                <label>Logo Placement</label>
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-logo" value="front" checked>
-                                        Front</label>
-                                    <label><input type="radio" name="placement-logo" value="back"> Back</label>
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label for="logo-align-group">Alignment</label>
+                                <label for="logo-align-group">Logo Alignment</label>
                                 <div class="radio-group" id="logo-align-group">
                                     <label><input type="radio" name="logo-align" value="flex-start"> Left</label>
                                     <label><input type="radio" name="logo-align" value="center" checked> Center</label>
                                     <label><input type="radio" name="logo-align" value="flex-end"> Right</label>
                                 </div>
                             </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label>Fine Position (pixels)</label>
-                                <div class="position-controls-grid" data-target-id="card-logo">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up" title="Up"><i
-                                            class="fas fa-arrow-up"></i></button>
-                                    <div class="controls-row">
-                                        <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="Left"><i class="fas fa-arrow-left"></i></button>
-                                        <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="Right"><i class="fas fa-arrow-right"></i></button>
-                                    </div>
-                                    <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="Down"><i class="fas fa-arrow-down"></i></button>
+                        </div>
+
+                        <!-- Background and Opacity section -->
+                        <div class="control-grid">
+                            <div class="form-group">
+                                <label for="logo-opacity">Logo Opacity</label>
+                                <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
+                                    data-update-target="card-logo-img" data-update-property="style.opacity">
+                            </div>
+                            <div class="form-group">
+                                <label for="logo-bg-color">Logo Background</label>
+                                <select id="logo-bg-color">
+                                    <option value="transparent">None</option>
+                                    <option value="#ffffff">White</option>
+                                    <option value="#000000">Black</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Image Filters (Phase 3) -->
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="logo-filter">Image Filter</label>
+                            <select id="logo-filter" data-update-target="card-logo-img"
+                                data-update-property="style.filter">
+                                <option value="none" selected>No Filter</option>
+                                <option value="grayscale(100%)">Grayscale</option>
+                                <option value="sepia(100%)">Sepia</option>
+                                <option value="invert(100%)">Invert</option>
+                                <option value="blur(2px)">Blur</option>
+                                <option value="brightness(150%)">Brightness</option>
+                                <option value="contrast(150%)">Contrast</option>
+                            </select>
+                        </div>
+
+                        <!-- Shadow section -->
+                        <fieldset class="fieldset" style="margin-top: 15px;">
+                            <legend>Logo Shadow</legend>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="logo-shadow-enabled"
+                                        style="width: auto; margin-inline-end: 10px;">
+                                    <span>Enable Shadow</span>
+                                </label>
+                            </div>
+                            <div class="control-grid" id="logo-shadow-controls" style="display: none;">
+                                <div class="form-group">
+                                    <label for="logo-shadow-blur">Shadow Blur</label>
+                                    <input type="range" id="logo-shadow-blur" min="0" max="40" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="logo-shadow-color">Shadow Color</label>
+                                    <input type="color" id="logo-shadow-color" value="#000000">
                                 </div>
                             </div>
                         </fieldset>
 
-                        <!-- 4. Appearance & Effects -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend style="font-size: 0.9em; color: var(--accent-primary);">Appearance & Effects
-                            </legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="logo-svg-color-enabled"
-                                            style="width: auto; margin-right: 5px;">
-                                        <span>Override SVG Color</span>
-                                    </label>
-                                    <input type="color" id="logo-svg-color" value="#ffffff" disabled
-                                        style="opacity: 0.5;">
-                                </div>
-                                <div class="form-group">
-                                    <label for="logo-brightness">Brightness</label>
-                                    <input type="range" id="logo-brightness" min="0" max="200" value="100">
-                                </div>
+                        <!-- Position and Movement section -->
+                        <div class="placement-control">
+                            <label>Element Placement</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="placement-logo" value="front" checked> Front</label>
+                                <label><input type="radio" name="placement-logo" value="back"> Back</label>
                             </div>
-                        </fieldset>
+                        </div>
 
-                        <!-- 5. Advanced Settings -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend style="font-size: 0.9em; color: var(--accent-primary);">Advanced Settings</legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="logo-lazy-load" checked
-                                            style="width: auto; margin-right: 10px;">
-                                        <span>Lazy Load</span>
-                                    </label>
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>Fine Position (pixels)</label>
+                            <div class="position-controls-grid" data-target-id="card-logo">
+                                <button type="button" class="btn-icon move-btn" data-direction="up" title="Up"><i
+                                        class="fas fa-arrow-up"></i></button>
+                                <div class="controls-row">
+                                    <button type="button" class="btn-icon move-btn" data-direction="left"
+                                        title="Left"><i class="fas fa-arrow-left"></i></button>
+                                    <button type="button" class="btn-icon move-btn" data-direction="right"
+                                        title="Right"><i class="fas fa-arrow-right"></i></button>
                                 </div>
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="logo-retina" checked
-                                            style="width: auto; margin-right: 10px;">
-                                        <span>Retina 2x</span>
-                                    </label>
-                                </div>
+                                <button type="button" class="btn-icon move-btn" data-direction="down" title="Down"><i
+                                        class="fas fa-arrow-down"></i></button>
                             </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label for="logo-alt-text">Alt Text (Screen readers & SEO)</label>
-                                <input type="text" id="logo-alt-text" value="Company Logo">
-                            </div>
-                        </fieldset>
+                        </div>
                     </fieldset>
                 </div>
             </details>
@@ -619,22 +586,15 @@
                             <input type="url" id="input-photo-url">
                         </div>
                         <div class="form-group">
-                            <label for="input-photo-upload">Or upload image (supports high-res WebP)</label>
+                            <label for="input-photo-upload">Or upload image (will be cropped)</label>
                             <div class="logo-upload-group">
                                 <img id="photo-preview" src="" alt="Personal photo preview"
                                     style="display: none; background-color: var(--accent-secondary); border-radius: 50%; object-fit: cover; width: 50px; height: 50px;">
                                 <div class="file-input-wrapper">
-                                    <input type="file" id="input-photo-upload"
-                                        accept="image/png, image/jpeg, image/webp">
+                                    <input type="file" id="input-photo-upload" accept="image/*">
                                     <div class="input-error-msg" id="photo-upload-error"></div>
                                 </div>
                                 <div class="spinner" id="photo-spinner" style="display: none;"></div>
-                            </div>
-                            <div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px;">
-                                <label style="display: flex; align-items: flex-start; gap: 5px; cursor: pointer;">
-                                    <input type="checkbox" id="photo-privacy-consent" checked>
-                                    <span>I agree to process and store this photo (can be removed anytime).</span>
-                                </label>
                             </div>
                         </div>
 
@@ -642,18 +602,12 @@
                         <div class="control-grid">
                             <div class="form-group">
                                 <label for="photo-size">Photo Size</label>
-                                <div style="display: flex; gap: 5px; align-items: center;">
-                                    <input type="range" id="photo-size" min="15" max="100" value="25"
-                                        style="width: 100%;">
-                                    <button class="btn-icon btn-compact active" id="photo-aspect-lock"
-                                        title="Lock Aspect Ratio"><i class="fas fa-link"></i></button>
-                                </div>
+                                <input type="range" id="photo-size" min="15" max="50" value="25">
                             </div>
                             <div class="form-group">
                                 <label>Photo Shape</label>
-                                <div class="radio-group" style="flex-direction: column; gap: 5px;">
+                                <div class="radio-group">
                                     <label><input type="radio" name="photo-shape" value="circle" checked> Circle</label>
-                                    <label><input type="radio" name="photo-shape" value="rounded"> Rounded</label>
                                     <label><input type="radio" name="photo-shape" value="square"> Square</label>
                                 </div>
                             </div>
@@ -667,62 +621,11 @@
                             </div>
                         </div>
 
-                        <!-- Cropping & Focal Point (Advanced) -->
-                        <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>Crop & Focal Point</legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label for="photo-object-fit">Object Fit</label>
-                                    <select id="photo-object-fit">
-                                        <option value="cover" selected>Cover (Recommended)</option>
-                                        <option value="contain">Contain</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Focal Point (X% / Y%)</label>
-                                    <div style="display: flex; gap: 5px;">
-                                        <input type="number" id="photo-focal-x" min="0" max="100" value="50"
-                                            style="width: 50%;" title="Horizontal %">
-                                        <input type="number" id="photo-focal-y" min="0" max="100" value="50"
-                                            style="width: 50%;" title="Vertical %">
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <!-- Styling & Filters -->
-                        <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>Colors & Effects</legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label for="photo-bg-color">Background Color</label>
-                                    <div style="display: flex; gap: 5px; align-items: center;">
-                                        <input type="checkbox" id="photo-bg-enabled" title="Enable Background">
-                                        <input type="color" id="photo-bg-color" value="#ffffff" disabled
-                                            style="opacity: 0.5;">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="photo-brightness">Brightness</label>
-                                    <input type="range" id="photo-brightness" min="0" max="200" value="100">
-                                </div>
-                            </div>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label for="photo-contrast">Contrast</label>
-                                    <input type="range" id="photo-contrast" min="0" max="200" value="100">
-                                </div>
-                                <div class="form-group">
-                                    <label for="photo-grayscale">Grayscale</label>
-                                    <input type="range" id="photo-grayscale" min="0" max="100" value="0">
-                                </div>
-                            </div>
-                        </fieldset>
 
                         <!-- Border and Opacity section -->
-                        <div class="control-grid" style="margin-top: 15px;">
+                        <div class="control-grid">
                             <div class="form-group">
-                                <label for="photo-opacity">Opacity</label>
+                                <label for="photo-opacity">Photo Opacity</label>
                                 <input type="range" id="photo-opacity" min="0" max="1" step="0.05" value="1">
                             </div>
                             <div class="form-group">
@@ -731,10 +634,23 @@
                             </div>
                             <div class="form-group">
                                 <label for="photo-border-color">Border Color</label>
-                                <input type="color" id="photo-border-color" value="#ffffff" style="margin-top: 8px;">
+                                <input type="color" id="photo-border-color" value="#ffffff">
                             </div>
                         </div>
 
+                        <!-- Image Filters (Phase 3) -->
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="photo-filter">Image Filter</label>
+                            <select id="photo-filter">
+                                <option value="none" selected>No Filter</option>
+                                <option value="grayscale(100%)">Grayscale</option>
+                                <option value="sepia(100%)">Sepia</option>
+                                <option value="invert(100%)">Invert</option>
+                                <option value="blur(2px)">Blur</option>
+                                <option value="brightness(150%)">Brightness</option>
+                                <option value="contrast(150%)">Contrast</option>
+                            </select>
+                        </div>
 
                         <!-- Shadow section -->
                         <fieldset class="fieldset" style="margin-top: 15px;">
@@ -758,32 +674,7 @@
                             </div>
                         </fieldset>
 
-                        <!-- Advanced Settings for Avatar -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend>Advanced Settings</legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="photo-lazy-load" checked
-                                            style="width: auto; margin-right: 10px;">
-                                        <span>Lazy Load</span>
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="photo-retina" checked
-                                            style="width: auto; margin-right: 10px;">
-                                        <span>Retina 2x</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label for="photo-alt-text">Alt Text (Accessibility)</label>
-                                <input type="text" id="photo-alt-text" value="Avatar">
-                            </div>
-                        </fieldset>
-
-                        <!-- Placement and Position -->
+                        <!-- Position and Movement section -->
                         <div class="placement-control">
                             <label>Photo Placement</label>
                             <div class="radio-group">
@@ -1620,12 +1511,6 @@
                         <i class="fas fa-save"></i> Save to Gallery
                     </button>
                 </div>
-                <!-- NEW: Save as Template Button -->
-                <div class="form-group">
-                    <button class="btn btn-secondary mobile-action-btn" id="save-as-template-btn" style="width: 100%;">
-                        <i class="fas fa-layer-group"></i> Save as Template
-                    </button>
-                </div>
                 <div class="form-group">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn"
                         style="width: 100%;">
@@ -1774,166 +1659,6 @@
                 <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp</a>
                 <a id="share-twitter" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i> Twitter</a>
                 <button id="share-copy-link"><i class="fas fa-copy" aria-hidden="true"></i> Copy Link</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- === Properties Panel (Floating/Contextual Sidebar) === -->
-    <div id="properties-panel" class="properties-panel hidden">
-        <div class="properties-panel-header">
-            <h3>Element Properties</h3>
-            <button id="close-properties-panel" class="btn-icon" title="Close">&times;</button>
-        </div>
-
-        <div class="properties-tabs">
-            <button class="prop-tab-btn active" data-tab="prop-general">General</button>
-            <button class="prop-tab-btn" data-tab="prop-style" id="prop-tab-style">Style</button>
-        </div>
-
-        <div class="properties-content">
-            <!-- General properties (applicable to all elements) -->
-            <div id="prop-general" class="prop-tab-pane active">
-                <div class="prop-row">
-                    <div class="prop-group">
-                        <label>X (px)</label>
-                        <input type="number" id="prop-x" class="prop-input">
-                    </div>
-                    <div class="prop-group">
-                        <label>Y (px)</label>
-                        <input type="number" id="prop-y" class="prop-input">
-                    </div>
-                </div>
-                <div class="prop-row">
-                    <div class="prop-group">
-                        <label>Width</label>
-                        <input type="number" id="prop-w" class="prop-input">
-                    </div>
-                    <div class="prop-group">
-                        <label>Height</label>
-                        <input type="number" id="prop-h" class="prop-input">
-                    </div>
-                </div>
-                <div class="prop-row">
-                    <div class="prop-group">
-                        <label>Rotation (°)</label>
-                        <input type="number" id="prop-rotation" class="prop-input" title="Degrees">
-                    </div>
-                    <div class="prop-group">
-                        <label>Z-Index</label>
-                        <input type="number" id="prop-zindex" class="prop-input">
-                    </div>
-                </div>
-                <div class="prop-row prop-toggles">
-                    <label class="prop-toggle-label">
-                        <input type="checkbox" id="prop-visible">
-                        Visible
-                    </label>
-                    <label class="prop-toggle-label">
-                        <input type="checkbox" id="prop-lock">
-                        Locked
-                    </label>
-                </div>
-            </div>
-
-            <!-- Style properties (context-dependent) -->
-            <div id="prop-style" class="prop-tab-pane">
-                <!-- Text Controls -->
-                <div id="style-text-controls" class="style-group hidden">
-                    <div class="prop-group">
-                        <label>Font Family</label>
-                        <select id="prop-fontFamily" class="prop-input">
-                            <option value="'Tajawal', sans-serif">Tajawal</option>
-                            <option value="'Cairo', sans-serif">Cairo</option>
-                            <option value="'Poppins', sans-serif">Poppins</option>
-                            <option value="'Lalezar', cursive">Lalezar</option>
-                        </select>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-group">
-                            <label>Size (px)</label>
-                            <input type="number" id="prop-fontSize" class="prop-input">
-                        </div>
-                        <div class="prop-group">
-                            <label>Color</label>
-                            <input type="color" id="prop-color" class="prop-input">
-                        </div>
-                    </div>
-                    <div class="prop-group">
-                        <label>Alignment</label>
-                        <div class="prop-radio-group" id="prop-textAlign">
-                            <button class="prop-icon-btn" data-value="left"><i class="fas fa-align-left"></i></button>
-                            <button class="prop-icon-btn" data-value="center"><i
-                                    class="fas fa-align-center"></i></button>
-                            <button class="prop-icon-btn" data-value="right"><i class="fas fa-align-right"></i></button>
-                        </div>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-group">
-                            <label>Line Height</label>
-                            <input type="number" step="0.1" id="prop-lineHeight" class="prop-input">
-                        </div>
-                        <div class="prop-group">
-                            <label>Letter Spacing</label>
-                            <input type="number" id="prop-letterSpacing" class="prop-input">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Image Controls -->
-                <div id="style-image-controls" class="style-group hidden">
-                    <div class="prop-group">
-                        <label>Object Fit</label>
-                        <select id="prop-objectFit" class="prop-input">
-                            <option value="cover">Cover</option>
-                            <option value="contain">Contain</option>
-                            <option value="fill">Fill</option>
-                        </select>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-group">
-                            <label>Border Radius</label>
-                            <input type="number" id="prop-borderRadius" class="prop-input">
-                        </div>
-                        <div class="prop-group">
-                            <label>Border Width</label>
-                            <input type="number" id="prop-borderWidth" class="prop-input">
-                        </div>
-                    </div>
-                    <div class="prop-group">
-                        <label>Grayscale Filter</label>
-                        <input type="range" id="prop-filter-grayscale" min="0" max="100" value="0">
-                    </div>
-                </div>
-
-                <!-- Button Controls -->
-                <div id="style-button-controls" class="style-group hidden">
-                    <div class="prop-group">
-                        <label>Background Color</label>
-                        <input type="color" id="prop-btn-bg" class="prop-input">
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-group">
-                            <label>Border Radius</label>
-                            <input type="number" id="prop-btn-radius" class="prop-input">
-                        </div>
-                        <div class="prop-group">
-                            <label>Padding</label>
-                            <input type="number" id="prop-btn-padding" class="prop-input">
-                        </div>
-                    </div>
-                    <div class="prop-group">
-                        <label>Action Type</label>
-                        <select id="prop-btn-actionType" class="prop-input">
-                            <option value="link">Website Link</option>
-                            <option value="phone">Phone Call</option>
-                            <option value="email">Email</option>
-                        </select>
-                    </div>
-                    <div class="prop-group">
-                        <label>Action Value</label>
-                        <input type="text" id="prop-btn-actionValue" class="prop-input" placeholder="https://...">
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -2150,57 +1875,13 @@
 
         <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> Theme</button>
         <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> Gallery</button>
-        <button id="open-templates-btn-menu"><i class="fas fa-layer-group"></i> Templates</button>
         <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> Save to Gallery</button>
-        <button id="save-as-template-btn-menu"><i class="fas fa-layer-group"></i> Save Template</button>
         <button id="start-collab-btn-menu"><i class="fas fa-users"></i> Collaborate</button>
         <button id="share-editor-btn-menu"><i class="fas fa-link"></i> Share Link</button>
         <hr>
         <a href="login-en.html" class="menu-item-link"><i class="fas fa-sign-in-alt"></i> Login</a>
         <hr>
         <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> Reset</button>
-    </div>
-    </div>
-
-    <!-- NEW: Templates Library Modal -->
-    <div id="templates-library-modal-overlay" class="modal-overlay">
-        <div class="modal-content" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>Templates Library <i class="fas fa-layer-group"></i></h3>
-                <button id="close-templates-library-btn" class="modal-close" aria-label="Close"
-                    style="top:25px; right:20px;">&times;</button>
-            </div>
-            <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 20px;">
-                Choose a template to quickly apply its layout, styling, and background to your current design.
-            </p>
-            <div id="templates-grid"
-                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
-                <!-- Dynamically populated by templates.js -->
-            </div>
-        </div>
-    </div>
-
-    <!-- NEW: Save as Template Modal -->
-    <div id="save-template-modal-overlay" class="modal-overlay">
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <h3 style="margin-bottom: 15px;">Save as Template</h3>
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px;">
-                Save your current design layout as a reusable template.
-            </p>
-            <div class="form-group" style="text-align: left;">
-                <label for="template-name-input">Template Name</label>
-                <input type="text" id="template-name-input" placeholder="e.g. Elegant Dark Theme">
-            </div>
-            <div class="form-group" style="text-align: left; margin-top:15px; display: flex; align-items: center;">
-                <input type="checkbox" id="template-public-checkbox" style="width: auto; margin-right: 10px;">
-                <label for="template-public-checkbox" style="margin: 0; cursor: pointer;">Make Public (Visible to all
-                    users)</label>
-            </div>
-            <div class="modal-footer" style="margin-top: 25px;">
-                <button id="cancel-save-template-btn" class="btn btn-secondary">Cancel</button>
-                <button id="confirm-save-template-btn" class="btn btn-primary">Save Template</button>
-            </div>
-        </div>
     </div>
 </body>
 

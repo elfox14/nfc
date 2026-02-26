@@ -1,30 +1,5 @@
 'use strict';
 
-/**
- * ==========================================
- * Editor Enhancements Implementation Details
- * ==========================================
- * 
- * 1. Undo/Redo (HistoryManager):
- *    - Located in script-core.js -> HistoryManager.
- *    - Records state changes and limits history to MAX_HISTORY (100).
- *    - Triggered via shortcuts (Ctrl+Z, Ctrl+Y) and buttons (#undo-btn, #redo-btn).
- * 
- * 2. Autosave (StateManager.saveDebounced):
- *    - Located in script-core.js -> StateManager.
- *    - Debounces save operations to automatically persist changes to localStorage.
- *    - Displays a "Saving..." toast notification to the user.
- * 
- * 3. Snap-to-Grid (DragManager):
- *    - Located in script-main.js -> DragManager.
- *    - Dynamically aligns elements to a 20px grid when `enableSnap` is active.
- *    - Displays vertical/horizontal visual guides when elements align.
- * 
- * To test Undo/Redo from console:
- *    HistoryManager.undo() // reverts state
- *    HistoryManager.redo() // reapplies state
- */
-
 
 const Config = {
     // ... existing config ...
@@ -134,9 +109,7 @@ const Config = {
             name: 'front',
             tagline: 'front',
             qr: 'back'
-        },
-        enableSnap: true,
-        gridSize: 8
+        }
     },
 
     THEMES: {
@@ -239,7 +212,7 @@ const Utils = {
 const HistoryManager = {
     history: [],
     currentIndex: -1,
-    MAX_HISTORY: 100, // Limit to prevent memory leaks
+    // maxHistory: 20, // REMOVED: No limit for undo/redo history
 
     pushState(state) {
         // Cut future history if we push new state after undoing
@@ -254,14 +227,7 @@ const HistoryManager = {
         if (newStateStr === currentStateStr) return;
 
         this.history.push(JSON.parse(newStateStr));
-        this.currentIndex++;
-
-        // Trim oldest entries if we exceed the limit
-        if (this.history.length > this.MAX_HISTORY) {
-            const excess = this.history.length - this.MAX_HISTORY;
-            this.history.splice(0, excess);
-            this.currentIndex -= excess;
-        }
+        this.currentIndex++; // UPDATED: Always increment index
 
         this.updateButtonStates();
     },
@@ -308,12 +274,3 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Google Analytics Initialized');
     }
 });
-
-// For Jest unit testing
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        Config,
-        HistoryManager,
-        StateManager
-    };
-}

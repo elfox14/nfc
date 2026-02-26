@@ -6,8 +6,6 @@
 
 **منصة متكاملة لإنشاء ومشاركة بطاقات الأعمال الرقمية باستخدام تقنية NFC**
 
-[![Node.js CI](https://github.com/your-username/nfc/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/nfc/actions/workflows/ci.yml)
-
 [العرض التجريبي](https://mcprim.com/nfc) | [التوثيق](#التثبيت) | [المساهمة](./CONTRIBUTING.md)
 
 </div>
@@ -52,10 +50,18 @@ npm start
 
 ### متغيرات `.env`
 
-يرجى الرجوع إلى ملف `.env.example` لمعرفة جميع المتغيرات المطلوبة والاختيارية لتشغيل المشروع. لا تقم أبداً برفع ملف `.env` الفعلي إلى المستودع.
-في بيئة التطوير، يمكنك نسخ الملف وتعبئته بالقيم الخاصة بك:
-```bash
-cp .env.example .env
+```env
+MONGO_URI=mongodb+srv://...
+JWT_SECRET=your_secret_key
+CLOUDINARY_CLOUD_NAME=your_cloud
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_secret
+PUBLIC_BASE_URL=https://your-domain.com/nfc
+
+# اختياري - لإرسال البريد
+EMAIL_PROVIDER=sendgrid
+EMAIL_API_KEY=your_sendgrid_key
+EMAIL_FROM_ADDRESS=noreply@your-domain.com
 ```
 
 ---
@@ -88,33 +94,16 @@ nfc/
 | GET | `/api/user/designs` | جلب تصاميم المستخدم |
 | POST | `/api/save-design` | حفظ تصميم جديد |
 | GET | `/api/get-design/:id` | جلب تصميم |
-| PATCH | `/api/design/:id/element/:elementId` | تحديث خصائص عنصر محدد في تصميم |
-
-> **ملاحظة للمطورين**: يتوفر توثيق كامل لكافة تفاصيل الـ API، مدخلات ومخرجات الطلبات (Schema) وصلاحيات الأمان بمواصفات **OpenAPI 3.0.3** في ملف [`docs/openapi.yaml`](./docs/openapi.yaml).
-
-### اختبار الواجهة المتقدمة (Properties Panel)
-لإجراء اختبار E2E يدوي للوحة الخصائص:
-1. افتح صفحة المحرر `editor-en.html` أو `editor.html`.
-2. حدد أي عنصر على البطاقة (نص، صورة، زر).
-3. ستظهر لوحة الخصائص في الشريط الجانبي الأيمن.
-4. قم بتغيير أي قيمة (مثل موضع X/Y، أو لون، أو خط).
-5. سيتم تحديث العنصر فورياً على الشاشة (Optimistic UI) وسيتم إرسال طلب `PATCH` للحفظ في الخلفية بعد 800 مللي ثانية من التوقف عن التعديل.
 
 ---
 
-## 🚢 النشر على بيئات الإنتاج (مثل Render)
+## 🚢 النشر على Render
 
-**هام جدًا للأمان**: لا تقم أبدًا برفع ملف `.env` الفعلي إلى مستودعك الخاص أو العام!
-
-1. أنشئ خدمة Web Service جديدة على دليلك المفضل (مثل Render أو Heroku).
-2. اربط مستودع Git.
+1. أنشئ خدمة Web Service جديدة
+2. اربط مستودع Git
 3. **Build Command:** `npm install`
 4. **Start Command:** `node server.js`
-5. **إعداد الأسرار (Secrets Manager)**:
-   - اذهب إلى لوحة التحكم الخاصة باستضافتك (Environment variables / Secrets).
-   - قم بإضافة جميع المتغيرات المذكورة في ملف `.env.example` يدويًا هناك بدلاً من رفع الملف.
-   - من أهم المتغيرات التي يجب إضافتها: `MONGO_URI`، `JWT_SECRET`، `CLOUDINARY_CLOUD_NAME`، `CLOUDINARY_API_KEY`، `CLOUDINARY_API_SECRET` وغيرها من المفاتيح الحساسة. لن يعمل الخادم بدون قيم صحيحة لهذه المتغيرات نظرًا لأن النظام يفرض التحقق من وجودها لحماية تطبيقك من العمل بكلمات مرور افتراضية ולتفعيل الرفع المباشر والآمن للصور على Cloudinary.
-   - **تقنيات المراقبة والأداء (اختياري ولكنه مفضل)**: لتفعيل خدمة التقاط الأخطاء ضع مفتاح `SENTRY_DSN`. ولتفعيل ذاكرة التخزينة المؤقتة السريعة العشوائية (Cache) ضع رابط خدمة التشغيل السريع `REDIS_URL`.
+5. أضف متغيرات البيئة من `.env`
 
 ---
 

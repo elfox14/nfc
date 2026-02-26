@@ -51,13 +51,12 @@ const DragManager = {
                         const original = event.target;
                         original.classList.add('dragging');
                     },
-                    move: this.dragMoveListener.bind(this),
+                    move: this.dragMoveListener,
                     end(event) {
                         event.target.classList.remove('dragging');
                         event.target.style.transform = 'translate(0px, 0px)';
                         event.target.setAttribute('data-x', '0');
                         event.target.setAttribute('data-y', '0');
-                        DragManager.clearAlignmentGuides();
                     },
                 },
             });
@@ -67,9 +66,9 @@ const DragManager = {
                 modifiers: [interact.modifiers.restrictRect({ restriction: 'parent', endOnly: true })],
                 autoScroll: false,
                 listeners: {
-                    start: this.dragStartListener.bind(this),
-                    move: this.dragMoveListener.bind(this),
-                    end: this.dragEndListener.bind(this)
+                    start: this.dragStartListener,
+                    move: this.dragMoveListener,
+                    end: this.dragEndListener
                 }
             });
         }
@@ -150,145 +149,16 @@ const DragManager = {
     dragStartListener(event) {
         event.target.classList.add('dragging');
     },
-
-    // --- SNAP TO GRID & ALIGNMENT LOGIC ---
-
-    getAlignmentGuides() {
-        // Find existing guides or create them if they don't exist in DOM
-        let hGuide = document.getElementById('snap-guide-h');
-        let vGuide = document.getElementById('snap-guide-v');
-        if (!hGuide) {
-            hGuide = document.createElement('div');
-            hGuide.id = 'snap-guide-h';
-            hGuide.className = 'alignment-guide horizontal';
-            document.getElementById('cards-wrapper')?.appendChild(hGuide);
-        }
-        if (!vGuide) {
-            vGuide = document.createElement('div');
-            vGuide.id = 'snap-guide-v';
-            vGuide.className = 'alignment-guide vertical';
-            document.getElementById('cards-wrapper')?.appendChild(vGuide);
-        }
-        return { hGuide, vGuide };
-    },
-
-    clearAlignmentGuides() {
-        const { hGuide, vGuide } = this.getAlignmentGuides();
-        if (hGuide) hGuide.classList.remove('visible');
-        if (vGuide) vGuide.classList.remove('visible');
-    },
-
-    checkAlignmentSnap(targetRect, dx, dy, targetX, targetY) {
-        const SNAP_THRESHOLD = 5; // px
-        let snapX = null;
-        let snapY = null;
-        let guideX = null;
-        let guideY = null;
-
-        // Bounding boxes we care about for snapping
-        const draggedCenters = {
-            x: targetRect.left + dx + targetRect.width / 2,
-            y: targetRect.top + dy + targetRect.height / 2
-        };
-
-        const siblings = Array.from(document.querySelectorAll('.draggable-on-card:not(.dragging), .phone-button-draggable-wrapper:not(.dragging), .draggable-social-link:not(.dragging)'))
-            .filter(el => el.offsetParent !== null); // Only visible elements
-
-        for (const sibling of siblings) {
-            const sibRect = sibling.getBoundingClientRect();
-
-            // Check Horizontal Alignment (Y-axis snapping)
-            const horizontalPoints = [
-                { dragged: targetRect.top + dy, sib: sibRect.top },
-                { dragged: targetRect.bottom + dy, sib: sibRect.bottom },
-                { dragged: draggedCenters.y, sib: sibRect.top + sibRect.height / 2 }
-            ];
-
-            for (const point of horizontalPoints) {
-                if (Math.abs(point.dragged - point.sib) < SNAP_THRESHOLD) {
-                    snapY = targetY + (point.sib - point.dragged); // Offset required to perfect match
-                    guideY = point.sib;
-                    break;
-                }
-            }
-
-            // Check Vertical Alignment (X-axis snapping)
-            const verticalPoints = [
-                { dragged: targetRect.left + dx, sib: sibRect.left },
-                { dragged: targetRect.right + dx, sib: sibRect.right },
-                { dragged: draggedCenters.x, sib: sibRect.left + sibRect.width / 2 }
-            ];
-
-            for (const point of verticalPoints) {
-                if (Math.abs(point.dragged - point.sib) < SNAP_THRESHOLD) {
-                    snapX = targetX + (point.sib - point.dragged); // Offset required to perfect match
-                    guideX = point.sib;
-                    break;
-                }
-            }
-
-            if (snapX !== null && snapY !== null) break; // found both
-        }
-
-        return { snapX, snapY, guideX, guideY };
-    },
-
     dragMoveListener(event) {
         const target = event.target;
-        // Standard interactive.js delta
-        let x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-        let y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-        const { hGuide, vGuide } = this.getAlignmentGuides();
-        hGuide.classList.remove('visible');
-        vGuide.classList.remove('visible');
-
-        const stateObj = typeof StateManager !== 'undefined' ? StateManager.getStateObject() : null;
-        const configEnableSnap = false; // Disabled per user request
-        const configGridSize = stateObj?.gridSize ? parseInt(stateObj.gridSize) : 8;
-
-        if (configEnableSnap) {
-            // 1. Grid Snap (Base level)
-            x = Math.round(x / configGridSize) * configGridSize;
-            y = Math.round(y / configGridSize) * configGridSize;
-
-            // 2. Smart Alignment Guides (Overrides grid if close enough to another element)
-            const targetRect = target.getBoundingClientRect();
-            // dx/dy relative to exact screen position for bounding rect comparison
-            const screenDx = event.clientX - event.clientX0;
-            const screenDy = event.clientY - event.clientY0;
-
-            const alignment = this.checkAlignmentSnap(targetRect, screenDx, screenDy, x, y);
-
-            if (alignment.snapX !== null) {
-                x = alignment.snapX;
-                // Position Vertical Guide
-                const cardWrapper = document.getElementById('cards-wrapper');
-                if (cardWrapper && alignment.guideX !== null) {
-                    const wrapperRect = cardWrapper.getBoundingClientRect();
-                    vGuide.style.left = `${alignment.guideX - wrapperRect.left}px`;
-                    vGuide.classList.add('visible');
-                }
-            }
-            if (alignment.snapY !== null) {
-                y = alignment.snapY;
-                // Position Horizontal Guide
-                const cardWrapper = document.getElementById('cards-wrapper');
-                if (cardWrapper && alignment.guideY !== null) {
-                    const wrapperRect = cardWrapper.getBoundingClientRect();
-                    hGuide.style.top = `${alignment.guideY - wrapperRect.top}px`;
-                    hGuide.classList.add('visible');
-                }
-            }
-        }
-
+        const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+        const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
         target.style.transform = `translate(${x}px, ${y}px)`;
         target.setAttribute('data-x', x);
         target.setAttribute('data-y', y);
     },
     dragEndListener(event) {
         event.target.classList.remove('dragging');
-        this.clearAlignmentGuides();
         StateManager.saveDebounced();
     }
 };
@@ -325,38 +195,6 @@ const CardManager = {
         if (logoContainer) {
             logoContainer.style.justifyContent = alignValue;
         }
-    },
-
-    updateLogoDimensions() {
-        const logoImg = document.getElementById('card-logo-img');
-        if (!logoImg) return;
-
-        const logoWrapper = document.getElementById('card-logo');
-        if (logoWrapper) logoWrapper.style.maxWidth = 'none';
-
-        const width = document.getElementById('logo-width')?.value || 120;
-        const height = document.getElementById('logo-height')?.value || 60;
-        const objectFit = document.getElementById('logo-object-fit')?.value || 'contain';
-        const aspectLock = document.getElementById('logo-aspect-lock')?.classList.contains('active');
-
-        logoImg.style.width = `${width}px`;
-        if (aspectLock) {
-            logoImg.style.height = 'auto'; // Let width control height proportionally
-        } else {
-            logoImg.style.height = `${height}px`;
-        }
-        logoImg.style.objectFit = objectFit;
-    },
-
-    updateLogoAdvanced() {
-        const logoImg = document.getElementById('card-logo-img');
-        if (!logoImg) return;
-
-        const lazyLoad = document.getElementById('logo-lazy-load')?.checked ?? true;
-        const altText = document.getElementById('logo-alt-text')?.value || 'شعار الشركة (Logo)';
-
-        logoImg.loading = lazyLoad ? 'lazy' : 'eager';
-        logoImg.alt = altText;
     },
 
     updateLogoBackground() {
@@ -1304,7 +1142,7 @@ const StateManager = {
         if (!state) return;
 
         this.isApplyingState = true;
-
+        
         // Update Proxy State if it exists
         if (window.editorState) {
             Object.assign(window.editorState, JSON.parse(JSON.stringify(state)));
@@ -1450,7 +1288,7 @@ const StateManager = {
         }
     },
 
-    saveDebounced: Utils.debounce(async () => {
+    saveDebounced: Utils.debounce(() => {
         if (StateManager.isApplyingState) return;
 
         const currentState = StateManager.getStateObject();
@@ -1460,54 +1298,6 @@ const StateManager = {
             CollaborationManager.sendState(currentState);
         }
 
-        const abstractId = Config.currentDesignId || new URLSearchParams(window.location.search).get('id') || 'draft';
-        const storageKey = `mcprime_autosave_${abstractId}`;
-
-        if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saving');
-
-        // 1. Local Save
-        try {
-            localStorage.setItem(storageKey, JSON.stringify({ timestamp: Date.now(), state: currentState }));
-        } catch (e) {
-            console.error('Autosave local error:', e);
-        }
-
-        // 2. Background Sync
-        try {
-            const token = localStorage.getItem('authToken');
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            let url = `${Config.API_BASE_URL}/api/save-design`;
-            // Only append ID if we actually have a created design ID to update
-            if (Config.currentDesignId) {
-                url += `?id=${Config.currentDesignId}`;
-            }
-
-            const fetchFn = (typeof Auth !== 'undefined' && Auth.fetchWithAuth)
-                ? Auth.fetchWithAuth.bind(Auth)
-                : fetch;
-
-            const response = await fetchFn(url, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(currentState)
-            });
-
-            if (!response.ok) throw new Error('Network response was not ok');
-
-            const result = await response.json();
-            if (result.success && result.id) {
-                Config.currentDesignId = result.id; // Update current ID if newly created
-                if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saved');
-                // Could optionally remove the local draft if server sync was successful.
-                // Keeping it for now ensures they have the latest even if server loses it.
-            } else {
-                throw new Error('Server returned unsuccessful save');
-            }
-        } catch (error) {
-            console.error('Autosave sync failed:', error);
-            if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('error');
-        }
+        UIManager.showSaveNotification('جاري الحفظ التلقائي...', 'تم الحفظ ✓');
     }, 1500)
 };

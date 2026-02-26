@@ -147,8 +147,6 @@
                         class="fas fa-home"></i></a>
                 <a href="gallery.html" class="btn-icon" title="المعرض" style="font-size: 12px;"><i
                         class="fas fa-images"></i></a>
-                <button id="open-templates-btn" class="btn-icon" title="مكتبة القوالب"
-                    style="font-size: 12px; cursor: pointer;"><i class="fas fa-layer-group"></i></button>
                 <a href="blog.html" class="btn-icon" title="المدونة" style="font-size: 12px;"><i
                         class="fas fa-blog"></i></a>
             </nav>
@@ -278,7 +276,6 @@
                     </label>
                 </div>
                 <input type="hidden" id="layout-select" value="classic">
-
             </fieldset>
 
             <fieldset class="fieldset" id="designs-fieldset-source">
@@ -401,79 +398,33 @@
                                 هنا</span></div>
                         <legend>الشعار (Logo)</legend>
 
-                        <!-- 1. المصدر والصورة -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend style="font-size: 0.9em; color: var(--accent-primary);">المصدر والصورة</legend>
-                            <div class="form-group">
-                                <label for="input-logo-upload">رفع صورة (يدعم SVG وصور عالية الدقة)</label>
-                                <div class="logo-upload-group">
-                                    <img id="logo-preview" src="mcprime-logo-transparent.png"
-                                        alt="معاينة الشعار المرفوع">
-                                    <div class="file-input-wrapper">
-                                        <input type="file" id="input-logo-upload"
-                                            accept="image/png, image/jpeg, image/webp, image/svg+xml">
-                                        <div class="input-error-msg" id="logo-upload-error"></div>
-                                    </div>
-                                    <div class="spinner" id="logo-spinner" style="display: none;"></div>
+                        <!-- قسم الرفع والرابط -->
+                        <div class="form-group">
+                            <label for="input-logo">رابط الشعار</label>
+                            <input type="text" id="input-logo" value="mcprime-logo-transparent.png"
+                                data-update-target="card-logo-img" data-update-property="src">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-logo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
+                            <div class="logo-upload-group">
+                                <img id="logo-preview" src="mcprime-logo-transparent.png" alt="معاينة الشعار المرفوع">
+                                <div class="file-input-wrapper">
+                                    <input type="file" id="input-logo-upload" accept="image/*">
+                                    <div class="input-error-msg" id="logo-upload-error"></div>
                                 </div>
+                                <div class="spinner" id="logo-spinner" style="display: none;"></div>
                             </div>
-                            <div class="form-group">
-                                <label for="input-logo">رابط الشعار</label>
-                                <input type="text" id="input-logo" value="mcprime-logo-transparent.png"
-                                    data-update-target="card-logo-img" data-update-property="src">
-                            </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label for="logo-variant-select">نسخة الشعار (Variant)</label>
-                                <select id="logo-variant-select">
-                                    <option value="full" selected>كامل (Full)</option>
-                                    <option value="icon">أيقونة (Icon)</option>
-                                    <option value="mono_light">أحادي فاتح (Mono Light)</option>
-                                    <option value="mono_dark">أحادي داكن (Mono Dark)</option>
-                                </select>
-                            </div>
-                        </fieldset>
+                        </div>
 
-                        <!-- 2. الأبعاد والإطار -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend style="font-size: 0.9em; color: var(--accent-primary);">الأبعاد والإطار</legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label for="logo-width">العرض (px)</label>
-                                    <div style="display: flex; gap: 5px; align-items: center;">
-                                        <input type="number" id="logo-width" value="120" style="width: 100%;">
-                                        <button class="btn-icon btn-compact active" id="logo-aspect-lock"
-                                            title="قفل الأبعاد"><i class="fas fa-link"></i></button>
-                                        <input type="checkbox" id="logo-aspect-lock-checkbox" checked
-                                            style="display:none;">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="logo-height">الطول (px)</label>
-                                    <input type="number" id="logo-height" value="60" style="width: 100%;">
-                                </div>
+                        <!-- قسم الحجم والمحاذاة -->
+                        <div class="control-grid">
+                            <div class="form-group">
+                                <label for="logo-size">حجم الشعار</label>
+                                <input type="range" id="logo-size" min="10" max="80" value="25"
+                                    data-update-target="card-logo-img" data-update-property="style.maxWidth"
+                                    data-update-unit="%">
                             </div>
                             <div class="form-group">
-                                <label for="logo-object-fit">طريقة الاحتواء</label>
-                                <select id="logo-object-fit">
-                                    <option value="contain" selected>احتواء (Contain)</option>
-                                    <option value="cover">تغطية (Cover)</option>
-                                    <option value="fill">ملء (Fill)</option>
-                                </select>
-                            </div>
-                        </fieldset>
-
-                        <!-- 3. الموضع والمحاذاة -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend style="font-size: 0.9em; color: var(--accent-primary);">الموضع والمحاذاة</legend>
-                            <div class="placement-control">
-                                <label>مكان العنصر</label>
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-logo" value="front" checked>
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-logo" value="back"> خلفي</label>
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin-top: 10px;">
                                 <label for="logo-align-group">محاذاة الشعار</label>
                                 <div class="radio-group" id="logo-align-group">
                                     <label><input type="radio" name="logo-align" value="flex-start"> يسار</label>
@@ -481,67 +432,71 @@
                                     <label><input type="radio" name="logo-align" value="flex-end"> يمين</label>
                                 </div>
                             </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label>تحريك دقيق (بالبكسل)</label>
-                                <div class="position-controls-grid" data-target-id="card-logo">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up"
-                                        title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                    <div class="controls-row">
-                                        <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                        <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                    </div>
-                                    <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="للأسفل"><i class="fas fa-arrow-down"></i></button>
+                        </div>
+
+                        <!-- قسم الخلفية والشفافية -->
+                        <div class="control-grid">
+                            <div class="form-group">
+                                <label for="logo-opacity">شفافية الشعار</label>
+                                <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
+                                    data-update-target="card-logo-img" data-update-property="style.opacity">
+                            </div>
+                            <div class="form-group">
+                                <label for="logo-bg-color">خلفية الشعار</label>
+                                <select id="logo-bg-color">
+                                    <option value="transparent">بدون</option>
+                                    <option value="#ffffff">أبيض</option>
+                                    <option value="#000000">أسود</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- قسم الظل -->
+                        <fieldset class="fieldset" style="margin-top: 15px;">
+                            <legend>ظل الشعار</legend>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="logo-shadow-enabled"
+                                        style="width: auto; margin-inline-end: 10px;">
+                                    <span>تفعيل الظل</span>
+                                </label>
+                            </div>
+                            <div class="control-grid" id="logo-shadow-controls" style="display: none;">
+                                <div class="form-group">
+                                    <label for="logo-shadow-blur">حدة الظل</label>
+                                    <input type="range" id="logo-shadow-blur" min="0" max="40" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="logo-shadow-color">لون الظل</label>
+                                    <input type="color" id="logo-shadow-color" value="#000000">
                                 </div>
                             </div>
                         </fieldset>
 
-                        <!-- 4. المظهر والتأثيرات -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend style="font-size: 0.9em; color: var(--accent-primary);">المظهر والتأثيرات</legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="logo-svg-color-enabled"
-                                            style="width: auto; margin-inline-end: 5px;">
-                                        <span>تخصيص لون SVG</span>
-                                    </label>
-                                    <input type="color" id="logo-svg-color" value="#ffffff" disabled
-                                        style="opacity: 0.5;">
-                                </div>
-                                <div class="form-group">
-                                    <label for="logo-brightness">سطوع الشعار</label>
-                                    <input type="range" id="logo-brightness" min="0" max="200" value="100">
-                                </div>
+                        <!-- قسم الموضع والتحريك -->
+                        <div class="placement-control">
+                            <label>مكان العنصر</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="placement-logo" value="front" checked> أمامي</label>
+                                <label><input type="radio" name="placement-logo" value="back"> خلفي</label>
                             </div>
-                        </fieldset>
+                        </div>
 
-                        <!-- 5. الإعدادات المتقدمة -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend style="font-size: 0.9em; color: var(--accent-primary);">الإعدادات المتقدمة</legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="logo-lazy-load" checked
-                                            style="width: auto; margin-inline-end: 10px;">
-                                        <span>تأخير التحميل (Lazy Load)</span>
-                                    </label>
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>تحريك دقيق (بالبكسل)</label>
+                            <div class="position-controls-grid" data-target-id="card-logo">
+                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i
+                                        class="fas fa-arrow-up"></i></button>
+                                <div class="controls-row">
+                                    <button type="button" class="btn-icon move-btn" data-direction="left"
+                                        title="لليسار"><i class="fas fa-arrow-left"></i></button>
+                                    <button type="button" class="btn-icon move-btn" data-direction="right"
+                                        title="لليمين"><i class="fas fa-arrow-right"></i></button>
                                 </div>
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="logo-retina" checked
-                                            style="width: auto; margin-inline-end: 10px;">
-                                        <span>عالي الدقة (Retina)</span>
-                                    </label>
-                                </div>
+                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i
+                                        class="fas fa-arrow-down"></i></button>
                             </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label for="logo-alt-text">نص بديل (وصف الشعار لـ SEO)</label>
-                                <input type="text" id="logo-alt-text" value="شعار الشركة (Logo)">
-                            </div>
-                        </fieldset>
+                        </div>
                     </fieldset>
                 </div>
             </details>
@@ -560,22 +515,15 @@
                             <input type="url" id="input-photo-url">
                         </div>
                         <div class="form-group">
-                            <label for="input-photo-upload">أو ارفع صورة (يدعم WebP، سيتم التحسين تلقائياً)</label>
+                            <label for="input-photo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
                             <div class="logo-upload-group">
                                 <img id="photo-preview" src="" alt="معاينة الصورة الشخصية"
                                     style="display: none; background-color: var(--accent-secondary); border-radius: 50%; object-fit: cover; width: 50px; height: 50px;">
                                 <div class="file-input-wrapper">
-                                    <input type="file" id="input-photo-upload"
-                                        accept="image/png, image/jpeg, image/webp">
+                                    <input type="file" id="input-photo-upload" accept="image/*">
                                     <div class="input-error-msg" id="photo-upload-error"></div>
                                 </div>
                                 <div class="spinner" id="photo-spinner" style="display: none;"></div>
-                            </div>
-                            <div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 5px;">
-                                <label style="display: flex; align-items: flex-start; gap: 5px; cursor: pointer;">
-                                    <input type="checkbox" id="photo-privacy-consent" checked>
-                                    <span>أوافق على معالجة الصورة الشخصية وتخزينها (يمكنك الإزالة لاحقاً).</span>
-                                </label>
                             </div>
                         </div>
 
@@ -583,18 +531,12 @@
                         <div class="control-grid">
                             <div class="form-group">
                                 <label for="photo-size">حجم الصورة</label>
-                                <div style="display: flex; gap: 5px; align-items: center;">
-                                    <input type="range" id="photo-size" min="15" max="100" value="25"
-                                        style="width: 100%;">
-                                    <button class="btn-icon btn-compact active" id="photo-aspect-lock"
-                                        title="قفل الأبعاد"><i class="fas fa-link"></i></button>
-                                </div>
+                                <input type="range" id="photo-size" min="15" max="50" value="25">
                             </div>
                             <div class="form-group">
                                 <label>شكل الصورة</label>
-                                <div class="radio-group" style="flex-direction: column; gap: 5px;">
+                                <div class="radio-group">
                                     <label><input type="radio" name="photo-shape" value="circle" checked> دائري</label>
-                                    <label><input type="radio" name="photo-shape" value="rounded"> زوايا ناعمة</label>
                                     <label><input type="radio" name="photo-shape" value="square"> مربع</label>
                                 </div>
                             </div>
@@ -608,71 +550,20 @@
                             </div>
                         </div>
 
-                        <!-- القص التركيز (Focal Point) -->
-                        <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>القص والتركيز</legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label for="photo-object-fit">طريقة الاحتواء</label>
-                                    <select id="photo-object-fit">
-                                        <option value="cover" selected>تغطية (Cover)</option>
-                                        <option value="contain">احتواء (Contain)</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>نقطة التركيز (X% / Y%)</label>
-                                    <div style="display: flex; gap: 5px;">
-                                        <input type="number" id="photo-focal-x" min="0" max="100" value="50"
-                                            style="width: 50%;" title="أفقي %">
-                                        <input type="number" id="photo-focal-y" min="0" max="100" value="50"
-                                            style="width: 50%;" title="عمودي %">
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
 
-                        <!-- الألوان والشفافية -->
-                        <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>التأثيرات والألوان</legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label for="photo-bg-color">لون الخلفية</label>
-                                    <div style="display: flex; gap: 5px; align-items: center;">
-                                        <input type="checkbox" id="photo-bg-enabled" title="تفعيل اللون">
-                                        <input type="color" id="photo-bg-color" value="#ffffff" disabled
-                                            style="opacity: 0.5;">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="photo-brightness">سطوع</label>
-                                    <input type="range" id="photo-brightness" min="0" max="200" value="100">
-                                </div>
-                            </div>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label for="photo-contrast">تباين</label>
-                                    <input type="range" id="photo-contrast" min="0" max="200" value="100">
-                                </div>
-                                <div class="form-group">
-                                    <label for="photo-grayscale">أبيض وأسود</label>
-                                    <input type="range" id="photo-grayscale" min="0" max="100" value="0">
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <!-- قسم الإطار -->
-                        <div class="control-grid" style="margin-top: 15px;">
+                        <!-- قسم الإطار والشفافية -->
+                        <div class="control-grid">
                             <div class="form-group">
-                                <label for="photo-opacity">الشفافية الكاملة</label>
+                                <label for="photo-opacity">شفافية الصورة</label>
                                 <input type="range" id="photo-opacity" min="0" max="1" step="0.05" value="1">
                             </div>
                             <div class="form-group">
-                                <label for="photo-border-width">عرض الإطار</label>
+                                <label for="photo-border-width">عرض الإطار (px)</label>
                                 <input type="range" id="photo-border-width" min="0" max="10" value="2">
                             </div>
                             <div class="form-group">
-                                <label for="photo-border-color">اللون</label>
-                                <input type="color" id="photo-border-color" value="#ffffff" style="margin-top: 8px;">
+                                <label for="photo-border-color">لون الإطار</label>
+                                <input type="color" id="photo-border-color" value="#ffffff">
                             </div>
                         </div>
 
@@ -695,31 +586,6 @@
                                     <label for="photo-shadow-color">لون الظل</label>
                                     <input type="color" id="photo-shadow-color" value="#000000">
                                 </div>
-                            </div>
-                        </fieldset>
-
-                        <!-- الخيارات المتقدمة للصورة الشخصية -->
-                        <fieldset class="fieldset" style="margin-top: 15px; background: rgba(0,0,0,0.02);">
-                            <legend>إعدادات متقدمة</legend>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="photo-lazy-load" checked
-                                            style="width: auto; margin-inline-end: 10px;">
-                                        <span>تأخير التحميل (Lazy Load)</span>
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" id="photo-retina" checked
-                                            style="width: auto; margin-inline-end: 10px;">
-                                        <span>عالي الدقة (Retina 2x)</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label for="photo-alt-text">نص بديل (وصف للصورة)</label>
-                                <input type="text" id="photo-alt-text" value="صورة شخصية (Avatar)">
                             </div>
                         </fieldset>
 
@@ -1456,12 +1322,6 @@
                         <i class="fas fa-save"></i> حفظ بالمعرض
                     </button>
                 </div>
-                <!-- NEW: Save as Template Button -->
-                <div class="form-group">
-                    <button class="btn btn-secondary mobile-action-btn" id="save-as-template-btn" style="width: 100%;">
-                        <i class="fas fa-layer-group"></i> حفظ كقالب
-                    </button>
-                </div>
                 <div class="form-group">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn"
                         style="width: 100%;">
@@ -1611,166 +1471,6 @@
                 <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> واتساب</a>
                 <a id="share-twitter" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i> تويتر</a>
                 <button id="share-copy-link"><i class="fas fa-copy" aria-hidden="true"></i> نسخ الرابط</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- === Properties Panel (Floating/Contextual Sidebar) === -->
-    <div id="properties-panel" class="properties-panel hidden">
-        <div class="properties-panel-header">
-            <h3>خصائص العنصر</h3>
-            <button id="close-properties-panel" class="btn-icon" title="إغلاق">&times;</button>
-        </div>
-
-        <div class="properties-tabs">
-            <button class="prop-tab-btn active" data-tab="prop-general">عام</button>
-            <button class="prop-tab-btn" data-tab="prop-style" id="prop-tab-style">الشكل</button>
-        </div>
-
-        <div class="properties-content">
-            <!-- General properties (applicable to all elements) -->
-            <div id="prop-general" class="prop-tab-pane active">
-                <div class="prop-row">
-                    <div class="prop-group">
-                        <label>X (px)</label>
-                        <input type="number" id="prop-x" class="prop-input">
-                    </div>
-                    <div class="prop-group">
-                        <label>Y (px)</label>
-                        <input type="number" id="prop-y" class="prop-input">
-                    </div>
-                </div>
-                <div class="prop-row">
-                    <div class="prop-group">
-                        <label>العرض</label>
-                        <input type="number" id="prop-w" class="prop-input">
-                    </div>
-                    <div class="prop-group">
-                        <label>الطول</label>
-                        <input type="number" id="prop-h" class="prop-input">
-                    </div>
-                </div>
-                <div class="prop-row">
-                    <div class="prop-group">
-                        <label>الدوران (°)</label>
-                        <input type="number" id="prop-rotation" class="prop-input" title="درجة الدوران">
-                    </div>
-                    <div class="prop-group">
-                        <label>الترتيب (Z-Index)</label>
-                        <input type="number" id="prop-zindex" class="prop-input">
-                    </div>
-                </div>
-                <div class="prop-row prop-toggles">
-                    <label class="prop-toggle-label">
-                        <input type="checkbox" id="prop-visible">
-                        مرئي
-                    </label>
-                    <label class="prop-toggle-label">
-                        <input type="checkbox" id="prop-lock">
-                        مُقفل
-                    </label>
-                </div>
-            </div>
-
-            <!-- Style properties (context-dependent) -->
-            <div id="prop-style" class="prop-tab-pane">
-                <!-- Text Controls -->
-                <div id="style-text-controls" class="style-group hidden">
-                    <div class="prop-group">
-                        <label>الخط</label>
-                        <select id="prop-fontFamily" class="prop-input">
-                            <option value="'Tajawal', sans-serif">Tajawal</option>
-                            <option value="'Cairo', sans-serif">Cairo</option>
-                            <option value="'Poppins', sans-serif">Poppins</option>
-                            <option value="'Lalezar', cursive">Lalezar</option>
-                        </select>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-group">
-                            <label>الحجم (px)</label>
-                            <input type="number" id="prop-fontSize" class="prop-input">
-                        </div>
-                        <div class="prop-group">
-                            <label>اللون</label>
-                            <input type="color" id="prop-color" class="prop-input">
-                        </div>
-                    </div>
-                    <div class="prop-group">
-                        <label>المحاذاة</label>
-                        <div class="prop-radio-group" id="prop-textAlign">
-                            <button class="prop-icon-btn" data-value="right"><i class="fas fa-align-right"></i></button>
-                            <button class="prop-icon-btn" data-value="center"><i
-                                    class="fas fa-align-center"></i></button>
-                            <button class="prop-icon-btn" data-value="left"><i class="fas fa-align-left"></i></button>
-                        </div>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-group">
-                            <label>تباعد الأسطر</label>
-                            <input type="number" step="0.1" id="prop-lineHeight" class="prop-input">
-                        </div>
-                        <div class="prop-group">
-                            <label>تباعد الأحرف</label>
-                            <input type="number" id="prop-letterSpacing" class="prop-input">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Image Controls -->
-                <div id="style-image-controls" class="style-group hidden">
-                    <div class="prop-group">
-                        <label>احتواء الصورة</label>
-                        <select id="prop-objectFit" class="prop-input">
-                            <option value="cover">Cover (تغطية)</option>
-                            <option value="contain">Contain (احتواء)</option>
-                            <option value="fill">Fill (تعبئة)</option>
-                        </select>
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-group">
-                            <label>انحناء الزوايا</label>
-                            <input type="number" id="prop-borderRadius" class="prop-input">
-                        </div>
-                        <div class="prop-group">
-                            <label>سُمك الإطار</label>
-                            <input type="number" id="prop-borderWidth" class="prop-input">
-                        </div>
-                    </div>
-                    <div class="prop-group">
-                        <label>فلاتر الأساسية (Grayscale)</label>
-                        <input type="range" id="prop-filter-grayscale" min="0" max="100" value="0">
-                    </div>
-                </div>
-
-                <!-- Button Controls -->
-                <div id="style-button-controls" class="style-group hidden">
-                    <div class="prop-group">
-                        <label>لون الخلفية</label>
-                        <input type="color" id="prop-btn-bg" class="prop-input">
-                    </div>
-                    <div class="prop-row">
-                        <div class="prop-group">
-                            <label>انحناء الزوايا</label>
-                            <input type="number" id="prop-btn-radius" class="prop-input">
-                        </div>
-                        <div class="prop-group">
-                            <label>الحشو (Padding)</label>
-                            <input type="number" id="prop-btn-padding" class="prop-input">
-                        </div>
-                    </div>
-                    <div class="prop-group">
-                        <label>نوع الإجراء</label>
-                        <select id="prop-btn-actionType" class="prop-input">
-                            <option value="link">رابط موقع</option>
-                            <option value="phone">اتصال (رقم)</option>
-                            <option value="email">بريد الكتروني</option>
-                        </select>
-                    </div>
-                    <div class="prop-group">
-                        <label>قيمة الإجراء</label>
-                        <input type="text" id="prop-btn-actionValue" class="prop-input" placeholder="https://...">
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -2104,57 +1804,13 @@
 
         <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> المظهر</button>
         <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> المعرض</button>
-        <button id="open-templates-btn-menu"><i class="fas fa-layer-group"></i> مكتبة القوالب</button>
         <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> حفظ بالمعرض</button>
-        <button id="save-as-template-btn-menu"><i class="fas fa-layer-group"></i> حفظ كقالب</button>
         <button id="start-collab-btn-menu"><i class="fas fa-users"></i> تعاون</button>
         <button id="share-editor-btn-menu"><i class="fas fa-link"></i> مشاركة الرابط</button>
         <hr>
         <a href="login.html" class="menu-item-link"><i class="fas fa-sign-in-alt"></i> تسجيل دخول</a>
         <hr>
         <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> إعادة تعيين</button>
-    </div>
-    </div>
-
-    <!-- NEW: Templates Library Modal (Arabic) -->
-    <div id="templates-library-modal-overlay" class="modal-overlay">
-        <div class="modal-content" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>مكتبة القوالب <i class="fas fa-layer-group"></i></h3>
-                <button id="close-templates-library-btn" class="modal-close" aria-label="إغلاق"
-                    style="top:25px; left:20px;">&times;</button>
-            </div>
-            <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 20px;">
-                اختر قالباً لتطبيق تخطيطه وألوانه وخلفيته بسرعة على تصميمك الحالي.
-            </p>
-            <div id="templates-grid"
-                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
-                <!-- Dynamically populated by templates.js -->
-            </div>
-        </div>
-    </div>
-
-    <!-- NEW: Save as Template Modal (Arabic) -->
-    <div id="save-template-modal-overlay" class="modal-overlay">
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <h3 style="margin-bottom: 15px;">حفظ كقالب</h3>
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px;">
-                احفظ تصميمك الحالي كقالب قابل لإعادة الاستخدام في أي وقت.
-            </p>
-            <div class="form-group" style="text-align: right;">
-                <label for="template-name-input">اسم القالب</label>
-                <input type="text" id="template-name-input" placeholder="مثال: تصميم داكن أنيق">
-            </div>
-            <div class="form-group" style="text-align: right; margin-top:15px; display: flex; align-items: center;">
-                <input type="checkbox" id="template-public-checkbox" style="width: auto; margin-left: 10px;">
-                <label for="template-public-checkbox" style="margin: 0; cursor: pointer;">جعله عاماً (مرئي لجميع
-                    المستخدمين)</label>
-            </div>
-            <div class="modal-footer" style="margin-top: 25px;">
-                <button id="cancel-save-template-btn" class="btn btn-secondary">إلغاء</button>
-                <button id="confirm-save-template-btn" class="btn btn-primary">حفظ القالب</button>
-            </div>
-        </div>
     </div>
 </body>
 
