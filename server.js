@@ -781,7 +781,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const safeError = String(error || 'Authorization failed').replace(/[^a-zA-Z0-9_ -]/g, '');
     const targetOrigin = process.env.SITE_BASE_URL || '*';
     return res.send(`
-      <script>
+      <script nonce="${res.locals.cspNonce}">
         window.opener.postMessage({ type: 'google-auth', success: false, error: '${safeError}' }, '${targetOrigin}');
         window.close();
       </script>
@@ -837,19 +837,34 @@ app.get('/api/auth/google/callback', async (req, res) => {
       user = { userId, email: googleUser.email, name: googleUser.name };
     }
 
-    // Generate JWT
-    const secret = process.env.JWT_SECRET;
-    if (!secret) throw new Error('JWT_SECRET not configured');
-    const jwtToken = jwt.sign({ userId: user.userId, email: user.email }, secret, { expiresIn: '7d' });
+    // Generate secure tokens
+    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    const refreshTokenValue = createRefreshToken();
+    const hashedRefresh = hashToken(refreshTokenValue);
+
+    // Store hashed refresh token in DB
+    await db.collection(usersCollectionName).updateOne(
+      { userId: user.userId },
+      { $set: { refreshTokenHash: hashedRefresh } }
+    );
+
+    // Set refresh token as HttpOnly Secure cookie
+    res.cookie('refreshToken', refreshTokenValue, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/auth'
+    });
 
     // Send success back to opener
     const targetOrigin = process.env.SITE_BASE_URL || '*';
     res.send(`
-      <script>
+      <script nonce="${res.locals.cspNonce}">
         window.opener.postMessage({
           type: 'google-auth',
           success: true,
-          token: '${jwtToken}',
+          token: '${accessToken}',
           user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
         }, '${targetOrigin}');
         window.close();
@@ -859,7 +874,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
   } catch (err) {
     console.error('Google OAuth error:', err);
     res.send(`
-      <script>
+      <script nonce="${res.locals.cspNonce}">
         window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '${process.env.SITE_BASE_URL || '*'}');
         window.close();
       </script>
