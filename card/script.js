@@ -18,7 +18,7 @@
         defaultState: {
             inputs: {
                 "layout-select": "classic",
-                "input-logo": "https://www.mcprim.com/nfc/mcprime-logo-transparent.png",
+                "input-logo": "https://www.mcprim.com/nfc/mc-prime-nfc.png",
                 "logo-size": "25",
                 "logo-opacity": "1",
                 "input-photo-url": "",

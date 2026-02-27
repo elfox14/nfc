@@ -24,7 +24,7 @@ const Config = {
         inputs: {
             'layout-select': 'classic',
             'layout-select-visual': 'classic',
-            'input-logo': 'mcprime-logo-transparent.png',
+            'input-logo': 'mc-prime-nfc.png',
             'logo-size': 25,
             'logo-opacity': 1,
             'input-photo-url': '',
@@ -278,3 +278,4 @@ document.addEventListener('DOMContentLoaded', () => {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { HistoryManager, Utils, Config };
 }
+

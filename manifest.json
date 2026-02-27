@@ -12,13 +12,13 @@
   "dir": "rtl",
   "icons": [
     {
-      "src": "/nfc/mcprime-logo-transparent.png",
+      "src": "/nfc/mc-prime-nfc.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/nfc/mcprime-logo-transparent.png",
+      "src": "/nfc/mc-prime-nfc.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -36,7 +36,7 @@
       "url": "/nfc/editor.html",
       "icons": [
         {
-          "src": "/nfc/mcprime-logo-transparent.png",
+          "src": "/nfc/mc-prime-nfc.png",
           "sizes": "96x96"
         }
       ]
@@ -47,7 +47,7 @@
       "url": "/nfc/gallery.html",
       "icons": [
         {
-          "src": "/nfc/mcprime-logo-transparent.png",
+          "src": "/nfc/mc-prime-nfc.png",
           "sizes": "96x96"
         }
       ]

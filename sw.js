@@ -15,7 +15,7 @@ const urlsToCache = [
     '/nfc/script-main.js',
     '/nfc/auth.js',
     '/nfc/logo.svg',
-    '/nfc/mcprime-logo-transparent.png',
+    '/nfc/mc-prime-nfc.png',
     '/nfc/manifest.json'
 ];
 
@@ -81,3 +81,4 @@ self.addEventListener('activate', event => {
     );
     self.clients.claim();
 });
+

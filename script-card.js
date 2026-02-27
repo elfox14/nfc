@@ -731,7 +731,7 @@ const CardManager = {
             await Utils.loadScript(Config.SCRIPT_URLS.qrCodeStyling);
 
             const currentLogo = DOMElements.draggable.logoImg.src;
-            const isDefaultLogo = currentLogo.includes('mcprime-logo-transparent.png');
+            const isDefaultLogo = currentLogo.includes('mc-prime-nfc.png');
 
             const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
 
@@ -800,7 +800,7 @@ const CardManager = {
             const finalUrl = viewerUrl.href;
 
             const currentLogo = DOMElements.draggable.logoImg.src;
-            const isDefaultLogo = currentLogo.includes('mcprime-logo-transparent.png');
+            const isDefaultLogo = currentLogo.includes('mc-prime-nfc.png');
             const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
 
             const isUseLogoChecked = document.getElementById('qr-use-logo').checked;

@@ -13,7 +13,7 @@ const ASSETS_TO_CACHE = [
   '/nfc/script-card.js',
   '/nfc/script-main.js',
   '/nfc/viewer.js',
-  '/nfc/mcprime-logo-transparent.png',
+  '/nfc/mc-prime-nfc.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Poppins:wght@400;700&family=Tajawal:wght@400;700&family=Lalezar&display=swap'
 ];
