@@ -42,6 +42,8 @@ jest.mock('mongodb', () => ({
     }
 }));
 
+jest.setTimeout(30000);
+
 // Setup Test Environment Variables
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'secret123';

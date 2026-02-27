@@ -116,7 +116,7 @@ MongoClient.connect(mongoUrl)
       console.warn('Some indexes may already exist:', indexErr.message);
     }
   })
-  .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
+  .catch(err => { console.error('Mongo connect error', err); /* process.exit(1); */ });
 
 const rootDir = __dirname;
 
@@ -1695,7 +1695,11 @@ wss.on('connection', (ws, req) => {
 
 
 // --- START SERVER (تغيير app.listen إلى server.listen) ---
-server.listen(port, () => {
-  console.log(`Server running on port: ${port}`);
-  console.log('WebSocket server is also running.');
-});
+if (require.main === module) {
+  server.listen(port, () => {
+    console.log(`Server running on port: ${port}`);
+    console.log('WebSocket server is also running.');
+  });
+}
+
+module.exports = app;

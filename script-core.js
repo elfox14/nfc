@@ -274,3 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Google Analytics Initialized');
     }
 });
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { HistoryManager, Utils, Config };
+}
