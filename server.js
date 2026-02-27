@@ -522,19 +522,20 @@ app.post('/api/save-design', async (req, res) => {
     let shortId = existingId || nanoid(8);
     let isUpdate = false;
 
-    // Check for authenticated user to assign ownership
+    // Require authentication - no anonymous saves allowed
     let ownerId = null;
     const authHeader = req.headers['authorization'];
-    if (authHeader) {
-      try {
-        const token = authHeader.split(' ')[1];
-        const secret = process.env.JWT_SECRET;
-        if (!secret) throw new Error('JWT_SECRET not configured');
-        const decoded = jwt.verify(token, secret);
-        ownerId = decoded.userId;
-      } catch (err) {
-        console.warn('Invalid token during save, saving as anonymous');
-      }
+    if (!authHeader) {
+      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
+    }
+    try {
+      const token = authHeader.split(' ')[1];
+      const secret = process.env.JWT_SECRET;
+      if (!secret) throw new Error('JWT_SECRET not configured');
+      const decoded = jwt.verify(token, secret);
+      ownerId = decoded.userId;
+    } catch (err) {
+      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
     }
 
     if (existingId) {
@@ -583,11 +584,11 @@ app.post('/api/save-design', async (req, res) => {
         { $set: updateDoc }
       );
     } else {
-      // Enforce max 10 designs per user
+      // Enforce max 1 design per user
       if (ownerId) {
         const designCount = await db.collection(designsCollectionName).countDocuments({ ownerId });
-        if (designCount >= 10) {
-          return res.status(403).json({ error: 'لقد وصلت للحد الأقصى (10 تصاميم). احذف تصميماً قديماً أولاً. / You have reached the maximum limit of 10 designs. Please delete an old design first.' });
+        if (designCount >= 1) {
+          return res.status(403).json({ error: 'لديك بالفعل كارت محفوظ. يمكنك تعديله من لوحة التحكم. / You already have a saved card. You can edit it from the dashboard.' });
         }
       }
       await db.collection(designsCollectionName).insertOne({

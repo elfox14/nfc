@@ -570,31 +570,7 @@ const ShareManager = {
         }
     },
 
-    // Save design without auth token (anonymous) - used by shareCard so it doesn't appear in dashboard
-    async saveDesignAnonymous(state) {
-        try {
-            const headers = { 'Content-Type': 'application/json' };
-            const url = `${Config.API_BASE_URL}/api/save-design`;
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(state),
-            });
-            if (!response.ok) throw new Error('Server responded with an error');
-
-            const result = await response.json();
-            if (result.success && result.id) {
-                return result.id;
-            } else {
-                throw new Error('Invalid response from server');
-            }
-        } catch (error) {
-            console.error("Failed to save design (anonymous):", error);
-            UIManager.announce(i18nMain.saveFailed || 'فشل حفظ التصميم. حاول مرة أخرى.');
-            return null;
-        }
-    },
 
     async performShare(url, title, text) {
         const shareData = { title, text, url };
@@ -611,6 +587,13 @@ const ShareManager = {
     },
 
     async shareCard() {
+        // Check if user is logged in
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert(i18nMain.loginRequired || 'يجب تسجيل الدخول أولاً لمشاركة بطاقتك. / You must be logged in to share your card.');
+            return;
+        }
+
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.capturing);
 
         let frontImageUrl, backImageUrl, shareState;
@@ -641,8 +624,8 @@ const ShareManager = {
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
 
-        // Save anonymously so shared card does NOT appear in user's dashboard
-        const designId = await this.saveDesignAnonymous(shareState);
+        // Save with authentication
+        const designId = await this.saveDesign(shareState);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
         if (!designId) return;
