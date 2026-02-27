@@ -35,6 +35,7 @@ jest.mock('mongodb', () => ({
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'secret123';
 process.env.MONGO_URI = 'mongodb://fake-uri';
+process.env.PUBLIC_BASE_URL = 'http://localhost:3000';
 
 const app = require('../server.js');
 

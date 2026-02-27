@@ -1,0 +1,925 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for nfc/script-core.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">nfc</a> script-core.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">82.14% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>230/280</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">87.5% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>7/8</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">50% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>4/8</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">82.14% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>230/280</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line high'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a>
+<a name='L200'></a><a href='#L200'>200</a>
+<a name='L201'></a><a href='#L201'>201</a>
+<a name='L202'></a><a href='#L202'>202</a>
+<a name='L203'></a><a href='#L203'>203</a>
+<a name='L204'></a><a href='#L204'>204</a>
+<a name='L205'></a><a href='#L205'>205</a>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a>
+<a name='L214'></a><a href='#L214'>214</a>
+<a name='L215'></a><a href='#L215'>215</a>
+<a name='L216'></a><a href='#L216'>216</a>
+<a name='L217'></a><a href='#L217'>217</a>
+<a name='L218'></a><a href='#L218'>218</a>
+<a name='L219'></a><a href='#L219'>219</a>
+<a name='L220'></a><a href='#L220'>220</a>
+<a name='L221'></a><a href='#L221'>221</a>
+<a name='L222'></a><a href='#L222'>222</a>
+<a name='L223'></a><a href='#L223'>223</a>
+<a name='L224'></a><a href='#L224'>224</a>
+<a name='L225'></a><a href='#L225'>225</a>
+<a name='L226'></a><a href='#L226'>226</a>
+<a name='L227'></a><a href='#L227'>227</a>
+<a name='L228'></a><a href='#L228'>228</a>
+<a name='L229'></a><a href='#L229'>229</a>
+<a name='L230'></a><a href='#L230'>230</a>
+<a name='L231'></a><a href='#L231'>231</a>
+<a name='L232'></a><a href='#L232'>232</a>
+<a name='L233'></a><a href='#L233'>233</a>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a>
+<a name='L251'></a><a href='#L251'>251</a>
+<a name='L252'></a><a href='#L252'>252</a>
+<a name='L253'></a><a href='#L253'>253</a>
+<a name='L254'></a><a href='#L254'>254</a>
+<a name='L255'></a><a href='#L255'>255</a>
+<a name='L256'></a><a href='#L256'>256</a>
+<a name='L257'></a><a href='#L257'>257</a>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a>
+<a name='L260'></a><a href='#L260'>260</a>
+<a name='L261'></a><a href='#L261'>261</a>
+<a name='L262'></a><a href='#L262'>262</a>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a>
+<a name='L269'></a><a href='#L269'>269</a>
+<a name='L270'></a><a href='#L270'>270</a>
+<a name='L271'></a><a href='#L271'>271</a>
+<a name='L272'></a><a href='#L272'>272</a>
+<a name='L273'></a><a href='#L273'>273</a>
+<a name='L274'></a><a href='#L274'>274</a>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a>
+<a name='L277'></a><a href='#L277'>277</a>
+<a name='L278'></a><a href='#L278'>278</a>
+<a name='L279'></a><a href='#L279'>279</a>
+<a name='L280'></a><a href='#L280'>280</a>
+<a name='L281'></a><a href='#L281'>281</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
+&nbsp;
+&nbsp;
+const Config = {
+    // ... existing config ...
+    GTM_CONTAINER_ID: 'GTM-PLL5SLNM', // GTM Container ID
+&nbsp;
+    API_BASE_URL: 'https://nfc-vjy6.onrender.com',
+    LOCAL_STORAGE_KEY: 'digitalCardEditorState_v20',
+    GALLERY_STORAGE_KEY: 'digitalCardGallery_v2',
+    MAX_LOGO_SIZE_MB: 10,
+    MAX_BG_SIZE_MB: 10,
+&nbsp;
+    SCRIPT_URLS: {
+        html2canvas: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+        jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+        qrCodeStyling: 'https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js',
+        jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.0/jszip.min.js',
+        qrcode: 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
+    },
+&nbsp;
+    defaultState: {
+        currentLanguage: 'ar', // NEW: To manage the current language
+        inputs: {
+            'layout-select': 'classic',
+            'layout-select-visual': 'classic',
+            'input-logo': 'mcprime-logo-transparent.png',
+            'logo-size': 25,
+            'logo-opacity': 1,
+            'input-photo-url': '',
+            'photo-size': 25,
+            'photo-shape': 'circle',
+            'photo-border-color': '#ffffff',
+            'photo-border-width': 2,
+&nbsp;
+            // BILINGUAL SUPPORT: Updated text fields
+            'input-name_ar': 'اسمك الكامل هنا',
+            'input-name_en': 'Your Full Name Here',
+            'name-font-size': 22,
+            'name-color': '#e6f0f7',
+            'name-font': 'Tajawal, sans-serif',
+&nbsp;
+            'input-tagline_ar': 'المسمى الوظيفي / الشركة',
+            'input-tagline_en': 'Job Title / Company',
+            'tagline-font-size': 14,
+            'tagline-color': '#4da6ff',
+            'tagline-font': 'Tajawal, sans-serif',
+&nbsp;
+            'toggle-phone-buttons': true,
+            'phone-text-layout': 'row',
+            'phone-text-size': 14,
+            'phone-text-color': '#e6f0f7',
+            'phone-text-font': 'Tajawal, sans-serif',
+            'phone-btn-bg-color': '#4da6ff',
+            'phone-btn-text-color': '#ffffff',
+            'phone-btn-font-size': 12,
+            'phone-btn-padding': 6,
+            'phone-btn-font': 'Poppins, sans-serif',
+            'front-bg-start': '#2a3d54',
+            'front-bg-end': '#223246',
+            'front-bg-opacity': 0,
+            'qr-source': 'auto-card',
+            'input-qr-url': '',
+            'qr-size': 30,
+            'back-bg-start': '#2a3d54',
+            'back-bg-end': '#223246',
+            'back-bg-opacity': 0,
+            'back-buttons-size': 10,
+            'back-buttons-bg-color': '#364f6b',
+            'back-buttons-text-color': '#aab8c2',
+            'back-buttons-font': 'Poppins, sans-serif',
+            'theme-select-input': 'deep-sea',
+            'toggle-master-social': true,
+            'toggle-social-buttons': true,
+            'social-text-size': 12,
+            'social-text-color': '#e6f0f7',
+            'social-text-font': 'Tajawal, sans-serif'
+        },
+        dynamic: {
+            phones: [
+                { id: `phone_${Date.now()}`, value: '01000000000', placement: 'front' }
+            ],
+            social: [],
+            staticSocial: {
+                email: { value: '', placement: 'back' },
+                website: { value: '', placement: 'back' },
+                whatsapp: { value: '', placement: 'back' },
+                facebook: { value: '', placement: 'back' },
+                linkedin: { value: '', placement: 'back' }
+            },
+            qr: { enabled: true }
+        },
+        imageUrls: {
+            front: null,
+            back: null,
+            qrCode: null,
+            photo: null
+        },
+        positions: {
+            "card-logo": { x: 0, y: 0 },
+            "card-personal-photo-wrapper": { x: 0, y: 0 },
+            "card-name": { x: 0, y: 0 },
+            "card-tagline": { x: 0, y: 0 },
+            "qr-code-wrapper": { x: 0, y: 0 }
+        },
+        placements: {
+            logo: 'front',
+            photo: 'front',
+            name: 'front',
+            tagline: 'front',
+            qr: 'back'
+        }
+    },
+&nbsp;
+    THEMES: {
+        // --- Original Designs ---
+        'deep-sea': { name: 'بحر عميق', nameEn: 'Deep Sea', gradient: ['#2a3d54', '#223246'], values: { textPrimary: '#e6f0f7', taglineColor: '#4da6ff', backButtonBg: '#364f6b', backButtonText: '#aab8c2', phoneBtnBg: '#4da6ff', phoneBtnText: '#ffffff' } },
+        'modern-light': { name: 'أبيض حديث', nameEn: 'Modern Light', gradient: ['#e9e9e9', '#ffffff'], values: { textPrimary: '#121212', taglineColor: '#007BFF', backButtonBg: '#f0f2f5', backButtonText: '#343a40', phoneBtnBg: '#007BFF', phoneBtnText: '#ffffff' } },
+        'forest-whisper': { name: 'همس الغابة', nameEn: 'Forest Whisper', gradient: ['#234d20', '#364935'], values: { textPrimary: '#f0f3f0', taglineColor: '#77ab59', backButtonBg: '#4a785f', backButtonText: '#f0f3f0', phoneBtnBg: '#77ab59', phoneBtnText: '#f0f3f0' } },
+        'sunset-gradient': { name: 'غروب الشمس', nameEn: 'Sunset Gradient', gradient: ['#ff8c42', '#ff5f6d'], values: { textPrimary: '#ffffff', taglineColor: '#ffcc80', backButtonBg: '#c44d56', backButtonText: '#ffffff', phoneBtnBg: 'rgba(255,255,255,0.2)', phoneBtnText: '#ffffff' } },
+        'corporate-elegance': { name: 'أناقة الشركات', nameEn: 'Corporate Elegance', gradient: ['#f8f9fa', '#e9ecef'], values: { textPrimary: '#212529', taglineColor: '#0056b3', backButtonBg: '#343a40', backButtonText: '#ffffff', phoneBtnBg: '#0056b3', phoneBtnText: '#ffffff' } },
+        'night-neon': { name: 'النيون الليلي', nameEn: 'Night Neon', gradient: ['#0d0d0d', '#1a1a1a'], values: { textPrimary: '#f0f0f0', taglineColor: '#39ff14', backButtonBg: '#222222', backButtonText: '#00ffdd', phoneBtnBg: 'transparent', phoneBtnText: '#39ff14' } },
+&nbsp;
+        // --- New Designs ---
+        'royal-gold': { name: 'ملكي ذهبي', nameEn: 'Royal Gold', gradient: ['#141E30', '#243B55'], values: { textPrimary: '#F2C94C', taglineColor: '#F2994A', backButtonBg: '#1F2E40', backButtonText: '#F2C94C', phoneBtnBg: '#F2C94C', phoneBtnText: '#141E30' } },
+        'crimson-red': { name: 'أحمر قرمزي', nameEn: 'Crimson Red', gradient: ['#870000', '#190A05'], values: { textPrimary: '#FFFFFF', taglineColor: '#FF6B6B', backButtonBg: '#4A0000', backButtonText: '#FFC3C3', phoneBtnBg: '#FF0000', phoneBtnText: '#FFFFFF' } },
+        'purple-haze': { name: 'ضباب بنفسجي', nameEn: 'Purple Haze', gradient: ['#4568DC', '#B06AB3'], values: { textPrimary: '#FFFFFF', taglineColor: '#E0C3FC', backButtonBg: 'rgba(255,255,255,0.2)', backButtonText: '#FFFFFF', phoneBtnBg: '#B06AB3', phoneBtnText: '#FFFFFF' } },
+        'teal-tech': { name: 'تكنولوجيا', nameEn: 'Teal Tech', gradient: ['#0F2027', '#203A43', '#2C5364'], values: { textPrimary: '#00FFFF', taglineColor: '#7FFFD4', backButtonBg: '#1C313A', backButtonText: '#00FFFF', phoneBtnBg: 'transparent', phoneBtnText: '#00FFFF' } },
+        'desert-sand': { name: 'رمال الصحراء', nameEn: 'Desert Sand', gradient: ['#C9D6FF', '#E2E2E2'], values: { textPrimary: '#5D4E3E', taglineColor: '#8E7C68', backButtonBg: '#D1C4B5', backButtonText: '#5D4E3E', phoneBtnBg: '#8E7C68', phoneBtnText: '#FFFFFF' } },
+        'midnight-blue': { name: 'أزرق منتصف الليل', nameEn: 'Midnight Blue', gradient: ['#000428', '#004e92'], values: { textPrimary: '#E0E0E0', taglineColor: '#4CA1AF', backButtonBg: '#002651', backButtonText: '#4CA1AF', phoneBtnBg: '#004e92', phoneBtnText: '#FFFFFF' } },
+        'cherry-blossom': { name: 'أزهار الكرز', nameEn: 'Cherry Blossom', gradient: ['#FBD3E9', '#BB377D'], values: { textPrimary: '#5D1438', taglineColor: '#FFFFFF', backButtonBg: 'rgba(255,255,255,0.3)', backButtonText: '#5D1438', phoneBtnBg: '#BB377D', phoneBtnText: '#FFFFFF' } },
+        'carbon-fiber': { name: 'ألياف الكربون', nameEn: 'Carbon Fiber', gradient: ['#232526', '#414345'], values: { textPrimary: '#EAEAEA', taglineColor: '#BDC3C7', backButtonBg: '#595B5D', backButtonText: '#FFFFFF', phoneBtnBg: '#343638', phoneBtnText: '#FFFFFF' } }
+    },
+&nbsp;
+    SOCIAL_PLATFORMS: {
+        instagram: { name: 'انستغرام', nameEn: 'Instagram', icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
+        x: { name: 'X (تويتر)', nameEn: 'X (Twitter)', icon: 'fab fa-xing', prefix: 'https://x.com/' },
+        telegram: { name: 'تيليجرام', nameEn: 'Telegram', icon: 'fab fa-telegram', prefix: 'https://t.me/' },
+        tiktok: { name: 'تيك توك', nameEn: 'TikTok', icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
+        snapchat: { name: 'سناب شات', nameEn: 'Snapchat', icon: 'fab fa-snapchat', prefix: 'https://snapchat.com/add/' },
+        youtube: { name: 'يوتيوب', nameEn: 'YouTube', icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
+        pinterest: { name: 'بينترست', nameEn: 'Pinterest', icon: 'fab fa-pinterest', prefix: 'https://pinterest.com/' },
+        behance: { name: 'بيهانس', nameEn: 'Behance', icon: 'fab fa-behance', prefix: 'https://behance.net/' },
+        github: { name: 'جيت هب', nameEn: 'GitHub', icon: 'fab fa-github', prefix: 'https://github.com/' },
+        discord: { name: 'ديسكورد', nameEn: 'Discord', icon: 'fab fa-discord', prefix: 'https://discord.gg/' },
+        spotify: { name: 'سبوتيفاي', nameEn: 'Spotify', icon: 'fab fa-spotify', prefix: 'https://open.spotify.com/user/' },
+        soundcloud: { name: 'ساوند كلاود', nameEn: 'SoundCloud', icon: 'fab fa-soundcloud', prefix: 'https://soundcloud.com/' }
+    },
+&nbsp;
+    STATIC_CONTACT_METHODS: [
+        { id: 'whatsapp', icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+        { id: 'email', icon: 'fas fa-envelope', prefix: 'mailto:' },
+        { id: 'website', icon: 'fas fa-globe' },
+        { id: 'facebook', icon: 'fab fa-facebook-f' },
+        { id: 'linkedin', icon: 'fab fa-linkedin-in' }
+    ]
+};
+&nbsp;
+const DOMElements = {}; // Filled in App.init()
+const loadedScripts = new Set();
+&nbsp;
+const Utils = {
+    debounce: <span class="fstat-no" title="function not covered" >(func, delay = 250) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        let timeoutId;</span>
+<span class="cstat-no" title="statement not covered" >        return (...args) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >            clearTimeout(timeoutId);</span>
+<span class="cstat-no" title="statement not covered" >            timeoutId = setTimeout(() =&gt; func.apply(this, args), delay);</span>
+<span class="cstat-no" title="statement not covered" >        };</span>
+    },
+&nbsp;
+    playSound: (<span class="fstat-no" title="function not covered" >soundId) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        const audioEl = document.getElementById(`audio-${soundId}`); // Fixed selector</span>
+<span class="cstat-no" title="statement not covered" >        if (audioEl) {</span>
+<span class="cstat-no" title="statement not covered" >            audioEl.currentTime = 0;</span>
+<span class="cstat-no" title="statement not covered" >            audioEl.play().catch(e =&gt; console.warn("Audio play failed:", e));</span>
+<span class="cstat-no" title="statement not covered" >        }</span>
+    },
+&nbsp;
+<span class="fstat-no" title="function not covered" >    async copyTextToClipboard(text) {</span>
+<span class="cstat-no" title="statement not covered" >        try {</span>
+<span class="cstat-no" title="statement not covered" >            if (navigator.clipboard &amp;&amp; window.isSecureContext) {</span>
+<span class="cstat-no" title="statement not covered" >                await navigator.clipboard.writeText(text);</span>
+<span class="cstat-no" title="statement not covered" >            } else {</span>
+<span class="cstat-no" title="statement not covered" >                const textArea = document.createElement('textarea');</span>
+<span class="cstat-no" title="statement not covered" >                textArea.value = text;</span>
+<span class="cstat-no" title="statement not covered" >                textArea.style.position = 'absolute';</span>
+<span class="cstat-no" title="statement not covered" >                textArea.style.left = '-999999px';</span>
+<span class="cstat-no" title="statement not covered" >                document.body.prepend(textArea);</span>
+<span class="cstat-no" title="statement not covered" >                textArea.select();</span>
+<span class="cstat-no" title="statement not covered" >                document.execCommand('copy');</span>
+<span class="cstat-no" title="statement not covered" >                textArea.remove();</span>
+<span class="cstat-no" title="statement not covered" >            }</span>
+<span class="cstat-no" title="statement not covered" >            return true;</span>
+<span class="cstat-no" title="statement not covered" >        } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >            console.error('Clipboard error:', error);</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+<span class="cstat-no" title="statement not covered" >        }</span>
+    },
+&nbsp;
+<span class="fstat-no" title="function not covered" >    loadScript(url) {</span>
+<span class="cstat-no" title="statement not covered" >        if (loadedScripts.has(url)) return Promise.resolve();</span>
+<span class="cstat-no" title="statement not covered" >        return new Promise((resolve, reject) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >            const script = document.createElement('script');</span>
+<span class="cstat-no" title="statement not covered" >            script.src = url;</span>
+<span class="cstat-no" title="statement not covered" >            script.onload = () =&gt; { loadedScripts.add(url); resolve(); };</span>
+<span class="cstat-no" title="statement not covered" >            script.onerror = () =&gt; reject(new Error(`Failed to load script: ${url}`));</span>
+<span class="cstat-no" title="statement not covered" >            document.head.appendChild(script);</span>
+<span class="cstat-no" title="statement not covered" >        });</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+};
+&nbsp;
+const HistoryManager = {
+    history: [],
+    currentIndex: -1,
+    // maxHistory: 20, // REMOVED: No limit for undo/redo history
+&nbsp;
+    pushState(state) {
+        // Cut future history if we push new state after undoing
+        if (this.currentIndex &lt; this.history.length - 1) {
+            this.history.splice(this.currentIndex + 1);
+        }
+&nbsp;
+        // Avoid duplicates
+        const newStateStr = JSON.stringify(state);
+        const currentStateStr = this.currentIndex &gt;= 0 ? JSON.stringify(this.history[this.currentIndex]) : null;
+&nbsp;
+        if (newStateStr === currentStateStr) <span class="branch-0 cbranch-no" title="branch not covered" >return;</span>
+&nbsp;
+        this.history.push(JSON.parse(newStateStr));
+        this.currentIndex++; // UPDATED: Always increment index
+&nbsp;
+        this.updateButtonStates();
+    },
+&nbsp;
+    undo() {
+        if (this.currentIndex &gt; 0) {
+            this.currentIndex--;
+            const state = JSON.parse(JSON.stringify(this.history[this.currentIndex]));
+            StateManager.applyState(state, false);
+            this.updateButtonStates();
+        }
+    },
+&nbsp;
+    redo() {
+        if (this.currentIndex &lt; this.history.length - 1) {
+            this.currentIndex++;
+            const state = JSON.parse(JSON.stringify(this.history[this.currentIndex]));
+            StateManager.applyState(state, false);
+            this.updateButtonStates();
+        }
+    },
+&nbsp;
+    updateButtonStates() {
+        const undoBtn = document.getElementById('undo-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        if (undoBtn) undoBtn.disabled = this.currentIndex &lt;= 0;
+        if (redoBtn) redoBtn.disabled = this.currentIndex &gt;= this.history.length - 1;
+    }
+};
+&nbsp;
+// Google Analytics Integration
+document.addEventListener('DOMContentLoaded', () =&gt; {
+<span class="cstat-no" title="statement not covered" >    // Check if ID is configured and is not the placeholder</span>
+<span class="cstat-no" title="statement not covered" >    if (Config.GA_MEASUREMENT_ID &amp;&amp; Config.GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX') {</span>
+<span class="cstat-no" title="statement not covered" >        const script = document.createElement('script');</span>
+<span class="cstat-no" title="statement not covered" >        script.async = true;</span>
+<span class="cstat-no" title="statement not covered" >        script.src = `https://www.googletagmanager.com/gtag/js?id=${Config.GA_MEASUREMENT_ID}`;</span>
+<span class="cstat-no" title="statement not covered" >        document.head.appendChild(script);</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >        window.dataLayer = window.dataLayer || [];</span>
+<span class="cstat-no" title="statement not covered" >        function gtag() { dataLayer.push(arguments); }</span>
+<span class="cstat-no" title="statement not covered" >        gtag('js', new Date());</span>
+<span class="cstat-no" title="statement not covered" >        gtag('config', Config.GA_MEASUREMENT_ID);</span>
+<span class="cstat-no" title="statement not covered" >        console.log('Google Analytics Initialized');</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+});
+&nbsp;
+if (typeof module !== 'undefined' &amp;&amp; module.exports) {
+    module.exports = { HistoryManager, Utils, Config };
+}
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-02-27T00:42:10.041Z
+            </div>
+        <script src="../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../sorter.js"></script>
+        <script src="../block-navigation.js"></script>
+    </body>
+</html>
+    
