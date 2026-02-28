@@ -1212,6 +1212,7 @@
 
         applyState(state, triggerSave = true) {
             if (!state) return;
+            StateManager._isApplyingState = true;
 
             if (state.inputs) {
                 for (const [key, value] of Object.entries(state.inputs)) {
@@ -1279,19 +1280,6 @@
                 input.dispatchEvent(new Event('change', { bubbles: true }));
             });
 
-            if (state.positions) {
-                for (const [id, pos] of Object.entries(state.positions)) {
-                    const el = document.getElementById(id);
-                    if (el && pos) {
-                        el.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
-                        el.setAttribute('data-x', pos.x);
-                        el.setAttribute('data-y', pos.y);
-                    }
-                }
-            } else {
-                DragManager.resetPositions();
-            }
-
             if (state.inputs && state.inputs['theme-select-input']) {
                 UIManager.setActiveThumbnail(state.inputs['theme-select-input']);
             }
@@ -1306,9 +1294,26 @@
                 CardManager.updateQrCodeDisplay();
             }
 
-            if (triggerSave) {
-                StateManager.saveDebounced();
-            }
+            // Apply positions AFTER rendering to prevent renderCardContent from overriding them
+            setTimeout(() => {
+                if (state.positions) {
+                    for (const [id, pos] of Object.entries(state.positions)) {
+                        const el = document.getElementById(id);
+                        if (el && pos) {
+                            el.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+                            el.setAttribute('data-x', pos.x);
+                            el.setAttribute('data-y', pos.y);
+                        }
+                    }
+                } else {
+                    DragManager.resetPositions();
+                }
+                StateManager._isApplyingState = false;
+
+                if (triggerSave) {
+                    StateManager.saveDebounced();
+                }
+            }, 150);
         },
         reset() {
             if (confirm('هل أنت متأكد أنك تريد إعادة تعيين التصميم بالكامل؟ سيتم حذف أي بيانات محفوظة.')) {
@@ -1317,6 +1322,7 @@
             }
         },
         saveDebounced: Utils.debounce(() => {
+            if (StateManager._isApplyingState) return;
             HistoryManager.pushState(StateManager.getStateObject());
             UIManager.showSaveNotification();
         }, 800)
@@ -1550,7 +1556,16 @@
                     headers: headers,
                     body: JSON.stringify(state),
                 });
-                if (!response.ok) throw new Error('Server responded with an error');
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const errorMsg = errorData.error || 'Server responded with an error';
+                    if (response.status === 401 || response.status === 403) {
+                        alert(errorMsg);
+                        return null;
+                    }
+                    throw new Error(errorMsg);
+                }
 
                 const result = await response.json();
                 if (result.success && result.id) {
@@ -1628,6 +1643,7 @@
                     if (!response.ok) throw new Error('Design not found or server error');
 
                     const state = await response.json();
+                    Config.currentDesignId = designId;
                     StateManager.applyState(state, false);
                     UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
 
@@ -1706,6 +1722,11 @@
 
             document.querySelectorAll('input[name^="placement-"]').forEach(radio => {
                 radio.addEventListener('change', () => {
+                    // Skip position reset during state restoration
+                    if (StateManager._isApplyingState) {
+                        CardManager.renderCardContent();
+                        return;
+                    }
                     const elementName = radio.name.replace('placement-', '');
                     const elementsMap = {
                         logo: DOMElements.draggable.logo,

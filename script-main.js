@@ -539,7 +539,6 @@ const ShareManager = {
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
         try {
-            // Use Auth header if available
             const headers = { 'Content-Type': 'application/json' };
             const token = localStorage.getItem('authToken');
             if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -554,7 +553,20 @@ const ShareManager = {
                 headers: headers,
                 body: JSON.stringify(state),
             });
-            if (!response.ok) throw new Error('Server responded with an error');
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const errorMsg = errorData.error || 'Server responded with an error';
+                if (response.status === 401) {
+                    alert(errorMsg);
+                    return null;
+                }
+                if (response.status === 403) {
+                    alert(errorMsg);
+                    return null;
+                }
+                throw new Error(errorMsg);
+            }
 
             const result = await response.json();
             if (result.success && result.id) {
