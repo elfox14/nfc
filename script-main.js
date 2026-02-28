@@ -582,6 +582,21 @@ const ShareManager = {
             // Remove editor-only UI (copy buttons, drag hints, etc.)
             [frontClone, backClone].forEach(clone => {
                 clone.querySelectorAll('.no-export, .copy-btn, .dnd-hover-hint').forEach(el => el.remove());
+
+                // Ensure phone buttons have span wrappers around text (User Requirement 2B)
+                clone.querySelectorAll('.phone-button').forEach(btn => {
+                    let span = btn.querySelector('span');
+                    if (!span) {
+                        const icon = btn.querySelector('i');
+                        const textContent = Array.from(btn.childNodes).find(n => n.nodeType === 3)?.textContent?.trim() || '';
+                        span = document.createElement('span');
+                        span.textContent = textContent;
+                        // Clean up text nodes outside spans
+                        Array.from(btn.childNodes).forEach(n => { if (n.nodeType === 3) n.remove(); });
+                        if (icon) btn.insertBefore(span, icon.nextSibling);
+                        else btn.appendChild(span);
+                    }
+                });
             });
 
             // Attach clones offscreen in live DOM so getComputedStyle returns real values
