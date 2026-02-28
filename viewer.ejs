@@ -360,22 +360,37 @@
 
                 <script>
                     (function () {
-                        const styleUrl = '/style.css'; // مسار ملف التنسيقات الخاص بالمحرر
-                        const cssVariables = `
-                            :host {
-                                width: 100%;
-                                height: 100%;
-                                display: block;
-                                border-radius: 15px; /* Important for corners */
-                            }
-                            * { box-sizing: border-box; }
-                        `;
-
                         function createShadow(hostId, htmlContent) {
                             const host = document.getElementById(hostId);
                             if (!host) return;
                             const shadow = host.attachShadow({ mode: 'open' });
-                            shadow.innerHTML = '<style>@import url("' + styleUrl + '");' + cssVariables + '</style>' + htmlContent;
+
+                            const layout = document.querySelector('.cards-wrapper').getAttribute('data-layout') || 'classic';
+                            const sideClass = hostId === 'card-front-preview' ? 'card-front' : 'card-back';
+
+                            const wrappedContent = `
+                                <div class="cards-wrapper" data-layout="${layout}" style="width:100%; height:100%; margin:0; padding:0; transform:none; box-shadow:none; left:0; top:0; position:relative;">
+                                    <div class="business-card ${sideClass}" style="position:relative; width:100%; height:100%; transform:none; left:0; top:0; box-shadow:none;">
+                                        ${htmlContent}
+                                    </div>
+                                </div>
+                            `;
+
+                            shadow.innerHTML = `
+                                <style>
+                                    @import url("/style.css");
+                                    @import url("/mobile.css");
+                                    @import url("/editor-enhancements.css");
+                                    :host {
+                                        width: 100%;
+                                        height: 100%;
+                                        display: block;
+                                        border-radius: 15px;
+                                    }
+                                    * { box-sizing: border-box; }
+                                </style>
+                                ${wrappedContent}
+                            `;
                         }
 
                         // محتوى الوجه الأمامي والخلفي

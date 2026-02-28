@@ -1,4 +1,5 @@
-:root {
+:root,
+:host {
     --text-primary: #e6f0f7;
     --text-secondary: #bcc9d4;
     --accent-primary: #4da6ff;
@@ -11,7 +12,8 @@
     --toolbar-height: 60px;
 }
 
-[data-theme="light"] {
+[data-theme="light"],
+:host([data-theme="light"]) {
     --text-primary: #2c3e50;
     --text-secondary: #5a6b7c;
     --accent-primary: #2980b9;
@@ -2351,4 +2353,13 @@ body.collaboration-active #start-collab-btn:hover {
     .footer-section:first-child p {
         display: block;
     }
+}
+
+/* Fix for vertical text wrap issue on absolutely positioned elements in editor */
+#card-name,
+#card-tagline,
+#card-logo {
+    white-space: nowrap !important;
+    min-width: max-content;
+    text-align: center;
 }
