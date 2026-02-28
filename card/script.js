@@ -1556,7 +1556,10 @@
                 'object-fit', 'position', 'top', 'left', 'right', 'bottom',
                 'text-shadow', 'backdrop-filter', 'overflow', 'z-index', 'aspect-ratio'
             ];
-            const elements = root.querySelectorAll('[data-el]');
+            // Target [data-el] elements AND all their children (e.g. <span> inside phone buttons)
+            // This is critical: inner elements like phone number <span> rely on card/style.css
+            // which is NOT loaded in viewer.ejs — so their styles MUST be inlined here.
+            const elements = root.querySelectorAll('[data-el], [data-el] *');
             elements.forEach(el => {
                 const computed = window.getComputedStyle(el);
                 PROPS.forEach(prop => {
@@ -1584,12 +1587,26 @@
                 const frontClone = frontEl.cloneNode(true);
                 const backClone = backEl.cloneNode(true);
 
-                // Inline computed styles on all data-el elements in the clones
+                // Remove editor-only UI (copy buttons etc.) from the snapshot
+                frontClone.querySelectorAll('.no-export, .copy-btn').forEach(el => el.remove());
+                backClone.querySelectorAll('.no-export, .copy-btn').forEach(el => el.remove());
+
+                // Attach clones offscreen in the live DOM so getComputedStyle works correctly
+                const offscreen = document.createElement('div');
+                offscreen.style.cssText = 'position:fixed;top:-9999px;left:-9999px;visibility:hidden;pointer-events:none;';
+                offscreen.appendChild(frontClone);
+                offscreen.appendChild(backClone);
+                document.body.appendChild(offscreen);
+
+                // Inline computed styles on all [data-el] + their descendants
                 this.inlineComputedStyles(frontClone);
                 this.inlineComputedStyles(backClone);
 
                 const rendered_html_front = frontClone.innerHTML;
                 const rendered_html_back = backClone.innerHTML;
+
+                // Clean up offscreen container
+                document.body.removeChild(offscreen);
 
                 // Capture PNG screenshots of the live elements
                 const [frontCanvas, backCanvas] = await Promise.all([
