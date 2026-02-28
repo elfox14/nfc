@@ -650,13 +650,23 @@
                         const date = new Date(design.createdAt).toLocaleDateString('ar-EG');
                         console.log('Design ImageURLs:', design.data?.imageUrls);
                         const thumb = design.data?.imageUrls?.capturedFront || design.data?.imageUrls?.front || '';
-                        let imgTag = '<i class="fas fa-id-card"></i>';
-                        if (thumb) imgTag = `<img src="${thumb}" alt="${name}" loading="lazy">`;
+                        let imgTag = '';
+                        let thumbStyle = '';
+
+                        if (thumb) {
+                            imgTag = `<img src="${thumb}" alt="${name}" loading="lazy">`;
+                        } else {
+                            const inputs = design.data?.inputs || {};
+                            const startColor = inputs['front-bg-start'] || '#2a3d54';
+                            const endColor = inputs['front-bg-end'] || '#223246';
+                            thumbStyle = `style="background: linear-gradient(135deg, ${startColor}, ${endColor}); display: flex; align-items: center; justify-content: center;"`;
+                            imgTag = '<i class="fas fa-id-card" style="font-size: 4rem; color: rgba(255,255,255,0.4);"></i>';
+                        }
 
                         const card = document.createElement('div');
                         card.className = 'design-card';
                         card.innerHTML = `
-                            <div class="card-thumb">${imgTag}</div>
+                            <div class="card-thumb" ${thumbStyle}>${imgTag}</div>
                             <div class="card-details">
                                 <h3 class="card-title">${name}</h3>
                                 <div class="card-meta">

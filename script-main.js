@@ -516,25 +516,7 @@ const GalleryManager = {
 
 const ShareManager = {
 
-    async captureAndUploadCard(element) {
-        await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
-        const canvas = await ExportManager.captureElement(element, 2);
 
-        return new Promise((resolve, reject) => {
-            canvas.toBlob(async (blob) => {
-                if (!blob) {
-                    return reject(new Error("فشل تحويل canvas إلى blob"));
-                }
-                try {
-                    const file = new File([blob], "card-capture.png", { type: "image/png" });
-                    const imageUrl = await UIManager.uploadImageToServer(file);
-                    resolve(imageUrl);
-                } catch (e) {
-                    reject(e);
-                }
-            }, 'image/png', 0.95);
-        });
-    },
 
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
@@ -607,29 +589,7 @@ const ShareManager = {
         }
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.capturing);
-
-        let frontImageUrl, backImageUrl, shareState;
-
-        try {
-            // Deep clone state so modifications don't leak to auto-save
-            shareState = JSON.parse(JSON.stringify(StateManager.getStateObject()));
-            frontImageUrl = await this.captureAndUploadCard(DOMElements.cardFront);
-
-            UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.uploading);
-            backImageUrl = await this.captureAndUploadCard(DOMElements.cardBack);
-
-        } catch (error) {
-            console.error("Card capture/upload failed:", error);
-            alert(i18nMain.captureError);
-            UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
-            return;
-        }
-
-        if (!shareState.imageUrls) shareState.imageUrls = {};
-        shareState.imageUrls.capturedFront = frontImageUrl;
-        shareState.imageUrls.capturedBack = backImageUrl;
-        shareState.imageUrls.front = frontImageUrl;
-        shareState.imageUrls.back = backImageUrl;
+        let shareState = JSON.parse(JSON.stringify(StateManager.getStateObject()));
 
         // Ask user if they want to display their design in the gallery
         shareState.sharedToGallery = await customConfirm(i18nMain.galleryPrompt);

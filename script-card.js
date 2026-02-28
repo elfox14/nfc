@@ -1173,7 +1173,7 @@ const StateManager = {
             }
         }
 
-        CardManager.updateCardForLanguageChange(state.currentLanguage || 'ar');
+        // updateCardForLanguageChange is called AFTER event dispatch below
 
         DOMElements.phoneNumbersContainer.innerHTML = '';
         if (state.dynamic && state.dynamic.phones) {
@@ -1230,10 +1230,19 @@ const StateManager = {
             }
         }
 
+        CardManager.updateCardBackgrounds();
+
+        // Dispatch events but SKIP hidden language inputs to prevent them from overwriting card text
+        const currentLang = state.currentLanguage || 'ar';
         document.querySelectorAll('input, select, textarea').forEach(input => {
+            // Skip language-specific inputs that don't match current language
+            if (input.dataset.lang && input.dataset.lang !== currentLang) return;
             input.dispatchEvent(new Event('input', { bubbles: true }));
             input.dispatchEvent(new Event('change', { bubbles: true }));
         });
+
+        // Apply language-specific text AFTER event dispatch so it's not overwritten
+        CardManager.updateCardForLanguageChange(state.currentLanguage || 'ar');
 
         if (state.inputs && state.inputs['theme-select-input']) {
             UIManager.setActiveThumbnail(state.inputs['theme-select-input']);
