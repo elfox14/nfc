@@ -633,13 +633,14 @@ app.post('/api/save-design-rendered', async (req, res) => {
     const SANITIZE_CONFIG = {
       ALLOWED_TAGS: [
         'div', 'span', 'img', 'a', 'h1', 'h2', 'h3', 'p', 'br',
-        'i', 'b', 'strong', 'em', 'ul', 'li', 'figure'
+        'i', 'b', 'strong', 'em', 'ul', 'li', 'figure', 'style'
       ],
       ALLOWED_ATTR: [
         'style', 'class', 'src', 'href', 'target', 'rel',
-        'data-el', 'data-bind', 'data-id', 'alt', 'id', 'aria-label'
+        'data-el', 'data-bind', 'data-id', 'alt', 'id', 'aria-label',
+        'data-layout', 'data-x', 'data-y'
       ],
-      FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'link', 'meta'],
+      FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'link', 'meta'],
       FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
       FORCE_BODY: false,
       RETURN_DOM: false

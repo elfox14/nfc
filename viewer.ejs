@@ -342,16 +342,47 @@
         <div class="cards-container">
             <!-- تطبيق data-layout لتفعيل CSS الوضع الطولي -->
             <% if (typeof rendered_html_front==='string' && rendered_html_front.length> 0) { %>
-                <!-- ===== WYSIWYG: عرض الـ HTML المُلتقَط مباشرةً من المحرّر ===== -->
+                <!-- ===== WYSIWYG: عرض الـ HTML المُلتقَط مباشرةً من المحرّر داخل Shadow DOM ===== -->
                 <div class="cards-wrapper" id="card" onclick="this.classList.toggle('is-flipped')"
                     data-layout="<%= layout %>">
-                    <div class="business-card card-front" id="card-front-preview">
-                        <%- rendered_html_front %>
+                    <div class="business-card card-front" id="card-front-preview"
+                        style="background-image: url('<%= rendered_image_front %>'); background-size: cover; background-position: center; border: none;">
+                        <!-- Shadow DOM Host -->
                     </div>
-                    <div class="business-card card-back" id="card-back-preview">
-                        <%- (typeof rendered_html_back==='string' ? rendered_html_back : '' ) %>
+                    <div class="business-card card-back" id="card-back-preview"
+                        style="<%= (typeof rendered_image_back === 'string' && rendered_image_back.length > 0) ? 'background-image: url(\\'' + rendered_image_back + '\\');' : 'background-color: #000;' %> background-size: cover; background-position: center; border: none;">
+                        <!-- Shadow DOM Host -->
                     </div>
                 </div>
+
+                <script>
+                    (function () {
+                        const styleUrl = '/card/style.css'; // مسار ملف التنسيقات الخاص بالمحرر
+                        const cssVariables = `
+                            :host {
+                                width: 100%;
+                                height: 100%;
+                                display: block;
+                                border-radius: 15px; /* Important for corners */
+                            }
+                            * { box-sizing: border-box; }
+                        `;
+
+                        function createShadow(hostId, htmlContent) {
+                            const host = document.getElementById(hostId);
+                            if (!host) return;
+                            const shadow = host.attachShadow({ mode: 'open' });
+                            shadow.innerHTML = '<style>@import url("' + styleUrl + '");' + cssVariables + '</style>' + htmlContent;
+                        }
+
+                        // محتوى الوجه الأمامي والخلفي
+                        const frontHtml = <% - JSON.stringify(rendered_html_front) %>;
+                        const backHtml = <% - JSON.stringify(typeof rendered_html_back === 'string' ? rendered_html_back : '') %>;
+
+                        createShadow('card-front-preview', frontHtml);
+                        createShadow('card-back-preview', backHtml);
+                    })();
+                </script>
                 <% } else { %>
                     <!-- ===== FALLBACK: إعادة البناء من البيانات الخام (للبطاقات القديمة) ===== -->
                     <div class="cards-wrapper" id="card" onclick="this.classList.toggle('is-flipped')"
@@ -645,17 +676,19 @@
         <script>
             // VCF Generation Logic
             function saveContact() {
-                const vcard = `BEGIN:VCARD
-VERSION:3.0
-FN:<%= inputs['input-name'] %>
-TITLE:<%= inputs['input-tagline'] %>
-<% if (dynamic.phones) { dynamic.phones.forEach(p => { %>TEL;TYPE=CELL:<%= p.value %>
-<% }) } %>
-<% if (dynamic.staticSocial && dynamic.staticSocial.email) { %>EMAIL:<%= dynamic.staticSocial.email.value %>
+                const vcard = `BEGIN: VCARD
+                            VERSION: 3.0
+                            FN:<%= inputs['input-name'] %>
+                                TITLE:<%= inputs['input-tagline'] %>
+<% if (dynamic.phones) {
+                                dynamic.phones.forEach(p => { %> TEL; TYPE = CELL:<%= p.value %>
+<% })
+                            } %>
+<% if (dynamic.staticSocial && dynamic.staticSocial.email) { %> EMAIL:<%= dynamic.staticSocial.email.value %>
 <% } %>
-<% if (dynamic.staticSocial && dynamic.staticSocial.website) { %>URL:<%= dynamic.staticSocial.website.value %>
+<% if (dynamic.staticSocial && dynamic.staticSocial.website) { %> URL:<%= dynamic.staticSocial.website.value %>
 <% } %>
-END:VCARD`;
+                                END: VCARD`;
 
                 const blob = new Blob([vcard], { type: 'text/vcard' });
                 const url = URL.createObjectURL(blob);

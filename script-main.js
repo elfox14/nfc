@@ -591,8 +591,8 @@ const ShareManager = {
             offscreen.appendChild(backClone);
             document.body.appendChild(offscreen);
 
-            this.inlineComputedStyles(frontClone);
-            this.inlineComputedStyles(backClone);
+            // this.inlineComputedStyles(frontClone);
+            // this.inlineComputedStyles(backClone);
 
             const rendered_html_front = frontClone.innerHTML;
             const rendered_html_back = backClone.innerHTML;
