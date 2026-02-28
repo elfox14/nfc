@@ -1545,7 +1545,8 @@
     const ShareManager = {
         // ===== WYSIWYG: Helper to inline computed styles on key elements =====
         inlineComputedStyles(root) {
-            const PROPS = [
+            // Properties safe for ROOT [data-el] elements (layout containers)
+            const ROOT_PROPS = [
                 'font-size', 'font-family', 'font-weight', 'color', 'background-color',
                 'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
                 'margin', 'border-radius', 'border', 'border-width', 'border-style', 'border-color',
@@ -1556,21 +1557,49 @@
                 'object-fit', 'position', 'top', 'left', 'right', 'bottom',
                 'text-shadow', 'backdrop-filter', 'overflow', 'z-index', 'aspect-ratio'
             ];
-            // Target [data-el] elements AND all their children (e.g. <span> inside phone buttons)
-            // This is critical: inner elements like phone number <span> rely on card/style.css
-            // which is NOT loaded in viewer.ejs — so their styles MUST be inlined here.
-            const elements = root.querySelectorAll('[data-el], [data-el] *');
-            elements.forEach(el => {
+            // Properties safe for CHILD elements (text, icons, links inside phone/social buttons)
+            // NEVER include width/height/overflow on children — they'll clip text at wrong viewport size
+            const CHILD_PROPS = [
+                'font-size', 'font-family', 'font-weight', 'color', 'background-color',
+                'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+                'border-radius', 'border', 'border-width', 'border-style', 'border-color',
+                'display', 'flex-direction', 'align-items', 'justify-content', 'gap',
+                'text-align', 'line-height', 'letter-spacing', 'text-transform', 'direction',
+                'opacity', 'text-shadow', 'text-decoration', 'word-break', 'white-space'
+            ];
+
+            const applyProps = (el, props) => {
                 const computed = window.getComputedStyle(el);
-                PROPS.forEach(prop => {
+                props.forEach(prop => {
                     try {
                         const val = computed.getPropertyValue(prop);
                         if (val && val !== '' && val !== 'auto' && val !== 'normal' && val !== 'none'
                             && !val.includes('NaN') && !val.includes('undefined')) {
-                            el.style.setProperty(prop, val);
+                            el.style.setProperty(prop, val, 'important');
                         }
                     } catch (e) { /* ignore */ }
                 });
+            };
+
+            // Apply full prop set to [data-el] root elements
+            root.querySelectorAll('[data-el]').forEach(el => applyProps(el, ROOT_PROPS));
+
+            // Apply safe child-only props to all descendants of [data-el] elements
+            root.querySelectorAll('[data-el] *').forEach(el => applyProps(el, CHILD_PROPS));
+
+            // Post-fix: ensure phone button links are never clipped
+            root.querySelectorAll('.phone-button, .draggable-social-link a').forEach(el => {
+                el.style.setProperty('overflow', 'visible', 'important');
+                el.style.setProperty('width', 'auto', 'important');
+                el.style.setProperty('max-width', 'none', 'important');
+                el.style.setProperty('white-space', 'nowrap', 'important');
+            });
+            // Ensure spans inside phone buttons are always visible
+            root.querySelectorAll('.phone-button span, .draggable-social-link a span').forEach(el => {
+                el.style.setProperty('display', 'inline', 'important');
+                el.style.setProperty('visibility', 'visible', 'important');
+                el.style.setProperty('overflow', 'visible', 'important');
+                el.style.setProperty('width', 'auto', 'important');
             });
         },
 
