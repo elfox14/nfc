@@ -614,7 +614,7 @@ app.post('/api/save-design-rendered', async (req, res) => {
       return res.status(401).json({ error: 'توكن غير صالح / Invalid token.' });
     }
 
-    const { cardId, rendered_html_front, rendered_html_back, rendered_image_front, rendered_image_back } = req.body;
+    const { cardId, rendered_html, rendered_image } = req.body;
 
     if (!cardId || typeof cardId !== 'string') {
       return res.status(400).json({ error: 'cardId is required.' });
@@ -646,28 +646,21 @@ app.post('/api/save-design-rendered', async (req, res) => {
       RETURN_DOM: false
     };
 
-    const cleanFront = rendered_html_front
-      ? DOMPurify.sanitize(String(rendered_html_front), SANITIZE_CONFIG)
-      : '';
-    const cleanBack = rendered_html_back
-      ? DOMPurify.sanitize(String(rendered_html_back), SANITIZE_CONFIG)
+    const cleanHtml = rendered_html
+      ? DOMPurify.sanitize(String(rendered_html), SANITIZE_CONFIG)
       : '';
 
-    // Limit base64 image sizes (max ~5MB each)
-    const MAX_IMAGE_LEN = 5 * 1024 * 1024 * 1.4; // base64 is ~33% larger
-    const safeImgFront = (typeof rendered_image_front === 'string' && rendered_image_front.length < MAX_IMAGE_LEN)
-      ? rendered_image_front : null;
-    const safeImgBack = (typeof rendered_image_back === 'string' && rendered_image_back.length < MAX_IMAGE_LEN)
-      ? rendered_image_back : null;
+    // Limit base64 image sizes (max ~10MB)
+    const MAX_IMAGE_LEN = 10 * 1024 * 1024 * 1.4; // base64 is ~33% larger
+    const safeImg = (typeof rendered_image === 'string' && rendered_image.length < MAX_IMAGE_LEN)
+      ? rendered_image : null;
 
     await db.collection(designsCollectionName).updateOne(
       { shortId: cardId },
       {
         $set: {
-          rendered_html_front: cleanFront,
-          rendered_html_back: cleanBack,
-          rendered_image_front: safeImgFront,
-          rendered_image_back: safeImgBack,
+          rendered_html: cleanHtml,
+          rendered_image: safeImg,
           rendered_at: new Date()
         }
       }

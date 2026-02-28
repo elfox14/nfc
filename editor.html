@@ -291,50 +291,26 @@
                 <summary>الخلفيات والألوان</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" style="padding: 10px;">
-                        <legend>الواجهة الأمامية</legend>
+                        <legend>خلفية البطاقة</legend>
                         <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
                                 هنا</span></div>
                         <div class="form-group"><label>لون الخلفية</label>
-                            <div class="control-grid"><input type="color" id="front-bg-start" value="#2a3d54"><input
-                                    type="color" id="front-bg-end" value="#223246"></div>
+                            <div class="control-grid"><input type="color" id="bg-start" value="#2a3d54"><input
+                                    type="color" id="bg-end" value="#223246"></div>
                         </div>
                         <div class="form-group">
-                            <label for="front-bg-upload">رفع صورة للخلفية</label>
+                            <label for="bg-upload">رفع صورة للخلفية</label>
                             <div class="file-input-group">
-                                <input type="file" id="front-bg-upload" accept="image/*">
-                                <button type="button" class="remove-image-btn" id="remove-front-bg-btn"
-                                    style="display: none;" title="إزالة الصورة"
-                                    aria-label="إزالة صورة الخلفية الأمامية"><i class="fas fa-times"
+                                <input type="file" id="bg-upload" accept="image/*">
+                                <button type="button" class="remove-image-btn" id="remove-bg-btn" style="display: none;"
+                                    title="إزالة الصورة" aria-label="إزالة صورة الخلفية"><i class="fas fa-times"
                                         aria-hidden="true"></i></button>
-                                <div class="spinner" id="front-bg-spinner" style="display: none;"></div>
+                                <div class="spinner" id="bg-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">شفافية اللون فوق
-                                الصورة</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
-                                value="0"></div>
-                    </fieldset>
-                    <fieldset class="fieldset" style="padding: 10px; margin-top: 15px;">
-                        <legend>الواجهة الخلفية</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <div class="form-group"><label>لون الخلفية</label>
-                            <div class="control-grid"><input type="color" id="back-bg-start" value="#2a3d54"><input
-                                    type="color" id="back-bg-end" value="#223246"></div>
+                        <div class="form-group" style="display: none;"><label for="bg-opacity">شفافية اللون فوق
+                                الصورة</label><input type="range" id="bg-opacity" min="0" max="1" step="0.05" value="0">
                         </div>
-                        <div class="form-group">
-                            <label for="back-bg-upload">رفع صورة للخلفية</label>
-                            <div class="file-input-group">
-                                <input type="file" id="back-bg-upload" accept="image/*">
-                                <button type="button" class="remove-image-btn" id="remove-back-bg-btn"
-                                    style="display: none;" title="إزالة الصورة"
-                                    aria-label="إزالة صورة الخلفية الخلفية"><i class="fas fa-times"
-                                        aria-hidden="true"></i></button>
-                                <div class="spinner" id="back-bg-spinner" style="display: none;"></div>
-                            </div>
-                        </div>
-                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">شفافية اللون فوق
-                                الصورة</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
-                                value="0"></div>
                     </fieldset>
                 </div>
             </details>
@@ -343,40 +319,27 @@
 
         <main class="pro-canvas">
             <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
-                <div class="card-flipper-container">
-                    <div class="card-flipper">
-                        <div class="business-card card-face card-front" id="card-front-preview">
-                            <div class="card-background-layer" id="front-bg-image-layer"></div>
-                            <div class="card-background-layer" id="front-bg-gradient-layer"></div>
-                            <div class="card-content-layer card-front-content-layer" id="card-front-content">
+                <div class="business-card" id="card-preview">
+                    <div class="card-background-layer" id="bg-image-layer"></div>
+                    <div class="card-background-layer" id="bg-gradient-layer"></div>
+                    <div class="card-content-layer" id="card-content">
 
-                                <div id="card-logo" data-input-target-id="logo-drop-zone">
-                                    <img src="mc-prime-nfc.png"
-                                        alt="شعار MC PRIME لتصميم بطاقات العمل الذكية" class="logo-front"
-                                        id="card-logo-img">
-                                </div>
-
-                                <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
-                                </div>
-                                <h1 id="card-name" data-input-target-id="name-tagline-accordion"
-                                    style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;">
-                                </h1>
-                                <h2 class="tagline" id="card-tagline" data-input-target-id="name-tagline-accordion"
-                                    style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">
-                                </h2>
-                                <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
-                                <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
-                                    data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
-                            </div>
+                        <div id="card-logo" data-input-target-id="logo-drop-zone">
+                            <img src="mc-prime-nfc.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية" class="logo-img"
+                                id="card-logo-img">
                         </div>
 
-                        <div class="business-card card-face card-back" id="card-back-preview">
-                            <div class="card-background-layer" id="back-bg-image-layer"></div>
-                            <div class="card-background-layer" id="back-bg-gradient-layer"></div>
-                            <div class="card-content-layer card-back-content-layer" id="card-back-content">
-                                <!-- JS will populate this -->
-                            </div>
+                        <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
                         </div>
+                        <h1 id="card-name" data-input-target-id="name-tagline-accordion"
+                            style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;">
+                        </h1>
+                        <h2 class="tagline" id="card-tagline" data-input-target-id="name-tagline-accordion"
+                            style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">
+                        </h2>
+                        <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
+                        <div class="qr-image-wrapper" id="qr-code-wrapper" data-input-target-id="qr-code-accordion"
+                            style="width: 30%;"></div>
                     </div>
                 </div>
 
@@ -473,14 +436,7 @@
                             </div>
                         </fieldset>
 
-                        <!-- قسم الموضع والتحريك -->
-                        <div class="placement-control">
-                            <label>مكان العنصر</label>
-                            <div class="radio-group">
-                                <label><input type="radio" name="placement-logo" value="front" checked> أمامي</label>
-                                <label><input type="radio" name="placement-logo" value="back"> خلفي</label>
-                            </div>
-                        </div>
+
 
                         <div class="form-group" style="margin-top: 15px;">
                             <label>تحريك دقيق (بالبكسل)</label>
@@ -589,14 +545,7 @@
                             </div>
                         </fieldset>
 
-                        <!-- قسم الموضع والتحريك -->
-                        <div class="placement-control">
-                            <label>مكان الصورة</label>
-                            <div class="radio-group">
-                                <label><input type="radio" name="placement-photo" value="front" checked> أمامي</label>
-                                <label><input type="radio" name="placement-photo" value="back"> خلفي</label>
-                            </div>
-                        </div>
+
 
                         <div class="form-group" style="margin-top: 15px;">
                             <label>تحريك دقيق (بالبكسل)</label>
@@ -698,13 +647,7 @@
                             <option value="'Cairo', sans-serif">Cairo</option>
                             <option value="'Lalezar', cursive">Lalezar</option>
                         </select></div>
-                    <div class="placement-control">
-                        <label>مكان المسمى الوظيفي</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="placement-tagline" value="front" checked> أمامي</label>
-                            <label><input type="radio" name="placement-tagline" value="back"> خلفي</label>
-                        </div>
-                    </div>
+
 
                     <details class="fieldset-accordion"
                         style="margin-top: 10px; background: transparent; border: none;">
@@ -796,13 +739,7 @@
             <details class="fieldset-accordion" id="qr-code-accordion">
                 <summary>رمز الاستجابة السريعة (QR)</summary>
                 <div class="fieldset-content">
-                    <div class="placement-control" style="border-top: none; padding-top: 0; margin-top: 0;">
-                        <label>مكان رمز QR</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="placement-qr" value="front"> أمامي</label>
-                            <label><input type="radio" name="placement-qr" value="back" checked> خلفي</label>
-                        </div>
-                    </div>
+
                     <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
                     <div class="form-group">
                         <label>مصدر QR Code</label>
@@ -994,14 +931,7 @@
                         <div class="form-group" id="form-group-static-email">
                             <label for="input-email">البريد الإلكتروني</label>
                             <input type="email" id="input-email" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-email" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-email" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
+
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background: transparent; border: none;">
@@ -1049,14 +979,7 @@
                         <div class="form-group" id="form-group-static-website">
                             <label for="input-website">الموقع الإلكتروني</label>
                             <input type="url" id="input-website" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-website" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-website" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
+
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background: transparent; border: none;">
@@ -1104,14 +1027,7 @@
                         <div class="form-group" id="form-group-static-whatsapp">
                             <label for="input-whatsapp">واتساب</label>
                             <input type="text" id="input-whatsapp" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-whatsapp" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-whatsapp" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
+
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background: transparent; border: none;">
@@ -1160,14 +1076,7 @@
                         <div class="form-group" id="form-group-static-facebook">
                             <label for="input-facebook">فيسبوك</label>
                             <input type="url" id="input-facebook" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-facebook" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-facebook" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
+
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background: transparent; border: none;">
@@ -1216,14 +1125,7 @@
                         <div class="form-group" id="form-group-static-linkedin">
                             <label for="input-linkedin">لينكدإن</label>
                             <input type="url" id="input-linkedin" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-linkedin" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-linkedin" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
+
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background: transparent; border: none;">

@@ -367,12 +367,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const placements = state.placements || {};
         const imageUrls = state.imageUrls || {};
 
-        const frontCardContainer = document.getElementById('front-card');
-        const backCardContainer = document.getElementById('back-card');
+        const cardContainer = document.getElementById('card-render');
 
-        if (!frontCardContainer || !backCardContainer) {
-            console.error("Card rendering containers not found!");
-            throw new Error("Card rendering containers not found");
+        if (!cardContainer) {
+            console.error("Card rendering container not found!");
+            throw new Error("Card rendering container not found");
         }
 
         const fontAwesomeLink = document.createElement('link');
@@ -390,62 +389,32 @@ document.addEventListener('DOMContentLoaded', () => {
             return `transform: translate(${pos.x}px, ${pos.y}px) !important;`;
         };
 
-        const getPlacement = (key, defaultPlacement = 'front') => placements[key] || defaultPlacement;
-
-        const renderElement = (elementHTML, placement, containerCollection) => {
-            if (containerCollection[placement]) {
-                containerCollection[placement].insertAdjacentHTML('beforeend', elementHTML);
-            } else {
-                containerCollection.front.insertAdjacentHTML('beforeend', elementHTML);
-            }
+        const renderElement = (elementHTML, container) => {
+            container.insertAdjacentHTML('beforeend', elementHTML);
         };
 
-        const frontStartColor = inputs['front-bg-start'] || '#2a3d54';
-        const frontEndColor = inputs['front-bg-end'] || '#223246';
-        const backStartColor = inputs['back-bg-start'] || '#2a3d54';
-        const backEndColor = inputs['back-bg-end'] || '#223246';
-        const frontOpacity = inputs['front-bg-opacity'] !== undefined ? inputs['front-bg-opacity'] : 1;
-        const backOpacity = inputs['back-bg-opacity'] !== undefined ? inputs['back-bg-opacity'] : 1;
+        const startColor = inputs['bg-start'] || '#2a3d54';
+        const endColor = inputs['bg-end'] || '#223246';
+        const opacity = inputs['bg-opacity'] !== undefined ? inputs['bg-opacity'] : 1;
 
-        const frontBgImage = imageUrls.front ? `url(${imageUrls.front})` : 'none';
-        const backBgImage = imageUrls.back ? `url(${imageUrls.back})` : 'none';
+        const bgImage = imageUrls.bg ? `url(${imageUrls.bg})` : 'none';
 
-        frontCardContainer.innerHTML = `
-            <div class="card-background-layer" style="background-image: ${frontBgImage} !important; background-size: cover; background-position: center;"></div>
-            <div class="card-background-layer" style="background: linear-gradient(135deg, ${frontStartColor}, ${frontEndColor}) !important; opacity: ${frontOpacity} !important;"></div>
-            <div class="card-content-layer" id="card-front-content-render"></div>
+        cardContainer.innerHTML = `
+            <div class="card-background-layer" style="background-image: ${bgImage} !important; background-size: cover; background-position: center;"></div>
+            <div class="card-background-layer" style="background: linear-gradient(135deg, ${startColor}, ${endColor}) !important; opacity: ${opacity} !important;"></div>
+            <div class="card-content-layer" id="card-content-render"></div>
         `;
 
-        backCardContainer.innerHTML = `
-            <div class="card-background-layer" style="background-image: ${backBgImage} !important; background-size: cover; background-position: center;"></div>
-            <div class="card-background-layer" style="background: linear-gradient(135deg, ${backStartColor}, ${backEndColor}) !important; opacity: ${backOpacity} !important;"></div>
-            <div class="card-content-layer" id="card-back-content-render"></div>
-        `;
+        const container = document.getElementById('card-content-render');
 
-        const containers = {
-            front: document.getElementById('card-front-content-render'),
-            back: document.getElementById('card-back-content-render')
-        };
-
-        if (!containers.front || !containers.back) throw new Error("Card content layers could not be found");
+        if (!container) throw new Error("Card content layer could not be found");
 
         if (inputs['input-logo']) {
             const logoSize = inputs['logo-size'] || 25;
             const logoOpacity = inputs['logo-opacity'] !== undefined ? inputs['logo-opacity'] : 1;
             const logoPos = getPositionStyle('card-logo');
-            const logoPlacement = getPlacement('logo');
-
-            const logoFilterArray = [];
-            if (inputs['logo-filter-grayscale']) logoFilterArray.push(`grayscale(${inputs['logo-filter-grayscale']}%)`);
-            if (inputs['logo-filter-sepia']) logoFilterArray.push(`sepia(${inputs['logo-filter-sepia']}%)`);
-            if (inputs['logo-filter-blur']) logoFilterArray.push(`blur(${inputs['logo-filter-blur']}px)`);
-            if (inputs['logo-filter-invert']) logoFilterArray.push(`invert(${inputs['logo-filter-invert']}%)`);
-            if (inputs['logo-filter-brightness']) logoFilterArray.push(`brightness(${inputs['logo-filter-brightness']}%)`);
-            if (inputs['logo-filter-contrast']) logoFilterArray.push(`contrast(${inputs['logo-filter-contrast']}%)`);
-            const logoFilterStyle = logoFilterArray.length > 0 ? `filter: ${logoFilterArray.join(' ')};` : '';
-
             const logoHTML = `<img src="${inputs['input-logo']}" alt="Logo" style="max-width: ${logoSize}% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; opacity: ${logoOpacity} !important; position: relative !important; margin: 5px 0 !important; cursor: default !important; ${logoFilterStyle} ${logoPos}">`;
-            renderElement(logoHTML, logoPlacement, containers);
+            renderElement(logoHTML, container);
         }
 
         if (inputs['input-photo-url']) {
@@ -455,20 +424,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const photoBorderColor = inputs['photo-border-color'] || '#ffffff';
             const photoBorder = `${photoBorderWidth}px solid ${photoBorderColor}`;
             const photoPos = getPositionStyle('card-personal-photo-wrapper');
-            const photoPlacement = getPlacement('photo');
-
-            const photoFilterArray = [];
-            if (inputs['photo-filter-grayscale']) photoFilterArray.push(`grayscale(${inputs['photo-filter-grayscale']}%)`);
-            if (inputs['photo-filter-sepia']) photoFilterArray.push(`sepia(${inputs['photo-filter-sepia']}%)`);
-            if (inputs['photo-filter-blur']) photoFilterArray.push(`blur(${inputs['photo-filter-blur']}px)`);
-            if (inputs['photo-filter-invert']) photoFilterArray.push(`invert(${inputs['photo-filter-invert']}%)`);
-            if (inputs['photo-filter-brightness']) photoFilterArray.push(`brightness(${inputs['photo-filter-brightness']}%)`);
-            if (inputs['photo-filter-contrast']) photoFilterArray.push(`contrast(${inputs['photo-filter-contrast']}%)`);
-            const photoFilterStyle = photoFilterArray.length > 0 ? `filter: ${photoFilterArray.join(' ')};` : '';
-            const photoGlassStyle = inputs['photo-glass-effect'] ? `mix-blend-mode: screen; opacity: 0.9;` : '';
-
             const photoHTML = `<div style="width: ${photoSize}% !important; padding-top: ${photoSize}%; height: 0; background-image: url(${inputs['input-photo-url']}) !important; background-size: cover !important; background-position: center !important; border-radius: ${photoShape} !important; border: ${photoBorder} !important; position: relative !important; margin: 5px 0 !important; cursor: default !important; overflow: hidden; ${photoFilterStyle} ${photoGlassStyle} ${photoPos}"></div>`;
-            renderElement(photoHTML, photoPlacement, containers);
+            renderElement(photoHTML, container);
         }
 
         let rawName = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || '';
@@ -477,16 +434,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const nameColor = inputs['name-color'] || '#e6f0f7';
             const nameFont = inputs['name-font'] || 'Tajawal, sans-serif';
             const namePos = getPositionStyle('card-name');
-            const namePlacement = getPlacement('name');
-            const displayName = rawName.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-            const nameLetterSpacing = inputs['name-letter-spacing'] ? `letter-spacing: ${inputs['name-letter-spacing']}px !important;` : '';
-            const nameLineHeight = inputs['name-line-height'] ? `line-height: ${inputs['name-line-height']} !important;` : '';
-            const nameTransform = inputs['name-uppercase'] ? `text-transform: uppercase !important;` : '';
-            const nameGlow = inputs['name-glow'] ? `text-shadow: 0 0 10px ${nameColor}, 0 0 20px ${nameColor} !important;` : '';
-
             const nameHTML = `<div id="card-name" style="font-size: ${nameSize}px !important; color: ${nameColor} !important; font-family: ${nameFont} !important; position: relative !important; margin: 5px 0 !important; cursor: default !important; width: 100%; white-space: pre-wrap; word-break: break-word; text-align: center; ${nameLetterSpacing} ${nameLineHeight} ${nameTransform} ${nameGlow} ${namePos}">${displayName}</div>`;
-            renderElement(nameHTML, namePlacement, containers);
+            renderElement(nameHTML, container);
         }
 
         let rawTagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || '';
@@ -534,18 +483,12 @@ document.addEventListener('DOMContentLoaded', () => {
             dynamicData.phones.forEach(phone => {
                 if (!phone || !phone.value) return;
                 const pos = phone.position || { x: 0, y: 0 };
-                const placement = phone.placement || 'front';
-                const wrapperPos = `transform: translate(${pos.x}px, ${pos.y}px) !important;`;
-                const sanitizedValue = phone.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                const telLink = `tel:${phone.value.replace(/\D/g, '')}`;
-                let phoneHTML = '';
-
                 if (showAsButtons) {
                     phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="${phoneBtnDynamicStyles} font-size: ${phoneBtnSize}px !important; font-family: ${phoneBtnFont} !important; padding: ${phoneBtnPadding}px ${phoneBtnPadding * 2}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap !important; direction: ltr !important;"><i class="fas fa-phone-alt"></i><span>${sanitizedValue}</span></a></div>`;
                 } else {
                     phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: transparent !important; border: none !important; font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap !important; direction: ltr !important;"><i class="fas fa-phone-alt" style="display:none;"></i> <span>${sanitizedValue}</span></a></div>`;
                 }
-                renderElement(phoneHTML, placement, containers);
+                renderElement(phoneHTML, container);
             });
         }
 
@@ -607,28 +550,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const platform = platforms[link.platformKey];
                     if (!platform) return;
                     const pos = link.position || { x: 0, y: 0 };
-                    const placement = link.placement || 'back';
-                    const wrapperPos = `transform: translate(${pos.x}px, ${pos.y}px) !important;`;
-                    let value = link.value;
-                    let displayValue = value;
-                    let fullUrl = value;
-                    let prefix = platform.prefix || 'https://';
-
-                    if (link.platformKey === 'email') { fullUrl = `${prefix}${value}`; }
-                    else if (link.platformKey === 'whatsapp') { fullUrl = `${prefix}${value.replace(/\D/g, '')}`; }
-                    else { fullUrl = !/^(https?:\/\/)/i.test(value) ? `${prefix}${value}` : value; }
-
-                    if (link.platformKey !== 'email') {
-                        displayValue = displayValue.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '');
-                    }
-                    displayValue = displayValue.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    let socialHTML = '';
                     if (showSocialButtons) {
                         socialHTML = `<div class="draggable-social-link" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="${socialBtnDynamicStyles} font-family: ${socialBtnFont} !important; font-size: ${socialBtnSize}px !important; padding: ${socialBtnSize * 0.5}px ${socialBtnSize}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap !important; direction: ltr !important;"><i class="${platform.icon}"></i><span style="direction: ltr !important;">${displayValue}</span></a></div>`;
                     } else {
                         socialHTML = `<div class="draggable-social-link text-only-mode" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="background-color: transparent !important; border: none !important; font-family: ${socialTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap !important; direction: ltr !important;"><i class="${platform.icon}" style="color: ${socialTextColor} !important; font-size: 1.2em;"></i><span style="font-size: ${socialTextSize}px !important; color: ${socialTextColor} !important; direction: ltr !important;">${displayValue}</span></a></div>`;
                     }
-                    renderElement(socialHTML, placement, containers);
+                    renderElement(socialHTML, container);
                 });
             }
         }
@@ -643,12 +570,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (qrDataString) {
             const qrSize = inputs['qr-size'] || 25;
             const qrPos = getPositionStyle('qr-code-wrapper');
-            const qrPlacement = getPlacement('qr', 'back');
-            let qrHTML = '';
-
             if (qrSource === 'custom' || qrSource === 'upload') {
                 qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}% !important; padding-top: ${qrSize}%; height: 0; position: relative !important; margin: 5px 0 !important; cursor: default !important; ${qrPos}"><img src="${qrDataString}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;"></div>`;
-                renderElement(qrHTML, qrPlacement, containers);
+                renderElement(qrHTML, container);
             } else if (qrDataString.length > 20) {
                 try {
                     await loadScript(SCRIPT_URLS.qrcode);
@@ -670,19 +594,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (dataUrl) {
                             qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}% !important; padding-top: ${qrSize}%; height: 0; position: relative !important; margin: 5px 0 !important; cursor: default !important; ${qrPos}"><img src="${dataUrl}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;"></div>`;
-                            renderElement(qrHTML, qrPlacement, containers);
+                            renderElement(qrHTML, container);
                         }
                         document.body.removeChild(tempQrDiv);
                         resolve();
                     }, 300));
                 } catch (error) {
                     qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}%; aspect-ratio: 1; position: relative !important; margin: 5px 0 !important; cursor: default !important; ${qrPos} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: red; text-align: center; border-radius: 4px; padding: 5px;">QR Error</div>`;
-                    renderElement(qrHTML, qrPlacement, containers);
+                    renderElement(qrHTML, container);
                 }
             }
         }
 
-        const allRenderedImages = [...containers.front.querySelectorAll('img'), ...containers.back.querySelectorAll('img')];
+        const allRenderedImages = [...container.querySelectorAll('img')];
         await Promise.all(allRenderedImages.map(img => {
             if (img.complete) return Promise.resolve();
             return new Promise(resolve => {
@@ -701,14 +625,10 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error(i18n.failedLoadHtml2canvas);
         }
 
-        const frontCardRenderArea = document.getElementById('front-card');
-        const backCardRenderArea = document.getElementById('back-card');
-        const frontDisplay = document.getElementById('card-front-display');
-        const backDisplay = document.getElementById('card-back-display');
-        const flipWrapper = document.getElementById('cards-wrapper-viewer');
-        const flipBtn = document.getElementById('viewer-flip-btn');
+        const cardRenderArea = document.getElementById('card-render');
+        const cardDisplay = document.getElementById('card-display');
 
-        if (!frontCardRenderArea || !backCardRenderArea || !frontDisplay || !backDisplay || !flipWrapper || !flipBtn) {
+        if (!cardRenderArea || !cardDisplay) {
             throw new Error(i18n.cardElementsNotFound);
         }
 
@@ -742,14 +662,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Also ensure render wrappers are positioned correctly
-        frontCardRenderArea.style.position = 'relative';
-        frontCardRenderArea.style.left = '0';
-        frontCardRenderArea.style.top = '0';
-        frontCardRenderArea.style.visibility = 'visible';
-        backCardRenderArea.style.position = 'relative';
-        backCardRenderArea.style.left = '0';
-        backCardRenderArea.style.top = '0';
-        backCardRenderArea.style.visibility = 'visible';
+        cardRenderArea.style.position = 'relative';
+        cardRenderArea.style.left = '0';
+        cardRenderArea.style.top = '0';
+        cardRenderArea.style.visibility = 'visible';
 
         // Wait for reflow
         await new Promise(resolve => setTimeout(resolve, 200));
@@ -757,8 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const captureOptions = { scale: 2, useCORS: true, allowTaint: true, backgroundColor: null, logging: false, imageTimeout: 15000 };
 
         try {
-            const frontCanvas = await html2canvas(frontCardRenderArea, captureOptions);
-            const backCanvas = await html2canvas(backCardRenderArea, captureOptions);
+            const canvas = await html2canvas(cardRenderArea, captureOptions);
 
             // Restore hidden container
             if (hiddenContainer && originalContainerStyles) {
@@ -777,23 +692,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Restore render areas
-            frontCardRenderArea.style.position = 'absolute';
-            frontCardRenderArea.style.left = '-9999px';
-            frontCardRenderArea.style.visibility = 'hidden';
-            backCardRenderArea.style.position = 'absolute';
-            backCardRenderArea.style.left = '-9999px';
-            backCardRenderArea.style.visibility = 'hidden';
+            cardRenderArea.style.position = 'absolute';
+            cardRenderArea.style.left = '-9999px';
+            cardRenderArea.style.visibility = 'hidden';
 
-            const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
-            const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
-
-            frontDisplay.innerHTML = `<img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardFront}">`;
-            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardBack}" ${backImageStyle}>`;
-
-            const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
-            flipWrapper.addEventListener('click', flipFn);
-            flipBtn.addEventListener('click', flipFn);
-            flipBtn.style.display = 'inline-flex';
+            cardDisplay.innerHTML = `<img src="${canvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardFront}">`;
 
         } catch (error) {
             // Restore hidden container on error
@@ -811,13 +714,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 hiddenContainer.style.opacity = '';
                 hiddenContainer.style.zIndex = '';
             }
-            // Restore render areas on error
-            frontCardRenderArea.style.position = 'absolute';
-            frontCardRenderArea.style.left = '-9999px';
-            frontCardRenderArea.style.visibility = 'hidden';
-            backCardRenderArea.style.position = 'absolute';
-            backCardRenderArea.style.left = '-9999px';
-            backCardRenderArea.style.visibility = 'hidden';
+            cardRenderArea.style.position = 'absolute';
+            cardRenderArea.style.left = '-9999px';
+            cardRenderArea.style.visibility = 'hidden';
             throw new Error(i18n.failedCaptureCardImages);
         }
     };
@@ -866,45 +765,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const layout = inputs['layout-select-visual'] || 'classic';
             const isVertical = layout === 'vertical';
             const wrapper = document.getElementById('cards-wrapper-viewer');
-            const frontRenderWrapper = document.getElementById('front-card');
-            const backRenderWrapper = document.getElementById('back-card');
+            const renderWrapper = document.getElementById('card-render');
 
             if (isVertical) {
                 if (wrapper) wrapper.classList.add('is-vertical');
-                if (frontRenderWrapper) frontRenderWrapper.classList.add('is-vertical');
-                if (backRenderWrapper) backRenderWrapper.classList.add('is-vertical');
+                if (renderWrapper) renderWrapper.classList.add('is-vertical');
             } else {
                 if (wrapper) wrapper.classList.remove('is-vertical');
-                if (frontRenderWrapper) frontRenderWrapper.classList.remove('is-vertical');
-                if (backRenderWrapper) backRenderWrapper.classList.remove('is-vertical');
+                if (renderWrapper) renderWrapper.classList.remove('is-vertical');
             }
             // --- [END] ---
 
             if (name && tagline) document.title = i18n.viewCard(name, tagline);
             else if (name) document.title = i18n.viewCard(name, '');
 
-            const frontDisplay = document.getElementById('card-front-display');
-            const backDisplay = document.getElementById('card-back-display');
-            const flipWrapper = document.getElementById('cards-wrapper-viewer');
-            const flipBtn = document.getElementById('viewer-flip-btn');
+            const cardDisplay = document.getElementById('card-display');
 
-            if (!frontDisplay || !backDisplay || !flipWrapper || !flipBtn) throw new Error(i18n.displayContainerNotFound);
+            if (!cardDisplay || !wrapper) throw new Error(i18n.displayContainerNotFound);
 
             const imageUrls = data.imageUrls || {};
-            const capturedFront = imageUrls.capturedFront;
-            const capturedBack = imageUrls.capturedBack;
+            const captured = imageUrls.captured;
 
-            if (capturedFront && capturedBack) {
-                const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
-                const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
-
-                frontDisplay.innerHTML = `<img src="${capturedFront}" alt="${i18n.cardFront}" loading="lazy">`;
-                backDisplay.innerHTML = `<img src="${capturedBack}" alt="${i18n.cardBack}" loading="lazy" ${backImageStyle}>`;
-
-                const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
-                flipWrapper.addEventListener('click', flipFn);
-                flipBtn.addEventListener('click', flipFn);
-                flipBtn.style.display = 'inline-flex';
+            if (captured) {
+                cardDisplay.innerHTML = `<img src="${captured}" alt="${i18n.cardFront}" loading="lazy">`;
 
                 const renderWrapper = document.querySelector('.visually-hidden');
                 if (renderWrapper) renderWrapper.remove();
@@ -959,8 +842,8 @@ document.addEventListener('DOMContentLoaded', () => {
             saveEmailSigBtn.onclick = generateEmailSignature;
         }
 
-        const downloadCapturedImage = (cardFace) => {
-            const imageContainer = cardFace === 'front' ? document.getElementById('card-front-display') : document.getElementById('card-back-display');
+        const downloadCapturedImage = () => {
+            const imageContainer = document.getElementById('card-display');
             if (!imageContainer) return;
             const imgElement = imageContainer.querySelector('img');
 
@@ -970,7 +853,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.href = imgElement.src;
                     link.setAttribute('download', '');
                     const filenameBase = (cardData && cardData.inputs && cardData.inputs['input-name'] ? cardData.inputs['input-name'] : 'card').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                    link.download = `${filenameBase}_${cardFace}.png`;
+                    link.download = `${filenameBase}.png`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -979,16 +862,15 @@ document.addEventListener('DOMContentLoaded', () => {
             } else { alert(i18n.cardImageNotFound); }
         };
 
-        if (saveFrontPngBtn) saveFrontPngBtn.onclick = () => downloadCapturedImage('front');
-        if (saveBackPngBtn) saveBackPngBtn.onclick = () => downloadCapturedImage('back');
+        const savePngBtn = document.getElementById('save-png-btn');
+        if (savePngBtn) savePngBtn.onclick = () => downloadCapturedImage();
 
         if (savePdfBtn) {
             savePdfBtn.onclick = async () => {
-                const frontImgElement = document.getElementById('card-front-display')?.querySelector('img');
-                const backImgElement = document.getElementById('card-back-display')?.querySelector('img');
+                const imgElement = document.getElementById('card-display')?.querySelector('img');
 
-                if (!frontImgElement || !frontImgElement.src || !backImgElement || !backImgElement.src) {
-                    alert(i18n.cardImagesNotFound);
+                if (!imgElement || !imgElement.src) {
+                    alert(i18n.cardImageNotFound);
                     return;
                 }
 
@@ -998,21 +880,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     await loadScript(SCRIPT_URLS.jspdf);
                     const { jsPDF } = window.jspdf;
-                    const frontImg = frontImgElement;
-                    const backImg = backImgElement;
-                    if (!frontImg.complete) await new Promise(resolve => frontImg.onload = resolve);
-                    if (!backImg.complete) await new Promise(resolve => backImg.onload = resolve);
+                    if (!imgElement.complete) await new Promise(resolve => imgElement.onload = resolve);
 
-                    const imgWidth = frontImg.naturalWidth || 510 * 2;
-                    const imgHeight = frontImg.naturalHeight || 330 * 2;
+                    const imgWidth = imgElement.naturalWidth || 510 * 2;
+                    const imgHeight = imgElement.naturalHeight || 330 * 2;
                     const pdfWidth = imgWidth * 0.75;
                     const pdfHeight = imgHeight * 0.75;
                     const orientation = pdfWidth > pdfHeight ? 'l' : 'p';
 
                     const doc = new jsPDF({ orientation: orientation, unit: 'pt', format: [pdfWidth, pdfHeight] });
-                    doc.addImage(frontImg.src, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-                    doc.addPage([pdfWidth, pdfHeight], orientation);
-                    doc.addImage(backImg.src, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+                    doc.addImage(imgElement.src, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
 
                     const filenameBase = (cardData && cardData.inputs && cardData.inputs['input-name'] ? cardData.inputs['input-name'] : 'card').replace(/[^a-z0-9]/gi, '_').toLowerCase();
                     doc.save(`${filenameBase}.pdf`);
