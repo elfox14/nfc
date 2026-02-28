@@ -539,9 +539,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 let phoneHTML = '';
 
                 if (showAsButtons) {
-                    phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="${phoneBtnDynamicStyles} font-size: ${phoneBtnSize}px !important; font-family: ${phoneBtnFont} !important; padding: ${phoneBtnPadding}px ${phoneBtnPadding * 2}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap !important; direction: ltr !important;"><i class="fas fa-phone-alt"></i><span>${sanitizedValue}</span></a></div>`;
+                    phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="${phoneBtnDynamicStyles} font-size: ${phoneBtnSize}px !important; font-family: ${phoneBtnFont} !important; padding: ${phoneBtnPadding}px ${phoneBtnPadding * 2}px !important; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;"><i class="fas fa-phone-alt"></i><span style="white-space: nowrap !important; direction: ltr !important; unicode-bidi: embed;">${sanitizedValue}</span></a></div>`;
                 } else {
-                    phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: transparent !important; border: none !important; font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap !important; direction: ltr !important;"><i class="fas fa-phone-alt" style="display:none;"></i> <span>${sanitizedValue}</span></a></div>`;
+                    phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: transparent !important; border: none !important; font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px;"><i class="fas fa-phone-alt" style="display:none;"></i> <span style="white-space: nowrap !important; direction: ltr !important; unicode-bidi: embed;">${sanitizedValue}</span></a></div>`;
                 }
                 renderElement(phoneHTML, placement, containers);
             });
@@ -822,7 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showLoadingError = (message) => {
         if (loader) {
-            loader.innerHTML = `<p style="color: #dc3545; font-weight: bold;">${i18n.loadingError}</p><p>${message || i18n.unexpectedError}</p>`;
+            loader.innerHTML = `<p style="color: #dc3545; font-weight: bold; font-size: 1.2rem;">${i18n.loadingError}</p><div style="color: #495057; font-size: 1rem; max-width: 80%; text-align: center; margin-top: 10px;">${message || i18n.unexpectedError}</div>`;
             loader.style.display = 'flex'; loader.style.flexDirection = 'column'; loader.style.alignItems = 'center'; loader.style.justifyContent = 'center';
         }
         if (viewerContainer) viewerContainer.style.display = 'none';
@@ -1062,7 +1062,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const apiUrl = `${API_BASE_URL}/api/get-design/${cardId}`;
                 const response = await fetch(apiUrl);
 
-                if (!response.ok) throw new Error(i18n.failedLoadCardData);
+                if (!response.ok) {
+                    const statusText = response.status === 404 ? "التصميم غير موجود (404) / Card not found" : `خطأ في اتصال السيرفر (${response.status}) / Server connection error`;
+                    throw new Error(`${i18n.failedLoadCardData}<br><br><small style="font-family: monospace; opacity: 0.8; direction: ltr; display: block; margin-top: 15px;">Reason: ${statusText}<br>API: ${apiUrl}</small>`);
+                }
                 data = await response.json();
             }
 
