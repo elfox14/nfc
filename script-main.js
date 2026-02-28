@@ -516,7 +516,108 @@ const GalleryManager = {
 
 const ShareManager = {
 
+    // ===== WYSIWYG: Inline computed styles for pixel-perfect viewer rendering =====
+    inlineComputedStyles(root) {
+        // ROOT props: full set including layout/overflow for wrapper elements
+        const ROOT_PROPS = [
+            'font-size', 'font-family', 'font-weight', 'color', 'background-color',
+            'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+            'margin', 'border-radius', 'border', 'border-width', 'border-style', 'border-color',
+            'transform', 'width', 'max-width', 'min-width', 'height', 'max-height',
+            'display', 'flex-direction', 'align-items', 'justify-content', 'flex-wrap', 'gap',
+            'white-space', 'text-align', 'line-height', 'letter-spacing', 'text-transform',
+            'opacity', 'box-shadow', 'background-image', 'background-size', 'background-position',
+            'object-fit', 'position', 'top', 'left', 'right', 'bottom',
+            'text-shadow', 'backdrop-filter', 'overflow', 'z-index', 'aspect-ratio'
+        ];
+        // CHILD props: typography+color only — NO width/height/overflow (prevents text clipping at viewer scale)
+        const CHILD_PROPS = [
+            'font-size', 'font-family', 'font-weight', 'color', 'background-color',
+            'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+            'border-radius', 'border', 'border-width', 'border-style', 'border-color',
+            'display', 'flex-direction', 'align-items', 'justify-content', 'gap',
+            'text-align', 'line-height', 'letter-spacing', 'text-transform', 'direction',
+            'opacity', 'text-shadow', 'text-decoration', 'word-break', 'white-space'
+        ];
+        const applyProps = (el, props) => {
+            const computed = window.getComputedStyle(el);
+            props.forEach(prop => {
+                try {
+                    const val = computed.getPropertyValue(prop);
+                    if (val && val !== '' && val !== 'auto' && val !== 'normal' && val !== 'none'
+                        && !val.includes('NaN') && !val.includes('undefined')) {
+                        el.style.setProperty(prop, val, 'important');
+                    }
+                } catch (e) { /* ignore */ }
+            });
+        };
+        root.querySelectorAll('[data-el]').forEach(el => applyProps(el, ROOT_PROPS));
+        root.querySelectorAll('[data-el] *').forEach(el => applyProps(el, CHILD_PROPS));
+        // Post-fix: phone buttons and social links must never clip their text
+        root.querySelectorAll('.phone-button, .draggable-social-link a').forEach(el => {
+            el.style.setProperty('overflow', 'visible', 'important');
+            el.style.setProperty('width', 'auto', 'important');
+            el.style.setProperty('max-width', 'none', 'important');
+            el.style.setProperty('white-space', 'nowrap', 'important');
+        });
+        root.querySelectorAll('.phone-button span, .draggable-social-link a span').forEach(el => {
+            el.style.setProperty('display', 'inline', 'important');
+            el.style.setProperty('visibility', 'visible', 'important');
+            el.style.setProperty('overflow', 'visible', 'important');
+            el.style.setProperty('width', 'auto', 'important');
+        });
+    },
 
+    // ===== WYSIWYG: Capture rendered card HTML + PNG images and save to server =====
+    async captureAndSaveRendered(cardId) {
+        try {
+            const frontEl = DOMElements.cardFront;
+            const backEl = DOMElements.cardBack;
+            if (!frontEl || !backEl) return;
+
+            // Clone faces without mutating live DOM
+            const frontClone = frontEl.cloneNode(true);
+            const backClone = backEl.cloneNode(true);
+
+            // Remove editor-only UI (copy buttons, drag hints, etc.)
+            [frontClone, backClone].forEach(clone => {
+                clone.querySelectorAll('.no-export, .copy-btn, .dnd-hover-hint').forEach(el => el.remove());
+            });
+
+            // Attach clones offscreen in live DOM so getComputedStyle returns real values
+            const offscreen = document.createElement('div');
+            offscreen.style.cssText = 'position:fixed;top:-9999px;left:-9999px;visibility:hidden;pointer-events:none;';
+            offscreen.appendChild(frontClone);
+            offscreen.appendChild(backClone);
+            document.body.appendChild(offscreen);
+
+            this.inlineComputedStyles(frontClone);
+            this.inlineComputedStyles(backClone);
+
+            const rendered_html_front = frontClone.innerHTML;
+            const rendered_html_back = backClone.innerHTML;
+            document.body.removeChild(offscreen);
+
+            // Capture PNG screenshots of the live elements using existing ExportManager
+            const [frontCanvas, backCanvas] = await Promise.all([
+                ExportManager.captureElement(frontEl, 2),
+                ExportManager.captureElement(backEl, 2)
+            ]);
+            const rendered_image_front = frontCanvas.toDataURL('image/png');
+            const rendered_image_back = backCanvas.toDataURL('image/png');
+
+            const token = localStorage.getItem('authToken');
+            await fetch(`${Config.API_BASE_URL}/api/save-design-rendered`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ cardId, rendered_html_front, rendered_html_back, rendered_image_front, rendered_image_back })
+            });
+            console.log('[WYSIWYG] Rendered snapshot saved for card:', cardId);
+        } catch (err) {
+            // Non-blocking — viewer falls back to EJS if this fails
+            console.warn('[WYSIWYG] captureAndSaveRendered failed (non-blocking):', err);
+        }
+    },
 
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
@@ -553,6 +654,8 @@ const ShareManager = {
             const result = await response.json();
             if (result.success && result.id) {
                 Config.currentDesignId = result.id;
+                // 🔑 WYSIWYG: Fire-and-forget rendered snapshot (non-blocking)
+                this.captureAndSaveRendered(result.id);
                 return result.id;
             } else {
                 throw new Error('Invalid response from server');
@@ -1235,6 +1338,18 @@ const App = {
                 exitPreview: document.getElementById('exit-preview-btn'),
                 langToggle: document.getElementById('lang-toggle-btn'),
             }
+        });
+
+        // WYSIWYG: Tag main draggable elements so inlineComputedStyles can target them
+        const draggableElMap = {
+            logo: DOMElements.draggable.logo,
+            photo: DOMElements.draggable.photo,
+            name: DOMElements.draggable.name,
+            tagline: DOMElements.draggable.tagline,
+            qr: DOMElements.draggable.qr
+        };
+        Object.entries(draggableElMap).forEach(([key, el]) => {
+            if (el) el.setAttribute('data-el', el.id || key);
         });
 
         Object.values(DOMElements.draggable).forEach(el => {

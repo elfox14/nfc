@@ -334,6 +334,7 @@ const CardManager = {
             wrapper.id = phoneId;
             wrapper.className = 'phone-button-draggable-wrapper draggable-on-card';
             wrapper.dataset.controlId = group.id;
+            wrapper.setAttribute('data-el', phoneId); // WYSIWYG: target for inlineComputedStyles
             wrapper.style.position = 'absolute';
             wrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
             wrapper.setAttribute('data-x', pos.x);
@@ -623,6 +624,7 @@ const CardManager = {
             linkWrapper.id = elementId;
             linkWrapper.className = 'draggable-social-link draggable-on-card';
             linkWrapper.dataset.controlId = controlId;
+            linkWrapper.setAttribute('data-el', elementId); // WYSIWYG: target for inlineComputedStyles
             linkWrapper.style.position = 'absolute';
             linkWrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
             linkWrapper.setAttribute('data-x', pos.x);
