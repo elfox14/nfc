@@ -1115,10 +1115,12 @@ app.get('/api/user/designs', verifyToken, async (req, res) => {
       .project({
         'data.inputs.input-name_ar': 1,
         'data.inputs.input-name_en': 1,
+        'data.inputs.input-name': 1,
         'shortId': 1,
         'createdAt': 1,
         'views': 1,
-        'data.imageUrls.front': 1
+        'data.imageUrls.front': 1,
+        'data.imageUrls.capturedFront': 1
       })
       .sort({ createdAt: -1 })
       .toArray();

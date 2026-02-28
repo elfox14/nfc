@@ -636,7 +636,7 @@
 
                 if (data.success && data.designs && data.designs.length > 0) {
                     data.designs.forEach(design => {
-                        const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || 'بدون اسم') : 'بطاقة';
+                        const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || design.data.inputs['input-name'] || 'بدون اسم') : 'بطاقة';
                         const views = design.views || 0;
                         const date = new Date(design.createdAt).toLocaleDateString('ar-EG');
                         console.log('Design ImageURLs:', design.data?.imageUrls);
