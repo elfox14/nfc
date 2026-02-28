@@ -321,7 +321,7 @@ class TemplateManager {
 
     // تطبيق البيانات
     const data = template.data;
-    
+
     // تحديث النصوص
     if (cardElement.querySelector('.card-name')) {
       cardElement.querySelector('.card-name').textContent = data.name;
@@ -456,6 +456,56 @@ class TemplateManager {
     delete customTemplates[templateId];
     localStorage.setItem('customTemplates', JSON.stringify(customTemplates));
     console.log('تم حذف القالب المخصص:', templateId);
+  }
+
+  /**
+   * الحصول على بنية بيانات البطاقة الافتراضية
+   * @param {string} templateId - معرف القالب (اختياري، افتراضي: 'classic')
+   * @returns {object} - بنية بيانات البطاقة الموحدة
+   */
+  static getDefaultCardData(templateId = 'classic') {
+    const template = this.getTemplate(templateId) || this.getTemplate('classic');
+    const templateData = template.data;
+
+    return {
+      templateId: templateId,
+      name: templateData.name || '',
+      title: templateData.tagline || '',
+      company: templateData.company || '',
+      phone: templateData.phone || '',
+      email: templateData.email || '',
+      website: templateData.website || '',
+      address: templateData.address || '',
+      logoUrl: '',
+      photoUrl: '',
+      bio: '',
+      socialLinks: {
+        facebook: '',
+        twitter: '',
+        instagram: '',
+        linkedin: '',
+        github: '',
+        whatsapp: ''
+      },
+      colors: {
+        primary: templateData.accentColor || '#0066cc',
+        secondary: templateData.secondaryColor || '#003d99',
+        background: templateData.backgroundColor || '#ffffff',
+        text: templateData.nameColor || '#1a1a1a',
+        accent: templateData.accentColor || '#0066cc'
+      },
+      typography: {
+        fontFamily: templateData.fontFamily || 'Arial',
+        nameSize: templateData.nameFontSize || 24,
+        titleSize: templateData.taglineFontSize || 14
+      },
+      layout: 'default',
+      features: {
+        showSaveContact: true,
+        showShare: true,
+        showQrcode: true
+      }
+    };
   }
 }
 
