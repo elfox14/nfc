@@ -543,8 +543,16 @@ html.ltr .dynamic-social-link span {
 }
 
 .business-card {
+    width: 100%;
     max-width: 450px;
+    aspect-ratio: 51 / 33;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    position: relative;
     background-color: #000;
+    flex-shrink: 0;
+    transition: width 0.5s ease, height 0.5s ease, box-shadow 0.3s ease;
 }
 
 #card-name,
@@ -569,6 +577,10 @@ html.ltr .dynamic-social-link span {
 }
 
 .card-background-layer {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
     transition: background-image 0.5s ease;
 }
 
@@ -576,10 +588,21 @@ html.ltr .dynamic-social-link span {
 #back-bg-gradient-layer {
     background-image: var(--bg-gradient);
     opacity: var(--bg-opacity);
-    transition: background-image 0.5s ease, opacity 0.5s ease;
+    transition: background-image 0.5s ease, opacity: 0.5s ease;
 }
 
-
+.card-content-layer {
+    width: 100%;
+    height: 100%;
+    padding: 5%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
 
 .card-content-layer #card-logo,
 .card-content-layer #card-personal-photo-wrapper,
@@ -607,7 +630,11 @@ html.ltr .dynamic-social-link span {
     z-index: 4;
 }
 
-.logo-front {}
+.logo-front {
+    max-width: 25%;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
 
 #card-personal-photo-wrapper {
     aspect-ratio: 1 / 1;
@@ -658,16 +685,11 @@ html.ltr .dynamic-social-link span {
     border-radius: 50px;
     text-decoration: none;
     font-weight: 600;
+    direction: ltr;
     transition: all 0.2s ease;
     font-size: 0.8rem;
     cursor: pointer;
     will-change: transform, filter;
-}
-
-.phone-button span {
-    white-space: nowrap;
-    direction: ltr;
-    unicode-bidi: embed;
 }
 
 .phone-button:hover {
@@ -791,7 +813,6 @@ html.ltr .cards-wrapper[data-layout="modern"] #card-tagline {
     position: relative;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: 8px;
     text-decoration: none;
     border-radius: 50px;
@@ -812,9 +833,8 @@ html.ltr .cards-wrapper[data-layout="modern"] #card-tagline {
 }
 
 .draggable-social-link a span {
-    white-space: nowrap;
     direction: ltr;
-    unicode-bidi: embed;
+    word-break: break-all;
 }
 
 .draggable-social-link.text-only-mode a {

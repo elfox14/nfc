@@ -408,34 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const frontBgImage = imageUrls.front ? `url(${imageUrls.front})` : 'none';
         const backBgImage = imageUrls.back ? `url(${imageUrls.back})` : 'none';
 
-        const padRaw = inputs['phone-btn-padding'];
-        const pad = Number.isFinite(Number(padRaw)) ? parseInt(padRaw, 10) : 6;
-        const fontSizeRaw = inputs['phone-btn-font-size'];
-        const phoneFontSize = Number.isFinite(Number(fontSizeRaw)) ? parseInt(fontSizeRaw, 10) : 16;
-        const phoneBg = inputs['phone-btn-bg-color'] || '#4da6ff';
-        const phoneColor = inputs['phone-btn-text-color'] || '#ffffff';
-        const logoSize = inputs['logo-size'] || 25;
-
-        const socialBtnBg = inputs['back-buttons-bg-color'] || '#364f6b';
-        const socialBtnText = inputs['back-buttons-text-color'] || '#aab8c2';
-        const socialBtnSize = inputs['back-buttons-size'] || 10;
-        const socialBtnFont = inputs['back-buttons-font'] || 'Poppins, sans-serif';
-
-        const businessCardVars = `
-            --logo-max-width-percent: ${logoSize}%;
-            --phone-btn-pad: ${pad}px;
-            --phone-btn-font-size: ${phoneFontSize}px;
-            --phone-btn-bg: ${phoneBg};
-            --phone-btn-color: ${phoneColor};
-            --social-btn-bg: ${socialBtnBg};
-            --social-btn-color: ${socialBtnText};
-            --social-btn-size: ${socialBtnSize}px;
-            --social-btn-font: ${socialBtnFont};
-        `;
-
-        frontCardContainer.style.cssText += businessCardVars;
-        backCardContainer.style.cssText += businessCardVars;
-
         frontCardContainer.innerHTML = `
             <div class="card-background-layer" style="background-image: ${frontBgImage} !important; background-size: cover; background-position: center;"></div>
             <div class="card-background-layer" style="background: linear-gradient(135deg, ${frontStartColor}, ${frontEndColor}) !important; opacity: ${frontOpacity} !important;"></div>
@@ -456,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!containers.front || !containers.back) throw new Error("Card content layers could not be found");
 
         if (inputs['input-logo']) {
+            const logoSize = inputs['logo-size'] || 25;
             const logoOpacity = inputs['logo-opacity'] !== undefined ? inputs['logo-opacity'] : 1;
             const logoPos = getPositionStyle('card-logo');
             const logoPlacement = getPlacement('logo');
@@ -469,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (inputs['logo-filter-contrast']) logoFilterArray.push(`contrast(${inputs['logo-filter-contrast']}%)`);
             const logoFilterStyle = logoFilterArray.length > 0 ? `filter: ${logoFilterArray.join(' ')};` : '';
 
-            const logoHTML = `<img src="${inputs['input-logo']}" class="logo-front" alt="Logo" style="opacity: ${logoOpacity} !important; position: relative !important; margin: 5px 0 !important; cursor: default !important; ${logoFilterStyle} ${logoPos}">`;
+            const logoHTML = `<img src="${inputs['input-logo']}" alt="Logo" style="max-width: ${logoSize}% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; opacity: ${logoOpacity} !important; position: relative !important; margin: 5px 0 !important; cursor: default !important; ${logoFilterStyle} ${logoPos}">`;
             renderElement(logoHTML, logoPlacement, containers);
         }
 
@@ -534,10 +507,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (dynamicData.phones && dynamicData.phones.length > 0) {
             const showAsButtons = inputs['toggle-phone-buttons'] !== undefined ? inputs['toggle-phone-buttons'] : true;
+            const phoneBtnBg = inputs['phone-btn-bg-color'] || '#4da6ff';
+            const phoneBtnText = inputs['phone-btn-text-color'] || '#ffffff';
+            const phoneBtnSize = inputs['phone-btn-font-size'] || 12;
+            const phoneBtnFont = inputs['phone-btn-font'] || 'Poppins, sans-serif';
+            const phoneBtnPadding = inputs['phone-btn-padding'] !== undefined ? inputs['phone-btn-padding'] : 6;
             const phoneTextLayout = inputs['phone-text-layout'] || 'row';
             const phoneTextSize = inputs['phone-text-size'] || 14;
             const phoneTextColor = inputs['phone-text-color'] || '#e6f0f7';
             const phoneTextFont = inputs['phone-text-font'] || 'Tajawal, sans-serif';
+
+            const phoneBtnStyleType = inputs['phone-btn-style'] || 'solid';
+            const phoneBtnRadius = inputs['phone-btn-radius'] !== undefined ? inputs['phone-btn-radius'] : 50;
+
+            let phoneBtnDynamicStyles = `border-radius: ${phoneBtnRadius}px !important;`;
+            if (phoneBtnStyleType === 'outline') {
+                phoneBtnDynamicStyles += `background-color: transparent !important; color: ${phoneBtnBg} !important; border: 2px solid ${phoneBtnBg} !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`;
+            } else if (phoneBtnStyleType === 'glass') {
+                phoneBtnDynamicStyles += `background-color: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; color: ${phoneBtnText} !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;`;
+            } else {
+                phoneBtnDynamicStyles += `background-color: ${phoneBtnBg} !important; color: ${phoneBtnText} !important; border: 2px solid ${phoneBtnBg === 'transparent' || phoneBtnBg.includes('rgba(0,0,0,0)') ? phoneBtnText : 'transparent'} !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`;
+            }
 
             dynamicData.phones.forEach(phone => {
                 if (!phone || !phone.value) return;
@@ -549,9 +539,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 let phoneHTML = '';
 
                 if (showAsButtons) {
-                    phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button"><i class="fas fa-phone-alt"></i><span>${sanitizedValue}</span></a></div>`;
+                    phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="${phoneBtnDynamicStyles} font-size: ${phoneBtnSize}px !important; font-family: ${phoneBtnFont} !important; padding: ${phoneBtnPadding}px ${phoneBtnPadding * 2}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap !important; direction: ltr !important;"><i class="fas fa-phone-alt"></i><span>${sanitizedValue}</span></a></div>`;
                 } else {
-                    phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important;"><i class="fas fa-phone-alt" style="display:none;"></i> <span>${sanitizedValue}</span></a></div>`;
+                    phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: transparent !important; border: none !important; font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap !important; direction: ltr !important;"><i class="fas fa-phone-alt" style="display:none;"></i> <span>${sanitizedValue}</span></a></div>`;
                 }
                 renderElement(phoneHTML, placement, containers);
             });
@@ -591,9 +581,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (allSocialLinks.length > 0) {
                 const showSocialButtons = inputs['toggle-social-buttons'] !== undefined ? inputs['toggle-social-buttons'] : true;
+                const socialBtnBg = inputs['back-buttons-bg-color'] || '#364f6b';
+                const socialBtnText = inputs['back-buttons-text-color'] || '#aab8c2';
+                const socialBtnSize = inputs['back-buttons-size'] || 10;
+                const socialBtnFont = inputs['back-buttons-font'] || 'Poppins, sans-serif';
                 const socialTextSize = inputs['social-text-size'] || 12;
                 const socialTextColor = inputs['social-text-color'] || '#e6f0f7';
                 const socialTextFont = inputs['social-text-font'] || 'Tajawal, sans-serif';
+
+                const socialBtnStyleType = inputs['back-buttons-style'] || 'solid';
+                const socialBtnRadius = inputs['back-buttons-radius'] !== undefined ? inputs['back-buttons-radius'] : 8;
+
+                let socialBtnDynamicStyles = `border-radius: ${socialBtnRadius}px !important;`;
+                if (socialBtnStyleType === 'outline') {
+                    socialBtnDynamicStyles += `background-color: transparent !important; color: ${socialBtnBg} !important; border: 2px solid ${socialBtnBg} !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`;
+                } else if (socialBtnStyleType === 'glass') {
+                    socialBtnDynamicStyles += `background-color: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; color: ${socialBtnText} !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;`;
+                } else {
+                    socialBtnDynamicStyles += `background-color: ${socialBtnBg} !important; color: ${socialBtnText} !important; border: 2px solid transparent !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;`;
+                }
 
                 allSocialLinks.forEach(link => {
                     const platform = platforms[link.platformKey];
@@ -616,9 +622,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     displayValue = displayValue.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     let socialHTML = '';
                     if (showSocialButtons) {
-                        socialHTML = `<div class="draggable-social-link" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" class="social-button"><i class="${platform.icon}"></i><span style="direction: ltr !important;">${displayValue}</span></a></div>`;
+                        socialHTML = `<div class="draggable-social-link" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="${socialBtnDynamicStyles} font-family: ${socialBtnFont} !important; font-size: ${socialBtnSize}px !important; padding: ${socialBtnSize * 0.5}px ${socialBtnSize}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap !important; direction: ltr !important;"><i class="${platform.icon}"></i><span style="direction: ltr !important;">${displayValue}</span></a></div>`;
                     } else {
-                        socialHTML = `<div class="draggable-social-link text-only-mode" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" class="social-button" style="background-color: transparent !important; border: none !important; font-family: ${socialTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap !important; direction: ltr !important;"><i class="${platform.icon}" style="color: ${socialTextColor} !important; font-size: 1.2em;"></i><span style="font-size: ${socialTextSize}px !important; color: ${socialTextColor} !important; direction: ltr !important;">${displayValue}</span></a></div>`;
+                        socialHTML = `<div class="draggable-social-link text-only-mode" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="background-color: transparent !important; border: none !important; font-family: ${socialTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap !important; direction: ltr !important;"><i class="${platform.icon}" style="color: ${socialTextColor} !important; font-size: 1.2em;"></i><span style="font-size: ${socialTextSize}px !important; color: ${socialTextColor} !important; direction: ltr !important;">${displayValue}</span></a></div>`;
                     }
                     renderElement(socialHTML, placement, containers);
                 });
@@ -816,7 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showLoadingError = (message) => {
         if (loader) {
-            loader.innerHTML = `<p style="color: #dc3545; font-weight: bold; font-size: 1.2rem;">${i18n.loadingError}</p><div style="color: #495057; font-size: 1rem; max-width: 80%; text-align: center; margin-top: 10px;">${message || i18n.unexpectedError}</div>`;
+            loader.innerHTML = `<p style="color: #dc3545; font-weight: bold;">${i18n.loadingError}</p><p>${message || i18n.unexpectedError}</p>`;
             loader.style.display = 'flex'; loader.style.flexDirection = 'column'; loader.style.alignItems = 'center'; loader.style.justifyContent = 'center';
         }
         if (viewerContainer) viewerContainer.style.display = 'none';
@@ -1056,10 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const apiUrl = `${API_BASE_URL}/api/get-design/${cardId}`;
                 const response = await fetch(apiUrl);
 
-                if (!response.ok) {
-                    const statusText = response.status === 404 ? "التصميم غير موجود (404) / Card not found" : `خطأ في اتصال السيرفر (${response.status}) / Server connection error`;
-                    throw new Error(`${i18n.failedLoadCardData}<br><br><small style="font-family: monospace; opacity: 0.8; direction: ltr; display: block; margin-top: 15px;">Reason: ${statusText}<br>API: ${apiUrl}</small>`);
-                }
+                if (!response.ok) throw new Error(i18n.failedLoadCardData);
                 data = await response.json();
             }
 
