@@ -221,7 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
             'المسمى الوظيفي',
             'your name here',
             'your full name',
-            'job title'
+            'your full name here',
+            'job title',
+            'job title / company'
         ];
 
         const isPlaceholder = (value) => {

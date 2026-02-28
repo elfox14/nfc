@@ -63,21 +63,22 @@
     <!-- English placeholder initialization -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Set English placeholders for input fields
+            // Set English placeholders for input fields from unified data model
             setTimeout(function () {
                 const nameInput = document.getElementById('input-name_ar');
                 const taglineInput = document.getElementById('input-tagline_ar');
+                const defaults = typeof Config !== 'undefined' ? Config.defaultState.inputs : null;
 
-                if (nameInput) {
-                    nameInput.placeholder = 'Your Full Name Here';
-                    if (!nameInput.value || nameInput.value === 'اسمك الكامل هنا') {
-                        nameInput.value = 'Your Full Name Here';
+                if (nameInput && defaults) {
+                    nameInput.placeholder = defaults['input-name_en'];
+                    if (!nameInput.value || nameInput.value === defaults['input-name_ar']) {
+                        nameInput.value = defaults['input-name_en'];
                     }
                 }
-                if (taglineInput) {
-                    taglineInput.placeholder = 'Job Title / Company';
-                    if (!taglineInput.value || taglineInput.value === 'المسمى الوظيفي / الشركة') {
-                        taglineInput.value = 'Job Title / Company';
+                if (taglineInput && defaults) {
+                    taglineInput.placeholder = defaults['input-tagline_en'];
+                    if (!taglineInput.value || taglineInput.value === defaults['input-tagline_ar']) {
+                        taglineInput.value = defaults['input-tagline_en'];
                     }
                 }
             }, 100);

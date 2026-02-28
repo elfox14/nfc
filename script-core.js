@@ -19,98 +19,103 @@ const Config = {
         qrcode: 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
     },
 
-    defaultState: {
-        currentLanguage: 'ar', // NEW: To manage the current language
-        inputs: {
-            'layout-select': 'classic',
-            'layout-select-visual': 'classic',
-            'input-logo': 'mc-prime-nfc.png',
-            'logo-size': 25,
-            'logo-opacity': 1,
-            'input-photo-url': '',
-            'photo-size': 25,
-            'photo-shape': 'circle',
-            'photo-border-color': '#ffffff',
-            'photo-border-width': 2,
+    defaultState: (() => {
+        const baseData = typeof TemplateManager !== 'undefined' ?
+            TemplateManager.getDefaultCardData('classic') :
+            { name: 'اسمك الكامل هنا', title: 'المسمى الوظيفي / الشركة' };
 
-            // BILINGUAL SUPPORT: Updated text fields
-            'input-name_ar': 'اسمك الكامل هنا',
-            'input-name_en': 'Your Full Name Here',
-            'name-font-size': 22,
-            'name-color': '#e6f0f7',
-            'name-font': 'Tajawal, sans-serif',
+        return {
+            currentLanguage: 'ar',
+            inputs: {
+                'layout-select': 'classic',
+                'layout-select-visual': 'classic',
+                'input-logo': baseData.logoUrl || 'mc-prime-nfc.png',
+                'logo-size': 25,
+                'logo-opacity': 1,
+                'input-photo-url': baseData.photoUrl || '',
+                'photo-size': 25,
+                'photo-shape': 'circle',
+                'photo-border-color': '#ffffff',
+                'photo-border-width': 2,
 
-            'input-tagline_ar': 'المسمى الوظيفي / الشركة',
-            'input-tagline_en': 'Job Title / Company',
-            'tagline-font-size': 14,
-            'tagline-color': '#4da6ff',
-            'tagline-font': 'Tajawal, sans-serif',
+                'input-name_ar': baseData.name || 'اسمك الكامل هنا',
+                'input-name_en': baseData.nameEn || 'Your Full Name Here',
+                'name-font-size': baseData.typography?.nameSize || 22,
+                'name-color': baseData.colors?.text || '#e6f0f7',
+                'name-font': baseData.typography?.fontFamily ? `${baseData.typography.fontFamily}, sans-serif` : 'Tajawal, sans-serif',
 
-            'toggle-phone-buttons': true,
-            'phone-text-layout': 'row',
-            'phone-text-size': 14,
-            'phone-text-color': '#e6f0f7',
-            'phone-text-font': 'Tajawal, sans-serif',
-            'phone-btn-bg-color': '#4da6ff',
-            'phone-btn-text-color': '#ffffff',
-            'phone-btn-font-size': 12,
-            'phone-btn-padding': 6,
-            'phone-btn-font': 'Poppins, sans-serif',
-            'front-bg-start': '#2a3d54',
-            'front-bg-end': '#223246',
-            'front-bg-opacity': 0,
-            'qr-source': 'auto-card',
-            'input-qr-url': '',
-            'qr-size': 30,
-            'back-bg-start': '#2a3d54',
-            'back-bg-end': '#223246',
-            'back-bg-opacity': 0,
-            'back-buttons-size': 10,
-            'back-buttons-bg-color': '#364f6b',
-            'back-buttons-text-color': '#aab8c2',
-            'back-buttons-font': 'Poppins, sans-serif',
-            'theme-select-input': 'deep-sea',
-            'toggle-master-social': true,
-            'toggle-social-buttons': true,
-            'social-text-size': 12,
-            'social-text-color': '#e6f0f7',
-            'social-text-font': 'Tajawal, sans-serif'
-        },
-        dynamic: {
-            phones: [
-                { id: `phone_${Date.now()}`, value: '01000000000', placement: 'front' }
-            ],
-            social: [],
-            staticSocial: {
-                email: { value: '', placement: 'back' },
-                website: { value: '', placement: 'back' },
-                whatsapp: { value: '', placement: 'back' },
-                facebook: { value: '', placement: 'back' },
-                linkedin: { value: '', placement: 'back' }
+                'input-tagline_ar': baseData.title || 'المسمى الوظيفي / الشركة',
+                'input-tagline_en': baseData.titleEn || 'Job Title / Company',
+                'tagline-font-size': baseData.typography?.titleSize || 14,
+                'tagline-color': baseData.colors?.accent || '#4da6ff',
+                'tagline-font': baseData.typography?.fontFamily ? `${baseData.typography.fontFamily}, sans-serif` : 'Tajawal, sans-serif',
+
+                'toggle-phone-buttons': true,
+                'phone-text-layout': 'row',
+                'phone-text-size': baseData.typography?.titleSize || 14,
+                'phone-text-color': baseData.colors?.text || '#e6f0f7',
+                'phone-text-font': baseData.typography?.fontFamily ? `${baseData.typography.fontFamily}, sans-serif` : 'Tajawal, sans-serif',
+                'phone-btn-bg-color': baseData.colors?.primary || '#4da6ff',
+                'phone-btn-text-color': '#ffffff',
+                'phone-btn-font-size': 12,
+                'phone-btn-padding': 6,
+                'phone-btn-font': 'Poppins, sans-serif',
+                'front-bg-start': baseData.colors?.background || '#2a3d54',
+                'front-bg-end': baseData.colors?.secondary || '#223246',
+                'front-bg-opacity': 0,
+                'qr-source': 'auto-card',
+                'input-qr-url': '',
+                'qr-size': 30,
+                'back-bg-start': baseData.colors?.background || '#2a3d54',
+                'back-bg-end': baseData.colors?.secondary || '#223246',
+                'back-bg-opacity': 0,
+                'back-buttons-size': 10,
+                'back-buttons-bg-color': baseData.colors?.secondary || '#364f6b',
+                'back-buttons-text-color': '#aab8c2',
+                'back-buttons-font': 'Poppins, sans-serif',
+                'theme-select-input': 'deep-sea',
+                'toggle-master-social': true,
+                'toggle-social-buttons': true,
+                'social-text-size': 12,
+                'social-text-color': baseData.colors?.text || '#e6f0f7',
+                'social-text-font': baseData.typography?.fontFamily ? `${baseData.typography.fontFamily}, sans-serif` : 'Tajawal, sans-serif'
             },
-            qr: { enabled: true }
-        },
-        imageUrls: {
-            front: null,
-            back: null,
-            qrCode: null,
-            photo: null
-        },
-        positions: {
-            "card-logo": { x: 0, y: 0 },
-            "card-personal-photo-wrapper": { x: 0, y: 0 },
-            "card-name": { x: 0, y: 0 },
-            "card-tagline": { x: 0, y: 0 },
-            "qr-code-wrapper": { x: 0, y: 0 }
-        },
-        placements: {
-            logo: 'front',
-            photo: 'front',
-            name: 'front',
-            tagline: 'front',
-            qr: 'back'
-        }
-    },
+            dynamic: {
+                phones: [
+                    { id: `phone_${Date.now()}`, value: baseData.phone || '01000000000', placement: 'front' }
+                ],
+                social: [],
+                staticSocial: {
+                    email: { value: baseData.email || '', placement: 'back' },
+                    website: { value: baseData.website || '', placement: 'back' },
+                    whatsapp: { value: baseData.socialLinks?.whatsapp || '', placement: 'back' },
+                    facebook: { value: baseData.socialLinks?.facebook || '', placement: 'back' },
+                    linkedin: { value: baseData.socialLinks?.linkedin || '', placement: 'back' }
+                },
+                qr: { enabled: true }
+            },
+            imageUrls: {
+                front: null,
+                back: null,
+                qrCode: null,
+                photo: null
+            },
+            positions: {
+                "card-logo": { x: 0, y: 0 },
+                "card-personal-photo-wrapper": { x: 0, y: 0 },
+                "card-name": { x: 0, y: 0 },
+                "card-tagline": { x: 0, y: 0 },
+                "qr-code-wrapper": { x: 0, y: 0 }
+            },
+            placements: {
+                logo: 'front',
+                photo: 'front',
+                name: 'front',
+                tagline: 'front',
+                qr: 'back'
+            }
+        };
+    })(),
 
     THEMES: {
         // --- Original Designs ---
