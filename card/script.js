@@ -639,6 +639,7 @@
                 wrapper.id = phoneId;
                 wrapper.className = 'phone-button-draggable-wrapper';
                 wrapper.dataset.controlId = group.id;
+                wrapper.setAttribute('data-el', `phone-${phoneId}`); // WYSIWYG
 
                 const pos = phoneData.position || { x: 0, y: 0 };
                 wrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
@@ -852,6 +853,7 @@
                 linkWrapper.id = elementId;
                 linkWrapper.className = 'draggable-social-link';
                 linkWrapper.dataset.controlId = controlId;
+                linkWrapper.setAttribute('data-el', `social-${id}`); // WYSIWYG
 
                 const pos = position || { x: 0, y: 0 };
                 linkWrapper.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
@@ -1541,6 +1543,85 @@
     };
 
     const ShareManager = {
+        // ===== WYSIWYG: Helper to inline computed styles on key elements =====
+        inlineComputedStyles(root) {
+            const PROPS = [
+                'font-size', 'font-family', 'font-weight', 'color', 'background-color',
+                'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+                'margin', 'border-radius', 'border', 'border-width', 'border-style', 'border-color',
+                'transform', 'width', 'max-width', 'min-width', 'height', 'max-height',
+                'display', 'flex-direction', 'align-items', 'justify-content', 'flex-wrap', 'gap',
+                'white-space', 'text-align', 'line-height', 'letter-spacing', 'text-transform',
+                'opacity', 'box-shadow', 'background-image', 'background-size', 'background-position',
+                'object-fit', 'position', 'top', 'left', 'right', 'bottom',
+                'text-shadow', 'backdrop-filter', 'overflow', 'z-index', 'aspect-ratio'
+            ];
+            const elements = root.querySelectorAll('[data-el]');
+            elements.forEach(el => {
+                const computed = window.getComputedStyle(el);
+                PROPS.forEach(prop => {
+                    try {
+                        const val = computed.getPropertyValue(prop);
+                        if (val && val !== '' && val !== 'auto' && val !== 'normal' && val !== 'none'
+                            && !val.includes('NaN') && !val.includes('undefined')) {
+                            el.style.setProperty(prop, val);
+                        }
+                    } catch (e) { /* ignore */ }
+                });
+            });
+        },
+
+        // ===== WYSIWYG: Capture rendered HTML + images and send to server =====
+        async captureAndSaveRendered(cardId) {
+            try {
+                await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
+
+                const frontEl = DOMElements.cardFront;
+                const backEl = DOMElements.cardBack;
+                if (!frontEl || !backEl) return;
+
+                // Clone each face so we don't mutate the live DOM
+                const frontClone = frontEl.cloneNode(true);
+                const backClone = backEl.cloneNode(true);
+
+                // Inline computed styles on all data-el elements in the clones
+                this.inlineComputedStyles(frontClone);
+                this.inlineComputedStyles(backClone);
+
+                const rendered_html_front = frontClone.innerHTML;
+                const rendered_html_back = backClone.innerHTML;
+
+                // Capture PNG screenshots of the live elements
+                const [frontCanvas, backCanvas] = await Promise.all([
+                    html2canvas(frontEl, { scale: 2, useCORS: true, backgroundColor: null }),
+                    html2canvas(backEl, { scale: 2, useCORS: true, backgroundColor: null })
+                ]);
+
+                const rendered_image_front = frontCanvas.toDataURL('image/png');
+                const rendered_image_back = backCanvas.toDataURL('image/png');
+
+                const token = localStorage.getItem('authToken');
+                await fetch(`${Config.API_BASE_URL}/api/save-design-rendered`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        cardId,
+                        rendered_html_front,
+                        rendered_html_back,
+                        rendered_image_front,
+                        rendered_image_back
+                    })
+                });
+                console.log('[WYSIWYG] Rendered snapshot saved for card:', cardId);
+            } catch (err) {
+                // Non-blocking: viewer will use fallback if this fails
+                console.warn('[WYSIWYG] captureAndSaveRendered failed (non-blocking):', err);
+            }
+        },
+
         async saveDesign() {
             const state = StateManager.getStateObject();
             try {
@@ -1569,6 +1650,8 @@
 
                 const result = await response.json();
                 if (result.success && result.id) {
+                    // 🔑 WYSIWYG: Fire-and-forget rendered snapshot (non-blocking)
+                    this.captureAndSaveRendered(result.id);
                     return result.id;
                 } else {
                     throw new Error('Invalid response from server');
@@ -2072,6 +2155,11 @@
                     generateAutoQr: document.getElementById('generate-auto-qr-btn'),
                     showHelp: document.getElementById('show-help-btn'),
                 }
+            });
+
+            // ===== WYSIWYG: Tag draggable elements for inlineComputedStyles() =====
+            ['logo', 'photo', 'name', 'tagline', 'qr'].forEach(key => {
+                if (DOMElements.draggable[key]) DOMElements.draggable[key].setAttribute('data-el', key);
             });
 
             this.initResponsiveLayout();
