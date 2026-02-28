@@ -1037,7 +1037,7 @@ html.ltr .dynamic-social-link span {
 
 .phone-button {
     position: relative;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     border: 2px solid transparent;
@@ -1050,6 +1050,8 @@ html.ltr .dynamic-social-link span {
     font-size: 0.8rem;
     cursor: pointer;
     will-change: transform, filter;
+    white-space: nowrap;
+    overflow: visible;
 }
 
 .phone-button:hover {
@@ -1066,6 +1068,11 @@ html.ltr .phone-button i {
     margin-inline-end: 0;
 }
 
+.phone-button span {
+    display: inline-block;
+    direction: ltr;
+}
+
 .phone-button-draggable-wrapper.text-only-mode .phone-button {
     background-color: transparent !important;
     border: none !important;
@@ -1075,6 +1082,10 @@ html.ltr .phone-button i {
     color: var(--text-primary);
     cursor: default;
     pointer-events: none;
+}
+
+.phone-button-draggable-wrapper.text-only-mode .phone-button span {
+    display: inline-block;
 }
 
 .phone-button-draggable-wrapper[data-layout="row"] {
