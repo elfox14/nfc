@@ -232,6 +232,15 @@
             background: var(--primary-hover);
         }
 
+        .btn-remove {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .btn-remove:hover {
+            background: #c0392b;
+        }
+
         .empty-state {
             text-align: center;
             padding: 50px;
@@ -657,6 +666,7 @@
                                 <div class="card-actions">
                                     <a href="/nfc/viewer.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">عرض</a>
                                     <a href="/nfc/editor.html?id=${design.shortId}" class="action-btn btn-edit">تعديل</a>
+                                    <button class="action-btn btn-remove" onclick="deleteDesign('${design.shortId}')">حذف</button>
                                 </div>
                             </div>`;
                         grid.appendChild(card);
@@ -673,6 +683,25 @@
             } catch (err) {
                 console.error(err);
                 document.getElementById('designs-grid').innerHTML = '<p style="text-align: center; color: #ff5252;">حدث خطأ أثناء تحميل البيانات</p>';
+            }
+        }
+
+        async function deleteDesign(shortId) {
+            if (!confirm('هل أنت متأكد أنك تريد حذف هذا التصميم نهائياً؟ سيتم حذفه أيضاً من المعرض.')) return;
+            try {
+                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
+                    method: 'DELETE',
+                    headers: Auth.getHeader()
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadMyDesigns();
+                } else {
+                    alert(data.error || 'فشل حذف التصميم');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ أثناء حذف التصميم');
             }
         }
 

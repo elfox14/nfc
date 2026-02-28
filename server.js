@@ -1132,6 +1132,31 @@ app.get('/api/user/designs', verifyToken, async (req, res) => {
   }
 });
 
+// Delete a user's design
+app.delete('/api/user/designs/:id', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const shortId = String(req.params.id);
+    const design = await db.collection(designsCollectionName).findOne({ shortId });
+
+    if (!design) {
+      return res.status(404).json({ error: 'التصميم غير موجود / Design not found' });
+    }
+
+    if (design.ownerId !== req.user.userId) {
+      return res.status(403).json({ error: 'لا يمكنك حذف هذا التصميم / You cannot delete this design' });
+    }
+
+    await db.collection(designsCollectionName).deleteOne({ shortId });
+
+    res.json({ success: true, message: 'تم حذف التصميم بنجاح / Design deleted successfully' });
+  } catch (err) {
+    console.error('Delete design error:', err);
+    res.status(500).json({ error: 'فشل حذف التصميم / Failed to delete design' });
+  }
+});
+
 // ===== CARD SAVE WITH CONSENT FEATURE =====
 
 // Get card privacy setting

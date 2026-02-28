@@ -912,6 +912,11 @@ const EventManager = {
 
         document.querySelectorAll('input[name^="placement-"]').forEach(radio => {
             radio.addEventListener('change', () => {
+                // Skip position reset during state restoration
+                if (StateManager.isApplyingState) {
+                    CardManager.renderCardContent();
+                    return;
+                }
                 const elementName = radio.name.replace('placement-', '');
                 let elementToReset;
 

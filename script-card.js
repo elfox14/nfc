@@ -1142,7 +1142,7 @@ const StateManager = {
         if (!state) return;
 
         this.isApplyingState = true;
-        
+
         // Update Proxy State if it exists
         if (window.editorState) {
             Object.assign(window.editorState, JSON.parse(JSON.stringify(state)));
@@ -1235,28 +1235,6 @@ const StateManager = {
             input.dispatchEvent(new Event('change', { bubbles: true }));
         });
 
-        if (state.positions) {
-            for (const [id, pos] of Object.entries(state.positions)) {
-                let elementId = id;
-                if (id.startsWith('form-group-static-') && !document.getElementById(id)) {
-                    elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
-                }
-                if (id.startsWith('dynsocial_') && !document.getElementById(id)) {
-                    elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`;
-                }
-
-                const targetEl = document.getElementById(elementId);
-
-                if (targetEl && pos) {
-                    targetEl.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
-                    targetEl.setAttribute('data-x', pos.x);
-                    targetEl.setAttribute('data-y', pos.y);
-                }
-            }
-        } else {
-            // DragManager.resetPositions(); // You might need to implement this
-        }
-
         if (state.inputs && state.inputs['theme-select-input']) {
             UIManager.setActiveThumbnail(state.inputs['theme-select-input']);
         }
@@ -1272,13 +1250,36 @@ const StateManager = {
         }
 
         CardManager.handleMasterSocialToggle();
-        this.isApplyingState = false;
 
         if (!state.inputs || !state.inputs['layout-select-visual']) {
             CardManager.applyLayout('classic');
         } else {
             CardManager.applyLayout(state.inputs['layout-select-visual']);
         }
+
+        // Apply positions AFTER rendering to prevent renderCardContent from overriding them
+        setTimeout(() => {
+            if (state.positions) {
+                for (const [id, pos] of Object.entries(state.positions)) {
+                    let elementId = id;
+                    if (id.startsWith('form-group-static-') && !document.getElementById(id)) {
+                        elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
+                    }
+                    if (id.startsWith('dynsocial_') && !document.getElementById(id)) {
+                        elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`;
+                    }
+
+                    const targetEl = document.getElementById(elementId);
+
+                    if (targetEl && pos) {
+                        targetEl.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+                        targetEl.setAttribute('data-x', pos.x);
+                        targetEl.setAttribute('data-y', pos.y);
+                    }
+                }
+            }
+            this.isApplyingState = false;
+        }, 200);
     },
 
     reset() {
