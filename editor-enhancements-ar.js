@@ -303,7 +303,7 @@
 
                 // Only restore if less than 1 hour old
                 if (age < 3600000) {
-                    showRestorePrompt(timestamp, state);
+                    // showRestorePrompt(timestamp, state); // Disabled as per user request
                 } else {
                     clearAutosave();
                 }

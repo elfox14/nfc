@@ -593,7 +593,7 @@
 
                 // Only restore if less than 1 hour old
                 if (age < 3600000) {
-                    showRestorePrompt(timestamp, state);
+                    // showRestorePrompt(timestamp, state); // Disabled as per user request
                 } else {
                     clearAutosave();
                 }
@@ -732,7 +732,7 @@
         deselectElement();
         selectedElement = el;
         selectedElement.classList.add('element-selected');
-        
+
         // Add visual indicator style if not exists
         if (!document.getElementById('selection-styles')) {
             const style = document.createElement('style');
@@ -754,7 +754,7 @@
 
     function deleteSelectedElement() {
         if (!selectedElement) return;
-        
+
         // Logic to find the delete button for this element and click it
         let deleteBtn = null;
         if (selectedElement.classList.contains('phone-button-draggable-wrapper')) {
@@ -773,14 +773,14 @@
 
     function moveSelectedElement(dx, dy) {
         if (!selectedElement) return;
-        
+
         const x = (parseFloat(selectedElement.getAttribute('data-x')) || 0) + dx;
         const y = (parseFloat(selectedElement.getAttribute('data-y')) || 0) + dy;
-        
+
         selectedElement.style.transform = `translate(${x}px, ${y}px)`;
         selectedElement.setAttribute('data-x', x);
         selectedElement.setAttribute('data-y', y);
-        
+
         // Trigger save
         if (window.StateManager && window.StateManager.saveDebounced) {
             window.StateManager.saveDebounced();
