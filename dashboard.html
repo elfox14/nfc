@@ -657,6 +657,7 @@
                                 <div class="card-actions">
                                     <a href="/nfc/viewer.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">عرض</a>
                                     <a href="/nfc/editor.html?id=${design.shortId}" class="action-btn btn-edit">تعديل</a>
+                                    <button class="action-btn btn-remove" onclick="deleteDesign('${design.shortId}')">حذف</button>
                                 </div>
                             </div>`;
                         grid.appendChild(card);
@@ -851,6 +852,26 @@
                 btn.disabled = false;
             }
         });
+        async function deleteDesign(designId) {
+            if (!confirm('هل أنت متأكد من حذف هذه البطاقة بشكل دائم؟')) return;
+            try {
+                const res = await fetch(`${baseUrl}/api/designs/${designId}`, {
+                    method: 'DELETE',
+                    headers: Auth.getHeader()
+                });
+
+                if (res.ok) {
+                    alert('تم حذف الديزاين بنجاح');
+                    loadMyDesigns(); // Reload the designs grid
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'فشل حذف البطاقة');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ أثناء الاتصال بالخادم');
+            }
+        }
     </script>
 </body>
 

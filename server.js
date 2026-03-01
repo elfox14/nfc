@@ -1129,6 +1129,43 @@ app.get('/api/user/designs', verifyToken, async (req, res) => {
   }
 });
 
+// Delete a Design
+app.delete('/api/designs/:id', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const designId = String(req.params.id);
+    const userId = req.user.userId;
+
+    // Verify ownership
+    const design = await db.collection(designsCollectionName).findOne({ shortId: designId });
+    if (!design) {
+      return res.status(404).json({ error: 'Design not found' });
+    }
+
+    if (design.ownerId !== userId) {
+      return res.status(403).json({ error: 'Unauthorized to delete this design' });
+    }
+
+    // Delete the design
+    const deleteResult = await db.collection(designsCollectionName).deleteOne({ shortId: designId });
+
+    if (deleteResult.deletedCount === 1) {
+      // Also clean up related pending save requests and saved cards
+      await db.collection(cardRequestsCollectionName).deleteMany({ designShortId: designId });
+      await db.collection(savedCardsCollectionName).deleteMany({ designShortId: designId });
+
+      return res.json({ success: true, message: 'Design deleted successfully' });
+    } else {
+      return res.status(500).json({ error: 'Failed to delete design' });
+    }
+
+  } catch (err) {
+    console.error('Delete design error:', err);
+    res.status(500).json({ error: 'Delete design failed' });
+  }
+});
+
 // ===== CARD SAVE WITH CONSENT FEATURE =====
 
 // Get card privacy setting

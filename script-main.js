@@ -201,13 +201,17 @@ const ExportManager = {
             await new Promise(resolve => setTimeout(resolve, 50));
         }
 
+        // Wait to ensure everything is rendered
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         try {
             return await html2canvas(element, {
                 backgroundColor: null,
                 scale: scale,
                 useCORS: true,
                 allowTaint: true,
-                logging: false
+                logging: false,
+                imageTimeout: 15000 // Give images enough time to load
             });
         }
         finally {
