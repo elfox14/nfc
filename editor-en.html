@@ -63,22 +63,21 @@
     <!-- English placeholder initialization -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Set English placeholders for input fields from unified data model
+            // Set English placeholders for input fields
             setTimeout(function () {
                 const nameInput = document.getElementById('input-name_ar');
                 const taglineInput = document.getElementById('input-tagline_ar');
-                const defaults = typeof Config !== 'undefined' ? Config.defaultState.inputs : null;
 
-                if (nameInput && defaults) {
-                    nameInput.placeholder = defaults['input-name_en'];
-                    if (!nameInput.value || nameInput.value === defaults['input-name_ar']) {
-                        nameInput.value = defaults['input-name_en'];
+                if (nameInput) {
+                    nameInput.placeholder = 'Your Full Name Here';
+                    if (!nameInput.value || nameInput.value === 'اسمك الكامل هنا') {
+                        nameInput.value = 'Your Full Name Here';
                     }
                 }
-                if (taglineInput && defaults) {
-                    taglineInput.placeholder = defaults['input-tagline_en'];
-                    if (!taglineInput.value || taglineInput.value === defaults['input-tagline_ar']) {
-                        taglineInput.value = defaults['input-tagline_en'];
+                if (taglineInput) {
+                    taglineInput.placeholder = 'Job Title / Company';
+                    if (!taglineInput.value || taglineInput.value === 'المسمى الوظيفي / الشركة') {
+                        taglineInput.value = 'Job Title / Company';
                     }
                 }
             }, 100);
@@ -346,25 +345,49 @@
                 <summary>Backgrounds & Colors</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" style="padding: 10px;">
-                        <legend>Card Background</legend>
+                        <legend>Front Side</legend>
                         <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
                                 here</span></div>
                         <div class="form-group"><label>Background Color</label>
-                            <div class="control-grid"><input type="color" id="bg-start" value="#2a3d54"><input
-                                    type="color" id="bg-end" value="#223246"></div>
+                            <div class="control-grid"><input type="color" id="front-bg-start" value="#2a3d54"><input
+                                    type="color" id="front-bg-end" value="#223246"></div>
                         </div>
                         <div class="form-group">
-                            <label for="bg-upload">Upload Background Image</label>
+                            <label for="front-bg-upload">Upload Background Image</label>
                             <div class="file-input-group">
-                                <input type="file" id="bg-upload" accept="image/*">
-                                <button type="button" class="remove-image-btn" id="remove-bg-btn" style="display: none;"
-                                    title="Remove Image" aria-label="Remove background image"><i class="fas fa-times"
+                                <input type="file" id="front-bg-upload" accept="image/*">
+                                <button type="button" class="remove-image-btn" id="remove-front-bg-btn"
+                                    style="display: none;" title="Remove Image"
+                                    aria-label="Remove front background image"><i class="fas fa-times"
                                         aria-hidden="true"></i></button>
-                                <div class="spinner" id="bg-spinner" style="display: none;"></div>
+                                <div class="spinner" id="front-bg-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="bg-opacity">Color Overlay
-                                Opacity</label><input type="range" id="bg-opacity" min="0" max="1" step="0.05"
+                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">Color Overlay
+                                Opacity</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
+                                value="0"></div>
+                    </fieldset>
+                    <fieldset class="fieldset" style="padding: 10px; margin-top: 15px;">
+                        <legend>Back Side</legend>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
+                                here</span></div>
+                        <div class="form-group"><label>Background Color</label>
+                            <div class="control-grid"><input type="color" id="back-bg-start" value="#2a3d54"><input
+                                    type="color" id="back-bg-end" value="#223246"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="back-bg-upload">Upload Background Image</label>
+                            <div class="file-input-group">
+                                <input type="file" id="back-bg-upload" accept="image/*">
+                                <button type="button" class="remove-image-btn" id="remove-back-bg-btn"
+                                    style="display: none;" title="Remove Image"
+                                    aria-label="Remove back background image"><i class="fas fa-times"
+                                        aria-hidden="true"></i></button>
+                                <div class="spinner" id="back-bg-spinner" style="display: none;"></div>
+                            </div>
+                        </div>
+                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">Color Overlay
+                                Opacity</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
                                 value="0"></div>
                     </fieldset>
                 </div>
@@ -377,29 +400,46 @@
                 <!-- Smart Snapping Guides -->
                 <div id="snap-guide-v" class="snap-guide-vertical"></div>
                 <div id="snap-guide-h" class="snap-guide-horizontal"></div>
-                <div class="business-card" id="card-preview">
-                    <div class="card-background-layer" id="bg-image-layer"></div>
-                    <div class="card-background-layer" id="bg-gradient-layer"></div>
-                    <div class="card-content-layer" id="card-content">
+                <div class="card-flipper-container">
+                    <div class="card-flipper">
+                        <div class="business-card card-face card-front" id="card-front-preview">
+                            <div class="card-background-layer" id="front-bg-image-layer"></div>
+                            <div class="card-background-layer" id="front-bg-gradient-layer"></div>
+                            <div class="card-content-layer card-front-content-layer" id="card-front-content">
 
-                        <div id="card-logo" data-input-target-id="logo-drop-zone">
-                            <img src="mc-prime-nfc.png" alt="MC PRIME Smart Business Card Logo" class="logo-front"
-                                id="card-logo-img">
+                                <div id="card-logo" data-input-target-id="logo-drop-zone">
+                                    <img src="mc-prime-nfc.png" alt="MC PRIME Smart Business Card Logo"
+                                        class="logo-front" id="card-logo-img">
+                                </div>
+
+                                <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
+                                </div>
+                                <h1 id="card-name" data-input-target-id="name-tagline-accordion"
+                                    style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;">
+                                </h1>
+                                <h2 class="tagline" id="card-tagline" data-input-target-id="name-tagline-accordion"
+                                    style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">
+                                </h2>
+                                <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
+                                <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
+                                    data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
+                            </div>
                         </div>
 
-                        <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
+                        <div class="business-card card-face card-back" id="card-back-preview">
+                            <div class="card-background-layer" id="back-bg-image-layer"></div>
+                            <div class="card-background-layer" id="back-bg-gradient-layer"></div>
+                            <div class="card-content-layer card-back-content-layer" id="card-back-content">
+                                <!-- JS will populate this -->
+                            </div>
                         </div>
-                        <h1 id="card-name" data-input-target-id="name-tagline-accordion"
-                            style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;">
-                        </h1>
-                        <h2 class="tagline" id="card-tagline" data-input-target-id="name-tagline-accordion"
-                            style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">
-                        </h2>
-                        <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
-                        <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
-                            data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
                     </div>
                 </div>
+
+                <button id="flip-card-btn-mobile" class="btn btn-secondary" title="Flip Card">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Flip Card</span>
+                </button>
 
             </main>
         </main>
@@ -504,7 +544,14 @@
                             </div>
                         </fieldset>
 
-
+                        <!-- Position and Movement section -->
+                        <div class="placement-control">
+                            <label>Element Placement</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="placement-logo" value="front" checked> Front</label>
+                                <label><input type="radio" name="placement-logo" value="back"> Back</label>
+                            </div>
+                        </div>
 
                         <div class="form-group" style="margin-top: 15px;">
                             <label>Fine Position (pixels)</label>
@@ -627,7 +674,14 @@
                             </div>
                         </fieldset>
 
-
+                        <!-- Position and Movement section -->
+                        <div class="placement-control">
+                            <label>Photo Placement</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="placement-photo" value="front" checked> Front</label>
+                                <label><input type="radio" name="placement-photo" value="back"> Back</label>
+                            </div>
+                        </div>
 
                         <div class="form-group" style="margin-top: 15px;">
                             <label>Fine Position (pixels)</label>
@@ -722,7 +776,13 @@
                             </div>
                         </div>
                     </details>
-
+                    <div class="placement-control">
+                        <label>Name Placement</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="placement-name" value="front" checked> Front</label>
+                            <label><input type="radio" name="placement-name" value="back"> Back</label>
+                        </div>
+                    </div>
 
                     <details class="fieldset-accordion"
                         style="margin-top: 10px; background: transparent; border: none;">
@@ -822,7 +882,13 @@
                             </div>
                         </div>
                     </details>
-
+                    <div class="placement-control">
+                        <label>Job Title Placement</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="placement-tagline" value="front" checked> Front</label>
+                            <label><input type="radio" name="placement-tagline" value="back"> Back</label>
+                        </div>
+                    </div>
 
                     <details class="fieldset-accordion"
                         style="margin-top: 10px; background: transparent; border: none;">
@@ -932,7 +998,13 @@
             <details class="fieldset-accordion" id="qr-code-accordion">
                 <summary>QR Code</summary>
                 <div class="fieldset-content">
-
+                    <div class="placement-control" style="border-top: none; padding-top: 0; margin-top: 0;">
+                        <label>QR Code Placement</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="placement-qr" value="front"> Front</label>
+                            <label><input type="radio" name="placement-qr" value="back" checked> Back</label>
+                        </div>
+                    </div>
                     <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
                     <div class="form-group">
                         <label>QR Code Source</label>
@@ -1112,7 +1184,14 @@
                         <div class="form-group" id="form-group-static-email">
                             <label for="input-email">Email</label>
                             <input type="email" id="input-email" value="">
-
+                            <div class="placement-control">
+                                <div class="radio-group">
+                                    <label><input type="radio" name="placement-static-email" value="front">
+                                        Front</label>
+                                    <label><input type="radio" name="placement-static-email" value="back" checked>
+                                        Back</label>
+                                </div>
+                            </div>
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background: transparent; border: none;">
@@ -1160,7 +1239,14 @@
                         <div class="form-group" id="form-group-static-website">
                             <label for="input-website">Website</label>
                             <input type="url" id="input-website" value="">
-
+                            <div class="placement-control">
+                                <div class="radio-group">
+                                    <label><input type="radio" name="placement-static-website" value="front">
+                                        Front</label>
+                                    <label><input type="radio" name="placement-static-website" value="back" checked>
+                                        Back</label>
+                                </div>
+                            </div>
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background: transparent; border: none;">
@@ -1208,7 +1294,14 @@
                         <div class="form-group" id="form-group-static-whatsapp">
                             <label for="input-whatsapp">WhatsApp</label>
                             <input type="text" id="input-whatsapp" value="">
-
+                            <div class="placement-control">
+                                <div class="radio-group">
+                                    <label><input type="radio" name="placement-static-whatsapp" value="front">
+                                        Front</label>
+                                    <label><input type="radio" name="placement-static-whatsapp" value="back" checked>
+                                        Back</label>
+                                </div>
+                            </div>
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background: transparent; border: none;">
@@ -1257,7 +1350,14 @@
                         <div class="form-group" id="form-group-static-facebook">
                             <label for="input-facebook">Facebook</label>
                             <input type="url" id="input-facebook" value="">
-
+                            <div class="placement-control">
+                                <div class="radio-group">
+                                    <label><input type="radio" name="placement-static-facebook" value="front">
+                                        Front</label>
+                                    <label><input type="radio" name="placement-static-facebook" value="back" checked>
+                                        Back</label>
+                                </div>
+                            </div>
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background: transparent; border: none;">
@@ -1306,7 +1406,14 @@
                         <div class="form-group" id="form-group-static-linkedin">
                             <label for="input-linkedin">LinkedIn</label>
                             <input type="url" id="input-linkedin" value="">
-
+                            <div class="placement-control">
+                                <div class="radio-group">
+                                    <label><input type="radio" name="placement-static-linkedin" value="front">
+                                        Front</label>
+                                    <label><input type="radio" name="placement-static-linkedin" value="back" checked>
+                                        Back</label>
+                                </div>
+                            </div>
 
                             <details class="fieldset-accordion"
                                 style="margin-top: 10px; background: transparent; border: none;">

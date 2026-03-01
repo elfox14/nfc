@@ -185,6 +185,22 @@ const ExportManager = {
         style.innerHTML = '.no-export { display: none !important; }';
         document.head.appendChild(style);
 
+        const isMobile = typeof MobileUtils !== 'undefined' && MobileUtils.isMobile();
+        const flipper = isMobile ? document.querySelector('.card-flipper') : null;
+        let originalFlippedState = false;
+
+        if (flipper) {
+            originalFlippedState = flipper.classList.contains('is-flipped');
+            const isCapturingBack = element.id === 'card-back-preview';
+
+            if (isCapturingBack && !originalFlippedState) {
+                flipper.classList.add('is-flipped');
+            } else if (!isCapturingBack && originalFlippedState) {
+                flipper.classList.remove('is-flipped');
+            }
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+
         try {
             return await html2canvas(element, {
                 backgroundColor: null,
@@ -196,13 +212,20 @@ const ExportManager = {
         }
         finally {
             document.head.removeChild(style);
+            if (flipper) {
+                if (originalFlippedState) {
+                    flipper.classList.add('is-flipped');
+                } else {
+                    flipper.classList.remove('is-flipped');
+                }
+            }
         }
     },
 
     async downloadElement(options) {
         const { format, quality, scale } = options;
-        const element = typeof DOMElements !== 'undefined' && DOMElements.cardPreview ? DOMElements.cardPreview : document.getElementById('card-preview');
-        const filename = `card-image.${format}`;
+        const element = this.pendingExportTarget === 'front' ? DOMElements.cardFront : DOMElements.cardBack;
+        const filename = `card-${this.pendingExportTarget}.${format}`;
 
         UIManager.showModal(DOMElements.exportLoadingOverlay);
         try {
@@ -241,8 +264,13 @@ const ExportManager = {
                 format: [width, height]
             });
 
-            const previewCanvas = await this.captureElement(typeof DOMElements !== 'undefined' && DOMElements.cardPreview ? DOMElements.cardPreview : document.getElementById('card-preview'), 2);
-            doc.addImage(previewCanvas.toDataURL('image/png'), 'PNG', 0, 0, width, height);
+            const frontCanvas = await this.captureElement(DOMElements.cardFront, 2);
+            doc.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, width, height);
+
+            doc.addPage([width, height], orientation);
+
+            const backCanvas = await this.captureElement(DOMElements.cardBack, 2);
+            doc.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, width, height);
 
             doc.save('business-card.pdf');
         } catch (e) {
@@ -394,8 +422,7 @@ const GalleryManager = {
     async addCurrentDesign() {
         try {
             const state = StateManager.getStateObject();
-            const element = typeof DOMElements !== 'undefined' && DOMElements.cardPreview ? DOMElements.cardPreview : document.getElementById('card-preview');
-            const thumbnail = await ExportManager.captureElement(element, 0.5).then(canvas => canvas.toDataURL('image/jpeg', 0.5));
+            const thumbnail = await ExportManager.captureElement(DOMElements.cardFront, 0.5).then(canvas => canvas.toDataURL('image/jpeg', 0.5));
             this.designs.push({ name: `تصميم ${this.designs.length + 1}`, timestamp: Date.now(), state, thumbnail });
             this.saveDesigns();
             UIManager.announce('تم حفظ التصميم في المعرض بنجاح!');
@@ -462,10 +489,12 @@ const GalleryManager = {
                 const design = this.designs[index];
                 StateManager.applyState(design.state, false);
                 await new Promise(resolve => setTimeout(resolve, 50));
-                const element = typeof DOMElements !== 'undefined' && DOMElements.cardPreview ? DOMElements.cardPreview : document.getElementById('card-preview');
-                const canvas = await ExportManager.captureElement(element);
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                zip.file(`${design.name}.png`, blob);
+                const frontCanvas = await ExportManager.captureElement(DOMElements.cardFront);
+                const backCanvas = await ExportManager.captureElement(DOMElements.cardBack);
+                const frontBlob = await new Promise(resolve => frontCanvas.toBlob(resolve, 'image/png'));
+                const backBlob = await new Promise(resolve => backCanvas.toBlob(resolve, 'image/png'));
+                zip.file(`${design.name}_Front.png`, frontBlob);
+                zip.file(`${design.name}_Back.png`, backBlob);
             }
 
             const content = await zip.generateAsync({ type: "blob" });
@@ -487,113 +516,7 @@ const GalleryManager = {
 
 const ShareManager = {
 
-    // ===== WYSIWYG: Inline computed styles for pixel-perfect viewer rendering =====
-    inlineComputedStyles(root) {
-        // ROOT props: full set including layout/overflow for wrapper elements
-        const ROOT_PROPS = [
-            'font-size', 'font-family', 'font-weight', 'color', 'background-color',
-            'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
-            'margin', 'border-radius', 'border', 'border-width', 'border-style', 'border-color',
-            'transform', 'width', 'max-width', 'min-width', 'height', 'max-height',
-            'display', 'flex-direction', 'align-items', 'justify-content', 'flex-wrap', 'gap',
-            'white-space', 'text-align', 'line-height', 'letter-spacing', 'text-transform',
-            'opacity', 'box-shadow', 'background-image', 'background-size', 'background-position',
-            'object-fit', 'position', 'top', 'left', 'right', 'bottom',
-            'text-shadow', 'backdrop-filter', 'overflow', 'z-index', 'aspect-ratio'
-        ];
-        // CHILD props: typography+color only — NO width/height/overflow (prevents text clipping at viewer scale)
-        const CHILD_PROPS = [
-            'font-size', 'font-family', 'font-weight', 'color', 'background-color',
-            'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
-            'border-radius', 'border', 'border-width', 'border-style', 'border-color',
-            'display', 'flex-direction', 'align-items', 'justify-content', 'gap',
-            'text-align', 'line-height', 'letter-spacing', 'text-transform', 'direction',
-            'opacity', 'text-shadow', 'text-decoration', 'word-break', 'white-space'
-        ];
-        const applyProps = (el, props) => {
-            const computed = window.getComputedStyle(el);
-            props.forEach(prop => {
-                try {
-                    const val = computed.getPropertyValue(prop);
-                    if (val && val !== '' && val !== 'auto' && val !== 'normal' && val !== 'none'
-                        && !val.includes('NaN') && !val.includes('undefined')) {
-                        el.style.setProperty(prop, val, 'important');
-                    }
-                } catch (e) { /* ignore */ }
-            });
-        };
-        root.querySelectorAll('[data-el]').forEach(el => applyProps(el, ROOT_PROPS));
-        root.querySelectorAll('[data-el] *').forEach(el => applyProps(el, CHILD_PROPS));
-        // Post-fix: phone buttons and social links must never clip their text
-        root.querySelectorAll('.phone-button, .draggable-social-link a').forEach(el => {
-            el.style.setProperty('overflow', 'visible', 'important');
-            el.style.setProperty('width', 'auto', 'important');
-            el.style.setProperty('max-width', 'none', 'important');
-            el.style.setProperty('white-space', 'nowrap', 'important');
-        });
-        root.querySelectorAll('.phone-button span, .draggable-social-link a span').forEach(el => {
-            el.style.setProperty('display', 'inline', 'important');
-            el.style.setProperty('visibility', 'visible', 'important');
-            el.style.setProperty('overflow', 'visible', 'important');
-            el.style.setProperty('width', 'auto', 'important');
-        });
-    },
 
-    // ===== WYSIWYG: Capture rendered card HTML + PNG images and save to server =====
-    async captureAndSaveRendered(cardId) {
-        try {
-            const previewEl = typeof DOMElements !== 'undefined' && DOMElements.cardPreview ? DOMElements.cardPreview : document.getElementById('card-preview');
-            if (!previewEl) return;
-
-            // Clone faces without mutating live DOM
-            const previewClone = previewEl.cloneNode(true);
-
-            // Remove editor-only UI (copy buttons, drag hints, etc.)
-            previewClone.querySelectorAll('.no-export, .copy-btn, .dnd-hover-hint').forEach(el => el.remove());
-
-            // Ensure phone buttons have span wrappers around text (User Requirement 2B)
-            previewClone.querySelectorAll('.phone-button').forEach(btn => {
-                let span = btn.querySelector('span');
-                if (!span) {
-                    const icon = btn.querySelector('i');
-                    const textContent = Array.from(btn.childNodes).find(n => n.nodeType === 3)?.textContent?.trim() || '';
-                    span = document.createElement('span');
-                    span.textContent = textContent;
-                    // Clean up text nodes outside spans
-                    Array.from(btn.childNodes).forEach(n => { if (n.nodeType === 3) n.remove(); });
-                    if (icon) btn.insertBefore(span, icon.nextSibling);
-                    else btn.appendChild(span);
-                }
-            });
-
-            // Attach clones offscreen in live DOM so getComputedStyle returns real values
-            const offscreen = document.createElement('div');
-            offscreen.style.cssText = 'position:fixed;top:-9999px;left:-9999px;visibility:hidden;pointer-events:none;';
-            offscreen.appendChild(previewClone);
-            document.body.appendChild(offscreen);
-
-            // this.inlineComputedStyles(previewClone);
-
-            const rendered_html = previewClone.innerHTML;
-            document.body.removeChild(offscreen);
-
-            // Capture PNG screenshots of the live elements using existing ExportManager
-            const canvas = await ExportManager.captureElement(previewEl, 2);
-
-            const rendered_image = canvas.toDataURL('image/png');
-
-            const token = localStorage.getItem('authToken');
-            await fetch(`${Config.API_BASE_URL}/api/save-design-rendered`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ cardId, rendered_html_front: rendered_html, rendered_image_front: rendered_image, rendered_html_back: '', rendered_image_back: '' })
-            });
-            console.log('[WYSIWYG] Rendered snapshot saved for card:', cardId);
-        } catch (err) {
-            // Non-blocking — viewer falls back to EJS if this fails
-            console.warn('[WYSIWYG] captureAndSaveRendered failed (non-blocking):', err);
-        }
-    },
 
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
@@ -630,8 +553,6 @@ const ShareManager = {
             const result = await response.json();
             if (result.success && result.id) {
                 Config.currentDesignId = result.id;
-                // 🔑 WYSIWYG: Block until capture is complete so viewer has latest HTML
-                await this.captureAndSaveRendered(result.id);
                 return result.id;
             } else {
                 throw new Error('Invalid response from server');
@@ -805,7 +726,8 @@ const EventManager = {
 
                 if (input.id.startsWith('back-buttons')) CardManager.updateSocialButtonStyles();
                 if (input.id.startsWith('social-text') || input.id.includes('-static-') || input.id.includes('-dynsocial_')) CardManager.updateSocialTextStyles();
-                if (input.id === 'bg-opacity') CardManager.updateCardBackgrounds();
+                if (input.id.startsWith('input-') && !input.id.includes('-static-') && !input.id.includes('-dynsocial_')) CardManager.updateSocialLinks();
+                if (input.id.startsWith('front-bg-') || input.id.startsWith('back-bg-')) CardManager.updateCardBackgrounds();
                 if (input.id === 'qr-size') CardManager.updateQrCodeDisplay();
 
                 const vCardFields = ['input-name_ar', 'input-name_en', 'input-tagline_ar', 'input-tagline_en', 'input-email', 'input-website'];
@@ -1007,10 +929,19 @@ const EventManager = {
             cropOptions: { aspectRatio: 1 / 1 } // Square crop for personal photos
         }));
 
-        DOMElements.fileInputs.bg.addEventListener('change', e => UIManager.handleImageUpload(e, {
-            maxSizeMB: Config.MAX_BG_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.bg,
+        DOMElements.fileInputs.frontBg.addEventListener('change', e => UIManager.handleImageUpload(e, {
+            maxSizeMB: Config.MAX_BG_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.frontBg,
             onSuccess: url => {
-                CardManager.bgImageUrl = url; DOMElements.buttons.removeBg.style.display = 'block';
+                CardManager.frontBgImageUrl = url; DOMElements.buttons.removeFrontBg.style.display = 'block';
+                CardManager.updateCardBackgrounds();
+            },
+            // No crop for backgrounds
+        }));
+
+        DOMElements.fileInputs.backBg.addEventListener('change', e => UIManager.handleImageUpload(e, {
+            maxSizeMB: Config.MAX_BG_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.backBg,
+            onSuccess: url => {
+                CardManager.backBgImageUrl = url; DOMElements.buttons.removeBackBg.style.display = 'block';
                 CardManager.updateCardBackgrounds();
             },
             // No crop for backgrounds
@@ -1073,12 +1004,21 @@ const EventManager = {
             control.addEventListener('input', () => { CardManager.updatePhoneTextStyles(); });
         });
 
-        DOMElements.buttons.removeBg.addEventListener('click', () => {
-            CardManager.bgImageUrl = null;
-            DOMElements.fileInputs.bg.value = '';
-            DOMElements.bgOpacity.value = 1;
-            DOMElements.bgOpacity.dispatchEvent(new Event('input'));
-            DOMElements.buttons.removeBg.style.display = 'none';
+        DOMElements.buttons.removeFrontBg.addEventListener('click', () => {
+            CardManager.frontBgImageUrl = null;
+            DOMElements.fileInputs.frontBg.value = '';
+            DOMElements.frontBgOpacity.value = 1;
+            DOMElements.frontBgOpacity.dispatchEvent(new Event('input'));
+            DOMElements.buttons.removeFrontBg.style.display = 'none';
+            CardManager.updateCardBackgrounds();
+        });
+
+        DOMElements.buttons.removeBackBg.addEventListener('click', () => {
+            CardManager.backBgImageUrl = null;
+            DOMElements.fileInputs.backBg.value = '';
+            DOMElements.backBgOpacity.value = 1;
+            DOMElements.backBgOpacity.dispatchEvent(new Event('input'));
+            DOMElements.buttons.removeBackBg.style.display = 'none';
             CardManager.updateCardBackgrounds();
         });
 
@@ -1209,8 +1149,10 @@ const App = {
         }
 
         Object.assign(DOMElements, {
-            cardPreview: document.getElementById('card-preview'),
-            cardContent: document.getElementById('card-content'),
+            cardFront: document.getElementById('card-front-preview'),
+            cardBack: document.getElementById('card-back-preview'),
+            cardFrontContent: document.getElementById('card-front-content'),
+            cardBackContent: document.getElementById('card-back-content'),
             phoneNumbersContainer: document.getElementById('phone-numbers-container'),
             cardsWrapper: document.getElementById('cards-wrapper'),
 
@@ -1243,14 +1185,14 @@ const App = {
             qrAutoCardGroup: document.getElementById('qr-auto-card-group'),
             qrSizeSlider: document.getElementById('qr-size'),
             phoneBtnBgColor: document.getElementById('phone-btn-bg-color'), phoneBtnTextColor: document.getElementById('phone-btn-text-color'), phoneBtnFontSize: document.getElementById('phone-btn-font-size'), phoneBtnFont: document.getElementById('phone-btn-font'), backButtonsBgColor: document.getElementById('back-buttons-bg-color'), backButtonsTextColor: document.getElementById('back-buttons-text-color'), backButtonsFont: document.getElementById('back-buttons-font'),
-            bgOpacity: document.getElementById('bg-opacity'), phoneBtnPadding: document.getElementById('phone-btn-padding'), backButtonsSize: document.getElementById('back-buttons-size'),
+            frontBgOpacity: document.getElementById('front-bg-opacity'), backBgOpacity: document.getElementById('back-bg-opacity'), phoneBtnPadding: document.getElementById('phone-btn-padding'), backButtonsSize: document.getElementById('back-buttons-size'),
             nameColor: document.getElementById('name-color'), nameFontSize: document.getElementById('name-font-size'), nameFont: document.getElementById('name-font'),
             taglineColor: document.getElementById('tagline-color'), taglineFontSize: document.getElementById('tagline-font-size'), taglineFont: document.getElementById('tagline-font'),
             social: { input: document.getElementById('social-media-input'), container: document.getElementById('dynamic-social-links-container'), typeSelect: document.getElementById('social-media-type') },
-            fileInputs: { logo: document.getElementById('input-logo-upload'), photo: document.getElementById('input-photo-upload'), bg: document.getElementById('bg-upload'), qrCode: document.getElementById('input-qr-upload') },
+            fileInputs: { logo: document.getElementById('input-logo-upload'), photo: document.getElementById('input-photo-upload'), frontBg: document.getElementById('front-bg-upload'), backBg: document.getElementById('back-bg-upload'), qrCode: document.getElementById('input-qr-upload') },
             previews: { logo: document.getElementById('logo-preview'), photo: document.getElementById('photo-preview') },
             errors: { logoUpload: document.getElementById('logo-upload-error'), photoUpload: document.getElementById('photo-upload-error'), qrUpload: document.getElementById('qr-upload-error') },
-            spinners: { logo: document.getElementById('logo-spinner'), photo: document.getElementById('photo-spinner'), bg: document.getElementById('bg-spinner'), qr: document.getElementById('qr-spinner') },
+            spinners: { logo: document.getElementById('logo-spinner'), photo: document.getElementById('photo-spinner'), frontBg: document.getElementById('front-bg-spinner'), backBg: document.getElementById('back-bg-spinner'), qr: document.getElementById('qr-spinner') },
             sounds: { success: document.getElementById('audio-success'), error: document.getElementById('audio-error') },
             phoneTextControls: { container: document.getElementById('phone-text-controls'), layoutRadios: document.querySelectorAll('input[name="phone-text-layout"]'), size: document.getElementById('phone-text-size'), color: document.getElementById('phone-text-color'), font: document.getElementById('phone-text-font'), },
             socialTextControls: { container: document.getElementById('social-text-controls'), size: document.getElementById('social-text-size'), color: document.getElementById('social-text-color'), font: document.getElementById('social-text-font'), },
@@ -1270,7 +1212,7 @@ const App = {
 
             buttons: {
                 addPhone: document.getElementById('add-phone-btn'), addSocial: document.getElementById('add-social-btn'),
-                removeBg: document.getElementById('remove-bg-btn'),
+                removeFrontBg: document.getElementById('remove-front-bg-btn'), removeBackBg: document.getElementById('remove-back-bg-btn'),
                 backToTop: document.getElementById('back-to-top-btn'),
                 togglePhone: document.getElementById('toggle-phone-buttons'),
                 toggleSocial: document.getElementById('toggle-social-buttons'),
@@ -1293,18 +1235,6 @@ const App = {
                 exitPreview: document.getElementById('exit-preview-btn'),
                 langToggle: document.getElementById('lang-toggle-btn'),
             }
-        });
-
-        // WYSIWYG: Tag main draggable elements so inlineComputedStyles can target them
-        const draggableElMap = {
-            logo: DOMElements.draggable.logo,
-            photo: DOMElements.draggable.photo,
-            name: DOMElements.draggable.name,
-            tagline: DOMElements.draggable.tagline,
-            qr: DOMElements.draggable.qr
-        };
-        Object.entries(draggableElMap).forEach(([key, el]) => {
-            if (el) el.setAttribute('data-el', el.id || key);
         });
 
         Object.values(DOMElements.draggable).forEach(el => {

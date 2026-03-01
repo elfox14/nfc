@@ -9,6 +9,7 @@ window.MobileUtils = {
         MobileUtils.setupNavigation();
         MobileUtils.setupActionButtons();
         MobileUtils.setupClickToEdit();
+        MobileUtils.setupCardFlipper();
         MobileUtils.updateMobileCardScale(); // Add this line
     },
 
@@ -26,6 +27,12 @@ window.MobileUtils = {
             document.querySelectorAll('.pro-sidebar').forEach(el => el.style.display = '');
             document.querySelector('.pro-canvas').style.display = '';
             document.getElementById('panel-share').style.display = 'none';
+            const cardFlipper = document.querySelector('.card-flipper');
+            if (cardFlipper) {
+                cardFlipper.classList.remove('is-flipped');
+            }
+            document.getElementById('card-front-preview').style.pointerEvents = 'auto';
+            document.getElementById('card-back-preview').style.pointerEvents = 'auto';
             // Reset scale on desktop
             const cardsWrapper = document.getElementById('cards-wrapper');
             if (cardsWrapper) cardsWrapper.style.transform = '';
@@ -82,7 +89,27 @@ window.MobileUtils = {
         });
     },
 
+    setupCardFlipper: () => {
+        const flipButton = document.getElementById('flip-card-btn-mobile');
+        const cardFlipper = document.querySelector('.card-flipper');
+        const cardFront = document.getElementById('card-front-preview');
+        const cardBack = document.getElementById('card-back-preview');
 
+        if (flipButton && cardFlipper && cardFront && cardBack) {
+            flipButton.addEventListener('click', () => {
+                const isFlipped = cardFlipper.classList.toggle('is-flipped');
+
+                if (isFlipped) {
+                    cardFront.style.pointerEvents = 'none';
+                    cardBack.style.pointerEvents = 'auto';
+                } else {
+                    cardFront.style.pointerEvents = 'auto';
+                    cardBack.style.pointerEvents = 'none';
+                }
+            });
+            cardBack.style.pointerEvents = 'none';
+        }
+    },
 
     switchView: (targetId) => {
         const sidebars = document.querySelectorAll('.pro-sidebar');

@@ -3,8 +3,7 @@
    =========================================== */
 
 /* CSS Variables */
-:root,
-:host {
+:root {
     --editor-progress-height: 4px;
     --editor-save-indicator-bg: rgba(46, 204, 113, 0.9);
     --editor-gradient-start: #4da6ff;

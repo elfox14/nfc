@@ -80,7 +80,7 @@ app.use(cors({
   },
   credentials: true
 }));
-app.use(express.json({ limit: '25mb' }));
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
@@ -323,9 +323,7 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
       keywords,
       design: doc.data,
       canonical: pageUrl,
-      contactLinksHtml: contactLinksHtml,
-      rendered_html_front: doc.rendered_html_front || null,
-      rendered_html_back: doc.rendered_html_back || null
+      contactLinksHtml: contactLinksHtml
     });
   } catch (e) {
     console.error('Error in /nfc/viewer route:', e);
@@ -590,87 +588,6 @@ app.post('/api/save-design', async (req, res) => {
     if (!res.headersSent) {
       res.status(500).json({ error: 'Save failed' });
     }
-  }
-});
-
-// --- WYSIWYG: Save rendered HTML + images for pixel-perfect viewer ---
-app.post('/api/save-design-rendered', async (req, res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-    // Verify JWT auth
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) {
-      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً / You must be logged in.' });
-    }
-    let ownerId;
-    try {
-      const token = authHeader.split(' ')[1];
-      const secret = process.env.JWT_SECRET;
-      if (!secret) throw new Error('JWT_SECRET not configured');
-      const decoded = jwt.verify(token, secret);
-      ownerId = decoded.userId;
-    } catch (err) {
-      return res.status(401).json({ error: 'توكن غير صالح / Invalid token.' });
-    }
-
-    const { cardId, rendered_html, rendered_image } = req.body;
-
-    if (!cardId || typeof cardId !== 'string') {
-      return res.status(400).json({ error: 'cardId is required.' });
-    }
-
-    // Validate ownership
-    const existing = await db.collection(designsCollectionName).findOne({ shortId: cardId });
-    if (!existing) {
-      return res.status(404).json({ error: 'Design not found.' });
-    }
-    if (existing.ownerId && existing.ownerId !== ownerId) {
-      return res.status(403).json({ error: 'Access denied.' });
-    }
-
-    // Sanitize rendered HTML (strictly) — removes script, on* events, iframes, etc.
-    const SANITIZE_CONFIG = {
-      ALLOWED_TAGS: [
-        'div', 'span', 'img', 'a', 'h1', 'h2', 'h3', 'p', 'br',
-        'i', 'b', 'strong', 'em', 'ul', 'li', 'figure', 'style'
-      ],
-      ALLOWED_ATTR: [
-        'style', 'class', 'src', 'href', 'target', 'rel',
-        'data-el', 'data-bind', 'data-id', 'alt', 'id', 'aria-label',
-        'data-layout', 'data-x', 'data-y'
-      ],
-      FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'link', 'meta'],
-      FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
-      FORCE_BODY: false,
-      RETURN_DOM: false
-    };
-
-    const cleanHtml = rendered_html
-      ? DOMPurify.sanitize(String(rendered_html), SANITIZE_CONFIG)
-      : '';
-
-    // Limit base64 image sizes (max ~10MB)
-    const MAX_IMAGE_LEN = 10 * 1024 * 1024 * 1.4; // base64 is ~33% larger
-    const safeImg = (typeof rendered_image === 'string' && rendered_image.length < MAX_IMAGE_LEN)
-      ? rendered_image : null;
-
-    await db.collection(designsCollectionName).updateOne(
-      { shortId: cardId },
-      {
-        $set: {
-          rendered_html: cleanHtml,
-          rendered_image: safeImg,
-          rendered_at: new Date()
-        }
-      }
-    );
-
-    console.log(`[WYSIWYG] Rendered HTML saved for card: ${cardId}`);
-    res.json({ success: true });
-  } catch (e) {
-    console.error('save-design-rendered error:', e);
-    if (!res.headersSent) res.status(500).json({ error: 'Save rendered failed.' });
   }
 });
 

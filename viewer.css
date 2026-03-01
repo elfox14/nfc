@@ -288,17 +288,31 @@ input:checked+.slider .moon-icon {
     position: relative;
     width: 100%;
     max-width: 510px;
+    aspect-ratio: 1.58;
+    /* نسبة البطاقة الأفقية 51/33 */
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    cursor: pointer;
     margin: 0 auto;
 }
 
+.cards-wrapper-viewer.is-flipped {
+    transform: rotateY(180deg);
+}
 
 .business-card-viewer {
+    height: 100%;
     width: 100%;
-    min-height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     border-radius: 15px;
     box-shadow: var(--card-shadow);
     overflow: hidden;
     background-color: var(--card-bg);
+    transform-style: preserve-3d;
 }
 
 .business-card-viewer img {
@@ -308,7 +322,23 @@ input:checked+.slider .moon-icon {
     object-fit: cover;
 }
 
+.cards-wrapper-viewer.is-flipped #card-front-display {
+    transform: rotateY(180deg);
+}
 
+#viewer-flip-btn {
+    gap: 8px;
+    background-color: var(--accent-secondary);
+    color: white;
+    border-radius: 30px;
+    padding: 10px 25px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#viewer-flip-btn:hover {
+    background-color: var(--accent-secondary-hover);
+}
 
 /* 6. الأعمدة الجانبية */
 .side-column {

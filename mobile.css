@@ -2,7 +2,8 @@
 
 /* Default: Hide mobile nav and other mobile-only elements on desktop */
 .mobile-bottom-nav,
-.mobile-action-btn {
+.mobile-action-btn,
+#flip-card-btn-mobile {
     display: none;
 }
 
@@ -69,7 +70,63 @@
         gap: 15px;
     }
 
+    /* --- Card Flip Animation --- */
+    .card-flipper-container {
+        perspective: 1500px;
+        width: 100%;
+        height: 100%;
+    }
 
+    .cards-wrapper[data-layout="classic"] .card-flipper-container,
+    .cards-wrapper[data-layout="modern"] .card-flipper-container {
+        width: 510px;
+        height: 330px;
+    }
+
+    .cards-wrapper[data-layout="vertical"] .card-flipper-container {
+        width: 330px;
+        height: 510px;
+    }
+
+    .card-flipper {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    .card-flipper.is-flipped {
+        transform: rotateY(180deg);
+    }
+
+    .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+
+    .card-face.card-back {
+        transform: rotateY(180deg);
+    }
+
+    #card-back-preview {
+        display: block;
+    }
+
+    .business-card {
+        margin-bottom: 0;
+    }
+
+    #flip-card-btn-mobile {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
 
     /* --- Scrollable Panels --- */
     .pro-sidebar {
