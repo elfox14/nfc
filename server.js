@@ -464,20 +464,29 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
 
         const uploadResponse = await fetch(externalUploadUrl, {
           method: 'POST',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          },
           body: formData
         });
 
         const responseText = await uploadResponse.text();
-        console.log('[Upload] External response:', uploadResponse.status, responseText);
+        console.log('[Upload] External response:', uploadResponse.status);
 
         if (uploadResponse.ok) {
-          const result = JSON.parse(responseText);
-          if (result.success && result.url) {
-            console.log('[Upload] Image saved to external hosting:', result.url);
-            return res.json({ success: true, url: result.url });
+          try {
+            const result = JSON.parse(responseText);
+            if (result.success && result.url) {
+              console.log('[Upload] Image saved to external hosting:', result.url);
+              return res.json({ success: true, url: result.url });
+            }
+            externalError = `Success false or missing URL: ${responseText.substring(0, 200)}`;
+          } catch (e) {
+            externalError = `Status 200 but INVALID JSON. First 500 chars: ${responseText.substring(0, 500)}`;
           }
+        } else {
+          externalError = `Status ${uploadResponse.status}. First 500 chars: ${responseText.substring(0, 500)}`;
         }
-        externalError = `Status ${uploadResponse.status}: ${responseText}`;
         console.warn('[Upload] External upload failed:', externalError);
       } catch (extErr) {
         externalError = extErr.message;
