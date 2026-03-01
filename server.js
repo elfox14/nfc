@@ -116,7 +116,7 @@ MongoClient.connect(mongoUrl)
       console.warn('Some indexes may already exist:', indexErr.message);
     }
   })
-  .catch(err => { console.error('Mongo connect error', err); /* process.exit(1); */ });
+  .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
 
 const rootDir = __dirname;
 
@@ -779,7 +779,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
   if (error || !code) {
     const safeError = String(error || 'Authorization failed').replace(/[^a-zA-Z0-9_ -]/g, '');
-    const targetOrigin = '*';
+    const targetOrigin = process.env.SITE_BASE_URL || '*';
     return res.send(`
       <script nonce="${res.locals.cspNonce}">
         window.opener.postMessage({ type: 'google-auth', success: false, error: '${safeError}' }, '${targetOrigin}');
@@ -858,7 +858,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     });
 
     // Send success back to opener
-    const targetOrigin = '*';
+    const targetOrigin = process.env.SITE_BASE_URL || '*';
     res.send(`
       <script nonce="${res.locals.cspNonce}">
         window.opener.postMessage({
@@ -875,7 +875,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     console.error('Google OAuth error:', err);
     res.send(`
       <script nonce="${res.locals.cspNonce}">
-        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '*');
+        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '${process.env.SITE_BASE_URL || '*'}');
         window.close();
       </script>
     `);
@@ -1695,11 +1695,7 @@ wss.on('connection', (ws, req) => {
 
 
 // --- START SERVER (تغيير app.listen إلى server.listen) ---
-if (require.main === module) {
-  server.listen(port, () => {
-    console.log(`Server running on port: ${port}`);
-    console.log('WebSocket server is also running.');
-  });
-}
-
-module.exports = app;
+server.listen(port, () => {
+  console.log(`Server running on port: ${port}`);
+  console.log('WebSocket server is also running.');
+});
