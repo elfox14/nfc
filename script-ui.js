@@ -377,25 +377,37 @@ const UIManager = {
     async uploadImageToServer(file) {
         const formData = new FormData();
         formData.append("image", file);
+        // التغيير هنا: إرسال الطلب مباشرة إلى سيرفر الصور لتجاوز حظر "البوتات" على سيرفر Render
+        formData.append("secret", "mcprime_upload_secret_2024_xK9mP2vL");
+
         try {
-            const response = await fetch(`${Config.API_BASE_URL}/api/upload-image`, { method: "POST", body: formData });
+            const uploadUrl = "https://uploads.mcprim.com/upload.php";
+            const response = await fetch(uploadUrl, {
+                method: "POST",
+                body: formData
+            });
+
             const result = await response.json();
 
             if (!response.ok) {
                 throw new Error(result.error || "Server error");
             }
 
-            // إذا حدث تحويل للرفع المحلي (Fallback) بسبب خطأ في السيرفر الخارجي
-            if (result.fallback && result.externalError) {
-                console.warn("External upload failed, using local fallback:", result.externalError);
-                // تنبيه المستخدم بالخطأ ليتمكن من تزويدنا به للتشخيص
-                alert(`تنبيه: فشل الرفع على uploads.mcprim.com وسيتم الرفع مؤقتاً على السيرفر الحالي.\nالسبب: ${result.externalError}`);
-            }
-
             return result.url;
         } catch (error) {
-            console.error("Image upload failed:", error);
-            throw error;
+            console.error("Direct image upload failed:", error);
+            // محاولة أخيرة عبر السيرفر المحلي في حال فشل الاتصال المباشر (رغم أنه قد يفشل بسبب الحظر)
+            try {
+                console.log("Attempting fallback to local server upload...");
+                const localResponse = await fetch(`${Config.API_BASE_URL}/api/upload-image`, {
+                    method: "POST",
+                    body: formData
+                });
+                const localResult = await localResponse.json();
+                return localResult.url;
+            } catch (fallbackError) {
+                throw new Error("فشل الرفع المباشر والمحلي. تأكد من اتصالك بالإنترنت.");
+            }
         }
     },
 
