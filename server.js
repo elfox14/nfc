@@ -449,16 +449,14 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
       .toBuffer();
 
     // Try to upload to external hosting (persistent storage)
-    // التغيير هنا: إجبار الرابط الجديد إذا كان الرابط القديم موجوداً في متغيرات البيئة
-    let externalUploadUrl = process.env.EXTERNAL_UPLOAD_URL;
-    if (!externalUploadUrl || externalUploadUrl.includes('mcprim.com')) {
-      externalUploadUrl = 'https://uploads.mcprim.com/upload.php';
-    }
+    // التغيير هنا: إجبار الرابط الجديد بشكل قاطع لاستكشاف الأخطاء
+    const externalUploadUrl = 'https://uploads.mcprim.com/upload.php';
     const uploadSecret = process.env.UPLOAD_SECRET || 'mcprime_upload_secret_2024_xK9mP2vL';
+
+    let externalError = null;
 
     if (externalUploadUrl && uploadSecret) {
       try {
-        // Use Node.js built-in FormData and Blob (available in Node 18+)
         const blob = new Blob([processedBuffer], { type: 'image/webp' });
         const formData = new FormData();
         formData.append('image', blob, nanoid(10) + '.webp');
@@ -479,20 +477,29 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
             return res.json({ success: true, url: result.url });
           }
         }
-        console.warn('[Upload] External upload failed, status:', uploadResponse.status, 'Response:', responseText);
+        externalError = `Status ${uploadResponse.status}: ${responseText}`;
+        console.warn('[Upload] External upload failed:', externalError);
       } catch (extErr) {
-        console.warn('[Upload] External upload error, falling back to local:', extErr.message);
+        externalError = extErr.message;
+        console.warn('[Upload] External upload error:', externalError);
       }
     }
 
-    // Fallback: save locally (will be lost on Render restart)
+    // Fallback: save locally
     const filename = nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
     fs.writeFileSync(out, processedBuffer);
 
     const base = absoluteBaseUrl(req);
     console.log('[Upload] Image saved locally (fallback):', filename);
-    return res.json({ success: true, url: `${base}/uploads/${filename}` });
+
+    // إرسال تفاصيل الخطأ الخارجي في الاستجابة للمساعدة في التشخيص
+    return res.json({
+      success: true,
+      url: `${base}/uploads/${filename}`,
+      fallback: true,
+      externalError: externalError
+    });
 
   } catch (e) {
     console.error('Image upload processing error:', e);

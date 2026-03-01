@@ -379,11 +379,20 @@ const UIManager = {
         formData.append("image", file);
         try {
             const response = await fetch(`${Config.API_BASE_URL}/api/upload-image`, { method: "POST", body: formData });
+            const result = await response.json();
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Server error");
+                throw new Error(result.error || "Server error");
             }
-            return await response.json().then(result => result.url);
+
+            // إذا حدث تحويل للرفع المحلي (Fallback) بسبب خطأ في السيرفر الخارجي
+            if (result.fallback && result.externalError) {
+                console.warn("External upload failed, using local fallback:", result.externalError);
+                // تنبيه المستخدم بالخطأ ليتمكن من تزويدنا به للتشخيص
+                alert(`تنبيه: فشل الرفع على uploads.mcprim.com وسيتم الرفع مؤقتاً على السيرفر الحالي.\nالسبب: ${result.externalError}`);
+            }
+
+            return result.url;
         } catch (error) {
             console.error("Image upload failed:", error);
             throw error;
