@@ -19,31 +19,63 @@ const EditorUserStatus = {
 
     updateUserStatus() {
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
+
+        // Desktop elements
         const statusText = document.getElementById('user-status-text');
         const loginLink = document.getElementById('user-login-link');
-        const logoutBtn = document.getElementById('user-logout-btn');
+        const signupLink = document.getElementById('user-signup-link');
         const dashboardLink = document.getElementById('user-dashboard-link');
+        const logoutBtn = document.getElementById('user-logout-btn');
         const saveBtn = document.getElementById('save-to-cloud-btn');
+
+        // Mobile Menu Elements
+        const mobileMenuUserText = document.getElementById('mobile-menu-user-text');
+        const mobileMenuDashboardLink = document.getElementById('mobile-menu-dashboard-link');
+        const mobileMenuLoginLink = document.getElementById('mobile-menu-login-link');
+        const mobileMenuSignupLink = document.getElementById('mobile-menu-signup-link');
+        const mobileMenuLogoutBtn = document.getElementById('mobile-menu-logout-btn');
+
+        // Mobile Sidebar Elements (Share Panel)
+        const mobileUserLoginContainer = document.getElementById('mobile-user-login-container');
+        const mobileUserSignupContainer = document.getElementById('mobile-user-signup-container');
+        const mobileUserDashboardContainer = document.getElementById('mobile-user-dashboard-container');
+        const mobileUserLogoutContainer = document.getElementById('mobile-user-logout-container');
 
         if (!statusText || !loginLink || !logoutBtn) return;
 
         const user = JSON.parse(localStorage.getItem('authUser') || 'null');
         const token = localStorage.getItem('authToken');
 
-        const signupLink = document.getElementById('user-signup-link');
-
         if (token && user) {
-            statusText.textContent = user.name || user.email || (isEnglish ? 'User' : 'مستخدم');
+            // Logged In Status
+            const userName = user.name || user.email || (isEnglish ? 'User' : 'مستخدم');
+
+            // Desktop
+            statusText.textContent = userName;
             statusText.style.color = 'var(--accent-primary)';
             loginLink.style.display = 'none';
             if (signupLink) signupLink.style.display = 'none';
             if (dashboardLink) dashboardLink.style.display = 'inline-flex';
             logoutBtn.style.display = 'inline-flex';
             logoutBtn.textContent = isEnglish ? 'Logout' : 'خروج';
-            if (saveBtn) {
-                saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
-            }
+            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
+
+            // Mobile Menu
+            if (mobileMenuUserText) mobileMenuUserText.textContent = userName;
+            if (mobileMenuDashboardLink) mobileMenuDashboardLink.style.display = 'inline-flex';
+            if (mobileMenuLoginLink) mobileMenuLoginLink.style.display = 'none';
+            if (mobileMenuSignupLink) mobileMenuSignupLink.style.display = 'none';
+            if (mobileMenuLogoutBtn) mobileMenuLogoutBtn.style.display = 'flex';
+
+            // Mobile Sidebar 
+            if (mobileUserLoginContainer) mobileUserLoginContainer.style.display = 'none';
+            if (mobileUserSignupContainer) mobileUserSignupContainer.style.display = 'none';
+            if (mobileUserDashboardContainer) mobileUserDashboardContainer.style.display = 'block';
+            if (mobileUserLogoutContainer) mobileUserLogoutContainer.style.display = 'block';
+
         } else {
+            // Guest Status
+            // Desktop
             statusText.textContent = isEnglish ? 'Guest' : 'غير مسجل';
             statusText.style.color = 'var(--text-secondary)';
             loginLink.style.display = 'inline-flex';
@@ -55,26 +87,51 @@ const EditorUserStatus = {
             }
             if (dashboardLink) dashboardLink.style.display = 'none';
             logoutBtn.style.display = 'none';
-            if (saveBtn) {
-                saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ';
-            }
+            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ';
+
+            // Mobile Menu
+            if (mobileMenuUserText) mobileMenuUserText.textContent = isEnglish ? 'Guest' : 'غير مسجل';
+            if (mobileMenuDashboardLink) mobileMenuDashboardLink.style.display = 'none';
+            if (mobileMenuLoginLink) mobileMenuLoginLink.style.display = 'flex';
+            if (mobileMenuSignupLink) mobileMenuSignupLink.style.display = 'flex';
+            if (mobileMenuLogoutBtn) mobileMenuLogoutBtn.style.display = 'none';
+
+            // Mobile Sidebar
+            if (mobileUserLoginContainer) mobileUserLoginContainer.style.display = 'block';
+            if (mobileUserSignupContainer) mobileUserSignupContainer.style.display = 'block';
+            if (mobileUserDashboardContainer) mobileUserDashboardContainer.style.display = 'none';
+            if (mobileUserLogoutContainer) mobileUserLogoutContainer.style.display = 'none';
         }
     },
 
     bindEvents() {
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-        // Logout button
-        const logoutBtn = document.getElementById('user-logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                if (confirm(isEnglish ? 'Are you sure you want to logout?' : 'هل تريد تسجيل الخروج؟')) {
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('authUser');
-                    this.updateUserStatus();
-                    if (typeof UIManager !== 'undefined') {
-                        UIManager.announce(isEnglish ? 'Logged out successfully' : 'تم تسجيل الخروج');
-                    }
+        // Logout handling helper function
+        const handleLogout = () => {
+            if (confirm(isEnglish ? 'Are you sure you want to logout?' : 'هل تريد تسجيل الخروج؟')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('authUser');
+                this.updateUserStatus();
+                if (typeof UIManager !== 'undefined') {
+                    UIManager.announce(isEnglish ? 'Logged out successfully' : 'تم تسجيل الخروج');
                 }
+            }
+        };
+
+        // Desktop Logout
+        const logoutBtn = document.getElementById('user-logout-btn');
+        if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+
+        // Mobile Menu Logout
+        const mobileMenuLogoutBtn = document.getElementById('mobile-menu-logout-btn');
+        if (mobileMenuLogoutBtn) mobileMenuLogoutBtn.addEventListener('click', handleLogout);
+
+        // Mobile Sidebar Logout
+        const mobileUserLogoutBtn = document.getElementById('mobile-user-logout-btn');
+        if (mobileUserLogoutBtn) {
+            mobileUserLogoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleLogout();
             });
         }
 
@@ -91,6 +148,9 @@ const EditorUserStatus = {
         const token = localStorage.getItem('authToken');
         const saveBtn = document.getElementById('save-to-cloud-btn');
         const saveBtnText = document.getElementById('save-btn-text');
+        // Mobile proxy button in panel-share
+        const mobileSaveProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="save-to-cloud-btn"]');
+        const mobileSaveProxyOrigHTML = mobileSaveProxyBtn ? mobileSaveProxyBtn.innerHTML : '';
 
         // If not logged in, redirect to login
         if (!token) {
@@ -124,6 +184,7 @@ const EditorUserStatus = {
         // Update button state (visual feedback only for manual save usually)
         if (captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Processing...' : 'جاري المعالجة...';
         if (captureImages && saveBtn) saveBtn.disabled = true;
+        if (captureImages && mobileSaveProxyBtn) { mobileSaveProxyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isEnglish ? 'Processing...' : 'جاري المعالجة...'); mobileSaveProxyBtn.disabled = true; }
         if (!captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Auto-saving...' : 'حفظ تلقائي...';
 
         try {
@@ -195,13 +256,19 @@ const EditorUserStatus = {
                         ? (isEnglish ? 'Design saved and added to gallery!' : 'تم حفظ التصميم وإضافته للمعرض!')
                         : (isEnglish ? 'Design and images saved successfully' : 'تم حفظ التصميم والصور بنجاح');
                     if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Saved ✓' : 'تم الحفظ ✓';
+                    if (mobileSaveProxyBtn) { mobileSaveProxyBtn.innerHTML = '<i class="fas fa-check"></i> ' + (isEnglish ? 'Saved ✓' : 'تم الحفظ ✓'); mobileSaveProxyBtn.disabled = false; }
                     if (typeof UIManager !== 'undefined') {
                         UIManager.announce(savedMsg);
+                    }
+                    // إظهار Toast مرئي على الموبايل
+                    if (typeof MobileUtils !== 'undefined' && MobileUtils.isMobile()) {
+                        MobileUtils.showMobileToast(savedMsg, 'success');
                     }
 
                     setTimeout(() => {
                         if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
-                    }, 2000);
+                        if (mobileSaveProxyBtn) mobileSaveProxyBtn.innerHTML = mobileSaveProxyOrigHTML;
+                    }, 2500);
                 } else {
                     // Auto-save silent update or minimal UI
                     if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
@@ -212,8 +279,13 @@ const EditorUserStatus = {
         } catch (err) {
             console.error('[EditorUserStatus] Save failed:', err);
             if (captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Failed' : 'فشل الحفظ';
+            const failMsg = isEnglish ? 'Failed to save design. Please try again.' : 'فشل حفظ التصميم. حاول مرة أخرى.';
             if (captureImages && typeof UIManager !== 'undefined') {
-                UIManager.announce(isEnglish ? 'Failed to save design. Please try again.' : 'فشل حفظ التصميم. حاول مرة أخرى.');
+                UIManager.announce(failMsg);
+            }
+            // إظهار Toast مرئي على الموبايل عند الفشل
+            if (typeof MobileUtils !== 'undefined' && MobileUtils.isMobile()) {
+                MobileUtils.showMobileToast(failMsg, 'error');
             }
             setTimeout(() => {
                 if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
@@ -221,6 +293,7 @@ const EditorUserStatus = {
         } finally {
             this.isSaving = false;
             if (saveBtn) saveBtn.disabled = false;
+            if (mobileSaveProxyBtn) { mobileSaveProxyBtn.disabled = false; }
         }
     },
 

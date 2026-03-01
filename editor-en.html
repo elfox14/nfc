@@ -1575,18 +1575,31 @@
                 </div>
             </fieldset>
 
-            <fieldset class="fieldset mobile-user-section">
+            <fieldset class="fieldset mobile-user-section" id="mobile-user-section">
                 <legend>Account</legend>
-                <div class="form-group">
-                    <a href="login-en.html" class="btn btn-secondary mobile-action-btn"
+                <div class="form-group" id="mobile-user-login-container">
+                    <a href="login-en.html" id="mobile-user-login-link" class="btn btn-secondary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center;">
                         <i class="fas fa-sign-in-alt"></i> Login
                     </a>
                 </div>
-                <div class="form-group">
-                    <a href="signup-en.html" class="btn btn-primary mobile-action-btn"
+                <div class="form-group" id="mobile-user-signup-container">
+                    <a href="signup-en.html" id="mobile-user-signup-link" class="btn btn-primary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white;">
                         <i class="fas fa-user-plus"></i> Sign Up
+                    </a>
+                </div>
+                <div class="form-group" id="mobile-user-dashboard-container" style="display: none;">
+                    <a href="dashboard-en.html" id="mobile-user-dashboard-link"
+                        class="btn btn-secondary mobile-action-btn"
+                        style="width: 100%; text-decoration: none; text-align: center;">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </div>
+                <div class="form-group" id="mobile-user-logout-container" style="display: none;">
+                    <a href="#" id="mobile-user-logout-btn" class="btn btn-secondary mobile-action-btn"
+                        style="width: 100%; text-decoration: none; text-align: center; color: #dc3545; border-color: #dc3545;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </div>
             </fieldset>
@@ -1989,6 +2002,17 @@
 
     <!-- Mobile More Menu (Floating) -->
     <div id="toolbar-more-menu-floating" class="toolbar-more-menu">
+        <!-- User Status Bar (Mobile) -->
+        <div id="mobile-menu-user-status"
+            style="padding: 10px 16px; border-bottom: 1px solid var(--accent-secondary); margin-bottom: 5px; text-align: left; display: flex; flex-direction: column; gap: 8px;">
+            <span id="mobile-menu-user-text" style="font-weight: bold; color: var(--accent-primary);">Guest</span>
+            <div style="display: flex; gap: 5px; justify-content: flex-start;">
+                <a href="dashboard-en.html" id="mobile-menu-dashboard-link" class="btn btn-secondary"
+                    style="display: none; padding: 4px 8px; font-size: 12px;"><i class="fas fa-tachometer-alt"></i>
+                    Dashboard</a>
+            </div>
+        </div>
+
         <!-- Navigation Links (Mobile Only) -->
         <a href="index-en.html" class="menu-item-link"><i class="fas fa-home"></i> Home</a>
         <a href="gallery-en.html" class="menu-item-link"><i class="fas fa-images"></i> Gallery</a>
@@ -2001,7 +2025,12 @@
         <button id="start-collab-btn-menu"><i class="fas fa-users"></i> Collaborate</button>
         <button id="share-editor-btn-menu"><i class="fas fa-link"></i> Share Link</button>
         <hr>
-        <a href="login-en.html" class="menu-item-link"><i class="fas fa-sign-in-alt"></i> Login</a>
+        <a href="login-en.html" id="mobile-menu-login-link" class="menu-item-link"><i class="fas fa-sign-in-alt"></i>
+            Login</a>
+        <a href="signup-en.html" id="mobile-menu-signup-link" class="menu-item-link"><i class="fas fa-user-plus"></i>
+            Sign Up</a>
+        <button id="mobile-menu-logout-btn" style="color: #dc3545; display: none;"><i class="fas fa-sign-out-alt"></i>
+            Logout</button>
         <hr>
         <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> Reset</button>
     </div>

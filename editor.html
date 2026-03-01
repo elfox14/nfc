@@ -1387,24 +1387,30 @@
                 </div>
             </fieldset>
 
-            <fieldset class="fieldset mobile-user-section">
+            <fieldset class="fieldset mobile-user-section" id="mobile-user-section">
                 <legend>الحساب</legend>
-                <div class="form-group">
-                    <a href="login.html" class="btn btn-secondary mobile-action-btn"
+                <div class="form-group" id="mobile-user-login-container">
+                    <a href="login.html" id="mobile-user-login-link" class="btn btn-secondary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center;">
                         <i class="fas fa-sign-in-alt"></i> تسجيل دخول
                     </a>
                 </div>
-                <div class="form-group">
-                    <a href="signup.html" class="btn btn-primary mobile-action-btn"
+                <div class="form-group" id="mobile-user-signup-container">
+                    <a href="signup.html" id="mobile-user-signup-link" class="btn btn-primary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white;">
                         <i class="fas fa-user-plus"></i> إنشاء حساب
                     </a>
                 </div>
-                <div class="form-group">
-                    <a href="dashboard.html" class="btn btn-secondary mobile-action-btn"
+                <div class="form-group" id="mobile-user-dashboard-container" style="display: none;">
+                    <a href="dashboard.html" id="mobile-user-dashboard-link" class="btn btn-secondary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center;">
                         <i class="fas fa-tachometer-alt"></i> لوحة التحكم
+                    </a>
+                </div>
+                <div class="form-group" id="mobile-user-logout-container" style="display: none;">
+                    <a href="#" id="mobile-user-logout-btn" class="btn btn-secondary mobile-action-btn"
+                        style="width: 100%; text-decoration: none; text-align: center; color: #dc3545; border-color: #dc3545;">
+                        <i class="fas fa-sign-out-alt"></i> تسجيل خروج
                     </a>
                 </div>
             </fieldset>
@@ -1803,9 +1809,19 @@
 
     <!-- Mobile More Menu (Moved to body to avoid overflow issues) -->
     <div id="toolbar-more-menu-floating" class="toolbar-more-menu">
+        <!-- User Status Bar (Mobile) -->
+        <div id="mobile-menu-user-status"
+            style="padding: 10px 16px; border-bottom: 1px solid var(--accent-secondary); margin-bottom: 5px; text-align: right; display: flex; flex-direction: column; gap: 8px;">
+            <span id="mobile-menu-user-text" style="font-weight: bold; color: var(--accent-primary);">غير مسجل</span>
+            <div style="display: flex; gap: 5px; justify-content: flex-end;">
+                <a href="dashboard.html" id="mobile-menu-dashboard-link" class="btn btn-secondary"
+                    style="display: none; padding: 4px 8px; font-size: 12px;"><i class="fas fa-tachometer-alt"></i> لوحة
+                    التحكم</a>
+            </div>
+        </div>
+
         <!-- Navigation Links (Mobile Only) -->
         <a href="index.html" class="menu-item-link"><i class="fas fa-home"></i> الرئيسية</a>
-        <a href="dashboard.html" class="menu-item-link"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a>
         <a href="gallery.html" class="menu-item-link"><i class="fas fa-images"></i> المعرض</a>
         <a href="blog.html" class="menu-item-link"><i class="fas fa-blog"></i> المدونة</a>
         <hr class="mobile-only-hr">
@@ -1816,7 +1832,12 @@
         <button id="start-collab-btn-menu"><i class="fas fa-users"></i> تعاون</button>
         <button id="share-editor-btn-menu"><i class="fas fa-link"></i> مشاركة الرابط</button>
         <hr>
-        <a href="login.html" class="menu-item-link"><i class="fas fa-sign-in-alt"></i> تسجيل دخول</a>
+        <a href="login.html" id="mobile-menu-login-link" class="menu-item-link"><i class="fas fa-sign-in-alt"></i> تسجيل
+            دخول</a>
+        <a href="signup.html" id="mobile-menu-signup-link" class="menu-item-link"><i class="fas fa-user-plus"></i> إنشاء
+            حساب</a>
+        <button id="mobile-menu-logout-btn" style="color: #dc3545; display: none;"><i class="fas fa-sign-out-alt"></i>
+            تسجيل خروج</button>
         <hr>
         <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> إعادة تعيين</button>
     </div>

@@ -185,6 +185,12 @@ const ExportManager = {
         style.innerHTML = '.no-export { display: none !important; }';
         document.head.appendChild(style);
 
+        // On mobile, cards-wrapper has a CSS scale transform that breaks html2canvas.
+        // Temporarily remove it before capture and restore it afterwards.
+        const cardsWrapper = document.getElementById('cards-wrapper');
+        const originalWrapperTransform = cardsWrapper ? cardsWrapper.style.transform : '';
+        if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = '';
+
         const isMobile = typeof MobileUtils !== 'undefined' && MobileUtils.isMobile();
         const flipper = isMobile ? document.querySelector('.card-flipper') : null;
         let originalFlippedState = false;
@@ -212,6 +218,8 @@ const ExportManager = {
         }
         finally {
             document.head.removeChild(style);
+            // Restore the mobile scale transform
+            if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = originalWrapperTransform;
             if (flipper) {
                 if (originalFlippedState) {
                     flipper.classList.add('is-flipped');
@@ -606,7 +614,11 @@ const ShareManager = {
             return;
         }
 
+        // Also target the mobile proxy button for visual feedback
+        const mobileShareProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="share-card-btn"]');
+
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.capturing);
+        if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, true, i18nMain.capturing || 'جاري التقاط الصورة...');
 
         let frontImageUrl, backImageUrl, shareState;
 
@@ -616,12 +628,14 @@ const ShareManager = {
             frontImageUrl = await this.captureAndUploadCard(DOMElements.cardFront);
 
             UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.uploading);
+            if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, true, i18nMain.uploading || 'جاري الرفع...');
             backImageUrl = await this.captureAndUploadCard(DOMElements.cardBack);
 
         } catch (error) {
             console.error("Card capture/upload failed:", error);
             alert(i18nMain.captureError);
             UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
+            if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, false);
             return;
         }
 
@@ -633,11 +647,13 @@ const ShareManager = {
         shareState.sharedToGallery = await customConfirm(i18nMain.galleryPrompt);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
+        if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, true, i18nMain.generating || 'جاري الإنشاء...');
 
         // Save with authentication
         const designId = await this.saveDesign(shareState);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
+        if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, false);
         if (!designId) return;
 
         const viewerUrl = new URL('viewer.html', window.location.href);
@@ -660,10 +676,23 @@ const ShareManager = {
     },
 
     showFallback(url, text) {
+        // إغلاق لوحات الجانب على الموبايل لضمان ظهور نافذة المشاركة
+        if (typeof MobileUtils !== 'undefined' && MobileUtils.isMobile()) {
+            MobileUtils.hidePanelBeforeModal();
+        }
         DOMElements.shareModal.email.href = `mailto:?subject=My Business Card&body=${encodeURIComponent(text + '\n' + url)}`;
         DOMElements.shareModal.whatsapp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + url)}`;
         DOMElements.shareModal.twitter.href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-        DOMElements.shareModal.copyLink.onclick = () => { Utils.copyTextToClipboard(url).then(success => { if (success) UIManager.announce('تم نسخ الرابط!'); }); };
+        DOMElements.shareModal.copyLink.onclick = () => {
+            Utils.copyTextToClipboard(url).then(success => {
+                if (success) {
+                    UIManager.announce('تم نسخ الرابط!');
+                    if (typeof MobileUtils !== 'undefined' && MobileUtils.isMobile()) {
+                        MobileUtils.showMobileToast('تم نسخ الرابط! 📋', 'success');
+                    }
+                }
+            });
+        };
         UIManager.showModal(DOMElements.shareModal.overlay);
     },
 

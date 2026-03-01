@@ -133,15 +133,166 @@ window.MobileUtils = {
         }
     },
 
+    // --- إظهار Toast مرئي على الموبايل ---
+    showMobileToast: (message, type = 'success') => {
+        // Remove existing toast if any
+        const existing = document.getElementById('mobile-toast-notification');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'mobile-toast-notification';
+        const bgColor = type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)'
+            : type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)'
+                : 'linear-gradient(135deg, #4da6ff, #3b82f6)';
+        const icon = type === 'success' ? 'fa-check-circle'
+            : type === 'error' ? 'fa-exclamation-circle'
+                : 'fa-info-circle';
+
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: ${bgColor};
+            color: white;
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            z-index: 99999;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            max-width: 85vw;
+            text-align: center;
+            white-space: nowrap;
+        `;
+        toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+        document.body.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+            });
+        });
+
+        // Animate out and remove
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    },
+
+    // --- إخفاء panel-share والـ sidebars قبل عرض Modal ---
+    hidePanelBeforeModal: () => {
+        if (!MobileUtils.isMobile()) return;
+        const sidebars = document.querySelectorAll('.pro-sidebar');
+        sidebars.forEach(view => {
+            view.classList.remove('active-view');
+            view.style.display = 'none';
+        });
+        // Reset nav active state
+        document.querySelectorAll('.mobile-nav-item').forEach(nav => nav.classList.remove('active'));
+    },
+
     setupActionButtons: () => {
         const actionButtons = document.querySelectorAll('.mobile-action-btn');
         actionButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const triggerId = btn.getAttribute('data-trigger-id');
+                if (!triggerId) return;
+
+                // --- معالجة خاصة لزر الحفظ على الموبايل ---
+                if (triggerId === 'save-to-cloud-btn') {
+                    MobileUtils.handleMobileSave(btn);
+                    return;
+                }
+
+                // --- معالجة خاصة لزر المشاركة على الموبايل ---
+                if (triggerId === 'share-card-btn') {
+                    MobileUtils.handleMobileShare(btn);
+                    return;
+                }
+
+                // الأزرار الأخرى: تشغيل بشكل عادي
                 const originalBtn = document.getElementById(triggerId);
                 if (originalBtn) originalBtn.click();
             });
         });
+    },
+
+    // --- معالج الحفظ على الموبايل ---
+    handleMobileSave: async (proxyBtn) => {
+        if (typeof EditorUserStatus === 'undefined' || !EditorUserStatus.saveToCloud) {
+            // Fallback: click the original button
+            const originalBtn = document.getElementById('save-to-cloud-btn');
+            if (originalBtn) originalBtn.click();
+            return;
+        }
+
+        // استدعاء الحفظ مباشرة (captureImages = true)
+        try {
+            await EditorUserStatus.saveToCloud(true);
+            // EditorUserStatus.saveToCloud يعالج حالة النجاح والفشل ويُظهر رسائل
+            // لكن نُضيف Toast مرئياً إضافياً للتأكيد
+        } catch (err) {
+            console.error('[MobileUtils] Save error:', err);
+        }
+    },
+
+    // --- معالج المشاركة على الموبايل ---
+    handleMobileShare: async (proxyBtn) => {
+        // التحقق من تسجيل الدخول أولاً
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            const isEnglish = document.documentElement.lang.includes('en');
+            MobileUtils.showMobileToast(
+                isEnglish ? 'Please log in to share your card' : 'يجب تسجيل الدخول لمشاركة بطاقتك',
+                'error'
+            );
+            setTimeout(() => {
+                window.location.href = isEnglish ? 'login-en.html?redirect=editor-en.html' : 'login.html?redirect=editor.html';
+            }, 1500);
+            return;
+        }
+
+        if (typeof ShareManager === 'undefined' || !ShareManager.shareCard) {
+            const originalBtn = document.getElementById('share-card-btn');
+            if (originalBtn) originalBtn.click();
+            return;
+        }
+
+        // إخفاء panel-share قبل بدء العملية لضمان ظهور الـ modals
+        MobileUtils.hidePanelBeforeModal();
+
+        // تعديل ShareManager.showFallback مؤقتاً لضمان ظهور الـ modal
+        const originalShowFallback = ShareManager.showFallback.bind(ShareManager);
+        ShareManager.showFallback = function (url, text) {
+            // التأكد من إخفاء الـ sidebars قبل فتح الـ modal
+            MobileUtils.hidePanelBeforeModal();
+            // استدعاء الأصلي
+            originalShowFallback(url, text);
+            // استعادة الدالة الأصلية
+            ShareManager.showFallback = originalShowFallback;
+        };
+
+        // استدعاء المشاركة
+        try {
+            const mobileShareProxyBtn = proxyBtn;
+            await ShareManager.shareCard();
+        } catch (err) {
+            console.error('[MobileUtils] Share error:', err);
+            // استعادة الدالة الأصلية في حالة الخطأ
+            ShareManager.showFallback = originalShowFallback;
+            MobileUtils.showMobileToast('حدث خطأ أثناء المشاركة. حاول مجدداً.', 'error');
+        }
     },
 
     setupClickToEdit: () => {
