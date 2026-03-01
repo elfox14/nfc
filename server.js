@@ -449,7 +449,11 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
       .toBuffer();
 
     // Try to upload to external hosting (persistent storage)
-    const externalUploadUrl = process.env.EXTERNAL_UPLOAD_URL || 'https://uploads.mcprim.com/upload.php';
+    // التغيير هنا: إجبار الرابط الجديد إذا كان الرابط القديم موجوداً في متغيرات البيئة
+    let externalUploadUrl = process.env.EXTERNAL_UPLOAD_URL;
+    if (!externalUploadUrl || externalUploadUrl.includes('mcprim.com')) {
+      externalUploadUrl = 'https://uploads.mcprim.com/upload.php';
+    }
     const uploadSecret = process.env.UPLOAD_SECRET || 'mcprime_upload_secret_2024_xK9mP2vL';
 
     if (externalUploadUrl && uploadSecret) {
@@ -475,7 +479,7 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
             return res.json({ success: true, url: result.url });
           }
         }
-        console.warn('[Upload] External upload failed, status:', uploadResponse.status);
+        console.warn('[Upload] External upload failed, status:', uploadResponse.status, 'Response:', responseText);
       } catch (extErr) {
         console.warn('[Upload] External upload error, falling back to local:', extErr.message);
       }
