@@ -232,15 +232,6 @@
             background: var(--primary-hover);
         }
 
-        .btn-remove {
-            background: #e74c3c;
-            color: #fff;
-        }
-
-        .btn-remove:hover {
-            background: #c0392b;
-        }
-
         .empty-state {
             text-align: center;
             padding: 50px;
@@ -645,28 +636,18 @@
 
                 if (data.success && data.designs && data.designs.length > 0) {
                     data.designs.forEach(design => {
-                        const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || design.data.inputs['input-name'] || 'بدون اسم') : 'بطاقة';
+                        const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || 'بدون اسم') : 'بطاقة';
                         const views = design.views || 0;
                         const date = new Date(design.createdAt).toLocaleDateString('ar-EG');
                         console.log('Design ImageURLs:', design.data?.imageUrls);
                         const thumb = design.data?.imageUrls?.capturedFront || design.data?.imageUrls?.front || '';
-                        let imgTag = '';
-                        let thumbStyle = '';
-
-                        if (thumb) {
-                            imgTag = `<img src="${thumb}" alt="${name}" loading="lazy">`;
-                        } else {
-                            const inputs = design.data?.inputs || {};
-                            const startColor = inputs['front-bg-start'] || '#2a3d54';
-                            const endColor = inputs['front-bg-end'] || '#223246';
-                            thumbStyle = `style="background: linear-gradient(135deg, ${startColor}, ${endColor}); display: flex; align-items: center; justify-content: center;"`;
-                            imgTag = '<i class="fas fa-id-card" style="font-size: 4rem; color: rgba(255,255,255,0.4);"></i>';
-                        }
+                        let imgTag = '<i class="fas fa-id-card"></i>';
+                        if (thumb) imgTag = `<img src="${thumb}" alt="${name}" loading="lazy">`;
 
                         const card = document.createElement('div');
                         card.className = 'design-card';
                         card.innerHTML = `
-                            <div class="card-thumb" ${thumbStyle}>${imgTag}</div>
+                            <div class="card-thumb">${imgTag}</div>
                             <div class="card-details">
                                 <h3 class="card-title">${name}</h3>
                                 <div class="card-meta">
@@ -676,7 +657,6 @@
                                 <div class="card-actions">
                                     <a href="/nfc/viewer.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">عرض</a>
                                     <a href="/nfc/editor.html?id=${design.shortId}" class="action-btn btn-edit">تعديل</a>
-                                    <button class="action-btn btn-remove" onclick="deleteDesign('${design.shortId}')">حذف</button>
                                 </div>
                             </div>`;
                         grid.appendChild(card);
@@ -693,25 +673,6 @@
             } catch (err) {
                 console.error(err);
                 document.getElementById('designs-grid').innerHTML = '<p style="text-align: center; color: #ff5252;">حدث خطأ أثناء تحميل البيانات</p>';
-            }
-        }
-
-        async function deleteDesign(shortId) {
-            if (!confirm('هل أنت متأكد أنك تريد حذف هذا التصميم نهائياً؟ سيتم حذفه أيضاً من المعرض.')) return;
-            try {
-                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
-                    method: 'DELETE',
-                    headers: Auth.getHeader()
-                });
-                const data = await res.json();
-                if (data.success) {
-                    loadMyDesigns();
-                } else {
-                    alert(data.error || 'فشل حذف التصميم');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('حدث خطأ أثناء حذف التصميم');
             }
         }
 

@@ -448,17 +448,10 @@
                         cardImg.loading = 'lazy';
                         thumbnailContainer.appendChild(cardImg);
                     } else {
-                        // Fallback gradient based on design inputs
-                        const inputs = design.data?.inputs || {};
-                        const startColor = inputs['front-bg-start'] || '#2a3d54';
-                        const endColor = inputs['front-bg-end'] || '#223246';
+                        // Fallback gradient
                         const bgLayer = document.createElement('div');
                         bgLayer.className = 'thumb-bg-layer loaded';
-                        bgLayer.style.background = `linear-gradient(135deg, ${startColor}, ${endColor})`;
-                        bgLayer.style.display = 'flex';
-                        bgLayer.style.alignItems = 'center';
-                        bgLayer.style.justifyContent = 'center';
-                        bgLayer.innerHTML = '<i class="fas fa-id-card" style="font-size: 3rem; color: rgba(255,255,255,0.4);"></i>';
+                        bgLayer.style.background = 'linear-gradient(135deg, #2a3d54, #1f2d3d)';
                         thumbnailContainer.appendChild(bgLayer);
                     }
                 }

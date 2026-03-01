@@ -516,11 +516,30 @@ const GalleryManager = {
 
 const ShareManager = {
 
+    async captureAndUploadCard(element) {
+        await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
+        const canvas = await ExportManager.captureElement(element, 2);
 
+        return new Promise((resolve, reject) => {
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    return reject(new Error("فشل تحويل canvas إلى blob"));
+                }
+                try {
+                    const file = new File([blob], "card-capture.png", { type: "image/png" });
+                    const imageUrl = await UIManager.uploadImageToServer(file);
+                    resolve(imageUrl);
+                } catch (e) {
+                    reject(e);
+                }
+            }, 'image/png', 0.95);
+        });
+    },
 
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
         try {
+            // Use Auth header if available
             const headers = { 'Content-Type': 'application/json' };
             const token = localStorage.getItem('authToken');
             if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -535,20 +554,7 @@ const ShareManager = {
                 headers: headers,
                 body: JSON.stringify(state),
             });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                const errorMsg = errorData.error || 'Server responded with an error';
-                if (response.status === 401) {
-                    alert(errorMsg);
-                    return null;
-                }
-                if (response.status === 403) {
-                    alert(errorMsg);
-                    return null;
-                }
-                throw new Error(errorMsg);
-            }
+            if (!response.ok) throw new Error('Server responded with an error');
 
             const result = await response.json();
             if (result.success && result.id) {
@@ -564,7 +570,31 @@ const ShareManager = {
         }
     },
 
+    // Save design without auth token (anonymous) - used by shareCard so it doesn't appear in dashboard
+    async saveDesignAnonymous(state) {
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            const url = `${Config.API_BASE_URL}/api/save-design`;
 
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(state),
+            });
+            if (!response.ok) throw new Error('Server responded with an error');
+
+            const result = await response.json();
+            if (result.success && result.id) {
+                return result.id;
+            } else {
+                throw new Error('Invalid response from server');
+            }
+        } catch (error) {
+            console.error("Failed to save design (anonymous):", error);
+            UIManager.announce(i18nMain.saveFailed || 'فشل حفظ التصميم. حاول مرة أخرى.');
+            return null;
+        }
+    },
 
     async performShare(url, title, text) {
         const shareData = { title, text, url };
@@ -581,23 +611,38 @@ const ShareManager = {
     },
 
     async shareCard() {
-        // Check if user is logged in
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            alert(i18nMain.loginRequired || 'يجب تسجيل الدخول أولاً لمشاركة بطاقتك. / You must be logged in to share your card.');
+        UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.capturing);
+
+        let frontImageUrl, backImageUrl, shareState;
+
+        try {
+            // Deep clone state so modifications don't leak to auto-save
+            shareState = JSON.parse(JSON.stringify(StateManager.getStateObject()));
+            frontImageUrl = await this.captureAndUploadCard(DOMElements.cardFront);
+
+            UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.uploading);
+            backImageUrl = await this.captureAndUploadCard(DOMElements.cardBack);
+
+        } catch (error) {
+            console.error("Card capture/upload failed:", error);
+            alert(i18nMain.captureError);
+            UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
             return;
         }
 
-        UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.capturing);
-        let shareState = JSON.parse(JSON.stringify(StateManager.getStateObject()));
+        if (!shareState.imageUrls) shareState.imageUrls = {};
+        shareState.imageUrls.capturedFront = frontImageUrl;
+        shareState.imageUrls.capturedBack = backImageUrl;
+        shareState.imageUrls.front = frontImageUrl;
+        shareState.imageUrls.back = backImageUrl;
 
         // Ask user if they want to display their design in the gallery
         shareState.sharedToGallery = await customConfirm(i18nMain.galleryPrompt);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
 
-        // Save with authentication
-        const designId = await this.saveDesign(shareState);
+        // Save anonymously so shared card does NOT appear in user's dashboard
+        const designId = await this.saveDesignAnonymous(shareState);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
         if (!designId) return;
@@ -872,11 +917,6 @@ const EventManager = {
 
         document.querySelectorAll('input[name^="placement-"]').forEach(radio => {
             radio.addEventListener('change', () => {
-                // Skip position reset during state restoration
-                if (StateManager.isApplyingState) {
-                    CardManager.renderCardContent();
-                    return;
-                }
                 const elementName = radio.name.replace('placement-', '');
                 let elementToReset;
 

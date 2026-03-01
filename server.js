@@ -522,20 +522,19 @@ app.post('/api/save-design', async (req, res) => {
     let shortId = existingId || nanoid(8);
     let isUpdate = false;
 
-    // Require authentication - no anonymous saves allowed
+    // Check for authenticated user to assign ownership
     let ownerId = null;
     const authHeader = req.headers['authorization'];
-    if (!authHeader) {
-      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
-    }
-    try {
-      const token = authHeader.split(' ')[1];
-      const secret = process.env.JWT_SECRET;
-      if (!secret) throw new Error('JWT_SECRET not configured');
-      const decoded = jwt.verify(token, secret);
-      ownerId = decoded.userId;
-    } catch (err) {
-      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
+    if (authHeader) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const secret = process.env.JWT_SECRET;
+        if (!secret) throw new Error('JWT_SECRET not configured');
+        const decoded = jwt.verify(token, secret);
+        ownerId = decoded.userId;
+      } catch (err) {
+        console.warn('Invalid token during save, saving as anonymous');
+      }
     }
 
     if (existingId) {
@@ -553,7 +552,23 @@ app.post('/api/save-design', async (req, res) => {
       }
     }
 
-
+    if (isUpdate) {
+      // Preserve captured card images during auto-save (which doesn't capture images)
+      const existingDoc = await db.collection(designsCollectionName).findOne({ shortId: shortId });
+      if (existingDoc?.data?.imageUrls) {
+        if (!data.imageUrls) data.imageUrls = {};
+        const existing = existingDoc.data.imageUrls;
+        // If update has no captured images, keep existing ones
+        if (!data.imageUrls.capturedFront && existing.capturedFront) {
+          data.imageUrls.capturedFront = existing.capturedFront;
+          data.imageUrls.front = existing.capturedFront;
+        }
+        if (!data.imageUrls.capturedBack && existing.capturedBack) {
+          data.imageUrls.capturedBack = existing.capturedBack;
+          data.imageUrls.back = existing.capturedBack;
+        }
+      }
+    }
 
     const updateDoc = {
       data,
@@ -568,11 +583,11 @@ app.post('/api/save-design', async (req, res) => {
         { $set: updateDoc }
       );
     } else {
-      // Enforce max 1 design per user
+      // Enforce max 10 designs per user
       if (ownerId) {
         const designCount = await db.collection(designsCollectionName).countDocuments({ ownerId });
-        if (designCount >= 1) {
-          return res.status(403).json({ error: 'لديك بالفعل كارت محفوظ. يمكنك تعديله من لوحة التحكم. / You already have a saved card. You can edit it from the dashboard.' });
+        if (designCount >= 10) {
+          return res.status(403).json({ error: 'لقد وصلت للحد الأقصى (10 تصاميم). احذف تصميماً قديماً أولاً. / You have reached the maximum limit of 10 designs. Please delete an old design first.' });
         }
       }
       await db.collection(designsCollectionName).insertOne({
@@ -1099,12 +1114,10 @@ app.get('/api/user/designs', verifyToken, async (req, res) => {
       .project({
         'data.inputs.input-name_ar': 1,
         'data.inputs.input-name_en': 1,
-        'data.inputs.input-name': 1,
         'shortId': 1,
         'createdAt': 1,
         'views': 1,
-        'data.imageUrls.front': 1,
-        'data.imageUrls.capturedFront': 1
+        'data.imageUrls.front': 1
       })
       .sort({ createdAt: -1 })
       .toArray();
@@ -1113,31 +1126,6 @@ app.get('/api/user/designs', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Get user designs error:', err);
     res.status(500).json({ error: 'Failed to fetch designs' });
-  }
-});
-
-// Delete a user's design
-app.delete('/api/user/designs/:id', verifyToken, async (req, res) => {
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-    const shortId = String(req.params.id);
-    const design = await db.collection(designsCollectionName).findOne({ shortId });
-
-    if (!design) {
-      return res.status(404).json({ error: 'التصميم غير موجود / Design not found' });
-    }
-
-    if (design.ownerId !== req.user.userId) {
-      return res.status(403).json({ error: 'لا يمكنك حذف هذا التصميم / You cannot delete this design' });
-    }
-
-    await db.collection(designsCollectionName).deleteOne({ shortId });
-
-    res.json({ success: true, message: 'تم حذف التصميم بنجاح / Design deleted successfully' });
-  } catch (err) {
-    console.error('Delete design error:', err);
-    res.status(500).json({ error: 'فشل حذف التصميم / Failed to delete design' });
   }
 });
 

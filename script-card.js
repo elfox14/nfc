@@ -1142,7 +1142,7 @@ const StateManager = {
         if (!state) return;
 
         this.isApplyingState = true;
-
+        
         // Update Proxy State if it exists
         if (window.editorState) {
             Object.assign(window.editorState, JSON.parse(JSON.stringify(state)));
@@ -1173,7 +1173,7 @@ const StateManager = {
             }
         }
 
-        // updateCardForLanguageChange is called AFTER event dispatch below
+        CardManager.updateCardForLanguageChange(state.currentLanguage || 'ar');
 
         DOMElements.phoneNumbersContainer.innerHTML = '';
         if (state.dynamic && state.dynamic.phones) {
@@ -1230,19 +1230,32 @@ const StateManager = {
             }
         }
 
-        CardManager.updateCardBackgrounds();
-
-        // Dispatch events but SKIP hidden language inputs to prevent them from overwriting card text
-        const currentLang = state.currentLanguage || 'ar';
         document.querySelectorAll('input, select, textarea').forEach(input => {
-            // Skip language-specific inputs that don't match current language
-            if (input.dataset.lang && input.dataset.lang !== currentLang) return;
             input.dispatchEvent(new Event('input', { bubbles: true }));
             input.dispatchEvent(new Event('change', { bubbles: true }));
         });
 
-        // Apply language-specific text AFTER event dispatch so it's not overwritten
-        CardManager.updateCardForLanguageChange(state.currentLanguage || 'ar');
+        if (state.positions) {
+            for (const [id, pos] of Object.entries(state.positions)) {
+                let elementId = id;
+                if (id.startsWith('form-group-static-') && !document.getElementById(id)) {
+                    elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
+                }
+                if (id.startsWith('dynsocial_') && !document.getElementById(id)) {
+                    elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`;
+                }
+
+                const targetEl = document.getElementById(elementId);
+
+                if (targetEl && pos) {
+                    targetEl.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+                    targetEl.setAttribute('data-x', pos.x);
+                    targetEl.setAttribute('data-y', pos.y);
+                }
+            }
+        } else {
+            // DragManager.resetPositions(); // You might need to implement this
+        }
 
         if (state.inputs && state.inputs['theme-select-input']) {
             UIManager.setActiveThumbnail(state.inputs['theme-select-input']);
@@ -1259,36 +1272,13 @@ const StateManager = {
         }
 
         CardManager.handleMasterSocialToggle();
+        this.isApplyingState = false;
 
         if (!state.inputs || !state.inputs['layout-select-visual']) {
             CardManager.applyLayout('classic');
         } else {
             CardManager.applyLayout(state.inputs['layout-select-visual']);
         }
-
-        // Apply positions AFTER rendering to prevent renderCardContent from overriding them
-        setTimeout(() => {
-            if (state.positions) {
-                for (const [id, pos] of Object.entries(state.positions)) {
-                    let elementId = id;
-                    if (id.startsWith('form-group-static-') && !document.getElementById(id)) {
-                        elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
-                    }
-                    if (id.startsWith('dynsocial_') && !document.getElementById(id)) {
-                        elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`;
-                    }
-
-                    const targetEl = document.getElementById(elementId);
-
-                    if (targetEl && pos) {
-                        targetEl.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
-                        targetEl.setAttribute('data-x', pos.x);
-                        targetEl.setAttribute('data-y', pos.y);
-                    }
-                }
-            }
-            this.isApplyingState = false;
-        }, 200);
     },
 
     reset() {

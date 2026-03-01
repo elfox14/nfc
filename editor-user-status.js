@@ -131,8 +131,41 @@ const EditorUserStatus = {
 
             let state = StateManager.getStateObject();
 
-            // Try to set button to simple loading text
-            if (captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Saving...' : 'جاري الحفظ...';
+            // Capture Images if requested (Manual Save)
+            if (captureImages) {
+                console.log('[EditorUserStatus] Attempting to capture images...');
+                console.log('[EditorUserStatus] DOMElements:', typeof DOMElements !== 'undefined' ? 'defined' : 'undefined');
+                console.log('[EditorUserStatus] ShareManager.captureAndUploadCard:', typeof ShareManager.captureAndUploadCard);
+
+                if (typeof DOMElements !== 'undefined' && DOMElements.cardFront && ShareManager.captureAndUploadCard) {
+                    try {
+                        if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Capturing images...' : 'جاري التقاط الصور...';
+
+                        // Capture Front
+                        console.log('[EditorUserStatus] Capturing front...');
+                        const frontImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardFront);
+                        console.log('[EditorUserStatus] Front captured:', frontImageUrl);
+
+                        // Capture Back
+                        console.log('[EditorUserStatus] Capturing back...');
+                        const backImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardBack);
+                        console.log('[EditorUserStatus] Back captured:', backImageUrl);
+
+                        if (!state.imageUrls) state.imageUrls = {};
+                        state.imageUrls.capturedFront = frontImageUrl;
+                        state.imageUrls.capturedBack = backImageUrl;
+
+                        if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Uploading...' : 'جاري الرفع...';
+                        console.log('[EditorUserStatus] Images captured successfully');
+                    } catch (captureErr) {
+                        console.error('[EditorUserStatus] Image capture failed:', captureErr);
+                        alert(isEnglish ? 'Failed to capture card image: ' + captureErr.message : 'فشل التقاط صورة البطاقة: ' + captureErr.message);
+                    }
+                } else {
+                    console.warn('[EditorUserStatus] Cannot capture images - missing dependencies');
+                    console.warn('DOMElements.cardFront:', DOMElements?.cardFront);
+                }
+            }
 
             // Ask about gallery BEFORE saving (manual save only) so we save once
             if (captureImages) {
@@ -140,6 +173,14 @@ const EditorUserStatus = {
                     ? 'Would you like to display your design in the gallery page?'
                     : 'هل تريد عرض تصميمك في صفحة المعرض؟';
                 state.sharedToGallery = await customConfirm(galleryPromptMsg);
+            } else {
+                // Auto-save: don't overwrite previously captured card images
+                // getStateObject() sets imageUrls.front/back to background URLs, not captured images
+                // Removing these prevents auto-save from clearing the dashboard thumbnail
+                if (state.imageUrls) {
+                    delete state.imageUrls.capturedFront;
+                    delete state.imageUrls.capturedBack;
+                }
             }
 
             const designId = await ShareManager.saveDesign(state);

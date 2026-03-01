@@ -30,7 +30,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     const viewerContainer = document.querySelector('.viewer-container');
-    const API_BASE_URL = (typeof Auth !== 'undefined') ? Auth.getBaseUrl() : 'https://nfc-vjy6.onrender.com';
+    const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
     let cardData = null;
     let cardId = null; // Store card ID for tracking
 
@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (inputs['logo-filter-contrast']) logoFilterArray.push(`contrast(${inputs['logo-filter-contrast']}%)`);
             const logoFilterStyle = logoFilterArray.length > 0 ? `filter: ${logoFilterArray.join(' ')};` : '';
 
-            const logoHTML = `<img src="${inputs['input-logo']}" alt="Logo" style="max-width: ${logoSize}% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; opacity: ${logoOpacity} !important; position: relative !important; margin: 5px 0 !important; cursor: default !important; ${logoFilterStyle} ${logoPos}">`;
+            const logoHTML = `<img src="${inputs['input-logo']}" alt="Logo" style="max-width: ${logoSize}% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; opacity: ${logoOpacity} !important; position: absolute !important; ${logoFilterStyle} ${logoPos}">`;
             renderElement(logoHTML, logoPlacement, containers);
         }
 
@@ -465,43 +465,41 @@ document.addEventListener('DOMContentLoaded', () => {
             const photoFilterStyle = photoFilterArray.length > 0 ? `filter: ${photoFilterArray.join(' ')};` : '';
             const photoGlassStyle = inputs['photo-glass-effect'] ? `mix-blend-mode: screen; opacity: 0.9;` : '';
 
-            const photoHTML = `<div style="width: ${photoSize}% !important; padding-top: ${photoSize}%; height: 0; background-image: url(${inputs['input-photo-url']}) !important; background-size: cover !important; background-position: center !important; border-radius: ${photoShape} !important; border: ${photoBorder} !important; position: relative !important; margin: 5px 0 !important; cursor: default !important; overflow: hidden; ${photoFilterStyle} ${photoGlassStyle} ${photoPos}"></div>`;
+            const photoHTML = `<div style="width: ${photoSize}% !important; padding-top: ${photoSize}%; height: 0; background-image: url(${inputs['input-photo-url']}) !important; background-size: cover !important; background-position: center !important; border-radius: ${photoShape} !important; border: ${photoBorder} !important; position: absolute !important; overflow: hidden; ${photoFilterStyle} ${photoGlassStyle} ${photoPos}"></div>`;
             renderElement(photoHTML, photoPlacement, containers);
         }
 
-        let rawName = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || '';
-        if (rawName) {
+        if (inputs['input-name']) {
             const nameSize = inputs['name-font-size'] || 22;
             const nameColor = inputs['name-color'] || '#e6f0f7';
             const nameFont = inputs['name-font'] || 'Tajawal, sans-serif';
             const namePos = getPositionStyle('card-name');
             const namePlacement = getPlacement('name');
-            const displayName = rawName.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const displayName = (inputs['input-name'] || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
             const nameLetterSpacing = inputs['name-letter-spacing'] ? `letter-spacing: ${inputs['name-letter-spacing']}px !important;` : '';
             const nameLineHeight = inputs['name-line-height'] ? `line-height: ${inputs['name-line-height']} !important;` : '';
             const nameTransform = inputs['name-uppercase'] ? `text-transform: uppercase !important;` : '';
             const nameGlow = inputs['name-glow'] ? `text-shadow: 0 0 10px ${nameColor}, 0 0 20px ${nameColor} !important;` : '';
 
-            const nameHTML = `<div id="card-name" style="font-size: ${nameSize}px !important; color: ${nameColor} !important; font-family: ${nameFont} !important; position: relative !important; margin: 5px 0 !important; cursor: default !important; width: 100%; white-space: pre-wrap; word-break: break-word; text-align: center; ${nameLetterSpacing} ${nameLineHeight} ${nameTransform} ${nameGlow} ${namePos}">${displayName}</div>`;
+            const nameHTML = `<div id="card-name" style="font-size: ${nameSize}px !important; color: ${nameColor} !important; font-family: ${nameFont} !important; position: absolute !important; white-space: pre-wrap; word-break: break-word; ${nameLetterSpacing} ${nameLineHeight} ${nameTransform} ${nameGlow} ${namePos}">${displayName}</div>`;
             renderElement(nameHTML, namePlacement, containers);
         }
 
-        let rawTagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || '';
-        if (rawTagline) {
+        if (inputs['input-tagline']) {
             const taglineSize = inputs['tagline-font-size'] || 14;
             const taglineColor = inputs['tagline-color'] || '#4da6ff';
             const taglineFont = inputs['tagline-font'] || 'Tajawal, sans-serif';
             const taglinePos = getPositionStyle('card-tagline');
             const taglinePlacement = getPlacement('tagline');
-            const displayTagline = rawTagline.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const displayTagline = (inputs['input-tagline'] || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
             const taglineLetterSpacing = inputs['tagline-letter-spacing'] ? `letter-spacing: ${inputs['tagline-letter-spacing']}px !important;` : '';
             const taglineLineHeight = inputs['tagline-line-height'] ? `line-height: ${inputs['tagline-line-height']} !important;` : '';
             const taglineTransform = inputs['tagline-uppercase'] ? `text-transform: uppercase !important;` : '';
             const taglineGlow = inputs['tagline-glow'] ? `text-shadow: 0 0 10px ${taglineColor}, 0 0 20px ${taglineColor} !important;` : '';
 
-            const taglineHTML = `<div id="card-tagline" style="font-size: ${taglineSize}px !important; color: ${taglineColor} !important; font-family: ${taglineFont} !important; position: relative !important; margin: 5px 0 !important; cursor: default !important; width: 100%; white-space: pre-wrap; word-break: break-word; text-align: center; ${taglineLetterSpacing} ${taglineLineHeight} ${taglineTransform} ${taglineGlow} ${taglinePos}">${displayTagline}</div>`;
+            const taglineHTML = `<div id="card-tagline" style="font-size: ${taglineSize}px !important; color: ${taglineColor} !important; font-family: ${taglineFont} !important; position: absolute !important; white-space: pre-wrap; word-break: break-word; ${taglineLetterSpacing} ${taglineLineHeight} ${taglineTransform} ${taglineGlow} ${taglinePos}">${displayTagline}</div>`;
             renderElement(taglineHTML, taglinePlacement, containers);
         }
 
@@ -539,9 +537,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 let phoneHTML = '';
 
                 if (showAsButtons) {
-                    phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="${phoneBtnDynamicStyles} font-size: ${phoneBtnSize}px !important; font-family: ${phoneBtnFont} !important; padding: ${phoneBtnPadding}px ${phoneBtnPadding * 2}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap !important; direction: ltr !important;"><i class="fas fa-phone-alt"></i><span>${sanitizedValue}</span></a></div>`;
+                    phoneHTML = `<div class="phone-button-draggable-wrapper" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="${phoneBtnDynamicStyles} font-size: ${phoneBtnSize}px !important; font-family: ${phoneBtnFont} !important; padding: ${phoneBtnPadding}px ${phoneBtnPadding * 2}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="fas fa-phone-alt"></i><span>${sanitizedValue}</span></a></div>`;
                 } else {
-                    phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: transparent !important; border: none !important; font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap !important; direction: ltr !important;"><i class="fas fa-phone-alt" style="display:none;"></i> <span>${sanitizedValue}</span></a></div>`;
+                    phoneHTML = `<div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}"><a href="${telLink}" class="phone-button" style="background-color: transparent !important; border: none !important; font-size: ${phoneTextSize}px !important; color: ${phoneTextColor} !important; font-family: ${phoneTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-phone-alt" style="display:none;"></i> <span>${sanitizedValue}</span></a></div>`;
                 }
                 renderElement(phoneHTML, placement, containers);
             });
@@ -590,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const socialTextFont = inputs['social-text-font'] || 'Tajawal, sans-serif';
 
                 const socialBtnStyleType = inputs['back-buttons-style'] || 'solid';
-                const socialBtnRadius = inputs['back-buttons-radius'] !== undefined ? inputs['back-buttons-radius'] : 8;
+                const socialBtnRadius = inputs['back-buttons-radius'] !== undefined ? inputs['back-buttons-radius'] : 50;
 
                 let socialBtnDynamicStyles = `border-radius: ${socialBtnRadius}px !important;`;
                 if (socialBtnStyleType === 'outline') {
@@ -622,9 +620,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     displayValue = displayValue.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     let socialHTML = '';
                     if (showSocialButtons) {
-                        socialHTML = `<div class="draggable-social-link" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="${socialBtnDynamicStyles} font-family: ${socialBtnFont} !important; font-size: ${socialBtnSize}px !important; padding: ${socialBtnSize * 0.5}px ${socialBtnSize}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap !important; direction: ltr !important;"><i class="${platform.icon}"></i><span style="direction: ltr !important;">${displayValue}</span></a></div>`;
+                        socialHTML = `<div class="draggable-social-link" style="position: absolute !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="${socialBtnDynamicStyles} font-family: ${socialBtnFont} !important; font-size: ${socialBtnSize}px !important; padding: ${socialBtnSize * 0.5}px ${socialBtnSize}px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="${platform.icon}"></i><span>${displayValue}</span></a></div>`;
                     } else {
-                        socialHTML = `<div class="draggable-social-link text-only-mode" style="position: relative !important; margin: 5px 0 !important; cursor: default !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="background-color: transparent !important; border: none !important; font-family: ${socialTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap !important; direction: ltr !important;"><i class="${platform.icon}" style="color: ${socialTextColor} !important; font-size: 1.2em;"></i><span style="font-size: ${socialTextSize}px !important; color: ${socialTextColor} !important; direction: ltr !important;">${displayValue}</span></a></div>`;
+                        socialHTML = `<div class="draggable-social-link text-only-mode" style="position: absolute !important; ${wrapperPos}"><a href="${encodeURI(fullUrl)}" target="_blank" rel="noopener noreferrer" style="background-color: transparent !important; border: none !important; font-family: ${socialTextFont} !important; padding: 2px !important; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"><i class="${platform.icon}" style="color: ${socialTextColor} !important; font-size: 1.2em;"></i><span style="font-size: ${socialTextSize}px !important; color: ${socialTextColor} !important;">${displayValue}</span></a></div>`;
                     }
                     renderElement(socialHTML, placement, containers);
                 });
@@ -645,7 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let qrHTML = '';
 
             if (qrSource === 'custom' || qrSource === 'upload') {
-                qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}% !important; padding-top: ${qrSize}%; height: 0; position: relative !important; margin: 5px 0 !important; cursor: default !important; ${qrPos}"><img src="${qrDataString}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;"></div>`;
+                qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}% !important; padding-top: ${qrSize}%; height: 0; position: absolute !important; ${qrPos}"><img src="${qrDataString}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;"></div>`;
                 renderElement(qrHTML, qrPlacement, containers);
             } else if (qrDataString.length > 20) {
                 try {
@@ -667,14 +665,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         else if (qrCanvasElement) { dataUrl = qrCanvasElement.toDataURL(); }
 
                         if (dataUrl) {
-                            qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}% !important; padding-top: ${qrSize}%; height: 0; position: relative !important; margin: 5px 0 !important; cursor: default !important; ${qrPos}"><img src="${dataUrl}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;"></div>`;
+                            qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}% !important; padding-top: ${qrSize}%; height: 0; position: absolute !important; ${qrPos}"><img src="${dataUrl}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;"></div>`;
                             renderElement(qrHTML, qrPlacement, containers);
                         }
                         document.body.removeChild(tempQrDiv);
                         resolve();
                     }, 300));
                 } catch (error) {
-                    qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}%; aspect-ratio: 1; position: relative !important; margin: 5px 0 !important; cursor: default !important; ${qrPos} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: red; text-align: center; border-radius: 4px; padding: 5px;">QR Error</div>`;
+                    qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}%; aspect-ratio: 1; position: absolute; ${qrPos} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: red; text-align: center; border-radius: 4px; padding: 5px;">QR Error</div>`;
                     renderElement(qrHTML, qrPlacement, containers);
                 }
             }
