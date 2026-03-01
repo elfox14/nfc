@@ -628,8 +628,6 @@ const ShareManager = {
         if (!shareState.imageUrls) shareState.imageUrls = {};
         shareState.imageUrls.capturedFront = frontImageUrl;
         shareState.imageUrls.capturedBack = backImageUrl;
-        shareState.imageUrls.front = frontImageUrl;
-        shareState.imageUrls.back = backImageUrl;
 
         // Ask user if they want to display their design in the gallery
         shareState.sharedToGallery = await customConfirm(i18nMain.galleryPrompt);

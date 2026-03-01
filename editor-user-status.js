@@ -22,6 +22,7 @@ const EditorUserStatus = {
         const statusText = document.getElementById('user-status-text');
         const loginLink = document.getElementById('user-login-link');
         const logoutBtn = document.getElementById('user-logout-btn');
+        const dashboardLink = document.getElementById('user-dashboard-link');
         const saveBtn = document.getElementById('save-to-cloud-btn');
 
         if (!statusText || !loginLink || !logoutBtn) return;
@@ -36,6 +37,7 @@ const EditorUserStatus = {
             statusText.style.color = 'var(--accent-primary)';
             loginLink.style.display = 'none';
             if (signupLink) signupLink.style.display = 'none';
+            if (dashboardLink) dashboardLink.style.display = 'inline-flex';
             logoutBtn.style.display = 'inline-flex';
             logoutBtn.textContent = isEnglish ? 'Logout' : 'خروج';
             if (saveBtn) {
@@ -51,6 +53,7 @@ const EditorUserStatus = {
                 signupLink.textContent = isEnglish ? 'Sign Up' : 'إنشاء حساب';
                 signupLink.href = isEnglish ? 'signup-en.html' : 'signup.html';
             }
+            if (dashboardLink) dashboardLink.style.display = 'none';
             logoutBtn.style.display = 'none';
             if (saveBtn) {
                 saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ';
