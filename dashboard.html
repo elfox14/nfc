@@ -232,6 +232,15 @@
             background: var(--primary-hover);
         }
 
+        .btn-remove {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .btn-remove:hover {
+            background: #c0392b;
+        }
+
         .empty-state {
             text-align: center;
             padding: 50px;
@@ -636,7 +645,7 @@
 
                 if (data.success && data.designs && data.designs.length > 0) {
                     data.designs.forEach(design => {
-                        const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || 'بدون اسم') : 'بطاقة';
+                        const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || design.data.inputs['input-name'] || 'بدون اسم') : 'بطاقة';
                         const views = design.views || 0;
                         const date = new Date(design.createdAt).toLocaleDateString('ar-EG');
                         console.log('Design ImageURLs:', design.data?.imageUrls);
@@ -674,6 +683,25 @@
             } catch (err) {
                 console.error(err);
                 document.getElementById('designs-grid').innerHTML = '<p style="text-align: center; color: #ff5252;">حدث خطأ أثناء تحميل البيانات</p>';
+            }
+        }
+
+        async function deleteDesign(shortId) {
+            if (!confirm('هل أنت متأكد أنك تريد حذف هذا التصميم نهائياً؟ سيتم حذفه أيضاً من المعرض.')) return;
+            try {
+                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
+                    method: 'DELETE',
+                    headers: Auth.getHeader()
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadMyDesigns();
+                } else {
+                    alert(data.error || 'فشل حذف التصميم');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ أثناء حذف التصميم');
             }
         }
 
@@ -852,26 +880,6 @@
                 btn.disabled = false;
             }
         });
-        async function deleteDesign(designId) {
-            if (!confirm('هل أنت متأكد من حذف هذه البطاقة بشكل دائم؟')) return;
-            try {
-                const res = await fetch(`${baseUrl}/api/designs/${designId}`, {
-                    method: 'DELETE',
-                    headers: Auth.getHeader()
-                });
-
-                if (res.ok) {
-                    alert('تم حذف الديزاين بنجاح');
-                    loadMyDesigns(); // Reload the designs grid
-                } else {
-                    const data = await res.json();
-                    alert(data.error || 'فشل حذف البطاقة');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('حدث خطأ أثناء الاتصال بالخادم');
-            }
-        }
     </script>
 </body>
 

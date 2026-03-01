@@ -201,17 +201,13 @@ const ExportManager = {
             await new Promise(resolve => setTimeout(resolve, 50));
         }
 
-        // Wait to ensure everything is rendered
-        await new Promise(resolve => setTimeout(resolve, 500));
-
         try {
             return await html2canvas(element, {
                 backgroundColor: null,
                 scale: scale,
                 useCORS: true,
                 allowTaint: true,
-                logging: false,
-                imageTimeout: 15000 // Give images enough time to load
+                logging: false
             });
         }
         finally {
@@ -543,7 +539,6 @@ const ShareManager = {
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
         try {
-            // Use Auth header if available
             const headers = { 'Content-Type': 'application/json' };
             const token = localStorage.getItem('authToken');
             if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -558,7 +553,20 @@ const ShareManager = {
                 headers: headers,
                 body: JSON.stringify(state),
             });
-            if (!response.ok) throw new Error('Server responded with an error');
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const errorMsg = errorData.error || 'Server responded with an error';
+                if (response.status === 401) {
+                    alert(errorMsg);
+                    return null;
+                }
+                if (response.status === 403) {
+                    alert(errorMsg);
+                    return null;
+                }
+                throw new Error(errorMsg);
+            }
 
             const result = await response.json();
             if (result.success && result.id) {
@@ -574,31 +582,7 @@ const ShareManager = {
         }
     },
 
-    // Save design without auth token (anonymous) - used by shareCard so it doesn't appear in dashboard
-    async saveDesignAnonymous(state) {
-        try {
-            const headers = { 'Content-Type': 'application/json' };
-            const url = `${Config.API_BASE_URL}/api/save-design`;
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(state),
-            });
-            if (!response.ok) throw new Error('Server responded with an error');
-
-            const result = await response.json();
-            if (result.success && result.id) {
-                return result.id;
-            } else {
-                throw new Error('Invalid response from server');
-            }
-        } catch (error) {
-            console.error("Failed to save design (anonymous):", error);
-            UIManager.announce(i18nMain.saveFailed || 'فشل حفظ التصميم. حاول مرة أخرى.');
-            return null;
-        }
-    },
 
     async performShare(url, title, text) {
         const shareData = { title, text, url };
@@ -615,6 +599,13 @@ const ShareManager = {
     },
 
     async shareCard() {
+        // Check if user is logged in
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert(i18nMain.loginRequired || 'يجب تسجيل الدخول أولاً لمشاركة بطاقتك. / You must be logged in to share your card.');
+            return;
+        }
+
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.capturing);
 
         let frontImageUrl, backImageUrl, shareState;
@@ -645,8 +636,8 @@ const ShareManager = {
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
 
-        // Save anonymously so shared card does NOT appear in user's dashboard
-        const designId = await this.saveDesignAnonymous(shareState);
+        // Save with authentication
+        const designId = await this.saveDesign(shareState);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
         if (!designId) return;
@@ -921,6 +912,11 @@ const EventManager = {
 
         document.querySelectorAll('input[name^="placement-"]').forEach(radio => {
             radio.addEventListener('change', () => {
+                // Skip position reset during state restoration
+                if (StateManager.isApplyingState) {
+                    CardManager.renderCardContent();
+                    return;
+                }
                 const elementName = radio.name.replace('placement-', '');
                 let elementToReset;
 

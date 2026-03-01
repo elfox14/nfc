@@ -116,7 +116,7 @@ MongoClient.connect(mongoUrl)
       console.warn('Some indexes may already exist:', indexErr.message);
     }
   })
-  .catch(err => { console.error('Mongo connect error', err); process.exit(1); });
+  .catch(err => { console.error('Mongo connect error', err); /* process.exit(1); */ });
 
 const rootDir = __dirname;
 
@@ -522,19 +522,20 @@ app.post('/api/save-design', async (req, res) => {
     let shortId = existingId || nanoid(8);
     let isUpdate = false;
 
-    // Check for authenticated user to assign ownership
+    // Require authentication - no anonymous saves allowed
     let ownerId = null;
     const authHeader = req.headers['authorization'];
-    if (authHeader) {
-      try {
-        const token = authHeader.split(' ')[1];
-        const secret = process.env.JWT_SECRET;
-        if (!secret) throw new Error('JWT_SECRET not configured');
-        const decoded = jwt.verify(token, secret);
-        ownerId = decoded.userId;
-      } catch (err) {
-        console.warn('Invalid token during save, saving as anonymous');
-      }
+    if (!authHeader) {
+      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
+    }
+    try {
+      const token = authHeader.split(' ')[1];
+      const secret = process.env.JWT_SECRET;
+      if (!secret) throw new Error('JWT_SECRET not configured');
+      const decoded = jwt.verify(token, secret);
+      ownerId = decoded.userId;
+    } catch (err) {
+      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
     }
 
     if (existingId) {
@@ -583,11 +584,11 @@ app.post('/api/save-design', async (req, res) => {
         { $set: updateDoc }
       );
     } else {
-      // Enforce max 10 designs per user
+      // Enforce max 1 design per user
       if (ownerId) {
         const designCount = await db.collection(designsCollectionName).countDocuments({ ownerId });
-        if (designCount >= 10) {
-          return res.status(403).json({ error: 'لقد وصلت للحد الأقصى (10 تصاميم). احذف تصميماً قديماً أولاً. / You have reached the maximum limit of 10 designs. Please delete an old design first.' });
+        if (designCount >= 1) {
+          return res.status(403).json({ error: 'لديك بالفعل كارت محفوظ. يمكنك تعديله من لوحة التحكم. / You already have a saved card. You can edit it from the dashboard.' });
         }
       }
       await db.collection(designsCollectionName).insertOne({
@@ -779,7 +780,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
   if (error || !code) {
     const safeError = String(error || 'Authorization failed').replace(/[^a-zA-Z0-9_ -]/g, '');
-    const targetOrigin = process.env.SITE_BASE_URL || '*';
+    const targetOrigin = '*';
     return res.send(`
       <script nonce="${res.locals.cspNonce}">
         window.opener.postMessage({ type: 'google-auth', success: false, error: '${safeError}' }, '${targetOrigin}');
@@ -858,7 +859,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     });
 
     // Send success back to opener
-    const targetOrigin = process.env.SITE_BASE_URL || '*';
+    const targetOrigin = '*';
     res.send(`
       <script nonce="${res.locals.cspNonce}">
         window.opener.postMessage({
@@ -875,7 +876,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     console.error('Google OAuth error:', err);
     res.send(`
       <script nonce="${res.locals.cspNonce}">
-        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '${process.env.SITE_BASE_URL || '*'}');
+        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '*');
         window.close();
       </script>
     `);
@@ -1114,10 +1115,12 @@ app.get('/api/user/designs', verifyToken, async (req, res) => {
       .project({
         'data.inputs.input-name_ar': 1,
         'data.inputs.input-name_en': 1,
+        'data.inputs.input-name': 1,
         'shortId': 1,
         'createdAt': 1,
         'views': 1,
-        'data.imageUrls.front': 1
+        'data.imageUrls.front': 1,
+        'data.imageUrls.capturedFront': 1
       })
       .sort({ createdAt: -1 })
       .toArray();
@@ -1129,40 +1132,28 @@ app.get('/api/user/designs', verifyToken, async (req, res) => {
   }
 });
 
-// Delete a Design
-app.delete('/api/designs/:id', verifyToken, async (req, res) => {
+// Delete a user's design
+app.delete('/api/user/designs/:id', verifyToken, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
-    const designId = String(req.params.id);
-    const userId = req.user.userId;
+    const shortId = String(req.params.id);
+    const design = await db.collection(designsCollectionName).findOne({ shortId });
 
-    // Verify ownership
-    const design = await db.collection(designsCollectionName).findOne({ shortId: designId });
     if (!design) {
-      return res.status(404).json({ error: 'Design not found' });
+      return res.status(404).json({ error: 'التصميم غير موجود / Design not found' });
     }
 
-    if (design.ownerId !== userId) {
-      return res.status(403).json({ error: 'Unauthorized to delete this design' });
+    if (design.ownerId !== req.user.userId) {
+      return res.status(403).json({ error: 'لا يمكنك حذف هذا التصميم / You cannot delete this design' });
     }
 
-    // Delete the design
-    const deleteResult = await db.collection(designsCollectionName).deleteOne({ shortId: designId });
+    await db.collection(designsCollectionName).deleteOne({ shortId });
 
-    if (deleteResult.deletedCount === 1) {
-      // Also clean up related pending save requests and saved cards
-      await db.collection(cardRequestsCollectionName).deleteMany({ designShortId: designId });
-      await db.collection(savedCardsCollectionName).deleteMany({ designShortId: designId });
-
-      return res.json({ success: true, message: 'Design deleted successfully' });
-    } else {
-      return res.status(500).json({ error: 'Failed to delete design' });
-    }
-
+    res.json({ success: true, message: 'تم حذف التصميم بنجاح / Design deleted successfully' });
   } catch (err) {
     console.error('Delete design error:', err);
-    res.status(500).json({ error: 'Delete design failed' });
+    res.status(500).json({ error: 'فشل حذف التصميم / Failed to delete design' });
   }
 });
 
@@ -1732,7 +1723,11 @@ wss.on('connection', (ws, req) => {
 
 
 // --- START SERVER (تغيير app.listen إلى server.listen) ---
-server.listen(port, () => {
-  console.log(`Server running on port: ${port}`);
-  console.log('WebSocket server is also running.');
-});
+if (require.main === module) {
+  server.listen(port, () => {
+    console.log(`Server running on port: ${port}`);
+    console.log('WebSocket server is also running.');
+  });
+}
+
+module.exports = app;
