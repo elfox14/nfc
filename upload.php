@@ -10,6 +10,7 @@
 // === التكوين ===
 $SECRET_KEY = 'mcprime_upload_secret_2024_xK9mP2vL'; // نفس القيمة في .env على Render
 $UPLOAD_DIR = __DIR__ . '/uploads/';
+$BASE_URL = 'https://uploads.mcprim.com/uploads'; // الرابط الأساسي للمجلد على الدومين الجديد
 $MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 $ALLOWED_TYPES = ['image/webp', 'image/png', 'image/jpeg', 'image/gif'];
 
@@ -91,10 +92,16 @@ $filepath = $UPLOAD_DIR . $filename;
 // === حفظ الملف ===
 if (move_uploaded_file($file['tmp_name'], $filepath)) {
     // بناء الرابط الكامل
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'];
-    $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
-    $url = $protocol . '://' . $host . $scriptDir . '/uploads/' . $filename;
+    if (!empty($BASE_URL)) {
+        // استخدام الرابط الثابت إذا تم تحديده
+        $url = rtrim($BASE_URL, '/') . '/' . $filename;
+    } else {
+        // البحث التلقائي عن الرابط (fallback)
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'];
+        $scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+        $url = $protocol . '://' . $host . (empty($scriptDir) ? '' : $scriptDir) . '/uploads/' . $filename;
+    }
     
     echo json_encode([
         'success' => true,
