@@ -449,7 +449,7 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
       .toBuffer();
 
     // Try to upload to external hosting (persistent storage)
-    const externalUploadUrl = process.env.EXTERNAL_UPLOAD_URL; // e.g. https://mcprim.com/nfc/upload.php
+    const externalUploadUrl = process.env.EXTERNAL_UPLOAD_URL; // e.g. https://uploads.mcprim.com//upload.php
     const uploadSecret = process.env.UPLOAD_SECRET;
 
     if (externalUploadUrl && uploadSecret) {
