@@ -449,8 +449,8 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
       .toBuffer();
 
     // Try to upload to external hosting (persistent storage)
-    const externalUploadUrl = process.env.EXTERNAL_UPLOAD_URL; // e.g. https://uploads.mcprim.com//upload.php
-    const uploadSecret = process.env.UPLOAD_SECRET;
+    const externalUploadUrl = process.env.EXTERNAL_UPLOAD_URL || 'https://uploads.mcprim.com/upload.php';
+    const uploadSecret = process.env.UPLOAD_SECRET || 'mcprime_upload_secret_2024_xK9mP2vL';
 
     if (externalUploadUrl && uploadSecret) {
       try {
