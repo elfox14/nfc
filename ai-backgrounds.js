@@ -101,14 +101,16 @@
         applyFrontBtn.addEventListener('click', () => {
             applyBackground('front');
             closeModal();
-            showNotification('تم تطبيق الخلفية على الواجهة الأمامية');
+            const lang = document.documentElement.lang || 'ar';
+            showNotification(lang === 'en' ? 'Background applied to front side' : 'تم تطبيق الخلفية على الواجهة الأمامية');
         });
 
         // Apply to back
         applyBackBtn.addEventListener('click', () => {
             applyBackground('back');
             closeModal();
-            showNotification('تم تطبيق الخلفية على الواجهة الخلفية');
+            const lang = document.documentElement.lang || 'ar';
+            showNotification(lang === 'en' ? 'Background applied to back side' : 'تم تطبيق الخلفية على الواجهة الخلفية');
         });
 
         console.log('AI Backgrounds: Initialized successfully');

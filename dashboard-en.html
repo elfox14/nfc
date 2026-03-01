@@ -642,6 +642,7 @@
                                 <div class="card-actions">
                                     <a href="/nfc/viewer-en.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">View</a>
                                     <a href="/nfc/editor-en.html?id=${design.shortId}" class="action-btn btn-edit">Edit</a>
+                                    <button class="action-btn btn-remove" onclick="deleteDesign('${design.shortId}')">Delete</button>
                                 </div>
                             </div>`;
                         grid.appendChild(card);
@@ -652,6 +653,25 @@
             } catch (err) {
                 console.error(err);
                 document.getElementById('designs-grid').innerHTML = '<p style="text-align: center; color: #ff5252;">Error loading data</p>';
+            }
+        }
+
+        async function deleteDesign(shortId) {
+            if (!confirm('Are you sure you want to permanently delete this design? It will also be removed from the gallery.')) return;
+            try {
+                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
+                    method: 'DELETE',
+                    headers: Auth.getHeader()
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadMyDesigns();
+                } else {
+                    alert(data.error || 'Failed to delete design');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred while deleting the design');
             }
         }
 

@@ -1142,7 +1142,7 @@ const StateManager = {
         if (!state) return;
 
         this.isApplyingState = true;
-        
+
         // Update Proxy State if it exists
         if (window.editorState) {
             Object.assign(window.editorState, JSON.parse(JSON.stringify(state)));
