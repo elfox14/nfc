@@ -2034,15 +2034,15 @@ html.ltr .testimonial-card {
 /* --- تحسينات الشعار --- */
 
 #card-logo {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: block;
     padding: 5px;
+    margin: 0 auto;
+    /* Default centering */
 }
 
 #card-logo-img {
-    max-width: 25%;
+    width: 100%;
+    max-width: 100%;
     object-fit: contain;
     transition: all 0.3s ease;
     padding: 5px;

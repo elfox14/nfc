@@ -193,7 +193,16 @@ const CardManager = {
         const alignValue = document.querySelector('input[name="logo-align"]:checked')?.value || 'center';
         const logoContainer = DOMElements.draggable.logo;
         if (logoContainer) {
-            logoContainer.style.justifyContent = alignValue;
+            if (alignValue === 'flex-start') {
+                logoContainer.style.marginRight = 'auto';
+                logoContainer.style.marginLeft = '0';
+            } else if (alignValue === 'flex-end') {
+                logoContainer.style.marginRight = '0';
+                logoContainer.style.marginLeft = 'auto';
+            } else { // center
+                logoContainer.style.marginRight = 'auto';
+                logoContainer.style.marginLeft = 'auto';
+            }
         }
     },
 
