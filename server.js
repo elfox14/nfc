@@ -855,16 +855,32 @@ app.get('/api/auth/google/callback', async (req, res) => {
       path: '/api/auth'
     });
 
-    // Create a short-lived (5 min) one-time token to pass via URL
-    const secret = process.env.JWT_SECRET;
-    const onetimeToken = jwt.sign(
-      { token: accessToken, user: { name: user.name, email: user.email, userId: user.userId }, type: 'google-onetime' },
-      secret,
-      { expiresIn: '5m' }
-    );
+    // Return a self-contained page that sets localStorage and redirects to dashboard
+    const dashboardPage = lang === 'en' ? `${frontendBase}/dashboard-en.html` : `${frontendBase}/dashboard.html`;
+    const userName = String(user.name || '').replace(/"/g, '&quot;');
+    const userEmail = String(user.email || '').replace(/"/g, '&quot;');
+    const userId = String(user.userId || '').replace(/"/g, '&quot;');
 
-    // Redirect back to frontend login page with one-time token
-    return res.redirect(`${loginPage}?google_token=${encodeURIComponent(onetimeToken)}`);
+    return res.send(`<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>جاري تسجيل الدخول...</title></head>
+<body style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f1923;color:#fff;font-family:sans-serif;flex-direction:column;gap:16px;">
+  <p style="font-size:1.2rem;">جاري تسجيل الدخول...</p>
+  <script nonce="${res.locals.cspNonce}">
+    try {
+      localStorage.setItem('authToken', ${JSON.stringify(accessToken)});
+      localStorage.setItem('authUser', JSON.stringify({
+        name: ${JSON.stringify(user.name)},
+        email: ${JSON.stringify(user.email)},
+        userId: ${JSON.stringify(user.userId)}
+      }));
+      window.location.href = ${JSON.stringify(dashboardPage)};
+    } catch(e) {
+      document.body.innerHTML = '<p style="color:#ff5252">خطأ: ' + e.message + '</p>';
+    }
+  </script>
+</body>
+</html>`);
 
   } catch (err) {
     console.error('Google OAuth error:', err);
