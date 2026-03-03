@@ -204,10 +204,25 @@ window.MobileUtils = {
 
     setupActionButtons: () => {
         const actionButtons = document.querySelectorAll('.mobile-action-btn');
+
+        // Retry if buttons not found yet (may be injected dynamically)
+        if (!actionButtons || actionButtons.length === 0) {
+            console.warn('[MobileUtils] No .mobile-action-btn found — retrying in 200ms');
+            setTimeout(MobileUtils.setupActionButtons, 200);
+            return;
+        }
+
         actionButtons.forEach(btn => {
+            // Avoid double-binding
+            if (btn.dataset.mobileInitialized) return;
+            btn.dataset.mobileInitialized = 'true';
+
             btn.addEventListener('click', (e) => {
                 const triggerId = btn.getAttribute('data-trigger-id');
-                if (!triggerId) return;
+                if (!triggerId) {
+                    console.warn('[MobileUtils] mobile-action-btn missing data-trigger-id', btn);
+                    return;
+                }
 
                 // --- معالجة خاصة لزر الحفظ على الموبايل ---
                 if (triggerId === 'save-to-cloud-btn') {
@@ -224,26 +239,36 @@ window.MobileUtils = {
                 // الأزرار الأخرى: تشغيل بشكل عادي
                 const originalBtn = document.getElementById(triggerId);
                 if (originalBtn) originalBtn.click();
+                else console.warn('[MobileUtils] originalBtn not found for triggerId:', triggerId);
             });
         });
+
+        console.log(`[MobileUtils] setupActionButtons: ${actionButtons.length} buttons bound`);
     },
 
     // --- معالج الحفظ على الموبايل ---
     handleMobileSave: async (proxyBtn) => {
+        const isEnglish = document.documentElement.lang.includes('en');
+
         if (typeof EditorUserStatus === 'undefined' || !EditorUserStatus.saveToCloud) {
-            // Fallback: click the original button
+            console.warn('[MobileUtils] EditorUserStatus not available — falling back to original btn');
             const originalBtn = document.getElementById('save-to-cloud-btn');
             if (originalBtn) originalBtn.click();
+            else MobileUtils.showMobileToast(isEnglish ? 'Save not available' : 'الحفظ غير متاح', 'error');
             return;
         }
 
-        // استدعاء الحفظ مباشرة (captureImages = true)
+        console.log('[MobileUtils] handleMobileSave called');
         try {
             await EditorUserStatus.saveToCloud(true);
-            // EditorUserStatus.saveToCloud يعالج حالة النجاح والفشل ويُظهر رسائل
-            // لكن نُضيف Toast مرئياً إضافياً للتأكيد
         } catch (err) {
             console.error('[MobileUtils] Save error:', err);
+            MobileUtils.showMobileToast(
+                isEnglish ? 'Save failed: ' + err.message : 'فشل الحفظ: ' + err.message,
+                'error'
+            );
+            // Ensure btn is re-enabled
+            if (proxyBtn) { proxyBtn.disabled = false; }
         }
     },
 
@@ -348,6 +373,16 @@ window.MobileUtils = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+// Wait for critical dependencies before initializing
+function _mobileWaitForDepsAndInit() {
+    if (typeof ShareManager === 'undefined' || typeof EditorUserStatus === 'undefined') {
+        console.log('[MobileUtils] Waiting for ShareManager / EditorUserStatus...');
+        setTimeout(_mobileWaitForDepsAndInit, 150);
+        return;
+    }
+    console.log('[MobileUtils] Dependencies ready — initializing');
     MobileUtils.init();
-});
+}
+
+// Use window.load to ensure all scripts are fully executed
+window.addEventListener('load', _mobileWaitForDepsAndInit);
