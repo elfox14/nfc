@@ -756,52 +756,58 @@ app.get('/api/auth/google', (req, res) => {
   const host = req.get('host');
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
-  // Validate and store the back URL — must be from an allowed origin
+  // Validate the back URL — must be from an allowed origin
   const rawBack = req.query.back || '';
-  let safeBackUrl = process.env.PUBLIC_BASE_URL
+  // Default fallback: use PUBLIC_BASE_URL env var (mcprim.com) or the Render host
+  const defaultBack = process.env.PUBLIC_BASE_URL
     ? `${process.env.PUBLIC_BASE_URL}/login`
     : `${proto}://${host}/nfc/login`;
 
+  let safeBackUrl = defaultBack;
   if (rawBack) {
     try {
       const backParsed = new URL(rawBack);
       const allowed = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-      const backOrigin = backParsed.origin;
-      // Allow same host or explicitly allowed origins
       const isSameHost = backParsed.host === host;
-      const isAllowed = allowed.length === 0 || allowed.includes(backOrigin);
-      if (isSameHost || isAllowed) {
+      const isAllowed = allowed.includes(backParsed.origin);
+      if (isSameHost || isAllowed || allowed.length === 0) {
         safeBackUrl = rawBack;
       } else {
-        console.warn('[OAuth] Rejected back URL (not in allowed origins):', rawBack);
+        console.warn('[OAuth] Rejected back URL:', rawBack);
       }
     } catch (e) {
       console.warn('[OAuth] Invalid back URL:', rawBack);
     }
   }
 
-  res.cookie('oauth_back', safeBackUrl, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Lax',
-    maxAge: 10 * 60 * 1000, // 10 minutes
-    path: '/'
-  });
+  // Encode the back URL as the OAuth state parameter (Google returns it unchanged)
+  const statePayload = Buffer.from(JSON.stringify({ back: safeBackUrl })).toString('base64url');
 
   const scope = 'email profile';
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=${encodeURIComponent(statePayload)}`;
 
   res.redirect(authUrl);
 });
 
-
 // Google OAuth - Callback Handler (redirect-based, works on mobile and cross-origin)
 app.get('/api/auth/google/callback', async (req, res) => {
-  const { code, error } = req.query;
+  const { code, error, state } = req.query;
 
-  // Determine where to redirect back (login or login-en)
-  const backUrl = req.cookies?.oauth_back || '/nfc/login';
-  res.clearCookie('oauth_back', { path: '/' });
+  // Decode back URL from state parameter
+  const defaultBack = process.env.PUBLIC_BASE_URL
+    ? `${process.env.PUBLIC_BASE_URL}/login`
+    : '/nfc/login';
+
+  let backUrl = defaultBack;
+  if (state) {
+    try {
+      const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
+      if (decoded.back) backUrl = decoded.back;
+    } catch (e) {
+      console.warn('[OAuth] Could not decode state:', e.message);
+    }
+  }
+
 
   if (error || !code) {
     const safeError = encodeURIComponent(String(error || 'google_auth_failed').replace(/[^a-zA-Z0-9_ -]/g, ''));
