@@ -855,32 +855,19 @@ app.get('/api/auth/google/callback', async (req, res) => {
       path: '/api/auth'
     });
 
-    // Return a self-contained page that sets localStorage and redirects to dashboard
-    const dashboardPage = lang === 'en' ? `${frontendBase}/dashboard-en.html` : `${frontendBase}/dashboard.html`;
-    const userName = String(user.name || '').replace(/"/g, '&quot;');
-    const userEmail = String(user.email || '').replace(/"/g, '&quot;');
-    const userId = String(user.userId || '').replace(/"/g, '&quot;');
+    // Encode auth data and pass via URL hash to the dashboard on mcprim.com
+    // URL hash (#) is never sent to servers, stays client-side — safe for cross-origin token passing
+    const authEncoded = Buffer.from(JSON.stringify({
+      token: accessToken,
+      user: { name: user.name, email: user.email, userId: user.userId }
+    })).toString('base64url');
 
-    return res.send(`<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>جاري تسجيل الدخول...</title></head>
-<body style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f1923;color:#fff;font-family:sans-serif;flex-direction:column;gap:16px;">
-  <p style="font-size:1.2rem;">جاري تسجيل الدخول...</p>
-  <script nonce="${res.locals.cspNonce}">
-    try {
-      localStorage.setItem('authToken', ${JSON.stringify(accessToken)});
-      localStorage.setItem('authUser', JSON.stringify({
-        name: ${JSON.stringify(user.name)},
-        email: ${JSON.stringify(user.email)},
-        userId: ${JSON.stringify(user.userId)}
-      }));
-      window.location.href = ${JSON.stringify(dashboardPage)};
-    } catch(e) {
-      document.body.innerHTML = '<p style="color:#ff5252">خطأ: ' + e.message + '</p>';
-    }
-  </script>
-</body>
-</html>`);
+    const dashboardPage = lang === 'en'
+      ? `${frontendBase}/dashboard-en.html#gauth=${authEncoded}`
+      : `${frontendBase}/dashboard.html#gauth=${authEncoded}`;
+
+    return res.redirect(dashboardPage);
+
 
   } catch (err) {
     console.error('Google OAuth error:', err);

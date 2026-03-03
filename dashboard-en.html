@@ -590,11 +590,29 @@
             });
         });
 
+        // Handle Google OAuth redirect — extract auth data from URL hash (#gauth=...)
+        (function () {
+            const hash = window.location.hash;
+            if (hash.startsWith('#gauth=')) {
+                try {
+                    const encoded = hash.slice(7);
+                    const data = JSON.parse(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')));
+                    if (data.token && data.user) {
+                        Auth.setSession(data.token, data.user);
+                        history.replaceState(null, '', window.location.pathname + window.location.search);
+                    }
+                } catch (e) {
+                    console.error('[Auth] Failed to decode gauth hash:', e);
+                }
+            }
+        })();
+
         document.addEventListener('DOMContentLoaded', async () => {
             if (!Auth.isLoggedIn()) {
                 window.location.href = '/nfc/login-en.html';
                 return;
             }
+
 
             document.getElementById('user-display-name').textContent = Auth.user?.name || 'User';
 
