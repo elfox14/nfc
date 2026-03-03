@@ -25,7 +25,10 @@ const Auth = {
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
 
     // State
-    token: localStorage.getItem('authToken'),
+    // NOTE: access token is kept in memory only (never localStorage) to reduce XSS exposure.
+    // The httpOnly refreshToken cookie (set by the server) is used to re-issue access tokens
+    // on page reload via refreshAccessToken().
+    token: null,
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     // Methods
@@ -33,11 +36,36 @@ const Auth = {
         return !!this.token;
     },
 
+    // Re-obtain an access token from the server using the httpOnly refresh cookie.
+    // Call this once on page load to restore auth state without localStorage.
+    async refreshAccessToken() {
+        try {
+            const response = await fetch(`${this.getBaseUrl()}/api/auth/refresh`, {
+                method: 'POST',
+                credentials: 'include',  // sends httpOnly refreshToken cookie
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.token && data.user) {
+                    this.token = data.token;
+                    this.user = data.user;
+                    localStorage.setItem('authUser', JSON.stringify(data.user));
+                    return true;
+                }
+            }
+        } catch (err) {
+            console.warn('[Auth] refreshAccessToken failed:', err);
+        }
+        return false;
+    },
+
     async login(email, password) {
         try {
             console.log(`[Auth] Attempting login to: ${this.API_LOGIN}`);
             const response = await fetch(this.API_LOGIN, {
                 method: 'POST',
+                credentials: 'include',  // receive httpOnly refreshToken cookie
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
@@ -60,6 +88,7 @@ const Auth = {
             console.log(`[Auth] Attempting register to: ${this.API_REGISTER}`);
             const response = await fetch(this.API_REGISTER, {
                 method: 'POST',
+                credentials: 'include',  // receive httpOnly refreshToken cookie
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password })
             });
@@ -119,18 +148,24 @@ const Auth = {
 
 
     logout() {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
+        // Clear in-memory token
         this.token = null;
         this.user = null;
+        localStorage.removeItem('authUser');
+        // Ask server to clear the httpOnly refreshToken cookie
+        fetch(`${this.getBaseUrl()}/api/auth/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        }).catch(() => {/* ignore errors during logout */ });
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
         window.location.href = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
     },
 
     setSession(token, user) {
+        // Store token in memory only — NOT in localStorage (XSS protection)
         this.token = token;
         this.user = user;
-        localStorage.setItem('authToken', token);
+        // User display info (not a secret) saved for UI across page loads
         localStorage.setItem('authUser', JSON.stringify(user));
     },
 
