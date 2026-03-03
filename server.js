@@ -863,10 +863,11 @@ app.get('/api/auth/google/callback', async (req, res) => {
     })).toString('base64url');
 
     const dashboardPage = lang === 'en'
-      ? `${frontendBase}/dashboard-en.html#gauth=${authEncoded}`
-      : `${frontendBase}/dashboard.html#gauth=${authEncoded}`;
+      ? `${frontendBase}/dashboard-en#gauth=${authEncoded}`
+      : `${frontendBase}/dashboard#gauth=${authEncoded}`;
 
     return res.redirect(dashboardPage);
+
 
 
   } catch (err) {
