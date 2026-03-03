@@ -752,14 +752,41 @@ app.get('/api/auth/google', (req, res) => {
     return res.status(500).send('Google OAuth not configured');
   }
 
-  // Use dynamic host for redirect URI to support both localhost and production
   const proto = req.headers['x-forwarded-proto'] || req.protocol;
   const host = req.get('host');
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('DEBUG: Google OAuth Redirect URI:', redirectUri);
+  // Validate and store the back URL — must be from an allowed origin
+  const rawBack = req.query.back || '';
+  let safeBackUrl = process.env.PUBLIC_BASE_URL
+    ? `${process.env.PUBLIC_BASE_URL}/login`
+    : `${proto}://${host}/nfc/login`;
+
+  if (rawBack) {
+    try {
+      const backParsed = new URL(rawBack);
+      const allowed = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+      const backOrigin = backParsed.origin;
+      // Allow same host or explicitly allowed origins
+      const isSameHost = backParsed.host === host;
+      const isAllowed = allowed.length === 0 || allowed.includes(backOrigin);
+      if (isSameHost || isAllowed) {
+        safeBackUrl = rawBack;
+      } else {
+        console.warn('[OAuth] Rejected back URL (not in allowed origins):', rawBack);
+      }
+    } catch (e) {
+      console.warn('[OAuth] Invalid back URL:', rawBack);
+    }
   }
+
+  res.cookie('oauth_back', safeBackUrl, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    maxAge: 10 * 60 * 1000, // 10 minutes
+    path: '/'
+  });
 
   const scope = 'email profile';
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
@@ -767,25 +794,23 @@ app.get('/api/auth/google', (req, res) => {
   res.redirect(authUrl);
 });
 
-// Google OAuth - Callback Handler
+
+// Google OAuth - Callback Handler (redirect-based, works on mobile and cross-origin)
 app.get('/api/auth/google/callback', async (req, res) => {
   const { code, error } = req.query;
 
+  // Determine where to redirect back (login or login-en)
+  const backUrl = req.cookies?.oauth_back || '/nfc/login';
+  res.clearCookie('oauth_back', { path: '/' });
+
   if (error || !code) {
-    const safeError = String(error || 'Authorization failed').replace(/[^a-zA-Z0-9_ -]/g, '');
-    const targetOrigin = '*';
-    return res.send(`
-      <script nonce="${res.locals.cspNonce}">
-        window.opener.postMessage({ type: 'google-auth', success: false, error: '${safeError}' }, '${targetOrigin}');
-        window.close();
-      </script>
-    `);
+    const safeError = encodeURIComponent(String(error || 'google_auth_failed').replace(/[^a-zA-Z0-9_ -]/g, ''));
+    return res.redirect(`${backUrl}?error=${safeError}`);
   }
 
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    // Use dynamic host for redirect URI to support both localhost and production
     const proto = req.headers['x-forwarded-proto'] || req.protocol;
     const host = req.get('host');
     const redirectUri = `${proto}://${host}/api/auth/google/callback`;
@@ -818,25 +843,23 @@ app.get('/api/auth/google/callback', async (req, res) => {
     let user = await db.collection(usersCollectionName).findOne({ email: googleUser.email });
 
     if (!user) {
-      // Create new user
       const userId = nanoid(10);
       await db.collection(usersCollectionName).insertOne({
         userId,
         email: googleUser.email,
         name: googleUser.name || googleUser.email.split('@')[0],
         googleId: googleUser.id,
-        isVerified: true, // Google accounts are pre-verified
+        isVerified: true,
         createdAt: new Date()
       });
       user = { userId, email: googleUser.email, name: googleUser.name };
     }
 
-    // Generate secure tokens
+    // Generate tokens
     const accessToken = createAccessToken({ userId: user.userId, email: user.email });
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
 
-    // Store hashed refresh token in DB
     await db.collection(usersCollectionName).updateOne(
       { userId: user.userId },
       { $set: { refreshTokenHash: hashedRefresh } }
@@ -847,32 +870,24 @@ app.get('/api/auth/google/callback', async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/api/auth'
     });
 
-    // Send success back to opener
-    const targetOrigin = '*';
-    res.send(`
-      <script nonce="${res.locals.cspNonce}">
-        window.opener.postMessage({
-          type: 'google-auth',
-          success: true,
-          token: '${accessToken}',
-          user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
-        }, '${targetOrigin}');
-        window.close();
-      </script>
-    `);
+    // Create a short-lived (5 min) one-time token to pass via URL
+    const secret = process.env.JWT_SECRET;
+    const onetimeToken = jwt.sign(
+      { token: accessToken, user: { name: user.name, email: user.email, userId: user.userId }, type: 'google-onetime' },
+      secret,
+      { expiresIn: '5m' }
+    );
+
+    // Redirect back to login page with one-time token
+    return res.redirect(`${backUrl}?google_token=${encodeURIComponent(onetimeToken)}`);
 
   } catch (err) {
     console.error('Google OAuth error:', err);
-    res.send(`
-      <script nonce="${res.locals.cspNonce}">
-        window.opener.postMessage({ type: 'google-auth', success: false, error: 'Authentication failed' }, '*');
-        window.close();
-      </script>
-    `);
+    return res.redirect(`${backUrl}?error=${encodeURIComponent('Authentication failed')}`);
   }
 });
 

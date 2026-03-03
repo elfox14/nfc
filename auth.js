@@ -77,50 +77,48 @@ const Auth = {
         }
     },
 
-    // Google Sign-In using popup flow
-    async googleSignIn() {
-        return new Promise((resolve) => {
-            // Open popup to backend Google OAuth endpoint
-            const width = 500;
-            const height = 600;
-            const left = (window.innerWidth - width) / 2;
-            const top = (window.innerHeight - height) / 2;
-
-            const popup = window.open(
-                `${this.getBaseUrl()}/api/auth/google`,
-                'Google Sign In',
-                `width=${width},height=${height},left=${left},top=${top}`
-            );
-
-            // Listen for message from popup
-            const messageHandler = (event) => {
-                if (event.data && event.data.type === 'google-auth') {
-                    window.removeEventListener('message', messageHandler);
-                    if (event.data.success) {
-                        this.setSession(event.data.token, event.data.user);
-                        resolve({ success: true });
-                    } else {
-                        resolve({ success: false, error: event.data.error || (document.documentElement.lang === 'en' ? 'Login failed' : 'فشل تسجيل الدخول') });
-                    }
-                    if (popup) popup.close();
-                }
-            };
-
-            window.addEventListener('message', messageHandler);
-
-            // Check if popup was blocked
-            if (!popup || popup.closed) {
-                resolve({ success: false, error: (document.documentElement.lang === 'en' ? 'Popup blocked. Please allow it.' : 'تم حظر النافذة المنبثقة. يرجى السماح بها.') });
-            }
-
-            // Timeout after 2 minutes
-            setTimeout(() => {
-                window.removeEventListener('message', messageHandler);
-                if (popup && !popup.closed) popup.close();
-                resolve({ success: false, error: (document.documentElement.lang === 'en' ? 'Timeout. Try again.' : 'انتهت المهلة. حاول مرة أخرى.') });
-            }, 120000);
-        });
+    // Google Sign-In — redirect-based flow (works on mobile & all browsers)
+    googleSignIn(backPath) {
+        const base = this.getBaseUrl();
+        // Use full absolute URL so the OAuth callback can redirect back to the correct domain
+        const backFull = backPath
+            ? (backPath.startsWith('http') ? backPath : window.location.origin + backPath)
+            : window.location.href;
+        window.location.href = `${base}/api/auth/google?back=${encodeURIComponent(backFull)}`;
     },
+
+    // Called by login pages on load to check for google_token or error in URL params
+    handleGoogleCallback() {
+        const params = new URLSearchParams(window.location.search);
+        const googleToken = params.get('google_token');
+        const error = params.get('error');
+
+        if (googleToken) {
+            try {
+                // Decode the one-time JWT payload (we don't verify on frontend, server already validated)
+                const payloadB64 = googleToken.split('.')[1];
+                const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+                if (payload.type === 'google-onetime' && payload.token && payload.user) {
+                    this.setSession(payload.token, payload.user);
+                    // Clean the URL and redirect to dashboard
+                    const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
+                    window.location.replace(isEnglish ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html');
+                    return { handled: true, success: true };
+                }
+            } catch (e) {
+                console.error('[Auth] Failed to decode google_token:', e);
+                return { handled: true, success: false, error: 'فشل معالجة رمز تسجيل الدخول' };
+            }
+        }
+
+        if (error) {
+            const msg = decodeURIComponent(error);
+            return { handled: true, success: false, error: msg };
+        }
+
+        return { handled: false };
+    },
+
 
     logout() {
         localStorage.removeItem('authToken');
