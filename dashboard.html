@@ -654,6 +654,17 @@
             loadRequestCount();
         });
 
+        // Listen for save events from Editor tab to auto-refresh designs
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'nfc:design_saved') {
+                const section = document.getElementById('section-my-designs');
+                if (section && section.classList.contains('active')) {
+                    console.log('[Dashboard] Auto-refreshing designs from cross-tab event');
+                    loadMyDesigns();
+                }
+            }
+        });
+
         async function loadMyDesigns() {
             const grid = document.getElementById('designs-grid');
             try {

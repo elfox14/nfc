@@ -261,6 +261,17 @@ window.MobileUtils = {
         console.log('[MobileUtils] handleMobileSave called');
         try {
             await EditorUserStatus.saveToCloud(true);
+
+            // Notify other tabs (dashboard) that a design was saved so they can refresh
+            try {
+                if (typeof window.loadMyDesigns === 'function') {
+                    window.loadMyDesigns();
+                } else {
+                    localStorage.setItem('nfc:design_saved', String(Date.now()));
+                }
+            } catch (notifyErr) {
+                console.warn('[MobileUtils] notify dashboard failed', notifyErr);
+            }
         } catch (err) {
             console.error('[MobileUtils] Save error:', err);
             MobileUtils.showMobileToast(
