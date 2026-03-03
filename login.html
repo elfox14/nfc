@@ -180,22 +180,24 @@
             const oauthError = params.get('error');
 
             if (googleToken) {
-                // Show a loading indicator while processing
+                console.log('[DEBUG] google_token present in URL');
                 document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f1923;color:#fff;font-family:Tajawal,sans-serif;"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#4da6ff;"></i><p>جاري تسجيل الدخول...</p></div>';
                 try {
                     const payloadB64 = googleToken.split('.')[1];
                     const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+                    console.log('[DEBUG] decoded payload type:', payload?.type);
                     if (payload.type === 'google-onetime' && payload.token && payload.user) {
                         Auth.setSession(payload.token, payload.user);
                         window.location.href = '/nfc/dashboard.html';
                         return;
+                    } else {
+                        document.body.innerHTML = '<div id="error-box" style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f1923;color:#ff5252;font-family:Tajawal,sans-serif;padding:20px;text-align:center;"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p>خطأ بمعالجة رمز Google (payload غير متوقع). حاول مجدداً.</p><a href="/nfc/login" style="color:#4da6ff;margin-top:10px;">العودة لتسجيل الدخول</a></div>';
+                        console.error('[DEBUG] Unexpected payload:', payload);
                     }
                 } catch (e) {
-                    console.error('[Auth] Token decode error:', e);
+                    console.error('[DEBUG] Token decode error:', e);
+                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f1923;color:#ff5252;font-family:Tajawal,sans-serif;padding:20px;text-align:center;"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p>فشل فك الرمز (token). تفقد الـ console للمزيد.</p><a href="/nfc/login" style="color:#4da6ff;margin-top:10px;">العودة لتسجيل الدخول</a></div>';
                 }
-                // If we reach here, token was invalid
-                document.body.innerHTML = '';
-                location.reload(); // reload without the token in URL
                 return;
             }
 
