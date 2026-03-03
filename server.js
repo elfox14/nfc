@@ -756,32 +756,9 @@ app.get('/api/auth/google', (req, res) => {
   const host = req.get('host');
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
-  // Validate the back URL — must be from an allowed origin
-  const rawBack = req.query.back || '';
-  // Default fallback: use PUBLIC_BASE_URL env var (mcprim.com) or the Render host
-  const defaultBack = process.env.PUBLIC_BASE_URL
-    ? `${process.env.PUBLIC_BASE_URL}/login`
-    : `${proto}://${host}/nfc/login`;
-
-  let safeBackUrl = defaultBack;
-  if (rawBack) {
-    try {
-      const backParsed = new URL(rawBack);
-      const allowed = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-      const isSameHost = backParsed.host === host;
-      const isAllowed = allowed.includes(backParsed.origin);
-      if (isSameHost || isAllowed || allowed.length === 0) {
-        safeBackUrl = rawBack;
-      } else {
-        console.warn('[OAuth] Rejected back URL:', rawBack);
-      }
-    } catch (e) {
-      console.warn('[OAuth] Invalid back URL:', rawBack);
-    }
-  }
-
-  // Encode the back URL as the OAuth state parameter (Google returns it unchanged)
-  const statePayload = Buffer.from(JSON.stringify({ back: safeBackUrl })).toString('base64url');
+  // Only store the language (ar/en) in state — rebuild full redirect URL from PUBLIC_BASE_URL
+  const lang = (req.query.lang === 'en') ? 'en' : 'ar';
+  const statePayload = Buffer.from(JSON.stringify({ lang })).toString('base64url');
 
   const scope = 'email profile';
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=${encodeURIComponent(statePayload)}`;
@@ -789,29 +766,27 @@ app.get('/api/auth/google', (req, res) => {
   res.redirect(authUrl);
 });
 
-// Google OAuth - Callback Handler (redirect-based, works on mobile and cross-origin)
+// Google OAuth - Callback Handler
 app.get('/api/auth/google/callback', async (req, res) => {
   const { code, error, state } = req.query;
 
-  // Decode back URL from state parameter
-  const defaultBack = process.env.PUBLIC_BASE_URL
-    ? `${process.env.PUBLIC_BASE_URL}/login`
-    : '/nfc/login';
-
-  let backUrl = defaultBack;
+  // Determine language from state
+  let lang = 'ar';
   if (state) {
     try {
       const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
-      if (decoded.back) backUrl = decoded.back;
-    } catch (e) {
-      console.warn('[OAuth] Could not decode state:', e.message);
-    }
+      if (decoded.lang === 'en') lang = 'en';
+    } catch (e) { /* use default */ }
   }
+
+  // Build the absolute redirect URL to the FRONTEND (mcprim.com), not the Render backend
+  const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
+  const loginPage = lang === 'en' ? `${frontendBase}/login-en` : `${frontendBase}/login`;
 
 
   if (error || !code) {
     const safeError = encodeURIComponent(String(error || 'google_auth_failed').replace(/[^a-zA-Z0-9_ -]/g, ''));
-    return res.redirect(`${backUrl}?error=${safeError}`);
+    return res.redirect(`${loginPage}?error=${safeError}`);
   }
 
   try {
@@ -888,12 +863,12 @@ app.get('/api/auth/google/callback', async (req, res) => {
       { expiresIn: '5m' }
     );
 
-    // Redirect back to login page with one-time token
-    return res.redirect(`${backUrl}?google_token=${encodeURIComponent(onetimeToken)}`);
+    // Redirect back to frontend login page with one-time token
+    return res.redirect(`${loginPage}?google_token=${encodeURIComponent(onetimeToken)}`);
 
   } catch (err) {
     console.error('Google OAuth error:', err);
-    return res.redirect(`${backUrl}?error=${encodeURIComponent('Authentication failed')}`);
+    return res.redirect(`${loginPage}?error=${encodeURIComponent('Authentication failed')}`);
   }
 });
 

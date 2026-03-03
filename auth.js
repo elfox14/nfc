@@ -78,13 +78,11 @@ const Auth = {
     },
 
     // Google Sign-In — redirect-based flow (works on mobile & all browsers)
-    googleSignIn(backPath) {
+    googleSignIn(lang) {
         const base = this.getBaseUrl();
-        // Use full absolute URL so the OAuth callback can redirect back to the correct domain
-        const backFull = backPath
-            ? (backPath.startsWith('http') ? backPath : window.location.origin + backPath)
-            : window.location.href;
-        window.location.href = `${base}/api/auth/google?back=${encodeURIComponent(backFull)}`;
+        // Only pass the language (ar/en) — the server builds the full redirect URL from PUBLIC_BASE_URL
+        const langParam = (lang === 'en') ? 'en' : 'ar';
+        window.location.href = `${base}/api/auth/google?lang=${langParam}`;
     },
 
     // Called by login pages on load to check for google_token or error in URL params
