@@ -14,7 +14,48 @@ const EditorUserStatus = {
         this.updateUserStatus();
         this.bindEvents();
         this.startAutoSave();
+        this.loadExistingDesignId(); // استعادة ID التصميم المحفوظ عند بدء التشغيل
         console.log('[EditorUserStatus] Initialized');
+    },
+
+    // جلب ID التصميم المحفوظ للمستخدم من الخادم عند بدء التشغيل
+    async loadExistingDesignId() {
+        const token = localStorage.getItem('authToken');
+        if (!token) return; // لا يوجد توكن = غير مسجل
+
+        // إذا كان URL يحتوي على ?id= فلا داعي للجلب
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlId = urlParams.get('id');
+        if (urlId) {
+            if (typeof Config !== 'undefined') Config.currentDesignId = urlId;
+            return;
+        }
+
+        // إذا كان Config.currentDesignId موجوداً بالفعل فلا داعي للجلب
+        if (typeof Config !== 'undefined' && Config.currentDesignId) return;
+
+        try {
+            const baseUrl = (typeof Config !== 'undefined' && Config.API_BASE_URL)
+                ? Config.API_BASE_URL
+                : 'https://nfc-vjy6.onrender.com';
+
+            const response = await fetch(`${baseUrl}/api/user/designs`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) return;
+
+            const data = await response.json();
+            if (data.success && data.designs && data.designs.length > 0) {
+                const existingId = data.designs[0].shortId;
+                if (typeof Config !== 'undefined') {
+                    Config.currentDesignId = existingId;
+                    console.log('[EditorUserStatus] Restored existing design ID:', existingId);
+                }
+            }
+        } catch (err) {
+            console.warn('[EditorUserStatus] Could not restore design ID:', err.message);
+        }
     },
 
     updateUserStatus() {
@@ -223,7 +264,19 @@ const EditorUserStatus = {
                         console.log('[EditorUserStatus] Images captured successfully');
                     } catch (captureErr) {
                         console.error('[EditorUserStatus] Image capture failed:', captureErr);
-                        alert(isEnglish ? 'Failed to capture card image: ' + captureErr.message : 'فشل التقاط صورة البطاقة: ' + captureErr.message);
+                        const captureFailMsg = isEnglish ? 'Failed to capture card image: ' + captureErr.message : 'فشل التقاط صورة البطاقة: ' + captureErr.message;
+                        // Show error toast on mobile, alert on desktop
+                        if (typeof MobileUtils !== 'undefined' && MobileUtils.isMobile()) {
+                            MobileUtils.showMobileToast(captureFailMsg, 'error');
+                        } else {
+                            alert(captureFailMsg);
+                        }
+                        // Reset button state and STOP — don't save without a thumbnail
+                        this.isSaving = false;
+                        if (saveBtn) saveBtn.disabled = false;
+                        if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
+                        if (mobileSaveProxyBtn) { mobileSaveProxyBtn.innerHTML = mobileSaveProxyOrigHTML; mobileSaveProxyBtn.disabled = false; }
+                        return;
                     }
                 } else {
                     console.warn('[EditorUserStatus] Cannot capture images - missing dependencies');

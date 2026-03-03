@@ -269,28 +269,11 @@ window.MobileUtils = {
             return;
         }
 
-        // إخفاء panel-share قبل بدء العملية لضمان ظهور الـ modals
-        MobileUtils.hidePanelBeforeModal();
-
-        // تعديل ShareManager.showFallback مؤقتاً لضمان ظهور الـ modal
-        const originalShowFallback = ShareManager.showFallback.bind(ShareManager);
-        ShareManager.showFallback = function (url, text) {
-            // التأكد من إخفاء الـ sidebars قبل فتح الـ modal
-            MobileUtils.hidePanelBeforeModal();
-            // استدعاء الأصلي
-            originalShowFallback(url, text);
-            // استعادة الدالة الأصلية
-            ShareManager.showFallback = originalShowFallback;
-        };
-
-        // استدعاء المشاركة
+        // استدعاء المشاركة مباشرة — ShareManager.showFallback يُخفي اللوحات تلقائياً
         try {
-            const mobileShareProxyBtn = proxyBtn;
             await ShareManager.shareCard();
         } catch (err) {
             console.error('[MobileUtils] Share error:', err);
-            // استعادة الدالة الأصلية في حالة الخطأ
-            ShareManager.showFallback = originalShowFallback;
             MobileUtils.showMobileToast('حدث خطأ أثناء المشاركة. حاول مجدداً.', 'error');
         }
     },

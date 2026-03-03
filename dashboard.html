@@ -637,10 +637,21 @@
         });
 
         async function loadMyDesigns() {
+            const grid = document.getElementById('designs-grid');
             try {
                 const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
+
+                if (!response.ok) {
+                    const errText = await response.text().catch(() => '');
+                    console.error('[Dashboard] API error:', response.status, errText);
+                    if (response.status === 401 || response.status === 403) {
+                        Auth.logout();
+                        return;
+                    }
+                    throw new Error('خطأ الخادم: ' + response.status);
+                }
+
                 const data = await response.json();
-                const grid = document.getElementById('designs-grid');
                 grid.innerHTML = '';
 
                 if (data.success && data.designs && data.designs.length > 0) {
@@ -681,10 +692,20 @@
                         </div>`;
                 }
             } catch (err) {
-                console.error(err);
-                document.getElementById('designs-grid').innerHTML = '<p style="text-align: center; color: #ff5252;">حدث خطأ أثناء تحميل البيانات</p>';
+                console.error('[Dashboard] loadMyDesigns failed:', err);
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:40px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#ff5252;margin-bottom:15px;"></i>
+                        <p style="color:#ff5252;font-size:1.1rem;">حدث خطأ أثناء تحميل التصميمات</p>
+                        <p style="color:#aaa;font-size:0.85rem;margin-bottom:20px;">${err.message}</p>
+                        <button onclick="loadMyDesigns()" style="padding:10px 25px;background:#4da6ff;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">
+                            <i class="fas fa-redo"></i> إعادة المحاولة
+                        </button>
+                    </div>`;
             }
         }
+
+
 
         async function deleteDesign(shortId) {
             if (!confirm('هل أنت متأكد أنك تريد حذف هذا التصميم نهائياً؟ سيتم حذفه أيضاً من المعرض.')) return;
