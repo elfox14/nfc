@@ -56,7 +56,7 @@ app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
-    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+    styleSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
     imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
     mediaSrc: ["'self'", "data:"],
@@ -69,14 +69,19 @@ app.use(helmet.contentSecurityPolicy({
 // --- END: SECURITY HEADERS (HELMET) ---
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+
+// Fail-fast: in production, ALLOWED_ORIGINS must be explicitly set
+if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
+  throw new Error('FATAL: ALLOWED_ORIGINS must be set in production. Refusing to start with open CORS.');
+}
+
 app.use(cors({
   origin: (origin, cb) => {
     // Allow requests with no origin (mobile apps, curl, server-to-server)
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Not allowed by CORS'));
-    }
+    if (!origin) return cb(null, true);
+    // In all environments, only allow explicitly listed origins
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error('Not allowed by CORS'));
   },
   credentials: true
 }));
@@ -674,8 +679,8 @@ app.post('/api/auth/register', [
     // Set refresh token as HttpOnly Secure cookie
     res.cookie('refreshToken', refreshTokenValue, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/api/auth'
     });
@@ -731,8 +736,8 @@ app.post('/api/auth/login', [
     // Set refresh token as HttpOnly Secure cookie
     res.cookie('refreshToken', refreshTokenValue, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/api/auth'
     });
@@ -849,8 +854,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
     // Set refresh token as HttpOnly Secure cookie
     res.cookie('refreshToken', refreshTokenValue, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/api/auth'
     });
@@ -1056,13 +1061,13 @@ app.post('/api/auth/refresh', async (req, res) => {
     // Set new refresh token cookie
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/api/auth'
     });
 
-    res.json({ success: true, token: newAccessToken });
+    res.json({ success: true, token: newAccessToken, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Token refresh error:', err);
@@ -1087,8 +1092,8 @@ app.post('/api/auth/logout', async (req, res) => {
     // Clear the cookie
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true,
+      sameSite: 'None',
       path: '/api/auth'
     });
 
@@ -1124,6 +1129,99 @@ app.get('/api/user/designs', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Get user designs error:', err);
     res.status(500).json({ error: 'Failed to fetch designs' });
+  }
+});
+
+// Get a single design's full data (for editor load)
+// Accessible if: owner is logged in, or design exists (public viewer usage)
+app.get('/api/get-design/:id', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const shortId = String(req.params.id);
+    const design = await db.collection(designsCollectionName).findOne({ shortId });
+
+    if (!design) {
+      return res.status(404).json({ error: 'التصميم غير موجود' });
+    }
+
+    // Verify ownership if auth token provided — optional but enforced if token exists
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token) {
+      try {
+        const secret = process.env.JWT_SECRET;
+        const decoded = require('jsonwebtoken').verify(token, secret);
+        if (design.ownerId && design.ownerId !== decoded.userId) {
+          return res.status(403).json({ error: 'غير مصرح لك بتعديل هذا التصميم' });
+        }
+      } catch (tokenErr) {
+        // Invalid token — treat as unauthenticated (allow if no ownerId)
+      }
+    }
+
+    // Return the full design data object (what StateManager needs)
+    res.json(design.data || {});
+
+  } catch (err) {
+    console.error('Get design error:', err);
+    res.status(500).json({ error: 'Failed to fetch design' });
+  }
+});
+
+// Patch a single element property in a design (for real-time element updates)
+// Whitelisted properties only — prevents arbitrary data injection
+app.patch('/api/design/:id/element/:elementId', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const shortId = String(req.params.id);
+    const elementId = String(req.params.elementId);
+
+    // Whitelist of allowed properties to update
+    const ALLOWED_PROPS = ['position', 'size', 'rotation', 'opacity', 'visible', 'zIndex', 'style'];
+    const updates = {};
+
+    for (const key of ALLOWED_PROPS) {
+      if (req.body[key] !== undefined) {
+        updates[`data.elements.$.${key}`] = req.body[key];
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No valid properties to update' });
+    }
+
+    // Try primary structure: data.elements array
+    let result = await db.collection(designsCollectionName).updateOne(
+      { shortId, 'data.elements.id': elementId, ownerId: req.user.userId },
+      { $set: updates }
+    );
+
+    // Fallback: try elements stored at root level (legacy structure)
+    if (!result.matchedCount) {
+      const fallbackUpdates = {};
+      for (const key of ALLOWED_PROPS) {
+        if (req.body[key] !== undefined) {
+          fallbackUpdates[`elements.$.${key}`] = req.body[key];
+        }
+      }
+      result = await db.collection(designsCollectionName).updateOne(
+        { shortId, 'elements.id': elementId, ownerId: req.user.userId },
+        { $set: fallbackUpdates }
+      );
+    }
+
+    if (!result.matchedCount) {
+      return res.status(404).json({ error: 'Design or element not found' });
+    }
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('Patch element error:', err);
+    res.status(500).json({ error: 'Failed to update element' });
   }
 });
 

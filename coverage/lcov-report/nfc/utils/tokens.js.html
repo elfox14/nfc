@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">71.05% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>38/38</span>
+                <span class='fraction'>27/38</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>3/4</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>3/3</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">71.05% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>38/38</span>
+                <span class='fraction'>27/38</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -111,28 +111,28 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -149,28 +149,28 @@ const config = require('../config');
  * @param {Object} payload Data to encode in the token
  * @returns {string} JWT Token
  */
-function createAccessToken(payload) {
-    const secret = config.JWT_SECRET;
-    if (!secret) <span class="branch-0 cbranch-no" title="branch not covered" >throw new Error('JWT_SECRET is not configured in environment variables.');</span>
-    return jwt.sign(payload, secret, { expiresIn: '15m' });
-}
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >function createAccessToken(payload) {</span></span>
+<span class="cstat-no" title="statement not covered" >    const secret = config.JWT_SECRET;</span>
+<span class="cstat-no" title="statement not covered" >    if (!secret) throw new Error('JWT_SECRET is not configured in environment variables.');</span>
+<span class="cstat-no" title="statement not covered" >    return jwt.sign(payload, secret, { expiresIn: '15m' });</span>
+<span class="cstat-no" title="statement not covered" >}</span>
 &nbsp;
 /**
  * Creates a random long-lived Refresh Token
  * @returns {string} Hex string token
  */
-function createRefreshToken() {
-    return crypto.randomBytes(64).toString('hex');
-}
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >function createRefreshToken() {</span></span>
+<span class="cstat-no" title="statement not covered" >    return crypto.randomBytes(64).toString('hex');</span>
+<span class="cstat-no" title="statement not covered" >}</span>
 &nbsp;
 /**
  * Hashes a token for secure storage in the database
  * @param {string} token The plain text token
  * @returns {string} Hashed hex string
  */
-function hashToken(token) {
-    return crypto.createHash('sha256').update(token).digest('hex');
-}
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >function hashToken(token) {</span></span>
+<span class="cstat-no" title="statement not covered" >    return crypto.createHash('sha256').update(token).digest('hex');</span>
+<span class="cstat-no" title="statement not covered" >}</span>
 &nbsp;
 module.exports = {
     createAccessToken,
@@ -184,7 +184,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-01T01:59:14.941Z
+                at 2026-03-04T01:58:36.943Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
