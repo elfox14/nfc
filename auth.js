@@ -25,10 +25,10 @@ const Auth = {
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
 
     // State
-    // NOTE: access token is kept in memory only (never localStorage) to reduce XSS exposure.
-    // The httpOnly refreshToken cookie (set by the server) is used to re-issue access tokens
-    // on page reload via refreshAccessToken().
-    token: null,
+    // Access token is stored in sessionStorage so it survives same-tab page navigations
+    // (e.g. login → dashboard redirect) without sending it in every request header via localStorage.
+    // sessionStorage is cleared when the tab/window is closed.
+    token: sessionStorage.getItem('authToken') || null,
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     // Methods
@@ -148,9 +148,10 @@ const Auth = {
 
 
     logout() {
-        // Clear in-memory token
+        // Clear token from memory and sessionStorage
         this.token = null;
         this.user = null;
+        sessionStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
         // Ask server to clear the httpOnly refreshToken cookie
         fetch(`${this.getBaseUrl()}/api/auth/logout`, {
@@ -162,9 +163,15 @@ const Auth = {
     },
 
     setSession(token, user) {
-        // Store token in memory only — NOT in localStorage (XSS protection)
         this.token = token;
         this.user = user;
+        // Save token in sessionStorage so it survives same-tab page navigations (login → dashboard)
+        // sessionStorage is tab-scoped and cleared when the tab closes — safer than localStorage
+        if (token) {
+            sessionStorage.setItem('authToken', token);
+        } else {
+            sessionStorage.removeItem('authToken');
+        }
         // User display info (not a secret) saved for UI across page loads
         localStorage.setItem('authUser', JSON.stringify(user));
     },
