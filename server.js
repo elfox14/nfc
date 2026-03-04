@@ -679,8 +679,8 @@ app.post('/api/auth/register', [
     // Set refresh token as HttpOnly Secure cookie
     res.cookie('refreshToken', refreshTokenValue, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/api/auth'
     });
@@ -736,8 +736,8 @@ app.post('/api/auth/login', [
     // Set refresh token as HttpOnly Secure cookie
     res.cookie('refreshToken', refreshTokenValue, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/api/auth'
     });
@@ -854,8 +854,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
     // Set refresh token as HttpOnly Secure cookie
     res.cookie('refreshToken', refreshTokenValue, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/api/auth'
     });
@@ -1061,8 +1061,8 @@ app.post('/api/auth/refresh', async (req, res) => {
     // Set new refresh token cookie
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/api/auth'
     });
@@ -1092,8 +1092,8 @@ app.post('/api/auth/logout', async (req, res) => {
     // Clear the cookie
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true,
+      sameSite: 'None',
       path: '/api/auth'
     });
 
