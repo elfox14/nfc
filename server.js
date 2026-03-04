@@ -1170,6 +1170,61 @@ app.get('/api/get-design/:id', async (req, res) => {
   }
 });
 
+// Patch a single element property in a design (for real-time element updates)
+// Whitelisted properties only — prevents arbitrary data injection
+app.patch('/api/design/:id/element/:elementId', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const shortId = String(req.params.id);
+    const elementId = String(req.params.elementId);
+
+    // Whitelist of allowed properties to update
+    const ALLOWED_PROPS = ['position', 'size', 'rotation', 'opacity', 'visible', 'zIndex', 'style'];
+    const updates = {};
+
+    for (const key of ALLOWED_PROPS) {
+      if (req.body[key] !== undefined) {
+        updates[`data.elements.$.${key}`] = req.body[key];
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No valid properties to update' });
+    }
+
+    // Try primary structure: data.elements array
+    let result = await db.collection(designsCollectionName).updateOne(
+      { shortId, 'data.elements.id': elementId, ownerId: req.user.userId },
+      { $set: updates }
+    );
+
+    // Fallback: try elements stored at root level (legacy structure)
+    if (!result.matchedCount) {
+      const fallbackUpdates = {};
+      for (const key of ALLOWED_PROPS) {
+        if (req.body[key] !== undefined) {
+          fallbackUpdates[`elements.$.${key}`] = req.body[key];
+        }
+      }
+      result = await db.collection(designsCollectionName).updateOne(
+        { shortId, 'elements.id': elementId, ownerId: req.user.userId },
+        { $set: fallbackUpdates }
+      );
+    }
+
+    if (!result.matchedCount) {
+      return res.status(404).json({ error: 'Design or element not found' });
+    }
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('Patch element error:', err);
+    res.status(500).json({ error: 'Failed to update element' });
+  }
+});
+
 // Delete a user's design
 app.delete('/api/user/designs/:id', verifyToken, async (req, res) => {
   try {
