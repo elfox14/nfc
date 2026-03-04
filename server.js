@@ -1132,6 +1132,44 @@ app.get('/api/user/designs', verifyToken, async (req, res) => {
   }
 });
 
+// Get a single design's full data (for editor load)
+// Accessible if: owner is logged in, or design exists (public viewer usage)
+app.get('/api/get-design/:id', async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const shortId = String(req.params.id);
+    const design = await db.collection(designsCollectionName).findOne({ shortId });
+
+    if (!design) {
+      return res.status(404).json({ error: 'التصميم غير موجود' });
+    }
+
+    // Verify ownership if auth token provided — optional but enforced if token exists
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token) {
+      try {
+        const secret = process.env.JWT_SECRET;
+        const decoded = require('jsonwebtoken').verify(token, secret);
+        if (design.ownerId && design.ownerId !== decoded.userId) {
+          return res.status(403).json({ error: 'غير مصرح لك بتعديل هذا التصميم' });
+        }
+      } catch (tokenErr) {
+        // Invalid token — treat as unauthenticated (allow if no ownerId)
+      }
+    }
+
+    // Return the full design data object (what StateManager needs)
+    res.json(design.data || {});
+
+  } catch (err) {
+    console.error('Get design error:', err);
+    res.status(500).json({ error: 'Failed to fetch design' });
+  }
+});
+
 // Delete a user's design
 app.delete('/api/user/designs/:id', verifyToken, async (req, res) => {
   try {

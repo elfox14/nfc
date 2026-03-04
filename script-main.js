@@ -707,7 +707,9 @@ const ShareManager = {
 
         if (designId) {
             try {
-                const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`);
+                const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`, {
+                    headers: (typeof Auth !== 'undefined') ? Auth.getHeader() : {}
+                });
                 if (!response.ok) throw new Error('Design not found or server error');
 
                 const state = await response.json();
