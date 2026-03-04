@@ -14,7 +14,9 @@ const EditorUserStatus = {
         this.updateUserStatus();
         this.bindEvents();
         this.startAutoSave();
-        this.loadExistingDesignId(); // استعادة ID التصميم المحفوظ عند بدء التشغيل
+        // استعادة ID التصميم المحفوظ عند بدء التشغيل (للـ auto-save فقط)
+        // App.init يتولى التحميل الفعلي من ?id= في الرابط
+        this.loadExistingDesignId().catch(e => console.warn('[EditorUserStatus] loadExistingDesignId error:', e));
         console.log('[EditorUserStatus] Initialized');
     },
 

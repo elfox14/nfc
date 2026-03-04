@@ -708,7 +708,10 @@ const ShareManager = {
         if (designId) {
             try {
                 const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`);
-                if (!response.ok) throw new Error('Design not found or server error');
+                if (!response.ok) {
+                    console.warn(`[loadFromUrl] Server returned ${response.status} for design ${designId}`);
+                    throw new Error(`Design not found: ${response.status}`);
+                }
 
                 const state = await response.json();
                 StateManager.applyState(state, false);
@@ -1325,14 +1328,23 @@ const App = {
             HistoryManager.pushState(StateManager.getStateObject());
             UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
         } else if (!CollaborationManager.isActive) {
-            const loadedFromStorage = StateManager.load();
-            if (loadedFromStorage) {
-                HistoryManager.pushState(StateManager.getStateObject());
-                UIManager.announce("تم استعادة التصميم المحفوظ.");
-            } else {
+            // إذا كان هناك ?id= في الرابط لكن التحميل فشل، لا نُعرض حالة قديمة من localStorage
+            const urlHasId = new URLSearchParams(window.location.search).get('id');
+            if (urlHasId) {
+                console.warn('[App.init] loadFromUrl failed with ?id= present — showing error instead of stale state');
                 StateManager.applyState(Config.defaultState, false);
                 HistoryManager.pushState(Config.defaultState);
-                UIManager.announce("تم تحميل التصميم الافتراضي.");
+                UIManager.announce("تعذّر تحميل التصميم من السيرفر. تحقق من اتصالك وأعد المحاولة.");
+            } else {
+                const loadedFromStorage = StateManager.load();
+                if (loadedFromStorage) {
+                    HistoryManager.pushState(StateManager.getStateObject());
+                    UIManager.announce("تم استعادة التصميم المحفوظ.");
+                } else {
+                    StateManager.applyState(Config.defaultState, false);
+                    HistoryManager.pushState(Config.defaultState);
+                    UIManager.announce("تم تحميل التصميم الافتراضي.");
+                }
             }
         }
 
