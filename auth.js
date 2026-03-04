@@ -25,10 +25,9 @@ const Auth = {
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
 
     // State
-    // Access token is stored in sessionStorage so it survives same-tab page navigations
-    // (e.g. login → dashboard redirect) without sending it in every request header via localStorage.
-    // sessionStorage is cleared when the tab/window is closed.
-    token: sessionStorage.getItem('authToken') || null,
+    // Access token is stored in both sessionStorage (same-tab) and localStorage (cross-script compat)
+    // sessionStorage survives page navigations within same tab; localStorage used by editor scripts
+    token: sessionStorage.getItem('authToken') || localStorage.getItem('authToken') || null,
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     // Methods
@@ -152,6 +151,7 @@ const Auth = {
         this.token = null;
         this.user = null;
         sessionStorage.removeItem('authToken');
+        localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
         // Ask server to clear the httpOnly refreshToken cookie
         fetch(`${this.getBaseUrl()}/api/auth/logout`, {
@@ -169,8 +169,10 @@ const Auth = {
         // sessionStorage is tab-scoped and cleared when the tab closes — safer than localStorage
         if (token) {
             sessionStorage.setItem('authToken', token);
+            localStorage.setItem('authToken', token);  // for editor-user-status.js + other scripts
         } else {
             sessionStorage.removeItem('authToken');
+            localStorage.removeItem('authToken');
         }
         // User display info (not a secret) saved for UI across page loads
         localStorage.setItem('authUser', JSON.stringify(user));

@@ -151,6 +151,7 @@ const EditorUserStatus = {
         const handleLogout = () => {
             if (confirm(isEnglish ? 'Are you sure you want to logout?' : 'هل تريد تسجيل الخروج؟')) {
                 localStorage.removeItem('authToken');
+                sessionStorage.removeItem('authToken');
                 localStorage.removeItem('authUser');
                 this.updateUserStatus();
                 if (typeof UIManager !== 'undefined') {
