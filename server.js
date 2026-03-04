@@ -1067,7 +1067,7 @@ app.post('/api/auth/refresh', async (req, res) => {
       path: '/api/auth'
     });
 
-    res.json({ success: true, token: newAccessToken });
+    res.json({ success: true, token: newAccessToken, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Token refresh error:', err);

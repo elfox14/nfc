@@ -628,6 +628,11 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // Try to restore session from httpOnly refresh cookie if token is not in memory
+            if (!Auth.isLoggedIn()) {
+                await Auth.refreshAccessToken();
+            }
+
             if (!Auth.isLoggedIn()) {
                 window.location.href = '/nfc/login.html';
                 return;
