@@ -185,6 +185,12 @@ const ExportManager = {
         style.innerHTML = '.no-export { display: none !important; }';
         document.head.appendChild(style);
 
+        // On mobile, cards-wrapper has a CSS scale transform that breaks html2canvas.
+        // Temporarily remove it before capture and restore it afterwards.
+        const cardsWrapper = document.getElementById('cards-wrapper');
+        const originalWrapperTransform = cardsWrapper ? cardsWrapper.style.transform : '';
+        if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = '';
+
         const isMobile = typeof MobileUtils !== 'undefined' && MobileUtils.isMobile();
         const flipper = isMobile ? document.querySelector('.card-flipper') : null;
         let originalFlippedState = false;
@@ -212,6 +218,8 @@ const ExportManager = {
         }
         finally {
             document.head.removeChild(style);
+            // Restore the mobile scale transform
+            if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = originalWrapperTransform;
             if (flipper) {
                 if (originalFlippedState) {
                     flipper.classList.add('is-flipped');
@@ -539,7 +547,6 @@ const ShareManager = {
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
         try {
-            // Use Auth header if available
             const headers = { 'Content-Type': 'application/json' };
             const token = localStorage.getItem('authToken');
             if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -554,7 +561,20 @@ const ShareManager = {
                 headers: headers,
                 body: JSON.stringify(state),
             });
-            if (!response.ok) throw new Error('Server responded with an error');
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const errorMsg = errorData.error || 'Server responded with an error';
+                if (response.status === 401) {
+                    alert(errorMsg);
+                    return null;
+                }
+                if (response.status === 403) {
+                    alert(errorMsg);
+                    return null;
+                }
+                throw new Error(errorMsg);
+            }
 
             const result = await response.json();
             if (result.success && result.id) {
@@ -570,31 +590,7 @@ const ShareManager = {
         }
     },
 
-    // Save design without auth token (anonymous) - used by shareCard so it doesn't appear in dashboard
-    async saveDesignAnonymous(state) {
-        try {
-            const headers = { 'Content-Type': 'application/json' };
-            const url = `${Config.API_BASE_URL}/api/save-design`;
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(state),
-            });
-            if (!response.ok) throw new Error('Server responded with an error');
-
-            const result = await response.json();
-            if (result.success && result.id) {
-                return result.id;
-            } else {
-                throw new Error('Invalid response from server');
-            }
-        } catch (error) {
-            console.error("Failed to save design (anonymous):", error);
-            UIManager.announce(i18nMain.saveFailed || 'فشل حفظ التصميم. حاول مرة أخرى.');
-            return null;
-        }
-    },
 
     async performShare(url, title, text) {
         const shareData = { title, text, url };
@@ -611,7 +607,18 @@ const ShareManager = {
     },
 
     async shareCard() {
+        // Check if user is logged in
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert(i18nMain.loginRequired || 'يجب تسجيل الدخول أولاً لمشاركة بطاقتك. / You must be logged in to share your card.');
+            return;
+        }
+
+        // Also target the mobile proxy button for visual feedback
+        const mobileShareProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="share-card-btn"]');
+
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.capturing);
+        if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, true, i18nMain.capturing || 'جاري التقاط الصورة...');
 
         let frontImageUrl, backImageUrl, shareState;
 
@@ -621,30 +628,32 @@ const ShareManager = {
             frontImageUrl = await this.captureAndUploadCard(DOMElements.cardFront);
 
             UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.uploading);
+            if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, true, i18nMain.uploading || 'جاري الرفع...');
             backImageUrl = await this.captureAndUploadCard(DOMElements.cardBack);
 
         } catch (error) {
             console.error("Card capture/upload failed:", error);
             alert(i18nMain.captureError);
             UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
+            if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, false);
             return;
         }
 
         if (!shareState.imageUrls) shareState.imageUrls = {};
         shareState.imageUrls.capturedFront = frontImageUrl;
         shareState.imageUrls.capturedBack = backImageUrl;
-        shareState.imageUrls.front = frontImageUrl;
-        shareState.imageUrls.back = backImageUrl;
 
         // Ask user if they want to display their design in the gallery
         shareState.sharedToGallery = await customConfirm(i18nMain.galleryPrompt);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
+        if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, true, i18nMain.generating || 'جاري الإنشاء...');
 
-        // Save anonymously so shared card does NOT appear in user's dashboard
-        const designId = await this.saveDesignAnonymous(shareState);
+        // Save with authentication
+        const designId = await this.saveDesign(shareState);
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, false);
+        if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, false);
         if (!designId) return;
 
         const viewerUrl = new URL('viewer.html', window.location.href);
@@ -667,10 +676,23 @@ const ShareManager = {
     },
 
     showFallback(url, text) {
+        // إغلاق لوحات الجانب على الموبايل لضمان ظهور نافذة المشاركة
+        if (typeof MobileUtils !== 'undefined' && MobileUtils.isMobile()) {
+            MobileUtils.hidePanelBeforeModal();
+        }
         DOMElements.shareModal.email.href = `mailto:?subject=My Business Card&body=${encodeURIComponent(text + '\n' + url)}`;
         DOMElements.shareModal.whatsapp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + url)}`;
         DOMElements.shareModal.twitter.href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-        DOMElements.shareModal.copyLink.onclick = () => { Utils.copyTextToClipboard(url).then(success => { if (success) UIManager.announce('تم نسخ الرابط!'); }); };
+        DOMElements.shareModal.copyLink.onclick = () => {
+            Utils.copyTextToClipboard(url).then(success => {
+                if (success) {
+                    UIManager.announce('تم نسخ الرابط!');
+                    if (typeof MobileUtils !== 'undefined' && MobileUtils.isMobile()) {
+                        MobileUtils.showMobileToast('تم نسخ الرابط! 📋', 'success');
+                    }
+                }
+            });
+        };
         UIManager.showModal(DOMElements.shareModal.overlay);
     },
 
@@ -686,7 +708,10 @@ const ShareManager = {
         if (designId) {
             try {
                 const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`);
-                if (!response.ok) throw new Error('Design not found or server error');
+                if (!response.ok) {
+                    console.warn(`[loadFromUrl] Server returned ${response.status} for design ${designId}`);
+                    throw new Error(`Design not found: ${response.status}`);
+                }
 
                 const state = await response.json();
                 StateManager.applyState(state, false);
@@ -917,6 +942,11 @@ const EventManager = {
 
         document.querySelectorAll('input[name^="placement-"]').forEach(radio => {
             radio.addEventListener('change', () => {
+                // Skip position reset during state restoration
+                if (StateManager.isApplyingState) {
+                    CardManager.renderCardContent();
+                    return;
+                }
                 const elementName = radio.name.replace('placement-', '');
                 let elementToReset;
 
@@ -1298,14 +1328,23 @@ const App = {
             HistoryManager.pushState(StateManager.getStateObject());
             UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
         } else if (!CollaborationManager.isActive) {
-            const loadedFromStorage = StateManager.load();
-            if (loadedFromStorage) {
-                HistoryManager.pushState(StateManager.getStateObject());
-                UIManager.announce("تم استعادة التصميم المحفوظ.");
-            } else {
+            // إذا كان هناك ?id= في الرابط لكن التحميل فشل، لا نُعرض حالة قديمة من localStorage
+            const urlHasId = new URLSearchParams(window.location.search).get('id');
+            if (urlHasId) {
+                console.warn('[App.init] loadFromUrl failed with ?id= present — showing error instead of stale state');
                 StateManager.applyState(Config.defaultState, false);
                 HistoryManager.pushState(Config.defaultState);
-                UIManager.announce("تم تحميل التصميم الافتراضي.");
+                UIManager.announce("تعذّر تحميل التصميم من السيرفر. تحقق من اتصالك وأعد المحاولة.");
+            } else {
+                const loadedFromStorage = StateManager.load();
+                if (loadedFromStorage) {
+                    HistoryManager.pushState(StateManager.getStateObject());
+                    UIManager.announce("تم استعادة التصميم المحفوظ.");
+                } else {
+                    StateManager.applyState(Config.defaultState, false);
+                    HistoryManager.pushState(Config.defaultState);
+                    UIManager.announce("تم تحميل التصميم الافتراضي.");
+                }
             }
         }
 
