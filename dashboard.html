@@ -628,7 +628,7 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            if (!Auth.isLoggedIn()) {
+            Auth.token = localStorage.getItem('authToken'); Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); if (!Auth.isLoggedIn()) {
                 window.location.href = '/nfc/login.html';
                 return;
             }
