@@ -188,9 +188,9 @@
                     const payloadB64 = googleToken.split('.')[1];
                     const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
                     console.log('[DEBUG] decoded payload type:', payload?.type);
-                    if (payload.type === 'google-onetime' && payload.token && payload.user) {
+                if (payload && payload.token && payload.user) {
                         Auth.setSession(payload.token, payload.user);
-                        window.location.href = '/nfc/dashboard.html';
+                                        window.location.replace('/nfc/dashboard.html');
                         return;
                     } else {
                         document.body.innerHTML = '<div id="error-box" style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f1923;color:#ff5252;font-family:Tajawal,sans-serif;padding:20px;text-align:center;"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p>خطأ بمعالجة رمز Google (payload غير متوقع). حاول مجدداً.</p><a href="/nfc/login" style="color:#4da6ff;margin-top:10px;">العودة لتسجيل الدخول</a></div>';
