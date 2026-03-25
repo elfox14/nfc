@@ -119,7 +119,7 @@ const Auth = {
                 // Decode the one-time JWT payload (we don't verify on frontend, server already validated)
                 const payloadB64 = googleToken.split('.')[1];
                 const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
-                if (payload.type === 'google-onetime' && payload.token && payload.user) {
+                            if (payload && payload.token && payload.user) {
                     this.setSession(payload.token, payload.user);
                     // Clean the URL and redirect to dashboard
                     const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
