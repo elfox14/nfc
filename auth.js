@@ -41,7 +41,6 @@ const Auth = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-
             const data = await response.json();
             if (data.success) {
                 this.setSession(data.token, data.user);
@@ -63,7 +62,6 @@ const Auth = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password })
             });
-
             const data = await response.json();
             if (data.success) {
                 this.setSession(data.token, data.user);
@@ -83,6 +81,31 @@ const Auth = {
         // Only pass the language (ar/en) — the server builds the full redirect URL from PUBLIC_BASE_URL
         const langParam = (lang === 'en') ? 'en' : 'ar';
         window.location.href = `${base}/api/auth/google?lang=${langParam}`;
+    },
+
+    // Called by dashboard on load to handle Google OAuth redirect via URL hash (#gauth=...)
+    // Server sends: dashboard.html#gauth=BASE64_JSON({token, user})
+    handleGoogleHashAuth() {
+        const hash = window.location.hash;
+        if (!hash || !hash.startsWith('#gauth=')) {
+            return { handled: false };
+        }
+        try {
+            const encoded = hash.slice('#gauth='.length);
+            const decoded = JSON.parse(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')));
+            if (decoded && decoded.token && decoded.user) {
+                this.setSession(decoded.token, decoded.user);
+                // Clean URL hash without triggering a page reload
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                }
+                return { handled: true, success: true };
+            }
+        } catch (e) {
+            console.error('[Auth] Failed to decode #gauth hash:', e);
+            return { handled: true, success: false, error: 'فشل معالجة رمز تسجيل الدخول بجوجل' };
+        }
+        return { handled: false };
     },
 
     // Called by login pages on load to check for google_token or error in URL params
@@ -117,7 +140,6 @@ const Auth = {
         return { handled: false };
     },
 
-
     logout() {
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
@@ -150,41 +172,33 @@ const Auth = {
         // 1. Main Website Navbar (.nav-links & .nav-cta)
         const navContainer = document.querySelector('.nav-links');
         const ctaBtn = document.querySelector('.nav-cta');
-        const navContent = document.querySelector('.nav-content'); // Container for positioning
+        const navContent = document.querySelector('.nav-content');
 
         if (navContainer) {
             if (this.isLoggedIn()) {
-                // Hide Login Link in Nav
                 const loginLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('login') && !a.href.includes('dashboard'));
                 if (loginLink && loginLink.parentNode) loginLink.parentNode.style.display = 'none';
 
-                // We want to replace the CTA with: User Name + Control Panel Button
                 if (ctaBtn) {
-                    ctaBtn.style.display = 'none'; // Hide default CTA
-
-                    // Check if we already added the user info container
+                    ctaBtn.style.display = 'none';
                     let userInfoContainer = document.getElementById('nav-user-info');
                     if (!userInfoContainer) {
                         userInfoContainer = document.createElement('div');
                         userInfoContainer.id = 'nav-user-info';
                         userInfoContainer.style.cssText = 'display: flex; gap: 15px; align-items: center; margin-inline-start: 15px;';
 
-                        // User Name
                         const userName = document.createElement('span');
                         userName.textContent = this.user?.name || (isEnglish ? 'User' : 'مستخدم');
                         userName.style.cssText = 'color: var(--text-primary-color); font-weight: bold; font-size: 0.9rem;';
 
-                        // Control Panel Button
                         const dashboardBtn = document.createElement('a');
                         dashboardBtn.href = dashboardUrl;
                         dashboardBtn.className = 'btn';
-                        // Reuse styling from nav-cta but maybe adjust slightly or add specific class
                         dashboardBtn.style.cssText = 'padding: 8px 15px; background: var(--primary-color); color: white; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem;';
                         dashboardBtn.textContent = dashboardText;
 
-                        // Logout Icon/Button (Optional but good UX)
                         const logoutBtn = document.createElement('button');
-                        logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
+                        logoutBtn.innerHTML = '';
                         logoutBtn.title = logoutText;
                         logoutBtn.onclick = () => this.logout();
                         logoutBtn.style.cssText = 'background: transparent; border: none; color: var(--text-secondary-color); cursor: pointer; font-size: 1.1rem;';
@@ -193,34 +207,24 @@ const Auth = {
                         userInfoContainer.appendChild(dashboardBtn);
                         userInfoContainer.appendChild(logoutBtn);
 
-                        // Insert where CTA was (handle nested containers safely)
                         if (ctaBtn.parentNode) {
                             ctaBtn.parentNode.insertBefore(userInfoContainer, ctaBtn);
                         } else if (navContent) {
-                            // Fallback if ctaBtn is somehow detached or we want to append to main nav
                             navContent.appendChild(userInfoContainer);
                         }
                     }
                 }
-
             } else {
-                // Logged Out State: Ensure standard Login/CTA is visible
-                const loginLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('login') && !a.href.includes('user'));
-                // Note: user-login-link in editor might match, but we are in nav-links loop usually. 
-                // Using specific check to be safe:
                 const allLinks = document.querySelectorAll('a');
                 allLinks.forEach(link => {
                     if ((link.href.includes('login.html') || link.href.includes('login-en.html')) && link.style.display === 'none') {
-                        link.parentNode.style.display = ''; // Show li if hidden
+                        link.parentNode.style.display = '';
                     }
                 });
-
-                // Remove user info if exists
                 const userInfoContainer = document.getElementById('nav-user-info');
                 if (userInfoContainer) userInfoContainer.remove();
-
                 if (ctaBtn) {
-                    ctaBtn.style.display = ''; // Show default CTA
+                    ctaBtn.style.display = '';
                 }
             }
         }
@@ -235,7 +239,7 @@ const Auth = {
                     a.className = "btn-icon";
                     a.title = dashboardText;
                     a.style.fontSize = "12px";
-                    a.innerHTML = '<i class="fas fa-user-circle"></i>';
+                    a.innerHTML = '';
                     toolbarNav.appendChild(a);
                 }
             } else {
@@ -245,7 +249,7 @@ const Auth = {
                     a.className = "btn-icon";
                     a.title = loginText;
                     a.style.fontSize = "12px";
-                    a.innerHTML = '<i class="fas fa-sign-in-alt"></i>';
+                    a.innerHTML = '';
                     toolbarNav.appendChild(a);
                 }
             }
