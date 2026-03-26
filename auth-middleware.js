@@ -9,7 +9,11 @@ const verifyToken = (req, res, next) => {
     }
 
     try {
-        const secret = process.env.JWT_SECRET || 'default_jwt_secret_change_me';
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            console.error('[Security] JWT_SECRET is not configured!');
+            return res.status(500).json({ error: 'Server misconfiguration: JWT_SECRET not set.' });
+        }
         const decoded = jwt.verify(token, secret);
         req.user = decoded; // { userId: "...", email: "..." }
         next();
