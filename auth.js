@@ -2,10 +2,6 @@
 
 const Auth = {
     // API Endpoints
-    // Determine Base URL:
-    // 1. If 'file:' protocol, default to Render live server.
-    // 2. If 'localhost' or '127.0.0.1', point to http://localhost:3000
-    // 3. For production (mcprim.com), point to Render backend
     getBaseUrl() {
         if (window.location.protocol === 'file:') {
             return 'https://nfc-vjy6.onrender.com';
@@ -35,7 +31,6 @@ const Auth = {
 
     async login(email, password) {
         try {
-            console.log(`[Auth] Attempting login to: ${this.API_LOGIN}`);
             const response = await fetch(this.API_LOGIN, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -49,14 +44,12 @@ const Auth = {
                 return { success: false, error: data.error || 'Login failed' };
             }
         } catch (err) {
-            console.error('[Auth] Login Error:', err);
-            return { success: false, error: `Network error: Failed to connect to ${this.API_LOGIN}` };
+            return { success: false, error: 'Network error: Unable to connect to server' };
         }
     },
 
     async register(name, email, password) {
         try {
-            console.log(`[Auth] Attempting register to: ${this.API_REGISTER}`);
             const response = await fetch(this.API_REGISTER, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -70,15 +63,13 @@ const Auth = {
                 return { success: false, error: data.error || 'Registration failed' };
             }
         } catch (err) {
-            console.error('[Auth] Register Error:', err);
-            return { success: false, error: `Network error: Failed to connect to ${this.API_REGISTER}` };
+            return { success: false, error: 'Network error: Unable to connect to server' };
         }
     },
 
     // Google Sign-In — redirect-based flow (works on mobile & all browsers)
     googleSignIn(lang) {
         const base = this.getBaseUrl();
-        // Only pass the language (ar/en) — the server builds the full redirect URL from PUBLIC_BASE_URL
         const langParam = (lang === 'en') ? 'en' : 'ar';
         window.location.href = `${base}/api/auth/google?lang=${langParam}`;
     },
@@ -102,7 +93,6 @@ const Auth = {
                 return { handled: true, success: true };
             }
         } catch (e) {
-            console.error('[Auth] Failed to decode #gauth hash:', e);
             return { handled: true, success: false, error: 'فشل معالجة رمز تسجيل الدخول بجوجل' };
         }
         return { handled: false };
@@ -116,18 +106,20 @@ const Auth = {
 
         if (googleToken) {
             try {
-                // Decode the one-time JWT payload (we don't verify on frontend, server already validated)
+                // Clean the token from URL immediately to avoid logging/history exposure
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState(null, '', window.location.pathname);
+                }
+                // Decode the one-time JWT payload (server already validated the signature)
                 const payloadB64 = googleToken.split('.')[1];
                 const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
-                            if (payload && payload.token && payload.user) {
+                if (payload && payload.token && payload.user) {
                     this.setSession(payload.token, payload.user);
-                    // Clean the URL and redirect to dashboard
                     const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
                     window.location.replace(isEnglish ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html');
                     return { handled: true, success: true };
                 }
             } catch (e) {
-                console.error('[Auth] Failed to decode google_token:', e);
                 return { handled: true, success: false, error: 'فشل معالجة رمز تسجيل الدخول' };
             }
         }
