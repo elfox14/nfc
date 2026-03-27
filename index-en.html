@@ -300,23 +300,97 @@
     <script src="/nfc/lang-switcher.js" defer></script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
-        <style>
-        /* Mock Card - Hero Preview */
-        .mock-card { background: linear-gradient(145deg, #1e3a5f, #243447); border: 1px solid rgba(77,166,255,0.3); border-radius: 16px; padding: 1.2rem; width: 240px; max-width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(77,166,255,0.1); }
-        .mock-card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
-        .mock-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--primary-color, #4da6ff); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; flex-shrink: 0; }
-        .mock-info strong { display: block; color: #e6f0f7; font-size: 0.9rem; }
-        .mock-info span { color: #8aa0b0; font-size: 0.75rem; }
-        .mock-card-body { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
-        .mock-link { display: flex; align-items: center; gap: 0.5rem; color: #bcc9d4; font-size: 0.78rem; padding: 0.3rem 0.5rem; border-radius: 6px; background: rgba(77,166,255,0.08); }
-        .mock-link i { color: var(--primary-color, #4da6ff); width: 14px; }
-        .mock-card-footer { display: flex; align-items: center; justify-content: space-between; }
-        .mock-qr { width: 40px; height: 40px; background: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #1c2a3b; font-size: 1.2rem; }
-        .mock-nfc-tag { display: flex; align-items: center; gap: 0.3rem; color: var(--primary-color, #4da6ff); font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(77,166,255,0.4); padding: 0.25rem 0.6rem; border-radius: 20px; }
-    </style>    
-    crossorigin="anonymous"></script>
-</head>
-
+    <style>
+        /* ===== Flip Card - Hero Preview ===== */
+        .flip-card-wrapper {
+            perspective: 1000px;
+            width: 260px;
+            height: 160px;
+            cursor: pointer;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
+            animation: autoFlip 4s ease-in-out infinite;
+        }
+        @keyframes autoFlip {
+            0%, 40%   { transform: rotateY(0deg); }
+            50%, 90%  { transform: rotateY(180deg); }
+            100%      { transform: rotateY(0deg); }
+        }
+        .flip-card-wrapper:hover .flip-card-inner { animation-play-state: paused; }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 18px;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(77,166,255,0.12);
+        }
+        .flip-card-front {
+            background: linear-gradient(135deg, #0f2744 0%, #1a3a60 50%, #1e4a7a 100%);
+            border: 1px solid rgba(77,166,255,0.35);
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 1.1rem 1.2rem;
+        }
+        .fc-top { display: flex; align-items: center; gap: 0.7rem; }
+        .fc-avatar {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: linear-gradient(135deg, #4da6ff, #a78bfa);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 0.8rem; font-weight: 700;
+            box-shadow: 0 4px 14px rgba(77,166,255,0.45); flex-shrink: 0;
+        }
+        .fc-name { color: #e8f4ff; font-size: 0.88rem; font-weight: 700; line-height: 1.2; }
+        .fc-title { color: #7db8e8; font-size: 0.7rem; margin-top: 2px; }
+        .fc-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(77,166,255,0.4), transparent); margin: 0.2rem 0; }
+        .fc-links { display: flex; flex-direction: column; gap: 0.3rem; }
+        .fc-link { display: flex; align-items: center; gap: 0.4rem; color: #bdd8f0; font-size: 0.7rem; }
+        .fc-link i { color: #4da6ff; width: 12px; font-size: 0.65rem; }
+        .fc-bottom { display: flex; align-items: center; justify-content: space-between; }
+        .fc-brand { color: #4da6ff; font-size: 0.62rem; font-weight: 800; letter-spacing: 1px; opacity: 0.8; }
+        .fc-nfc-pill {
+            display: flex; align-items: center; gap: 0.25rem;
+            background: rgba(77,166,255,0.15); border: 1px solid rgba(77,166,255,0.4);
+            border-radius: 20px; padding: 0.15rem 0.5rem;
+            color: #4da6ff; font-size: 0.6rem; font-weight: 700;
+        }
+        .flip-card-back {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border: 1px solid rgba(167,139,250,0.35);
+            transform: rotateY(180deg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 0.6rem; padding: 1rem;
+        }
+        .fc-qr-box {
+            width: 72px; height: 72px; background: white; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #0f2744; font-size: 2.2rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .fc-scan-label { color: #a78bfa; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.5px; }
+        .fc-back-links { display: flex; gap: 0.5rem; }
+        .fc-social-icon {
+            width: 28px; height: 28px;
+            background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            color: #a78bfa; font-size: 0.75rem;
+        }
+        .flip-card-front::after {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            animation: shine 4s ease-in-out infinite;
+        }
+        @keyframes shine {
+            0%, 45%, 100% { left: -100%; }
+            20% { left: 150%; }
+        }
+    </style>
 <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
@@ -392,25 +466,40 @@
 
                     <!-- Floating Card Preview -->
                     <div class="hero-card-preview">
-<div class="floating-card mock-card" aria-hidden="true">
-                    <div class="mock-card-header">
-                        <div class="mock-avatar"><i class="fas fa-user"></i></div>
-                        <div class="mock-info">
-                            <strong>Mohammed Ahmed</strong>
-                            <span>Web Developer | MC PRIME</span>
+<div class="flip-card-wrapper" role="img" aria-label="Smart business card demo">
+                    <div class="flip-card-inner">
+                        <!-- FRONT -->
+                        <div class="flip-card-front">
+                            <div class="fc-top">
+                                <div class="fc-avatar">M.A</div>
+                                <div>
+                                    <div class="fc-name">Mohammed Ahmed</div>
+                                    <div class="fc-title">Web Developer &amp; Freelancer</div>
+                                </div>
+                            </div>
+                            <div class="fc-divider"></div>
+                            <div class="fc-links">
+                                <div class="fc-link"><i class="fas fa-phone"></i> +966 5x xxx xxxx</div>
+                                <div class="fc-link"><i class="fas fa-envelope"></i> hello@mcprim.com</div>
+                                <div class="fc-link"><i class="fas fa-globe"></i> mcprim.com</div>
+                            </div>
+                            <div class="fc-bottom">
+                                <span class="fc-brand">MC PRIME</span>
+                                <span class="fc-nfc-pill"><i class="fas fa-wifi"></i> NFC</span>
+                            </div>
+                        </div>
+                        <!-- BACK -->
+                        <div class="flip-card-back">
+                            <div class="fc-qr-box"><i class="fas fa-qrcode"></i></div>
+                            <div class="fc-scan-label">Scan to share your info</div>
+                            <div class="fc-back-links">
+                                <div class="fc-social-icon"><i class="fab fa-linkedin-in"></i></div>
+                                <div class="fc-social-icon"><i class="fab fa-instagram"></i></div>
+                                <div class="fc-social-icon"><i class="fab fa-facebook-f"></i></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="mock-card-body">
-                        <div class="mock-link"><i class="fas fa-phone"></i> +966 5x xxx xxxx</div>
-                        <div class="mock-link"><i class="fas fa-envelope"></i> hello@mcprim.com</div>
-                        <div class="mock-link"><i class="fas fa-globe"></i> mcprim.com</div>
-                    </div>
-                    <div class="mock-card-footer">
-                        <div class="mock-qr"><i class="fas fa-qrcode"></i></div>
-                        <span class="mock-nfc-tag"><i class="fas fa-wifi"></i> NFC</span>
-                    </div>
                 </div>
-                    </div>
                     <!-- Trust Badges -->
                     <div class="trust-badges reveal">
                         <div class="trust-badge">
