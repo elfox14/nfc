@@ -616,7 +616,11 @@
             if (hash.startsWith('#gauth=')) {
                 try {
                     const encoded = hash.slice(7);
-                    const data = JSON.parse(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')));
+                    let b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+                    while (b64.length % 4) b64 += '=';
+                    // decodeURIComponent(escape(atob(...))) is used for UTF-8 Base64 payloads natively
+                    const decodedStr = decodeURIComponent(escape(atob(b64)));
+                    const data = JSON.parse(decodedStr);
                     if (data.token && data.user) {
                         Auth.setSession(data.token, data.user);
                         history.replaceState(null, '', window.location.pathname + window.location.search);

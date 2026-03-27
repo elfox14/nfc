@@ -83,7 +83,10 @@ const Auth = {
         }
         try {
             const encoded = hash.slice('#gauth='.length);
-            const decoded = JSON.parse(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')));
+            let b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+            while (b64.length % 4) b64 += '=';
+            const decodedStr = decodeURIComponent(escape(atob(b64)));
+            const decoded = JSON.parse(decodedStr);
             if (decoded && decoded.token && decoded.user) {
                 this.setSession(decoded.token, decoded.user);
                 // Clean URL hash without triggering a page reload
@@ -112,7 +115,10 @@ const Auth = {
                 }
                 // Decode the one-time JWT payload (server already validated the signature)
                 const payloadB64 = googleToken.split('.')[1];
-                const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+                let b64 = payloadB64.replace(/-/g, '+').replace(/_/g, '/');
+                while (b64.length % 4) b64 += '=';
+                const decodedStr = decodeURIComponent(escape(atob(b64)));
+                const payload = JSON.parse(decodedStr);
                 if (payload && payload.token && payload.user) {
                     this.setSession(payload.token, payload.user);
                     const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
