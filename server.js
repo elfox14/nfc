@@ -409,7 +409,9 @@ app.get('/api/auth/google/callback', async (req, res) => {
   } catch (err) { 
     console.error('Google OAuth error:', err); 
     let safeMsg = 'Authentication failed';
-    if (err.message && err.message.includes('No access token')) safeMsg = 'Token error: Check Google Secret or URI';
+    if (err.message && err.message.includes('No access token:')) {
+        safeMsg = err.message; // Pass the exact Google error
+    }
     return res.redirect(`${loginPage}?error=${encodeURIComponent(safeMsg)}`); 
   }
 });
