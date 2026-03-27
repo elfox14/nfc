@@ -302,6 +302,20 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
         crossorigin="anonymous"></script>
 </head>
+    <style>
+        /* Mock Card - Hero Preview */
+        .mock-card { background: linear-gradient(145deg, #1e3a5f, #243447); border: 1px solid rgba(77,166,255,0.3); border-radius: 16px; padding: 1.2rem; width: 240px; max-width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(77,166,255,0.1); }
+        .mock-card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .mock-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--primary-color, #4da6ff); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; flex-shrink: 0; }
+        .mock-info strong { display: block; color: #e6f0f7; font-size: 0.9rem; }
+        .mock-info span { color: #8aa0b0; font-size: 0.75rem; }
+        .mock-card-body { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+        .mock-link { display: flex; align-items: center; gap: 0.5rem; color: #bcc9d4; font-size: 0.78rem; padding: 0.3rem 0.5rem; border-radius: 6px; background: rgba(77,166,255,0.08); }
+        .mock-link i { color: var(--primary-color, #4da6ff); width: 14px; }
+        .mock-card-footer { display: flex; align-items: center; justify-content: space-between; }
+        .mock-qr { width: 40px; height: 40px; background: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #1c2a3b; font-size: 1.2rem; }
+        .mock-nfc-tag { display: flex; align-items: center; gap: 0.3rem; color: var(--primary-color, #4da6ff); font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(77,166,255,0.4); padding: 0.25rem 0.6rem; border-radius: 20px; }
+    </style>
 
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -376,9 +390,24 @@
 
                     <!-- Floating Card Preview -->
                     <div class="hero-card-preview">
-                        <div class="floating-card">
-                            <span>MC PRIME</span>
+                        <div class="floating-card mock-card" aria-hidden="true">
+                    <div class="mock-card-header">
+                        <div class="mock-avatar"><i class="fas fa-user"></i></div>
+                        <div class="mock-info">
+                            <strong>محمد أحمد</strong>
+                            <span>مطور ويب | MC PRIME</span>
                         </div>
+                    </div>
+                    <div class="mock-card-body">
+                        <div class="mock-link"><i class="fas fa-phone"></i> +966 5x xxx xxxx</div>
+                        <div class="mock-link"><i class="fas fa-envelope"></i> hello@mcprim.com</div>
+                        <div class="mock-link"><i class="fas fa-globe"></i> mcprim.com</div>
+                    </div>
+                    <div class="mock-card-footer">
+                        <div class="mock-qr"><i class="fas fa-qrcode"></i></div>
+                        <span class="mock-nfc-tag"><i class="fas fa-wifi"></i> NFC</span>
+                    </div>
+                </div>
                     </div>
                     <!-- Trust Badges -->
                     <div class="trust-badges reveal">
@@ -414,7 +443,7 @@
                         <div class="feature-icon" aria-hidden="true"><i class="fas fa-leaf" style="color: #43e97b;"></i>
                         </div>
                         <h3>صديقة للبيئة</h3>
-                        <p>وفر تكاليف الطباعة المتكررة وساهم في الحفاظ على البيئة.</p>
+                                            <p>وفّر تكاليف الطباعة المتكررة، وساهم في تقليل البصمة الكربونية في آنٍ واحد.</p>
                     </article>
                     <article class="feature-card reveal">
                         <div class="feature-icon" aria-hidden="true"><i class="fas fa-sync-alt"
@@ -423,12 +452,11 @@
                         <p>حدّث بياناتك في أي وقت دون الحاجة لإعادة طباعة البطاقة.</p>
                     </article>
                     <article class="feature-card reveal">
-                        <div class="feature-icon" aria-hidden="true"><i class="fas fa-chart-line"
-                                style="color: #fa709a;"></i></div>
-                        <h3>توفير التكاليف</h3>
-                        <p>وفر تكاليف الطباعة المتكررة واستثمر في حل دائم وعملي.</p>
-                    </article>
-                    <article class="feature-card reveal">
+                    <div class="feature-icon" aria-hidden="true"><i class="fas fa-chart-line"
+                        style="color: #fa709a;"></i></div>
+                    <h3>تحليلات فورية</h3>
+                    <p>تابع عدد زيارات بطاقتك واعرف من أين يأتي عملاؤك لتحسين تواصلك.</p>
+                </article><article class="feature-card reveal">
                         <div class="feature-icon" aria-hidden="true"><i class="fas fa-paint-brush"
                                 style="color: #f093fb;"></i></div>
                         <h3>تصاميم احترافية</h3>
