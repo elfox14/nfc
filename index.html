@@ -46,7 +46,16 @@
     {
         "@context": "https://schema.org",
         "@graph": [
-            {
+                        {
+          "@type": "WebSite",
+          "name": "MC PRIME",
+          "url": "https://www.mcprim.com/nfc/",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://www.mcprim.com/nfc/?s={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
                 "@type": "WebPage",
                 "name": "بطاقة عمل NFC الذكية - صمم بطاقتك الرقمية مجانًا",
                 "description": "صمم بطاقة عمل NFC الذكية مجاناً مع MC PRIME",
@@ -312,7 +321,7 @@
     <!-- Floating CTA Button -->
     <a href="/nfc/editor.html" class="floating-cta" id="floating-cta">
         <i class="fas fa-rocket"></i>
-        <span>صمم بطاقتك الآن</span>
+        <span>جرّب مجاناً الآن</span>
     </a>
 
     <!-- Back to Top Button -->
@@ -575,16 +584,12 @@
                             </div>
                             <div class="editor-preview-overlay">
                                 <i class="fas fa-play-circle"></i>
-                                <span>ابدأ التصميم الآن</span>
+                                <span>افتح المحرر الآن</span>
                             </div>
                         </div>
                     </a>
                 </div>
 
-                <a href="/nfc/editor.html" class="btn btn-primary btn-lg cta-main-btn reveal">
-                    <i class="fas fa-rocket"></i>
-                    انتقل إلى محرر التصميم
-                </a>
             </div>
         </section>
 
@@ -620,33 +625,6 @@
                             <p>حوّل بطاقتك إلى منيو رقمي فعال.</p>
                         </article>
                     </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Testimonials Section -->
-        <section id="testimonials" class="testimonials-section" aria-labelledby="testimonials-title">
-            <div class="container">
-                <h2 id="testimonials-title">ماذا يقول عملاؤنا؟</h2>
-                <div class="testimonials-grid">
-                    <article class="testimonial-card reveal-left">
-                        <blockquote>
-                            <p>"أداة تصميم رائعة وسهلة الاستخدام! تمكنت من إنشاء بطاقتي الرقمية في دقائق. الآن أشارك
-                                معلوماتي بلمسة واحدة، والعملاء معجبون جداً."</p>
-                            <footer>
-                                <cite>— أحمد خالد، مطور ويب مستقل</cite>
-                            </footer>
-                        </blockquote>
-                    </article>
-                    <article class="testimonial-card reveal-right">
-                        <blockquote>
-                            <p>"وفرت عليّ الكثير من تكاليف طباعة البطاقات الورقية، والأهم أنني أستطيع تحديث بياناتي
-                                فوراً إذا تغير رقم هاتفي. خدمة ممتازة وأنصح بها بشدة."</p>
-                            <footer>
-                                <cite>— فاطمة علي، مديرة تسويق</cite>
-                            </footer>
-                        </blockquote>
-                    </article>
                 </div>
             </div>
         </section>
@@ -744,7 +722,7 @@
             <div class="container">
                 <h2 id="cta-title" class="reveal">هل أنت جاهز لترك انطباع لا يُنسى؟</h2>
                 <p class="reveal">انضم لآلاف المحترفين الذين اختاروا الحل الذكي والمستدام.</p>
-                <a href="/nfc/editor.html" class="btn btn-primary btn-lg reveal">صمم بطاقتك الآن مجاناً</a>
+                <a href="/nfc/editor.html" class="btn btn-primary btn-lg reveal">جرّب مجاناً الآن مجاناً</a>
             </div>
         </section>
     </main>
@@ -790,15 +768,11 @@
                             aria-label="لينكد إن" title="تواصل معنا على لينكد إن">
                             <i class="fab fa-linkedin-in" aria-hidden="true"></i>
                         </a>
-                        <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener noreferrer"
-                            aria-label="واتساب" title="تواصل معنا على واتساب">
-                            <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                        </a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 MC PRIME. جميع الحقوق محفوظة.</p>
+                <p>&copy; <span id="footer-year"></span> MC PRIME. جميع الحقوق محفوظة.</p>
             </div>
         </div>
     </footer>
@@ -814,6 +788,10 @@
                 }, 500);
             }
         });
+
+        // Dynamic footer year
+        const footerYear = document.getElementById('footer-year');
+        if (footerYear) footerYear.textContent = new Date().getFullYear();
 
         // Navbar scroll effect
         const navbar = document.getElementById('navbar');
