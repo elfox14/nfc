@@ -41,7 +41,17 @@
     {
         "@context": "https://schema.org",
         "@graph": [
-            {
+                {
+            "@type": "WebSite",
+            "name": "MC PRIME",
+            "url": "https://www.mcprim.com/nfc/",
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.mcprim.com/nfc/?s={search_term_string}",
+                "query-input": "required name=search_term_string"
+            }
+        },    
+        {
                 "@type": "WebPage",
                 "name": "Smart NFC Business Card - Design Your Digital Card Free",
                 "description": "Design your smart NFC business card for free with MC PRIME",
@@ -68,7 +78,13 @@
                     "https://facebook.com/mcprime",
                     "https://instagram.com/mcprime",
                     "https://linkedin.com/company/mcprime"
-                ]
+                ],
+            "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "customer support",
+                "url": "https://mcprim.com/nfc/contact-en.html",
+                "availableLanguage": ["Arabic", "English"]
+            }
             },
             {
                 "@type": "SoftwareApplication",
@@ -78,7 +94,8 @@
                 "offers": {
                     "@type": "Offer",
                     "price": "0",
-                    "priceCurrency": "USD"
+                    "priceCurrency": "EGP",
+                "availability": "https://schema.org/InStock"
                 },
                 "description": "Free tool to design smart digital business cards with NFC and QR Code support",
                 "aggregateRating": {
@@ -304,7 +321,7 @@
     <!-- Floating CTA Button -->
     <a href="/nfc/editor-en.html" class="floating-cta" id="floating-cta">
         <i class="fas fa-rocket"></i>
-        <span>Design Your Card</span>
+        <span>Try It Free Now</span>
     </a>
 
     <!-- Back to Top Button -->
@@ -564,18 +581,11 @@
                             </div>
                             <div class="editor-preview-overlay">
                                 <i class="fas fa-play-circle"></i>
-                                <span>Start Designing Now</span>
+                                <span>Open the Editor Now</span>
                             </div>
                         </div>
                     </a>
                 </div>
-
-                <a href="/nfc/editor-en.html" class="btn btn-primary btn-lg cta-main-btn reveal">
-                    <i class="fas fa-rocket"></i>
-                    Go to Design Editor
-                </a>
-            </div>
-        </section>
 
         <!-- Use Cases Section -->
         <section id="use-cases" class="use-cases-section" aria-labelledby="use-cases-title">
@@ -606,34 +616,6 @@
                             <p>Turn your card into an effective digital menu.</p>
                         </article>
                     </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Testimonials Section -->
-        <section id="testimonials" class="testimonials-section" aria-labelledby="testimonials-title">
-            <div class="container">
-                <h2 id="testimonials-title">What Our Customers Say</h2>
-                <div class="testimonials-grid">
-                    <article class="testimonial-card reveal-left">
-                        <blockquote>
-                            <p>"A wonderful and easy-to-use design tool! I was able to create my digital card in
-                                minutes. Now I share my information with one tap, and customers are very impressed."</p>
-                            <footer>
-                                <cite>— Ahmed Khaled, Freelance Web Developer</cite>
-                            </footer>
-                        </blockquote>
-                    </article>
-                    <article class="testimonial-card reveal-right">
-                        <blockquote>
-                            <p>"Saved me a lot of paper card printing costs, and most importantly, I can update my
-                                information instantly if my phone number changes. Excellent service, highly
-                                recommended."</p>
-                            <footer>
-                                <cite>— Fatima Ali, Marketing Manager</cite>
-                            </footer>
-                        </blockquote>
-                    </article>
                 </div>
             </div>
         </section>
@@ -735,7 +717,7 @@
             <div class="container">
                 <h2 id="cta-title" class="reveal">Ready to Make an Unforgettable Impression?</h2>
                 <p class="reveal">Join thousands of professionals who chose the smart and sustainable solution.</p>
-                <a href="/nfc/editor-en.html" class="btn btn-primary btn-lg reveal">Design Your Card Now — Free</a>
+                <a href="/nfc/editor-en.html" class="btn btn-primary btn-lg reveal">Start Free — In 30 Seconds</a>
             </div>
         </section>
     </main>
@@ -781,15 +763,10 @@
                             aria-label="LinkedIn" title="Connect with us on LinkedIn">
                             <i class="fab fa-linkedin-in" aria-hidden="true"></i>
                         </a>
-                        <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener noreferrer"
-                            aria-label="WhatsApp" title="Contact us on WhatsApp">
-                            <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                        </a>
-                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 MC PRIME. All rights reserved.</p>
+                <p>&copy; <span id="footer-year"></span> MC PRIME. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -805,6 +782,10 @@
                 }, 500);
             }
         });
+
+                // Dynamic footer year
+        const footerYear = document.getElementById('footer-year');
+        if (footerYear) footerYear.textContent = new Date().getFullYear();
 
         // Navbar scroll effect
         const navbar = document.getElementById('navbar');
