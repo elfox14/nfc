@@ -83,9 +83,7 @@ const Auth = {
         }
         try {
             const encoded = hash.slice('#gauth='.length);
-            let b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
-            while (b64.length % 4) b64 += '=';
-            const decodedStr = decodeURIComponent(escape(atob(b64)));
+            const decodedStr = decodeURIComponent(encoded);
             const decoded = JSON.parse(decodedStr);
             if (decoded && decoded.token && decoded.user) {
                 this.setSession(decoded.token, decoded.user);
@@ -138,13 +136,15 @@ const Auth = {
         return { handled: false };
     },
 
-    logout() {
+    logout(reason = '') {
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
         this.token = null;
         this.user = null;
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-        window.location.href = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
+        let redirectUrl = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
+        if (reason) redirectUrl += '?error=' + encodeURIComponent(reason);
+        window.location.href = redirectUrl;
     },
 
     setSession(token, user) {

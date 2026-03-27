@@ -403,7 +403,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const hashedRefresh = hashToken(refreshTokenValue);
     await db.collection(usersCollectionName).updateOne({ userId: user.userId }, { $set: { refreshTokenHash: hashedRefresh } });
     res.cookie('refreshToken', refreshTokenValue, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax', maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth' });
-    const authEncoded = Buffer.from(JSON.stringify({ token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } })).toString('base64url');
+    const authEncoded = encodeURIComponent(JSON.stringify({ token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } }));
     const dashboardPage = lang === 'en' ? `${frontendBase}/dashboard-en.html#gauth=${authEncoded}` : `${frontendBase}/dashboard.html#gauth=${authEncoded}`;
     return res.redirect(dashboardPage);
   } catch (err) { 
