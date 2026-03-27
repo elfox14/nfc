@@ -390,12 +390,12 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const proto = req.headers['x-forwarded-proto'] || req.protocol;
     const host = req.get('host');
     const redirectUri = `${proto}://${host}/api/auth/google/callback`;
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ code, client_id: clientId, client_secret: clientSecret, redirect_uri: redirectUri, grant_type: 'authorization_code' }) });
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ code, client_id: clientId, client_secret: clientSecret, redirect_uri: redirectUri, grant_type: 'authorization_code' }).toString() });
     const tokens = await tokenResponse.json();
-    if (!tokens.access_token) throw new Error('No access token');
+    if (!tokens.access_token) throw new Error('No access token: ' + JSON.stringify(tokens));
     const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokens.access_token}` } });
     const googleUser = await userInfoResponse.json();
-    if (!googleUser.email) throw new Error('No email from Google');
+    if (!googleUser.email) throw new Error('No email from Google: ' + JSON.stringify(googleUser));
     let user = await db.collection(usersCollectionName).findOne({ email: googleUser.email });
     if (!user) { const userId = nanoid(10); await db.collection(usersCollectionName).insertOne({ userId, email: googleUser.email, name: googleUser.name || googleUser.email.split('@')[0], googleId: googleUser.id, isVerified: true, createdAt: new Date() }); user = { userId, email: googleUser.email, name: googleUser.name }; }
     const accessToken = createAccessToken({ userId: user.userId, email: user.email });
@@ -406,7 +406,12 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const authEncoded = Buffer.from(JSON.stringify({ token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } })).toString('base64url');
     const dashboardPage = lang === 'en' ? `${frontendBase}/dashboard-en.html#gauth=${authEncoded}` : `${frontendBase}/dashboard.html#gauth=${authEncoded}`;
     return res.redirect(dashboardPage);
-  } catch (err) { console.error('Google OAuth error:', err); return res.redirect(`${loginPage}?error=${encodeURIComponent('Authentication failed')}`); }
+  } catch (err) { 
+    console.error('Google OAuth error:', err); 
+    let safeMsg = 'Authentication failed';
+    if (err.message && err.message.includes('No access token')) safeMsg = 'Token error: Check Google Secret or URI';
+    return res.redirect(`${loginPage}?error=${encodeURIComponent(safeMsg)}`); 
+  }
 });
 // [SECURITY FIX] Removed console.log that exposes password reset link
 app.post('/api/auth/forgot-password', [body('email').isEmail().normalizeEmail()], async (req, res) => {
