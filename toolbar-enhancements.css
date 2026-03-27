@@ -1,8 +1,4 @@
 /* ================================================
-   Trial Period Banner - Styles
-   ================================================ */
-
-/* ================================================
    Compact Toolbar - Icons Only
    ================================================ */
 .pro-toolbar .btn span,
@@ -92,71 +88,10 @@
     }
 }
 
-.trial-banner {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #ffffff;
-    padding: 10px 20px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    position: relative;
-    z-index: 1000;
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
-}
-
-.trial-banner__icon {
-    font-size: 1.2em;
-}
-
-.trial-banner__text {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.trial-banner__highlight {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-}
-
-.trial-banner__close {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.7);
-    cursor: pointer;
-    font-size: 18px;
-    padding: 5px;
-    transition: color 0.2s;
-}
-
-.trial-banner__close:hover {
-    color: #ffffff;
-}
-
-/* Collapsed state */
-.trial-banner.collapsed {
-    display: none;
-}
 
 /* Responsive */
 @media (max-width: 768px) {
 
-    /* Hide trial banner on mobile */
-    .trial-banner {
-        display: none !important;
-    }
 
     /* Fixed single row toolbar */
     .pro-toolbar {
