@@ -186,7 +186,10 @@
                 document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f1923;color:#fff;font-family:Tajawal,sans-serif;"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#4da6ff;"></i><p>جاري تسجيل الدخول...</p></div>';
                 try {
                     const payloadB64 = googleToken.split('.')[1];
-                    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+                    let b64 = payloadB64.replace(/-/g, '+').replace(/_/g, '/');
+                    while (b64.length % 4) b64 += '=';
+                    const decodedStr = decodeURIComponent(escape(atob(b64)));
+                    const payload = JSON.parse(decodedStr);
                     console.log('[DEBUG] decoded payload type:', payload?.type);
                 if (payload && payload.token && payload.user) {
                         Auth.setSession(payload.token, payload.user);

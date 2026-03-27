@@ -630,7 +630,7 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             Auth.token = localStorage.getItem('authToken'); Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); if (!Auth.isLoggedIn()) {
-                window.location.href = '/nfc/login.html';
+                window.location.href = '/nfc/login.html?error=AuthNotLoggedIn';
                 return;
             }
 
@@ -675,7 +675,7 @@
                     const errText = await response.text().catch(() => '');
                     console.error('[Dashboard] API error:', response.status, errText);
                     if (response.status === 401 || response.status === 403) {
-                        Auth.logout();
+                        Auth.logout('ApiUnauthorized');
                         return;
                     }
                     throw new Error('خطأ الخادم: ' + response.status);

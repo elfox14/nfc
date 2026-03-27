@@ -610,7 +610,7 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!Auth.isLoggedIn()) {
-                window.location.href = '/nfc/login-en.html';
+                window.location.href = '/nfc/login-en.html?error=AuthNotLoggedIn';
                 return;
             }
 
@@ -654,7 +654,7 @@
                     const errText = await response.text().catch(() => '');
                     console.error('[Dashboard] API error:', response.status, errText);
                     if (response.status === 401 || response.status === 403) {
-                        Auth.logout();
+                        Auth.logout('ApiUnauthorized');
                         return;
                     }
                     throw new Error('Server error: ' + response.status);
