@@ -50,13 +50,13 @@ const INTERNAL_SERVER_URL = process.env.INTERNAL_SERVER_URL || '';
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.googletagmanager.com", "https://accounts.google.com"],
-    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com", "https://www.googletagmanager.com"],
+    scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.googletagmanager.com", "https://pagead2.googlesyndication.com", "https://accounts.google.com", "https://cdn.shepherd.dev"],
+    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com", "https://www.googletagmanager.com", "https://cdn.shepherd.dev"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", ...(INTERNAL_SERVER_URL ? [INTERNAL_SERVER_URL] : [])],
+    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://uploads.mcprim.com", "https://media.giphy.com", ...(INTERNAL_SERVER_URL ? [INTERNAL_SERVER_URL] : [])],
     mediaSrc: ["'self'", "data:"],
-    frameSrc: ["'self'", "https://www.youtube.com"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "ws:", "wss:", ...(INTERNAL_SERVER_URL ? [INTERNAL_SERVER_URL] : [])],
+    frameSrc: ["'self'", "https://www.youtube.com", "https://td.doubleclick.net"],
+    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://uploads.mcprim.com", "https://media.giphy.com", "https://pagead2.googlesyndication.com", "https://www.googletagmanager.com", "ws:", "wss:", ...(INTERNAL_SERVER_URL ? [INTERNAL_SERVER_URL] : [])],
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
   },

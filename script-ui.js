@@ -377,13 +377,14 @@ const UIManager = {
     async uploadImageToServer(file) {
         const formData = new FormData();
         formData.append("image", file);
-        // التغيير هنا: إرسال الطلب مباشرة إلى سيرفر الصور لتجاوز حظر "البوتات" على سيرفر Render
-        formData.append("secret", "mcprime_upload_secret_2024_xK9mP2vL");
 
         try {
             const uploadUrl = "https://uploads.mcprim.com/upload.php";
             const response = await fetch(uploadUrl, {
                 method: "POST",
+                headers: {
+                    "X-Upload-Secret": "mcprime_upload_secret_2024_xK9mP2vL"
+                },
                 body: formData
             });
 
