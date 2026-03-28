@@ -3,18 +3,7 @@
 const Auth = {
     // API Endpoints
     getBaseUrl() {
-        if (window.location.protocol === 'file:') {
-            // For local file:// development, fall back to localhost
-            return 'http://localhost:3000';
-        }
-
-        const hostname = window.location.hostname;
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            return 'http://localhost:3000';
-        }
-
-        // Production - use same origin (server serves both API and frontend)
-        return window.location.origin;
+        return window.__API_BASE_URL || window.location.origin;
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },

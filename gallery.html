@@ -283,6 +283,7 @@
         </div>
     </footer>
 
+    <script src="/nfc/api-config.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // DOM Elements
@@ -303,9 +304,7 @@
             const gridViewBtn = document.getElementById('grid-view-btn');
             const listViewBtn = document.getElementById('list-view-btn');
 
-            const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                ? 'http://localhost:3000'
-                : window.location.origin;
+            const API_BASE_URL = window.__API_BASE_URL || window.location.origin;
             const CACHE_KEY = 'mcprime_gallery_cache';
             const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 

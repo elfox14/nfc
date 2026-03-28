@@ -39,7 +39,7 @@ const EditorUserStatus = {
         try {
             const baseUrl = (typeof Config !== 'undefined' && Config.API_BASE_URL)
                 ? Config.API_BASE_URL
-                : window.location.origin;
+                : (window.__API_BASE_URL || window.location.origin);
 
             const response = await fetch(`${baseUrl}/api/user/designs`, {
                 headers: { 'Authorization': `Bearer ${token}` }
