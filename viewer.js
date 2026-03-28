@@ -30,7 +30,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     const viewerContainer = document.querySelector('.viewer-container');
-    const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
+    const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:3000'
+        : window.location.origin;
     let cardData = null;
     let cardId = null; // Store card ID for tracking
 

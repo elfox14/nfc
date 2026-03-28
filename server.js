@@ -45,16 +45,18 @@ app.use((req, res, next) => {
   res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
   next();
 });
+// ✅ Read internal server URL from environment variable
+const INTERNAL_SERVER_URL = process.env.INTERNAL_SERVER_URL || '';
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.googletagmanager.com", "https://accounts.google.com"],
     styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com", "https://www.googletagmanager.com"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
+    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", ...(INTERNAL_SERVER_URL ? [INTERNAL_SERVER_URL] : [])],
     mediaSrc: ["'self'", "data:"],
     frameSrc: ["'self'", "https://www.youtube.com"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com", "ws:", "wss:"],
+    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://media.giphy.com", "ws:", "wss:", ...(INTERNAL_SERVER_URL ? [INTERNAL_SERVER_URL] : [])],
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
   },
@@ -407,12 +409,9 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const dashboardPage = lang === 'en' ? `${frontendBase}/dashboard-en.html#gauth=${authEncoded}` : `${frontendBase}/dashboard.html#gauth=${authEncoded}`;
     return res.redirect(dashboardPage);
   } catch (err) { 
-    console.error('Google OAuth error:', err); 
-    let safeMsg = 'Authentication failed';
-    if (err.message && err.message.includes('No access token:')) {
-        safeMsg = err.message; // Pass the exact Google error
-    }
-    return res.redirect(`${loginPage}?error=${encodeURIComponent(safeMsg)}`); 
+    // ✅ Log internally only — never expose error details to user
+    console.error('[Google OAuth] Internal error:', err.message); 
+    return res.redirect(`${loginPage}?error=${encodeURIComponent('google_auth_failed')}`); 
   }
 });
 // [SECURITY FIX] Removed console.log that exposes password reset link
@@ -616,7 +615,9 @@ wss.on('connection', (ws, req) => {
   if (!rooms.has(collabId)) rooms.set(collabId, new Set());
   const room = rooms.get(collabId);
   room.add(ws);
-  ws.on('message', (message) => { try { room.forEach(client => { if (client !== ws && client.readyState === ws.OPEN) client.send(message.toString()); }); } catch (error) { console.error('Error broadcasting message:', error); } });
+  // ✅ WebSocket message size limit to prevent DoS
+  const WS_MAX_MESSAGE_BYTES = 64 * 1024; // 64KB
+  ws.on('message', (message) => { try { if (message.length > WS_MAX_MESSAGE_BYTES) { console.warn(`[WS] Message too large (${message.length} bytes) — rejected`); ws.close(1009, 'Message too large'); return; } room.forEach(client => { if (client !== ws && client.readyState === ws.OPEN) client.send(message.toString()); }); } catch (error) { console.error('Error broadcasting message:', error); } });
   ws.on('close', () => { if (room) { room.delete(ws); if (room.size === 0) rooms.delete(collabId); } });
   ws.on('error', (error) => { console.error('WebSocket error:', error); });
 });

@@ -28,12 +28,22 @@ if (empty($SECRET_KEY)) {
 }
 
 $UPLOAD_DIR = __DIR__ . '/uploads/';
-$BASE_URL = 'https://uploads.mcprim.com/uploads';
+
+// ✅ Read BASE_URL from environment variable instead of hardcoding
+$BASE_URL = getenv('UPLOAD_BASE_URL');
+if (!$BASE_URL) {
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['error' => 'Server misconfiguration: UPLOAD_BASE_URL not set']);
+    exit;
+}
+
 $MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 $ALLOWED_TYPES = ['image/webp', 'image/png', 'image/jpeg', 'image/gif'];
 
-// Restrict CORS to your own domain only
-$allowedOrigins = ['https://mcprim.com', 'https://uploads.mcprim.com', 'https://nfc-vjy6.onrender.com'];
+// ✅ CORS origins from environment variable (comma-separated)
+$allowedOriginsEnv = getenv('ALLOWED_ORIGINS') ?: 'https://mcprim.com';
+$allowedOrigins = array_map('trim', explode(',', $allowedOriginsEnv));
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 if (in_array($origin, $allowedOrigins)) {
     header('Access-Control-Allow-Origin: ' . $origin);

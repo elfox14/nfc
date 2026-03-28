@@ -4,7 +4,8 @@ const Auth = {
     // API Endpoints
     getBaseUrl() {
         if (window.location.protocol === 'file:') {
-            return 'https://nfc-vjy6.onrender.com';
+            // For local file:// development, fall back to localhost
+            return 'http://localhost:3000';
         }
 
         const hostname = window.location.hostname;
@@ -12,8 +13,8 @@ const Auth = {
             return 'http://localhost:3000';
         }
 
-        // Production - use Render backend
-        return 'https://nfc-vjy6.onrender.com';
+        // Production - use same origin (server serves both API and frontend)
+        return window.location.origin;
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
