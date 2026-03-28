@@ -1,5 +1,6 @@
 // server.js (الكود الكامل والنهائي مع ميزة التحرير الجماعي)
 require('dotenv').config();
+const config = require('./config');
 const express = require('express');
 const compression = require('compression');
 const { MongoClient } = require('mongodb');
@@ -266,7 +267,7 @@ app.post('/api/save-design', async (req, res) => {
     if (!authHeader) return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم' });
     try {
       const token = authHeader.split(' ')[1];
-      const secret = process.env.JWT_SECRET;
+      const secret = config.JWT_SECRET;
       if (!secret) throw new Error('JWT_SECRET not configured');
       const decoded = jwt.verify(token, secret);
       ownerId = decoded.userId;
@@ -330,7 +331,7 @@ app.post('/api/auth/register', [body('email').isEmail().normalizeEmail(), body('
     const hashedPassword = await bcrypt.hash(password, salt);
     const userId = nanoid(10);
     await db.collection(usersCollectionName).insertOne({ userId, email, password: hashedPassword, name, isVerified: false, createdAt: new Date() });
-    const secret = process.env.JWT_SECRET;
+    const secret = config.JWT_SECRET;
     if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
     await db.collection(usersCollectionName).updateOne({ userId }, { $set: { verificationToken } });
@@ -423,7 +424,7 @@ app.post('/api/auth/forgot-password', [body('email').isEmail().normalizeEmail()]
     const { email } = req.body;
     const user = await db.collection(usersCollectionName).findOne({ email });
     if (!user) return res.json({ success: true });
-    const secret = process.env.JWT_SECRET;
+    const secret = config.JWT_SECRET;
     if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     const resetToken = jwt.sign({ userId: user.userId, email: user.email, type: 'password-reset' }, secret, { expiresIn: '1h' });
     await db.collection(usersCollectionName).updateOne({ userId: user.userId }, { $set: { resetToken, resetTokenExpiry: new Date(Date.now() + 3600000) } });
@@ -440,7 +441,7 @@ app.post('/api/auth/reset-password/:token', [body('password').isLength({ min: 6 
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const { token } = req.params;
     const { password } = req.body;
-    const secret = process.env.JWT_SECRET;
+    const secret = config.JWT_SECRET;
     if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     let decoded;
     try { decoded = jwt.verify(token, secret); if (decoded.type !== 'password-reset') throw new Error('Invalid token type'); } catch (tokenErr) { return res.status(400).json({ error: 'رابط غير صالح أو منتهي الصلاحية' }); }
@@ -457,7 +458,7 @@ app.get('/api/auth/verify-email/:token', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const { token } = req.params;
-    const secret = process.env.JWT_SECRET;
+    const secret = config.JWT_SECRET;
     if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     let decoded;
     try { decoded = jwt.verify(token, secret); if (decoded.type !== 'email-verify') throw new Error('Invalid token type'); } catch (tokenErr) { return res.status(400).json({ error: 'رابط التحقق غير صالح' }); }
@@ -610,7 +611,7 @@ wss.on('connection', (ws, req) => {
   const collabId = parameters.get('collabId');
   const token = parameters.get('token');
   if (!collabId) { console.log('Connection rejected: No collabId provided.'); ws.close(1008, 'collabId is required'); return; }
-  const secret = process.env.JWT_SECRET;
+  const secret = config.JWT_SECRET;
   if (secret && token) { try { jwt.verify(token, secret); } catch (err) { console.log('WebSocket connection rejected: Invalid token.'); ws.close(1008, 'Invalid authentication token'); return; } } else if (secret && !token) { console.log('WebSocket connection rejected: No token provided.'); ws.close(1008, 'Authentication token required'); return; }
   if (!rooms.has(collabId)) rooms.set(collabId, new Set());
   const room = rooms.get(collabId);

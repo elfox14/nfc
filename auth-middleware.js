@@ -9,7 +9,8 @@ const verifyToken = (req, res, next) => {
     }
 
     try {
-        const secret = process.env.JWT_SECRET;
+        const config = require('./config');
+        const secret = config.JWT_SECRET;
         if (!secret) {
             console.error('[Security] JWT_SECRET is not configured!');
             return res.status(500).json({ error: 'Server misconfiguration: JWT_SECRET not set.' });
@@ -18,7 +19,8 @@ const verifyToken = (req, res, next) => {
         req.user = decoded; // { userId: "...", email: "..." }
         next();
     } catch (err) {
-        return res.status(403).json({ error: 'Invalid token.' });
+        console.error('[JWT Verification Error]', err.message);
+        return res.status(403).json({ error: 'Invalid token.', details: err.message });
     }
 };
 
