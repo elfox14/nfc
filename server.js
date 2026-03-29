@@ -248,10 +248,39 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
     if (!req.file) { if (!res.headersSent) return res.status(400).json({ error: 'لم يتم تقديم أي ملف صورة.' }); return; }
     const processedBuffer = await sharp(req.file.buffer).resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true }).webp({ quality: 85 }).toBuffer();
     const filename = nanoid(10) + '.webp';
+
+    // Proxy upload to the PHP server at uploads.mcprim.com
+    const uploadProxyUrl = process.env.UPLOAD_PROXY_URL;
+    const uploadSecret = process.env.UPLOAD_SECRET;
+
+    if (uploadProxyUrl && uploadSecret) {
+      try {
+        const blob = new Blob([processedBuffer], { type: 'image/webp' });
+        const proxyFormData = new FormData();
+        proxyFormData.append('image', blob, filename);
+
+        const proxyResponse = await fetch(uploadProxyUrl, {
+          method: 'POST',
+          headers: { 'X-Upload-Secret': uploadSecret },
+          body: proxyFormData
+        });
+
+        const proxyResult = await proxyResponse.json();
+        if (proxyResponse.ok && proxyResult.success && proxyResult.url) {
+          return res.json({ success: true, url: proxyResult.url });
+        }
+        console.warn('[Upload Proxy] PHP server response not successful:', proxyResult);
+      } catch (proxyError) {
+        console.error('[Upload Proxy] Failed to proxy to PHP server:', proxyError.message);
+      }
+    }
+
+    // Fallback: save locally (development only, or if proxy not configured)
     const out = path.join(uploadDir, filename);
     await fs.promises.writeFile(out, processedBuffer);
     const uploadBaseUrl = (process.env.UPLOAD_BASE_URL || '').replace(/\/+$/, '');
     const imageUrl = uploadBaseUrl ? `${uploadBaseUrl}/${filename}` : `${absoluteBaseUrl(req)}/uploads/${filename}`;
+    console.warn('[Upload] Saved locally (proxy not configured or failed). URL:', imageUrl);
     return res.json({ success: true, url: imageUrl, local: true });
   } catch (e) {
     console.error('Image upload processing error:', e);
