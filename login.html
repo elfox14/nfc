@@ -213,7 +213,8 @@
             if (oauthError) {
                 const errorBox = document.getElementById('error-box');
                 if (errorBox) {
-                    errorBox.textContent = decodeURIComponent(oauthError);
+                                    const errorMessages = { SessionExpired: 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً', Unauthorized: 'غير مصرح لك بالدخول، يرجى تسجيل الدخول', InvalidToken: 'بيانات الجلسة غير صالحة، يرجى تسجيل الدخول مجدداً', AccessDenied: 'ليس لديك صلاحية للوصول' };
+                                  errorBox.textContent = errorMessages[oauthError] || decodeURIComponent(oauthError);
                     errorBox.style.display = 'block';
                 }
             }
