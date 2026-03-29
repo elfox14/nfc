@@ -631,8 +631,39 @@
             }
         })();
 
+        async function fetchWithAutoRefresh(url, options = {}) {
+            let response = await fetch(url, {
+                ...options,
+                headers: {
+                    ...(options.headers || {}),
+                    ...Auth.getHeader()
+                },
+                credentials: 'include'
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                const refreshed = await Auth.refreshSession();
+
+                if (!refreshed.success) {
+                    await Auth.logoutServer('SessionExpired');
+                    return null;
+                }
+
+                response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        ...(options.headers || {}),
+                        ...Auth.getHeader()
+                    },
+                    credentials: 'include'
+                });
+            }
+
+            return response;
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
-            Auth.token = localStorage.getItem('authToken'); Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); if (!Auth.isLoggedIn()) {
+            if (!Auth.isLoggedIn()) {
                 window.location.href = '/nfc/login.html?error=AuthNotLoggedIn';
                 return;
             }
@@ -672,17 +703,13 @@
         async function loadMyDesigns() {
             const grid = document.getElementById('designs-grid');
             try {
-                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
+                const response = await fetchWithAutoRefresh(Auth.API_USER_DESIGNS);
+
+                if (!response) return; // Handled by auto-refresh logout
 
                 if (!response.ok) {
                     const errText = await response.text().catch(() => '');
-                    console.error('[Dashboard] API error:', response.status, errText);
-                    if (response.status === 401 || response.status === 403) {
-                        alert(`Login Error Debug: HTTP ${response.status}\n${errText}`);
-                        Auth.logout('ApiUnauthorized');
-                        return;
-                    }
-                    throw new Error('خطأ الخادم: ' + response.status);
+                    throw new Error('خطأ الخادم: ' + response.status + ' ' + errText);
                 }
 
                 const data = await response.json();
@@ -744,9 +771,8 @@
         async function deleteDesign(shortId) {
             if (!confirm('هل أنت متأكد أنك تريد حذف هذا التصميم نهائياً؟ سيتم حذفه أيضاً من المعرض.')) return;
             try {
-                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
-                    method: 'DELETE',
-                    headers: Auth.getHeader()
+                const res = await fetchWithAutoRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
+                    method: 'DELETE'
                 });
                 const data = await res.json();
                 if (data.success) {

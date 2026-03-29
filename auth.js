@@ -9,6 +9,8 @@ const Auth = {
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
     get API_REGISTER() { return `${this.getBaseUrl()}/api/auth/register`; },
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
+    getRefreshUrl() { return `${this.getBaseUrl()}/api/auth/refresh`; },
+    getLogoutUrl() { return `${this.getBaseUrl()}/api/auth/logout`; },
 
     // Methods
     isLoggedIn() {
@@ -64,6 +66,38 @@ const Auth = {
         } catch (err) {
             return { success: false, error: 'Network error: Unable to connect to server' };
         }
+    },
+
+    async refreshSession() {
+        try {
+            const response = await fetch(this.getRefreshUrl(), {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+            if (response.ok && data.success && data.token) {
+                const currentUser = this.getUser();
+                this.setSession(data.token, currentUser);
+                return { success: true, token: data.token };
+            }
+
+            return { success: false, error: data.error || 'Refresh failed' };
+        } catch (err) {
+            return { success: false, error: 'Network error during refresh' };
+        }
+    },
+
+    async logoutServer(reason = '') {
+        try {
+            await fetch(this.getLogoutUrl(), {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch (e) {
+            console.error('[Auth] logoutServer error:', e);
+        }
+        this.logout(reason);
     },
 
     // Google Sign-In — redirect-based flow (works on mobile & all browsers)

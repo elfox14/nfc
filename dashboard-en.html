@@ -611,6 +611,37 @@
             }
         })();
 
+        async function fetchWithAutoRefresh(url, options = {}) {
+            let response = await fetch(url, {
+                ...options,
+                headers: {
+                    ...(options.headers || {}),
+                    ...Auth.getHeader()
+                },
+                credentials: 'include'
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                const refreshed = await Auth.refreshSession();
+
+                if (!refreshed.success) {
+                    await Auth.logoutServer('SessionExpired');
+                    return null;
+                }
+
+                response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        ...(options.headers || {}),
+                        ...Auth.getHeader()
+                    },
+                    credentials: 'include'
+                });
+            }
+
+            return response;
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             if (!Auth.isLoggedIn()) {
                 window.location.href = '/nfc/login-en.html?error=AuthNotLoggedIn';
@@ -651,17 +682,13 @@
         async function loadMyDesigns() {
             const grid = document.getElementById('designs-grid');
             try {
-                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
+                const response = await fetchWithAutoRefresh(Auth.API_USER_DESIGNS);
+
+                if (!response) return; // Handled by auto-refresh logout
 
                 if (!response.ok) {
                     const errText = await response.text().catch(() => '');
-                    console.error('[Dashboard EN] API error:', response.status, errText);
-                    if (response.status === 401 || response.status === 403) {
-                        alert(`Login Error Debug: HTTP ${response.status}\n${errText}`);
-                        Auth.logout('ApiUnauthorized');
-                        return;
-                    }
-                    throw new Error('Server error: ' + response.status);
+                    throw new Error('Server error: ' + response.status + ' ' + errText);
                 }
 
                 const data = await response.json();
@@ -712,9 +739,8 @@
         async function deleteDesign(shortId) {
             if (!confirm('Are you sure you want to permanently delete this design? It will also be removed from the gallery.')) return;
             try {
-                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
-                    method: 'DELETE',
-                    headers: Auth.getHeader()
+                const res = await fetchWithAutoRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
+                    method: 'DELETE'
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -730,7 +756,7 @@
 
         async function loadRequestCount() {
             try {
-                const res = await fetch(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
+                const res = await fetchWithAutoRefresh(`${baseUrl}/api/card-requests/count`);
                 const data = await res.json();
                 const badge = document.getElementById('requests-badge');
                 if (data.count > 0) { badge.textContent = data.count; badge.style.display = 'inline'; }
