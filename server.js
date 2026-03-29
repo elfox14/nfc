@@ -63,12 +63,20 @@ app.use(helmet.contentSecurityPolicy({
   },
 }));
 // --- END: SECURITY HEADERS (HELMET) ---
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim().replace(/\/+$/, '')).filter(Boolean);
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    // Unconditionally allow the main domains and localhost, plus any valid env origins
+    if (!origin || 
+        origin.startsWith('https://mcprim.com') || 
+        origin.startsWith('https://www.mcprim.com') ||
+        origin.startsWith('http://localhost') ||
+        origin.startsWith('http://127.0.0.1') ||
+        allowedOrigins.length === 0 || 
+        allowedOrigins.some(o => origin.startsWith(o))) {
       cb(null, true);
     } else {
+      console.warn(`[CORS] Rejected Origin: ${origin}`);
       cb(new Error('Not allowed by CORS'));
     }
   },
