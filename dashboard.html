@@ -664,12 +664,13 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!Auth.isLoggedIn()) {
+                console.warn('[Dashboard] Not logged in — redirecting');
                 window.location.href = '/nfc/login.html?error=AuthNotLoggedIn';
                 return;
             }
 
 
-            document.getElementById('user-display-name').textContent = Auth.user?.name || 'مستخدم';
+            document.getElementById('user-display-name').textContent = (Auth.getUser()?.name) || 'مستخدم';
 
             // Check URL params for tab
             const urlParams = new URLSearchParams(window.location.search);

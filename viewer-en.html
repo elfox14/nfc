@@ -228,7 +228,7 @@
                 if (!ownerData.success) return;
 
                 const isLoggedIn = Auth.isLoggedIn();
-                const currentUserId = Auth.user?.userId;
+                const currentUserId = Auth.getUser()?.userId;
 
                 if (isLoggedIn && ownerData.ownerId === currentUserId) return;
                 if (ownerData.cardPrivacy === 'deny_all') return;
