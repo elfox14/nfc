@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+// FIX: نقل require خارج الدالة لتجنب إعادة التحميل في كل طلب
+const config = require('./config');
 
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -8,13 +10,13 @@ const verifyToken = (req, res, next) => {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
     }
 
+    const secret = config.JWT_SECRET;
+    if (!secret) {
+        console.error('[Security] JWT_SECRET is not configured!');
+        return res.status(500).json({ error: 'Server misconfiguration: JWT_SECRET not set.' });
+    }
+
     try {
-        const config = require('./config');
-        const secret = config.JWT_SECRET;
-        if (!secret) {
-            console.error('[Security] JWT_SECRET is not configured!');
-            return res.status(500).json({ error: 'Server misconfiguration: JWT_SECRET not set.' });
-        }
         const decoded = jwt.verify(token, secret);
         req.user = decoded; // { userId: "...", email: "..." }
         next();

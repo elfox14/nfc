@@ -10,13 +10,22 @@ const Auth = {
     get API_REGISTER() { return `${this.getBaseUrl()}/api/auth/register`; },
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
 
-    // State
-    token: localStorage.getItem('authToken'),
-    user: JSON.parse(localStorage.getItem('authUser') || 'null'),
-
     // Methods
     isLoggedIn() {
-        return !!this.token;
+        // FIX: قراءة مباشرة من localStorage بدل قراءة مرة واحدة عند التحميل
+        return !!localStorage.getItem('authToken');
+    },
+
+    getUser() {
+        try {
+            return JSON.parse(localStorage.getItem('authUser') || 'null');
+        } catch (e) {
+            return null;
+        }
+    },
+
+    getToken() {
+        return localStorage.getItem('authToken');
     },
 
     async login(email, password) {
@@ -73,9 +82,18 @@ const Auth = {
         }
         try {
             const encoded = hash.slice('#gauth='.length);
-            const decodedStr = decodeURIComponent(encoded);
-            const decoded = JSON.parse(decodedStr);
-            if (decoded && decoded.token && decoded.user) {
+            // FIX: تحقق أن البيانات تحتوي على token و user قبل الاستخدام
+            let decoded;
+            try {
+                decoded = JSON.parse(decodeURIComponent(encoded));
+            } catch (parseErr) {
+                return { handled: true, success: false, error: 'فشل تحليل بيانات تسجيل الدخول' };
+            }
+            if (
+                decoded &&
+                typeof decoded.token === 'string' && decoded.token.length > 10 &&
+                decoded.user && typeof decoded.user === 'object'
+            ) {
                 this.setSession(decoded.token, decoded.user);
                 // Clean URL hash without triggering a page reload
                 if (window.history && window.history.replaceState) {
@@ -83,10 +101,10 @@ const Auth = {
                 }
                 return { handled: true, success: true };
             }
+            return { handled: true, success: false, error: 'بيانات تسجيل الدخول غير مكتملة' };
         } catch (e) {
             return { handled: true, success: false, error: 'فشل معالجة رمز تسجيل الدخول بجوجل' };
         }
-        return { handled: false };
     },
 
     // Called by login pages on load to check for google_token or error in URL params
@@ -101,16 +119,21 @@ const Auth = {
                 if (window.history && window.history.replaceState) {
                     window.history.replaceState(null, '', window.location.pathname);
                 }
-                // Decode the one-time JWT payload (server already validated the signature)
+                // FIX: استبدال escape/unescape deprecated بـ TextDecoder
                 const payloadB64 = googleToken.split('.')[1];
                 let b64 = payloadB64.replace(/-/g, '+').replace(/_/g, '/');
                 while (b64.length % 4) b64 += '=';
-                const decodedStr = decodeURIComponent(escape(atob(b64)));
+                const decodedStr = new TextDecoder('utf-8').decode(
+                    Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+                );
                 const payload = JSON.parse(decodedStr);
                 if (payload && payload.token && payload.user) {
                     this.setSession(payload.token, payload.user);
                     const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-                    window.location.replace(isEnglish ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html');
+                    // FIX: مسار ديناميكي بدل مسار ثابت
+                    const base = window.location.origin;
+                    const path = window.location.pathname.split('/').slice(0, -1).join('/');
+                    window.location.replace(`${base}${path}/dashboard${isEnglish ? '-en' : ''}.html`);
                     return { handled: true, success: true };
                 }
             } catch (e) {
@@ -129,23 +152,23 @@ const Auth = {
     logout(reason = '') {
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
-        this.token = null;
-        this.user = null;
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-        let redirectUrl = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
+        // FIX: مسار ديناميكي
+        const base = window.location.origin;
+        const path = window.location.pathname.split('/').slice(0, -1).join('/');
+        let redirectUrl = `${base}${path}/login${isEnglish ? '-en' : ''}.html`;
         if (reason) redirectUrl += '?error=' + encodeURIComponent(reason);
         window.location.href = redirectUrl;
     },
 
     setSession(token, user) {
-        this.token = token;
-        this.user = user;
         localStorage.setItem('authToken', token);
         localStorage.setItem('authUser', JSON.stringify(user));
     },
 
     getHeader() {
-        return this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
+        const token = this.getToken();
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
     },
 
     // UI Helpers
@@ -156,6 +179,7 @@ const Auth = {
         const loginText = isEnglish ? 'Login' : 'تسجيل الدخول';
         const dashboardText = isEnglish ? 'Control Panel' : 'لوحة التحكم';
         const logoutText = isEnglish ? 'Logout' : 'خروج';
+        const currentUser = this.getUser();
 
         // 1. Main Website Navbar (.nav-links & .nav-cta)
         const navContainer = document.querySelector('.nav-links');
@@ -176,7 +200,7 @@ const Auth = {
                         userInfoContainer.style.cssText = 'display: flex; gap: 15px; align-items: center; margin-inline-start: 15px;';
 
                         const userName = document.createElement('span');
-                        userName.textContent = this.user?.name || (isEnglish ? 'User' : 'مستخدم');
+                        userName.textContent = currentUser?.name || (isEnglish ? 'User' : 'مستخدم');
                         userName.style.cssText = 'color: var(--text-primary-color); font-weight: bold; font-size: 0.9rem;';
 
                         const dashboardBtn = document.createElement('a');
