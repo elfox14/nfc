@@ -2,8 +2,6 @@
 <html lang="en" dir="ltr">
 
 <head>
-  <!-- SEO: Block indexing -->
-  <meta name="robots" content="noindex, nofollow" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Google Tag Manager -->
@@ -21,8 +19,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
         rel="stylesheet">
-    <script src="/nfc/api-config.js?v=2"></script>
-    <script src="/nfc/auth.js?v=2"></script>
+    <script src="/nfc/auth.js"></script>
     <script src="/nfc/lang-switcher.js"></script>
     <style>
         .dashboard-container {
@@ -437,7 +434,7 @@
     <nav class="navbar" style="background: rgba(28, 42, 59, 1);">
         <div class="container nav-content">
             <a href="/nfc/index-en.html" class="nav-logo">
-                <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME">
+                <img src="https://www.mcprim.com/nfc/mcprime-logo-transparent.png" alt="MC PRIME">
             </a>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <button onclick="switchLanguage('ar')" class="lang-btn" style="padding: 5px 10px;">عربي</button>
@@ -593,63 +590,13 @@
             });
         });
 
-        // Handle Google OAuth redirect — extract auth data from URL hash (#gauth=...)
-        (function () {
-            const hash = window.location.hash;
-            if (hash.startsWith('#gauth=')) {
-                try {
-                    const encoded = hash.slice(7);
-                    const decodedStr = decodeURIComponent(encoded);
-                    const data = JSON.parse(decodedStr);
-                    if (data.token && data.user) {
-                        Auth.setSession(data.token, data.user);
-                        history.replaceState(null, '', window.location.pathname + window.location.search);
-                    }
-                } catch (e) {
-                    console.error('[Auth] Failed to decode gauth hash:', e);
-                }
-            }
-        })();
-
-        async function fetchWithAutoRefresh(url, options = {}) {
-            let response = await fetch(url, {
-                ...options,
-                headers: {
-                    ...(options.headers || {}),
-                    ...Auth.getHeader()
-                },
-                credentials: 'include'
-            });
-
-            if (response.status === 401 || response.status === 403) {
-                const refreshed = await Auth.refreshSession();
-
-                if (!refreshed.success) {
-                    await Auth.logoutServer('SessionExpired');
-                    return null;
-                }
-
-                response = await fetch(url, {
-                    ...options,
-                    headers: {
-                        ...(options.headers || {}),
-                        ...Auth.getHeader()
-                    },
-                    credentials: 'include'
-                });
-            }
-
-            return response;
-        }
-
         document.addEventListener('DOMContentLoaded', async () => {
             if (!Auth.isLoggedIn()) {
-                window.location.href = '/nfc/login-en.html?error=AuthNotLoggedIn';
+                window.location.href = '/nfc/login-en.html';
                 return;
             }
 
-
-            document.getElementById('user-display-name').textContent = Auth.getUser()?.name || 'User';
+            document.getElementById('user-display-name').textContent = Auth.user?.name || 'User';
 
             // Check URL params for tab
             const urlParams = new URLSearchParams(window.location.search);
@@ -668,30 +615,11 @@
             loadRequestCount();
         });
 
-        // Listen for save events from Editor tab to auto-refresh designs
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'nfc:design_saved') {
-                const section = document.getElementById('section-my-designs');
-                if (section && section.classList.contains('active')) {
-                    console.log('[Dashboard EN] Auto-refreshing designs from cross-tab event');
-                    loadMyDesigns();
-                }
-            }
-        });
-
         async function loadMyDesigns() {
-            const grid = document.getElementById('designs-grid');
             try {
-                const response = await fetchWithAutoRefresh(Auth.API_USER_DESIGNS);
-
-                if (!response) return; // Handled by auto-refresh logout
-
-                if (!response.ok) {
-                    const errText = await response.text().catch(() => '');
-                    throw new Error('Server error: ' + response.status + ' ' + errText);
-                }
-
+                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
                 const data = await response.json();
+                const grid = document.getElementById('designs-grid');
                 grid.innerHTML = '';
                 if (data.success && data.designs && data.designs.length > 0) {
                     data.designs.forEach(design => {
@@ -714,7 +642,6 @@
                                 <div class="card-actions">
                                     <a href="/nfc/viewer-en.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">View</a>
                                     <a href="/nfc/editor-en.html?id=${design.shortId}" class="action-btn btn-edit">Edit</a>
-                                    <button class="action-btn btn-remove" onclick="deleteDesign('${design.shortId}')">Delete</button>
                                 </div>
                             </div>`;
                         grid.appendChild(card);
@@ -723,40 +650,14 @@
                     grid.innerHTML = `<div class="empty-state"><i class="far fa-folder-open"></i><h3>No saved designs yet</h3><p>Start creating your first digital business card now</p><a href="/nfc/editor-en.html" class="btn btn-primary" style="margin-top: 20px;">Create Card</a></div>`;
                 }
             } catch (err) {
-                console.error('[Dashboard] loadMyDesigns failed:', err);
-                grid.innerHTML = `
-                    <div style="grid-column:1/-1;text-align:center;padding:40px;">
-                        <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#ff5252;margin-bottom:15px;"></i>
-                        <p style="color:#ff5252;font-size:1.1rem;">Error loading designs</p>
-                        <p style="color:#aaa;font-size:0.85rem;margin-bottom:20px;">${err.message}</p>
-                        <button onclick="loadMyDesigns()" style="padding:10px 25px;background:#4da6ff;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">
-                            <i class="fas fa-redo"></i> Retry
-                        </button>
-                    </div>`;
-            }
-        }
-
-        async function deleteDesign(shortId) {
-            if (!confirm('Are you sure you want to permanently delete this design? It will also be removed from the gallery.')) return;
-            try {
-                const res = await fetchWithAutoRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
-                    method: 'DELETE'
-                });
-                const data = await res.json();
-                if (data.success) {
-                    loadMyDesigns();
-                } else {
-                    alert(data.error || 'Failed to delete design');
-                }
-            } catch (err) {
                 console.error(err);
-                alert('An error occurred while deleting the design');
+                document.getElementById('designs-grid').innerHTML = '<p style="text-align: center; color: #ff5252;">Error loading data</p>';
             }
         }
 
         async function loadRequestCount() {
             try {
-                const res = await fetchWithAutoRefresh(`${baseUrl}/api/card-requests/count`);
+                const res = await fetch(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
                 const data = await res.json();
                 const badge = document.getElementById('requests-badge');
                 if (data.count > 0) { badge.textContent = data.count; badge.style.display = 'inline'; }
