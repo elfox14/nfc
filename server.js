@@ -342,7 +342,7 @@ app.post('/api/auth/register', [body('email').isEmail().normalizeEmail(), body('
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     await db.collection(usersCollectionName).updateOne({ userId }, { $set: { refreshTokenHash: hashedRefresh } });
-    res.cookie('refreshToken', refreshTokenValue, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax', maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth' });
+    res.cookie('refreshToken', refreshTokenValue, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth' });
     res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
   } catch (err) {
     if (err.code === 11000) return res.status(400).json({ error: 'User already exists' });
@@ -364,7 +364,7 @@ app.post('/api/auth/login', [body('email').isEmail().normalizeEmail(), body('pas
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     await db.collection(usersCollectionName).updateOne({ userId: user.userId }, { $set: { refreshTokenHash: hashedRefresh } });
-    res.cookie('refreshToken', refreshTokenValue, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax', maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth' });
+    res.cookie('refreshToken', refreshTokenValue, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth' });
     res.json({ success: true, token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } });
   } catch (err) { console.error('Login error:', err); res.status(500).json({ error: 'Login failed' }); }
 });
@@ -405,7 +405,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     await db.collection(usersCollectionName).updateOne({ userId: user.userId }, { $set: { refreshTokenHash: hashedRefresh } });
-    res.cookie('refreshToken', refreshTokenValue, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax', maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth' });
+    res.cookie('refreshToken', refreshTokenValue, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth' });
     const authEncoded = encodeURIComponent(JSON.stringify({ token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } }));
     const dashboardPage = lang === 'en' ? `${frontendBase}/dashboard-en.html#gauth=${authEncoded}` : `${frontendBase}/dashboard.html#gauth=${authEncoded}`;
     return res.redirect(dashboardPage);
@@ -481,7 +481,7 @@ app.post('/api/auth/refresh', async (req, res) => {
     const newRefreshToken = createRefreshToken();
     const newHashedRefresh = hashToken(newRefreshToken);
     await db.collection(usersCollectionName).updateOne({ userId: user.userId }, { $set: { refreshTokenHash: newHashedRefresh } });
-    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax', maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth' });
+    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth' });
     res.json({ success: true, token: newAccessToken });
   } catch (err) { console.error('Token refresh error:', err); res.status(500).json({ error: 'Token refresh failed' }); }
 });
@@ -489,7 +489,7 @@ app.post('/api/auth/logout', async (req, res) => {
   try {
     const tokenFromCookie = req.cookies?.refreshToken;
     if (tokenFromCookie && db) { const hashedToken = hashToken(tokenFromCookie); await db.collection(usersCollectionName).updateOne({ refreshTokenHash: hashedToken }, { $unset: { refreshTokenHash: '' } }); }
-    res.clearCookie('refreshToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax', path: '/api/auth' });
+    res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'None', path: '/api/auth' });
     res.json({ success: true });
   } catch (err) { console.error('Logout error:', err); res.status(500).json({ error: 'Logout failed' }); }
 });
