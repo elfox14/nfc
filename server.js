@@ -250,8 +250,9 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
     const filename = nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
     await fs.promises.writeFile(out, processedBuffer);
-    const base = absoluteBaseUrl(req);
-    return res.json({ success: true, url: `${base}/uploads/${filename}`, local: true });
+    const uploadBaseUrl = (process.env.UPLOAD_BASE_URL || '').replace(/\/+$/, '');
+    const imageUrl = uploadBaseUrl ? `${uploadBaseUrl}/${filename}` : `${absoluteBaseUrl(req)}/uploads/${filename}`;
+    return res.json({ success: true, url: imageUrl, local: true });
   } catch (e) {
     console.error('Image upload processing error:', e);
     if (!res.headersSent) return res.status(500).json({ error: 'فشل معالجة الصورة بعد الرفع.' });
