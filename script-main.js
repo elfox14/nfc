@@ -546,6 +546,27 @@ const ShareManager = {
 
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
+
+        // --- تطبيع مركزي: تأكد أن imageUrls.front/back موجودة ---
+        if (state.imageUrls) {
+            console.log('[ShareManager] Normalizing imageUrls...', {
+                capturedFront: !!state.imageUrls.capturedFront,
+                frontBefore: state.imageUrls.front
+            });
+            
+            // نستخدم لقطة الشاشة كواجهة (front) إذا لم تكن هناك خلفية مخصصة
+            if (state.imageUrls.capturedFront && (!state.imageUrls.front || state.imageUrls.front === '')) {
+                state.imageUrls.front = state.imageUrls.capturedFront;
+            }
+            if (state.imageUrls.capturedBack && (!state.imageUrls.back || state.imageUrls.back === '')) {
+                state.imageUrls.back = state.imageUrls.capturedBack;
+            }
+            
+            console.log('[ShareManager] Normalization complete:', {
+                frontAfter: state.imageUrls.front
+            });
+        }
+
         try {
             const headers = { 'Content-Type': 'application/json' };
             const token = localStorage.getItem('authToken');

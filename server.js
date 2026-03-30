@@ -152,7 +152,7 @@ function sanitizeInputs(inputs) {
   return sanitized;
 }
 // --- VIEWER & SEO ROUTES ---
-app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
+app.get(['/nfc/viewer', '/nfc/viewer.html', '/viewer', '/viewer.html'], async (req, res) => {
   try {
     if (!db) { res.setHeader('X-Robots-Tag', 'noindex, noarchive'); return res.status(500).send('DB not connected'); }
     const id = String(req.query.id);
@@ -170,7 +170,16 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
     const imageUrls = doc.data.imageUrls || {};
     let ogImage = `${base}/nfc/og-image.png`;
     const ogSource = imageUrls.capturedFront || imageUrls.front;
-    if (ogSource) { ogImage = ogSource.startsWith('http') ? ogSource : `${base}${ogSource.startsWith('/') ? '' : '/'}${ogSource}`; }
+    if (ogSource) { 
+      if (ogSource.startsWith('http')) {
+        ogImage = ogSource;
+      } else {
+        // Ensure local paths have /nfc/ prefix and no double slashes
+        const cleanSource = ogSource.startsWith('/') ? ogSource : `/${ogSource}`;
+        const prefix = cleanSource.startsWith('/nfc/') ? '' : '/nfc';
+        ogImage = `${base}${prefix}${cleanSource}`;
+      }
+    }
     const keywords = ['NFC', 'بطاقة عمل ذكية', 'كارت شخصي', name, ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])].filter(Boolean).join(', ');
     res.render(path.join(rootDir, 'viewer.ejs'), { pageUrl, name, tagline, ogImage, keywords, design: doc.data, canonical: pageUrl, contactLinksHtml: '' });
   } catch (e) {
@@ -206,7 +215,7 @@ app.get('/', (req, res) => { res.redirect(301, '/nfc/'); });
 // --- UPLOADS FOLDER ---
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
+app.use('/nfc/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 // --- API ROUTES ---
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true, legacyHeaders: false, message: 'Too many requests from this IP, please try again after 15 minutes' });
 app.use('/api/', apiLimiter);
@@ -280,7 +289,7 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
     const out = path.join(uploadDir, filename);
     await fs.promises.writeFile(out, processedBuffer);
     const uploadBaseUrl = (process.env.UPLOAD_BASE_URL || '').replace(/\/+$/, '');
-    const imageUrl = uploadBaseUrl ? `${uploadBaseUrl}/${filename}` : `${absoluteBaseUrl(req)}/uploads/${filename}`;
+    const imageUrl = uploadBaseUrl ? `${uploadBaseUrl}/${filename}` : `${absoluteBaseUrl(req)}/nfc/uploads/${filename}`;
     console.warn('[Upload] Saved locally (proxy not configured or failed). URL:', imageUrl);
     return res.json({ success: true, url: imageUrl, local: true });
   } catch (e) {
@@ -632,10 +641,12 @@ app.get('/sitemap.xml', async (req, res) => {
 app.get('/healthz', (req, res) => {
   if (db && db.client.topology && db.client.topology.isConnected()) res.json({ ok: true, db_status: 'connected' }); else res.status(500).json({ ok: false, db_status: 'disconnected' });
 });
-app.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
+app.get(['/nfc/editor', '/nfc/editor.html', '/editor', '/editor.html'], (req, res) => {
   if (req.useragent.isMobile) res.sendFile(path.join(rootDir, 'editor-mobile.html')); else res.sendFile(path.join(rootDir, 'editor.html'));
 });
+// Static files with and without /nfc prefix
 app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
+app.use(express.static(rootDir, { extensions: ['html'] }));
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.stack || err);
   const statusCode = err.status || 500;
