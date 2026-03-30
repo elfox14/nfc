@@ -52,128 +52,133 @@
     <meta property="twitter:image" content="https://www.mcprim.com/nfc/og-image.png">
     <meta property="twitter:image:alt" content="بطاقة عمل NFC الذكية من MC PRIME">
     <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
     {
-        "@context": "https://schema.org",
-        "@graph": [
-                        {
-          "@type": "WebSite",
-          "name": "MC PRIME",
-          "url": "https://www.mcprim.com/nfc/",
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://www.mcprim.com/nfc/?s={search_term_string}",
-            "query-input": "required name=search_term_string"
+      "@type": "WebSite",
+      "name": "MC PRIME",
+      "url": "https://www.mcprim.com/nfc/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.mcprim.com/nfc/?s={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "WebPage",
+      "name": "بطاقة عمل NFC الذكية - صمم بطاقتك الرقمية مجانًا",
+      "description": "صمم بطاقة عمل NFC الذكية مجانًا مع MC PRIME",
+      "url": "https://www.mcprim.com/nfc/",
+      "inLanguage": "ar"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "الرئيسية",
+          "item": "https://www.mcprim.com/nfc/"
+        }
+      ]
+    },
+    {
+      "@type": "Organization",
+      "name": "MC PRIME",
+      "url": "https://www.mcprim.com",
+      "logo": "https://mcprim.com/nfc/mc-prime-nfc.png",
+      "sameAs": [
+        "https://facebook.com/mcprime",
+        "https://instagram.com/mcprime",
+        "https://linkedin.com/company/mcprime"
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "MC PRIME NFC Card Designer",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "تصميم بطاقات عمل NFC و QR Code",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "5000"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "ما هي القيمة الحقيقية لهذه البطاقة؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "بطاقة عمل NFC الذكية تتيح لك مشاركة بياناتك بلمسة واحدة."
           }
         },
-                "@type": "WebPage",
-                "name": "بطاقة عمل NFC الذكية - صمم بطاقتك الرقمية مجانًا",
-                "description": "صمم بطاقة عمل NFC الذكية مجاناً مع MC PRIME",
-                "url": "https://www.mcprim.com/nfc/",
-                "inLanguage": "ar"
-            },
-            {
-                "@type": "BreadcrumbList",
-                "itemListElement": [
-                    {
-                        "@type": "ListItem",
-                        "position": 1,
-                        "name": "الرئيسية",
-                        "item": "https://www.mcprim.com/nfc/"
-                    }
-                ]
-            },
-            {
-                "@type": "Organization",
-                "name": "MC PRIME",
-                "url": "https://www.mcprim.com",
-                "logo": "https://mcprim.com/nfc/mc-prime-nfc.png",
-                "sameAs": [
-                    "https://facebook.com/mcprime",
-                    "https://instagram.com/mcprime",
-                    "https://linkedin.com/company/mcprime"
-                ]
-            },
-            {
-                "@type": "SoftwareApplication",
-                "name": "MC PRIME NFC Card Designer",
-                "applicationCategory": "BusinessApplication",
-                "operatingSystem": "Web",
-                "offers": {
-                    "@type": "Offer",
-                    "price": "0",
-                    "priceCurrency": "USD"
-                },
-                "description": "أداة مجانية لتصميم بطاقات العمل الرقمية الذكية التي تدعم NFC و QR Code",
-                "aggregateRating": {
-                    "@type": "AggregateRating",
-                    "ratingValue": "4.9",
-                    "ratingCount": "5000"
-                }
-            },
-            {
-                "@type": "FAQPage",
-                "mainEntity": [
-                    {
-                        "@type": "Question",
-                        "name": "ما هي القيمة الحقيقية لهذه البطاقة؟",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "هي أكثر من مجرد بطاقة، إنها أداة تسويق حديثة. توفر عليك تكاليف الطباعة، صديقة للبيئة، وتسمح لك بتحديث بياناتك فوراً، مما يضمن أن معلوماتك دقيقة دائمًا لدى عملائك."
-                        }
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "كيف يتم تأمين بياناتي وخصوصيتي؟",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "نحن نأخذ الخصوصية على محمل الجد. بياناتك تستخدم فقط لعرض بطاقتك ولا نشاركها أو نبيعها لأي طرف ثالث."
-                        }
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "هل تقدمون دعمًا فنيًا؟",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "بالتأكيد. نقدم دعمًا كاملاً لمساعدتك في أي خطوة. إذا واجهت أي مشكلة أثناء تصميم بطاقتك أو كان لديك أي استفسار، يمكنك التواصل معنا مباشرة عبر صفحة اتصل بنا."
-                        }
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "كيف أطلب بطاقة NFC فعلية؟",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "بعد تصميم بطاقتك وحفظها، يمكنك التواصل معنا عبر صفحة اتصل بنا لطلب بطاقة NFC فعلية. سنقوم ببرمجة البطاقة برابط بطاقتك الرقمية وشحنها إليك."
-                        }
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "ما الهواتف المتوافقة مع بطاقات NFC؟",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "معظم الهواتف الذكية الحديثة تدعم NFC، بما في ذلك: iPhone 7 والأحدث (iOS 11+)، وجميع هواتف Android التي تدعم NFC (معظم الهواتف منذ 2015)."
-                        }
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "هل تعمل البطاقة مع iPhone؟",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "نعم! iPhone 7 والأحدث يدعم قراءة بطاقات NFC. لأجهزة iPhone، يكفي تقريب الهاتف من البطاقة وسيظهر إشعار للانتقال إلى صفحة بطاقتك. كما يمكن دائماً مسح رمز QR كبديل."
-                        }
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "كم تستغرق عملية الشحن؟",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "نقوم بشحن البطاقات خلال 3-5 أيام عمل داخل مصر، و7-14 يوم عمل للدول العربية الأخرى. سنرسل لك رابط تتبع الشحنة فور إرسالها."
-                        }
-                    }
-                ]
-            }
-        ]
+        {
+          "@type": "Question",
+          "name": "كيف يتم تأمين بياناتي وخصوصيتي؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "بياناتك محمية بالكامل ولا تُشارك مع أي طرف ثالث."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل تقدمون دعمًا فنيًا؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "نعم، نقدم دعمًا فنيًا على مدار الساعة."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "كيف أطلب بطاقة NFC فعلية؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "يمكنك طلب بطاقة NFC من خلال صفحة الطلب على موقعنا."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "ما الهواتف المتوافقة مع بطاقات NFC؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "تتوافق بطاقات NFC مع iPhone 7 فما فوق مع iOS 11، وجميع هواتف Android التي تدعم NFC من 2015."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل تعمل البطاقة مع iPhone؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "نعم! iPhone 7 فما فوق يدعم NFC بشكل كامل. كما يمكن استخدام QR Code على جميع الأجهزة."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "كم تستغرق عملية الشحن؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "يستغرق الشحن من 3-5 أيام محلياً و 7-14 يوم دولياً."
+          }
+        }
+      ]
     }
-    </script>    <link rel="icon" id="favicon" href="https://mcprim.com/nfc/mc-prime-nfc.png" type="image/png">
+  ]
+}
+</script>
+    <link rel="icon" id="favicon" href="https://mcprim.com/nfc/mc-prime-nfc.png" type="image/png">
 
     <!-- Preconnect for external resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -299,6 +304,7 @@
     <!-- Language Switcher -->
     <script src="/nfc/lang-switcher.js" defer></script>
     <!-- Authentication -->
+    <script src="/nfc/api-config.js"></script>
     <script src="/nfc/auth.js" defer></script>
 
     <!-- Google AdSense -->
