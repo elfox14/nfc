@@ -1,6 +1,11 @@
 const jwt = require('jsonwebtoken');
-// FIX: نقل require خارج الدالة لتجنب إعادة التحميل في كل طلب
-const config = require('./config');
+
+let config;
+try {
+    config = require('./config');
+} catch (e) {
+    config = null;
+}
 
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -10,10 +15,11 @@ const verifyToken = (req, res, next) => {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
     }
 
-    const secret = config.JWT_SECRET;
+    // Resolve JWT secret — never use a hardcoded fallback
+    const secret = (config && config.JWT_SECRET) || process.env.JWT_SECRET;
     if (!secret) {
-        console.error('[Security] JWT_SECRET is not configured!');
-        return res.status(500).json({ error: 'Server misconfiguration: JWT_SECRET not set.' });
+        console.error('[auth-middleware] JWT_SECRET is not configured');
+        return res.status(500).json({ error: 'Server misconfiguration: JWT_SECRET not set' });
     }
 
     try {
@@ -21,8 +27,7 @@ const verifyToken = (req, res, next) => {
         req.user = decoded; // { userId: "...", email: "..." }
         next();
     } catch (err) {
-        console.error('[JWT Verification Error]', err.message);
-        return res.status(403).json({ error: 'Invalid token.', details: err.message });
+        return res.status(403).json({ error: 'Invalid token.' });
     }
 };
 

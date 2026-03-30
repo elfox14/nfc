@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
         rel="stylesheet">
-    <script src="/nfc/auth.js"></script>
+    <script src="/nfc/auth.js?v=2"></script>
     <script src="/nfc/lang-switcher.js"></script>
     <style>
         .dashboard-container {
@@ -232,6 +232,15 @@
             background: var(--primary-hover);
         }
 
+        .btn-remove {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .btn-remove:hover {
+            background: #c0392b;
+        }
+
         .empty-state {
             text-align: center;
             padding: 50px;
@@ -437,7 +446,7 @@
     <nav class="navbar" style="background: rgba(28, 42, 59, 1);">
         <div class="container nav-content">
             <a href="/nfc/" class="nav-logo">
-                <img src="https://www.mcprim.com/nfc/mcprime-logo-transparent.png" alt="MC PRIME">
+                <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME">
             </a>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <button onclick="switchLanguage('en')" class="lang-btn" style="padding: 5px 10px;">English</button>
@@ -601,11 +610,34 @@
             });
         });
 
+        // Handle Google OAuth redirect — extract auth data from URL hash (#gauth=...)
+        (function () {
+            const hash = window.location.hash;
+            if (hash.startsWith('#gauth=')) {
+                try {
+                    const encoded = hash.slice(7);
+                    const data = JSON.parse(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')));
+                    if (data.token && data.user) {
+                        Auth.setSession(data.token, data.user);
+                        history.replaceState(null, '', window.location.pathname + window.location.search);
+                    }
+                } catch (e) {
+                    console.error('[Auth] Failed to decode gauth hash:', e);
+                }
+            }
+        })();
+
         document.addEventListener('DOMContentLoaded', async () => {
+            // Try to restore session from httpOnly refresh cookie if token is not in memory
+            if (!Auth.isLoggedIn()) {
+                await Auth.refreshAccessToken();
+            }
+
             if (!Auth.isLoggedIn()) {
                 window.location.href = '/nfc/login.html';
                 return;
             }
+
 
             document.getElementById('user-display-name').textContent = Auth.user?.name || 'مستخدم';
 
@@ -627,16 +659,38 @@
             loadRequestCount();
         });
 
+        // Listen for save events from Editor tab to auto-refresh designs
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'nfc:design_saved') {
+                const section = document.getElementById('section-my-designs');
+                if (section && section.classList.contains('active')) {
+                    console.log('[Dashboard] Auto-refreshing designs from cross-tab event');
+                    loadMyDesigns();
+                }
+            }
+        });
+
         async function loadMyDesigns() {
+            const grid = document.getElementById('designs-grid');
             try {
-                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
+                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader(), cache: 'no-store' });
+
+                if (!response.ok) {
+                    const errText = await response.text().catch(() => '');
+                    console.error('[Dashboard] API error:', response.status, errText);
+                    if (response.status === 401 || response.status === 403) {
+                        Auth.logout();
+                        return;
+                    }
+                    throw new Error('خطأ الخادم: ' + response.status);
+                }
+
                 const data = await response.json();
-                const grid = document.getElementById('designs-grid');
                 grid.innerHTML = '';
 
                 if (data.success && data.designs && data.designs.length > 0) {
                     data.designs.forEach(design => {
-                        const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || 'بدون اسم') : 'بطاقة';
+                        const name = design.data?.inputs ? (design.data.inputs['input-name_ar'] || design.data.inputs['input-name_en'] || design.data.inputs['input-name'] || 'بدون اسم') : 'بطاقة';
                         const views = design.views || 0;
                         const date = new Date(design.createdAt).toLocaleDateString('ar-EG');
                         console.log('Design ImageURLs:', design.data?.imageUrls);
@@ -657,6 +711,7 @@
                                 <div class="card-actions">
                                     <a href="/nfc/viewer.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">عرض</a>
                                     <a href="/nfc/editor.html?id=${design.shortId}" class="action-btn btn-edit">تعديل</a>
+                                    <button class="action-btn btn-remove" onclick="deleteDesign('${design.shortId}')">حذف</button>
                                 </div>
                             </div>`;
                         grid.appendChild(card);
@@ -671,8 +726,37 @@
                         </div>`;
                 }
             } catch (err) {
+                console.error('[Dashboard] loadMyDesigns failed:', err);
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:40px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#ff5252;margin-bottom:15px;"></i>
+                        <p style="color:#ff5252;font-size:1.1rem;">حدث خطأ أثناء تحميل التصميمات</p>
+                        <p style="color:#aaa;font-size:0.85rem;margin-bottom:20px;">${err.message}</p>
+                        <button onclick="loadMyDesigns()" style="padding:10px 25px;background:#4da6ff;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">
+                            <i class="fas fa-redo"></i> إعادة المحاولة
+                        </button>
+                    </div>`;
+            }
+        }
+
+
+
+        async function deleteDesign(shortId) {
+            if (!confirm('هل أنت متأكد أنك تريد حذف هذا التصميم نهائياً؟ سيتم حذفه أيضاً من المعرض.')) return;
+            try {
+                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
+                    method: 'DELETE',
+                    headers: Auth.getHeader()
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadMyDesigns();
+                } else {
+                    alert(data.error || 'فشل حذف التصميم');
+                }
+            } catch (err) {
                 console.error(err);
-                document.getElementById('designs-grid').innerHTML = '<p style="text-align: center; color: #ff5252;">حدث خطأ أثناء تحميل البيانات</p>';
+                alert('حدث خطأ أثناء حذف التصميم');
             }
         }
 

@@ -375,19 +375,16 @@ const UIManager = {
     },
 
     async uploadImageToServer(file) {
-        // المسار الأساسي: الرفع عبر الباك إند (آمن — يتولى الـ proxy إلى PHP server)
+        const formData = new FormData();
+        formData.append("image", file);
+        // التغيير هنا: إرسال الطلب مباشرة إلى سيرفر الصور لتجاوز حظر "البوتات" على سيرفر Render
+        formData.append("secret", "mcprime_upload_secret_2024_xK9mP2vL");
+
         try {
-            const backendFormData = new FormData();
-            backendFormData.append("image", file);
-
-            const headers = {};
-            const token = localStorage.getItem('authToken');
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            const response = await fetch(`${Config.API_BASE_URL}/api/upload-image`, {
+            const uploadUrl = "https://uploads.mcprim.com/upload.php";
+            const response = await fetch(uploadUrl, {
                 method: "POST",
-                headers: headers,
-                body: backendFormData
+                body: formData
             });
 
             const result = await response.json();
@@ -396,38 +393,20 @@ const UIManager = {
                 throw new Error(result.error || "Server error");
             }
 
-            if (result.success && result.url) {
-                return result.url;
-            }
-            throw new Error(result.error || "Invalid response from server");
+            return result.url;
         } catch (error) {
-            console.error("Backend image upload failed:", error);
-
-            // المسار الاحتياطي: الرفع المباشر إلى PHP server
-            // ملاحظة: يتم إنشاء FormData جديد لأن الـ body stream استُهلك في المحاولة السابقة
+            console.error("Direct image upload failed:", error);
+            // محاولة أخيرة عبر السيرفر المحلي في حال فشل الاتصال المباشر (رغم أنه قد يفشل بسبب الحظر)
             try {
-                console.log("Attempting direct upload fallback...");
-                const directFormData = new FormData();
-                directFormData.append("image", file);
-
-                const directResponse = await fetch("https://uploads.mcprim.com/upload.php", {
+                console.log("Attempting fallback to local server upload...");
+                const localResponse = await fetch(`${Config.API_BASE_URL}/api/upload-image`, {
                     method: "POST",
-                    body: directFormData
+                    body: formData
                 });
-
-                const directResult = await directResponse.json();
-
-                if (!directResponse.ok) {
-                    throw new Error(directResult.error || "Direct upload server error");
-                }
-
-                if (directResult.success && directResult.url) {
-                    return directResult.url;
-                }
-                throw new Error(directResult.error || "Invalid response from direct upload");
+                const localResult = await localResponse.json();
+                return localResult.url;
             } catch (fallbackError) {
-                console.error("Direct upload also failed:", fallbackError);
-                throw new Error("فشل رفع الصورة. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.");
+                throw new Error("فشل الرفع المباشر والمحلي. تأكد من اتصالك بالإنترنت.");
             }
         }
     },

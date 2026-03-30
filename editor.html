@@ -2,14 +2,16 @@
 <html lang="ar" dir="rtl">
 
 <head>
-  <!-- SEO: Block indexing -->
-  <meta name="robots" content="noindex, nofollow" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>محرر بطاقات العمل الذكية | MC PRIME</title>
     <meta name="description"
-        content="استخدم محرر MC PRIME لتصميم وتخصيص بطاقة عملك الذكية (NFC) مجاناً. تحكم كامل في الألوان، الخطوط، الشعار، ومعلومات الاتصال.">    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
+        content="استخدم محرر MC PRIME لتصميم وتخصيص بطاقة عملك الذكية (NFC) مجاناً. تحكم كامل في الألوان، الخطوط، الشعار، ومعلومات الاتصال.">
+
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://www.mcprim.com/nfc/editor.html">
+    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
 
     <!-- Google Tag Manager -->
     <script>(function (w, d, s, l, i) {
@@ -48,7 +50,6 @@
 
     <!-- ملفات الجافاسكريبت الخاصة بالمشروع (الترتيب مهم) -->
     <script src="lang-switcher.js" defer></script>
-    <script src="/nfc/api-config.js?v=2"></script>
     <script src="/nfc/auth.js?v=2" defer></script>
     <script src="security-utils.js" defer></script>
     <script src="mobile.js" defer></script>
@@ -118,6 +119,16 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
+
+    <!-- Trial Period Banner -->
+    <div class="trial-banner" id="trial-banner">
+        <span class="trial-banner__icon">🎉</span>
+        <div class="trial-banner__text">
+            <span>فترة تجريبية مجانية</span>
+            <span class="trial-banner__highlight">جميع الميزات متاحة حتى 1 أبريل 2026</span>
+        </div>
+        <button class="trial-banner__close" id="close-trial-banner" title="إغلاق">&times;</button>
+    </div>
 
     <header class="pro-toolbar">
         <div class="toolbar-group toolbar-start">

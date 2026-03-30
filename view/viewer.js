@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     const viewerContainer = document.querySelector('.viewer-container');
-    const API_BASE_URL = window.__API_BASE_URL || window.location.origin;
+    const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
     let cardData = null;
 
     // --- HELPER FUNCTIONS ---

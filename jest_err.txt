@@ -1,0 +1,40 @@
+  console.log
+    [dotenv@17.2.3] injecting env (17) from .env -- tip: ΓÜÖ∩╕Å  override existing env vars with { override: true }
+
+      at _log (node_modules/dotenv/lib/main.js:142:11)
+
+  console.warn
+    Field encryption util not found ΓÇö sensitive-field encryption will be skipped unless utils/field-encryption.js is added.
+
+    [0m [90m 52 |[39m   encrypt [33m=[39m (v) [33m=>[39m v[33m;[39m
+     [90m 53 |[39m   decrypt [33m=[39m (v) [33m=>[39m v[33m;[39m
+    [31m[1m>[22m[39m[90m 54 |[39m   console[33m.[39mwarn([32m'Field encryption util not found ΓÇö sensitive-field encryption will be skipped unless utils/field-encryption.js is added.'[39m)[33m;[39m
+     [90m    |[39m           [31m[1m^[22m[39m
+     [90m 55 |[39m }
+     [90m 56 |[39m
+     [90m 57 |[39m [90m// ╪º╪│╪¬╪«╪»┘à middleware auth ╪º┘ä┘à┘ê╪¼┘ê╪» ┘ü┘è middleware/auth-middleware.js[39m[0m
+
+      at Object.warn (server.js:54:11)
+      at Object.require (test/api.spec.js:50:13)
+
+FAIL test/api.spec.js
+  ΓùÅ Test suite failed to run
+
+    ReferenceError: Cannot access 'redisClient' before initialization
+
+      233 |   message: 'Too many requests from this IP, please try again after 15 minutes'
+      234 | };
+    > 235 | if (redisClient) apiLimiterOpts.store = getRedisStore('rl:api:');
+          | ^
+      236 | const apiLimiter = rateLimit(apiLimiterOpts);
+      237 | app.use('/api/', apiLimiter);
+      238 |
+
+      at Object.<anonymous> (server.js:235:1)
+      at Object.require (test/api.spec.js:50:13)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        4.298 s
+Ran all test suites matching /test\\api.spec.js/i.

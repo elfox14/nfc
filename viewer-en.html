@@ -207,8 +207,7 @@
         window.cardData = {};
     </script>
 
-    <script src="/nfc/api-config.js"></script>
-    <script src="/nfc/auth.js"></script>
+    <script src="/nfc/auth.js?v=2"></script>
     <script src="viewer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -228,7 +227,7 @@
                 if (!ownerData.success) return;
 
                 const isLoggedIn = Auth.isLoggedIn();
-                const currentUserId = Auth.getUser()?.userId;
+                const currentUserId = Auth.user?.userId;
 
                 if (isLoggedIn && ownerData.ownerId === currentUserId) return;
                 if (ownerData.cardPrivacy === 'deny_all') return;

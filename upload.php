@@ -6,77 +6,101 @@
  * ضع هذا الملف في: mcprim.com/nfc/upload.php
  * أنشئ مجلد: mcprim.com/nfc/uploads/ (صلاحيات 755)
  *
- * IMPORTANT: Set UPLOAD_SECRET in your environment or config file.
- * Never hard-code the secret key in source code.
+ * Required environment variables (set in server / hosting control panel):
+ *   UPLOAD_SECRET           - Shared secret key (long random string)
+ *   UPLOAD_ALLOWED_ORIGINS  - Comma-separated list of allowed CORS origins
+ *   UPLOAD_BASE_URL         - Base URL for generated file links
+ *   NODE_ENV                - 'production' or 'development'
  */
 
-// === التكوين ===
-// Load secret from environment variable (set on your server/hosting panel)
-$SECRET_KEY = getenv('UPLOAD_SECRET');
-if (empty($SECRET_KEY)) {
-    // Fallback: load from a config file outside the web root (NEVER commit this file)
-    $configFile = __DIR__ . '/../upload-config.php';
-    if (file_exists($configFile)) {
-        require $configFile; // should define $SECRET_KEY
+// === HTTPS Enforcement (production only) ===
+if (getenv('NODE_ENV') === 'production') {
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+        || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    if (!$isHttps) {
+        http_response_code(400);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => 'HTTPS is required in production']);
+        exit;
     }
 }
+
+// === Configuration from environment ===
+$UPLOAD_DIR  = __DIR__ . '/uploads/';
+$BASE_URL    = getenv('UPLOAD_BASE_URL') ?: '';
+$MAX_FILE_SIZE  = 10 * 1024 * 1024; // 10 MB
+$ALLOWED_TYPES  = ['image/webp', 'image/png', 'image/jpeg', 'image/gif'];
+
+// Secret — must be set; never hardcoded
+$SECRET_KEY = getenv('UPLOAD_SECRET');
 if (empty($SECRET_KEY)) {
     http_response_code(500);
     header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['error' => 'Server misconfiguration: upload secret not set']);
+    echo json_encode(['error' => 'Server misconfiguration: UPLOAD_SECRET not set']);
     exit;
 }
 
-$UPLOAD_DIR = __DIR__ . '/uploads/';
+// CORS allowed origins — must be set in production
+$allowedOriginsEnv = getenv('UPLOAD_ALLOWED_ORIGINS') ?: '';
+$allowedOrigins    = array_filter(array_map('trim', explode(',', $allowedOriginsEnv)));
+$origin            = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 
-// ✅ Read BASE_URL from environment variable instead of hardcoding
-$BASE_URL = getenv('UPLOAD_BASE_URL');
-if (!$BASE_URL) {
-    http_response_code(500);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['error' => 'Server misconfiguration: UPLOAD_BASE_URL not set']);
-    exit;
-}
-
-$MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-$ALLOWED_TYPES = ['image/webp', 'image/png', 'image/jpeg', 'image/gif'];
-
-// ✅ CORS origins from environment variable (comma-separated)
-$allowedOriginsEnv = getenv('ALLOWED_ORIGINS') ?: 'https://mcprim.com';
-$allowedOrigins = array_map('trim', explode(',', $allowedOriginsEnv));
-$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
-if (in_array($origin, $allowedOrigins)) {
-    header('Access-Control-Allow-Origin: ' . $origin);
-} else {
-    header('Access-Control-Allow-Origin: https://mcprim.com');
-}
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-Upload-Secret');
 header('Content-Type: application/json; charset=utf-8');
 
-// Handle preflight
+if (!empty($origin)) {
+    if (count($allowedOrigins) === 0 && getenv('NODE_ENV') === 'production') {
+        http_response_code(500);
+        echo json_encode(['error' => 'Server misconfiguration: UPLOAD_ALLOWED_ORIGINS must be set in production']);
+        exit;
+    }
+
+    if (count($allowedOrigins) === 0 || in_array($origin, $allowedOrigins)) {
+        // Development fallback or explicit origin match
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Vary: Origin');
+    } else {
+        http_response_code(403);
+        echo json_encode(['error' => 'CORS origin not allowed']);
+        exit;
+    }
+} else {
+    // No origin header: server-to-server / curl — allow, but don't expose CORS header
+    header('Access-Control-Allow-Origin: null');
+}
+
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, X-Upload-Secret');
+
+// === Handle preflight ===
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// === التحقق من الطريقة ===
+// === Verify HTTP method ===
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
     exit;
 }
 
-// === التحقق من المفتاح السري (header only - no POST body fallback) ===
-$providedSecret = isset($_SERVER['HTTP_X_UPLOAD_SECRET']) ? $_SERVER['HTTP_X_UPLOAD_SECRET'] : '';
+// === Verify secret ===
+$providedSecret = '';
+if (isset($_SERVER['HTTP_X_UPLOAD_SECRET'])) {
+    $providedSecret = $_SERVER['HTTP_X_UPLOAD_SECRET'];
+} elseif (isset($_POST['secret'])) {
+    $providedSecret = $_POST['secret'];
+}
 
+// Constant-time comparison to prevent timing attacks
 if (!hash_equals($SECRET_KEY, $providedSecret)) {
     http_response_code(403);
     echo json_encode(['error' => 'Unauthorized']);
     exit;
 }
 
-// === التحقق من وجود الملف ===
+// === Verify file present ===
 if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
     $errorCode = isset($_FILES['image']) ? $_FILES['image']['error'] : 'No file';
     http_response_code(400);
@@ -86,54 +110,53 @@ if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
 
 $file = $_FILES['image'];
 
-// === التحقق من الحجم ===
+// === Verify file size ===
 if ($file['size'] > $MAX_FILE_SIZE) {
     http_response_code(400);
     echo json_encode(['error' => 'File too large. Max 10MB.']);
     exit;
 }
 
-// === التحقق من النوع الحقيقي (magic bytes) ===
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
+// === Verify MIME type via finfo (not client-supplied Content-Type) ===
+$finfo    = finfo_open(FILEINFO_MIME_TYPE);
 $mimeType = finfo_file($finfo, $file['tmp_name']);
 finfo_close($finfo);
 
 if (!in_array($mimeType, $ALLOWED_TYPES)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid file type']);
+    echo json_encode(['error' => 'Invalid file type: ' . $mimeType]);
     exit;
 }
 
-// === إنشاء مجلد الرفع ===
+// === Ensure upload directory exists ===
 if (!is_dir($UPLOAD_DIR)) {
     mkdir($UPLOAD_DIR, 0755, true);
 }
 
-// Prevent PHP/script execution inside uploads dir
-$htaccessPath = $UPLOAD_DIR . '.htaccess';
-if (!file_exists($htaccessPath)) {
-    file_put_contents($htaccessPath,
-        "<FilesMatch \".+\\.ph(ar|p|tml|ps)$\">\n  Deny from all\n</FilesMatch>\n" .
-        "Options -ExecCGI\n" .
-        "AddHandler default-handler .php .php3 .php4 .php5 .phtml .phps .phar\n"
-    );
-}
-
-// === توليد اسم فريد ===
+// === Generate unique filename ===
 $extension = 'webp';
-if ($mimeType === 'image/png') $extension = 'png';
+if ($mimeType === 'image/png')  $extension = 'png';
 elseif ($mimeType === 'image/jpeg') $extension = 'jpg';
-elseif ($mimeType === 'image/gif') $extension = 'gif';
+elseif ($mimeType === 'image/gif')  $extension = 'gif';
 
-$filename = bin2hex(random_bytes(16)) . '.' . $extension;
+$filename = bin2hex(random_bytes(10)) . '.' . $extension;
 $filepath = $UPLOAD_DIR . $filename;
 
-// === حفظ الملف ===
+// === Save file ===
 if (move_uploaded_file($file['tmp_name'], $filepath)) {
-    $url = rtrim($BASE_URL, '/') . '/' . $filename;
+    if (!empty($BASE_URL)) {
+        $url = rtrim($BASE_URL, '/') . '/' . $filename;
+    } else {
+        $protocol  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host      = $_SERVER['HTTP_HOST'];
+        $scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+        $scriptPath = ($scriptDir === '.' || $scriptDir === '/') ? '' : $scriptDir;
+        $url = $protocol . '://' . $host . $scriptPath . '/uploads/' . $filename;
+    }
+
     echo json_encode([
-        'success' => true,
-        'url' => $url,
+        'success'  => true,
+        'url'      => $url,
         'filename' => $filename
     ]);
 } else {

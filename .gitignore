@@ -1,3 +1,23 @@
+# Environment / Secrets — NEVER commit these
+.env
+.env.local
+.env.*.local
+
+# Key and certificate files
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Backup files — may contain secrets
+*.bak
+
+# Sensitive local files
+cookies.txt
+
+# Upload directory — contains user data
+uploads/
+
 # Logs
 logs
 *.log
@@ -7,16 +27,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies
 node_modules
 dist
 dist-ssr
 *.local
-
-# Environment variables
-.env
-.env.*
-!.env.example
 
 # Editor directories and files
 .vscode/*
@@ -35,33 +49,3 @@ dist-ssr
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
-
-# Backup files
-*.bak
-*.backup
-
-# Temporary files
-temp.txt
-out.txt
-test-ssh.txt
-test-log.txt
-test-results.txt
-jest_err.txt
-cookies.txt
-headers.txt
-gitignore.txt
-
-# Coverage reports
-coverage/
-
-# Test artifacts
-test-results.json
-test-auth.js
-
-# Uploads folder (user content should not be in git)
-uploads/
-!uploads/.gitkeep
-
-# Large media / snapshots (use CDN instead)
-*.html.bak
-mcprim.com_*.html

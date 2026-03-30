@@ -1,14 +1,12 @@
+# السماح لعناكب البحث بالوصول إلى الموقع بالكامل
 User-agent: *
 Allow: /
 
-Disallow: /nfc/login.html
-Disallow: /nfc/login-en.html
-Disallow: /nfc/dashboard.html
-Disallow: /nfc/dashboard-en.html
-Disallow: /nfc/editor.html
-Disallow: /nfc/editor-en.html
-Disallow: /nfc/signup.html
-Disallow: /nfc/signup-en.html
-Disallow: /nfc/forgot-password.html
+# حظر ملفات حساسة أو غير ضرورية
+Disallow: /admin/
+Disallow: /cgi-bin/
+Disallow: /tmp/
+Disallow: /private/
 
+# رابط الخريطة الصحيح
 Sitemap: https://www.mcprim.com/nfc/sitemap.xml

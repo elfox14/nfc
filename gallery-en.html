@@ -2,11 +2,6 @@
 <html lang="en" dir="ltr">
 
 <head>
-  <!-- SEO: Canonical + Hreflang -->
-  <link rel="canonical" href="https://www.mcprim.com/nfc/gallery-en.html" />
-  <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/gallery.html" />
-  <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/gallery-en.html" />
-  <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/gallery.html" />
     <!-- Google Tag Manager -->
     <script>(function (w, d, s, l, i) {
             w[l] = w[l] || []; w[l].push({
@@ -42,7 +37,13 @@
     <meta property="twitter:description"
         content="Browse our gallery and get inspired by smart NFC card designs and ready templates.">
     <meta property="twitter:image" content="https://www.mcprim.com/nfc/og-image.png">
-    <meta property="twitter:image:alt" content="MC PRIME Smart Digital Business Card Gallery">    <link rel="icon" href="/nfc/mc-prime-nfc.png" type="image/png">
+    <meta property="twitter:image:alt" content="MC PRIME Smart Digital Business Card Gallery">
+
+    <link rel="canonical" href="https://www.mcprim.com/nfc/gallery-en.html">
+    <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/gallery-en.html">
+    <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/gallery.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/gallery.html">
+    <link rel="icon" href="/nfc/mc-prime-nfc.png" type="image/png">
 
     <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -287,7 +288,6 @@
         </div>
     </footer>
 
-    <script src="/nfc/api-config.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // DOM Elements
@@ -308,7 +308,7 @@
             const gridViewBtn = document.getElementById('grid-view-btn');
             const listViewBtn = document.getElementById('list-view-btn');
 
-            const API_BASE_URL = window.__API_BASE_URL || window.location.origin;
+            const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
             const CACHE_KEY = 'mcprime_gallery_cache';
             const CACHE_DURATION = 5 * 60 * 1000;
 

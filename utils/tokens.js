@@ -11,7 +11,7 @@ const config = require('../config');
 function createAccessToken(payload) {
     const secret = config.JWT_SECRET;
     if (!secret) throw new Error('JWT_SECRET is not configured in environment variables.');
-    return jwt.sign(payload, secret, { expiresIn: '7d' });
+    return jwt.sign(payload, secret, { expiresIn: '15m' });
 }
 
 /**

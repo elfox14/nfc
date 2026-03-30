@@ -6,31 +6,26 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [18.x]
 
     steps:
     - uses: actions/checkout@v4
-
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+    
+    # Install both normal and dev dependencies
+    - run: npm install
 
-    - name: Install dependencies
-      run: npm ci
+    # Run jest test cases explicitly checking that it shouldn't fail builds
+    - run: npm test
 
-    - name: Run tests
-      run: npm test || true
-
-    - name: Security audit
-      run: npm audit --audit-level=critical || true
+    # Security audit for critical vulnerabilities
+    - run: npm audit --audit-level=critical || true

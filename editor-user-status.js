@@ -14,9 +14,7 @@ const EditorUserStatus = {
         this.updateUserStatus();
         this.bindEvents();
         this.startAutoSave();
-        // استعادة ID التصميم المحفوظ عند بدء التشغيل (للـ auto-save فقط)
-        // App.init يتولى التحميل الفعلي من ?id= في الرابط
-        this.loadExistingDesignId().catch(e => console.warn('[EditorUserStatus] loadExistingDesignId error:', e));
+        this.loadExistingDesignId(); // استعادة ID التصميم المحفوظ عند بدء التشغيل
         console.log('[EditorUserStatus] Initialized');
     },
 
@@ -39,7 +37,7 @@ const EditorUserStatus = {
         try {
             const baseUrl = (typeof Config !== 'undefined' && Config.API_BASE_URL)
                 ? Config.API_BASE_URL
-                : (window.__API_BASE_URL || window.location.origin);
+                : 'https://nfc-vjy6.onrender.com';
 
             const response = await fetch(`${baseUrl}/api/user/designs`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -153,6 +151,7 @@ const EditorUserStatus = {
         const handleLogout = () => {
             if (confirm(isEnglish ? 'Are you sure you want to logout?' : 'هل تريد تسجيل الخروج؟')) {
                 localStorage.removeItem('authToken');
+                sessionStorage.removeItem('authToken');
                 localStorage.removeItem('authUser');
                 this.updateUserStatus();
                 if (typeof UIManager !== 'undefined') {

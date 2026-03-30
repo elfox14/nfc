@@ -1,0 +1,6 @@
+1337:       sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
+1388:       sameSite: 'Strict',
+1463:       sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
+1492:       sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
+1519:       sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax', // Lax allows top-level navigation from popup to send cookie, None allows cross-site
+1629:       sameSite: config.NODE_ENV === 'production' ? 'None' : 'Lax',
