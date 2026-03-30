@@ -51,13 +51,92 @@ const INTERNAL_SERVER_URL = process.env.INTERNAL_SERVER_URL || '';
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.googletagmanager.com", "https://pagead2.googlesyndication.com", "https://accounts.google.com", "https://cdn.shepherd.dev"],
-    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com", "https://www.googletagmanager.com", "https://cdn.shepherd.dev"],
-    fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://uploads.mcprim.com", "https://media.giphy.com", ...(INTERNAL_SERVER_URL ? [INTERNAL_SERVER_URL] : [])],
-    mediaSrc: ["'self'", "data:"],
-    frameSrc: ["'self'", "https://www.youtube.com", "https://td.doubleclick.net"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://www.mcprim.com", "https://uploads.mcprim.com", "https://media.giphy.com", "https://pagead2.googlesyndication.com", "https://www.googletagmanager.com", "ws:", "wss:", ...(INTERNAL_SERVER_URL ? [INTERNAL_SERVER_URL] : [])],
+    scriptSrc: [
+      "'self'",
+      "'unsafe-inline'",
+      "'unsafe-eval'",
+      (req, res) => `'nonce-${res.locals.cspNonce}'`,
+      "https://cdnjs.cloudflare.com",
+      "https://cdn.jsdelivr.net",
+      "https://www.googletagmanager.com",
+      "https://pagead2.googlesyndication.com",
+      "https://accounts.google.com",
+      "https://www.youtube.com",
+      "https://cdn.shepherd.dev"
+    ],
+    scriptSrcElem: [
+      "'self'",
+      "'unsafe-inline'",
+      (req, res) => `'nonce-${res.locals.cspNonce}'`,
+      "https://cdnjs.cloudflare.com",
+      "https://cdn.jsdelivr.net",
+      "https://www.googletagmanager.com",
+      "https://pagead2.googlesyndication.com",
+      "https://accounts.google.com",
+      "https://www.youtube.com",
+      "https://cdn.shepherd.dev"
+    ],
+    styleSrc: [
+      "'self'",
+      "'unsafe-inline'",
+      "https://cdnjs.cloudflare.com",
+      "https://cdn.jsdelivr.net",
+      "https://fonts.googleapis.com",
+      "https://www.googletagmanager.com",
+      "https://cdn.shepherd.dev"
+    ],
+    styleSrcElem: [
+      "'self'",
+      "'unsafe-inline'",
+      "https://cdnjs.cloudflare.com",
+      "https://cdn.jsdelivr.net",
+      "https://fonts.googleapis.com",
+      "https://www.googletagmanager.com",
+      "https://cdn.shepherd.dev"
+    ],
+    imgSrc: [
+      "'self'",
+      "data:",
+      "https:",
+      "https://i.imgur.com",
+      "https://www.mcprim.com",
+      "https://uploads.mcprim.com",
+      "https://media.giphy.com",
+      "https://pagead2.googlesyndication.com",
+      "https://www.googletagmanager.com",
+      ...(INTERNAL_SERVER_URL ? [INTERNAL_SERVER_URL] : [])
+    ],
+    mediaSrc: [
+      "'self'",
+      "data:",
+      "https://media.giphy.com"
+    ],
+    connectSrc: [
+      "'self'",
+      "https://cdnjs.cloudflare.com",
+      "https://cdn.jsdelivr.net",
+      "https://www.youtube.com",
+      "https://www.mcprim.com",
+      "https://uploads.mcprim.com",
+      "https://media.giphy.com",
+      "https://pagead2.googlesyndication.com",
+      "https://www.googletagmanager.com",
+      "https://nfc-vjy6.onrender.com",
+      "ws:",
+      "wss:",
+      ...(INTERNAL_SERVER_URL ? [INTERNAL_SERVER_URL] : [])
+    ],
+    fontSrc: [
+      "'self'",
+      "https://fonts.gstatic.com",
+      "https://cdnjs.cloudflare.com"
+    ],
+    frameSrc: [
+      "'self'",
+      "https://www.youtube.com",
+      "https://td.doubleclick.net",
+      "https://pagead2.googlesyndication.com"
+    ],
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
   },
