@@ -169,7 +169,8 @@ app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
     const tagline = DOMPurify.sanitize(inputs['input-tagline'] || '');
     const imageUrls = doc.data.imageUrls || {};
     let ogImage = `${base}/nfc/og-image.png`;
-    if (imageUrls.front) { ogImage = imageUrls.front.startsWith('http') ? imageUrls.front : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`; }
+    const ogSource = imageUrls.capturedFront || imageUrls.front;
+    if (ogSource) { ogImage = ogSource.startsWith('http') ? ogSource : `${base}${ogSource.startsWith('/') ? '' : '/'}${ogSource}`; }
     const keywords = ['NFC', 'بطاقة عمل ذكية', 'كارت شخصي', name, ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])].filter(Boolean).join(', ');
     res.render(path.join(rootDir, 'viewer.ejs'), { pageUrl, name, tagline, ogImage, keywords, design: doc.data, canonical: pageUrl, contactLinksHtml: '' });
   } catch (e) {
