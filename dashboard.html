@@ -2,6 +2,8 @@
 <html lang="ar" dir="rtl">
 
 <head>
+  <!-- SEO: Block indexing -->
+  <meta name="robots" content="noindex, nofollow" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Google Tag Manager -->
@@ -19,7 +21,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
         rel="stylesheet">
-    <script src="/nfc/auth.js?v=2"></script>
+    <script src="/nfc/auth.js"></script>
     <script src="/nfc/lang-switcher.js"></script>
     <style>
         .dashboard-container {
@@ -616,7 +618,8 @@
             if (hash.startsWith('#gauth=')) {
                 try {
                     const encoded = hash.slice(7);
-                    const data = JSON.parse(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')));
+                    const decodedStr = decodeURIComponent(encoded);
+                    const data = JSON.parse(decodedStr);
                     if (data.token && data.user) {
                         Auth.setSession(data.token, data.user);
                         history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -628,13 +631,8 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // Try to restore session from httpOnly refresh cookie if token is not in memory
-            if (!Auth.isLoggedIn()) {
-                await Auth.refreshAccessToken();
-            }
-
-            if (!Auth.isLoggedIn()) {
-                window.location.href = '/nfc/login.html';
+            Auth.token = localStorage.getItem('authToken'); Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); if (!Auth.isLoggedIn()) {
+                window.location.href = '/nfc/login.html?error=AuthNotLoggedIn';
                 return;
             }
 
@@ -673,13 +671,13 @@
         async function loadMyDesigns() {
             const grid = document.getElementById('designs-grid');
             try {
-                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader(), cache: 'no-store' });
+                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
 
                 if (!response.ok) {
                     const errText = await response.text().catch(() => '');
                     console.error('[Dashboard] API error:', response.status, errText);
                     if (response.status === 401 || response.status === 403) {
-                        Auth.logout();
+                        Auth.logout('ApiUnauthorized');
                         return;
                     }
                     throw new Error('خطأ الخادم: ' + response.status);
