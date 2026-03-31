@@ -815,7 +815,10 @@ app.get('/api/auth/google/callback', async (req, res) => {
     });
 
     const tokens = await tokenResponse.json();
-    if (!tokens.access_token) throw new Error('No access token');
+    if (!tokens.access_token) {
+      console.error('Google Token API Error:', tokens);
+      throw new Error(tokens.error_description || tokens.error || 'No access token');
+    }
 
     // Get user info
     const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -823,7 +826,10 @@ app.get('/api/auth/google/callback', async (req, res) => {
     });
     const googleUser = await userInfoResponse.json();
 
-    if (!googleUser.email) throw new Error('No email from Google');
+    if (!googleUser.email) {
+      console.error('Google UserInfo Error:', googleUser);
+      throw new Error('No email returned from Google');
+    }
 
     // Find or create user
     let user = await db.collection(usersCollectionName).findOne({ email: googleUser.email });
@@ -879,7 +885,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
   } catch (err) {
     console.error('Google OAuth error:', err);
-    return res.redirect(`${loginPage}?error=${encodeURIComponent('Authentication failed')}`);
+    const errorMessage = err.message || 'Authentication failed';
+    return res.redirect(`${loginPage}?error=${encodeURIComponent(errorMessage)}`);
   }
 });
 

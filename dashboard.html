@@ -617,11 +617,12 @@
             const hash = window.location.hash;
             if (hash.startsWith('#gauth=')) {
                 try {
-                    const encoded = hash.slice(7);
-                    const decodedStr = decodeURIComponent(encoded);
+                    const b64Encoded = hash.slice(7).replace(/-/g, '+').replace(/_/g, '/');
+                    const decodedStr = decodeURIComponent(escape(atob(b64Encoded)));
                     const data = JSON.parse(decodedStr);
                     if (data.token && data.user) {
                         Auth.setSession(data.token, data.user);
+                        // Clean the URL hash without refreshing
                         history.replaceState(null, '', window.location.pathname + window.location.search);
                     }
                 } catch (e) {
@@ -631,7 +632,7 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            Auth.token = localStorage.getItem('authToken'); Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); if (!Auth.isLoggedIn()) {
+            if (!Auth.isLoggedIn()) {
                 window.location.href = '/nfc/login.html?error=AuthNotLoggedIn';
                 return;
             }
