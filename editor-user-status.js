@@ -10,11 +10,15 @@ const EditorUserStatus = {
     lastSaveTime: null,
     isSaving: false,
 
-    init() {
+    async init() {
+        // Restore session via refresh cookie if token is missing/expired
+        if (typeof Auth !== 'undefined' && !Auth.isLoggedIn()) {
+            await Auth.refreshAccessToken();
+        }
         this.updateUserStatus();
         this.bindEvents();
         this.startAutoSave();
-        this.loadExistingDesignId(); // استعادة ID التصميم المحفوظ عند بدء التشغيل
+        this.loadExistingDesignId();
         console.log('[EditorUserStatus] Initialized');
     },
 

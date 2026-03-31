@@ -295,7 +295,10 @@ const Auth = {
     }
 };
 
-// Auto-run on load to update UI
-document.addEventListener('DOMContentLoaded', () => {
+// Auto-run on load to update UI — restore session if needed
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!Auth.isLoggedIn()) {
+        await Auth.refreshAccessToken();
+    }
     Auth.updateNavAuth();
 });

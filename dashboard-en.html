@@ -579,6 +579,19 @@
     <script>
         const baseUrl = Auth.getBaseUrl();
 
+        async function ensureAuthWithRetry(retries = 3, delay = 1800) {
+            if (Auth.isLoggedIn()) return true;
+
+            for (let i = 0; i < retries; i++) {
+                const ok = await Auth.refreshAccessToken();
+                if (ok && Auth.isLoggedIn()) return true;
+                if (i < retries - 1) {
+                    await new Promise(r => setTimeout(r, delay));
+                }
+            }
+            return false;
+        }
+
         document.querySelectorAll('.sidebar-item[data-section]').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -616,15 +629,12 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            if (!Auth.isLoggedIn()) {
-                // Try refreshing the access token using the httpOnly refresh cookie
-                const refreshed = await Auth.refreshAccessToken();
-                if (!refreshed) {
-                    window.location.href = '/nfc/login-en.html?error=AuthNotLoggedIn';
-                    return;
-                }
-            }
+            const authOk = await ensureAuthWithRetry();
 
+            if (!authOk) {
+                window.location.href = '/nfc/login-en.html?error=AuthNotLoggedIn';
+                return;
+            }
 
             document.getElementById('user-display-name').textContent = Auth.user?.name || 'User';
 
