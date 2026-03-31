@@ -637,8 +637,12 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!Auth.isLoggedIn()) {
-                window.location.href = '/nfc/login.html?error=AuthNotLoggedIn';
-                return;
+                // Try refreshing the access token using the httpOnly refresh cookie
+                const refreshed = await Auth.refreshAccessToken();
+                if (!refreshed) {
+                    window.location.href = '/nfc/login.html?error=AuthNotLoggedIn';
+                    return;
+                }
             }
 
 

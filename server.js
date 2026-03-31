@@ -878,10 +878,10 @@ app.get('/api/auth/google/callback', async (req, res) => {
     })).toString('base64url');
 
     // Redirect cross-server to mcprim.com dashboard with auth data in URL hash
-    // mcprim.com requires .html extension (it's a separate server from Render, no .html stripping middleware)
+    // Use paths without .html to avoid the .html-stripping 301 redirect (which can lose hash fragments)
     const dashboardPage = lang === 'en'
-      ? `${frontendBase}/dashboard-en.html#gauth=${authEncoded}`
-      : `${frontendBase}/dashboard.html#gauth=${authEncoded}`;
+      ? `${frontendBase}/dashboard-en#gauth=${authEncoded}`
+      : `${frontendBase}/dashboard#gauth=${authEncoded}`;
 
     return res.redirect(dashboardPage);
 

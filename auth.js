@@ -47,9 +47,7 @@ const Auth = {
             if (response.ok) {
                 const data = await response.json();
                 if (data.token && data.user) {
-                    this.token = data.token;
-                    this.user = data.user;
-                    localStorage.setItem('authUser', JSON.stringify(data.user));
+                    this.setSession(data.token, data.user);
                     return true;
                 }
             }
@@ -128,7 +126,7 @@ const Auth = {
                     this.setSession(payload.token, payload.user);
                     // Clean the URL and redirect to dashboard
                     const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-                    window.location.replace(isEnglish ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html');
+                    window.location.replace(isEnglish ? '/nfc/dashboard-en' : '/nfc/dashboard');
                     return { handled: true, success: true };
                 }
             } catch (e) {
@@ -146,7 +144,7 @@ const Auth = {
     },
 
 
-    logout(msg) {
+    logout() {
         // Clear token from memory and sessionStorage
         this.token = null;
         this.user = null;
@@ -159,9 +157,7 @@ const Auth = {
             credentials: 'include'
         }).catch(() => {/* ignore errors during logout */ });
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-        const loginPage = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
-        const errorParam = msg ? `?error=${encodeURIComponent(msg)}` : '';
-        window.location.href = loginPage + errorParam;
+        window.location.href = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
     },
 
     setSession(token, user) {
