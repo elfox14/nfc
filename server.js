@@ -752,12 +752,14 @@ app.post('/api/auth/login', [
 
 // Google OAuth - Initiate Flow
 app.get('/api/auth/google', (req, res) => {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
+  let clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
     return res.status(500).send('Google OAuth not configured');
   }
+  clientId = clientId.trim();
 
-  const proto = req.headers['x-forwarded-proto'] || req.protocol;
+  const protoHeader = req.headers['x-forwarded-proto'];
+  const proto = protoHeader ? protoHeader.split(',')[0].trim() : req.protocol;
   const host = req.get('host');
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
@@ -795,9 +797,11 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 
   try {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const proto = req.headers['x-forwarded-proto'] || req.protocol;
+    const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
+    const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
+    
+    const protoHeader = req.headers['x-forwarded-proto'];
+    const proto = protoHeader ? protoHeader.split(',')[0].trim() : req.protocol;
     const host = req.get('host');
     const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
@@ -806,12 +810,12 @@ app.get('/api/auth/google/callback', async (req, res) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        code,
+        code: code,
         client_id: clientId,
         client_secret: clientSecret,
         redirect_uri: redirectUri,
         grant_type: 'authorization_code'
-      })
+      }).toString()
     });
 
     const tokens = await tokenResponse.json();
