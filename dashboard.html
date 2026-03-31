@@ -617,8 +617,9 @@
             const hash = window.location.hash;
             if (hash.startsWith('#gauth=')) {
                 try {
-                    const b64Encoded = hash.slice(7).replace(/-/g, '+').replace(/_/g, '/');
-                    const decodedStr = decodeURIComponent(escape(atob(b64Encoded)));
+                    let b64 = hash.slice(7).replace(/-/g, '+').replace(/_/g, '/');
+                    while (b64.length % 4) b64 += '=';
+                    const decodedStr = decodeURIComponent(escape(atob(b64)));
                     const data = JSON.parse(decodedStr);
                     if (data.token && data.user) {
                         Auth.setSession(data.token, data.user);
