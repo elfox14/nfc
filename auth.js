@@ -146,7 +146,7 @@ const Auth = {
     },
 
 
-    logout() {
+    logout(msg) {
         // Clear token from memory and sessionStorage
         this.token = null;
         this.user = null;
@@ -159,7 +159,9 @@ const Auth = {
             credentials: 'include'
         }).catch(() => {/* ignore errors during logout */ });
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-        window.location.href = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
+        const loginPage = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
+        const errorParam = msg ? `?error=${encodeURIComponent(msg)}` : '';
+        window.location.href = loginPage + errorParam;
     },
 
     setSession(token, user) {
