@@ -121,7 +121,7 @@ const EditorUserStatus = {
             loginLink.textContent = isEnglish ? 'Login' : 'تسجيل دخول';
             if (dashboardLink) dashboardLink.style.display = 'none';
             logoutBtn.style.display = 'none';
-            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ';
+            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
 
             // Mobile Menu
             if (mobileMenuUserText) mobileMenuUserText.textContent = isEnglish ? 'Guest' : 'غير مسجل';
@@ -185,31 +185,6 @@ const EditorUserStatus = {
         const mobileSaveProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="save-to-cloud-btn"]');
         const mobileSaveProxyOrigHTML = mobileSaveProxyBtn ? mobileSaveProxyBtn.innerHTML : '';
 
-        // If not logged in, redirect to login
-        if (!token) {
-            const confirmMsg = isEnglish
-                ? 'You must be logged in to save your design.\n\nDo you want to login now?'
-                : 'يجب تسجيل الدخول لحفظ التصميم في حسابك.\n\nهل تريد تسجيل الدخول الآن؟';
-
-            const shouldLogin = confirm(confirmMsg);
-            console.log('[EditorUserStatus] shouldLogin:', shouldLogin);
-            if (shouldLogin) {
-                // Save current state to localStorage before redirecting
-                try {
-                    if (typeof StateManager !== 'undefined') {
-                        StateManager.saveState();
-                    }
-                } catch (e) {
-                    console.warn('[EditorUserStatus] saveState failed, continuing to redirect:', e);
-                }
-                // Set flag so beforeunload handlers don't block the redirect
-                window._intentionalRedirect = true;
-                const redirectUrl = isEnglish ? 'login-en.html?redirect=editor-en.html' : 'login.html?redirect=editor.html';
-                console.log('[EditorUserStatus] Redirecting to:', redirectUrl);
-                window.location.href = redirectUrl;
-            }
-            return;
-        }
 
         if (this.isSaving) return;
         this.isSaving = true;

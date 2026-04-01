@@ -607,12 +607,7 @@ const ShareManager = {
     },
 
     async shareCard() {
-        // Check if user is logged in
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            alert(i18nMain.loginRequired || 'يجب تسجيل الدخول أولاً لمشاركة بطاقتك. / You must be logged in to share your card.');
-            return;
-        }
+        // [MODIFIED] Login check removed to allow guest sharing.
 
         // Also target the mobile proxy button for visual feedback
         const mobileShareProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="share-card-btn"]');

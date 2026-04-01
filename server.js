@@ -504,20 +504,21 @@ app.post('/api/save-design', async (req, res) => {
     let shortId = existingId || nanoid(8);
     let isUpdate = false;
 
-    // Require authentication - no anonymous saves allowed
+    // Authentication is now optional - guests can save as well
     let ownerId = null;
     const authHeader = req.headers['authorization'];
-    if (!authHeader) {
-      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
-    }
-    try {
-      const token = authHeader.split(' ')[1];
-      const secret = process.env.JWT_SECRET;
-      if (!secret) throw new Error('JWT_SECRET not configured');
-      const decoded = jwt.verify(token, secret);
-      ownerId = decoded.userId;
-    } catch (err) {
-      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
+    if (authHeader) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const secret = process.env.JWT_SECRET;
+        if (secret) {
+          const decoded = jwt.verify(token, secret);
+          ownerId = decoded.userId;
+        }
+      } catch (err) {
+        console.warn('[SaveDesign] Invalid token provided, saving as guest or owner mismatch will handle it.');
+        // ownerId remains null
+      }
     }
 
     if (existingId) {
