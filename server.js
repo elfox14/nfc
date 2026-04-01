@@ -556,44 +556,42 @@ app.post('/api/save-design', async (req, res) => {
       data,
       lastModified: new Date()
     };
-    if (ownerId && !isUpdate) updateDoc.ownerId = ownerId;
-    if (ownerId && isUpdate) updateDoc.ownerId = ownerId;
+    if (ownerId) {
+      updateDoc.ownerId = ownerId;
+    } else {
+      console.log('[SaveDesign] Anonymous save detected (ownerId: null)');
+    }
 
     if (isUpdate) {
+      console.log(`[SaveDesign] Updating existing design: ${shortId}`);
       await db.collection(designsCollectionName).updateOne(
         { shortId: shortId },
         { $set: updateDoc }
       );
     } else {
-      // If user already has a design, update it instead of failing
+      console.log(`[SaveDesign] Creating NEW design: ${shortId}`);
+      // If user is logged in, check for existing design first
       if (ownerId) {
-        const designCount = await db.collection(designsCollectionName).countDocuments({ ownerId });
-        if (designCount >= 1) {
-          // Find the existing design and update it
-          const existingDesign = await db.collection(designsCollectionName).findOne({ ownerId });
-          if (existingDesign) {
-            shortId = existingDesign.shortId;
-            isUpdate = true;
-            // Preserve existing captured images if not re-capturing now
-            if (existingDesign.data?.imageUrls) {
-              if (!data.imageUrls) data.imageUrls = {};
-              const existing = existingDesign.data.imageUrls;
-              if (!data.imageUrls.capturedFront && existing.capturedFront) {
-                data.imageUrls.capturedFront = existing.capturedFront;
-              }
-              if (!data.imageUrls.capturedBack && existing.capturedBack) {
-                data.imageUrls.capturedBack = existing.capturedBack;
-              }
-            }
-            const updateExisting = { data, ownerId, lastModified: new Date() };
-            await db.collection(designsCollectionName).updateOne(
-              { shortId },
-              { $set: updateExisting }
-            );
-            return res.json({ success: true, id: shortId });
+        const existingDesign = await db.collection(designsCollectionName).findOne({ ownerId });
+        if (existingDesign) {
+          console.log(`[SaveDesign] Member already has a design, switching to update: ${existingDesign.shortId}`);
+          shortId = existingDesign.shortId;
+          isUpdate = true;
+          // Preserve existing captured images
+          if (existingDesign.data?.imageUrls) {
+            if (!data.imageUrls) data.imageUrls = {};
+            const exImages = existingDesign.data.imageUrls;
+            if (!data.imageUrls.capturedFront && exImages.capturedFront) data.imageUrls.capturedFront = exImages.capturedFront;
+            if (!data.imageUrls.capturedBack && exImages.capturedBack) data.imageUrls.capturedBack = exImages.capturedBack;
           }
+          await db.collection(designsCollectionName).updateOne(
+            { shortId },
+            { $set: { data, ownerId, lastModified: new Date() } }
+          );
+          return res.json({ success: true, id: shortId });
         }
       }
+      
       await db.collection(designsCollectionName).insertOne({
         shortId,
         ...updateDoc,
