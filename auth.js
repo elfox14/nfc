@@ -29,6 +29,7 @@ const Auth = {
     },
 
     setSession(token, user) {
+        console.log('[Auth] Setting session:', { user, token: token ? (token.substring(0, 10) + '...') : null });
         this.token = token;
         this.user = user;
         localStorage.setItem('authToken', token);
@@ -114,17 +115,27 @@ const Auth = {
     },
 
     async refreshSession() {
+        console.log('[Auth] Attempting to refresh session...');
         try {
             const res = await fetch(this.API_REFRESH, {
                 method: 'POST',
                 credentials: 'include'
             });
 
+            if (!res.ok) {
+                console.warn('[Auth] Refresh request failed with status:', res.status);
+                this.clearSession();
+                return false;
+            }
+
             const data = await res.json();
 
             if (data.success && data.token && data.user) {
+                console.log('[Auth] Session refreshed successfully');
                 this.setSession(data.token, data.user);
                 return true;
+            } else {
+                console.warn('[Auth] Refresh failed:', data.error || 'Unknown error');
             }
         } catch (err) {
             console.error('[Auth] refresh error:', err);

@@ -83,9 +83,16 @@ if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
 app.use(cors({
   origin: (origin, cb) => {
     // Allow requests with no origin (mobile apps, curl, server-to-server)
-    if (!origin) return cb(null, true);
+    if (!origin) {
+      console.log('[CORS] Request with no origin allowed');
+      return cb(null, true);
+    }
     // In all environments, only allow explicitly listed origins
-    if (allowedOrigins.includes(origin)) return cb(null, true);
+    if (allowedOrigins.includes(origin)) {
+      console.log(`[CORS] Request from allowed origin: ${origin}`);
+      return cb(null, true);
+    }
+    console.warn(`[CORS] Request from BLOCKED origin: ${origin}. Allowed origins: ${allowedOrigins.join(', ')}`);
     cb(new Error('Not allowed by CORS'));
   },
   credentials: true
@@ -95,7 +102,7 @@ app.use(cookieParser());
 app.set('view engine', 'ejs');
 
 // --- DATABASE CONNECTION ---
-const mongoUrl = process.env.MONGO_URI || "mongodb+srv://nfc:mahMAH123QAZ@mcnfc.n8o5xdi.mongodb.net/?appName=mcnfc";
+const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'mcnfc';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 const usersCollectionName = 'users'; // New Users Collection
@@ -747,6 +754,7 @@ app.post('/api/auth/login', [
       path: '/api/auth'
     });
 
+    console.log(`[Login] Successful login for: ${email}. Token issued.`);
     res.json({ success: true, token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
@@ -1087,6 +1095,7 @@ app.post('/api/auth/refresh', async (req, res) => {
 
     const tokenFromCookie = req.cookies?.refreshToken;
     if (!tokenFromCookie) {
+      console.warn('[Refresh] No refresh token found in cookies');
       return res.status(401).json({ error: 'No refresh token provided' });
     }
 
@@ -1095,8 +1104,10 @@ app.post('/api/auth/refresh', async (req, res) => {
     const user = await db.collection(usersCollectionName).findOne({ refreshTokenHash: hashedToken });
 
     if (!user) {
+      console.warn('[Refresh] Invalid refresh token: No user found for this hash');
       return res.status(403).json({ error: 'Invalid refresh token' });
     }
+    console.log(`[Refresh] Refreshing session for user: ${user.email}`);
 
     // Rotate: generate new tokens
     const newAccessToken = createAccessToken({ userId: user.userId, email: user.email });
