@@ -95,8 +95,8 @@ app.use(cookieParser());
 app.set('view engine', 'ejs');
 
 // --- DATABASE CONNECTION ---
-const mongoUrl = process.env.MONGO_URI;
-const dbName = process.env.MONGO_DB || 'nfc_db';
+const mongoUrl = process.env.MONGO_URI || "mongodb+srv://nfc:mahMAH123QAZ@mcnfc.n8o5xdi.mongodb.net/?appName=mcnfc";
+const dbName = process.env.MONGO_DB || 'mcnfc';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 const usersCollectionName = 'users'; // New Users Collection
 const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
