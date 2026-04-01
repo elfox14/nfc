@@ -793,7 +793,9 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
   // Build the absolute redirect URL to the FRONTEND (mcprim.com), not the Render backend
   const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
-  const loginPage = lang === 'en' ? `${frontendBase}/login-en` : `${frontendBase}/login`;
+  const loginPage = lang === 'en'
+    ? `${frontendBase}/login-en.html`
+    : `${frontendBase}/login.html`;
 
 
   if (error || !code) {
@@ -875,27 +877,60 @@ app.get('/api/auth/google/callback', async (req, res) => {
       path: '/api/auth'
     });
 
-    // Encode auth data and pass via URL hash to the dashboard on mcprim.com
-    // URL hash (#) is never sent to servers, stays client-side — safe for cross-origin token passing
-    const authEncoded = Buffer.from(JSON.stringify({
-      token: accessToken,
-      user: { name: user.name, email: user.email, userId: user.userId }
-    })).toString('base64url');
+    // Send auth data to the popup opener via postMessage
+    const script = `
+      (function() {
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({
+              type: 'google-auth',
+              success: true,
+              token: ${JSON.stringify(accessToken)},
+              user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
+            }, '*');
+          }
+        } catch (e) {}
+        window.close();
+      })();
+    `;
 
-    // Redirect cross-server to mcprim.com dashboard with auth data in URL hash
-    // mcprim.com requires .html extension (it's a separate server from Render, no .html stripping middleware)
-    const dashboardPage = lang === 'en'
-      ? `${frontendBase}/dashboard-en.html#gauth=${authEncoded}`
-      : `${frontendBase}/dashboard.html#gauth=${authEncoded}`;
-
-    return res.redirect(dashboardPage);
+    res.send(`<!DOCTYPE html>
+    <html lang="${lang}">
+    <head><meta charset="utf-8"><title>Google Login</title></head>
+    <body>
+    <script>${script}</script>
+    </body>
+    </html>`);
 
 
 
   } catch (err) {
     console.error('Google OAuth error:', err);
     const errorMessage = err.message || 'Authentication failed';
-    return res.redirect(`${loginPage}?error=${encodeURIComponent(errorMessage)}`);
+    
+    // Send error to the popup opener via postMessage
+    const script = `
+      (function() {
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({
+              type: 'google-auth',
+              success: false,
+              error: ${JSON.stringify(errorMessage)}
+            }, '*');
+          }
+        } catch (e) {}
+        window.close();
+      })();
+    `;
+
+    res.send(`<!DOCTYPE html>
+    <html lang="${lang}">
+    <head><meta charset="utf-8"><title>Google Login Error</title></head>
+    <body>
+    <script>${script}</script>
+    </body>
+    </html>`);
   }
 });
 

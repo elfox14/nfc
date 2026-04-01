@@ -86,7 +86,7 @@ const Auth = {
             const top = (window.innerHeight - height) / 2;
 
             const popup = window.open(
-                `${this.getBaseUrl()}/api/auth/google`,
+                `${this.getBaseUrl()}/api/auth/google?lang=${document.documentElement.lang.includes('en') ? 'en' : 'ar'}`,
                 'Google Sign In',
                 `width=${width},height=${height},left=${left},top=${top}`
             );
