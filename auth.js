@@ -6,37 +6,38 @@
  */
 const Auth = {
 
-    // ─── Config ────────────────────────────────────────────────────────────────
-
     getBaseUrl() {
         const p = window.location.protocol;
         const h = window.location.hostname;
-        if (p === 'file:')                          return 'https://nfc-vjy6.onrender.com';
+        if (p === 'file:') return 'https://nfc-vjy6.onrender.com';
         if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:3000';
         return 'https://nfc-vjy6.onrender.com';
     },
 
-    get API_LOGIN()    { return `${this.getBaseUrl()}/api/auth/login`; },
+    get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
     get API_REGISTER() { return `${this.getBaseUrl()}/api/auth/register`; },
-    get API_DESIGNS()  { return `${this.getBaseUrl()}/api/user/designs`; },
-
-    // ─── Session ───────────────────────────────────────────────────────────────
+    get API_REFRESH() { return `${this.getBaseUrl()}/api/auth/refresh`; },
+    get API_LOGOUT() { return `${this.getBaseUrl()}/api/auth/logout`; },
+    get API_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
+    get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
 
     token: localStorage.getItem('authToken'),
-    user:  JSON.parse(localStorage.getItem('authUser') || 'null'),
+    user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
-    isLoggedIn() { return !!this.token; },
+    isLoggedIn() {
+        return !!this.token;
+    },
 
     setSession(token, user) {
         this.token = token;
-        this.user  = user;
+        this.user = user;
         localStorage.setItem('authToken', token);
-        localStorage.setItem('authUser',  JSON.stringify(user));
+        localStorage.setItem('authUser', JSON.stringify(user));
     },
 
     clearSession() {
         this.token = null;
-        this.user  = null;
+        this.user = null;
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
     },
@@ -45,165 +46,202 @@ const Auth = {
         return this.token ? { Authorization: `Bearer ${this.token}` } : {};
     },
 
-    // ─── Language helpers ──────────────────────────────────────────────────────
-
     isEnglish() {
-        return document.documentElement.lang.includes('en')
-            || window.location.pathname.includes('-en');
+        return document.documentElement.lang.includes('en') ||
+            window.location.pathname.includes('-en');
     },
 
     t(ar, en) {
         return this.isEnglish() ? en : ar;
     },
 
-    // ─── Login ─────────────────────────────────────────────────────────────────
-
     async login(email, password) {
         try {
-            const res  = await fetch(this.API_LOGIN, {
-                method:  'POST',
+            const res = await fetch(this.API_LOGIN, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ email, password }),
+                credentials: 'include',
+                body: JSON.stringify({ email, password }),
             });
+
             const data = await res.json();
+
             if (data.success) {
                 this.setSession(data.token, data.user);
                 return { success: true };
             }
-            return { success: false, error: data.error || this.t('فشل تسجيل الدخول', 'Login failed') };
+
+            return {
+                success: false,
+                error: data.error || this.t('فشل تسجيل الدخول', 'Login failed')
+            };
         } catch (err) {
             console.error('[Auth] login error:', err);
-            return { success: false, error: this.t('خطأ في الشبكة. تحقق من الاتصال.', 'Network error. Check your connection.') };
+            return {
+                success: false,
+                error: this.t('خطأ في الشبكة. تحقق من الاتصال.', 'Network error. Check your connection.')
+            };
         }
     },
-
-    // ─── Register ──────────────────────────────────────────────────────────────
 
     async register(name, email, password) {
         try {
-            const res  = await fetch(this.API_REGISTER, {
-                method:  'POST',
+            const res = await fetch(this.API_REGISTER, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ name, email, password }),
+                credentials: 'include',
+                body: JSON.stringify({ name, email, password }),
             });
+
             const data = await res.json();
+
             if (data.success) {
                 this.setSession(data.token, data.user);
                 return { success: true };
             }
-            return { success: false, error: data.error || this.t('فشل إنشاء الحساب', 'Registration failed') };
+
+            return {
+                success: false,
+                error: data.error || this.t('فشل إنشاء الحساب', 'Registration failed')
+            };
         } catch (err) {
             console.error('[Auth] register error:', err);
-            return { success: false, error: this.t('خطأ في الشبكة. تحقق من الاتصال.', 'Network error. Check your connection.') };
+            return {
+                success: false,
+                error: this.t('خطأ في الشبكة. تحقق من الاتصال.', 'Network error. Check your connection.')
+            };
         }
     },
 
-    // ─── Google Sign-In (popup + postMessage) ──────────────────────────────────
+    async refreshSession() {
+        try {
+            const res = await fetch(this.API_REFRESH, {
+                method: 'POST',
+                credentials: 'include'
+            });
 
-    googleSignIn() {
+            const data = await res.json();
+
+            if (data.success && data.token && data.user) {
+                this.setSession(data.token, data.user);
+                return true;
+            }
+        } catch (err) {
+            console.error('[Auth] refresh error:', err);
+        }
+
+        this.clearSession();
+        return false;
+    },
+
+    async logout() {
+        try {
+            await fetch(this.API_LOGOUT, {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch (err) {
+            console.warn('[Auth] logout request failed:', err);
+        }
+
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
+        this.token = null;
+        this.user = null;
+
+        const isEnglish =
+            document.documentElement.lang.includes('en') ||
+            window.location.pathname.includes('-en');
+
+        const currentPath = window.location.pathname;
+        const basePrefix = currentPath.includes('/nfc/') ? '/nfc' : '';
+        window.location.href = isEnglish
+            ? `${basePrefix}/login-en.html`
+            : `${basePrefix}/login.html`;
+    },
+
+    async googleSignIn() {
         return new Promise((resolve) => {
-            const W = 500, H = 600;
-            const left = Math.round((window.innerWidth  - W) / 2);
-            const top  = Math.round((window.innerHeight - H) / 2);
-            const lang = this.isEnglish() ? 'en' : 'ar';
+            const width = 500;
+            const height = 600;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
 
             const popup = window.open(
-                `${this.getBaseUrl()}/api/auth/google?lang=${lang}`,
-                'google-auth',
-                `width=${W},height=${H},left=${left},top=${top},resizable=yes,scrollbars=yes`
+                `${this.getBaseUrl()}/api/auth/google?lang=${document.documentElement.lang.includes('en') ? 'en' : 'ar'}`,
+                'Google Sign In',
+                `width=${width},height=${height},left=${left},top=${top}`
             );
 
-            // Popup blocked
             if (!popup || popup.closed) {
-                return resolve({
+                resolve({
                     success: false,
-                    error: this.t(
-                        'تم حظر النافذة المنبثقة. يرجى السماح بها من إعدادات المتصفح.',
-                        'Popup blocked. Please allow popups for this site.'
-                    ),
+                    error: document.documentElement.lang === 'en'
+                        ? 'Popup blocked. Please allow it.'
+                        : 'تم حظر النافذة المنبثقة. يرجى السماح بها.'
                 });
+                return;
             }
 
-            let done = false;
+            let finished = false;
 
-            const finish = (result) => {
-                if (done) return;
-                done = true;
-                window.removeEventListener('message', onMessage);
-                clearTimeout(timer);
+            const cleanup = () => {
+                window.removeEventListener('message', messageHandler);
                 if (popup && !popup.closed) popup.close();
-                resolve(result);
             };
 
-            const onMessage = (event) => {
-                // Security: only accept messages from our backend
-                const allowedOrigin = this.getBaseUrl();
-                if (event.origin !== allowedOrigin) return;
-                if (!event.data || event.data.type !== 'google-auth') return;
+            const messageHandler = (event) => {
+                if (event.origin !== this.getBaseUrl()) return;
+                if (!event.data || event.data.type !== 'google-auth' || finished) return;
+
+                finished = true;
+                cleanup();
 
                 if (event.data.success) {
                     this.setSession(event.data.token, event.data.user);
-                    finish({ success: true });
+                    resolve({ success: true });
                 } else {
-                    finish({
+                    resolve({
                         success: false,
-                        error: event.data.error || this.t('فشل تسجيل الدخول', 'Login failed'),
+                        error: event.data.error || (
+                            document.documentElement.lang === 'en'
+                                ? 'Login failed'
+                                : 'فشل تسجيل الدخول'
+                        )
                     });
                 }
             };
 
-            window.addEventListener('message', onMessage);
+            window.addEventListener('message', messageHandler);
 
-            // Timeout after 2 minutes
-            const timer = setTimeout(() => {
-                finish({
+            setTimeout(() => {
+                if (finished) return;
+                finished = true;
+                cleanup();
+                resolve({
                     success: false,
-                    error: this.t('انتهت المهلة. يرجى المحاولة مجدداً.', 'Timed out. Please try again.'),
+                    error: document.documentElement.lang === 'en'
+                        ? 'Timeout. Try again.'
+                        : 'انتهت المهلة. حاول مرة أخرى.'
                 });
-            }, 120_000);
-
-            // Also detect if user closes popup manually
-            const pollClosed = setInterval(() => {
-                if (done) { clearInterval(pollClosed); return; }
-                if (popup.closed) {
-                    clearInterval(pollClosed);
-                    finish({
-                        success: false,
-                        error: this.t('أُغلقت نافذة Google. يرجى المحاولة مجدداً.', 'Google window closed. Please try again.'),
-                    });
-                }
-            }, 500);
+            }, 120000);
         });
     },
 
-    // ─── Logout ────────────────────────────────────────────────────────────────
-
-    logout() {
-        this.clearSession();
-        const base = window.location.pathname.includes('/nfc/') ? '/nfc' : '';
-        window.location.href = this.isEnglish()
-            ? `${base}/login-en.html`
-            : `${base}/login.html`;
-    },
-
-    // ─── Nav UI ────────────────────────────────────────────────────────────────
-
     updateNavAuth() {
-        const en           = this.isEnglish();
-        const loginUrl     = en ? '/nfc/login-en.html'     : '/nfc/login.html';
+        const en = this.isEnglish();
+        const loginUrl = en ? '/nfc/login-en.html' : '/nfc/login.html';
         const dashboardUrl = en ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html';
-        const dashTxt      = en ? 'Control Panel'          : 'لوحة التحكم';
-        const logoutTxt    = en ? 'Logout'                 : 'خروج';
-        const loginTxt     = en ? 'Login'                  : 'تسجيل الدخول';
+        const dashTxt = en ? 'Control Panel' : 'لوحة التحكم';
+        const logoutTxt = en ? 'Logout' : 'خروج';
+        const loginTxt = en ? 'Login' : 'تسجيل الدخول';
 
-        // ── Main navbar ────────────────────────────────────────────────────────
         const navLinks = document.querySelector('.nav-links');
-        const ctaBtn   = document.querySelector('.nav-cta');
+        const ctaBtn = document.querySelector('.nav-cta');
         const navContent = document.querySelector('.nav-content');
 
         if (navLinks) {
             if (this.isLoggedIn()) {
-                // Hide any raw login links inside nav
                 document.querySelectorAll('a').forEach(a => {
                     if (/login/.test(a.href) && !/dashboard/.test(a.href)) {
                         if (a.parentElement) a.parentElement.style.display = 'none';
@@ -236,9 +274,7 @@ const Auth = {
                     wrap.append(name, dash, out);
                     (ctaBtn?.parentNode || navContent)?.insertBefore(wrap, ctaBtn || null);
                 }
-
             } else {
-                // Logged-out: restore hidden links
                 document.querySelectorAll('a').forEach(a => {
                     if (/login\.html/.test(a.href) && a.parentElement?.style.display === 'none') {
                         a.parentElement.style.display = '';
@@ -249,7 +285,6 @@ const Auth = {
             }
         }
 
-        // ── Editor toolbar ─────────────────────────────────────────────────────
         const toolbar = document.querySelector('.toolbar-nav');
         if (toolbar) {
             const existing = toolbar.querySelector('[data-auth-btn]');

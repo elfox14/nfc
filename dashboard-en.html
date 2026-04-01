@@ -577,6 +577,31 @@
     </div>
 
     <script>
+        async function apiFetchWithRefresh(url, options = {}) {
+            let res = await fetch(url, options);
+
+            if (res.status === 401 || res.status === 403) {
+                const refreshed = await Auth.refreshSession();
+
+                if (!refreshed) {
+                    await Auth.logout();
+                    throw new Error('Session expired');
+                }
+
+                const retryOptions = {
+                    ...options,
+                    headers: {
+                        ...(options.headers || {}),
+                        ...Auth.getHeader()
+                    }
+                };
+
+                res = await fetch(url, retryOptions);
+            }
+
+            return res;
+        }
+
         const baseUrl = Auth.getBaseUrl();
 
         document.querySelectorAll('.sidebar-item[data-section]').forEach(item => {
@@ -611,11 +636,16 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            if (!Auth.isLoggedIn()) {
-                window.location.href = '/nfc/login-en.html?error=AuthNotLoggedIn';
-                return;
-            }
+            Auth.token = localStorage.getItem('authToken');
+            Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null');
 
+            if (!Auth.isLoggedIn()) {
+                const refreshed = await Auth.refreshSession();
+                if (!refreshed) {
+                    window.location.href = '/nfc/login-en.html?error=AuthNotLoggedIn';
+                    return;
+                }
+            }
 
             document.getElementById('user-display-name').textContent = Auth.user?.name || 'User';
 
@@ -650,7 +680,7 @@
         async function loadMyDesigns() {
             const grid = document.getElementById('designs-grid');
             try {
-                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
+                const response = await apiFetchWithRefresh(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
 
                 if (!response.ok) {
                     const errText = await response.text().catch(() => '');
@@ -710,7 +740,7 @@
         async function deleteDesign(shortId) {
             if (!confirm('Are you sure you want to permanently delete this design? It will also be removed from the gallery.')) return;
             try {
-                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
+                const res = await apiFetchWithRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
                     method: 'DELETE',
                     headers: Auth.getHeader()
                 });
@@ -728,7 +758,7 @@
 
         async function loadRequestCount() {
             try {
-                const res = await fetch(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
+                const res = await apiFetchWithRefresh(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
                 const data = await res.json();
                 const badge = document.getElementById('requests-badge');
                 if (data.count > 0) { badge.textContent = data.count; badge.style.display = 'inline'; }
@@ -739,7 +769,7 @@
         async function loadSavedCards() {
             const grid = document.getElementById('saved-cards-grid');
             try {
-                const res = await fetch(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
+                const res = await apiFetchWithRefresh(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
 
                 if (!res.ok) {
                     const text = await res.text();
