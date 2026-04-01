@@ -898,7 +898,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     <html lang="${lang}">
     <head><meta charset="utf-8"><title>Google Login</title></head>
     <body>
-    <script>${script}</script>
+    <script nonce="${res.locals.cspNonce}">${script}</script>
     </body>
     </html>`);
 
@@ -928,7 +928,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     <html lang="${lang}">
     <head><meta charset="utf-8"><title>Google Login Error</title></head>
     <body>
-    <script>${script}</script>
+    <script nonce="${res.locals.cspNonce}">${script}</script>
     </body>
     </html>`);
   }
