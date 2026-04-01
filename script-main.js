@@ -564,10 +564,16 @@ const ShareManager = {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                const errorMsg = errorData.error || `Server error (${response.status})`;
-                console.error('[SaveDesign] Server error:', errorMsg);
-                alert(`فشل الحفظ: ${errorMsg}\n(Status: ${response.status})`);
-                return null;
+                const errorMsg = errorData.error || 'Server responded with an error';
+                if (response.status === 401) {
+                    alert(errorMsg);
+                    return null;
+                }
+                if (response.status === 403) {
+                    alert(errorMsg);
+                    return null;
+                }
+                throw new Error(errorMsg);
             }
 
             const result = await response.json();
@@ -575,12 +581,10 @@ const ShareManager = {
                 Config.currentDesignId = result.id;
                 return result.id;
             } else {
-                alert('فشل الحفظ: استجابة غير صالحة من السيرفر.\nSave failed: Invalid server response.');
                 throw new Error('Invalid response from server');
             }
         } catch (error) {
             console.error("Failed to save design:", error);
-            alert(`حدث خطأ أثناء الاتصال بالسيرفر: ${error.message}\nConnection error.`);
             UIManager.announce(i18nMain.saveFailed || 'فشل حفظ التصميم. حاول مرة أخرى.');
             return null;
         }
@@ -603,7 +607,12 @@ const ShareManager = {
     },
 
     async shareCard() {
-        // [MODIFIED] Login check removed to allow guest sharing.
+        // Check if user is logged in
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert(i18nMain.loginRequired || 'يجب تسجيل الدخول أولاً لمشاركة بطاقتك. / You must be logged in to share your card.');
+            return;
+        }
 
         // Also target the mobile proxy button for visual feedback
         const mobileShareProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="share-card-btn"]');

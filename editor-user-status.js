@@ -68,6 +68,7 @@ const EditorUserStatus = {
         // Desktop elements
         const statusText = document.getElementById('user-status-text');
         const loginLink = document.getElementById('user-login-link');
+        const signupLink = document.getElementById('user-signup-link');
         const dashboardLink = document.getElementById('user-dashboard-link');
         const logoutBtn = document.getElementById('user-logout-btn');
         const saveBtn = document.getElementById('save-to-cloud-btn');
@@ -76,10 +77,12 @@ const EditorUserStatus = {
         const mobileMenuUserText = document.getElementById('mobile-menu-user-text');
         const mobileMenuDashboardLink = document.getElementById('mobile-menu-dashboard-link');
         const mobileMenuLoginLink = document.getElementById('mobile-menu-login-link');
+        const mobileMenuSignupLink = document.getElementById('mobile-menu-signup-link');
         const mobileMenuLogoutBtn = document.getElementById('mobile-menu-logout-btn');
 
         // Mobile Sidebar Elements (Share Panel)
         const mobileUserLoginContainer = document.getElementById('mobile-user-login-container');
+        const mobileUserSignupContainer = document.getElementById('mobile-user-signup-container');
         const mobileUserDashboardContainer = document.getElementById('mobile-user-dashboard-container');
         const mobileUserLogoutContainer = document.getElementById('mobile-user-logout-container');
 
@@ -96,6 +99,7 @@ const EditorUserStatus = {
             statusText.textContent = userName;
             statusText.style.color = 'var(--accent-primary)';
             loginLink.style.display = 'none';
+            if (signupLink) signupLink.style.display = 'none';
             if (dashboardLink) dashboardLink.style.display = 'inline-flex';
             logoutBtn.style.display = 'inline-flex';
             logoutBtn.textContent = isEnglish ? 'Logout' : 'خروج';
@@ -105,10 +109,12 @@ const EditorUserStatus = {
             if (mobileMenuUserText) mobileMenuUserText.textContent = userName;
             if (mobileMenuDashboardLink) mobileMenuDashboardLink.style.display = 'inline-flex';
             if (mobileMenuLoginLink) mobileMenuLoginLink.style.display = 'none';
+            if (mobileMenuSignupLink) mobileMenuSignupLink.style.display = 'none';
             if (mobileMenuLogoutBtn) mobileMenuLogoutBtn.style.display = 'flex';
 
             // Mobile Sidebar 
             if (mobileUserLoginContainer) mobileUserLoginContainer.style.display = 'none';
+            if (mobileUserSignupContainer) mobileUserSignupContainer.style.display = 'none';
             if (mobileUserDashboardContainer) mobileUserDashboardContainer.style.display = 'block';
             if (mobileUserLogoutContainer) mobileUserLogoutContainer.style.display = 'block';
 
@@ -119,18 +125,25 @@ const EditorUserStatus = {
             statusText.style.color = 'var(--text-secondary)';
             loginLink.style.display = 'inline-flex';
             loginLink.textContent = isEnglish ? 'Login' : 'تسجيل دخول';
+            if (signupLink) {
+                signupLink.style.display = 'inline-flex';
+                signupLink.textContent = isEnglish ? 'Sign Up' : 'إنشاء حساب';
+                signupLink.href = isEnglish ? 'signup-en.html' : 'signup.html';
+            }
             if (dashboardLink) dashboardLink.style.display = 'none';
             logoutBtn.style.display = 'none';
-            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
+            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ';
 
             // Mobile Menu
             if (mobileMenuUserText) mobileMenuUserText.textContent = isEnglish ? 'Guest' : 'غير مسجل';
             if (mobileMenuDashboardLink) mobileMenuDashboardLink.style.display = 'none';
             if (mobileMenuLoginLink) mobileMenuLoginLink.style.display = 'flex';
+            if (mobileMenuSignupLink) mobileMenuSignupLink.style.display = 'flex';
             if (mobileMenuLogoutBtn) mobileMenuLogoutBtn.style.display = 'none';
 
             // Mobile Sidebar
             if (mobileUserLoginContainer) mobileUserLoginContainer.style.display = 'block';
+            if (mobileUserSignupContainer) mobileUserSignupContainer.style.display = 'block';
             if (mobileUserDashboardContainer) mobileUserDashboardContainer.style.display = 'none';
             if (mobileUserLogoutContainer) mobileUserLogoutContainer.style.display = 'none';
         }
@@ -185,6 +198,31 @@ const EditorUserStatus = {
         const mobileSaveProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="save-to-cloud-btn"]');
         const mobileSaveProxyOrigHTML = mobileSaveProxyBtn ? mobileSaveProxyBtn.innerHTML : '';
 
+        // If not logged in, redirect to login
+        if (!token) {
+            const confirmMsg = isEnglish
+                ? 'You must be logged in to save your design.\n\nDo you want to login now?'
+                : 'يجب تسجيل الدخول لحفظ التصميم في حسابك.\n\nهل تريد تسجيل الدخول الآن؟';
+
+            const shouldLogin = confirm(confirmMsg);
+            console.log('[EditorUserStatus] shouldLogin:', shouldLogin);
+            if (shouldLogin) {
+                // Save current state to localStorage before redirecting
+                try {
+                    if (typeof StateManager !== 'undefined') {
+                        StateManager.saveState();
+                    }
+                } catch (e) {
+                    console.warn('[EditorUserStatus] saveState failed, continuing to redirect:', e);
+                }
+                // Set flag so beforeunload handlers don't block the redirect
+                window._intentionalRedirect = true;
+                const redirectUrl = isEnglish ? 'login-en.html?redirect=editor-en.html' : 'login.html?redirect=editor.html';
+                console.log('[EditorUserStatus] Redirecting to:', redirectUrl);
+                window.location.href = redirectUrl;
+            }
+            return;
+        }
 
         if (this.isSaving) return;
         this.isSaving = true;

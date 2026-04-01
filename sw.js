@@ -5,6 +5,7 @@ const urlsToCache = [
     '/nfc/index.html',
     '/nfc/editor.html',
     '/nfc/login.html',
+    '/nfc/signup.html',
     '/nfc/dashboard.html',
     '/nfc/gallery.html',
     '/nfc/style.css',

@@ -5,11 +5,6 @@ require('dotenv').config();
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required. Please set it in your environment variables.');
 }
-if (!process.env.MONGO_URI) {
-  console.error('FATAL ERROR: MONGO_URI is not defined in environment variables.');
-  console.error('Please add MONGO_URI to your .env file or Render environment settings.');
-  process.exit(1);
-}
 
 const express = require('express');
 const compression = require('compression');
@@ -109,8 +104,29 @@ const savedCardsCollectionName = 'savedCards';
 const cardRequestsCollectionName = 'cardRequests';
 let db;
 
-// --- DATABASE INITIALIZATION REMOVED FROM TOP ---
-// (Moved to the bottom to wrap server.listen)
+MongoClient.connect(mongoUrl)
+  .then(async client => {
+    db = client.db(dbName);
+    console.log('MongoDB connected');
+
+    // Create indexes for better performance
+    try {
+      await db.collection(designsCollectionName).createIndex({ shortId: 1 }, { unique: true });
+      await db.collection(designsCollectionName).createIndex({ ownerId: 1 });
+      await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
+      await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
+      await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
+      // Indexes for card save feature
+      await db.collection(savedCardsCollectionName).createIndex({ userId: 1 });
+      await db.collection(savedCardsCollectionName).createIndex({ userId: 1, designShortId: 1 }, { unique: true });
+      await db.collection(cardRequestsCollectionName).createIndex({ ownerUserId: 1, status: 1 });
+      await db.collection(cardRequestsCollectionName).createIndex({ requesterId: 1, designShortId: 1 });
+      console.log('MongoDB indexes created');
+    } catch (indexErr) {
+      console.warn('Some indexes may already exist:', indexErr.message);
+    }
+  })
+  .catch(err => { console.error('Mongo connect error', err); /* process.exit(1); */ });
 
 const rootDir = __dirname;
 
@@ -384,6 +400,7 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true // Don't count successful logins
 });
 app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/forgot-password', authLimiter);
 
 const storage = multer.memoryStorage();
@@ -488,21 +505,20 @@ app.post('/api/save-design', async (req, res) => {
     let shortId = existingId || nanoid(8);
     let isUpdate = false;
 
-    // Authentication is now optional - guests can save as well
+    // Require authentication - no anonymous saves allowed
     let ownerId = null;
     const authHeader = req.headers['authorization'];
-    if (authHeader) {
-      try {
-        const token = authHeader.split(' ')[1];
-        const secret = process.env.JWT_SECRET;
-        if (secret) {
-          const decoded = jwt.verify(token, secret);
-          ownerId = decoded.userId;
-        }
-      } catch (err) {
-        console.warn('[SaveDesign] Invalid token provided, saving as guest or owner mismatch will handle it.');
-        // ownerId remains null
-      }
+    if (!authHeader) {
+      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
+    }
+    try {
+      const token = authHeader.split(' ')[1];
+      const secret = process.env.JWT_SECRET;
+      if (!secret) throw new Error('JWT_SECRET not configured');
+      const decoded = jwt.verify(token, secret);
+      ownerId = decoded.userId;
+    } catch (err) {
+      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
     }
 
     if (existingId) {
@@ -540,42 +556,44 @@ app.post('/api/save-design', async (req, res) => {
       data,
       lastModified: new Date()
     };
-    if (ownerId) {
-      updateDoc.ownerId = ownerId;
-    } else {
-      console.log('[SaveDesign] Anonymous save detected (ownerId: null)');
-    }
+    if (ownerId && !isUpdate) updateDoc.ownerId = ownerId;
+    if (ownerId && isUpdate) updateDoc.ownerId = ownerId;
 
     if (isUpdate) {
-      console.log(`[SaveDesign] Updating existing design: ${shortId}`);
       await db.collection(designsCollectionName).updateOne(
         { shortId: shortId },
         { $set: updateDoc }
       );
     } else {
-      console.log(`[SaveDesign] Creating NEW design: ${shortId}`);
-      // If user is logged in, check for existing design first
+      // If user already has a design, update it instead of failing
       if (ownerId) {
-        const existingDesign = await db.collection(designsCollectionName).findOne({ ownerId });
-        if (existingDesign) {
-          console.log(`[SaveDesign] Member already has a design, switching to update: ${existingDesign.shortId}`);
-          shortId = existingDesign.shortId;
-          isUpdate = true;
-          // Preserve existing captured images
-          if (existingDesign.data?.imageUrls) {
-            if (!data.imageUrls) data.imageUrls = {};
-            const exImages = existingDesign.data.imageUrls;
-            if (!data.imageUrls.capturedFront && exImages.capturedFront) data.imageUrls.capturedFront = exImages.capturedFront;
-            if (!data.imageUrls.capturedBack && exImages.capturedBack) data.imageUrls.capturedBack = exImages.capturedBack;
+        const designCount = await db.collection(designsCollectionName).countDocuments({ ownerId });
+        if (designCount >= 1) {
+          // Find the existing design and update it
+          const existingDesign = await db.collection(designsCollectionName).findOne({ ownerId });
+          if (existingDesign) {
+            shortId = existingDesign.shortId;
+            isUpdate = true;
+            // Preserve existing captured images if not re-capturing now
+            if (existingDesign.data?.imageUrls) {
+              if (!data.imageUrls) data.imageUrls = {};
+              const existing = existingDesign.data.imageUrls;
+              if (!data.imageUrls.capturedFront && existing.capturedFront) {
+                data.imageUrls.capturedFront = existing.capturedFront;
+              }
+              if (!data.imageUrls.capturedBack && existing.capturedBack) {
+                data.imageUrls.capturedBack = existing.capturedBack;
+              }
+            }
+            const updateExisting = { data, ownerId, lastModified: new Date() };
+            await db.collection(designsCollectionName).updateOne(
+              { shortId },
+              { $set: updateExisting }
+            );
+            return res.json({ success: true, id: shortId });
           }
-          await db.collection(designsCollectionName).updateOne(
-            { shortId },
-            { $set: { data, ownerId, lastModified: new Date() } }
-          );
-          return res.json({ success: true, id: shortId });
         }
       }
-      
       await db.collection(designsCollectionName).insertOne({
         shortId,
         ...updateDoc,
@@ -594,6 +612,95 @@ app.post('/api/save-design', async (req, res) => {
 
 // --- AUTHENTICATION ROUTES ---
 
+// Register
+app.post('/api/auth/register', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 6 }),
+  body('name').trim().notEmpty()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const { email, password, name } = req.body;
+
+    // Check if user exists
+    const existingUser = await db.collection(usersCollectionName).findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create user
+    const userId = nanoid(10);
+    await db.collection(usersCollectionName).insertOne({
+      userId,
+      email,
+      password: hashedPassword,
+      name,
+      isVerified: false,
+      createdAt: new Date()
+    });
+
+    // Generate verification token
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
+    const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
+
+    // Store verification token
+    await db.collection(usersCollectionName).updateOne(
+      { userId },
+      { $set: { verificationToken } }
+    );
+
+    // Send verification email (non-blocking)
+    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
+    const verifyUrl = `${baseUrl}/verify-email.html?token=${verificationToken}`;
+    try {
+      const emailTemplate = EmailService.verificationEmail(name, verifyUrl);
+      await EmailService.send({ to: email, ...emailTemplate });
+    } catch (emailErr) {
+      console.warn('[Register] Email sending failed (non-blocking):', emailErr.message);
+    }
+
+    // Generate short-lived access token + HttpOnly refresh cookie
+    const accessToken = createAccessToken({ userId, email });
+    const refreshTokenValue = createRefreshToken();
+    const hashedRefresh = hashToken(refreshTokenValue);
+
+    // Store hashed refresh token in DB
+    await db.collection(usersCollectionName).updateOne(
+      { userId },
+      { $set: { refreshTokenHash: hashedRefresh } }
+    );
+
+    // Set refresh token as HttpOnly Secure cookie
+    res.cookie('refreshToken', refreshTokenValue, {
+      httpOnly: true,
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/auth'
+    });
+
+    res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
+
+  } catch (err) {
+    if (err.code === 11000) {
+      console.warn('Register duplicate error:', err);
+      return res.status(400).json({ error: 'User already exists' });
+    }
+    console.error('Register error:', err);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
 
 // Login
 app.post('/api/auth/login', [
@@ -739,9 +846,16 @@ app.get('/api/auth/google/callback', async (req, res) => {
     let user = await db.collection(usersCollectionName).findOne({ email: googleUser.email });
 
     if (!user) {
-      const isEnglish = req.headers.referer && req.headers.referer.includes('-en');
-      const errorMsg = isEnglish ? 'Registration is currently disabled.' : 'عذراً، التسجيل موقوف حالياً.';
-      return res.redirect((isEnglish ? '/nfc/login-en.html' : '/nfc/login.html') + '?error=' + encodeURIComponent(errorMsg));
+      const userId = nanoid(10);
+      await db.collection(usersCollectionName).insertOne({
+        userId,
+        email: googleUser.email,
+        name: googleUser.name || googleUser.email.split('@')[0],
+        googleId: googleUser.id,
+        isVerified: true,
+        createdAt: new Date()
+      });
+      user = { userId, email: googleUser.email, name: googleUser.name };
     }
 
     // Generate tokens
@@ -1659,40 +1773,12 @@ wss.on('connection', (ws, req) => {
 // =================================================================
 
 
-// --- START SERVER (Only after MongoDB is connected) ---
+// --- START SERVER (تغيير app.listen إلى server.listen) ---
 if (require.main === module) {
-  console.log('Attempting to connect to MongoDB...');
-  MongoClient.connect(mongoUrl)
-    .then(async client => {
-      db = client.db(dbName);
-      console.log('MongoDB connected successfully');
-
-      // Create indexes for better performance
-      try {
-        await db.collection(designsCollectionName).createIndex({ shortId: 1 }, { unique: true });
-        await db.collection(designsCollectionName).createIndex({ ownerId: 1 });
-        await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
-        await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
-        await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
-        await db.collection(savedCardsCollectionName).createIndex({ userId: 1 });
-        await db.collection(savedCardsCollectionName).createIndex({ userId: 1, designShortId: 1 }, { unique: true });
-        await db.collection(cardRequestsCollectionName).createIndex({ ownerUserId: 1, status: 1 });
-        await db.collection(cardRequestsCollectionName).createIndex({ requesterId: 1, designShortId: 1 });
-        console.log('MongoDB indexes synchronized');
-      } catch (indexErr) {
-        console.warn('Index sync warning (this is normal if they already exist):', indexErr.message);
-      }
-
-      server.listen(port, () => {
-        console.log(`[SUCCESS] Server running on port: ${port}`);
-        console.log('[SUCCESS] WebSocket server is active.');
-      });
-    })
-    .catch(err => {
-      console.error('FATAL: Could not connect to MongoDB. Server will not start.');
-      console.error('Error details:', err.message);
-      process.exit(1);
-    });
+  server.listen(port, () => {
+    console.log(`Server running on port: ${port}`);
+    console.log('WebSocket server is also running.');
+  });
 }
 
 module.exports = app;

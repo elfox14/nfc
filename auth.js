@@ -15,6 +15,7 @@ const Auth = {
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
+    get API_REGISTER() { return `${this.getBaseUrl()}/api/auth/register`; },
     get API_REFRESH() { return `${this.getBaseUrl()}/api/auth/refresh`; },
     get API_LOGOUT() { return `${this.getBaseUrl()}/api/auth/logout`; },
     get API_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
@@ -83,7 +84,34 @@ const Auth = {
         }
     },
 
+    async register(name, email, password) {
+        try {
+            const res = await fetch(this.API_REGISTER, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ name, email, password }),
+            });
 
+            const data = await res.json();
+
+            if (data.success) {
+                this.setSession(data.token, data.user);
+                return { success: true };
+            }
+
+            return {
+                success: false,
+                error: data.error || this.t('فشل إنشاء الحساب', 'Registration failed')
+            };
+        } catch (err) {
+            console.error('[Auth] register error:', err);
+            return {
+                success: false,
+                error: this.t('خطأ في الشبكة. تحقق من الاتصال.', 'Network error. Check your connection.')
+            };
+        }
+    },
 
     async refreshSession() {
         try {
