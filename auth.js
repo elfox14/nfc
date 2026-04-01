@@ -1,294 +1,277 @@
 'use strict';
 
+/**
+ * Auth — MC PRIME NFC
+ * Handles: login, register, Google sign-in (popup+postMessage), logout, session, nav UI.
+ */
 const Auth = {
-    // API Endpoints
-    // Determine Base URL:
-    // 1. If 'file:' protocol, default to Render live server.
-    // 2. If 'localhost' or '127.0.0.1', point to http://localhost:3000
-    // 3. For production (mcprim.com), point to Render backend
+
+    // ─── Config ────────────────────────────────────────────────────────────────
+
     getBaseUrl() {
-        if (window.location.protocol === 'file:') {
-            return 'https://nfc-vjy6.onrender.com';
-        }
-
-        const hostname = window.location.hostname;
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            return 'http://localhost:3000';
-        }
-
-        // Production - use Render backend
+        const p = window.location.protocol;
+        const h = window.location.hostname;
+        if (p === 'file:')                          return 'https://nfc-vjy6.onrender.com';
+        if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:3000';
         return 'https://nfc-vjy6.onrender.com';
     },
 
-    get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
+    get API_LOGIN()    { return `${this.getBaseUrl()}/api/auth/login`; },
     get API_REGISTER() { return `${this.getBaseUrl()}/api/auth/register`; },
-    get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
+    get API_DESIGNS()  { return `${this.getBaseUrl()}/api/user/designs`; },
 
-    // State
+    // ─── Session ───────────────────────────────────────────────────────────────
+
     token: localStorage.getItem('authToken'),
-    user: JSON.parse(localStorage.getItem('authUser') || 'null'),
+    user:  JSON.parse(localStorage.getItem('authUser') || 'null'),
 
-    // Methods
-    isLoggedIn() {
-        return !!this.token;
+    isLoggedIn() { return !!this.token; },
+
+    setSession(token, user) {
+        this.token = token;
+        this.user  = user;
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('authUser',  JSON.stringify(user));
     },
+
+    clearSession() {
+        this.token = null;
+        this.user  = null;
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
+    },
+
+    getHeader() {
+        return this.token ? { Authorization: `Bearer ${this.token}` } : {};
+    },
+
+    // ─── Language helpers ──────────────────────────────────────────────────────
+
+    isEnglish() {
+        return document.documentElement.lang.includes('en')
+            || window.location.pathname.includes('-en');
+    },
+
+    t(ar, en) {
+        return this.isEnglish() ? en : ar;
+    },
+
+    // ─── Login ─────────────────────────────────────────────────────────────────
 
     async login(email, password) {
         try {
-            console.log(`[Auth] Attempting login to: ${this.API_LOGIN}`);
-            const response = await fetch(this.API_LOGIN, {
-                method: 'POST',
+            const res  = await fetch(this.API_LOGIN, {
+                method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body:    JSON.stringify({ email, password }),
             });
-
-            const data = await response.json();
+            const data = await res.json();
             if (data.success) {
                 this.setSession(data.token, data.user);
                 return { success: true };
-            } else {
-                return { success: false, error: data.error || 'Login failed' };
             }
+            return { success: false, error: data.error || this.t('فشل تسجيل الدخول', 'Login failed') };
         } catch (err) {
-            console.error('[Auth] Login Error:', err);
-            return { success: false, error: `Network error: Failed to connect to ${this.API_LOGIN}` };
+            console.error('[Auth] login error:', err);
+            return { success: false, error: this.t('خطأ في الشبكة. تحقق من الاتصال.', 'Network error. Check your connection.') };
         }
     },
+
+    // ─── Register ──────────────────────────────────────────────────────────────
 
     async register(name, email, password) {
         try {
-            console.log(`[Auth] Attempting register to: ${this.API_REGISTER}`);
-            const response = await fetch(this.API_REGISTER, {
-                method: 'POST',
+            const res  = await fetch(this.API_REGISTER, {
+                method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password })
+                body:    JSON.stringify({ name, email, password }),
             });
-
-            const data = await response.json();
+            const data = await res.json();
             if (data.success) {
                 this.setSession(data.token, data.user);
                 return { success: true };
-            } else {
-                return { success: false, error: data.error || 'Registration failed' };
             }
+            return { success: false, error: data.error || this.t('فشل إنشاء الحساب', 'Registration failed') };
         } catch (err) {
-            console.error('[Auth] Register Error:', err);
-            return { success: false, error: `Network error: Failed to connect to ${this.API_REGISTER}` };
+            console.error('[Auth] register error:', err);
+            return { success: false, error: this.t('خطأ في الشبكة. تحقق من الاتصال.', 'Network error. Check your connection.') };
         }
     },
 
-    // Google Sign-In using popup flow
-    async googleSignIn() {
+    // ─── Google Sign-In (popup + postMessage) ──────────────────────────────────
+
+    googleSignIn() {
         return new Promise((resolve) => {
-            const width = 500;
-            const height = 600;
-            const left = (window.innerWidth - width) / 2;
-            const top = (window.innerHeight - height) / 2;
+            const W = 500, H = 600;
+            const left = Math.round((window.innerWidth  - W) / 2);
+            const top  = Math.round((window.innerHeight - H) / 2);
+            const lang = this.isEnglish() ? 'en' : 'ar';
 
             const popup = window.open(
-                `${this.getBaseUrl()}/api/auth/google?lang=${document.documentElement.lang.includes('en') ? 'en' : 'ar'}`,
-                'Google Sign In',
-                `width=${width},height=${height},left=${left},top=${top}`
+                `${this.getBaseUrl()}/api/auth/google?lang=${lang}`,
+                'google-auth',
+                `width=${W},height=${H},left=${left},top=${top},resizable=yes,scrollbars=yes`
             );
 
+            // Popup blocked
             if (!popup || popup.closed) {
-                resolve({
+                return resolve({
                     success: false,
-                    error: document.documentElement.lang === 'en'
-                        ? 'Popup blocked. Please allow it.'
-                        : 'تم حظر النافذة المنبثقة. يرجى السماح بها.'
+                    error: this.t(
+                        'تم حظر النافذة المنبثقة. يرجى السماح بها من إعدادات المتصفح.',
+                        'Popup blocked. Please allow popups for this site.'
+                    ),
                 });
-                return;
             }
 
-            let finished = false;
+            let done = false;
 
-            const cleanup = () => {
-                window.removeEventListener('message', messageHandler);
+            const finish = (result) => {
+                if (done) return;
+                done = true;
+                window.removeEventListener('message', onMessage);
+                clearTimeout(timer);
                 if (popup && !popup.closed) popup.close();
+                resolve(result);
             };
 
-            const messageHandler = (event) => {
-                if (!event.data || event.data.type !== 'google-auth' || finished) return;
-
-                finished = true;
-                cleanup();
+            const onMessage = (event) => {
+                // Security: only accept messages from our backend
+                const allowedOrigin = this.getBaseUrl();
+                if (event.origin !== allowedOrigin) return;
+                if (!event.data || event.data.type !== 'google-auth') return;
 
                 if (event.data.success) {
                     this.setSession(event.data.token, event.data.user);
-                    resolve({ success: true });
+                    finish({ success: true });
                 } else {
-                    resolve({
+                    finish({
                         success: false,
-                        error: event.data.error || (
-                            document.documentElement.lang === 'en'
-                                ? 'Login failed'
-                                : 'فشل تسجيل الدخول'
-                        )
+                        error: event.data.error || this.t('فشل تسجيل الدخول', 'Login failed'),
                     });
                 }
             };
 
-            window.addEventListener('message', messageHandler);
+            window.addEventListener('message', onMessage);
 
-            setTimeout(() => {
-                if (finished) return;
-                finished = true;
-                cleanup();
-                resolve({
+            // Timeout after 2 minutes
+            const timer = setTimeout(() => {
+                finish({
                     success: false,
-                    error: document.documentElement.lang === 'en'
-                        ? 'Timeout. Try again.'
-                        : 'انتهت المهلة. حاول مرة أخرى.'
+                    error: this.t('انتهت المهلة. يرجى المحاولة مجدداً.', 'Timed out. Please try again.'),
                 });
-            }, 120000);
+            }, 120_000);
+
+            // Also detect if user closes popup manually
+            const pollClosed = setInterval(() => {
+                if (done) { clearInterval(pollClosed); return; }
+                if (popup.closed) {
+                    clearInterval(pollClosed);
+                    finish({
+                        success: false,
+                        error: this.t('أُغلقت نافذة Google. يرجى المحاولة مجدداً.', 'Google window closed. Please try again.'),
+                    });
+                }
+            }, 500);
         });
     },
 
+    // ─── Logout ────────────────────────────────────────────────────────────────
+
     logout() {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
-        this.token = null;
-        this.user = null;
-
-        const isEnglish =
-            document.documentElement.lang.includes('en') ||
-            window.location.pathname.includes('-en');
-
-        const currentPath = window.location.pathname;
-        const basePrefix = currentPath.includes('/nfc/') ? '/nfc' : '';
-        window.location.href = isEnglish
-            ? `${basePrefix}/login-en.html`
-            : `${basePrefix}/login.html`;
+        this.clearSession();
+        const base = window.location.pathname.includes('/nfc/') ? '/nfc' : '';
+        window.location.href = this.isEnglish()
+            ? `${base}/login-en.html`
+            : `${base}/login.html`;
     },
 
-    setSession(token, user) {
-        this.token = token;
-        this.user = user;
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('authUser', JSON.stringify(user));
-    },
+    // ─── Nav UI ────────────────────────────────────────────────────────────────
 
-    getHeader() {
-        return this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
-    },
-
-    // UI Helpers
     updateNavAuth() {
-        const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-        const loginUrl = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
-        const dashboardUrl = isEnglish ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html';
-        const loginText = isEnglish ? 'Login' : 'تسجيل الدخول';
-        const dashboardText = isEnglish ? 'Control Panel' : 'لوحة التحكم';
-        const logoutText = isEnglish ? 'Logout' : 'خروج';
+        const en           = this.isEnglish();
+        const loginUrl     = en ? '/nfc/login-en.html'     : '/nfc/login.html';
+        const dashboardUrl = en ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html';
+        const dashTxt      = en ? 'Control Panel'          : 'لوحة التحكم';
+        const logoutTxt    = en ? 'Logout'                 : 'خروج';
+        const loginTxt     = en ? 'Login'                  : 'تسجيل الدخول';
 
-        // 1. Main Website Navbar (.nav-links & .nav-cta)
-        const navContainer = document.querySelector('.nav-links');
-        const ctaBtn = document.querySelector('.nav-cta');
-        const navContent = document.querySelector('.nav-content'); // Container for positioning
+        // ── Main navbar ────────────────────────────────────────────────────────
+        const navLinks = document.querySelector('.nav-links');
+        const ctaBtn   = document.querySelector('.nav-cta');
+        const navContent = document.querySelector('.nav-content');
 
-        if (navContainer) {
+        if (navLinks) {
             if (this.isLoggedIn()) {
-                // Hide Login Link in Nav
-                const loginLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('login') && !a.href.includes('dashboard'));
-                if (loginLink && loginLink.parentNode) loginLink.parentNode.style.display = 'none';
-
-                // We want to replace the CTA with: User Name + Control Panel Button
-                if (ctaBtn) {
-                    ctaBtn.style.display = 'none'; // Hide default CTA
-
-                    // Check if we already added the user info container
-                    let userInfoContainer = document.getElementById('nav-user-info');
-                    if (!userInfoContainer) {
-                        userInfoContainer = document.createElement('div');
-                        userInfoContainer.id = 'nav-user-info';
-                        userInfoContainer.style.cssText = 'display: flex; gap: 15px; align-items: center; margin-inline-start: 15px;';
-
-                        // User Name
-                        const userName = document.createElement('span');
-                        userName.textContent = this.user?.name || (isEnglish ? 'User' : 'مستخدم');
-                        userName.style.cssText = 'color: var(--text-primary-color); font-weight: bold; font-size: 0.9rem;';
-
-                        // Control Panel Button
-                        const dashboardBtn = document.createElement('a');
-                        dashboardBtn.href = dashboardUrl;
-                        dashboardBtn.className = 'btn';
-                        // Reuse styling from nav-cta but maybe adjust slightly or add specific class
-                        dashboardBtn.style.cssText = 'padding: 8px 15px; background: var(--primary-color); color: white; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem;';
-                        dashboardBtn.textContent = dashboardText;
-
-                        // Logout Icon/Button (Optional but good UX)
-                        const logoutBtn = document.createElement('button');
-                        logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
-                        logoutBtn.title = logoutText;
-                        logoutBtn.onclick = () => this.logout();
-                        logoutBtn.style.cssText = 'background: transparent; border: none; color: var(--text-secondary-color); cursor: pointer; font-size: 1.1rem;';
-
-                        userInfoContainer.appendChild(userName);
-                        userInfoContainer.appendChild(dashboardBtn);
-                        userInfoContainer.appendChild(logoutBtn);
-
-                        // Insert where CTA was (handle nested containers safely)
-                        if (ctaBtn.parentNode) {
-                            ctaBtn.parentNode.insertBefore(userInfoContainer, ctaBtn);
-                        } else if (navContent) {
-                            // Fallback if ctaBtn is somehow detached or we want to append to main nav
-                            navContent.appendChild(userInfoContainer);
-                        }
-                    }
-                }
-
-            } else {
-                // Logged Out State: Ensure standard Login/CTA is visible
-                const loginLink = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('login') && !a.href.includes('user'));
-                // Note: user-login-link in editor might match, but we are in nav-links loop usually. 
-                // Using specific check to be safe:
-                const allLinks = document.querySelectorAll('a');
-                allLinks.forEach(link => {
-                    if ((link.href.includes('login.html') || link.href.includes('login-en.html')) && link.style.display === 'none') {
-                        link.parentNode.style.display = ''; // Show li if hidden
+                // Hide any raw login links inside nav
+                document.querySelectorAll('a').forEach(a => {
+                    if (/login/.test(a.href) && !/dashboard/.test(a.href)) {
+                        if (a.parentElement) a.parentElement.style.display = 'none';
                     }
                 });
 
-                // Remove user info if exists
-                const userInfoContainer = document.getElementById('nav-user-info');
-                if (userInfoContainer) userInfoContainer.remove();
+                if (ctaBtn) ctaBtn.style.display = 'none';
 
-                if (ctaBtn) {
-                    ctaBtn.style.display = ''; // Show default CTA
-                }
-            }
-        }
+                if (!document.getElementById('nav-user-info')) {
+                    const wrap = document.createElement('div');
+                    wrap.id = 'nav-user-info';
+                    wrap.style.cssText = 'display:flex;gap:12px;align-items:center;margin-inline-start:15px';
 
-        // 2. Editor Toolbar (.toolbar-nav)
-        const toolbarNav = document.querySelector('.toolbar-nav');
-        if (toolbarNav) {
-            if (this.isLoggedIn()) {
-                if (!toolbarNav.querySelector(`a[href="${dashboardUrl}"]`)) {
-                    const a = document.createElement('a');
-                    a.href = dashboardUrl;
-                    a.className = "btn-icon";
-                    a.title = dashboardText;
-                    a.style.fontSize = "12px";
-                    a.innerHTML = '<i class="fas fa-user-circle"></i>';
-                    toolbarNav.appendChild(a);
+                    const name = document.createElement('span');
+                    name.textContent = this.user?.name || (en ? 'User' : 'مستخدم');
+                    name.style.cssText = 'color:var(--text-primary-color);font-weight:bold;font-size:.9rem';
+
+                    const dash = document.createElement('a');
+                    dash.href = dashboardUrl;
+                    dash.className = 'btn';
+                    dash.style.cssText = 'padding:8px 15px;background:var(--primary-color);color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;font-size:.9rem';
+                    dash.textContent = dashTxt;
+
+                    const out = document.createElement('button');
+                    out.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
+                    out.title = logoutTxt;
+                    out.onclick = () => this.logout();
+                    out.style.cssText = 'background:transparent;border:none;color:var(--text-secondary-color);cursor:pointer;font-size:1.1rem';
+
+                    wrap.append(name, dash, out);
+                    (ctaBtn?.parentNode || navContent)?.insertBefore(wrap, ctaBtn || null);
                 }
+
             } else {
-                if (!toolbarNav.querySelector(`a[href="${loginUrl}"]`)) {
-                    const a = document.createElement('a');
-                    a.href = loginUrl;
-                    a.className = "btn-icon";
-                    a.title = loginText;
-                    a.style.fontSize = "12px";
-                    a.innerHTML = '<i class="fas fa-sign-in-alt"></i>';
-                    toolbarNav.appendChild(a);
-                }
+                // Logged-out: restore hidden links
+                document.querySelectorAll('a').forEach(a => {
+                    if (/login\.html/.test(a.href) && a.parentElement?.style.display === 'none') {
+                        a.parentElement.style.display = '';
+                    }
+                });
+                document.getElementById('nav-user-info')?.remove();
+                if (ctaBtn) ctaBtn.style.display = '';
             }
         }
-    }
+
+        // ── Editor toolbar ─────────────────────────────────────────────────────
+        const toolbar = document.querySelector('.toolbar-nav');
+        if (toolbar) {
+            const existing = toolbar.querySelector('[data-auth-btn]');
+            if (existing) existing.remove();
+
+            const a = document.createElement('a');
+            a.dataset.authBtn = '';
+            a.className = 'btn-icon';
+            a.style.fontSize = '12px';
+
+            if (this.isLoggedIn()) {
+                a.href = dashboardUrl;
+                a.title = dashTxt;
+                a.innerHTML = '<i class="fas fa-user-circle"></i>';
+            } else {
+                a.href = loginUrl;
+                a.title = loginTxt;
+                a.innerHTML = '<i class="fas fa-sign-in-alt"></i>';
+            }
+            toolbar.appendChild(a);
+        }
+    },
 };
 
-// Auto-run on load to update UI
-document.addEventListener('DOMContentLoaded', () => {
-    Auth.updateNavAuth();
-});
+document.addEventListener('DOMContentLoaded', () => Auth.updateNavAuth());
