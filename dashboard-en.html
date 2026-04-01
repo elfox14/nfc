@@ -669,13 +669,13 @@
         async function loadMyDesigns() {
             const grid = document.getElementById('designs-grid');
             try {
-                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
+                const response = await Auth.fetchWithAuth(Auth.API_USER_DESIGNS);
 
                 if (!response.ok) {
                     const errText = await response.text().catch(() => '');
                     console.error('[Dashboard] API error:', response.status, errText);
                     if (response.status === 401 || response.status === 403) {
-                        Auth.logout('ApiUnauthorized');
+                        Auth.logout();
                         return;
                     }
                     throw new Error('Server error: ' + response.status);
@@ -729,9 +729,8 @@
         async function deleteDesign(shortId) {
             if (!confirm('Are you sure you want to permanently delete this design? It will also be removed from the gallery.')) return;
             try {
-                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
-                    method: 'DELETE',
-                    headers: Auth.getHeader()
+                const res = await Auth.fetchWithAuth(`${baseUrl}/api/user/designs/${shortId}`, {
+                    method: 'DELETE'
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -747,7 +746,7 @@
 
         async function loadRequestCount() {
             try {
-                const res = await fetch(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
+                const res = await Auth.fetchWithAuth(`${baseUrl}/api/card-requests/count`);
                 const data = await res.json();
                 const badge = document.getElementById('requests-badge');
                 if (data.count > 0) { badge.textContent = data.count; badge.style.display = 'inline'; }
@@ -758,7 +757,7 @@
         async function loadSavedCards() {
             const grid = document.getElementById('saved-cards-grid');
             try {
-                const res = await fetch(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
+                const res = await Auth.fetchWithAuth(`${baseUrl}/api/saved-cards`);
 
                 if (!res.ok) {
                     const text = await res.text();
@@ -799,13 +798,13 @@
 
         async function removeSavedCard(designId) {
             if (!confirm('Remove this card from saved?')) return;
-            try { await fetch(`${baseUrl}/api/saved-cards/${designId}`, { method: 'DELETE', headers: Auth.getHeader() }); loadSavedCards(); } catch (err) { console.error(err); }
+            try { await Auth.fetchWithAuth(`${baseUrl}/api/saved-cards/${designId}`, { method: 'DELETE' }); loadSavedCards(); } catch (err) { console.error(err); }
         }
 
         async function loadCardRequests() {
             const list = document.getElementById('requests-list');
             try {
-                const res = await fetch(`${baseUrl}/api/card-requests`, { headers: Auth.getHeader() });
+                const res = await Auth.fetchWithAuth(`${baseUrl}/api/card-requests`);
                 const data = await res.json();
                 list.innerHTML = '';
                 if (data.requests && data.requests.length > 0) {
@@ -838,9 +837,9 @@
 
         async function handleRequest(requestId, action) {
             try {
-                await fetch(`${baseUrl}/api/card-requests/${requestId}`, {
+                await Auth.fetchWithAuth(`${baseUrl}/api/card-requests/${requestId}`, {
                     method: 'PUT',
-                    headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action })
                 });
                 loadCardRequests(); loadRequestCount();
@@ -849,7 +848,7 @@
 
         async function loadPrivacySettings() {
             try {
-                const res = await fetch(`${baseUrl}/api/card-privacy`, { headers: Auth.getHeader() });
+                const res = await Auth.fetchWithAuth(`${baseUrl}/api/card-privacy`);
                 const data = await res.json();
                 const current = data.cardPrivacy || 'require_approval';
                 document.querySelectorAll('.privacy-option').forEach(opt => {
@@ -874,9 +873,9 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             try {
-                await fetch(`${baseUrl}/api/card-privacy`, {
+                await Auth.fetchWithAuth(`${baseUrl}/api/card-privacy`, {
                     method: 'PUT',
-                    headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cardPrivacy: selected })
                 });
                 btn.innerHTML = '<i class="fas fa-check"></i> Saved!';

@@ -31,8 +31,25 @@ const Auth = {
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     // Methods
+    isTokenExpired() {
+        if (!this.token) return true;
+        try {
+            const payload = JSON.parse(atob(this.token.split('.')[1]));
+            // Consider expired if less than 30 seconds remaining
+            return (payload.exp * 1000) < (Date.now() + 30000);
+        } catch (e) {
+            return true;
+        }
+    },
+
     isLoggedIn() {
-        return !!this.token;
+        return !!this.token && !this.isTokenExpired();
+    },
+
+    // Ensure we have a valid (non-expired) token, refreshing if needed
+    async ensureAuth() {
+        if (this.isLoggedIn()) return true;
+        return await this.refreshAccessToken();
     },
 
     // Re-obtain an access token from the server using the httpOnly refresh cookie.
@@ -178,6 +195,28 @@ const Auth = {
 
     getHeader() {
         return this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
+    },
+
+    // Wrapper around fetch that auto-refreshes the access token on 401
+    async fetchWithAuth(url, options = {}) {
+        // Proactively refresh if token is expired before making the request
+        if (this.isTokenExpired()) {
+            await this.refreshAccessToken();
+        }
+
+        // Ensure auth header is set with the (possibly refreshed) token
+        options.headers = { ...this.getHeader(), ...(options.headers || {}) };
+        let response = await fetch(url, options);
+
+        // Safety net: if still 401, try refreshing one more time and retry
+        if (response.status === 401) {
+            const refreshed = await this.refreshAccessToken();
+            if (refreshed) {
+                options.headers = { ...this.getHeader(), ...(options.headers || {}) };
+                response = await fetch(url, options);
+            }
+        }
+        return response;
     },
 
     // UI Helpers
