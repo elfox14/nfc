@@ -1,6 +1,11 @@
 // server.js (الكود الكامل والنهائي مع ميزة التحرير الجماعي)
 
 require('dotenv').config();
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is required. Please set it in your environment variables.');
+}
+
 const express = require('express');
 const compression = require('compression');
 const { MongoClient } = require('mongodb');
