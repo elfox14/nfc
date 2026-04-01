@@ -80,7 +80,6 @@ const Auth = {
     // Google Sign-In using popup flow
     async googleSignIn() {
         return new Promise((resolve) => {
-            // Open popup to backend Google OAuth endpoint
             const width = 500;
             const height = 600;
             const left = (window.innerWidth - width) / 2;
@@ -92,32 +91,56 @@ const Auth = {
                 `width=${width},height=${height},left=${left},top=${top}`
             );
 
-            // Listen for message from popup
+            if (!popup || popup.closed) {
+                resolve({
+                    success: false,
+                    error: document.documentElement.lang === 'en'
+                        ? 'Popup blocked. Please allow it.'
+                        : 'تم حظر النافذة المنبثقة. يرجى السماح بها.'
+                });
+                return;
+            }
+
+            let finished = false;
+
+            const cleanup = () => {
+                window.removeEventListener('message', messageHandler);
+                if (popup && !popup.closed) popup.close();
+            };
+
             const messageHandler = (event) => {
-                if (event.data && event.data.type === 'google-auth') {
-                    window.removeEventListener('message', messageHandler);
-                    if (event.data.success) {
-                        this.setSession(event.data.token, event.data.user);
-                        resolve({ success: true });
-                    } else {
-                        resolve({ success: false, error: event.data.error || (document.documentElement.lang === 'en' ? 'Login failed' : 'فشل تسجيل الدخول') });
-                    }
-                    if (popup) popup.close();
+                if (!event.data || event.data.type !== 'google-auth' || finished) return;
+
+                finished = true;
+                cleanup();
+
+                if (event.data.success) {
+                    this.setSession(event.data.token, event.data.user);
+                    resolve({ success: true });
+                } else {
+                    resolve({
+                        success: false,
+                        error: event.data.error || (
+                            document.documentElement.lang === 'en'
+                                ? 'Login failed'
+                                : 'فشل تسجيل الدخول'
+                        )
+                    });
                 }
             };
 
             window.addEventListener('message', messageHandler);
 
-            // Check if popup was blocked
-            if (!popup || popup.closed) {
-                resolve({ success: false, error: (document.documentElement.lang === 'en' ? 'Popup blocked. Please allow it.' : 'تم حظر النافذة المنبثقة. يرجى السماح بها.') });
-            }
-
-            // Timeout after 2 minutes
             setTimeout(() => {
-                window.removeEventListener('message', messageHandler);
-                if (popup && !popup.closed) popup.close();
-                resolve({ success: false, error: (document.documentElement.lang === 'en' ? 'Timeout. Try again.' : 'انتهت المهلة. حاول مرة أخرى.') });
+                if (finished) return;
+                finished = true;
+                cleanup();
+                resolve({
+                    success: false,
+                    error: document.documentElement.lang === 'en'
+                        ? 'Timeout. Try again.'
+                        : 'انتهت المهلة. حاول مرة أخرى.'
+                });
             }, 120000);
         });
     },
@@ -127,8 +150,16 @@ const Auth = {
         localStorage.removeItem('authUser');
         this.token = null;
         this.user = null;
-        const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-        window.location.href = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
+
+        const isEnglish =
+            document.documentElement.lang.includes('en') ||
+            window.location.pathname.includes('-en');
+
+        const currentPath = window.location.pathname;
+        const basePrefix = currentPath.includes('/nfc/') ? '/nfc' : '';
+        window.location.href = isEnglish
+            ? `${basePrefix}/login-en.html`
+            : `${basePrefix}/login.html`;
     },
 
     setSession(token, user) {
