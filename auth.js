@@ -25,7 +25,7 @@ const Auth = {
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     isLoggedIn() {
-        return !!this.token;
+        return !!localStorage.getItem('authToken');
     },
 
     setSession(token, user) {
@@ -44,7 +44,8 @@ const Auth = {
     },
 
     getHeader() {
-        return this.token ? { Authorization: `Bearer ${this.token}` } : {};
+        const token = localStorage.getItem('authToken');
+        return token ? { Authorization: `Bearer ${token}` } : {};
     },
 
     isEnglish() {
@@ -124,7 +125,10 @@ const Auth = {
 
             if (!res.ok) {
                 console.warn('[Auth] Refresh request failed with status:', res.status);
-                this.clearSession();
+                // فقط امسح الجلسة إذا كان الخطأ 401 أو 403 (Unauthorized/Forbidden)
+                if (res.status === 401 || res.status === 403) {
+                    this.clearSession();
+                }
                 return false;
             }
 
@@ -140,8 +144,6 @@ const Auth = {
         } catch (err) {
             console.error('[Auth] refresh error:', err);
         }
-
-        this.clearSession();
         return false;
     },
 
@@ -155,20 +157,13 @@ const Auth = {
             console.warn('[Auth] logout request failed:', err);
         }
 
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
-        this.token = null;
-        this.user = null;
+        this.clearSession();
 
-        const isEnglish =
-            document.documentElement.lang.includes('en') ||
-            window.location.pathname.includes('-en');
-
-        const currentPath = window.location.pathname;
-        const basePrefix = currentPath.includes('/nfc/') ? '/nfc' : '';
-        window.location.href = isEnglish
-            ? `${basePrefix}/login-en.html`
-            : `${basePrefix}/login.html`;
+        const en = this.isEnglish();
+        const basePath = window.location.pathname.startsWith('/nfc') ? '/nfc' : '';
+        window.location.href = en
+            ? `${basePath}/login-en.html`
+            : `${basePath}/login.html`;
     },
 
     async googleSignIn() {
@@ -241,8 +236,9 @@ const Auth = {
 
     updateNavAuth() {
         const en = this.isEnglish();
-        const loginUrl = en ? '/nfc/login-en.html' : '/nfc/login.html';
-        const dashboardUrl = en ? '/nfc/dashboard-en.html' : '/nfc/dashboard.html';
+        const basePath = window.location.pathname.startsWith('/nfc') ? '/nfc' : '';
+        const loginUrl = en ? `${basePath}/login-en.html` : `${basePath}/login.html`;
+        const dashboardUrl = en ? `${basePath}/dashboard-en.html` : `${basePath}/dashboard.html`;
         const dashTxt = en ? 'Control Panel' : 'لوحة التحكم';
         const logoutTxt = en ? 'Logout' : 'خروج';
         const loginTxt = en ? 'Login' : 'تسجيل الدخول';
