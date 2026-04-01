@@ -595,19 +595,6 @@
     <script>
         const baseUrl = Auth.getBaseUrl();
 
-        async function ensureAuthWithRetry(retries = 3, delay = 1800) {
-            if (Auth.isLoggedIn()) return true;
-
-            for (let i = 0; i < retries; i++) {
-                const ok = await Auth.refreshAccessToken();
-                if (ok && Auth.isLoggedIn()) return true;
-                if (i < retries - 1) {
-                    await new Promise(r => setTimeout(r, delay));
-                }
-            }
-            return false;
-        }
-
         // Tab switching
         document.querySelectorAll('.sidebar-item[data-section]').forEach(item => {
             item.addEventListener('click', (e) => {
@@ -630,31 +617,25 @@
             const hash = window.location.hash;
             if (hash.startsWith('#gauth=')) {
                 try {
-                    let b64 = hash.slice(7).replace(/-/g, '+').replace(/_/g, '/');
-                    while (b64.length % 4) b64 += '=';
-                    const decodedStr = decodeURIComponent(escape(atob(b64)));
+                    const encoded = hash.slice(7);
+                    const decodedStr = decodeURIComponent(encoded);
                     const data = JSON.parse(decodedStr);
                     if (data.token && data.user) {
                         Auth.setSession(data.token, data.user);
-                        // Clean the URL hash without refreshing
                         history.replaceState(null, '', window.location.pathname + window.location.search);
-                    } else {
-                        window.location.href = '/nfc/login.html?error=HashDecodeFailed_NoToken';
                     }
                 } catch (e) {
                     console.error('[Auth] Failed to decode gauth hash:', e);
-                    window.location.href = '/nfc/login.html?error=HashDecodeFailed_' + encodeURIComponent(e.message);
                 }
             }
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const authOk = await ensureAuthWithRetry();
-
-            if (!authOk) {
+            Auth.token = localStorage.getItem('authToken'); Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); if (!Auth.isLoggedIn()) {
                 window.location.href = '/nfc/login.html?error=AuthNotLoggedIn';
                 return;
             }
+
 
             document.getElementById('user-display-name').textContent = Auth.user?.name || 'مستخدم';
 
@@ -690,13 +671,13 @@
         async function loadMyDesigns() {
             const grid = document.getElementById('designs-grid');
             try {
-                const response = await Auth.fetchWithAuth(Auth.API_USER_DESIGNS);
+                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
 
                 if (!response.ok) {
                     const errText = await response.text().catch(() => '');
                     console.error('[Dashboard] API error:', response.status, errText);
                     if (response.status === 401 || response.status === 403) {
-                        Auth.logout();
+                        Auth.logout('ApiUnauthorized');
                         return;
                     }
                     throw new Error('خطأ الخادم: ' + response.status);
@@ -761,8 +742,9 @@
         async function deleteDesign(shortId) {
             if (!confirm('هل أنت متأكد أنك تريد حذف هذا التصميم نهائياً؟ سيتم حذفه أيضاً من المعرض.')) return;
             try {
-                const res = await Auth.fetchWithAuth(`${baseUrl}/api/user/designs/${shortId}`, {
-                    method: 'DELETE'
+                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
+                    method: 'DELETE',
+                    headers: Auth.getHeader()
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -778,7 +760,7 @@
 
         async function loadRequestCount() {
             try {
-                const res = await Auth.fetchWithAuth(`${baseUrl}/api/card-requests/count`);
+                const res = await fetch(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
                 const data = await res.json();
                 const badge = document.getElementById('requests-badge');
                 if (data.count > 0) {
@@ -793,7 +775,7 @@
         async function loadSavedCards() {
             const grid = document.getElementById('saved-cards-grid');
             try {
-                const res = await Auth.fetchWithAuth(`${baseUrl}/api/saved-cards`);
+                const res = await fetch(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
 
                 if (!res.ok) {
                     const text = await res.text();
@@ -835,8 +817,9 @@
         async function removeSavedCard(designId) {
             if (!confirm('هل تريد إزالة هذه البطاقة من المحفوظات؟')) return;
             try {
-                await Auth.fetchWithAuth(`${baseUrl}/api/saved-cards/${designId}`, {
-                    method: 'DELETE'
+                await fetch(`${baseUrl}/api/saved-cards/${designId}`, {
+                    method: 'DELETE',
+                    headers: Auth.getHeader()
                 });
                 loadSavedCards();
             } catch (err) { console.error(err); }
@@ -845,7 +828,7 @@
         async function loadCardRequests() {
             const list = document.getElementById('requests-list');
             try {
-                const res = await Auth.fetchWithAuth(`${baseUrl}/api/card-requests`);
+                const res = await fetch(`${baseUrl}/api/card-requests`, { headers: Auth.getHeader() });
                 const data = await res.json();
                 list.innerHTML = '';
 
@@ -893,9 +876,9 @@
 
         async function handleRequest(requestId, action) {
             try {
-                await Auth.fetchWithAuth(`${baseUrl}/api/card-requests/${requestId}`, {
+                await fetch(`${baseUrl}/api/card-requests/${requestId}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action })
                 });
                 loadCardRequests();
@@ -905,7 +888,7 @@
 
         async function loadPrivacySettings() {
             try {
-                const res = await Auth.fetchWithAuth(`${baseUrl}/api/card-privacy`);
+                const res = await fetch(`${baseUrl}/api/card-privacy`, { headers: Auth.getHeader() });
                 const data = await res.json();
                 const current = data.cardPrivacy || 'require_approval';
                 document.querySelectorAll('.privacy-option').forEach(opt => {
@@ -932,9 +915,9 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
             try {
-                await Auth.fetchWithAuth(`${baseUrl}/api/card-privacy`, {
+                await fetch(`${baseUrl}/api/card-privacy`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cardPrivacy: selected })
                 });
                 btn.innerHTML = '<i class="fas fa-check"></i> تم الحفظ بنجاح';

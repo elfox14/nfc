@@ -25,53 +25,12 @@ const Auth = {
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
 
     // State
-    // Access token is stored in both sessionStorage (same-tab) and localStorage (cross-script compat)
-    // sessionStorage survives page navigations within same tab; localStorage used by editor scripts
-    token: sessionStorage.getItem('authToken') || localStorage.getItem('authToken') || null,
+    token: localStorage.getItem('authToken'),
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     // Methods
-    isTokenExpired() {
-        if (!this.token) return true;
-        try {
-            const payload = JSON.parse(atob(this.token.split('.')[1]));
-            // Consider expired if less than 30 seconds remaining
-            return (payload.exp * 1000) < (Date.now() + 30000);
-        } catch (e) {
-            return true;
-        }
-    },
-
     isLoggedIn() {
-        return !!this.token && !this.isTokenExpired();
-    },
-
-    // Ensure we have a valid (non-expired) token, refreshing if needed
-    async ensureAuth() {
-        if (this.isLoggedIn()) return true;
-        return await this.refreshAccessToken();
-    },
-
-    // Re-obtain an access token from the server using the httpOnly refresh cookie.
-    // Call this once on page load to restore auth state without localStorage.
-    async refreshAccessToken() {
-        try {
-            const response = await fetch(`${this.getBaseUrl()}/api/auth/refresh`, {
-                method: 'POST',
-                credentials: 'include',  // sends httpOnly refreshToken cookie
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.token && data.user) {
-                    this.setSession(data.token, data.user);
-                    return true;
-                }
-            }
-        } catch (err) {
-            console.warn('[Auth] refreshAccessToken failed:', err);
-        }
-        return false;
+        return !!this.token;
     },
 
     async login(email, password) {
@@ -79,7 +38,6 @@ const Auth = {
             console.log(`[Auth] Attempting login to: ${this.API_LOGIN}`);
             const response = await fetch(this.API_LOGIN, {
                 method: 'POST',
-                credentials: 'include',  // receive httpOnly refreshToken cookie
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
@@ -102,7 +60,6 @@ const Auth = {
             console.log(`[Auth] Attempting register to: ${this.API_REGISTER}`);
             const response = await fetch(this.API_REGISTER, {
                 method: 'POST',
-                credentials: 'include',  // receive httpOnly refreshToken cookie
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password })
             });
@@ -120,59 +77,56 @@ const Auth = {
         }
     },
 
-    // Google Sign-In — redirect-based flow (works on mobile & all browsers)
-    googleSignIn(lang) {
-        const base = this.getBaseUrl();
-        // Only pass the language (ar/en) — the server builds the full redirect URL from PUBLIC_BASE_URL
-        const langParam = (lang === 'en') ? 'en' : 'ar';
-        window.location.href = `${base}/api/auth/google?lang=${langParam}`;
-    },
+    // Google Sign-In using popup flow
+    async googleSignIn() {
+        return new Promise((resolve) => {
+            // Open popup to backend Google OAuth endpoint
+            const width = 500;
+            const height = 600;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
 
-    // Called by login pages on load to check for google_token or error in URL params
-    handleGoogleCallback() {
-        const params = new URLSearchParams(window.location.search);
-        const googleToken = params.get('google_token');
-        const error = params.get('error');
+            const popup = window.open(
+                `${this.getBaseUrl()}/api/auth/google`,
+                'Google Sign In',
+                `width=${width},height=${height},left=${left},top=${top}`
+            );
 
-        if (googleToken) {
-            try {
-                // Decode the one-time JWT payload (we don't verify on frontend, server already validated)
-                const payloadB64 = googleToken.split('.')[1];
-                const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
-                if (payload.type === 'google-onetime' && payload.token && payload.user) {
-                    this.setSession(payload.token, payload.user);
-                    // Clean the URL and redirect to dashboard
-                    const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-                    window.location.replace(isEnglish ? '/nfc/dashboard-en' : '/nfc/dashboard');
-                    return { handled: true, success: true };
+            // Listen for message from popup
+            const messageHandler = (event) => {
+                if (event.data && event.data.type === 'google-auth') {
+                    window.removeEventListener('message', messageHandler);
+                    if (event.data.success) {
+                        this.setSession(event.data.token, event.data.user);
+                        resolve({ success: true });
+                    } else {
+                        resolve({ success: false, error: event.data.error || (document.documentElement.lang === 'en' ? 'Login failed' : 'فشل تسجيل الدخول') });
+                    }
+                    if (popup) popup.close();
                 }
-            } catch (e) {
-                console.error('[Auth] Failed to decode google_token:', e);
-                return { handled: true, success: false, error: 'فشل معالجة رمز تسجيل الدخول' };
+            };
+
+            window.addEventListener('message', messageHandler);
+
+            // Check if popup was blocked
+            if (!popup || popup.closed) {
+                resolve({ success: false, error: (document.documentElement.lang === 'en' ? 'Popup blocked. Please allow it.' : 'تم حظر النافذة المنبثقة. يرجى السماح بها.') });
             }
-        }
 
-        if (error) {
-            const msg = decodeURIComponent(error);
-            return { handled: true, success: false, error: msg };
-        }
-
-        return { handled: false };
+            // Timeout after 2 minutes
+            setTimeout(() => {
+                window.removeEventListener('message', messageHandler);
+                if (popup && !popup.closed) popup.close();
+                resolve({ success: false, error: (document.documentElement.lang === 'en' ? 'Timeout. Try again.' : 'انتهت المهلة. حاول مرة أخرى.') });
+            }, 120000);
+        });
     },
-
 
     logout() {
-        // Clear token from memory and sessionStorage
-        this.token = null;
-        this.user = null;
-        sessionStorage.removeItem('authToken');
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
-        // Ask server to clear the httpOnly refreshToken cookie
-        fetch(`${this.getBaseUrl()}/api/auth/logout`, {
-            method: 'POST',
-            credentials: 'include'
-        }).catch(() => {/* ignore errors during logout */ });
+        this.token = null;
+        this.user = null;
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
         window.location.href = isEnglish ? '/nfc/login-en.html' : '/nfc/login.html';
     },
@@ -180,43 +134,12 @@ const Auth = {
     setSession(token, user) {
         this.token = token;
         this.user = user;
-        // Save token in sessionStorage so it survives same-tab page navigations (login → dashboard)
-        // sessionStorage is tab-scoped and cleared when the tab closes — safer than localStorage
-        if (token) {
-            sessionStorage.setItem('authToken', token);
-            localStorage.setItem('authToken', token);  // for editor-user-status.js + other scripts
-        } else {
-            sessionStorage.removeItem('authToken');
-            localStorage.removeItem('authToken');
-        }
-        // User display info (not a secret) saved for UI across page loads
+        localStorage.setItem('authToken', token);
         localStorage.setItem('authUser', JSON.stringify(user));
     },
 
     getHeader() {
         return this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
-    },
-
-    // Wrapper around fetch that auto-refreshes the access token on 401
-    async fetchWithAuth(url, options = {}) {
-        // Proactively refresh if token is expired before making the request
-        if (this.isTokenExpired()) {
-            await this.refreshAccessToken();
-        }
-
-        // Ensure auth header is set with the (possibly refreshed) token
-        options.headers = { ...this.getHeader(), ...(options.headers || {}) };
-        let response = await fetch(url, options);
-
-        // Safety net: if still 401, try refreshing one more time and retry
-        if (response.status === 401) {
-            const refreshed = await this.refreshAccessToken();
-            if (refreshed) {
-                options.headers = { ...this.getHeader(), ...(options.headers || {}) };
-                response = await fetch(url, options);
-            }
-        }
-        return response;
     },
 
     // UI Helpers
@@ -334,10 +257,7 @@ const Auth = {
     }
 };
 
-// Auto-run on load to update UI — restore session if needed
-document.addEventListener('DOMContentLoaded', async () => {
-    if (!Auth.isLoggedIn()) {
-        await Auth.refreshAccessToken();
-    }
+// Auto-run on load to update UI
+document.addEventListener('DOMContentLoaded', () => {
     Auth.updateNavAuth();
 });
