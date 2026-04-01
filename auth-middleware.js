@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const config = require('./config');
 
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -10,9 +11,9 @@ const verifyToken = (req, res, next) => {
     }
 
     try {
-        const secret = process.env.JWT_SECRET;
+        const secret = config.JWT_SECRET;
         if (!secret) {
-            console.error('[AuthMiddleware] JWT_SECRET is missing in environment variables');
+            console.error('[AuthMiddleware] JWT_SECRET is missing in config');
             return res.status(500).json({ error: 'Server misconfiguration' });
         }
         

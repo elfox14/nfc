@@ -617,6 +617,63 @@ app.post('/api/save-design', async (req, res) => {
   }
 });
 
+// PATCH element property
+app.patch('/api/design/:id/element/:elementId', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const { id, elementId } = req.params;
+    const updates = req.body;
+
+    // Whitelist of allowed properties
+    const allowedKeys = ['position', 'fontSize', 'color', 'content', 'width', 'height', 'rotation', 'opacity', 'zIndex', 'display', 'text', 'src', 'url'];
+    const filteredUpdates = {};
+    Object.keys(updates).forEach(key => {
+      if (allowedKeys.includes(key)) {
+        filteredUpdates[key] = updates[key];
+      }
+    });
+
+    if (Object.keys(filteredUpdates).length === 0) {
+      return res.status(400).json({ error: 'No valid properties to update' });
+    }
+
+    const updatePayload = {};
+    for (const key in filteredUpdates) {
+      updatePayload[`data.elements.$.${key}`] = filteredUpdates[key];
+    }
+
+    // Try primary structure (data.elements)
+    let result = await db.collection(designsCollectionName).updateOne(
+      { shortId: id, 'data.elements.id': elementId, ownerId: req.user.userId },
+      { $set: updatePayload }
+    );
+
+    // Fallback for legacy or test structures
+    if (result.matchedCount === 0) {
+      const fallbackPayload = {};
+      for (const key in filteredUpdates) {
+        fallbackPayload[`elements.$.${key}`] = filteredUpdates[key];
+      }
+      result = await db.collection(designsCollectionName).updateOne(
+        { shortId: id, 'elements.id': elementId, ownerId: req.user.userId },
+        { $set: fallbackPayload }
+      );
+    }
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: 'Design or element not found or unauthorized' });
+    }
+
+    console.log(`[PatchElement] Element ${elementId} updated in design ${id}`);
+    res.json({ success: true, message: 'Element updated successfully' });
+
+  } catch (err) {
+    console.error('Patch element error:', err);
+    res.status(500).json({ error: 'Failed to update element' });
+  }
+});
+
+
 // --- AUTHENTICATION ROUTES ---
 
 // Register
