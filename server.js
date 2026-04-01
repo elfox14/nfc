@@ -87,16 +87,26 @@ app.use(cors({
       console.log('[CORS] Request with no origin allowed');
       return cb(null, true);
     }
-    // In all environments, only allow explicitly listed origins
-    if (allowedOrigins.includes(origin)) {
+    // In all environments, check against allowedOrigins with flexible subdomain matching
+    const isAllowed = allowedOrigins.some(baseDomain => {
+      if (baseDomain === origin) return true;
+      // Compare without protocols and www
+      const cleanBase = baseDomain.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
+      const cleanOrigin = origin.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
+      return cleanBase === cleanOrigin;
+    });
+
+    if (isAllowed) {
       console.log(`[CORS] Request from allowed origin: ${origin}`);
       return cb(null, true);
     }
     console.warn(`[CORS] Request from BLOCKED origin: ${origin}. Allowed origins: ${allowedOrigins.join(', ')}`);
     cb(new Error('Not allowed by CORS'));
   },
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers crash on 204
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
