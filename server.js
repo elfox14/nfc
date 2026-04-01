@@ -716,13 +716,18 @@ app.post('/api/auth/login', [
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.warn('[Login] Validation failed:', errors.array());
     return res.status(400).json({ errors: errors.array() });
   }
 
   try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    if (!db) {
+      console.error('[Login] Database not connected');
+      return res.status(500).json({ error: 'DB not connected' });
+    }
 
     const { email, password } = req.body;
+    console.log(`[Login] Login attempt for: ${email}`);
 
     const user = await db.collection(usersCollectionName).findOne({ email });
     if (!user) {
