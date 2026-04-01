@@ -5,6 +5,11 @@ require('dotenv').config();
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required. Please set it in your environment variables.');
 }
+if (!process.env.MONGO_URI) {
+  console.error('FATAL ERROR: MONGO_URI is not defined in environment variables.');
+  console.error('Please add MONGO_URI to your .env file or Render environment settings.');
+  process.exit(1);
+}
 
 const express = require('express');
 const compression = require('compression');
@@ -104,29 +109,8 @@ const savedCardsCollectionName = 'savedCards';
 const cardRequestsCollectionName = 'cardRequests';
 let db;
 
-MongoClient.connect(mongoUrl)
-  .then(async client => {
-    db = client.db(dbName);
-    console.log('MongoDB connected');
-
-    // Create indexes for better performance
-    try {
-      await db.collection(designsCollectionName).createIndex({ shortId: 1 }, { unique: true });
-      await db.collection(designsCollectionName).createIndex({ ownerId: 1 });
-      await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
-      await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
-      await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
-      // Indexes for card save feature
-      await db.collection(savedCardsCollectionName).createIndex({ userId: 1 });
-      await db.collection(savedCardsCollectionName).createIndex({ userId: 1, designShortId: 1 }, { unique: true });
-      await db.collection(cardRequestsCollectionName).createIndex({ ownerUserId: 1, status: 1 });
-      await db.collection(cardRequestsCollectionName).createIndex({ requesterId: 1, designShortId: 1 });
-      console.log('MongoDB indexes created');
-    } catch (indexErr) {
-      console.warn('Some indexes may already exist:', indexErr.message);
-    }
-  })
-  .catch(err => { console.error('Mongo connect error', err); /* process.exit(1); */ });
+// --- DATABASE INITIALIZATION REMOVED FROM TOP ---
+// (Moved to the bottom to wrap server.listen)
 
 const rootDir = __dirname;
 
@@ -1675,12 +1659,40 @@ wss.on('connection', (ws, req) => {
 // =================================================================
 
 
-// --- START SERVER (تغيير app.listen إلى server.listen) ---
+// --- START SERVER (Only after MongoDB is connected) ---
 if (require.main === module) {
-  server.listen(port, () => {
-    console.log(`Server running on port: ${port}`);
-    console.log('WebSocket server is also running.');
-  });
+  console.log('Attempting to connect to MongoDB...');
+  MongoClient.connect(mongoUrl)
+    .then(async client => {
+      db = client.db(dbName);
+      console.log('MongoDB connected successfully');
+
+      // Create indexes for better performance
+      try {
+        await db.collection(designsCollectionName).createIndex({ shortId: 1 }, { unique: true });
+        await db.collection(designsCollectionName).createIndex({ ownerId: 1 });
+        await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
+        await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
+        await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
+        await db.collection(savedCardsCollectionName).createIndex({ userId: 1 });
+        await db.collection(savedCardsCollectionName).createIndex({ userId: 1, designShortId: 1 }, { unique: true });
+        await db.collection(cardRequestsCollectionName).createIndex({ ownerUserId: 1, status: 1 });
+        await db.collection(cardRequestsCollectionName).createIndex({ requesterId: 1, designShortId: 1 });
+        console.log('MongoDB indexes synchronized');
+      } catch (indexErr) {
+        console.warn('Index sync warning (this is normal if they already exist):', indexErr.message);
+      }
+
+      server.listen(port, () => {
+        console.log(`[SUCCESS] Server running on port: ${port}`);
+        console.log('[SUCCESS] WebSocket server is active.');
+      });
+    })
+    .catch(err => {
+      console.error('FATAL: Could not connect to MongoDB. Server will not start.');
+      console.error('Error details:', err.message);
+      process.exit(1);
+    });
 }
 
 module.exports = app;
