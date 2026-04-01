@@ -68,7 +68,6 @@ const EditorUserStatus = {
         // Desktop elements
         const statusText = document.getElementById('user-status-text');
         const loginLink = document.getElementById('user-login-link');
-        const signupLink = document.getElementById('user-signup-link');
         const dashboardLink = document.getElementById('user-dashboard-link');
         const logoutBtn = document.getElementById('user-logout-btn');
         const saveBtn = document.getElementById('save-to-cloud-btn');
@@ -77,12 +76,10 @@ const EditorUserStatus = {
         const mobileMenuUserText = document.getElementById('mobile-menu-user-text');
         const mobileMenuDashboardLink = document.getElementById('mobile-menu-dashboard-link');
         const mobileMenuLoginLink = document.getElementById('mobile-menu-login-link');
-        const mobileMenuSignupLink = document.getElementById('mobile-menu-signup-link');
         const mobileMenuLogoutBtn = document.getElementById('mobile-menu-logout-btn');
 
         // Mobile Sidebar Elements (Share Panel)
         const mobileUserLoginContainer = document.getElementById('mobile-user-login-container');
-        const mobileUserSignupContainer = document.getElementById('mobile-user-signup-container');
         const mobileUserDashboardContainer = document.getElementById('mobile-user-dashboard-container');
         const mobileUserLogoutContainer = document.getElementById('mobile-user-logout-container');
 
@@ -99,7 +96,6 @@ const EditorUserStatus = {
             statusText.textContent = userName;
             statusText.style.color = 'var(--accent-primary)';
             loginLink.style.display = 'none';
-            if (signupLink) signupLink.style.display = 'none';
             if (dashboardLink) dashboardLink.style.display = 'inline-flex';
             logoutBtn.style.display = 'inline-flex';
             logoutBtn.textContent = isEnglish ? 'Logout' : 'خروج';
@@ -109,12 +105,10 @@ const EditorUserStatus = {
             if (mobileMenuUserText) mobileMenuUserText.textContent = userName;
             if (mobileMenuDashboardLink) mobileMenuDashboardLink.style.display = 'inline-flex';
             if (mobileMenuLoginLink) mobileMenuLoginLink.style.display = 'none';
-            if (mobileMenuSignupLink) mobileMenuSignupLink.style.display = 'none';
             if (mobileMenuLogoutBtn) mobileMenuLogoutBtn.style.display = 'flex';
 
             // Mobile Sidebar 
             if (mobileUserLoginContainer) mobileUserLoginContainer.style.display = 'none';
-            if (mobileUserSignupContainer) mobileUserSignupContainer.style.display = 'none';
             if (mobileUserDashboardContainer) mobileUserDashboardContainer.style.display = 'block';
             if (mobileUserLogoutContainer) mobileUserLogoutContainer.style.display = 'block';
 
@@ -125,11 +119,6 @@ const EditorUserStatus = {
             statusText.style.color = 'var(--text-secondary)';
             loginLink.style.display = 'inline-flex';
             loginLink.textContent = isEnglish ? 'Login' : 'تسجيل دخول';
-            if (signupLink) {
-                signupLink.style.display = 'inline-flex';
-                signupLink.textContent = isEnglish ? 'Sign Up' : 'إنشاء حساب';
-                signupLink.href = isEnglish ? 'signup-en.html' : 'signup.html';
-            }
             if (dashboardLink) dashboardLink.style.display = 'none';
             logoutBtn.style.display = 'none';
             if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ';
@@ -138,12 +127,10 @@ const EditorUserStatus = {
             if (mobileMenuUserText) mobileMenuUserText.textContent = isEnglish ? 'Guest' : 'غير مسجل';
             if (mobileMenuDashboardLink) mobileMenuDashboardLink.style.display = 'none';
             if (mobileMenuLoginLink) mobileMenuLoginLink.style.display = 'flex';
-            if (mobileMenuSignupLink) mobileMenuSignupLink.style.display = 'flex';
             if (mobileMenuLogoutBtn) mobileMenuLogoutBtn.style.display = 'none';
 
             // Mobile Sidebar
             if (mobileUserLoginContainer) mobileUserLoginContainer.style.display = 'block';
-            if (mobileUserSignupContainer) mobileUserSignupContainer.style.display = 'block';
             if (mobileUserDashboardContainer) mobileUserDashboardContainer.style.display = 'none';
             if (mobileUserLogoutContainer) mobileUserLogoutContainer.style.display = 'none';
         }

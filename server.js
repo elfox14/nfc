@@ -400,7 +400,6 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true // Don't count successful logins
 });
 app.use('/api/auth/login', authLimiter);
-app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/forgot-password', authLimiter);
 
 const storage = multer.memoryStorage();
@@ -612,95 +611,6 @@ app.post('/api/save-design', async (req, res) => {
 
 // --- AUTHENTICATION ROUTES ---
 
-// Register
-app.post('/api/auth/register', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
-  body('name').trim().notEmpty()
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-    const { email, password, name } = req.body;
-
-    // Check if user exists
-    const existingUser = await db.collection(usersCollectionName).findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create user
-    const userId = nanoid(10);
-    await db.collection(usersCollectionName).insertOne({
-      userId,
-      email,
-      password: hashedPassword,
-      name,
-      isVerified: false,
-      createdAt: new Date()
-    });
-
-    // Generate verification token
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
-    const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
-
-    // Store verification token
-    await db.collection(usersCollectionName).updateOne(
-      { userId },
-      { $set: { verificationToken } }
-    );
-
-    // Send verification email (non-blocking)
-    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
-    const verifyUrl = `${baseUrl}/verify-email.html?token=${verificationToken}`;
-    try {
-      const emailTemplate = EmailService.verificationEmail(name, verifyUrl);
-      await EmailService.send({ to: email, ...emailTemplate });
-    } catch (emailErr) {
-      console.warn('[Register] Email sending failed (non-blocking):', emailErr.message);
-    }
-
-    // Generate short-lived access token + HttpOnly refresh cookie
-    const accessToken = createAccessToken({ userId, email });
-    const refreshTokenValue = createRefreshToken();
-    const hashedRefresh = hashToken(refreshTokenValue);
-
-    // Store hashed refresh token in DB
-    await db.collection(usersCollectionName).updateOne(
-      { userId },
-      { $set: { refreshTokenHash: hashedRefresh } }
-    );
-
-    // Set refresh token as HttpOnly Secure cookie
-    res.cookie('refreshToken', refreshTokenValue, {
-      httpOnly: true,
-      secure: true, // required for sameSite: 'None'
-      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/api/auth'
-    });
-
-    res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
-
-  } catch (err) {
-    if (err.code === 11000) {
-      console.warn('Register duplicate error:', err);
-      return res.status(400).json({ error: 'User already exists' });
-    }
-    console.error('Register error:', err);
-    res.status(500).json({ error: 'Registration failed' });
-  }
-});
 
 // Login
 app.post('/api/auth/login', [
@@ -846,16 +756,9 @@ app.get('/api/auth/google/callback', async (req, res) => {
     let user = await db.collection(usersCollectionName).findOne({ email: googleUser.email });
 
     if (!user) {
-      const userId = nanoid(10);
-      await db.collection(usersCollectionName).insertOne({
-        userId,
-        email: googleUser.email,
-        name: googleUser.name || googleUser.email.split('@')[0],
-        googleId: googleUser.id,
-        isVerified: true,
-        createdAt: new Date()
-      });
-      user = { userId, email: googleUser.email, name: googleUser.name };
+      const isEnglish = req.headers.referer && req.headers.referer.includes('-en');
+      const errorMsg = isEnglish ? 'Registration is currently disabled.' : 'عذراً، التسجيل موقوف حالياً.';
+      return res.redirect((isEnglish ? '/nfc/login-en.html' : '/nfc/login.html') + '?error=' + encodeURIComponent(errorMsg));
     }
 
     // Generate tokens
