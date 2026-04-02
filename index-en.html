@@ -2,6 +2,11 @@
 <html lang="en" dir="ltr">
 
 <head>
+  <!-- SEO: Canonical + Hreflang -->
+  <link rel="canonical" href="https://www.mcprim.com/nfc/index-en.html" />
+  <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/" />
+  <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/index-en.html" />
+  <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Google Tag Manager -->
@@ -41,7 +46,17 @@
     {
         "@context": "https://schema.org",
         "@graph": [
-            {
+                {
+            "@type": "WebSite",
+            "name": "MC PRIME",
+            "url": "https://www.mcprim.com/nfc/",
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.mcprim.com/nfc/?s={search_term_string}",
+                "query-input": "required name=search_term_string"
+            }
+        },    
+        {
                 "@type": "WebPage",
                 "name": "Smart NFC Business Card - Design Your Digital Card Free",
                 "description": "Design your smart NFC business card for free with MC PRIME",
@@ -68,7 +83,13 @@
                     "https://facebook.com/mcprime",
                     "https://instagram.com/mcprime",
                     "https://linkedin.com/company/mcprime"
-                ]
+                ],
+            "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "customer support",
+                "url": "https://mcprim.com/nfc/contact-en.html",
+                "availableLanguage": ["Arabic", "English"]
+            }
             },
             {
                 "@type": "SoftwareApplication",
@@ -78,7 +99,8 @@
                 "offers": {
                     "@type": "Offer",
                     "price": "0",
-                    "priceCurrency": "USD"
+                    "priceCurrency": "EGP",
+                "availability": "https://schema.org/InStock"
                 },
                 "description": "Free tool to design smart digital business cards with NFC and QR Code support",
                 "aggregateRating": {
@@ -150,13 +172,7 @@
             }
         ]
     }
-    </script>
-
-    <link rel="canonical" href="https://www.mcprim.com/nfc/index-en.html">
-    <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/index-en.html">
-    <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/">
-    <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/">
-    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
+    </script>    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
 
     <!-- Preconnect for external resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -282,10 +298,98 @@
     <!-- Language Switcher -->
     <script src="/nfc/lang-switcher.js" defer></script>
     <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
-        crossorigin="anonymous"></script>
-</head>
-
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790" crossorigin="anonymous"></script>
+    <style>
+        /* ===== Flip Card - Hero Preview ===== */
+        .flip-card-wrapper {
+            perspective: 1000px;
+            width: 260px;
+            height: 160px;
+            cursor: pointer;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
+            animation: autoFlip 4s ease-in-out infinite;
+        }
+        @keyframes autoFlip {
+            0%, 40%   { transform: rotateY(0deg); }
+            50%, 90%  { transform: rotateY(180deg); }
+            100%      { transform: rotateY(0deg); }
+        }
+        .flip-card-wrapper:hover .flip-card-inner { animation-play-state: paused; }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 18px;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(77,166,255,0.12);
+        }
+        .flip-card-front {
+            background: linear-gradient(135deg, #0f2744 0%, #1a3a60 50%, #1e4a7a 100%);
+            border: 1px solid rgba(77,166,255,0.35);
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 1.1rem 1.2rem;
+        }
+        .fc-top { display: flex; align-items: center; gap: 0.7rem; }
+        .fc-avatar {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: linear-gradient(135deg, #4da6ff, #a78bfa);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 0.8rem; font-weight: 700;
+            box-shadow: 0 4px 14px rgba(77,166,255,0.45); flex-shrink: 0;
+        }
+        .fc-name { color: #e8f4ff; font-size: 0.88rem; font-weight: 700; line-height: 1.2; }
+        .fc-title { color: #7db8e8; font-size: 0.7rem; margin-top: 2px; }
+        .fc-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(77,166,255,0.4), transparent); margin: 0.2rem 0; }
+        .fc-links { display: flex; flex-direction: column; gap: 0.3rem; }
+        .fc-link { display: flex; align-items: center; gap: 0.4rem; color: #bdd8f0; font-size: 0.7rem; }
+        .fc-link i { color: #4da6ff; width: 12px; font-size: 0.65rem; }
+        .fc-bottom { display: flex; align-items: center; justify-content: space-between; }
+        .fc-brand { color: #4da6ff; font-size: 0.62rem; font-weight: 800; letter-spacing: 1px; opacity: 0.8; }
+        .fc-nfc-pill {
+            display: flex; align-items: center; gap: 0.25rem;
+            background: rgba(77,166,255,0.15); border: 1px solid rgba(77,166,255,0.4);
+            border-radius: 20px; padding: 0.15rem 0.5rem;
+            color: #4da6ff; font-size: 0.6rem; font-weight: 700;
+        }
+        .flip-card-back {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border: 1px solid rgba(167,139,250,0.35);
+            transform: rotateY(180deg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 0.6rem; padding: 1rem;
+        }
+        .fc-qr-box {
+            width: 72px; height: 72px; background: white; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #0f2744; font-size: 2.2rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .fc-scan-label { color: #a78bfa; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.5px; }
+        .fc-back-links { display: flex; gap: 0.5rem; }
+        .fc-social-icon {
+            width: 28px; height: 28px;
+            background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            color: #a78bfa; font-size: 0.75rem;
+        }
+        .flip-card-front::after {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            animation: shine 4s ease-in-out infinite;
+        }
+        @keyframes shine {
+            0%, 45%, 100% { left: -100%; }
+            20% { left: 150%; }
+        }
+    </style>
 <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
@@ -304,7 +408,7 @@
     <!-- Floating CTA Button -->
     <a href="/nfc/editor-en.html" class="floating-cta" id="floating-cta">
         <i class="fas fa-rocket"></i>
-        <span>Design Your Card</span>
+        <span>Try It Free Now</span>
     </a>
 
     <!-- Back to Top Button -->
@@ -361,16 +465,42 @@
 
                     <!-- Floating Card Preview -->
                     <div class="hero-card-preview">
-                        <div class="floating-card">
-                            <span>MC PRIME</span>
+<div class="flip-card-wrapper" role="img" aria-label="Smart business card demo">
+                    <div class="flip-card-inner">
+                        <!-- FRONT -->
+                        <div class="flip-card-front">
+                            <div class="fc-top">
+                                <div class="fc-avatar">M.A</div>
+                                <div>
+                                    <div class="fc-name">Mohammed Ahmed</div>
+                                    <div class="fc-title">Web Developer &amp; Freelancer</div>
+                                </div>
+                            </div>
+                            <div class="fc-divider"></div>
+                            <div class="fc-links">
+                                <div class="fc-link"><i class="fas fa-phone"></i> +966 5x xxx xxxx</div>
+                                <div class="fc-link"><i class="fas fa-envelope"></i> hello@mcprim.com</div>
+                                <div class="fc-link"><i class="fas fa-globe"></i> mcprim.com</div>
+                            </div>
+                            <div class="fc-bottom">
+                                <span class="fc-brand">MC PRIME</span>
+                                <span class="fc-nfc-pill"><i class="fas fa-wifi"></i> NFC</span>
+                            </div>
+                        </div>
+                        <!-- BACK -->
+                        <div class="flip-card-back">
+                            <div class="fc-qr-box"><i class="fas fa-qrcode"></i></div>
+                            <div class="fc-scan-label">Scan to share your info</div>
+                            <div class="fc-back-links">
+                                <div class="fc-social-icon"><i class="fab fa-linkedin-in"></i></div>
+                                <div class="fc-social-icon"><i class="fab fa-instagram"></i></div>
+                                <div class="fc-social-icon"><i class="fab fa-facebook-f"></i></div>
+                            </div>
                         </div>
                     </div>
+                </div>
                     <!-- Trust Badges -->
                     <div class="trust-badges reveal">
-                        <div class="trust-badge">
-                            <i class="fas fa-users"></i>
-                            <span><span class="badge-number">+5000</span> Users</span>
-                        </div>
                         <div class="trust-badge">
                             <i class="fas fa-shield-alt"></i>
                             <span>100% Secure</span>
@@ -401,7 +531,7 @@
                     <article class="feature-card reveal">
                         <div class="feature-icon" aria-hidden="true">🌿</div>
                         <h3>Eco-Friendly</h3>
-                        <p>Save on repeated printing costs and contribute to environmental preservation.</p>
+                                                <p>Save on recurring printing costs while reducing your carbon footprint — both at once.</p>
                     </article>
                     <article class="feature-card reveal">
                         <div class="feature-icon" aria-hidden="true">🔄</div>
@@ -409,11 +539,12 @@
                         <p>Update your information anytime without needing to reprint your card.</p>
                     </article>
                     <article class="feature-card reveal">
-                        <div class="feature-icon" aria-hidden="true">💰</div>
-                        <h3>Cost Savings</h3>
-                        <p>Save on repeated printing costs and invest in a permanent, practical solution.</p>
-                    </article>
-                    <article class="feature-card reveal">
+                    <div class="feature-icon" aria-hidden="true"><i class="fas fa-chart-line"
+                        style="color: #fa709a;"></i></div>
+                    <h3>Instant Analytics</h3>
+                    <p>Track how many people view your card and where they come from to improve your outreach.</p>
+                </article
+                ><article class="feature-card reveal">
                         <div class="feature-icon" aria-hidden="true">🎨</div>
                         <h3>Professional Designs</h3>
                         <p>Choose from dozens of ready-made templates or design your own custom card.</p>
@@ -564,18 +695,11 @@
                             </div>
                             <div class="editor-preview-overlay">
                                 <i class="fas fa-play-circle"></i>
-                                <span>Start Designing Now</span>
+                                <span>Open the Editor Now</span>
                             </div>
                         </div>
                     </a>
                 </div>
-
-                <a href="/nfc/editor-en.html" class="btn btn-primary btn-lg cta-main-btn reveal">
-                    <i class="fas fa-rocket"></i>
-                    Go to Design Editor
-                </a>
-            </div>
-        </section>
 
         <!-- Use Cases Section -->
         <section id="use-cases" class="use-cases-section" aria-labelledby="use-cases-title">
@@ -606,34 +730,6 @@
                             <p>Turn your card into an effective digital menu.</p>
                         </article>
                     </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Testimonials Section -->
-        <section id="testimonials" class="testimonials-section" aria-labelledby="testimonials-title">
-            <div class="container">
-                <h2 id="testimonials-title">What Our Customers Say</h2>
-                <div class="testimonials-grid">
-                    <article class="testimonial-card reveal-left">
-                        <blockquote>
-                            <p>"A wonderful and easy-to-use design tool! I was able to create my digital card in
-                                minutes. Now I share my information with one tap, and customers are very impressed."</p>
-                            <footer>
-                                <cite>— Ahmed Khaled, Freelance Web Developer</cite>
-                            </footer>
-                        </blockquote>
-                    </article>
-                    <article class="testimonial-card reveal-right">
-                        <blockquote>
-                            <p>"Saved me a lot of paper card printing costs, and most importantly, I can update my
-                                information instantly if my phone number changes. Excellent service, highly
-                                recommended."</p>
-                            <footer>
-                                <cite>— Fatima Ali, Marketing Manager</cite>
-                            </footer>
-                        </blockquote>
-                    </article>
                 </div>
             </div>
         </section>
@@ -735,7 +831,7 @@
             <div class="container">
                 <h2 id="cta-title" class="reveal">Ready to Make an Unforgettable Impression?</h2>
                 <p class="reveal">Join thousands of professionals who chose the smart and sustainable solution.</p>
-                <a href="/nfc/editor-en.html" class="btn btn-primary btn-lg reveal">Design Your Card Now — Free</a>
+                <a href="/nfc/editor-en.html" class="btn btn-primary btn-lg reveal">Start Free — In 30 Seconds</a>
             </div>
         </section>
     </main>
@@ -781,15 +877,10 @@
                             aria-label="LinkedIn" title="Connect with us on LinkedIn">
                             <i class="fab fa-linkedin-in" aria-hidden="true"></i>
                         </a>
-                        <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener noreferrer"
-                            aria-label="WhatsApp" title="Contact us on WhatsApp">
-                            <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                        </a>
-                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 MC PRIME. All rights reserved.</p>
+                <p>&copy; <span id="footer-year"></span> MC PRIME. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -805,6 +896,10 @@
                 }, 500);
             }
         });
+
+                // Dynamic footer year
+        const footerYear = document.getElementById('footer-year');
+        if (footerYear) footerYear.textContent = new Date().getFullYear();
 
         // Navbar scroll effect
         const navbar = document.getElementById('navbar');

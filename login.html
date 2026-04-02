@@ -1,175 +1,252 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
-  <meta name="robots" content="noindex, nofollow">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Google Tag Manager -->
-  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PLL5SLNM');</script>
-  <!-- End Google Tag Manager -->
-  <title>تسجيل الدخول - MC PRIME NFC</title>
-  <link rel="stylesheet" href="/nfc/homepage.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap" rel="stylesheet">
-  <script src="/nfc/auth.js"></script>
-  <style>
-    .auth-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:100px 20px 50px; }
-    .auth-card { background:linear-gradient(145deg,var(--surface-color),#2a3d54); padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.5); width:100%; max-width:450px; border:1px solid rgba(77,166,255,.1); }
-    .auth-title { text-align:center; margin-bottom:30px; }
-    .auth-title h1 { color:#fff; margin-bottom:8px; font-family:'Cairo',sans-serif; }
-    .auth-title p  { color:var(--text-secondary-color); }
-    .form-group { margin-bottom:18px; }
-    .form-group label { display:block; margin-bottom:7px; color:var(--text-secondary-color); font-size:.9rem; }
-    .form-input { width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,.1); background:rgba(0,0,0,.2); color:#fff; font-family:'Tajawal',sans-serif; font-size:1rem; transition:border-color .3s,background .3s; }
-    .form-input:focus { outline:none; border-color:var(--primary-color); background:rgba(0,0,0,.3); }
-    .auth-btn { width:100%; margin-top:8px; }
-    .divider { display:flex; align-items:center; gap:15px; margin:20px 0; }
-    .divider span { color:var(--text-secondary-color); font-size:14px; flex-shrink:0; }
-    .divider::before,.divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.1); }
-    .google-btn { width:100%; height:42px; background:#fff; color:#3c4043; border:1px solid #dadce0; border-radius:4px; padding:0 12px; font-family:Roboto,arial,sans-serif; font-size:14px; font-weight:500; letter-spacing:.25px; display:flex; align-items:center; cursor:pointer; transition:background .2s,box-shadow .2s; box-sizing:border-box; }
-    .google-btn:hover { background:#f8f9fa; box-shadow:0 1px 3px rgba(60,64,67,.3); }
-    .google-btn:disabled { opacity:.7; cursor:default; }
-    .google-btn svg { flex-shrink:0; }
-    .google-btn span { flex:1; text-align:center; }
-    .error-box { background:rgba(255,82,82,.1); color:#ff5252; padding:12px 14px; border-radius:8px; margin-bottom:18px; text-align:center; display:none; font-size:.9rem; }
-    .auth-footer { margin-top:20px; text-align:center; color:var(--text-secondary-color); line-height:2; }
-    .auth-footer a { color:var(--primary-color); text-decoration:none; }
-  </style>
+  <!-- SEO: Block indexing -->
+  <meta name="robots" content="noindex, nofollow" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
+    <!-- End Google Tag Manager -->
+    <title>تسجيل الدخول - MC PRIME NFC</title>
+    <link rel="stylesheet" href="/nfc/homepage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
+        rel="stylesheet">
+    <script src="/nfc/auth.js"></script>
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px 50px;
+        }
+
+        .auth-card {
+            background: linear-gradient(145deg, var(--surface-color), #2a3d54);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(77, 166, 255, 0.1);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h1 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary-color);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .auth-footer {
+            margin-top: 20px;
+            text-align: center;
+            color: var(--text-secondary-color);
+        }
+
+        .auth-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .error-msg {
+            background: rgba(255, 82, 82, 0.1);
+            color: #ff5252;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+    </style>
 </head>
+
 <body>
-  <!-- Google Tag Manager (noscript) -->
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <!-- Navbar (Simplified) -->
+    <nav class="navbar" style="background: rgba(28, 42, 59, 1);">
+        <div class="container nav-content">
+            <a href="/nfc/" class="nav-logo">
+                <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME" loading="eager">
+            </a>
+            <a href="/nfc/" class="btn btn-secondary nav-cta">العودة للرئيسية</a>
+        </div>
+    </nav>
 
-  <nav class="navbar" style="background:rgba(28,42,59,1)">
-    <div class="container nav-content">
-      <a href="/nfc/" class="nav-logo"><img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME" loading="eager"></a>
-      <a href="/nfc/" class="btn btn-secondary nav-cta">العودة للرئيسية</a>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>تسجيل الدخول</h1>
+                <p style="color: var(--text-secondary-color);">مرحباً بك مجدداً في MC PRIME</p>
+            </div>
+
+            <div id="error-box" class="error-msg"></div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input type="email" id="email" class="form-input" required placeholder="example@email.com"
+                        autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="password">كلمة المرور</label>
+                    <input type="password" id="password" class="form-input" required placeholder="********"
+                        autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary auth-btn">دخول</button>
+            </form>
+
+            <!-- Divider -->
+            <div style="display: flex; align-items: center; margin: 20px 0; gap: 15px;">
+                <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+                <span style="color: var(--text-secondary-color); font-size: 14px;">أو</span>
+                <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+            </div>
+
+            <!-- Google Sign-In Button -->
+            <button id="google-signin-btn" type="button"
+                style="width: 100%; height: 40px; background-color: #ffffff; color: #3c4043; border: 1px solid #dadce0; border-radius: 4px; padding: 0 12px; font-family: Roboto, arial, sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.25px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background-color 0.2s, box-shadow 0.2s; box-sizing: border-box;"
+                onmouseover="this.style.backgroundColor='#f8f9fa'; this.style.boxShadow='0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)';" onmouseout="this.style.backgroundColor='#ffffff'; this.style.boxShadow='none';">
+                <svg width="20" height="20" viewBox="0 0 24 24" style="min-width: 20px;">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+                <span style="flex-grow: 1; text-align: center; font-family: Roboto, arial, sans-serif;">تسجيل الدخول باستخدام Google</span>
+                <div style="min-width: 20px;"></div>
+            </button>
+
+            <div class="auth-footer">
+                <a href="/nfc/forgot-password.html" style="display: block; margin-bottom: 10px;">نسيت كلمة المرور؟</a>
+                ليس لديك حساب؟ <a href="/nfc/signup.html">إنشاء حساب جديد</a>
+                <div style="margin-top: 15px; font-size: 13px;">
+                    <a href="/nfc/privacy.html" style="color: var(--text-secondary-color); text-decoration: underline;">سياسة الخصوصية</a>
+                </div>
+            </div>
+        </div>
     </div>
-  </nav>
 
-  <div class="auth-wrap">
-    <div class="auth-card">
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
 
-      <div class="auth-title">
-        <h1>تسجيل الدخول</h1>
-        <p>مرحباً بك مجدداً في MC PRIME</p>
-      </div>
+            // ── 1. Handle Google OAuth callback first ──────────────────────
+            const params = new URLSearchParams(window.location.search);
+            const googleToken = params.get('google_token');
+            const oauthError = params.get('error');
 
-      <div id="error-box" class="error-box" role="alert"></div>
+            if (googleToken) {
+                console.log('[DEBUG] google_token present in URL');
+                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f1923;color:#fff;font-family:Tajawal,sans-serif;"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#4da6ff;"></i><p>جاري تسجيل الدخول...</p></div>';
+                try {
+                    const payloadB64 = googleToken.split('.')[1];
+                    let b64 = payloadB64.replace(/-/g, '+').replace(/_/g, '/');
+                    while (b64.length % 4) b64 += '=';
+                    const decodedStr = decodeURIComponent(escape(atob(b64)));
+                    const payload = JSON.parse(decodedStr);
+                    console.log('[DEBUG] decoded payload type:', payload?.type);
+                if (payload && payload.token && payload.user) {
+                        Auth.setSession(payload.token, payload.user);
+                                        window.location.replace('/nfc/dashboard.html');
+                        return;
+                    } else {
+                        document.body.innerHTML = '<div id="error-box" style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f1923;color:#ff5252;font-family:Tajawal,sans-serif;padding:20px;text-align:center;"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p>خطأ بمعالجة رمز Google (payload غير متوقع). حاول مجدداً.</p><a href="/nfc/login" style="color:#4da6ff;margin-top:10px;">العودة لتسجيل الدخول</a></div>';
+                        console.error('[DEBUG] Unexpected payload:', payload);
+                    }
+                } catch (e) {
+                    console.error('[DEBUG] Token decode error:', e);
+                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f1923;color:#ff5252;font-family:Tajawal,sans-serif;padding:20px;text-align:center;"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p>فشل فك الرمز (token). تفقد الـ console للمزيد.</p><a href="/nfc/login" style="color:#4da6ff;margin-top:10px;">العودة لتسجيل الدخول</a></div>';
+                }
+                return;
+            }
 
-      <!-- Email / Password Form -->
-      <form id="login-form" novalidate>
-        <div class="form-group">
-          <label for="email">البريد الإلكتروني</label>
-          <input type="email" id="email" class="form-input" required placeholder="example@email.com" autocomplete="email">
-        </div>
-        <div class="form-group">
-          <label for="password">كلمة المرور</label>
-          <input type="password" id="password" class="form-input" required placeholder="••••••••" autocomplete="current-password">
-        </div>
-        <button type="submit" id="login-btn" class="btn btn-primary auth-btn">دخول</button>
-      </form>
+            if (oauthError) {
+                const errorBox = document.getElementById('error-box');
+                if (errorBox) {
+                    errorBox.textContent = decodeURIComponent(oauthError);
+                    errorBox.style.display = 'block';
+                }
+            }
 
-      <!-- Divider -->
-      <div class="divider"><span>أو</span></div>
+            // ── 2. Login form ──────────────────────────────────────────────
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const btn = e.target.querySelector('button');
+                const errorBox = document.getElementById('error-box');
 
-      <!-- Google Sign-In -->
-      <button id="google-btn" type="button" class="google-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        <span>تسجيل الدخول باستخدام Google</span>
-      </button>
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الدخول...';
+                errorBox.style.display = 'none';
 
-      <div class="auth-footer">
-        <a href="/nfc/forgot-password.html">نسيت كلمة المرور؟</a><br>
-        ليس لديك حساب؟ <a href="/nfc/signup.html">إنشاء حساب جديد</a>
-        <div style="margin-top:12px;font-size:13px">
-          <a href="/nfc/privacy.html" style="color:var(--text-secondary-color);text-decoration:underline">سياسة الخصوصية</a>
-        </div>
-      </div>
+                const result = await Auth.login(email, password);
 
-    </div>
-  </div>
+                if (result.success) {
+                    window.location.href = '/nfc/dashboard.html';
+                } else {
+                    errorBox.textContent = result.error;
+                    errorBox.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'دخول';
+                }
+            });
 
-  <script>
-  (function () {
-    'use strict';
-
-    const errorBox = document.getElementById('error-box');
-
-    function showError(msg) {
-      errorBox.textContent = msg;
-      errorBox.style.display = 'block';
-    }
-
-    function hideError() {
-      errorBox.style.display = 'none';
-    }
-
-    // Show ?error= from OAuth redirect
-    const urlError = new URLSearchParams(window.location.search).get('error');
-    if (urlError) showError(decodeURIComponent(urlError));
-
-    // ── Email / Password login ─────────────────────────────────────────────────
-    const loginForm = document.getElementById('login-form');
-    const loginBtn  = document.getElementById('login-btn');
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      hideError();
-
-      const email    = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-
-      if (!email || !password) {
-        return showError('يرجى تعبئة البريد الإلكتروني وكلمة المرور.');
-      }
-
-      loginBtn.disabled = true;
-      loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ الدخول...';
-
-      const result = await Auth.login(email, password);
-
-      if (result.success) {
-        window.location.href = '/nfc/dashboard.html';
-      } else {
-        showError(result.error);
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'دخول';
-      }
-    });
-
-    // ── Google Sign-In ─────────────────────────────────────────────────────────
-    const googleBtn = document.getElementById('google-btn');
-
-    googleBtn.addEventListener('click', async () => {
-      hideError();
-      googleBtn.disabled = true;
-      googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#4285F4;margin-left:8px"></i><span>جارٍ الاتصال...</span>';
-
-      const result = await Auth.googleSignIn();
-
-      if (result.success) {
-        window.location.href = '/nfc/dashboard.html';
-      } else {
-        showError(result.error || 'فشل تسجيل الدخول عبر Google');
-        googleBtn.disabled = false;
-        googleBtn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
-          <span>تسجيل الدخول باستخدام Google</span>`;
-      }
-    });
-
-  })();
-  </script>
+            // ── 3. Google Sign-In button ────────────────────────────────────
+            document.getElementById('google-signin-btn').addEventListener('click', () => {
+                Auth.googleSignIn('ar');
+            });
+        });
+    </script>
 </body>
+
 </html>
