@@ -10,15 +10,13 @@ const EditorUserStatus = {
     lastSaveTime: null,
     isSaving: false,
 
-    async init() {
-        // Restore session via refresh cookie if token is missing/expired
-        if (typeof Auth !== 'undefined' && !Auth.isLoggedIn()) {
-            await Auth.refreshAccessToken();
-        }
+    init() {
         this.updateUserStatus();
         this.bindEvents();
         this.startAutoSave();
-        this.loadExistingDesignId();
+        // استعادة ID التصميم المحفوظ عند بدء التشغيل (للـ auto-save فقط)
+        // App.init يتولى التحميل الفعلي من ?id= في الرابط
+        this.loadExistingDesignId().catch(e => console.warn('[EditorUserStatus] loadExistingDesignId error:', e));
         console.log('[EditorUserStatus] Initialized');
     },
 
@@ -155,7 +153,6 @@ const EditorUserStatus = {
         const handleLogout = () => {
             if (confirm(isEnglish ? 'Are you sure you want to logout?' : 'هل تريد تسجيل الخروج؟')) {
                 localStorage.removeItem('authToken');
-                sessionStorage.removeItem('authToken');
                 localStorage.removeItem('authUser');
                 this.updateUserStatus();
                 if (typeof UIManager !== 'undefined') {

@@ -2,8 +2,6 @@
 <html lang="en" dir="ltr">
 
 <head>
-  <!-- SEO: Block indexing -->
-  <meta name="robots" content="noindex, nofollow" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Google Tag Manager -->
@@ -425,37 +423,10 @@
         .btn-remove:hover {
             background: rgba(231, 76, 60, 0.3);
         }
-        /* Loading Overlay for Auth */
-        #auth-loading-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(28, 42, 59, 1);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s ease;
-        }
-        #auth-loading-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .status-text {
-            margin-top: 15px;
-            color: var(--text-secondary-color);
-            font-size: 1rem;
-        }
     </style>
 </head>
 
 <body>
-    <!-- Auth Loading Overlay -->
-    <div id="auth-loading-overlay">
-        <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary-color);"></i>
-        <p id="auth-status-text" class="status-text">Verifying session...</p>
-    </div>
-
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
@@ -604,40 +575,6 @@
     </div>
 
     <script>
-        async function apiFetchWithRefresh(url, options = {}) {
-            // Ensure credentials are included for cross-domain cookie support (refresh token)
-            const fetchOptions = {
-                ...options,
-                credentials: 'include'
-            };
-
-            let res = await fetch(url, fetchOptions);
-
-            if (res.status === 401 || res.status === 403) {
-                console.warn('[Dashboard] Unauthorized access, attempting to refresh session...');
-                const refreshed = await Auth.refreshSession();
-
-                if (!refreshed) {
-                    console.error('[Dashboard] Refresh session failed, logging out...');
-                    await Auth.logout();
-                    throw new Error('Session expired');
-                }
-
-                // Retry with new token
-                const retryOptions = {
-                    ...fetchOptions,
-                    headers: {
-                        ...(fetchOptions.headers || {}),
-                        ...Auth.getHeader()
-                    }
-                };
-
-                res = await fetch(url, retryOptions);
-            }
-
-            return res;
-        }
-
         const baseUrl = Auth.getBaseUrl();
 
         document.querySelectorAll('.sidebar-item[data-section]').forEach(item => {
@@ -659,8 +596,7 @@
             if (hash.startsWith('#gauth=')) {
                 try {
                     const encoded = hash.slice(7);
-                    const decodedStr = decodeURIComponent(encoded);
-                    const data = JSON.parse(decodedStr);
+                    const data = JSON.parse(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')));
                     if (data.token && data.user) {
                         Auth.setSession(data.token, data.user);
                         history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -672,30 +608,11 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const overlay = document.getElementById('auth-loading-overlay');
-            const statusText = document.getElementById('auth-status-text');
-
-            // Update local state from storage
-            Auth.token = localStorage.getItem('authToken');
-            Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null');
-
             if (!Auth.isLoggedIn()) {
-                console.log('[Dashboard] No token found in localStorage, attempting silent refresh...');
-                statusText.textContent = 'Server is waking up... this may take a minute';
-
-                const refreshed = await Auth.refreshSession();
-                if (!refreshed) {
-                    console.warn('[Dashboard] Silent refresh failed, redirecting to login');
-                    window.location.href = '/nfc/login-en.html?error=AuthNotLoggedIn';
-                    return;
-                }
+                window.location.href = '/nfc/login-en.html';
+                return;
             }
 
-            console.log('[Dashboard] User is logged in as:', Auth.user?.email);
-
-            // Hide overlay
-            overlay.classList.add('hidden');
-            setTimeout(() => overlay.remove(), 600);
 
             document.getElementById('user-display-name').textContent = Auth.user?.name || 'User';
 
@@ -730,13 +647,13 @@
         async function loadMyDesigns() {
             const grid = document.getElementById('designs-grid');
             try {
-                const response = await apiFetchWithRefresh(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
+                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
 
                 if (!response.ok) {
                     const errText = await response.text().catch(() => '');
                     console.error('[Dashboard] API error:', response.status, errText);
                     if (response.status === 401 || response.status === 403) {
-                        Auth.logout('ApiUnauthorized');
+                        Auth.logout();
                         return;
                     }
                     throw new Error('Server error: ' + response.status);
@@ -790,7 +707,7 @@
         async function deleteDesign(shortId) {
             if (!confirm('Are you sure you want to permanently delete this design? It will also be removed from the gallery.')) return;
             try {
-                const res = await apiFetchWithRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
+                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
                     method: 'DELETE',
                     headers: Auth.getHeader()
                 });
@@ -808,7 +725,7 @@
 
         async function loadRequestCount() {
             try {
-                const res = await apiFetchWithRefresh(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
+                const res = await fetch(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
                 const data = await res.json();
                 const badge = document.getElementById('requests-badge');
                 if (data.count > 0) { badge.textContent = data.count; badge.style.display = 'inline'; }
@@ -819,7 +736,7 @@
         async function loadSavedCards() {
             const grid = document.getElementById('saved-cards-grid');
             try {
-                const res = await apiFetchWithRefresh(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
+                const res = await fetch(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
 
                 if (!res.ok) {
                     const text = await res.text();

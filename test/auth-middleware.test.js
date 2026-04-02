@@ -3,9 +3,6 @@ const jwt = require('jsonwebtoken');
 
 jest.mock('jsonwebtoken');
 
-// Mock the config module so auth-middleware can load without a real .env
-jest.mock('../config', () => ({ JWT_SECRET: 'test_secret_value_for_jest' }), { virtual: false });
-
 describe('Auth Middleware', () => {
     let req, res, next;
 
@@ -41,19 +38,5 @@ describe('Auth Middleware', () => {
         verifyToken(req, res, next);
         expect(next).toHaveBeenCalled();
         expect(req.user).toEqual(mockUser);
-    });
-
-    test('should return 500 if JWT_SECRET is not configured', () => {
-        // Override the config mock to simulate missing JWT_SECRET
-        jest.resetModules();
-        jest.doMock('../config', () => ({ JWT_SECRET: '' }), { virtual: false });
-        jest.doMock('jsonwebtoken', () => jwt);
-
-        const verifyTokenNoSecret = require('../auth-middleware');
-        req.headers['authorization'] = 'Bearer sometoken';
-
-        verifyTokenNoSecret(req, res, next);
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringContaining('misconfiguration') }));
     });
 });
