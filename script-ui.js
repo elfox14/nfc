@@ -7,16 +7,24 @@
  * @returns {File}
  */
 function dataURLtoFile(dataurl, filename) {
-    let arr = dataurl.split(','),
-        mime = arr[0].match(/:(.*?);/)[1],
-        bstr = atob(arr[1]),
-        n = bstr.length,
-        u8arr = new Uint8Array(n);
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
+    if (!dataurl || typeof dataurl !== 'string') return null;
+    let arr = dataurl.split(',');
+    if (arr.length < 2) return null;
+    try {
+        let mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]),
+            n = bstr.length,
+            u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    } catch (e) {
+        console.error("[script-ui] atob decoding failed:", e);
+        return null;
     }
-    return new File([u8arr], filename, { type: mime });
 }
+
 
 
 const ImageCropper = {

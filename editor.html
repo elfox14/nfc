@@ -2,16 +2,14 @@
 <html lang="ar" dir="rtl">
 
 <head>
+  <!-- SEO: Block indexing -->
+  <meta name="robots" content="noindex, nofollow" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>محرر بطاقات العمل الذكية | MC PRIME</title>
     <meta name="description"
-        content="استخدم محرر MC PRIME لتصميم وتخصيص بطاقة عملك الذكية (NFC) مجاناً. تحكم كامل في الألوان، الخطوط، الشعار، ومعلومات الاتصال.">
-
-    <meta name="robots" content="noindex, nofollow">
-    <link rel="canonical" href="https://www.mcprim.com/nfc/editor.html">
-    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
+        content="استخدم محرر MC PRIME لتصميم وتخصيص بطاقة عملك الذكية (NFC) مجاناً. تحكم كامل في الألوان، الخطوط، الشعار، ومعلومات الاتصال.">    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
 
     <!-- Google Tag Manager -->
     <script>(function (w, d, s, l, i) {
@@ -108,8 +106,260 @@
                 display: none !important;
             }
         }
-    </style>
-    <!-- Google AdSense -->
+    \n/* ============ FLOATING PANEL ============ */
+#logo-panel {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  width: 300px;
+  background: #12122a;
+  border-radius: 18px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(108,99,255,0.25);
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideIn 0.25s ease;
+}
+#logo-panel.visible { display: flex; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+#logo-panel.dragging {
+  box-shadow: 0 35px 80px rgba(0,0,0,0.9), 0 0 0 2px #6c63ff, 0 0 30px rgba(108,99,255,0.25);
+  cursor: grabbing;
+}
+
+/* PANEL HEADER */
+.lp-header {
+  background: linear-gradient(135deg,#1e1b4b,#2d2b6b);
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(108,99,255,0.2);
+  cursor: grab;
+  user-select: none;
+}
+.lp-header h3 { color: #fff; font-size: 14px; flex: 1; font-weight: 700; }
+.lp-close {
+  width: 26px; height: 26px;
+  background: rgba(239,68,68,0.2);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 50%;
+  color: #f87171;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.lp-close:hover { background: rgba(239,68,68,0.5); color: #fff; }
+
+/* PANEL BODY */
+.lp-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 72vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #6c63ff30 transparent;
+}
+.lp-body::-webkit-scrollbar { width: 3px; }
+.lp-body::-webkit-scrollbar-thumb { background: #6c63ff40; border-radius: 4px; }
+
+/* SECTION */
+.lp-section {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 11px;
+  padding: 11px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.lp-label {
+  color: #a5b4fc;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* UPLOAD */
+.lp-upload {
+  border: 2px dashed rgba(108,99,255,0.35);
+  border-radius: 9px;
+  padding: 16px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(108,99,255,0.03);
+}
+.lp-upload:hover { border-color: #6c63ff; background: rgba(108,99,255,0.08); }
+.lp-upload .u-icon { font-size: 24px; }
+.lp-upload p { color: #94a3b8; font-size: 11px; margin-top: 4px; }
+.fmt-row { display: flex; gap: 5px; justify-content: center; margin-top: 6px; }
+.fmt { background: rgba(108,99,255,0.15); color: #a5b4fc; font-size: 9px; padding: 2px 7px; border-radius: 20px; border: 1px solid rgba(108,99,255,0.25); }
+
+/* PREVIEW */
+.lp-preview-row { display: flex; align-items: center; gap: 10px; }
+.lp-img-wrap { position: relative; flex-shrink: 0; }
+#lp-img {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(108,99,255,0.4);
+  box-shadow: 0 0 15px rgba(108,99,255,0.3);
+  transition: all 0.3s;
+}
+.lp-del {
+  position: absolute; top: -5px; left: -5px;
+  width: 18px; height: 18px;
+  background: #ef4444; border: none; border-radius: 50%;
+  color: #fff; font-size: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s;
+}
+.lp-img-wrap:hover .lp-del { opacity: 1; }
+.lp-file-info strong { color: #e2e8f0; font-size: 11px; display: block; }
+.lp-file-info span { color: #64748b; font-size: 10px; }
+
+/* SLIDER ROW */
+.sl-row { display: flex; align-items: center; gap: 8px; }
+.sl-row label { color: #cbd5e1; font-size: 11px; min-width: 55px; }
+.sl-row input[type=range] {
+  flex: 1; -webkit-appearance: none;
+  height: 4px; border-radius: 4px;
+  background: linear-gradient(to left, #6c63ff, #a855f7);
+  outline: none; cursor: pointer;
+}
+.sl-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 6px rgba(108,99,255,0.8); cursor: pointer;
+}
+.val-pill {
+  background: rgba(108,99,255,0.2);
+  color: #a5b4fc; font-size: 10px;
+  padding: 2px 7px; border-radius: 20px;
+  min-width: 36px; text-align: center; font-weight: 600;
+}
+
+/* POSITION GRID */
+.pos-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 4px;
+}
+.pos-btn {
+  aspect-ratio: 1;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  color: #475569;
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.pos-btn:hover { background: rgba(108,99,255,0.15); color: #a5b4fc; }
+.pos-btn.active { background: rgba(108,99,255,0.3); border-color: #6c63ff; color: #fff; box-shadow: 0 0 8px rgba(108,99,255,0.4); }
+
+/* SHAPE BTNS */
+.shape-row { display: flex; gap: 6px; }
+.sh-btn {
+  flex: 1; padding: 7px 4px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  cursor: pointer; color: #94a3b8;
+  font-size: 10px; text-align: center;
+  transition: all 0.2s;
+}
+.sh-btn .sh-icon { font-size: 16px; display: block; margin-bottom: 2px; }
+.sh-btn:hover { background: rgba(108,99,255,0.1); color: #a5b4fc; }
+.sh-btn.active { background: rgba(108,99,255,0.28); border-color: #6c63ff; color: #fff; box-shadow: 0 0 10px rgba(108,99,255,0.3); }
+
+/* TOGGLE */
+.tog-row { display: flex; align-items: center; gap: 8px; }
+.tog-row .tog-label { flex: 1; }
+.tog-row .tog-label strong { color: #cbd5e1; font-size: 11px; display: block; font-weight: 600; }
+.tog-row .tog-label small { color: #475569; font-size: 10px; }
+.sw { position: relative; width: 38px; height: 22px; flex-shrink: 0; }
+.sw input { opacity: 0; width: 0; height: 0; }
+.sw-slider {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.1);
+  border-radius: 22px; cursor: pointer; transition: 0.3s;
+}
+.sw-slider:before {
+  content: ''; position: absolute;
+  width: 16px; height: 16px;
+  right: 3px; top: 3px;
+  background: #fff; border-radius: 50%; transition: 0.3s;
+}
+.sw input:checked + .sw-slider { background: linear-gradient(135deg,#6c63ff,#a855f7); }
+.sw input:checked + .sw-slider:before { transform: translateX(-16px); }
+
+/* COLOR */
+.col-row { display: flex; align-items: center; gap: 8px; }
+.col-row label { flex: 1; color: #cbd5e1; font-size: 11px; }
+input[type=color] {
+  width: 28px; height: 28px;
+  border: none; border-radius: 50%;
+  cursor: pointer; padding: 2px;
+  background: transparent;
+  outline: 2px solid rgba(108,99,255,0.4);
+  outline-offset: 2px;
+}
+
+/* APPLY */
+.lp-apply {
+  width: 100%;
+  padding: 11px;
+  background: linear-gradient(135deg,#6c63ff,#a855f7);
+  border: none; border-radius: 10px;
+  color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 18px rgba(108,99,255,0.4);
+  letter-spacing: 0.3px;
+}
+.lp-apply:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(108,99,255,0.6); }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: rgba(108,99,255,0.92);
+  color: #fff; padding: 10px 22px;
+  border-radius: 30px; font-size: 13px;
+  z-index: 9999; transition: transform 0.3s;
+  pointer-events: none; backdrop-filter: blur(8px);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* SPIN ANIMATION */
+@keyframes logoSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.logo-spin { animation: logoSpin 3s linear infinite; }
+
+/* RESPONSIVE */
+@media (max-width: 680px) {
+  .editor-wrap { flex-direction: column; align-items: center; padding: 16px 12px; }
+  .sidebar { width: 100%; }
+  .card-preview { width: 320px; }
+  #logo-panel { width: 285px; }
+}\n    </style>\n    <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
         crossorigin="anonymous"></script>
 </head>
@@ -119,16 +369,6 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-
-    <!-- Trial Period Banner -->
-    <div class="trial-banner" id="trial-banner">
-        <span class="trial-banner__icon">🎉</span>
-        <div class="trial-banner__text">
-            <span>فترة تجريبية مجانية</span>
-            <span class="trial-banner__highlight">جميع الميزات متاحة حتى 1 أبريل 2026</span>
-        </div>
-        <button class="trial-banner__close" id="close-trial-banner" title="إغلاق">&times;</button>
-    </div>
 
     <header class="pro-toolbar">
         <div class="toolbar-group toolbar-start">
@@ -170,7 +410,609 @@
             <button id="preview-mode-btn" class="btn-icon btn-compact" title="وضع المعاينة"
                 aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
 
-            <!-- Mobile More Menu Button -->
+            \n\n    <!-- ===== FLOATING LOGO PANEL ===== -->
+<div id="logo-panel">
+  <div class="lp-header" id="lp-header">
+    <span style="font-size:18px;opacity:0.5">⠿</span>
+    <h3>🖼️ خصائص الشعار</h3>
+    <button class="lp-close" onclick="closeLogoPanel()">✕</button>
+  </div>
+
+  <div class="lp-body">
+
+    <!-- UPLOAD -->
+    <div class="lp-section">
+      <div class="lp-label">📤 رفع الشعار</div>
+      <div class="lp-upload" id="lp-upload">
+        <div class="u-icon">☁️</div>
+        <p>اسحب الشعار هنا أو انقر للرفع</p>
+        <div class="fmt-row">
+          <span class="fmt">PNG</span><span class="fmt">SVG</span>
+          <span class="fmt">JPG</span><span class="fmt">WEBP</span>
+        </div>
+      </div>
+      <input type="file" id="lp-file" accept="image/*" style="display:none">
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="lp-section">
+      <div class="lp-label">👁️ معاينة الشعار</div>
+      <div class="lp-preview-row">
+        <div class="lp-img-wrap">
+          <img id="lp-img"
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 52'%3E%3Crect width='52' height='52' fill='%236c63ff22'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%236c63ff'%3E🏷%3C/text%3E%3C/svg%3E"
+            alt="معاينة">
+          <button class="lp-del" id="lp-del">✕</button>
+        </div>
+        <div class="lp-file-info">
+          <strong id="lp-fname">لم يُرفع شعار</strong>
+          <span id="lp-fsize">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIZE + OPACITY -->
+    <div class="lp-section">
+      <div class="lp-label">📐 الحجم والشفافية</div>
+      <div class="sl-row">
+        <label>الحجم</label>
+        <input type="range" id="sl-size" min="30" max="160" value="70">
+        <span class="val-pill" id="v-size">70px</span>
+      </div>
+      <div class="sl-row">
+        <label>الشفافية</label>
+        <input type="range" id="sl-opacity" min="10" max="100" value="100">
+        <span class="val-pill" id="v-opacity">100%</span>
+      </div>
+    </div>
+
+    <!-- POSITION -->
+    <div class="lp-section">
+      <div class="lp-label">📍 الموضع على البطاقة</div>
+      <div class="pos-grid" id="pos-grid">
+        <button class="pos-btn" data-pos="flex-start,flex-start">↖</button>
+        <button class="pos-btn" data-pos="flex-start,center">⬆</button>
+        <button class="pos-btn" data-pos="flex-start,flex-end">↗</button>
+        <button class="pos-btn" data-pos="center,flex-start">⬅</button>
+        <button class="pos-btn active" data-pos="center,center">⊙</button>
+        <button class="pos-btn" data-pos="center,flex-end">➡</button>
+        <button class="pos-btn" data-pos="flex-end,flex-start">↙</button>
+        <button class="pos-btn" data-pos="flex-end,center">⬇</button>
+        <button class="pos-btn" data-pos="flex-end,flex-end">↘</button>
+      </div>
+    </div>
+
+    <!-- SHAPE -->
+    <div class="lp-section">
+      <div class="lp-label">🔷 شكل الشعار</div>
+      <div class="shape-row" id="shape-row">
+        <button class="sh-btn" data-r="4"><span class="sh-icon">⬜</span>مربع</button>
+        <button class="sh-btn" data-r="14"><span class="sh-icon">▢</span>ناعم</button>
+        <button class="sh-btn active" data-r="50"><span class="sh-icon">⚪</span>دائري</button>
+      </div>
+    </div>
+
+    <!-- BORDER + SHADOW -->
+    <div class="lp-section">
+      <div class="lp-label">🔲 الحد والظل</div>
+      <div class="col-row">
+        <label>لون الحد</label>
+        <input type="color" id="c-border" value="#6c63ff">
+      </div>
+      <div class="sl-row">
+        <label>سُمك الحد</label>
+        <input type="range" id="sl-border" min="0" max="8" value="2">
+        <span class="val-pill" id="v-border">2px</span>
+      </div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>ظل متوهج</strong>
+          <small>توهج خارجي حول الشعار</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-shadow" checked><span class="sw-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- EFFECTS -->
+    <div class="lp-section">
+      <div class="lp-label">✨ تأثيرات</div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>إزالة الخلفية 🪄</strong>
+          <small>يعمل بالذكاء الاصطناعي</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-bgremove"><span class="sw-slider"></span></label>
+      </div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>تأثير الدوران</strong>
+          <small>حركة دوران عند التحويم</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-spin"><span class="sw-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- APPLY -->
+    <button class="lp-apply" id="lp-apply">✅ تطبيق على البطاقة</button>
+
+  </div>
+</div>
+<!-- /PANEL -->
+
+<div class="toast" id="toast">✅ تم تطبيق إعدادات الشعار على البطاقة</div>\n\n    <script>
+// ======= PANEL OPEN/CLOSE =======
+const panel = document.getElementById('logo-panel');
+function openLogoPanel() {
+  panel.classList.add('visible');
+  syncPanelToCard();
+}
+function closeLogoPanel() { panel.classList.remove('visible'); }
+
+// ======= DRAGGING =======
+let dragging = false, sx, sy, sl, st;
+const header = document.getElementById('lp-header');
+
+function startDrag(x, y) {
+  dragging = true;
+  panel.classList.add('dragging');
+  const r = panel.getBoundingClientRect();
+  sx = x; sy = y; sl = r.left; st = r.top;
+}
+function moveDrag(x, y) {
+  if (!dragging) return;
+  const W = window.innerWidth, H = window.innerHeight;
+  const w = panel.offsetWidth, h = panel.offsetHeight;
+  let nx = sl + x - sx, ny = st + y - sy;
+  nx = Math.max(0, Math.min(nx, W - w));
+  ny = Math.max(0, Math.min(ny, H - h));
+  panel.style.left = nx + 'px';
+  panel.style.top = ny + 'px';
+  panel.style.transform = 'none';
+}
+function endDrag() { dragging = false; panel.classList.remove('dragging'); }
+
+header.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+document.addEventListener('mouseup', endDrag);
+header.addEventListener('touchstart', e => { const t=e.touches[0]; startDrag(t.clientX,t.clientY); },{passive:true});
+document.addEventListener('touchmove', e => { if(!dragging)return; e.preventDefault(); const t=e.touches[0]; moveDrag(t.clientX,t.clientY); },{passive:false});
+document.addEventListener('touchend', endDrag);
+
+// ======= FILE UPLOAD =======
+const uploadZone = document.getElementById('lp-upload');
+const fileInput  = document.getElementById('lp-file');
+const lpImg      = document.getElementById('lp-img');
+const cardLogo   = document.getElementById('card-logo');
+const fnameEl    = document.getElementById('lp-fname');
+const fsizeEl    = document.getElementById('lp-fsize');
+let currentSrc   = null;
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor='#6c63ff'; });
+uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor=''; });
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.style.borderColor=''; if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentSrc = ev.target.result;
+    lpImg.src = currentSrc;
+    cardLogo.src = currentSrc;
+    fnameEl.textContent = file.name.length>22 ? file.name.slice(0,20)+'…' : file.name;
+    fsizeEl.textContent = (file.size/1024).toFixed(1)+' KB';
+    applyStyles();
+    showToast('✅ تم رفع الشعار بنجاح');
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('lp-del').addEventListener('click', () => {
+  const ph = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Crect width='70' height='70' fill='%236c63ff22'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='26' fill='%236c63ff'%3E🏷%3C/text%3E%3C/svg%3E";
+  currentSrc = null;
+  lpImg.src = cardLogo.src = ph;
+  fnameEl.textContent='لم يُرفع شعار'; fsizeEl.textContent='—';
+  fileInput.value='';
+});
+
+// ======= SLIDERS =======
+function bindSlider(id, valId, suffix, cb) {
+  const r=document.getElementById(id), v=document.getElementById(valId);
+  function u(){ v.textContent=r.value+suffix; if(cb)cb(); applyStyles(); }
+  r.addEventListener('input',u); u();
+}
+bindSlider('sl-size','v-size','px');
+bindSlider('sl-opacity','v-opacity','%');
+document.getElementById('sl-border').addEventListener('input', function(){
+  document.getElementById('v-border').textContent=this.value+'px'; applyStyles();
+});
+
+// ======= POSITION GRID =======
+document.getElementById('pos-grid').querySelectorAll('.pos-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.pos-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const [alignSelf, justifySelf] = btn.dataset.pos.split(',');
+    cardLogo.style.alignSelf = alignSelf;
+    // card-logo-wrap position
+    const wrap = cardLogo.closest('.card-logo-wrap') || cardLogo.parentElement;
+    const preview = document.getElementById('card-preview');
+    // adjust card flex alignment
+    if(alignSelf==='flex-start') preview.style.alignItems='flex-start';
+    else if(alignSelf==='flex-end') preview.style.alignItems='flex-end';
+    else preview.style.alignItems='center';
+  });
+});
+
+// ======= SHAPE =======
+document.getElementById('shape-row').querySelectorAll('.sh-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.sh-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    applyStyles();
+  });
+});
+
+// ======= TOGGLES =======
+['t-shadow','t-bgremove','t-spin'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',applyStyles);
+});
+document.getElementById('c-border').addEventListener('input',applyStyles);
+
+// ======= APPLY STYLES (LIVE) =======
+function applyStyles() {
+  const size    = +document.getElementById('sl-size').value;
+  const opacity = +document.getElementById('sl-opacity').value/100;
+  const bWidth  = +document.getElementById('sl-border').value;
+  const bColor  = document.getElementById('c-border').value;
+  const shadow  = document.getElementById('t-shadow').checked;
+  const spin    = document.getElementById('t-spin').checked;
+  const activeShape = document.querySelector('.sh-btn.active');
+  const radius  = activeShape ? activeShape.dataset.r+'px' : '50px';
+
+  // apply to card logo
+  cardLogo.style.width = cardLogo.style.height = size+'px';
+  cardLogo.style.opacity = opacity;
+  cardLogo.style.borderRadius = radius;
+  cardLogo.style.border = bWidth>0 ? `${bWidth}px solid ${bColor}` : 'none';
+  cardLogo.style.boxShadow = shadow ? `0 0 ${16+bWidth*2}px ${bColor}90` : 'none';
+
+  // spin
+  if(spin) cardLogo.classList.add('logo-spin');
+  else cardLogo.classList.remove('logo-spin');
+
+  // sync panel preview img
+  lpImg.style.borderRadius = radius;
+  lpImg.style.opacity = opacity;
+  lpImg.style.border = cardLogo.style.border;
+  lpImg.style.boxShadow = cardLogo.style.boxShadow;
+}
+
+function syncPanelToCard() {
+  // keep panel in sync if reopened
+  applyStyles();
+}
+
+// ======= APPLY BUTTON =======
+document.getElementById('lp-apply').addEventListener('click',()=>{
+  applyStyles();
+  showToast('✅ تم تطبيق إعدادات الشعار على البطاقة');
+});
+
+// ======= TOAST =======
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// Init
+applyStyles();
+</script>\n\n    
+    <!-- LOGO PANEL -->
+    <!-- ===== FLOATING LOGO PANEL ===== -->
+<div id="logo-panel">
+  <div class="lp-header" id="lp-header">
+    <span style="font-size:18px;opacity:0.5">⠿</span>
+    <h3>🖼️ خصائص الشعار</h3>
+    <button class="lp-close" onclick="closeLogoPanel()">✕</button>
+  </div>
+
+  <div class="lp-body">
+
+    <!-- UPLOAD -->
+    <div class="lp-section">
+      <div class="lp-label">📤 رفع الشعار</div>
+      <div class="lp-upload" id="lp-upload">
+        <div class="u-icon">☁️</div>
+        <p>اسحب الشعار هنا أو انقر للرفع</p>
+        <div class="fmt-row">
+          <span class="fmt">PNG</span><span class="fmt">SVG</span>
+          <span class="fmt">JPG</span><span class="fmt">WEBP</span>
+        </div>
+      </div>
+      <input type="file" id="lp-file" accept="image/*" style="display:none">
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="lp-section">
+      <div class="lp-label">👁️ معاينة الشعار</div>
+      <div class="lp-preview-row">
+        <div class="lp-img-wrap">
+          <img id="lp-img"
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 52'%3E%3Crect width='52' height='52' fill='%236c63ff22'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%236c63ff'%3E🏷%3C/text%3E%3C/svg%3E"
+            alt="معاينة">
+          <button class="lp-del" id="lp-del">✕</button>
+        </div>
+        <div class="lp-file-info">
+          <strong id="lp-fname">لم يُرفع شعار</strong>
+          <span id="lp-fsize">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIZE + OPACITY -->
+    <div class="lp-section">
+      <div class="lp-label">📐 الحجم والشفافية</div>
+      <div class="sl-row">
+        <label>الحجم</label>
+        <input type="range" id="sl-size" min="30" max="160" value="70">
+        <span class="val-pill" id="v-size">70px</span>
+      </div>
+      <div class="sl-row">
+        <label>الشفافية</label>
+        <input type="range" id="sl-opacity" min="10" max="100" value="100">
+        <span class="val-pill" id="v-opacity">100%</span>
+      </div>
+    </div>
+
+    <!-- POSITION -->
+    <div class="lp-section">
+      <div class="lp-label">📍 الموضع على البطاقة</div>
+      <div class="pos-grid" id="pos-grid">
+        <button class="pos-btn" data-pos="flex-start,flex-start">↖</button>
+        <button class="pos-btn" data-pos="flex-start,center">⬆</button>
+        <button class="pos-btn" data-pos="flex-start,flex-end">↗</button>
+        <button class="pos-btn" data-pos="center,flex-start">⬅</button>
+        <button class="pos-btn active" data-pos="center,center">⊙</button>
+        <button class="pos-btn" data-pos="center,flex-end">➡</button>
+        <button class="pos-btn" data-pos="flex-end,flex-start">↙</button>
+        <button class="pos-btn" data-pos="flex-end,center">⬇</button>
+        <button class="pos-btn" data-pos="flex-end,flex-end">↘</button>
+      </div>
+    </div>
+
+    <!-- SHAPE -->
+    <div class="lp-section">
+      <div class="lp-label">🔷 شكل الشعار</div>
+      <div class="shape-row" id="shape-row">
+        <button class="sh-btn" data-r="4"><span class="sh-icon">⬜</span>مربع</button>
+        <button class="sh-btn" data-r="14"><span class="sh-icon">▢</span>ناعم</button>
+        <button class="sh-btn active" data-r="50"><span class="sh-icon">⚪</span>دائري</button>
+      </div>
+    </div>
+
+    <!-- BORDER + SHADOW -->
+    <div class="lp-section">
+      <div class="lp-label">🔲 الحد والظل</div>
+      <div class="col-row">
+        <label>لون الحد</label>
+        <input type="color" id="c-border" value="#6c63ff">
+      </div>
+      <div class="sl-row">
+        <label>سُمك الحد</label>
+        <input type="range" id="sl-border" min="0" max="8" value="2">
+        <span class="val-pill" id="v-border">2px</span>
+      </div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>ظل متوهج</strong>
+          <small>توهج خارجي حول الشعار</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-shadow" checked><span class="sw-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- EFFECTS -->
+    <div class="lp-section">
+      <div class="lp-label">✨ تأثيرات</div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>إزالة الخلفية 🪄</strong>
+          <small>يعمل بالذكاء الاصطناعي</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-bgremove"><span class="sw-slider"></span></label>
+      </div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>تأثير الدوران</strong>
+          <small>حركة دوران عند التحويم</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-spin"><span class="sw-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- APPLY -->
+    <button class="lp-apply" id="lp-apply">✅ تطبيق على البطاقة</button>
+
+  </div>
+</div>
+<!-- /PANEL -->
+
+<div class="toast" id="toast">✅ تم تطبيق إعدادات الشعار على البطاقة</div>
+
+    <script>
+// ======= PANEL OPEN/CLOSE =======
+const panel = document.getElementById('logo-panel');
+function openLogoPanel() {
+  panel.classList.add('visible');
+  syncPanelToCard();
+}
+function closeLogoPanel() { panel.classList.remove('visible'); }
+
+// ======= DRAGGING =======
+let dragging = false, sx, sy, sl, st;
+const header = document.getElementById('lp-header');
+
+function startDrag(x, y) {
+  dragging = true;
+  panel.classList.add('dragging');
+  const r = panel.getBoundingClientRect();
+  sx = x; sy = y; sl = r.left; st = r.top;
+}
+function moveDrag(x, y) {
+  if (!dragging) return;
+  const W = window.innerWidth, H = window.innerHeight;
+  const w = panel.offsetWidth, h = panel.offsetHeight;
+  let nx = sl + x - sx, ny = st + y - sy;
+  nx = Math.max(0, Math.min(nx, W - w));
+  ny = Math.max(0, Math.min(ny, H - h));
+  panel.style.left = nx + 'px';
+  panel.style.top = ny + 'px';
+  panel.style.transform = 'none';
+}
+function endDrag() { dragging = false; panel.classList.remove('dragging'); }
+
+header.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+document.addEventListener('mouseup', endDrag);
+header.addEventListener('touchstart', e => { const t=e.touches[0]; startDrag(t.clientX,t.clientY); },{passive:true});
+document.addEventListener('touchmove', e => { if(!dragging)return; e.preventDefault(); const t=e.touches[0]; moveDrag(t.clientX,t.clientY); },{passive:false});
+document.addEventListener('touchend', endDrag);
+
+// ======= FILE UPLOAD =======
+const uploadZone = document.getElementById('lp-upload');
+const fileInput  = document.getElementById('lp-file');
+const lpImg      = document.getElementById('lp-img');
+const cardLogo   = document.getElementById('card-logo');
+const fnameEl    = document.getElementById('lp-fname');
+const fsizeEl    = document.getElementById('lp-fsize');
+let currentSrc   = null;
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor='#6c63ff'; });
+uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor=''; });
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.style.borderColor=''; if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentSrc = ev.target.result;
+    lpImg.src = currentSrc;
+    cardLogo.src = currentSrc;
+    fnameEl.textContent = file.name.length>22 ? file.name.slice(0,20)+'…' : file.name;
+    fsizeEl.textContent = (file.size/1024).toFixed(1)+' KB';
+    applyStyles();
+    showToast('✅ تم رفع الشعار بنجاح');
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('lp-del').addEventListener('click', () => {
+  const ph = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Crect width='70' height='70' fill='%236c63ff22'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='26' fill='%236c63ff'%3E🏷%3C/text%3E%3C/svg%3E";
+  currentSrc = null;
+  lpImg.src = cardLogo.src = ph;
+  fnameEl.textContent='لم يُرفع شعار'; fsizeEl.textContent='—';
+  fileInput.value='';
+});
+
+// ======= SLIDERS =======
+function bindSlider(id, valId, suffix, cb) {
+  const r=document.getElementById(id), v=document.getElementById(valId);
+  function u(){ v.textContent=r.value+suffix; if(cb)cb(); applyStyles(); }
+  r.addEventListener('input',u); u();
+}
+bindSlider('sl-size','v-size','px');
+bindSlider('sl-opacity','v-opacity','%');
+document.getElementById('sl-border').addEventListener('input', function(){
+  document.getElementById('v-border').textContent=this.value+'px'; applyStyles();
+});
+
+// ======= POSITION GRID =======
+document.getElementById('pos-grid').querySelectorAll('.pos-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.pos-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const [alignSelf, justifySelf] = btn.dataset.pos.split(',');
+    cardLogo.style.alignSelf = alignSelf;
+    // card-logo-wrap position
+    const wrap = cardLogo.closest('.card-logo-wrap') || cardLogo.parentElement;
+    const preview = document.getElementById('card-preview');
+    // adjust card flex alignment
+    if(alignSelf==='flex-start') preview.style.alignItems='flex-start';
+    else if(alignSelf==='flex-end') preview.style.alignItems='flex-end';
+    else preview.style.alignItems='center';
+  });
+});
+
+// ======= SHAPE =======
+document.getElementById('shape-row').querySelectorAll('.sh-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.sh-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    applyStyles();
+  });
+});
+
+// ======= TOGGLES =======
+['t-shadow','t-bgremove','t-spin'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',applyStyles);
+});
+document.getElementById('c-border').addEventListener('input',applyStyles);
+
+// ======= APPLY STYLES (LIVE) =======
+function applyStyles() {
+  const size    = +document.getElementById('sl-size').value;
+  const opacity = +document.getElementById('sl-opacity').value/100;
+  const bWidth  = +document.getElementById('sl-border').value;
+  const bColor  = document.getElementById('c-border').value;
+  const shadow  = document.getElementById('t-shadow').checked;
+  const spin    = document.getElementById('t-spin').checked;
+  const activeShape = document.querySelector('.sh-btn.active');
+  const radius  = activeShape ? activeShape.dataset.r+'px' : '50px';
+
+  // apply to card logo
+  cardLogo.style.width = cardLogo.style.height = size+'px';
+  cardLogo.style.opacity = opacity;
+  cardLogo.style.borderRadius = radius;
+  cardLogo.style.border = bWidth>0 ? `${bWidth}px solid ${bColor}` : 'none';
+  cardLogo.style.boxShadow = shadow ? `0 0 ${16+bWidth*2}px ${bColor}90` : 'none';
+
+  // spin
+  if(spin) cardLogo.classList.add('logo-spin');
+  else cardLogo.classList.remove('logo-spin');
+
+  // sync panel preview img
+  lpImg.style.borderRadius = radius;
+  lpImg.style.opacity = opacity;
+  lpImg.style.border = cardLogo.style.border;
+  lpImg.style.boxShadow = cardLogo.style.boxShadow;
+}
+
+function syncPanelToCard() {
+  // keep panel in sync if reopened
+  applyStyles();
+}
+
+// ======= APPLY BUTTON =======
+document.getElementById('lp-apply').addEventListener('click',()=>{
+  applyStyles();
+  showToast('✅ تم تطبيق إعدادات الشعار على البطاقة');
+});
+
+// ======= TOAST =======
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// Init
+applyStyles();
+</script>
+
+    <!-- Mobile More Menu Button -->
             <div class="toolbar-more-container">
                 <button id="toolbar-more-btn" class="btn-icon btn-compact" title="المزيد" aria-label="More Options"
                     style="display: none;">
@@ -360,9 +1202,10 @@
                             <div class="card-background-layer" id="front-bg-gradient-layer"></div>
                             <div class="card-content-layer card-front-content-layer" id="card-front-content">
 
-                                <div id="card-logo" data-input-target-id="logo-drop-zone">
+                                <div id="card-logo-wrapper" class="card-logo-wrap" data-input-target-id="logo-drop-zone" onclick="openLogoPanel()">
                                     <img src="mc-prime-nfc.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية"
-                                        class="logo-front" id="card-logo-img">
+                                        class="logo-front" id="card-logo">
+                                    <div class="edit-logo-hint">✏️ تعديل الشعار</div>
                                 </div>
 
                                 <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
@@ -411,7 +1254,7 @@
                         <div class="form-group">
                             <label for="input-logo">رابط الشعار</label>
                             <input type="text" id="input-logo" value="mc-prime-nfc.png"
-                                data-update-target="card-logo-img" data-update-property="src">
+                                data-update-target="card-logo" data-update-property="src">
                         </div>
                         <div class="form-group">
                             <label for="input-logo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
@@ -448,7 +1291,7 @@
                             <div class="form-group">
                                 <label for="logo-opacity">شفافية الشعار</label>
                                 <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
-                                    data-update-target="card-logo-img" data-update-property="style.opacity">
+                                    data-update-target="card-logo" data-update-property="style.opacity">
                             </div>
                             <div class="form-group">
                                 <label for="logo-bg-color">خلفية الشعار</label>
@@ -1806,6 +2649,608 @@
             </div>
         </div>
     </footer>
+
+    \n\n    <!-- ===== FLOATING LOGO PANEL ===== -->
+<div id="logo-panel">
+  <div class="lp-header" id="lp-header">
+    <span style="font-size:18px;opacity:0.5">⠿</span>
+    <h3>🖼️ خصائص الشعار</h3>
+    <button class="lp-close" onclick="closeLogoPanel()">✕</button>
+  </div>
+
+  <div class="lp-body">
+
+    <!-- UPLOAD -->
+    <div class="lp-section">
+      <div class="lp-label">📤 رفع الشعار</div>
+      <div class="lp-upload" id="lp-upload">
+        <div class="u-icon">☁️</div>
+        <p>اسحب الشعار هنا أو انقر للرفع</p>
+        <div class="fmt-row">
+          <span class="fmt">PNG</span><span class="fmt">SVG</span>
+          <span class="fmt">JPG</span><span class="fmt">WEBP</span>
+        </div>
+      </div>
+      <input type="file" id="lp-file" accept="image/*" style="display:none">
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="lp-section">
+      <div class="lp-label">👁️ معاينة الشعار</div>
+      <div class="lp-preview-row">
+        <div class="lp-img-wrap">
+          <img id="lp-img"
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 52'%3E%3Crect width='52' height='52' fill='%236c63ff22'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%236c63ff'%3E🏷%3C/text%3E%3C/svg%3E"
+            alt="معاينة">
+          <button class="lp-del" id="lp-del">✕</button>
+        </div>
+        <div class="lp-file-info">
+          <strong id="lp-fname">لم يُرفع شعار</strong>
+          <span id="lp-fsize">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIZE + OPACITY -->
+    <div class="lp-section">
+      <div class="lp-label">📐 الحجم والشفافية</div>
+      <div class="sl-row">
+        <label>الحجم</label>
+        <input type="range" id="sl-size" min="30" max="160" value="70">
+        <span class="val-pill" id="v-size">70px</span>
+      </div>
+      <div class="sl-row">
+        <label>الشفافية</label>
+        <input type="range" id="sl-opacity" min="10" max="100" value="100">
+        <span class="val-pill" id="v-opacity">100%</span>
+      </div>
+    </div>
+
+    <!-- POSITION -->
+    <div class="lp-section">
+      <div class="lp-label">📍 الموضع على البطاقة</div>
+      <div class="pos-grid" id="pos-grid">
+        <button class="pos-btn" data-pos="flex-start,flex-start">↖</button>
+        <button class="pos-btn" data-pos="flex-start,center">⬆</button>
+        <button class="pos-btn" data-pos="flex-start,flex-end">↗</button>
+        <button class="pos-btn" data-pos="center,flex-start">⬅</button>
+        <button class="pos-btn active" data-pos="center,center">⊙</button>
+        <button class="pos-btn" data-pos="center,flex-end">➡</button>
+        <button class="pos-btn" data-pos="flex-end,flex-start">↙</button>
+        <button class="pos-btn" data-pos="flex-end,center">⬇</button>
+        <button class="pos-btn" data-pos="flex-end,flex-end">↘</button>
+      </div>
+    </div>
+
+    <!-- SHAPE -->
+    <div class="lp-section">
+      <div class="lp-label">🔷 شكل الشعار</div>
+      <div class="shape-row" id="shape-row">
+        <button class="sh-btn" data-r="4"><span class="sh-icon">⬜</span>مربع</button>
+        <button class="sh-btn" data-r="14"><span class="sh-icon">▢</span>ناعم</button>
+        <button class="sh-btn active" data-r="50"><span class="sh-icon">⚪</span>دائري</button>
+      </div>
+    </div>
+
+    <!-- BORDER + SHADOW -->
+    <div class="lp-section">
+      <div class="lp-label">🔲 الحد والظل</div>
+      <div class="col-row">
+        <label>لون الحد</label>
+        <input type="color" id="c-border" value="#6c63ff">
+      </div>
+      <div class="sl-row">
+        <label>سُمك الحد</label>
+        <input type="range" id="sl-border" min="0" max="8" value="2">
+        <span class="val-pill" id="v-border">2px</span>
+      </div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>ظل متوهج</strong>
+          <small>توهج خارجي حول الشعار</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-shadow" checked><span class="sw-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- EFFECTS -->
+    <div class="lp-section">
+      <div class="lp-label">✨ تأثيرات</div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>إزالة الخلفية 🪄</strong>
+          <small>يعمل بالذكاء الاصطناعي</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-bgremove"><span class="sw-slider"></span></label>
+      </div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>تأثير الدوران</strong>
+          <small>حركة دوران عند التحويم</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-spin"><span class="sw-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- APPLY -->
+    <button class="lp-apply" id="lp-apply">✅ تطبيق على البطاقة</button>
+
+  </div>
+</div>
+<!-- /PANEL -->
+
+<div class="toast" id="toast">✅ تم تطبيق إعدادات الشعار على البطاقة</div>\n\n    <script>
+// ======= PANEL OPEN/CLOSE =======
+const panel = document.getElementById('logo-panel');
+function openLogoPanel() {
+  panel.classList.add('visible');
+  syncPanelToCard();
+}
+function closeLogoPanel() { panel.classList.remove('visible'); }
+
+// ======= DRAGGING =======
+let dragging = false, sx, sy, sl, st;
+const header = document.getElementById('lp-header');
+
+function startDrag(x, y) {
+  dragging = true;
+  panel.classList.add('dragging');
+  const r = panel.getBoundingClientRect();
+  sx = x; sy = y; sl = r.left; st = r.top;
+}
+function moveDrag(x, y) {
+  if (!dragging) return;
+  const W = window.innerWidth, H = window.innerHeight;
+  const w = panel.offsetWidth, h = panel.offsetHeight;
+  let nx = sl + x - sx, ny = st + y - sy;
+  nx = Math.max(0, Math.min(nx, W - w));
+  ny = Math.max(0, Math.min(ny, H - h));
+  panel.style.left = nx + 'px';
+  panel.style.top = ny + 'px';
+  panel.style.transform = 'none';
+}
+function endDrag() { dragging = false; panel.classList.remove('dragging'); }
+
+header.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+document.addEventListener('mouseup', endDrag);
+header.addEventListener('touchstart', e => { const t=e.touches[0]; startDrag(t.clientX,t.clientY); },{passive:true});
+document.addEventListener('touchmove', e => { if(!dragging)return; e.preventDefault(); const t=e.touches[0]; moveDrag(t.clientX,t.clientY); },{passive:false});
+document.addEventListener('touchend', endDrag);
+
+// ======= FILE UPLOAD =======
+const uploadZone = document.getElementById('lp-upload');
+const fileInput  = document.getElementById('lp-file');
+const lpImg      = document.getElementById('lp-img');
+const cardLogo   = document.getElementById('card-logo');
+const fnameEl    = document.getElementById('lp-fname');
+const fsizeEl    = document.getElementById('lp-fsize');
+let currentSrc   = null;
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor='#6c63ff'; });
+uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor=''; });
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.style.borderColor=''; if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentSrc = ev.target.result;
+    lpImg.src = currentSrc;
+    cardLogo.src = currentSrc;
+    fnameEl.textContent = file.name.length>22 ? file.name.slice(0,20)+'…' : file.name;
+    fsizeEl.textContent = (file.size/1024).toFixed(1)+' KB';
+    applyStyles();
+    showToast('✅ تم رفع الشعار بنجاح');
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('lp-del').addEventListener('click', () => {
+  const ph = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Crect width='70' height='70' fill='%236c63ff22'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='26' fill='%236c63ff'%3E🏷%3C/text%3E%3C/svg%3E";
+  currentSrc = null;
+  lpImg.src = cardLogo.src = ph;
+  fnameEl.textContent='لم يُرفع شعار'; fsizeEl.textContent='—';
+  fileInput.value='';
+});
+
+// ======= SLIDERS =======
+function bindSlider(id, valId, suffix, cb) {
+  const r=document.getElementById(id), v=document.getElementById(valId);
+  function u(){ v.textContent=r.value+suffix; if(cb)cb(); applyStyles(); }
+  r.addEventListener('input',u); u();
+}
+bindSlider('sl-size','v-size','px');
+bindSlider('sl-opacity','v-opacity','%');
+document.getElementById('sl-border').addEventListener('input', function(){
+  document.getElementById('v-border').textContent=this.value+'px'; applyStyles();
+});
+
+// ======= POSITION GRID =======
+document.getElementById('pos-grid').querySelectorAll('.pos-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.pos-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const [alignSelf, justifySelf] = btn.dataset.pos.split(',');
+    cardLogo.style.alignSelf = alignSelf;
+    // card-logo-wrap position
+    const wrap = cardLogo.closest('.card-logo-wrap') || cardLogo.parentElement;
+    const preview = document.getElementById('card-preview');
+    // adjust card flex alignment
+    if(alignSelf==='flex-start') preview.style.alignItems='flex-start';
+    else if(alignSelf==='flex-end') preview.style.alignItems='flex-end';
+    else preview.style.alignItems='center';
+  });
+});
+
+// ======= SHAPE =======
+document.getElementById('shape-row').querySelectorAll('.sh-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.sh-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    applyStyles();
+  });
+});
+
+// ======= TOGGLES =======
+['t-shadow','t-bgremove','t-spin'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',applyStyles);
+});
+document.getElementById('c-border').addEventListener('input',applyStyles);
+
+// ======= APPLY STYLES (LIVE) =======
+function applyStyles() {
+  const size    = +document.getElementById('sl-size').value;
+  const opacity = +document.getElementById('sl-opacity').value/100;
+  const bWidth  = +document.getElementById('sl-border').value;
+  const bColor  = document.getElementById('c-border').value;
+  const shadow  = document.getElementById('t-shadow').checked;
+  const spin    = document.getElementById('t-spin').checked;
+  const activeShape = document.querySelector('.sh-btn.active');
+  const radius  = activeShape ? activeShape.dataset.r+'px' : '50px';
+
+  // apply to card logo
+  cardLogo.style.width = cardLogo.style.height = size+'px';
+  cardLogo.style.opacity = opacity;
+  cardLogo.style.borderRadius = radius;
+  cardLogo.style.border = bWidth>0 ? `${bWidth}px solid ${bColor}` : 'none';
+  cardLogo.style.boxShadow = shadow ? `0 0 ${16+bWidth*2}px ${bColor}90` : 'none';
+
+  // spin
+  if(spin) cardLogo.classList.add('logo-spin');
+  else cardLogo.classList.remove('logo-spin');
+
+  // sync panel preview img
+  lpImg.style.borderRadius = radius;
+  lpImg.style.opacity = opacity;
+  lpImg.style.border = cardLogo.style.border;
+  lpImg.style.boxShadow = cardLogo.style.boxShadow;
+}
+
+function syncPanelToCard() {
+  // keep panel in sync if reopened
+  applyStyles();
+}
+
+// ======= APPLY BUTTON =======
+document.getElementById('lp-apply').addEventListener('click',()=>{
+  applyStyles();
+  showToast('✅ تم تطبيق إعدادات الشعار على البطاقة');
+});
+
+// ======= TOAST =======
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// Init
+applyStyles();
+</script>\n\n    
+    <!-- LOGO PANEL -->
+    <!-- ===== FLOATING LOGO PANEL ===== -->
+<div id="logo-panel">
+  <div class="lp-header" id="lp-header">
+    <span style="font-size:18px;opacity:0.5">⠿</span>
+    <h3>🖼️ خصائص الشعار</h3>
+    <button class="lp-close" onclick="closeLogoPanel()">✕</button>
+  </div>
+
+  <div class="lp-body">
+
+    <!-- UPLOAD -->
+    <div class="lp-section">
+      <div class="lp-label">📤 رفع الشعار</div>
+      <div class="lp-upload" id="lp-upload">
+        <div class="u-icon">☁️</div>
+        <p>اسحب الشعار هنا أو انقر للرفع</p>
+        <div class="fmt-row">
+          <span class="fmt">PNG</span><span class="fmt">SVG</span>
+          <span class="fmt">JPG</span><span class="fmt">WEBP</span>
+        </div>
+      </div>
+      <input type="file" id="lp-file" accept="image/*" style="display:none">
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="lp-section">
+      <div class="lp-label">👁️ معاينة الشعار</div>
+      <div class="lp-preview-row">
+        <div class="lp-img-wrap">
+          <img id="lp-img"
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 52'%3E%3Crect width='52' height='52' fill='%236c63ff22'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%236c63ff'%3E🏷%3C/text%3E%3C/svg%3E"
+            alt="معاينة">
+          <button class="lp-del" id="lp-del">✕</button>
+        </div>
+        <div class="lp-file-info">
+          <strong id="lp-fname">لم يُرفع شعار</strong>
+          <span id="lp-fsize">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIZE + OPACITY -->
+    <div class="lp-section">
+      <div class="lp-label">📐 الحجم والشفافية</div>
+      <div class="sl-row">
+        <label>الحجم</label>
+        <input type="range" id="sl-size" min="30" max="160" value="70">
+        <span class="val-pill" id="v-size">70px</span>
+      </div>
+      <div class="sl-row">
+        <label>الشفافية</label>
+        <input type="range" id="sl-opacity" min="10" max="100" value="100">
+        <span class="val-pill" id="v-opacity">100%</span>
+      </div>
+    </div>
+
+    <!-- POSITION -->
+    <div class="lp-section">
+      <div class="lp-label">📍 الموضع على البطاقة</div>
+      <div class="pos-grid" id="pos-grid">
+        <button class="pos-btn" data-pos="flex-start,flex-start">↖</button>
+        <button class="pos-btn" data-pos="flex-start,center">⬆</button>
+        <button class="pos-btn" data-pos="flex-start,flex-end">↗</button>
+        <button class="pos-btn" data-pos="center,flex-start">⬅</button>
+        <button class="pos-btn active" data-pos="center,center">⊙</button>
+        <button class="pos-btn" data-pos="center,flex-end">➡</button>
+        <button class="pos-btn" data-pos="flex-end,flex-start">↙</button>
+        <button class="pos-btn" data-pos="flex-end,center">⬇</button>
+        <button class="pos-btn" data-pos="flex-end,flex-end">↘</button>
+      </div>
+    </div>
+
+    <!-- SHAPE -->
+    <div class="lp-section">
+      <div class="lp-label">🔷 شكل الشعار</div>
+      <div class="shape-row" id="shape-row">
+        <button class="sh-btn" data-r="4"><span class="sh-icon">⬜</span>مربع</button>
+        <button class="sh-btn" data-r="14"><span class="sh-icon">▢</span>ناعم</button>
+        <button class="sh-btn active" data-r="50"><span class="sh-icon">⚪</span>دائري</button>
+      </div>
+    </div>
+
+    <!-- BORDER + SHADOW -->
+    <div class="lp-section">
+      <div class="lp-label">🔲 الحد والظل</div>
+      <div class="col-row">
+        <label>لون الحد</label>
+        <input type="color" id="c-border" value="#6c63ff">
+      </div>
+      <div class="sl-row">
+        <label>سُمك الحد</label>
+        <input type="range" id="sl-border" min="0" max="8" value="2">
+        <span class="val-pill" id="v-border">2px</span>
+      </div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>ظل متوهج</strong>
+          <small>توهج خارجي حول الشعار</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-shadow" checked><span class="sw-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- EFFECTS -->
+    <div class="lp-section">
+      <div class="lp-label">✨ تأثيرات</div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>إزالة الخلفية 🪄</strong>
+          <small>يعمل بالذكاء الاصطناعي</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-bgremove"><span class="sw-slider"></span></label>
+      </div>
+      <div class="tog-row">
+        <div class="tog-label">
+          <strong>تأثير الدوران</strong>
+          <small>حركة دوران عند التحويم</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="t-spin"><span class="sw-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- APPLY -->
+    <button class="lp-apply" id="lp-apply">✅ تطبيق على البطاقة</button>
+
+  </div>
+</div>
+<!-- /PANEL -->
+
+<div class="toast" id="toast">✅ تم تطبيق إعدادات الشعار على البطاقة</div>
+
+    <script>
+// ======= PANEL OPEN/CLOSE =======
+const panel = document.getElementById('logo-panel');
+function openLogoPanel() {
+  panel.classList.add('visible');
+  syncPanelToCard();
+}
+function closeLogoPanel() { panel.classList.remove('visible'); }
+
+// ======= DRAGGING =======
+let dragging = false, sx, sy, sl, st;
+const header = document.getElementById('lp-header');
+
+function startDrag(x, y) {
+  dragging = true;
+  panel.classList.add('dragging');
+  const r = panel.getBoundingClientRect();
+  sx = x; sy = y; sl = r.left; st = r.top;
+}
+function moveDrag(x, y) {
+  if (!dragging) return;
+  const W = window.innerWidth, H = window.innerHeight;
+  const w = panel.offsetWidth, h = panel.offsetHeight;
+  let nx = sl + x - sx, ny = st + y - sy;
+  nx = Math.max(0, Math.min(nx, W - w));
+  ny = Math.max(0, Math.min(ny, H - h));
+  panel.style.left = nx + 'px';
+  panel.style.top = ny + 'px';
+  panel.style.transform = 'none';
+}
+function endDrag() { dragging = false; panel.classList.remove('dragging'); }
+
+header.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+document.addEventListener('mouseup', endDrag);
+header.addEventListener('touchstart', e => { const t=e.touches[0]; startDrag(t.clientX,t.clientY); },{passive:true});
+document.addEventListener('touchmove', e => { if(!dragging)return; e.preventDefault(); const t=e.touches[0]; moveDrag(t.clientX,t.clientY); },{passive:false});
+document.addEventListener('touchend', endDrag);
+
+// ======= FILE UPLOAD =======
+const uploadZone = document.getElementById('lp-upload');
+const fileInput  = document.getElementById('lp-file');
+const lpImg      = document.getElementById('lp-img');
+const cardLogo   = document.getElementById('card-logo');
+const fnameEl    = document.getElementById('lp-fname');
+const fsizeEl    = document.getElementById('lp-fsize');
+let currentSrc   = null;
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor='#6c63ff'; });
+uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor=''; });
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.style.borderColor=''; if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentSrc = ev.target.result;
+    lpImg.src = currentSrc;
+    cardLogo.src = currentSrc;
+    fnameEl.textContent = file.name.length>22 ? file.name.slice(0,20)+'…' : file.name;
+    fsizeEl.textContent = (file.size/1024).toFixed(1)+' KB';
+    applyStyles();
+    showToast('✅ تم رفع الشعار بنجاح');
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('lp-del').addEventListener('click', () => {
+  const ph = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Crect width='70' height='70' fill='%236c63ff22'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='26' fill='%236c63ff'%3E🏷%3C/text%3E%3C/svg%3E";
+  currentSrc = null;
+  lpImg.src = cardLogo.src = ph;
+  fnameEl.textContent='لم يُرفع شعار'; fsizeEl.textContent='—';
+  fileInput.value='';
+});
+
+// ======= SLIDERS =======
+function bindSlider(id, valId, suffix, cb) {
+  const r=document.getElementById(id), v=document.getElementById(valId);
+  function u(){ v.textContent=r.value+suffix; if(cb)cb(); applyStyles(); }
+  r.addEventListener('input',u); u();
+}
+bindSlider('sl-size','v-size','px');
+bindSlider('sl-opacity','v-opacity','%');
+document.getElementById('sl-border').addEventListener('input', function(){
+  document.getElementById('v-border').textContent=this.value+'px'; applyStyles();
+});
+
+// ======= POSITION GRID =======
+document.getElementById('pos-grid').querySelectorAll('.pos-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.pos-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const [alignSelf, justifySelf] = btn.dataset.pos.split(',');
+    cardLogo.style.alignSelf = alignSelf;
+    // card-logo-wrap position
+    const wrap = cardLogo.closest('.card-logo-wrap') || cardLogo.parentElement;
+    const preview = document.getElementById('card-preview');
+    // adjust card flex alignment
+    if(alignSelf==='flex-start') preview.style.alignItems='flex-start';
+    else if(alignSelf==='flex-end') preview.style.alignItems='flex-end';
+    else preview.style.alignItems='center';
+  });
+});
+
+// ======= SHAPE =======
+document.getElementById('shape-row').querySelectorAll('.sh-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.sh-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    applyStyles();
+  });
+});
+
+// ======= TOGGLES =======
+['t-shadow','t-bgremove','t-spin'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',applyStyles);
+});
+document.getElementById('c-border').addEventListener('input',applyStyles);
+
+// ======= APPLY STYLES (LIVE) =======
+function applyStyles() {
+  const size    = +document.getElementById('sl-size').value;
+  const opacity = +document.getElementById('sl-opacity').value/100;
+  const bWidth  = +document.getElementById('sl-border').value;
+  const bColor  = document.getElementById('c-border').value;
+  const shadow  = document.getElementById('t-shadow').checked;
+  const spin    = document.getElementById('t-spin').checked;
+  const activeShape = document.querySelector('.sh-btn.active');
+  const radius  = activeShape ? activeShape.dataset.r+'px' : '50px';
+
+  // apply to card logo
+  cardLogo.style.width = cardLogo.style.height = size+'px';
+  cardLogo.style.opacity = opacity;
+  cardLogo.style.borderRadius = radius;
+  cardLogo.style.border = bWidth>0 ? `${bWidth}px solid ${bColor}` : 'none';
+  cardLogo.style.boxShadow = shadow ? `0 0 ${16+bWidth*2}px ${bColor}90` : 'none';
+
+  // spin
+  if(spin) cardLogo.classList.add('logo-spin');
+  else cardLogo.classList.remove('logo-spin');
+
+  // sync panel preview img
+  lpImg.style.borderRadius = radius;
+  lpImg.style.opacity = opacity;
+  lpImg.style.border = cardLogo.style.border;
+  lpImg.style.boxShadow = cardLogo.style.boxShadow;
+}
+
+function syncPanelToCard() {
+  // keep panel in sync if reopened
+  applyStyles();
+}
+
+// ======= APPLY BUTTON =======
+document.getElementById('lp-apply').addEventListener('click',()=>{
+  applyStyles();
+  showToast('✅ تم تطبيق إعدادات الشعار على البطاقة');
+});
+
+// ======= TOAST =======
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// Init
+applyStyles();
+</script>
 
     <!-- Mobile More Menu (Moved to body to avoid overflow issues) -->
     <div id="toolbar-more-menu-floating" class="toolbar-more-menu">

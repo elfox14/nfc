@@ -1,6 +1,11 @@
 // server.js (الكود الكامل والنهائي مع ميزة التحرير الجماعي)
 
 require('dotenv').config();
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is required. Please set it in your environment variables.');
+}
+
 const express = require('express');
 const compression = require('compression');
 const { MongoClient } = require('mongodb');
@@ -56,7 +61,7 @@ app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
-    styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+    styleSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
     imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://www.mcprim.com", "https://media.giphy.com", "https://nfc-vjy6.onrender.com"],
     mediaSrc: ["'self'", "data:"],
@@ -69,24 +74,46 @@ app.use(helmet.contentSecurityPolicy({
 // --- END: SECURITY HEADERS (HELMET) ---
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+
+// Fail-fast: in production, ALLOWED_ORIGINS must be explicitly set
+if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
+  throw new Error('FATAL: ALLOWED_ORIGINS must be set in production. Refusing to start with open CORS.');
+}
+
 app.use(cors({
   origin: (origin, cb) => {
     // Allow requests with no origin (mobile apps, curl, server-to-server)
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Not allowed by CORS'));
+    if (!origin) {
+      console.log('[CORS] Request with no origin allowed');
+      return cb(null, true);
     }
+    // In all environments, check against allowedOrigins with flexible subdomain matching
+    const isAllowed = allowedOrigins.some(baseDomain => {
+      if (baseDomain === origin) return true;
+      // Compare without protocols and www
+      const cleanBase = baseDomain.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
+      const cleanOrigin = origin.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
+      return cleanBase === cleanOrigin;
+    });
+
+    if (isAllowed) {
+      console.log(`[CORS] Request from allowed origin: ${origin}`);
+      return cb(null, true);
+    }
+    console.warn(`[CORS] Request from BLOCKED origin: ${origin}. Allowed origins: ${allowedOrigins.join(', ')}`);
+    cb(new Error('Not allowed by CORS'));
   },
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers crash on 204
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
 // --- DATABASE CONNECTION ---
 const mongoUrl = process.env.MONGO_URI;
-const dbName = process.env.MONGO_DB || 'nfc_db';
+const dbName = process.env.MONGO_DB || 'mcnfc';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 const usersCollectionName = 'users'; // New Users Collection
 const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
@@ -600,6 +627,63 @@ app.post('/api/save-design', async (req, res) => {
   }
 });
 
+// PATCH element property
+app.patch('/api/design/:id/element/:elementId', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const { id, elementId } = req.params;
+    const updates = req.body;
+
+    // Whitelist of allowed properties
+    const allowedKeys = ['position', 'fontSize', 'color', 'content', 'width', 'height', 'rotation', 'opacity', 'zIndex', 'display', 'text', 'src', 'url'];
+    const filteredUpdates = {};
+    Object.keys(updates).forEach(key => {
+      if (allowedKeys.includes(key)) {
+        filteredUpdates[key] = updates[key];
+      }
+    });
+
+    if (Object.keys(filteredUpdates).length === 0) {
+      return res.status(400).json({ error: 'No valid properties to update' });
+    }
+
+    const updatePayload = {};
+    for (const key in filteredUpdates) {
+      updatePayload[`data.elements.$.${key}`] = filteredUpdates[key];
+    }
+
+    // Try primary structure (data.elements)
+    let result = await db.collection(designsCollectionName).updateOne(
+      { shortId: id, 'data.elements.id': elementId, ownerId: req.user.userId },
+      { $set: updatePayload }
+    );
+
+    // Fallback for legacy or test structures
+    if (result.matchedCount === 0) {
+      const fallbackPayload = {};
+      for (const key in filteredUpdates) {
+        fallbackPayload[`elements.$.${key}`] = filteredUpdates[key];
+      }
+      result = await db.collection(designsCollectionName).updateOne(
+        { shortId: id, 'elements.id': elementId, ownerId: req.user.userId },
+        { $set: fallbackPayload }
+      );
+    }
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: 'Design or element not found or unauthorized' });
+    }
+
+    console.log(`[PatchElement] Element ${elementId} updated in design ${id}`);
+    res.json({ success: true, message: 'Element updated successfully' });
+
+  } catch (err) {
+    console.error('Patch element error:', err);
+    res.status(500).json({ error: 'Failed to update element' });
+  }
+});
+
+
 // --- AUTHENTICATION ROUTES ---
 
 // Register
@@ -674,8 +758,8 @@ app.post('/api/auth/register', [
     // Set refresh token as HttpOnly Secure cookie
     res.cookie('refreshToken', refreshTokenValue, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/api/auth'
     });
@@ -699,13 +783,18 @@ app.post('/api/auth/login', [
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.warn('[Login] Validation failed:', errors.array());
     return res.status(400).json({ errors: errors.array() });
   }
 
   try {
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    if (!db) {
+      console.error('[Login] Database not connected');
+      return res.status(500).json({ error: 'DB not connected' });
+    }
 
     const { email, password } = req.body;
+    console.log(`[Login] Login attempt for: ${email}`);
 
     const user = await db.collection(usersCollectionName).findOne({ email });
     if (!user) {
@@ -731,12 +820,13 @@ app.post('/api/auth/login', [
     // Set refresh token as HttpOnly Secure cookie
     res.cookie('refreshToken', refreshTokenValue, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/api/auth'
     });
 
+    console.log(`[Login] Successful login for: ${email}. Token issued.`);
     res.json({ success: true, token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
@@ -747,12 +837,14 @@ app.post('/api/auth/login', [
 
 // Google OAuth - Initiate Flow
 app.get('/api/auth/google', (req, res) => {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
+  let clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
     return res.status(500).send('Google OAuth not configured');
   }
+  clientId = clientId.trim();
 
-  const proto = req.headers['x-forwarded-proto'] || req.protocol;
+  const protoHeader = req.headers['x-forwarded-proto'];
+  const proto = protoHeader ? protoHeader.split(',')[0].trim() : req.protocol;
   const host = req.get('host');
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
@@ -781,7 +873,9 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
   // Build the absolute redirect URL to the FRONTEND (mcprim.com), not the Render backend
   const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
-  const loginPage = lang === 'en' ? `${frontendBase}/login-en` : `${frontendBase}/login`;
+  const loginPage = lang === 'en'
+    ? `${frontendBase}/login-en.html`
+    : `${frontendBase}/login.html`;
 
 
   if (error || !code) {
@@ -790,9 +884,11 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 
   try {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const proto = req.headers['x-forwarded-proto'] || req.protocol;
+    const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
+    const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
+    
+    const protoHeader = req.headers['x-forwarded-proto'];
+    const proto = protoHeader ? protoHeader.split(',')[0].trim() : req.protocol;
     const host = req.get('host');
     const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
@@ -801,16 +897,19 @@ app.get('/api/auth/google/callback', async (req, res) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        code,
+        code: code,
         client_id: clientId,
         client_secret: clientSecret,
         redirect_uri: redirectUri,
         grant_type: 'authorization_code'
-      })
+      }).toString()
     });
 
     const tokens = await tokenResponse.json();
-    if (!tokens.access_token) throw new Error('No access token');
+    if (!tokens.access_token) {
+      console.error('Google Token API Error:', tokens);
+      throw new Error(tokens.error_description || tokens.error || 'No access token');
+    }
 
     // Get user info
     const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -818,7 +917,10 @@ app.get('/api/auth/google/callback', async (req, res) => {
     });
     const googleUser = await userInfoResponse.json();
 
-    if (!googleUser.email) throw new Error('No email from Google');
+    if (!googleUser.email) {
+      console.error('Google UserInfo Error:', googleUser);
+      throw new Error('No email returned from Google');
+    }
 
     // Find or create user
     let user = await db.collection(usersCollectionName).findOne({ email: googleUser.email });
@@ -849,32 +951,66 @@ app.get('/api/auth/google/callback', async (req, res) => {
     // Set refresh token as HttpOnly Secure cookie
     res.cookie('refreshToken', refreshTokenValue, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/api/auth'
     });
 
-    // Encode auth data and pass via URL hash to the dashboard on mcprim.com
-    // URL hash (#) is never sent to servers, stays client-side — safe for cross-origin token passing
-    const authEncoded = Buffer.from(JSON.stringify({
-      token: accessToken,
-      user: { name: user.name, email: user.email, userId: user.userId }
-    })).toString('base64url');
+    // Send auth data to the popup opener via postMessage
+    const script = `
+      (function() {
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({
+              type: 'google-auth',
+              success: true,
+              token: ${JSON.stringify(accessToken)},
+              user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
+            }, '*');
+          }
+        } catch (e) {}
+        window.close();
+      })();
+    `;
 
-    // Redirect cross-server to mcprim.com dashboard with auth data in URL hash
-    // mcprim.com requires .html extension (it's a separate server from Render, no .html stripping middleware)
-    const dashboardPage = lang === 'en'
-      ? `${frontendBase}/dashboard-en.html#gauth=${authEncoded}`
-      : `${frontendBase}/dashboard.html#gauth=${authEncoded}`;
-
-    return res.redirect(dashboardPage);
+    res.send(`<!DOCTYPE html>
+    <html lang="${lang}">
+    <head><meta charset="utf-8"><title>Google Login</title></head>
+    <body>
+    <script nonce="${res.locals.cspNonce}">${script}</script>
+    </body>
+    </html>`);
 
 
 
   } catch (err) {
     console.error('Google OAuth error:', err);
-    return res.redirect(`${loginPage}?error=${encodeURIComponent('Authentication failed')}`);
+    const errorMessage = err.message || 'Authentication failed';
+    
+    // Send error to the popup opener via postMessage
+    const script = `
+      (function() {
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({
+              type: 'google-auth',
+              success: false,
+              error: ${JSON.stringify(errorMessage)}
+            }, '*');
+          }
+        } catch (e) {}
+        window.close();
+      })();
+    `;
+
+    res.send(`<!DOCTYPE html>
+    <html lang="${lang}">
+    <head><meta charset="utf-8"><title>Google Login Error</title></head>
+    <body>
+    <script nonce="${res.locals.cspNonce}">${script}</script>
+    </body>
+    </html>`);
   }
 });
 
@@ -1031,6 +1167,7 @@ app.post('/api/auth/refresh', async (req, res) => {
 
     const tokenFromCookie = req.cookies?.refreshToken;
     if (!tokenFromCookie) {
+      console.warn('[Refresh] No refresh token found in cookies');
       return res.status(401).json({ error: 'No refresh token provided' });
     }
 
@@ -1039,8 +1176,10 @@ app.post('/api/auth/refresh', async (req, res) => {
     const user = await db.collection(usersCollectionName).findOne({ refreshTokenHash: hashedToken });
 
     if (!user) {
+      console.warn('[Refresh] Invalid refresh token: No user found for this hash');
       return res.status(403).json({ error: 'Invalid refresh token' });
     }
+    console.log(`[Refresh] Refreshing session for user: ${user.email}`);
 
     // Rotate: generate new tokens
     const newAccessToken = createAccessToken({ userId: user.userId, email: user.email });
@@ -1056,13 +1195,13 @@ app.post('/api/auth/refresh', async (req, res) => {
     // Set new refresh token cookie
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/api/auth'
     });
 
-    res.json({ success: true, token: newAccessToken });
+    res.json({ success: true, token: newAccessToken, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Token refresh error:', err);
@@ -1087,8 +1226,8 @@ app.post('/api/auth/logout', async (req, res) => {
     // Clear the cookie
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true,
+      sameSite: 'None',
       path: '/api/auth'
     });
 
