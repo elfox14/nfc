@@ -594,20 +594,29 @@
 
     <script>
         async function apiFetchWithRefresh(url, options = {}) {
-            let res = await fetch(url, options);
+            // Ensure credentials are included for cross-domain cookie support (refresh token)
+            const fetchOptions = {
+                ...options,
+                credentials: 'include'
+            };
+
+            let res = await fetch(url, fetchOptions);
 
             if (res.status === 401 || res.status === 403) {
+                console.warn('[Dashboard] Unauthorized access, attempting to refresh session...');
                 const refreshed = await Auth.refreshSession();
 
                 if (!refreshed) {
+                    console.error('[Dashboard] Refresh session failed, logging out...');
                     await Auth.logout();
                     throw new Error('Session expired');
                 }
 
+                // Retry with new token
                 const retryOptions = {
-                    ...options,
+                    ...fetchOptions,
                     headers: {
-                        ...(options.headers || {}),
+                        ...(fetchOptions.headers || {}),
                         ...Auth.getHeader()
                     }
                 };
@@ -656,16 +665,21 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // Update local state from storage
             Auth.token = localStorage.getItem('authToken');
             Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null');
             
             if (!Auth.isLoggedIn()) {
+                console.log('[Dashboard] No token found in localStorage, attempting silent refresh...');
                 const refreshed = await Auth.refreshSession();
                 if (!refreshed) {
+                    console.warn('[Dashboard] Silent refresh failed, redirecting to login');
                     window.location.href = '/nfc/login.html?error=AuthNotLoggedIn';
                     return;
                 }
             }
+
+            console.log('[Dashboard] User is logged in as:', Auth.user?.email);
 
             document.getElementById('user-display-name').textContent = Auth.user?.name || 'مستخدم';
 

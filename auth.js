@@ -23,6 +23,7 @@ const Auth = {
 
     token: localStorage.getItem('authToken'),
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
+    refreshPromise: null,
 
     isLoggedIn() {
         return !!localStorage.getItem('authToken');
@@ -116,35 +117,45 @@ const Auth = {
     },
 
     async refreshSession() {
-        console.log('[Auth] Attempting to refresh session...');
-        try {
-            const res = await fetch(this.API_REFRESH, {
-                method: 'POST',
-                credentials: 'include'
-            });
-
-            if (!res.ok) {
-                console.warn('[Auth] Refresh request failed with status:', res.status);
-                // فقط امسح الجلسة إذا كان الخطأ 401 أو 403 (Unauthorized/Forbidden)
-                if (res.status === 401 || res.status === 403) {
-                    this.clearSession();
-                }
-                return false;
-            }
-
-            const data = await res.json();
-
-            if (data.success && data.token && data.user) {
-                console.log('[Auth] Session refreshed successfully');
-                this.setSession(data.token, data.user);
-                return true;
-            } else {
-                console.warn('[Auth] Refresh failed:', data.error || 'Unknown error');
-            }
-        } catch (err) {
-            console.error('[Auth] refresh error:', err);
+        if (this.refreshPromise) {
+            console.log('[Auth] Refresh already in progress, returning existing promise');
+            return this.refreshPromise;
         }
-        return false;
+
+        console.log('[Auth] Attempting to refresh session...');
+        this.refreshPromise = (async () => {
+            try {
+                const res = await fetch(this.API_REFRESH, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (!res.ok) {
+                    console.warn('[Auth] Refresh request failed with status:', res.status);
+                    if (res.status === 401 || res.status === 403) {
+                        this.clearSession();
+                    }
+                    return false;
+                }
+
+                const data = await res.json();
+
+                if (data.success && data.token && data.user) {
+                    console.log('[Auth] Session refreshed successfully');
+                    this.setSession(data.token, data.user);
+                    return true;
+                } else {
+                    console.warn('[Auth] Refresh response unsuccessful:', data.error || 'Unknown error');
+                }
+            } catch (err) {
+                console.error('[Auth] refresh error:', err);
+            } finally {
+                this.refreshPromise = null;
+            }
+            return false;
+        })();
+
+        return this.refreshPromise;
     },
 
     async logout() {

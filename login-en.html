@@ -135,7 +135,10 @@
       const result = await Auth.login(email, password);
 
       if (result.success) {
-        window.location.href = '/nfc/dashboard-en.html';
+        console.log('[Login] Success, redirecting to dashboard...');
+        setTimeout(() => {
+          window.location.href = '/nfc/dashboard-en.html';
+        }, 100);
       } else {
         showError(result.error);
         loginBtn.disabled = false;
@@ -154,7 +157,10 @@
       const result = await Auth.googleSignIn();
 
       if (result.success) {
-        window.location.href = '/nfc/dashboard-en.html';
+        console.log('[Login] Google Success, redirecting to dashboard...');
+        setTimeout(() => {
+          window.location.href = '/nfc/dashboard-en.html';
+        }, 100);
       } else {
         showError(result.error || 'Google sign-in failed');
         googleBtn.disabled = false;
