@@ -425,10 +425,37 @@
         .btn-remove:hover {
             background: rgba(231, 76, 60, 0.3);
         }
+        /* Loading Overlay for Auth */
+        #auth-loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(28, 42, 59, 1);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        #auth-loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .status-text {
+            margin-top: 15px;
+            color: var(--text-secondary-color);
+            font-size: 1rem;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Auth Loading Overlay -->
+    <div id="auth-loading-overlay">
+        <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary-color);"></i>
+        <p id="auth-status-text" class="status-text">Verifying session...</p>
+    </div>
+
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
@@ -645,12 +672,17 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
+            const overlay = document.getElementById('auth-loading-overlay');
+            const statusText = document.getElementById('auth-status-text');
+
             // Update local state from storage
             Auth.token = localStorage.getItem('authToken');
             Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null');
 
             if (!Auth.isLoggedIn()) {
                 console.log('[Dashboard] No token found in localStorage, attempting silent refresh...');
+                statusText.textContent = 'Server is waking up... this may take a minute';
+
                 const refreshed = await Auth.refreshSession();
                 if (!refreshed) {
                     console.warn('[Dashboard] Silent refresh failed, redirecting to login');
@@ -660,6 +692,10 @@
             }
 
             console.log('[Dashboard] User is logged in as:', Auth.user?.email);
+
+            // Hide overlay
+            overlay.classList.add('hidden');
+            setTimeout(() => overlay.remove(), 600);
 
             document.getElementById('user-display-name').textContent = Auth.user?.name || 'User';
 

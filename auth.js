@@ -7,6 +7,7 @@
 const Auth = {
 
     getBaseUrl() {
+        if (window.__API_BASE_URL) return window.__API_BASE_URL;
         const p = window.location.protocol;
         const h = window.location.hostname;
         if (p === 'file:') return 'https://nfc-vjy6.onrender.com';
@@ -116,7 +117,7 @@ const Auth = {
         }
     },
 
-    async refreshSession() {
+    async refreshSession(retries = 3) {
         if (this.refreshPromise) {
             console.log('[Auth] Refresh already in progress, returning existing promise');
             return this.refreshPromise;
@@ -124,34 +125,44 @@ const Auth = {
 
         console.log('[Auth] Attempting to refresh session...');
         this.refreshPromise = (async () => {
-            try {
-                const res = await fetch(this.API_REFRESH, {
-                    method: 'POST',
-                    credentials: 'include'
-                });
+            let attempt = 0;
+            while (attempt < retries) {
+                try {
+                    const res = await fetch(this.API_REFRESH, {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
 
-                if (!res.ok) {
-                    console.warn('[Auth] Refresh request failed with status:', res.status);
-                    if (res.status === 401 || res.status === 403) {
-                        this.clearSession();
+                    if (!res.ok) {
+                        console.warn('[Auth] Refresh request failed with status:', res.status);
+                        if (res.status === 401 || res.status === 403) {
+                            this.clearSession();
+                        }
+                        return false;
                     }
-                    return false;
-                }
 
-                const data = await res.json();
+                    const data = await res.json();
 
-                if (data.success && data.token && data.user) {
-                    console.log('[Auth] Session refreshed successfully');
-                    this.setSession(data.token, data.user);
-                    return true;
-                } else {
-                    console.warn('[Auth] Refresh response unsuccessful:', data.error || 'Unknown error');
+                    if (data.success && data.token && data.user) {
+                        console.log('[Auth] Session refreshed successfully');
+                        this.setSession(data.token, data.user);
+                        return true;
+                    } else {
+                        console.warn('[Auth] Refresh response unsuccessful:', data.error || 'Unknown error');
+                    }
+                    break; // Exit loop if we got a response (even if unsuccessful)
+                } catch (err) {
+                    attempt++;
+                    console.error(`[Auth] refresh error (attempt ${attempt}/${retries}):`, err);
+                    if (attempt < retries) {
+                        console.log(`[Auth] Server might be sleeping (Cold Start). Retrying in 5s...`);
+                        await new Promise(r => setTimeout(r, 5000));
+                    } else {
+                        console.error('[Auth] Max retries reached for refresh session.');
+                    }
                 }
-            } catch (err) {
-                console.error('[Auth] refresh error:', err);
-            } finally {
-                this.refreshPromise = null;
             }
+            this.refreshPromise = null;
             return false;
         })();
 
