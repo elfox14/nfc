@@ -178,9 +178,19 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const redirectParam = params.get('redirect');
+
+            const getTargetUrl = (defaultUrl) => {
+                if (!redirectParam) return defaultUrl;
+                // Basic safety check for redirect
+                if (redirectParam.startsWith('http') && !redirectParam.includes(window.location.hostname)) {
+                    return defaultUrl;
+                }
+                return redirectParam;
+            };
 
             // ── 1. Handle Google OAuth callback first ──────────────────────
-            const params = new URLSearchParams(window.location.search);
             const googleToken = params.get('google_token');
             const oauthError = params.get('error');
 
@@ -196,7 +206,7 @@
                     console.log('[DEBUG] decoded payload type:', payload?.type);
                 if (payload && payload.token && payload.user) {
                         Auth.setSession(payload.token, payload.user);
-                                        window.location.replace('/nfc/dashboard.html');
+                        window.location.replace(getTargetUrl('/nfc/dashboard.html'));
                         return;
                     } else {
                         document.body.innerHTML = '<div id="error-box" style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f1923;color:#ff5252;font-family:Tajawal,sans-serif;padding:20px;text-align:center;"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p>خطأ بمعالجة رمز Google (payload غير متوقع). حاول مجدداً.</p><a href="/nfc/login" style="color:#4da6ff;margin-top:10px;">العودة لتسجيل الدخول</a></div>';
@@ -232,7 +242,7 @@
                 const result = await Auth.login(email, password);
 
                 if (result.success) {
-                    window.location.href = '/nfc/dashboard.html';
+                    window.location.href = getTargetUrl('/nfc/dashboard.html');
                 } else {
                     errorBox.textContent = result.error;
                     errorBox.style.display = 'block';
@@ -253,7 +263,7 @@
                 try {
                     const result = await Auth.googleSignIn();
                     if (result.success) {
-                        window.location.href = '/nfc/dashboard.html';
+                        window.location.href = getTargetUrl('/nfc/dashboard.html');
                     } else {
                         throw new Error(result.error || 'فشل تسجيل الدخول');
                     }

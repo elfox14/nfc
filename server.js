@@ -386,7 +386,9 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) {
     const newPath = req.path.slice(0, -5);
-    return res.redirect(301, newPath);
+    const queryString = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    console.log(`[Redirect] Stripping .html from ${req.url} -> ${newPath + queryString}`);
+    return res.redirect(301, newPath + queryString);
   }
   next();
 });

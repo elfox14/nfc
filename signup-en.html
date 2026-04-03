@@ -178,6 +178,17 @@
     </div>
 
     <script>
+        const params = new URLSearchParams(window.location.search);
+        const redirectParam = params.get('redirect');
+
+        const getTargetUrl = (defaultUrl) => {
+            if (!redirectParam) return defaultUrl;
+            if (redirectParam.startsWith('http') && !redirectParam.includes(window.location.hostname)) {
+                return defaultUrl;
+            }
+            return redirectParam;
+        };
+
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('name').value;
@@ -193,7 +204,7 @@
             const result = await Auth.register(name, email, password);
 
             if (result.success) {
-                window.location.href = '/nfc/dashboard-en.html';
+                window.location.href = getTargetUrl('/nfc/dashboard-en.html');
             } else {
                 errorBox.textContent = result.error;
                 errorBox.style.display = 'block';
@@ -214,7 +225,7 @@
             try {
                 const result = await Auth.googleSignIn();
                 if (result.success) {
-                    window.location.href = '/nfc/dashboard-en.html';
+                    window.location.href = getTargetUrl('/nfc/dashboard-en.html');
                 } else {
                     throw new Error(result.error || 'Login failed');
                 }

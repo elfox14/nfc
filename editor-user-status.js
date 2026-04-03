@@ -13,7 +13,7 @@ const EditorUserStatus = {
     async init() {
         // Restore session via refresh cookie if token is missing/expired
         if (typeof Auth !== 'undefined' && !Auth.isLoggedIn()) {
-            await Auth.refreshAccessToken();
+            await Auth.refreshSession();
         }
         this.updateUserStatus();
         this.bindEvents();
@@ -217,7 +217,7 @@ const EditorUserStatus = {
                 }
                 // Set flag so beforeunload handlers don't block the redirect
                 window._intentionalRedirect = true;
-                const redirectUrl = isEnglish ? 'login-en.html?redirect=editor-en.html' : 'login.html?redirect=editor.html';
+                const redirectUrl = isEnglish ? 'login-en?redirect=editor-en' : 'login?redirect=editor';
                 console.log('[EditorUserStatus] Redirecting to:', redirectUrl);
                 window.location.href = redirectUrl;
             }
