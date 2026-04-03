@@ -71,7 +71,7 @@ const EditorUserStatus = {
         const signupLink = document.getElementById('user-signup-link');
         const dashboardLink = document.getElementById('user-dashboard-link');
         const logoutBtn = document.getElementById('user-logout-btn');
-        const saveBtn = document.getElementById('save-to-cloud-btn');
+        const saveBtn = document.getElementById('save-share-btn');
 
         // Mobile Menu Elements
         const mobileMenuUserText = document.getElementById('mobile-menu-user-text');
@@ -103,7 +103,7 @@ const EditorUserStatus = {
             if (dashboardLink) dashboardLink.style.display = 'inline-flex';
             logoutBtn.style.display = 'inline-flex';
             logoutBtn.textContent = isEnglish ? 'Logout' : 'خروج';
-            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
+            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Save & Share' : 'حفظ و مشاركة';
 
             // Mobile Menu
             if (mobileMenuUserText) mobileMenuUserText.textContent = userName;
@@ -132,7 +132,7 @@ const EditorUserStatus = {
             }
             if (dashboardLink) dashboardLink.style.display = 'none';
             logoutBtn.style.display = 'none';
-            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ';
+            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ ومشاركة';
 
             // Mobile Menu
             if (mobileMenuUserText) mobileMenuUserText.textContent = isEnglish ? 'Guest' : 'غير مسجل';
@@ -182,7 +182,7 @@ const EditorUserStatus = {
         }
 
         // Save to cloud button
-        const saveBtn = document.getElementById('save-to-cloud-btn');
+        const saveBtn = document.getElementById('save-share-btn');
         if (saveBtn) {
             // Manual save: Capture images
             saveBtn.addEventListener('click', () => this.saveToCloud(true));
@@ -192,10 +192,10 @@ const EditorUserStatus = {
     async saveToCloud(captureImages = false) {
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
         const token = localStorage.getItem('authToken');
-        const saveBtn = document.getElementById('save-to-cloud-btn');
+        const saveBtn = document.getElementById('save-share-btn');
         const saveBtnText = document.getElementById('save-btn-text');
         // Mobile proxy button in panel-share
-        const mobileSaveProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="save-to-cloud-btn"]');
+        const mobileSaveProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="save-share-btn"]');
         const mobileSaveProxyOrigHTML = mobileSaveProxyBtn ? mobileSaveProxyBtn.innerHTML : '';
 
         // If not logged in, redirect to login
@@ -279,7 +279,7 @@ const EditorUserStatus = {
                         // Reset button state and STOP — don't save without a thumbnail
                         this.isSaving = false;
                         if (saveBtn) saveBtn.disabled = false;
-                        if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
+                        if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save & Share' : 'حفظ و مشاركة';
                         if (mobileSaveProxyBtn) { mobileSaveProxyBtn.innerHTML = mobileSaveProxyOrigHTML; mobileSaveProxyBtn.disabled = false; }
                         return;
                     }
@@ -314,6 +314,13 @@ const EditorUserStatus = {
                         ? (isEnglish ? 'Design saved and added to gallery!' : 'تم حفظ التصميم وإضافته للمعرض!')
                         : (isEnglish ? 'Design and images saved successfully' : 'تم حفظ التصميم والصور بنجاح');
                     if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Saved ✓' : 'تم الحفظ ✓';
+
+                    // AFTER SUCCESSFUL MANUAL SAVE: Trigger Sharing
+                    const viewerUrl = new URL('viewer.html', window.location.href);
+                    viewerUrl.searchParams.set('id', designId);
+                    if (typeof ShareManager !== 'undefined' && ShareManager.performShare) {
+                        ShareManager.performShare(viewerUrl.href, i18nMain.shareTitle, i18nMain.shareText);
+                    }
                     if (mobileSaveProxyBtn) { mobileSaveProxyBtn.innerHTML = '<i class="fas fa-check"></i> ' + (isEnglish ? 'Saved ✓' : 'تم الحفظ ✓'); mobileSaveProxyBtn.disabled = false; }
                     if (typeof UIManager !== 'undefined') {
                         UIManager.announce(savedMsg);
@@ -324,7 +331,7 @@ const EditorUserStatus = {
                     }
 
                     setTimeout(() => {
-                        if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
+                        if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save & Share' : 'حفظ و مشاركة';
                         if (mobileSaveProxyBtn) mobileSaveProxyBtn.innerHTML = mobileSaveProxyOrigHTML;
                     }, 2500);
                 } else {
@@ -346,7 +353,7 @@ const EditorUserStatus = {
                 MobileUtils.showMobileToast(failMsg, 'error');
             }
             setTimeout(() => {
-                if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Design' : 'حفظ التصميم';
+                if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save & Share' : 'حفظ و مشاركة';
             }, 2000);
         } finally {
             this.isSaving = false;

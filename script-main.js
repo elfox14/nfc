@@ -1036,10 +1036,6 @@ const EventManager = {
         DOMElements.buttons.reset.addEventListener('click', () => StateManager.reset());
         DOMElements.layoutSelect.addEventListener('change', e => CardManager.applyLayout(e.target.value));
 
-        DOMElements.buttons.shareCard.addEventListener('click', () => {
-            if (typeof gtag === 'function') { gtag('event', 'share_card', { 'share_type': 'viewer_link' }); }
-            ShareManager.shareCard();
-        });
 
         DOMElements.buttons.shareEditor.addEventListener('click', () => {
             if (typeof gtag === 'function') { gtag('event', 'share_editor'); }
@@ -1286,7 +1282,7 @@ const App = {
                 toggleMasterSocial: document.getElementById('toggle-master-social'),
                 saveToGallery: document.getElementById('save-to-gallery-btn'),
                 showGallery: document.getElementById('show-gallery-btn'),
-                shareCard: document.getElementById('share-card-btn'),
+                saveShare: document.getElementById('save-share-btn'),
                 shareEditor: document.getElementById('share-editor-btn'),
                 downloadOptions: document.getElementById('download-options-btn'),
                 downloadPngFront: document.getElementById('download-png-front'),
