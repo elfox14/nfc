@@ -24,7 +24,6 @@
         init3DPreview();
         initThemeToggle();
         initElementSelection(); // New: Allow selecting elements for keyboard control
-        initLogoPanel(); // New: Initialize integration for new sleek Logo panel
     }
 
     // ===========================================
@@ -1064,117 +1063,5 @@
         }
     `;
     document.head.appendChild(style);
-    document.head.appendChild(style);
-
-    // ===========================================
-    // LOGO PANEL NEW UI LOGIC
-    // ===========================================
-    function initLogoPanel() {
-        const posGrid = document.getElementById('logo-pos-grid');
-        const shapeRow = document.getElementById('logo-shape-row');
-        const cardLogo = document.getElementById('card-logo');
-        const logoImg = document.getElementById('card-logo-img');
-        const previewImg = document.getElementById('logo-preview');
-        const borderCol = document.getElementById('logo-border-color');
-        const borderWid = document.getElementById('logo-border-width');
-        const shadowToggle = document.getElementById('logo-shadow-enabled');
-
-        if(posGrid) {
-            const btns = posGrid.querySelectorAll('.pos-btn');
-            btns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    btns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    if(cardLogo) {
-                        const alignParts = btn.dataset.pos.split(',');
-                        if (alignParts.length === 2) {
-                            const [alignSelf, justifySelf] = alignParts;
-                            cardLogo.style.alignSelf = alignSelf;
-                            const preview = document.getElementById('card-front-content');
-                            if(preview) {
-                                if(alignSelf==='flex-start') preview.style.alignItems='flex-start';
-                                else if(alignSelf==='flex-end') preview.style.alignItems='flex-end';
-                                else preview.style.alignItems='center';
-                            }
-                        }
-                        
-                        // Just trigger global save via change
-                        if(window.StateManager) window.StateManager.saveDebounced();
-                    }
-                });
-            });
-        }
-
-        if(shapeRow) {
-            const btns = shapeRow.querySelectorAll('.sh-btn');
-            btns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    btns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    const radius = btn.dataset.shape;
-                    if(logoImg) logoImg.style.borderRadius = radius;
-                    if(previewImg) previewImg.style.borderRadius = radius;
-                    if(window.StateManager) window.StateManager.saveDebounced();
-                });
-            });
-        }
-
-        function updateBorderAndShadow() {
-            if(!logoImg) return;
-            const bWidth = borderWid ? borderWid.value : 0;
-            const bColor = borderCol ? borderCol.value : '#000000';
-            const shadow = shadowToggle ? shadowToggle.checked : false;
-
-            logoImg.style.border = bWidth > 0 ? `${bWidth}px solid ${bColor}` : 'none';
-            logoImg.style.boxShadow = shadow ? `0 0 ${16 + parseInt(bWidth)*2}px ${bColor}90` : 'none';
-            if(previewImg) {
-                previewImg.style.border = logoImg.style.border;
-                previewImg.style.boxShadow = logoImg.style.boxShadow;
-            }
-            if(window.StateManager) window.StateManager.saveDebounced();
-        }
-
-        if(borderCol) borderCol.addEventListener('input', updateBorderAndShadow);
-        if(borderWid) borderWid.addEventListener('input', updateBorderAndShadow);
-        if(shadowToggle) shadowToggle.addEventListener('change', updateBorderAndShadow);
-
-        // Remove logo button
-        const removeLogoBtn = document.getElementById('remove-logo-btn');
-        if(removeLogoBtn) {
-            removeLogoBtn.addEventListener('click', () => {
-                if(logoImg) logoImg.src = 'mc-prime-nfc.png';
-                if(previewImg) previewImg.src = 'mc-prime-nfc.png';
-                
-                // Reset file input
-                const fileInput = document.getElementById('input-logo-upload');
-                if (fileInput) fileInput.value = '';
-
-                if(window.StateManager) window.StateManager.saveDebounced();
-            });
-        }
-
-        // Live value pills for sliders
-        const updatePill = (id, valId, suffix) => {
-            const el = document.getElementById(id);
-            const valEl = document.getElementById(valId);
-            if(el && valEl) {
-                el.addEventListener('input', () => {
-                    const v = el.id === 'logo-opacity' ? Math.round(el.value * 100) : el.value;
-                    valEl.textContent = v + suffix;
-                    
-                    // Sync preview opacity
-                    if(el.id === 'logo-opacity' && previewImg) {
-                        previewImg.style.opacity = el.value;
-                    }
-                });
-                
-                // Trigger once on init
-                const initV = el.id === 'logo-opacity' ? Math.round(el.value * 100) : el.value;
-                valEl.textContent = initV + suffix;
-            }
-        };
-        updatePill('logo-size', 'v-logo-size', '%');
-        updatePill('logo-opacity', 'v-logo-opacity', '%');
-    }
 
 })();
