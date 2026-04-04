@@ -1,0 +1,198 @@
+/* ===========================================
+   MC PRIME NFC - Logo Panel Enhancements CSS
+   New Sleek Design
+   =========================================== */
+
+/* PANEL BODY */
+.lp-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* Dark aesthetics matching the new design */
+}
+
+/* SECTION */
+.lp-section {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 11px;
+  padding: 11px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.lp-label {
+  color: #a5b4fc;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* UPLOAD */
+.lp-upload {
+  border: 2px dashed rgba(108,99,255,0.35);
+  border-radius: 9px;
+  padding: 16px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(108,99,255,0.03);
+}
+.lp-upload:hover { border-color: #6c63ff; background: rgba(108,99,255,0.08); }
+.lp-upload .u-icon { font-size: 24px; color: #a5b4fc; }
+.lp-upload p { color: #94a3b8; font-size: 11px; margin-top: 4px; }
+.fmt-row { display: flex; gap: 5px; justify-content: center; margin-top: 6px; }
+.fmt { background: rgba(108,99,255,0.15); color: #a5b4fc; font-size: 9px; padding: 2px 7px; border-radius: 20px; border: 1px solid rgba(108,99,255,0.25); }
+
+/* PREVIEW */
+.lp-preview-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+.lp-img-wrap { position: relative; flex-shrink: 0; }
+#lp-img {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(108,99,255,0.4);
+  box-shadow: 0 0 15px rgba(108,99,255,0.3);
+  transition: all 0.3s;
+}
+.lp-del {
+  position: absolute; top: -8px; right: -8px;
+  width: 20px; height: 20px;
+  background: #2b2b40; border: 1px solid #4a4a6a; border-radius: 50%;
+  color: #fff; font-size: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 1; transition: opacity 0.2s;
+}
+.lp-del:hover { background: #ef4444; border-color: #ef4444; }
+
+/* SLIDER ROW */
+.sl-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.sl-row label { color: #cbd5e1; font-size: 11px; min-width: 55px; font-weight: bold; }
+.sl-row input[type=range] {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 4px;
+  background: linear-gradient(to left, #6c63ff, #a855f7);
+  outline: none; cursor: pointer;
+}
+/* Checkerboard for opacity slider */
+.sl-row.opacity-slider input[type=range] {
+  background: 
+    linear-gradient(to left, rgba(108,99,255,1), rgba(108,99,255,0)),
+    repeating-conic-gradient(#808080 0% 25%, #e0e0e0 0% 50%) 50% / 10px 10px;
+}
+
+.sl-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 6px rgba(108,99,255,0.8); cursor: pointer;
+}
+.val-pill {
+  background: rgba(108,99,255,0.2);
+  color: #a5b4fc; font-size: 10px;
+  padding: 3px 8px; border-radius: 20px;
+  min-width: 40px; text-align: center; font-weight: 600;
+}
+
+/* POSITION GRID */
+.pos-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 4px;
+  margin-top: 5px;
+}
+.pos-btn {
+  aspect-ratio: 1.5;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  color: #475569;
+  font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.pos-btn:hover { background: rgba(108,99,255,0.15); color: #a5b4fc; }
+.pos-btn.active { background: rgba(108,99,255,0.3); border-color: #6c63ff; color: #fff; box-shadow: 0 0 8px rgba(108,99,255,0.4); }
+/* Specifically making the center button distinct */
+.pos-btn[data-pos="center,center"] { background: rgba(108,99,255,0.1); color: #a5b4fc; }
+.pos-btn[data-pos="center,center"].active { background: #6c63ff; color: #fff; border-color: #6c63ff; }
+.pos-btn i { pointer-events: none; }
+
+/* SHAPE BTNS */
+.shape-row { display: flex; gap: 6px; margin-top: 5px; }
+.sh-btn {
+  flex: 1; padding: 7px 4px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  cursor: pointer; color: #94a3b8;
+  font-size: 11px; text-align: center;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.sh-btn .sh-icon { font-size: 16px; display: block; }
+.sh-btn:hover { background: rgba(108,99,255,0.1); color: #a5b4fc; }
+.sh-btn.active { background: #6c63ff; border-color: #6c63ff; color: #fff; box-shadow: 0 0 10px rgba(108,99,255,0.3); }
+.sh-btn.active .sh-icon { color: #fff; }
+
+/* TOGGLE */
+.tog-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.tog-row .tog-label { flex: 1; display: flex; align-items: center; gap: 6px;}
+.tog-row .tog-label strong { color: #cbd5e1; font-size: 11px; display: block; font-weight: bold; }
+.tog-row .tog-label small { color: #475569; font-size: 10px; }
+.sw { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.sw input { opacity: 0; width: 0; height: 0; }
+.sw-slider {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.1);
+  border-radius: 22px; cursor: pointer; transition: 0.3s;
+}
+.sw-slider:before {
+  content: ''; position: absolute;
+  width: 18px; height: 18px;
+  right: 3px; top: 3px;
+  background: #fff; border-radius: 50%; transition: 0.3s;
+}
+.sw input:checked + .sw-slider { background: linear-gradient(135deg,#6c63ff,#a855f7); }
+.sw input:checked + .sw-slider:before { transform: translateX(-20px); }
+.sw .sw-status { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 9px; color: #fff; font-weight: bold; opacity: 0; transition: 0.3s; pointer-events: none;}
+.sw input:checked ~ .sw-status { opacity: 1; }
+
+/* COLOR */
+.col-row { display: flex; align-items: center; gap: 8px; }
+.col-row label { flex: 1; color: #cbd5e1; font-size: 11px; font-weight: bold; }
+.col-picker-wrap {
+  position: relative;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+  padding: 2px;
+  cursor: pointer;
+}
+.col-picker-wrap input[type=color] {
+  width: 100%; height: 100%;
+  border: 2px solid #1a1a2e; border-radius: 50%;
+  cursor: pointer; padding: 0;
+  background: transparent;
+  outline: none;
+}
+.col-picker-wrap input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+.col-picker-wrap input[type=color]::-webkit-color-swatch { border: 2px solid #1a1a2e; border-radius: 50%; }
+
+/* Customizations for Integration */
+#logo-drop-zone.fieldset {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+#logo-drop-zone.fieldset legend {
+  display: none; /* We use the panel header instead or it's obvious */
+}
