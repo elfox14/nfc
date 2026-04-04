@@ -491,7 +491,6 @@ const CardManager = {
         for (const [key, side] of Object.entries(state.placements)) {
             const isVisible = state.visibilities ? state.visibilities[key] : true;
             if (isVisible && elements[key] && containers[side]) {
-                elements[key].style.position = 'absolute';
                 containers[side].appendChild(elements[key]);
             }
         }

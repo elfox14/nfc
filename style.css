@@ -849,6 +849,7 @@ html.ltr .dynamic-social-link span {
     position: relative;
     background-color: #000;
     flex-shrink: 0;
+    min-width: 300px; /* <--- ADDED */
     transition: width 0.5s ease, height 0.5s ease, box-shadow 0.3s ease;
 }
 
