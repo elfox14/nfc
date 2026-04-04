@@ -25,7 +25,7 @@ const Config = {
             'layout-select': 'classic',
             'layout-select-visual': 'classic',
             'input-logo': 'mc-prime-nfc.png',
-            'logo-size': 25,
+            'logo-size': 10,
             'logo-opacity': 1,
             'input-photo-url': '',
             'photo-size': 25,
@@ -189,6 +189,7 @@ const Utils = {
         try {
             if (navigator.clipboard && window.isSecureContext) {
                 await navigator.clipboard.writeText(text);
+                return true;
             } else {
                 const textArea = document.createElement('textarea');
                 textArea.value = text;

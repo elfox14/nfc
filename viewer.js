@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const visibilities = state.visibilities || {};
 
         if (inputs['input-logo'] && (visibilities.logo === undefined || visibilities.logo)) {
-            const logoSize = inputs['logo-size'] || 25;
+            const logoSize = inputs['logo-size'] || 10;
             const logoOpacity = inputs['logo-opacity'] !== undefined ? inputs['logo-opacity'] : 1;
             const logoPos = getPositionStyle('card-logo');
             const logoPlacement = getPlacement('logo');
