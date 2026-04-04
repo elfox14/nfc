@@ -147,6 +147,53 @@ const Auth = {
         return false;
     },
 
+    // Singleton promise to prevent concurrent refreshes
+    _refreshPromise: null,
+
+    async apiFetchWithRefresh(url, options = {}) {
+        // Ensure headers exist
+        options.headers = options.headers || {};
+        
+        // Add Authorization header if we have a token
+        if (this.token) {
+            options.headers['Authorization'] = `Bearer ${this.token}`;
+        }
+
+        try {
+            let res = await fetch(url, options);
+
+            // If token expired (401) or forbidden (403)
+            if (res.status === 401 || res.status === 403) {
+                console.warn('[Auth] Token expired or unauthorized. Attempting refresh...');
+
+                // Ensure only one refresh call happens at a time
+                if (!this._refreshPromise) {
+                    this._refreshPromise = this.refreshSession().finally(() => {
+                        this._refreshPromise = null;
+                    });
+                }
+                
+                const refreshed = await this._refreshPromise;
+
+                if (refreshed) {
+                    console.log('[Auth] Refresh successful, retrying original request...');
+                    // Update header with new token
+                    options.headers['Authorization'] = `Bearer ${this.token}`;
+                    // Retry original request
+                    res = await fetch(url, options);
+                } else {
+                    console.error('[Auth] Refresh failed, logging out.');
+                    this.logout('SessionExpired');
+                }
+            }
+
+            return res;
+        } catch (err) {
+            console.error('[Auth] apiFetch error:', err);
+            throw err;
+        }
+    },
+
     async logout() {
         try {
             await fetch(this.API_LOGOUT, {

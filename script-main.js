@@ -548,15 +548,13 @@ const ShareManager = {
         const state = stateToSave || StateManager.getStateObject();
         try {
             const headers = { 'Content-Type': 'application/json' };
-            const token = localStorage.getItem('authToken');
-            if (token) headers['Authorization'] = `Bearer ${token}`;
 
             let url = `${Config.API_BASE_URL}/api/save-design`;
             if (Config.currentDesignId) {
                 url += `?id=${Config.currentDesignId}`;
             }
 
-            const response = await fetch(url, {
+            const response = await Auth.apiFetchWithRefresh(url, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(state),
@@ -565,14 +563,6 @@ const ShareManager = {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 const errorMsg = errorData.error || 'Server responded with an error';
-                if (response.status === 401) {
-                    alert(errorMsg);
-                    return null;
-                }
-                if (response.status === 403) {
-                    alert(errorMsg);
-                    return null;
-                }
                 throw new Error(errorMsg);
             }
 

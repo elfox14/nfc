@@ -631,7 +631,14 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            Auth.token = localStorage.getItem('authToken'); Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); if (!Auth.isLoggedIn()) {
+            Auth.token = localStorage.getItem('authToken'); 
+            Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); 
+            
+            if (!Auth.isLoggedIn()) {
+                await Auth.refreshSession();
+            }
+
+            if (!Auth.isLoggedIn()) {
                 window.location.href = '/nfc/login.html?error=AuthNotLoggedIn';
                 return;
             }
@@ -671,15 +678,11 @@
         async function loadMyDesigns() {
             const grid = document.getElementById('designs-grid');
             try {
-                const response = await fetch(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
+                const response = await Auth.apiFetchWithRefresh(Auth.API_USER_DESIGNS, { headers: Auth.getHeader() });
 
                 if (!response.ok) {
                     const errText = await response.text().catch(() => '');
                     console.error('[Dashboard] API error:', response.status, errText);
-                    if (response.status === 401 || response.status === 403) {
-                        Auth.logout('ApiUnauthorized');
-                        return;
-                    }
                     throw new Error('خطأ الخادم: ' + response.status);
                 }
 
@@ -742,7 +745,7 @@
         async function deleteDesign(shortId) {
             if (!confirm('هل أنت متأكد أنك تريد حذف هذا التصميم نهائياً؟ سيتم حذفه أيضاً من المعرض.')) return;
             try {
-                const res = await fetch(`${baseUrl}/api/user/designs/${shortId}`, {
+                const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
                     method: 'DELETE',
                     headers: Auth.getHeader()
                 });
@@ -760,7 +763,7 @@
 
         async function loadRequestCount() {
             try {
-                const res = await fetch(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
+                const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/card-requests/count`, { headers: Auth.getHeader() });
                 const data = await res.json();
                 const badge = document.getElementById('requests-badge');
                 if (data.count > 0) {
@@ -775,7 +778,7 @@
         async function loadSavedCards() {
             const grid = document.getElementById('saved-cards-grid');
             try {
-                const res = await fetch(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
+                const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
 
                 if (!res.ok) {
                     const text = await res.text();
@@ -817,7 +820,7 @@
         async function removeSavedCard(designId) {
             if (!confirm('هل تريد إزالة هذه البطاقة من المحفوظات؟')) return;
             try {
-                await fetch(`${baseUrl}/api/saved-cards/${designId}`, {
+                await Auth.apiFetchWithRefresh(`${baseUrl}/api/saved-cards/${designId}`, {
                     method: 'DELETE',
                     headers: Auth.getHeader()
                 });
@@ -828,7 +831,7 @@
         async function loadCardRequests() {
             const list = document.getElementById('requests-list');
             try {
-                const res = await fetch(`${baseUrl}/api/card-requests`, { headers: Auth.getHeader() });
+                const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/card-requests`, { headers: Auth.getHeader() });
                 const data = await res.json();
                 list.innerHTML = '';
 
@@ -876,7 +879,7 @@
 
         async function handleRequest(requestId, action) {
             try {
-                await fetch(`${baseUrl}/api/card-requests/${requestId}`, {
+                await Auth.apiFetchWithRefresh(`${baseUrl}/api/card-requests/${requestId}`, {
                     method: 'PUT',
                     headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action })
@@ -888,7 +891,7 @@
 
         async function loadPrivacySettings() {
             try {
-                const res = await fetch(`${baseUrl}/api/card-privacy`, { headers: Auth.getHeader() });
+                const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/card-privacy`, { headers: Auth.getHeader() });
                 const data = await res.json();
                 const current = data.cardPrivacy || 'require_approval';
                 document.querySelectorAll('.privacy-option').forEach(opt => {
@@ -915,7 +918,7 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
             try {
-                await fetch(`${baseUrl}/api/card-privacy`, {
+                await Auth.apiFetchWithRefresh(`${baseUrl}/api/card-privacy`, {
                     method: 'PUT',
                     headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cardPrivacy: selected })

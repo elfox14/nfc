@@ -251,15 +251,10 @@
                     btn.querySelector('i').className = 'fas fa-spinner fa-spin';
 
                     try {
-                        const res = await fetch(`${baseUrl}/api/save-card/${designId}`, {
+                        const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/save-card/${designId}`, {
                             method: 'POST',
                             headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' }
                         });
-
-                        if (res.status === 401 || res.status === 403) {
-                            Auth.logout();
-                            return;
-                        }
 
                         const data = await res.json();
 
@@ -295,7 +290,7 @@
 
                 // 2. Then check if already saved (Non-blocking)
                 try {
-                    const checkRes = await fetch(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
+                    const checkRes = await Auth.apiFetchWithRefresh(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
                     if (checkRes.ok) {
                         const checkData = await checkRes.json();
                         if (checkData.savedCards?.some(c => c.designShortId === designId)) {

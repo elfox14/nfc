@@ -43,8 +43,8 @@ const EditorUserStatus = {
                 ? Config.API_BASE_URL
                 : 'https://nfc-vjy6.onrender.com';
 
-            const response = await fetch(`${baseUrl}/api/user/designs`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const response = await Auth.apiFetchWithRefresh(`${baseUrl}/api/user/designs`, {
+                headers: Auth.getHeader()
             });
 
             if (!response.ok) return;
