@@ -221,7 +221,13 @@
             if (oauthError) {
                 const errorBox = document.getElementById('error-box');
                 if (errorBox) {
-                    errorBox.textContent = decodeURIComponent(oauthError);
+                    let displayError = decodeURIComponent(oauthError);
+                    if (displayError === 'AuthNotLoggedIn') {
+                        displayError = 'Please login first to access this page.';
+                    } else if (displayError === 'SessionExpired') {
+                        displayError = 'Your session has expired. Please login again.';
+                    }
+                    errorBox.textContent = displayError;
                     errorBox.style.display = 'block';
                 }
             }

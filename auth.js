@@ -209,8 +209,8 @@ const Auth = {
         const en = this.isEnglish();
         const basePath = window.location.pathname.startsWith('/nfc') ? '/nfc' : '';
         window.location.href = en
-            ? `${basePath}/login-en`
-            : `${basePath}/login`;
+            ? `${basePath}/login-en.html`
+            : `${basePath}/login.html`;
     },
 
     async googleSignIn() {
