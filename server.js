@@ -890,6 +890,11 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 
   try {
+    if (!db) {
+      const safeError = encodeURIComponent('خدمة قاعدة البيانات غير متوفرة حالياً، يرجى المحاولة لاحقاً.');
+      return res.redirect(`${loginPage}?error=${safeError}`);
+    }
+
     const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
     const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
     
