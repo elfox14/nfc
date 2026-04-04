@@ -840,17 +840,30 @@ html.ltr .dynamic-social-link span {
     box-shadow: 0 0 15px var(--accent-primary);
 }
 
+.card-flipper-container {
+    perspective: 1500px;
+    width: 510px;
+    height: 330px;
+    position: relative;
+    z-index: 1;
+}
+
+.card-flipper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
 .business-card {
     width: 100%;
-    aspect-ratio: 51 / 33;
+    height: 100%;
     border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     overflow: hidden;
     position: relative;
     background-color: #000;
     flex-shrink: 0;
-    min-width: 300px; /* <--- ADDED */
-    transition: width 0.5s ease, height 0.5s ease, box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease;
 }
 
 #card-name,
@@ -870,13 +883,13 @@ html.ltr .dynamic-social-link span {
     left: -9999px;
 }
 
-.cards-wrapper[data-layout="vertical"] .business-card {
-    aspect-ratio: 33 / 51;
+.cards-wrapper[data-layout="vertical"] .card-flipper-container {
+    width: 330px;
+    height: 510px;
 }
 
 .cards-wrapper[data-layout="vertical"] {
-    width: 70%;
-    max-width: 330px;
+    width: 330px;
 }
 
 .card-background-layer {

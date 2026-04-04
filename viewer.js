@@ -238,9 +238,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isPlaceholder(name)) name = '';
         if (isPlaceholder(tagline)) tagline = '';
 
-        // Only show header if we have real data
-        if (name) {
-            profileName.textContent = name;
+        const profileImageContainer = document.getElementById('profile-image-container');
+        if (profileImageContainer) {
+            profileImageContainer.innerHTML = '';
+            const photoUrl = inputs['input-photo-url'] || '';
+            const logoUrl = inputs['input-logo'] || '';
+            let imageUrl = photoUrl || logoUrl;
+
+            if (imageUrl) {
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.style.width = '80px';
+                img.style.height = '80px';
+                img.style.borderRadius = photoUrl ? '50%' : '12px';
+                img.style.objectFit = 'cover';
+                img.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
+                img.style.backgroundColor = 'white';
+                img.alt = name || 'Profile';
+                profileImageContainer.appendChild(img);
+            }
+        }
+
+        // Manage profile actions visibility
+        const saveVcfBtn = document.getElementById('save-vcf-btn');
+        const saveEmailSigBtn = document.getElementById('save-email-sig-btn');
+        const hasContactData = !!(name || inputs['input-phone-url'] || (data.dynamic && data.dynamic.phones && data.dynamic.phones.length > 0));
+        const hasEmail = !!(data.dynamic && data.dynamic.staticSocial && data.dynamic.staticSocial.email && data.dynamic.staticSocial.email.value);
+
+        if (saveVcfBtn) saveVcfBtn.style.display = (name || hasContactData) ? 'flex' : 'none';
+        if (saveEmailSigBtn) saveEmailSigBtn.style.display = hasEmail ? 'flex' : 'none';
+
+        // Only show header if we have real data or actions
+        if (name || inputs['input-photo-url'] || inputs['input-logo'] || hasContactData || hasEmail) {
+            profileName.textContent = name || '';
             if (tagline && tagline.trim() !== '') {
                 profileTagline.textContent = tagline;
                 profileTagline.style.display = 'block';
