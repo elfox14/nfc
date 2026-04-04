@@ -328,6 +328,9 @@ const CardManager = {
 
         const state = StateManager.getStateObject();
         const phoneState = state.dynamic.phones || [];
+        const isVisible = state.visibilities ? state.visibilities.phones : true;
+
+        if (!isVisible) return;
 
         DOMElements.phoneNumbersContainer.querySelectorAll('.dynamic-input-group').forEach((group) => {
             const phoneId = group.dataset.phoneId;
@@ -486,7 +489,8 @@ const CardManager = {
         Object.values(elements).forEach(el => el.parentNode?.removeChild(el));
 
         for (const [key, side] of Object.entries(state.placements)) {
-            if (elements[key] && containers[side]) {
+            const isVisible = state.visibilities ? state.visibilities[key] : true;
+            if (isVisible && elements[key] && containers[side]) {
                 elements[key].style.position = 'absolute';
                 containers[side].appendChild(elements[key]);
             }
@@ -613,11 +617,13 @@ const CardManager = {
     updateSocialLinks() {
         document.querySelectorAll('.draggable-social-link').forEach(el => el.remove());
 
-        const isMasterEnabled = DOMElements.buttons.toggleMasterSocial ? DOMElements.buttons.toggleMasterSocial.checked : true;
-        if (!isMasterEnabled) return;
-
         const state = StateManager.getStateObject();
         if (!state) return;
+
+        const isVisible = state.visibilities ? state.visibilities.social : true;
+        const isMasterEnabled = DOMElements.buttons.toggleMasterSocial ? DOMElements.buttons.toggleMasterSocial.checked : true;
+        
+        if (!isVisible || !isMasterEnabled) return;
 
         const renderLink = (linkData) => {
             const { id, value, placement, platform, controlId, position } = linkData;
@@ -1052,7 +1058,8 @@ const StateManager = {
             dynamic: { phones: [], social: [], staticSocial: {} },
             imageUrls: {},
             positions: {},
-            placements: {}
+            placements: {},
+            visibilities: {}
         };
 
         document.querySelectorAll('input, select, textarea').forEach(input => {
@@ -1139,6 +1146,12 @@ const StateManager = {
             if (checkedRadio) {
                 state.placements[elName] = checkedRadio.value;
             }
+        });
+
+        const visibilityElements = ['logo', 'photo', 'name', 'tagline', 'phones', 'qr', 'social'];
+        visibilityElements.forEach(key => {
+            const cb = document.getElementById(`visibility-${key}`);
+            state.visibilities[key] = cb ? cb.checked : true;
         });
 
         return state;
@@ -1236,6 +1249,13 @@ const StateManager = {
             for (const [elName, side] of Object.entries(state.placements)) {
                 const radio = document.querySelector(`input[name="placement-${elName}"][value="${side}"]`);
                 if (radio) radio.checked = true;
+            }
+        }
+
+        if (state.visibilities) {
+            for (const [key, value] of Object.entries(state.visibilities)) {
+                const cb = document.getElementById(`visibility-${key}`);
+                if (cb) cb.checked = value;
             }
         }
 

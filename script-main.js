@@ -787,6 +787,13 @@ const EventManager = {
                 if (input.id.startsWith('front-bg-') || input.id.startsWith('back-bg-')) CardManager.updateCardBackgrounds();
                 if (input.id === 'qr-size') CardManager.updateQrCodeDisplay();
 
+                if (input.id.startsWith('visibility-')) {
+                    const key = input.id.replace('visibility-', '');
+                    if (key === 'phones') CardManager.renderPhoneButtons();
+                    else if (key === 'social') CardManager.updateSocialLinks();
+                    else CardManager.renderCardContent();
+                }
+
                 const vCardFields = ['input-name_ar', 'input-name_en', 'input-tagline_ar', 'input-tagline_en', 'input-email', 'input-website'];
                 if (vCardFields.includes(input.id)) CardManager.generateVCardQrDebounced();
                 if (input.name.startsWith('placement-static-')) CardManager.updateSocialLinks();

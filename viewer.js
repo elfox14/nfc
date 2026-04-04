@@ -427,7 +427,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!containers.front || !containers.back) throw new Error("Card content layers could not be found");
 
-        if (inputs['input-logo']) {
+        const visibilities = state.visibilities || {};
+
+        if (inputs['input-logo'] && (visibilities.logo === undefined || visibilities.logo)) {
             const logoSize = inputs['logo-size'] || 25;
             const logoOpacity = inputs['logo-opacity'] !== undefined ? inputs['logo-opacity'] : 1;
             const logoPos = getPositionStyle('card-logo');
@@ -446,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderElement(logoHTML, logoPlacement, containers);
         }
 
-        if (inputs['input-photo-url']) {
+        if (inputs['input-photo-url'] && (visibilities.photo === undefined || visibilities.photo)) {
             const photoSize = inputs['photo-size'] || 25;
             const photoShape = inputs['photo-shape'] === 'circle' ? '50%' : '8px';
             const photoBorderWidth = inputs['photo-border-width'] !== undefined ? inputs['photo-border-width'] : 2;
@@ -469,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderElement(photoHTML, photoPlacement, containers);
         }
 
-        if (inputs['input-name']) {
+        if (inputs['input-name'] && (visibilities.name === undefined || visibilities.name)) {
             const nameSize = inputs['name-font-size'] || 22;
             const nameColor = inputs['name-color'] || '#e6f0f7';
             const nameFont = inputs['name-font'] || 'Tajawal, sans-serif';
@@ -486,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderElement(nameHTML, namePlacement, containers);
         }
 
-        if (inputs['input-tagline']) {
+        if (inputs['input-tagline'] && (visibilities.tagline === undefined || visibilities.tagline)) {
             const taglineSize = inputs['tagline-font-size'] || 14;
             const taglineColor = inputs['tagline-color'] || '#4da6ff';
             const taglineFont = inputs['tagline-font'] || 'Tajawal, sans-serif';
@@ -503,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderElement(taglineHTML, taglinePlacement, containers);
         }
 
-        if (dynamicData.phones && dynamicData.phones.length > 0) {
+        if (dynamicData.phones && dynamicData.phones.length > 0 && (visibilities.phones === undefined || visibilities.phones)) {
             const showAsButtons = inputs['toggle-phone-buttons'] !== undefined ? inputs['toggle-phone-buttons'] : true;
             const phoneBtnBg = inputs['phone-btn-bg-color'] || '#4da6ff';
             const phoneBtnText = inputs['phone-btn-text-color'] || '#ffffff';
@@ -545,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const showSocial = (inputs['toggle-master-social'] === undefined || inputs['toggle-master-social'] === true);
+        const showSocial = (inputs['toggle-master-social'] === undefined || inputs['toggle-master-social'] === true) && (visibilities.social === undefined || visibilities.social);
         if (showSocial) {
             const allSocialLinks = [];
             const staticSocial = dynamicData.staticSocial || {};
@@ -636,7 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (qrSource === 'upload') { qrDataString = imageUrls.qrCode; }
         else if (qrSource === 'auto-vcard' || qrSource === 'auto-card') { qrDataString = getVCardString(); }
 
-        if (qrDataString) {
+        if (qrDataString && (visibilities.qr === undefined || visibilities.qr)) {
             const qrSize = inputs['qr-size'] || 25;
             const qrPos = getPositionStyle('qr-code-wrapper');
             const qrPlacement = getPlacement('qr', 'back');

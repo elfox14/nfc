@@ -109,6 +109,15 @@ const Config = {
             name: 'front',
             tagline: 'front',
             qr: 'back'
+        },
+        visibilities: {
+            logo: true,
+            photo: true,
+            name: true,
+            tagline: true,
+            phones: true,
+            qr: true,
+            social: true
         }
     },
 
