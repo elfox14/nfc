@@ -145,8 +145,9 @@
         tiltDiv.addEventListener('mouseleave', () => {
             cancelAnimationFrame(raf);
             isTiltActive = false;
-            tiltDiv.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+            // Clear transform entirely — identity rotates still create a stacking context
             tiltDiv.style.transition = 'transform 0.55s cubic-bezier(0.34,1.2,0.64,1)';
+            tiltDiv.style.transform = '';
             const shineEl = document.querySelector('#card-front-display .tilt-shine');
             if (shineEl) shineEl.style.background = 'transparent';
         });
