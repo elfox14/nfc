@@ -99,6 +99,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- [NEW] Top Progress Bar Controller ---
+    const progressBar = document.getElementById('page-progress-bar');
+    const setProgress = (pct) => {
+        if (!progressBar) return;
+        progressBar.style.width = pct + '%';
+        if (pct >= 100) {
+            setTimeout(() => { progressBar.style.opacity = '0'; }, 400);
+        } else {
+            progressBar.style.opacity = '1';
+        }
+    };
+
     // --- دالة تتبع النقرات (Analytics) ---
     const trackClick = (platform) => {
         if (!cardId) return;
@@ -114,46 +126,97 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(err => console.warn("Tracking failed", err));
     };
 
+    // --- [NEW] Toast Notification System ---
+    const showToast = (message, type = 'success', duration = 3000) => {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `<i class="fas ${iconMap[type] || iconMap.info}"></i><span>${message}</span>`;
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => { toast.classList.add('show'); });
+        });
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, duration);
+    };
+
     // --- دالة نسخ توقيع الإيميل ---
     const generateEmailSignature = () => {
         if (!cardData) return;
         const inputs = cardData.inputs || {};
+        const dynamic = cardData.dynamic || {};
+        const staticSocial = dynamic.staticSocial || {};
+
         const name = inputs['input-name'] || i18n.defaultName;
         const tagline = inputs['input-tagline'] || '';
-        const photoUrl = cardData.imageUrls.photo || 'https://via.placeholder.com/80';
+        const photoUrl = (cardData.imageUrls && cardData.imageUrls.photo) || '';
+        const logoUrl = inputs['input-logo'] || '';
         const cardUrl = window.location.href;
 
-        // استخدام Table Layout لضمان التوافقية
-        const signatureHTML = `
-            <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
-                <table cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                        <td style="padding-right: 15px; vertical-align: middle;">
-                            <img src="${photoUrl}" alt="${name}" width="80" height="80" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: block;">
-                        </td>
-                        <td style="border-left: 2px solid #4da6ff; padding-left: 15px; vertical-align: middle;">
-                            <h3 style="margin: 0; font-size: 18px; color: #2a3d54; font-weight: bold;">${name}</h3>
-                            <p style="margin: 4px 0; font-size: 14px; color: #666;">${tagline}</p>
-                            <p style="margin: 8px 0 0 0;">
-                                <a href="${cardUrl}" style="background-color: #4da6ff; color: #ffffff; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; display: inline-block;">${i18n.viewBusinessCard}</a>
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        `;
+        const phone = dynamic.phones && dynamic.phones[0] ? dynamic.phones[0].value : '';
+        const email = staticSocial.email ? staticSocial.email.value : '';
+        const whatsapp = staticSocial.whatsapp ? staticSocial.whatsapp.value.replace(/\D/g, '') : '';
+        const website = staticSocial.website ? staticSocial.website.value : '';
+        const linkedin = staticSocial.linkedin ? staticSocial.linkedin.value : '';
 
-        const blob = new Blob([signatureHTML], { type: "text/html" });
-        const clipboardItem = new ClipboardItem({ "text/html": blob });
+        const avatarUrl = photoUrl || logoUrl;
+        const avatarShape = photoUrl ? '50%' : '8px';
+        const avatarSize = '72';
+
+        const avatarHtml = avatarUrl
+            ? `<img src="${avatarUrl}" width="${avatarSize}" height="${avatarSize}" style="width:${avatarSize}px;height:${avatarSize}px;border-radius:${avatarShape};object-fit:cover;display:block;" alt="${name}">`
+            : `<div style="width:${avatarSize}px;height:${avatarSize}px;border-radius:${avatarShape};background:linear-gradient(135deg,#4da6ff,#6f42c1);display:flex;align-items:center;justify-content:center;color:white;font-size:28px;font-weight:700;">${name.charAt(0).toUpperCase()}</div>`;
+
+        const socialLinks = [
+            phone    ? `<a href="tel:${phone}"    style="${socialLinkStyle('#2ecc71')}"><i>&#9990;</i> ${phone}</a>`    : '',
+            email    ? `<a href="mailto:${email}" style="${socialLinkStyle('#e74c3c')}"><i>&#9993;</i> ${email}</a>`    : '',
+            whatsapp ? `<a href="https://wa.me/${whatsapp}" style="${socialLinkStyle('#25d366')}">WhatsApp</a>`         : '',
+            website  ? `<a href="${website.startsWith('http') ? website : 'https://' + website}" style="${socialLinkStyle('#4da6ff')}"><i>&#127760;</i> ${website.replace(/^https?:\/\//, '')}</a>` : '',
+            linkedin ? `<a href="https://linkedin.com/in/${linkedin}" style="${socialLinkStyle('#0077b5')}">LinkedIn</a>` : '',
+        ].filter(Boolean).join('\n                    ');
+
+        const signatureHTML = `
+<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1e2d40;max-width:500px;">
+  <tr>
+    <td style="padding:0 18px 0 0;vertical-align:middle;">
+      ${avatarHtml}
+    </td>
+    <td style="border-left:3px solid #4da6ff;padding-left:18px;vertical-align:middle;">
+      <div style="font-size:18px;font-weight:700;color:#1e2d40;margin:0 0 2px;">${name}</div>
+      ${tagline ? `<div style="font-size:12px;color:#5a6a7a;margin:0 0 10px;">${tagline}</div>` : ''}
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+                    ${socialLinks}
+      </div>
+      <a href="${cardUrl}" style="display:inline-block;background:linear-gradient(135deg,#4da6ff,#6f42c1);color:#fff;text-decoration:none;padding:7px 16px;border-radius:50px;font-size:11px;font-weight:700;letter-spacing:0.04em;">&#127149; عرض البطاقة</a>
+    </td>
+  </tr>
+</table>`;
+
+        const blob = new Blob([signatureHTML], { type: 'text/html' });
+        const clipboardItem = new ClipboardItem({ 'text/html': blob });
 
         navigator.clipboard.write([clipboardItem]).then(() => {
-            alert(i18n.signatureCopied);
+            showToast(i18n.signatureCopied || '\u062aم نسخ التوقيع بنجاح ✨', 'success');
             trackClick('save_email_signature');
         }).catch(err => {
-            console.error("Copy failed:", err);
-            alert(i18n.copyFailed);
+            console.error('Copy failed:', err);
+            showToast(i18n.copyFailed || '\u0641شل النسخ', 'error');
         });
     };
+
+    const socialLinkStyle = (color) =>
+        `display:inline-block;font-size:11px;color:${color};text-decoration:none;border:1px solid ${color}33;padding:3px 8px;border-radius:50px;`;
 
     // --- VCARD GENERATION ---
     const getVCardString = () => {
@@ -340,8 +403,19 @@ document.addEventListener('DOMContentLoaded', () => {
             a.rel = 'noopener noreferrer';
             a.innerHTML = `<i class="${platform.icon}"></i><span>${displayValue}</span>`;
 
-            // *** إضافة حدث التتبع ***
-            a.addEventListener('click', () => trackClick(key));
+            // Toast on click for phone/email
+            if (key === 'email' || key === 'whatsapp') {
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navigator.clipboard.writeText(linkData && linkData.value ? linkData.value : value)
+                        .then(() => showToast('تم النسخ 📋', 'info', 2000))
+                        .catch(() => {});
+                    setTimeout(() => window.open(a.href, '_blank'), 300);
+                    trackClick(key);
+                });
+            } else {
+                a.addEventListener('click', () => trackClick(key));
+            }
 
             return a;
         };
@@ -886,6 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             renderContactLinks(data);
 
+            setProgress(20);
             const inputs = data.inputs || {};
             const name = inputs['input-name'] || '';
             const tagline = inputs['input-tagline'] || '';
@@ -936,18 +1011,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const renderWrapper = document.querySelector('.visually-hidden');
                 if (renderWrapper) renderWrapper.remove();
+                setProgress(50);
 
             } else {
                 console.log("Building card for capture...");
+                setProgress(60);
                 await buildCardForRender(data);
                 console.log("Capturing card images...");
+                setProgress(80);
                 await captureAndDisplayCards();
             }
 
+            setProgress(95);
             addSaveButtonListeners();
 
+            setProgress(100);
             if (loader) loader.style.display = 'none';
-            if (viewerContainer) viewerContainer.style.display = 'block';
+            if (viewerContainer) {
+                viewerContainer.style.opacity = '0';
+                viewerContainer.style.display = 'block';
+                requestAnimationFrame(() => {
+                    viewerContainer.style.transition = 'opacity 0.45s ease';
+                    viewerContainer.style.opacity = '1';
+                });
+            }
 
         } catch (error) {
             showLoadingError(error.message || i18n.errorProcessingCard);
@@ -966,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', () => {
             saveVcfBtn.onclick = () => {
                 try {
                     const vcfData = getVCardString();
-                    if (!vcfData || vcfData.length < 20) { alert(i18n.noContactData); return; }
+                    if (!vcfData || vcfData.length < 20) { showToast(i18n.noContactData || 'لا توجد بيانات اتصال', 'error'); return; }
                     const blob = new Blob([vcfData], { type: 'text/vcard;charset=utf-8' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
@@ -977,14 +1064,103 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.click();
                     document.body.removeChild(link);
                     URL.revokeObjectURL(url);
-                    trackClick('save_vcf'); // تتبع
-                } catch (e) { alert(i18n.contactFilePrepError); }
+                    showToast('تم تحميل جهة الاتصال ✅', 'success');
+                    trackClick('save_vcf');
+                } catch (e) { showToast(i18n.contactFilePrepError || 'خطأ في تجهيز الملف', 'error'); }
             };
         }
 
         // *** حدث زر توقيع الإيميل ***
         if (saveEmailSigBtn) {
             saveEmailSigBtn.onclick = generateEmailSignature;
+        }
+
+        // *** [NEW] QR Code Modal ***
+        const showQrBtn = document.getElementById('show-qr-btn');
+        const qrOverlay = document.getElementById('qr-modal-overlay');
+        const qrClose = document.getElementById('qr-modal-close');
+        const qrWrapper = document.getElementById('qr-modal-image-wrapper');
+
+        if (showQrBtn && qrOverlay) {
+            showQrBtn.addEventListener('click', () => {
+                qrOverlay.classList.add('show');
+                if (qrWrapper.querySelector('img')) return; // already generated
+
+                const cardUrl = window.location.href;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(cardUrl)}&format=png&qzone=1&color=1e2d40&bgcolor=ffffff`;
+
+                const img = document.createElement('img');
+                img.alt = 'QR Code';
+                img.style.display = 'none';
+                img.onload = () => {
+                    const spinner = document.getElementById('qr-spinner');
+                    if (spinner) spinner.remove();
+                    img.style.display = 'block';
+                    trackClick('show_qr');
+                };
+                img.onerror = () => {
+                    const spinner = document.getElementById('qr-spinner');
+                    if (spinner) spinner.innerHTML = '<span style="font-size:12px;color:#e74c3c">\u062a\u0639\u0630\u0631 \u062a\u062d\u0645\u064a\u0644 QR</span>';
+                };
+                img.src = qrApiUrl;
+                qrWrapper.appendChild(img);
+            });
+
+            const closeModal = () => qrOverlay.classList.remove('show');
+            if (qrClose) qrClose.addEventListener('click', closeModal);
+            qrOverlay.addEventListener('click', (e) => { if (e.target === qrOverlay) closeModal(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+        }
+
+        // *** [NEW] Web Share API ***
+        const webShareBtn = document.getElementById('web-share-btn');
+        if (webShareBtn) {
+            const shareData = {
+                title: (cardData && cardData.inputs && cardData.inputs['input-name']) ? cardData.inputs['input-name'] : 'بطاقة أعمال رقمية',
+                text: 'شاهد بطاقتي الرقمية الذكية',
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                webShareBtn.addEventListener('click', async () => {
+                    try {
+                        await navigator.share(shareData);
+                        trackClick('web_share');
+                    } catch (e) {
+                        if (e.name !== 'AbortError') showToast('فشلت المشاركة', 'error');
+                    }
+                });
+            } else {
+                // Fallback: copy link
+                webShareBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(window.location.href)
+                        .then(() => { showToast('تم نسخ الرابط 🔗', 'info'); trackClick('share_fallback'); })
+                        .catch(() => showToast('فشل نسخ الرابط', 'error'));
+                });
+            }
+        }
+
+        // *** [NEW] Copy Link Button ***
+        const copyLinkBtn = document.getElementById('copy-link-btn');
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(window.location.href)
+                    .then(() => {
+                        // Animated success state
+                        const origHTML = copyLinkBtn.innerHTML;
+                        copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> تم النسخ';
+                        copyLinkBtn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+                        copyLinkBtn.style.color = 'white';
+                        showToast('تم نسخ رابط البطاقة 🔗', 'success', 2500);
+                        trackClick('copy_link');
+                        setTimeout(() => {
+                            copyLinkBtn.innerHTML = origHTML;
+                            copyLinkBtn.style.background = '';
+                            copyLinkBtn.style.color = '';
+                        }, 2200);
+                    })
+                    .catch(() => showToast('فشل نسخ الرابط', 'error'));
+            });
         }
 
         const downloadCapturedImage = (cardFace) => {
@@ -1002,9 +1178,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    trackClick(`save_${cardFace}_png`); // تتبع
-                } catch (e) { alert(i18n.imagePreparationError); }
-            } else { alert(i18n.cardImageNotFound); }
+                    showToast('تم حفظ الصورة ✅', 'success');
+                    trackClick(`save_${cardFace}_png`);
+                } catch (e) { showToast(i18n.imagePreparationError || 'خطأ في تجهيز الصورة', 'error'); }
+            } else { showToast(i18n.cardImageNotFound || 'الصورة غير متاحة', 'error'); }
         };
 
         if (saveFrontPngBtn) saveFrontPngBtn.onclick = () => downloadCapturedImage('front');

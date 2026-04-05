@@ -96,6 +96,9 @@
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
+    <!-- [NEW] Top Progress Bar -->
+    <div id="page-progress-bar"></div>
+
     <nav class="viewer-nav" aria-label="القائمة الرئيسية للعارض">
         <a href="index.html" class="nav-logo" title="العودة إلى الرئيسية">
             <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME Logo"
@@ -134,7 +137,7 @@
 
         <div class="viewer-layout">
 
-            <aside class="side-column active" id="left-column">
+            <aside class="side-column active anim-entry" id="left-column">
 
                 <div class="profile-header" id="profile-header"
                     style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; display: none;">
@@ -157,7 +160,7 @@
                 </div>
             </aside>
 
-            <main class="center-column">
+            <main class="center-column anim-entry">
                 <div class="cards-wrapper-viewer" id="cards-wrapper-viewer" title="انقر لتقليب البطاقة">
                     <div class="business-card-viewer" id="card-front-display">
                     </div>
@@ -170,10 +173,26 @@
                 </button>
             </main>
 
-            <aside class="side-column save-options" id="right-column">
+            <aside class="side-column save-options anim-entry" id="right-column">
                 <h2><i class="fas fa-download"></i> حفظ ومشاركة</h2>
 
                 <!-- Buttons moved to profile header -->
+
+                <!-- [NEW] Web Share + Copy Link -->
+                <div style="display:flex; gap: 8px; margin-bottom: 12px;">
+                    <button id="web-share-btn" class="btn" style="flex:1; background: linear-gradient(135deg, #4da6ff, #6f42c1);">
+                        <i class="fas fa-share-alt"></i> مشاركة
+                    </button>
+                    <button id="copy-link-btn" class="btn btn-secondary" style="flex:1;" title="نسخ رابط البطاقة">
+                        <i class="fas fa-link"></i> نسخ الرابط
+                    </button>
+                </div>
+
+                <!-- [NEW] QR Code Share Button -->
+                <button id="show-qr-btn" class="btn">
+                    <i class="fas fa-qrcode"></i>
+                    مشاركة رمز QR
+                </button>
 
                 <details class="fieldset-accordion">
                     <summary class="secondary-actions-summary">
@@ -250,6 +269,26 @@
         </div>
     </div>
 
+    <!-- [NEW] QR Modal -->
+    <div class="qr-modal-overlay" id="qr-modal-overlay">
+        <div class="qr-modal">
+            <div class="qr-modal-title">
+                <i class="fas fa-qrcode"></i>
+                <span>مشاركة البطاقة</span>
+            </div>
+            <p class="qr-modal-subtitle">صوِّب هذا الرمز بهاتفك لعرض هذه البطاقة</p>
+            <div class="qr-modal-image-wrapper" id="qr-modal-image-wrapper">
+                <div class="qr-spinner" id="qr-spinner"></div>
+            </div>
+            <button class="qr-modal-close" id="qr-modal-close">
+                <i class="fas fa-times"></i> إغلاق
+            </button>
+        </div>
+    </div>
+
+    <!-- [NEW] Toast Container -->
+    <div id="toast-container"></div>
+
     <div class="visually-hidden">
         <div class="business-card-render-wrapper" id="front-card">
         </div>
@@ -263,6 +302,8 @@
 
     <script src="/nfc/auth.js?v=2"></script>
     <script src="viewer.js" defer></script>
+    <!-- [NEW v2.0] Premium Enhancements -->
+    <script src="viewer-premium.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
@@ -373,3 +414,10 @@
 </body>
 
 </html>
+    <!-- [NEW v2.0] Keyboard shortcut hint -->
+    <div id="shortcuts-hint" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'?',bubbles:true}))">
+        <i class="fas fa-keyboard"></i> اختصارات <kbd>?</kbd>
+    </div>
+
+    <!-- [NEW v2.0] Premium Viewer Enhancements -->
+    <script src="viewer-premium.js"></script>

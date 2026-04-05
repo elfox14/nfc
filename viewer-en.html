@@ -14,16 +14,18 @@
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
     <!-- End Google Tag Manager -->
-    <title>View Card</title>
+    <title>View Card | MC PRIME</title>
+    <meta name="description" content="View this smart digital business card powered by MC PRIME NFC.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Poppins:wght@400;700&family=Tajawal:wght@400;700&family=Lalezar&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&family=Lalezar&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <link rel="stylesheet" href="viewer.css">
+    <link rel="manifest" href="manifest.json">
     <script src="lang-switcher.js" defer></script>
 
     <meta name="color-scheme" content="light dark">
@@ -38,7 +40,10 @@
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
-    <nav class="viewer-nav">
+    <!-- [NEW] Top Progress Bar -->
+    <div id="page-progress-bar"></div>
+
+    <nav class="viewer-nav" aria-label="Main navigation">
         <a href="index-en.html" class="nav-logo" title="Back to Home">
             <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME Logo"
                 style="height: 32px; width: auto;">
@@ -77,14 +82,14 @@
 
         <div class="viewer-layout">
 
-            <aside class="side-column active" id="left-column">
+            <aside class="side-column active anim-entry" id="left-column">
 
                 <div class="profile-header" id="profile-header"
                     style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; display: none;">
                     <div id="profile-image-container" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
                     <h1 id="profile-name" style="font-size: 1.5rem; margin: 0; color: var(--text-primary);"></h1>
                     <p id="profile-tagline" style="font-size: 1rem; color: var(--text-secondary); margin: 5px 0 0 0;"></p>
-                    
+
                     <div class="profile-actions" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
                         <button id="save-vcf-btn" class="btn btn-primary" style="width: 100%;">
                             <i class="fas fa-user-plus"></i> Save Contact (VCF)
@@ -100,7 +105,7 @@
                 </div>
             </aside>
 
-            <main class="center-column">
+            <main class="center-column anim-entry">
                 <div class="cards-wrapper-viewer" id="cards-wrapper-viewer" title="Click to flip the card">
                     <div class="business-card-viewer" id="card-front-display">
                     </div>
@@ -113,10 +118,24 @@
                 </button>
             </main>
 
-            <aside class="side-column save-options" id="right-column">
-                <h2><i class="fas fa-download"></i> Save & Share</h2>
+            <aside class="side-column save-options anim-entry" id="right-column">
+                <h2><i class="fas fa-download"></i> Save &amp; Share</h2>
 
-                <!-- Buttons moved to profile header -->
+                <!-- [NEW] Web Share + Copy Link -->
+                <div style="display:flex; gap: 8px; margin-bottom: 12px;">
+                    <button id="web-share-btn" class="btn" style="flex:1; background: linear-gradient(135deg, #4da6ff, #6f42c1);">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                    <button id="copy-link-btn" class="btn btn-secondary" style="flex:1;" title="Copy card link">
+                        <i class="fas fa-link"></i> Copy Link
+                    </button>
+                </div>
+
+                <!-- [NEW] QR Code Share Button -->
+                <button id="show-qr-btn" class="btn">
+                    <i class="fas fa-qrcode"></i>
+                    Share QR Code
+                </button>
 
                 <details class="fieldset-accordion">
                     <summary class="secondary-actions-summary">
@@ -172,6 +191,7 @@
                         <li><i class="fas fa-edit c-blue"></i> Edit anytime</li>
                         <li><i class="fas fa-chart-line c-yellow"></i> Track your card visits</li>
                     </ul>
+
                 </div>
 
                 <a href="editor-en.html" class="btn btn-secondary"
@@ -185,12 +205,34 @@
                     <i class="fas fa-address-book"></i> Contact Info
                 </button>
                 <button class="mobile-tab-btn" data-tab-target="#right-column">
-                    <i class="fas fa-download"></i> Save & Share
+                    <i class="fas fa-download"></i> Save &amp; Share
                 </button>
             </nav>
 
         </div>
     </div>
+
+    <!-- [NEW] QR Modal -->
+    <div class="qr-modal-overlay" id="qr-modal-overlay">
+        <div class="qr-modal">
+            <div class="qr-modal-title">
+                <i class="fas fa-qrcode"></i>
+                <span>Share via QR Code</span>
+            </div>
+            <p class="qr-modal-subtitle">Scan to open this card on any device</p>
+            <div id="qr-modal-image-wrapper">
+                <div id="qr-spinner" style="padding:20px;text-align:center;">
+                    <i class="fas fa-circle-notch fa-spin" style="font-size:2rem;color:var(--accent-primary);"></i>
+                </div>
+            </div>
+            <button class="qr-modal-close" id="qr-modal-close">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+
+    <!-- [NEW] Toast Container -->
+    <div id="toast-container" aria-live="polite"></div>
 
     <div class="visually-hidden">
         <div class="business-card-render-wrapper" id="front-card">
@@ -204,7 +246,10 @@
     </script>
 
     <script src="/nfc/auth.js?v=2"></script>
+    <!-- viewer.js with English locale override -->
     <script src="viewer.js"></script>
+    <!-- [NEW v2.0] Premium Enhancements -->
+    <script src="viewer-premium.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
@@ -237,7 +282,6 @@
                     return;
                 }
 
-                // 1. Assign Click Handler IMMEDIATELY
                 btn.onclick = async () => {
                     const originalText = btnText.textContent;
                     const originalIconClass = btn.querySelector('i').className;
@@ -284,7 +328,6 @@
                     }
                 };
 
-                // 2. Then check if already saved (Non-blocking)
                 try {
                     const checkRes = await Auth.apiFetchWithRefresh(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
                     if (checkRes.ok) {
@@ -304,6 +347,11 @@
             }
         });
     </script>
+
+    <!-- [NEW v2.0] Keyboard shortcut hint -->
+    <div id="shortcuts-hint" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'?',bubbles:true}))">
+        <i class="fas fa-keyboard"></i> Shortcuts <kbd>?</kbd>
+    </div>
 
 </body>
 

@@ -20,10 +20,197 @@
         initTrialBanner();
         initMoreMenu();
         initAutoSaveIndicator();
+        initBeforeAfter();
 
         init3DPreview();
         initThemeToggle();
         initElementSelection(); // New: Allow selecting elements for keyboard control
+    }
+
+    // ===========================================
+    // BEFORE / AFTER COMPARISON TOGGLE
+    // ===========================================
+    function initBeforeAfter() {
+        // Wait for toolbar to be ready
+        setTimeout(() => {
+            const toolbar = document.querySelector('.editor-toolbar, .top-toolbar, #editor-toolbar, .toolbar-container');
+            if (!toolbar) return; // Silently skip if toolbar not available
+
+            const btn = document.createElement('button');
+            btn.id = 'before-after-btn';
+            btn.className = 'toolbar-btn';
+            btn.title = 'مقارنة قبل / بعد (B)';
+            btn.innerHTML = '<i class="fas fa-columns"></i>';
+            btn.setAttribute('aria-label', 'مقارنة قبل/بعد');
+            toolbar.appendChild(btn);
+
+            let isComparing = false;
+            let savedState = null;
+
+            btn.addEventListener('click', () => {
+                if (!isComparing) {
+                    // Save current state and show default
+                    if (typeof StateManager !== 'undefined') {
+                        savedState = StateManager.getStateObject ? StateManager.getStateObject() : null;
+                        if (savedState && typeof StateManager.applyState === 'function' && typeof Config !== 'undefined') {
+                            StateManager.applyState(Config.defaultState, false);
+                            isComparing = true;
+                            btn.innerHTML = '<i class="fas fa-eye"></i>';
+                            btn.style.background = 'rgba(231,76,60,0.2)';
+                            btn.style.borderColor = '#e74c3c';
+                            btn.title = 'العودة للتصميم الحالي';
+                            showBeforeAfterToast('يعرض الآن: التصميم الافتراضي', '#e74c3c');
+                        }
+                    }
+                } else {
+                    // Restore saved state
+                    if (savedState && typeof StateManager !== 'undefined' && typeof StateManager.applyState === 'function') {
+                        StateManager.applyState(savedState, false);
+                    }
+                    isComparing = false;
+                    savedState = null;
+                    btn.innerHTML = '<i class="fas fa-columns"></i>';
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.title = 'مقارنة قبل / بعد (B)';
+                    showBeforeAfterToast('يعرض الآن: تصميمك الحالي', '#2ecc71');
+                }
+            });
+
+            // Keyboard shortcut: B key
+            document.addEventListener('keydown', (e) => {
+                const tag = document.activeElement.tagName;
+                if (e.key.toLowerCase() === 'b' && !e.ctrlKey && !e.metaKey && !['INPUT','TEXTAREA','SELECT'].includes(tag)) {
+                    btn.click();
+                }
+            });
+        }, 1500);
+    }
+
+    function showBeforeAfterToast(msg, color) {
+        const t = document.createElement('div');
+        Object.assign(t.style, {
+            position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%) translateY(-20px)',
+            background: 'rgba(15,25,38,0.95)', backdropFilter: 'blur(16px)',
+            border: `1px solid ${color}55`, borderRadius: '50px',
+            padding: '10px 24px', color: color, fontWeight: '700', fontSize: '0.88rem',
+            zIndex: '9999', display: 'flex', alignItems: 'center', gap: '8px',
+            boxShadow: `0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px ${color}33`,
+            transition: 'all 0.35s cubic-bezier(0.34,1.56,0.64,1)',
+            opacity: '0', fontFamily: 'Tajawal, sans-serif'
+        });
+        t.innerHTML = `<i class="fas fa-columns"></i> ${msg}`;
+        document.body.appendChild(t);
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                t.style.opacity = '1';
+                t.style.transform = 'translateX(-50%) translateY(0)';
+            });
+        });
+        setTimeout(() => {
+            t.style.opacity = '0';
+            t.style.transform = 'translateX(-50%) translateY(-20px)';
+            setTimeout(() => t.remove(), 350);
+        }, 3000);
+    }
+
+    // ===========================================
+    // AUTO-SAVE TO LOCALSTORAGE
+    // ===========================================
+    function initAutoSave() {
+        // Auto-save every 30 seconds if StateManager is available
+        setInterval(() => {
+            try {
+                if (typeof StateManager !== 'undefined' && typeof StateManager.save === 'function') {
+                    StateManager.save();
+                    window.updateAutoSaveIndicator && window.updateAutoSaveIndicator('saved');
+                }
+            } catch (e) { /* silent */ }
+        }, 30000);
+
+        // Save on page hide (tab switch / close)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                try {
+                    if (typeof StateManager !== 'undefined') StateManager.save();
+                } catch (e) { /* silent */ }
+            }
+        });
+    }
+
+    // ===========================================
+    // AUTO-SAVE INDICATOR BADGE
+    // ===========================================
+    function initAutoSaveIndicator() {
+        // Create the floating indicator
+        const indicator = document.createElement('div');
+        indicator.id = 'auto-save-indicator';
+        indicator.innerHTML = '<i class="fas fa-check-circle"></i> <span id="auto-save-text">تم الحفظ</span>';
+        Object.assign(indicator.style, {
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            padding: '8px 16px',
+            borderRadius: '50px',
+            background: 'rgba(20, 30, 45, 0.9)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(46, 204, 113, 0.35)',
+            color: '#2ecc71',
+            fontSize: '0.82rem',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            zIndex: '9990',
+            opacity: '0',
+            transform: 'translateY(10px)',
+            transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            pointerEvents: 'none',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+        });
+        document.body.appendChild(indicator);
+
+        let hideTimer = null;
+
+        window.updateAutoSaveIndicator = (state) => {
+            const textEl = document.getElementById('auto-save-text');
+            if (!textEl) return;
+
+            clearTimeout(hideTimer);
+
+            if (state === 'saving') {
+                indicator.style.borderColor = 'rgba(77, 166, 255, 0.4)';
+                indicator.style.color = '#4da6ff';
+                indicator.querySelector('i').className = 'fas fa-circle-notch fa-spin';
+                textEl.textContent = 'جاري الحفظ...';
+            } else {
+                indicator.style.borderColor = 'rgba(46, 204, 113, 0.35)';
+                indicator.style.color = '#2ecc71';
+                indicator.querySelector('i').className = 'fas fa-check-circle';
+                textEl.textContent = 'تم الحفظ';
+            }
+
+            // Show
+            indicator.style.opacity = '1';
+            indicator.style.transform = 'translateY(0)';
+
+            // Auto-hide after 3s (only when saved)
+            if (state !== 'saving') {
+                hideTimer = setTimeout(() => {
+                    indicator.style.opacity = '0';
+                    indicator.style.transform = 'translateY(10px)';
+                }, 3000);
+            }
+        };
+
+        // Trigger on any input change
+        document.addEventListener('input', () => {
+            window.updateAutoSaveIndicator && window.updateAutoSaveIndicator('saving');
+            clearTimeout(window._autoSaveDebounce);
+            window._autoSaveDebounce = setTimeout(() => {
+                window.updateAutoSaveIndicator && window.updateAutoSaveIndicator('saved');
+            }, 1500);
+        }, { passive: true });
     }
 
     // ===========================================
