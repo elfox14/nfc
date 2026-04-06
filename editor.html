@@ -118,118 +118,157 @@
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
-    <header class="pro-toolbar">
-        <div class="toolbar-group toolbar-start">
-            <a href="index.html"
-                style="color: var(--text-primary); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px;"
-                title="العودة إلى الرئيسية">
-                <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME Logo"
-                    style="height: 32px; width: auto;">
-                <span class="toolbar-title-desktop" style="font-size: 0.9rem;">MC PRIME</span>
+    <header class="pro-toolbar" id="pro-toolbar">
+
+        <!-- ═══ ZONE 1: LEFT — Brand + History ═══ -->
+        <div class="tb-zone tb-left">
+
+            <!-- Logo -->
+            <a href="index.html" class="tb-logo" title="العودة إلى الرئيسية">
+                <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME Logo" style="height:30px;width:auto;">
+                <span class="tb-logo-text">MC PRIME</span>
             </a>
 
-            <!-- روابط التنقل -->
-            <nav class="toolbar-nav"
-                style="display: flex; gap: 5px; margin-right: 15px; padding-right: 15px; border-right: 1px solid rgba(77,166,255,0.2);">
-                <a href="index.html" class="btn-icon" title="الرئيسية" style="font-size: 12px;"><i
-                        class="fas fa-home"></i></a>
-                <a href="gallery.html" class="btn-icon" title="المعرض" style="font-size: 12px;"><i
-                        class="fas fa-images"></i></a>
-                <a href="blog.html" class="btn-icon" title="المدونة" style="font-size: 12px;"><i
-                        class="fas fa-blog"></i></a>
+            <!-- Divider -->
+            <div class="tb-divider"></div>
+
+            <!-- Nav Icons -->
+            <nav class="tb-nav-icons" aria-label="التنقل">
+                <a href="index.html" class="tb-icon-btn" title="الرئيسية">
+                    <i class="fas fa-home"></i>
+                </a>
+                <a href="gallery.html" class="tb-icon-btn" title="المعرض">
+                    <i class="fas fa-images"></i>
+                </a>
+                <a href="blog.html" class="tb-icon-btn" title="المدونة">
+                    <i class="fas fa-newspaper"></i>
+                </a>
             </nav>
-            <!-- Promoted Editor Guide Button -->
-            <a href="how-to-use-editor.html" class="btn btn-primary editor-guide-promoted" id="editor-guide-btn-mobile"
-                style="padding: 6px 14px; font-size: 12px; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); border: none; margin: 0;">
-                <i class="fas fa-book-open"></i> <span>شرح المحرر</span>
-            </a>
 
-            <div class="undo-redo-container">
-                <button id="redo-btn" class="btn-icon btn-compact" title="إعادة (Ctrl+Y)" aria-label="إعادة" disabled><i
-                        class="fas fa-redo"></i></button>
-                <button id="undo-btn" class="btn-icon btn-compact" title="تراجع (Ctrl+Z)" aria-label="تراجع" disabled><i
-                        class="fas fa-undo"></i></button>
-            </div>
-            <!-- NEW: Language & Preview Buttons -->
-            <button id="theme-toggle-btn" class="btn-icon btn-compact" title="تبديل المظهر (Dark/Light)"
-                aria-label="Toggle Theme"><i class="fas fa-sun"></i></button>
-            <button id="lang-toggle-btn" class="btn-icon btn-compact" title="تبديل اللغة / Toggle Language"
-                aria-label="Toggle Language" style="font-size: 11px;">EN</button>
-            <button id="preview-mode-btn" class="btn-icon btn-compact" title="وضع المعاينة"
-                aria-label="Enter Preview Mode"><i class="fas fa-eye"></i></button>
+            <div class="tb-divider"></div>
 
-            <!-- Mobile More Menu Button -->
-            <div class="toolbar-more-container">
-                <button id="toolbar-more-btn" class="btn-icon btn-compact" title="المزيد" aria-label="More Options"
-                    style="display: none;">
-                    <i class="fas fa-ellipsis-v"></i>
+            <!-- Undo / Redo -->
+            <div class="tb-history">
+                <button id="undo-btn" class="tb-icon-btn" title="تراجع (Ctrl+Z)" aria-label="تراجع" disabled>
+                    <i class="fas fa-undo"></i>
                 </button>
-
+                <button id="redo-btn" class="tb-icon-btn" title="إعادة (Ctrl+Y)" aria-label="إعادة" disabled>
+                    <i class="fas fa-redo"></i>
+                </button>
             </div>
 
         </div>
-        <div class="toolbar-group toolbar-end">
-            <!-- User Status & Login -->
-            <div class="user-status-bar" id="user-status-bar"
-                style="display: flex; align-items: center; gap: 8px; margin-left: 10px; padding: 4px 10px; background: rgba(77,166,255,0.1); border-radius: 8px;">
-                <span id="user-status-text" style="font-size: 11px; color: var(--text-secondary);">غير مسجل</span>
-                <a href="login.html" id="user-login-link" class="btn btn-secondary"
-                    style="padding: 4px 8px; font-size: 10px;">تسجيل دخول</a>
-                <a href="dashboard.html" id="user-dashboard-link" class="btn btn-secondary"
-                    style="padding: 4px 8px; font-size: 10px; display: none;">لوحة التحكم</a>
-                <button id="user-logout-btn" class="btn btn-secondary"
-                    style="padding: 4px 8px; font-size: 10px; display: none;">خروج</button>
-            </div>
 
-            <!-- Management Group -->
-            <div class="toolbar-actions-group" style="display: flex; gap: 5px; align-items: center; padding: 0 10px; border-left: 1px solid rgba(77,166,255,0.1); border-right: 1px solid rgba(77,166,255,0.1);">
-                <button id="show-gallery-btn" class="btn-icon btn-compact" title="المعرض (Ctrl+G)" aria-controls="gallery-modal-overlay">
-                    <i class="fas fa-images"></i>
-                </button>
-                <button id="start-collab-btn" class="btn-icon btn-compact" title="تحرير جماعي (Ctrl+Shift+C)">
-                    <i class="fas fa-users"></i>
-                </button>
-                <button id="save-to-gallery-btn" class="btn-icon btn-compact" title="حفظ سريع بالمعرض (Ctrl+S)">
-                    <i class="fas fa-bookmark"></i>
-                </button>
-                <button id="share-editor-btn" class="btn-icon btn-compact" title="نسخ رابط المحرر (Ctrl+Shift+L)">
-                    <i class="fas fa-link"></i>
-                </button>
-                <button id="reset-design-btn" class="btn-icon btn-compact" title="إعادة تعيين التصميم" style="color: #dc3545;">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </div>
+        <!-- ═══ ZONE 2: CENTER — Core Actions ═══ -->
+        <div class="tb-zone tb-center">
 
-            <!-- Auto-save indicator -->
-            <div id="autosave-indicator" class="autosave-indicator" title="حالة الحفظ التلقائي" style="margin: 0 10px;">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <span id="autosave-status" style="font-size: 10px;">محفوظ</span>
-            </div>
+            <!-- Preview -->
+            <button id="preview-mode-btn" class="tb-action-btn" title="وضع المعاينة (Ctrl+P)" aria-label="معاينة">
+                <i class="fas fa-eye"></i>
+                <span class="tb-label">معاينة</span>
+            </button>
 
-            <!-- Primary Actions Group -->
-            <div class="toolbar-main-actions" style="display: flex; gap: 8px; align-items: center;">
-                <div class="download-container">
-                    <button id="download-options-btn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
-                        <span>تنزيل</span><i class="fas fa-chevron-down" style="font-size: 10px; margin-right: 5px;"></i>
+            <!-- Language -->
+            <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="تبديل اللغة">
+                <i class="fas fa-language"></i>
+                <span class="tb-label">EN</span>
+            </button>
+
+            <!-- Theme -->
+            <button id="theme-toggle-btn" class="tb-icon-btn" title="تبديل المظهر (Dark/Light)" aria-label="Toggle Theme">
+                <i class="fas fa-sun"></i>
+            </button>
+
+            <div class="tb-divider"></div>
+
+            <!-- 🔧 Tools Dropdown -->
+            <div class="tb-dropdown-wrap" id="tools-dropdown-wrap">
+                <button class="tb-action-btn tb-tools-trigger" id="tools-menu-btn" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-tools"></i>
+                    <span class="tb-label">أدوات</span>
+                    <i class="fas fa-chevron-down tb-caret"></i>
+                </button>
+                <div class="tb-dropdown-menu" id="tools-dropdown-menu" role="menu">
+                    <a href="how-to-use-editor.html" class="tb-dropdown-item" target="_blank">
+                        <i class="fas fa-book-open" style="color:#10b981;"></i> شرح المحرر
+                    </a>
+                    <div class="tb-dropdown-divider"></div>
+                    <button id="show-gallery-btn" class="tb-dropdown-item" role="menuitem">
+                        <i class="fas fa-images" style="color:#4da6ff;"></i> المعرض
+                        <kbd>Ctrl+G</kbd>
                     </button>
-                    <ul id="download-menu" class="dropdown-menu">
-                        <li><button id="download-png-front"><i class="fas fa-image"></i> صورة الواجهة (PNG)</button></li>
-                        <li><button id="download-png-back"><i class="fas fa-image"></i> صورة الخلفية (PNG)</button></li>
-                        <li><button id="download-pdf"><i class="fas fa-file-pdf"></i> ملف PDF</button></li>
-                        <li><button id="download-vcf"><i class="fas fa-address-card"></i> جهة اتصال (VCF)</button></li>
-                        <li><button id="download-qrcode"><i class="fas fa-qrcode"></i> رمز QR Code</button></li>
-                    </ul>
+                    <button id="save-to-gallery-btn" class="tb-dropdown-item" role="menuitem">
+                        <i class="fas fa-bookmark" style="color:#f1c40f;"></i> حفظ في المعرض
+                    </button>
+                    <button id="start-collab-btn" class="tb-dropdown-item" role="menuitem">
+                        <i class="fas fa-users" style="color:#a855f7;"></i> تحرير جماعي
+                    </button>
+                    <button id="share-editor-btn" class="tb-dropdown-item" role="menuitem">
+                        <i class="fas fa-link" style="color:#2ecc71;"></i> نسخ رابط المحرر
+                    </button>
+                    <div class="tb-dropdown-divider"></div>
+                    <button id="reset-design-btn" class="tb-dropdown-item tb-danger" role="menuitem">
+                        <i class="fas fa-trash-alt"></i> إعادة تعيين التصميم
+                    </button>
                 </div>
-                
-                <button id="save-share-btn" class="btn btn-primary" style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 6px 16px; font-size: 13px; font-weight: 600;">
-                    <span id="save-btn-text">حفظ و مشاركة</span>
-                    <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>
+            </div>
+
+        </div>
+
+
+        <!-- ═══ ZONE 3: RIGHT — Status + Save ═══ -->
+        <div class="tb-zone tb-right">
+
+            <!-- User Status -->
+            <div class="user-status-bar" id="user-status-bar">
+                <span id="user-status-text" class="tb-user-text">غير مسجل</span>
+                <a href="login.html" id="user-login-link" class="tb-pill-btn">تسجيل الدخول</a>
+                <a href="dashboard.html" id="user-dashboard-link" class="tb-pill-btn" style="display:none;">لوحة التحكم</a>
+                <button id="user-logout-btn" class="tb-pill-btn" style="display:none;">خروج</button>
+            </div>
+
+            <div class="tb-divider"></div>
+
+            <!-- Auto-save Indicator -->
+            <div id="autosave-indicator" class="tb-autosave autosave-indicator" title="حالة الحفظ التلقائي">
+                <i class="fas fa-cloud-check"></i>
+                <span id="autosave-status">محفوظ</span>
+            </div>
+
+            <!-- Download dropdown -->
+            <div class="download-container tb-dropdown-wrap">
+                <button id="download-options-btn" class="tb-action-btn">
+                    <i class="fas fa-download"></i>
+                    <span class="tb-label">تنزيل</span>
+                    <i class="fas fa-chevron-down tb-caret"></i>
+                </button>
+                <ul id="download-menu" class="dropdown-menu tb-dropdown-menu" style="min-width:210px;">
+                    <li><button id="download-png-front"><i class="fas fa-image"></i> صورة الواجهة (PNG)</button></li>
+                    <li><button id="download-png-back"><i class="fas fa-image"></i> صورة الخلفية (PNG)</button></li>
+                    <li><button id="download-pdf"><i class="fas fa-file-pdf"></i> ملف PDF</button></li>
+                    <li><button id="download-vcf"><i class="fas fa-address-card"></i> جهة اتصال (VCF)</button></li>
+                    <li><button id="download-qrcode"><i class="fas fa-qrcode"></i> رمز QR Code</button></li>
+                </ul>
+            </div>
+
+            <!-- PRIMARY CTA -->
+            <button id="save-share-btn" class="tb-cta-btn">
+                <i class="fas fa-paper-plane"></i>
+                <span id="save-btn-text">حفظ ومشاركة</span>
+            </button>
+
+            <!-- Mobile More -->
+            <div class="toolbar-more-container">
+                <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="المزيد" aria-label="More Options">
+                    <i class="fas fa-ellipsis-v"></i>
                 </button>
             </div>
+
         </div>
     </header>
 
     <div class="pro-layout">
+
 
         <aside class="pro-sidebar pro-sidebar-left" id="panel-design">
 
@@ -1842,8 +1881,47 @@
     </div>
 
     <!-- [NEW] Editor Premium Enhancements -->
+    <script src="toolbar-tab-nav.js"></script>
     <script src="editor-premium.js" defer></script>
 <script src="editor-premium-v2.js" defer></script>
+
+<!-- Toolbar 3-Zone: Tools dropdown toggle -->
+<script>
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        var toolsBtn = document.getElementById('tools-menu-btn');
+        var toolsMenu = document.getElementById('tools-dropdown-menu');
+        var toolsWrap = document.getElementById('tools-dropdown-wrap');
+        if (!toolsBtn || !toolsMenu) return;
+
+        var open = false;
+        function toggle(state) {
+            open = (state !== undefined) ? state : !open;
+            toolsWrap.classList.toggle('open', open);
+            toolsBtn.setAttribute('aria-expanded', open);
+        }
+
+        toolsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggle();
+        });
+
+        document.addEventListener('click', function(e) {
+            if (open && !toolsWrap.contains(e.target)) toggle(false);
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && open) toggle(false);
+        });
+
+        // Close menu when an item is clicked
+        toolsMenu.querySelectorAll('.tb-dropdown-item').forEach(function(item) {
+            item.addEventListener('click', function() { toggle(false); });
+        });
+    });
+})();
+</script>
 </body>
+
 
 </html>

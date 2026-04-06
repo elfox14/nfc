@@ -3,11 +3,91 @@
    ================================================ */
 
 /* ================================================
-   Compact Toolbar - Icons Only
+   TAB PILL NAV — HIGH PRIORITY OVERRIDES
    ================================================ */
-.pro-toolbar .btn span,
-.pro-toolbar .toolbar-group button span {
+#tb-pill-nav {
+    display: flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 50px !important;
+    padding: 4px !important;
+    flex-shrink: 0 !important;
+    margin: 0 4px !important;
+}
+
+.tb-tab {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 15px !important;
+    border-radius: 50px !important;
+    border: none !important;
+    background: transparent !important;
+    color: rgba(255,255,255,0.5) !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.22s !important;
+    font-family: inherit !important;
+    white-space: nowrap !important;
+    min-width: auto !important;
+    height: auto !important;
+    box-shadow: none !important;
+    transform: none !important;
+    text-decoration: none !important;
+}
+
+.tb-tab:hover {
+    color: #fff !important;
+    background: rgba(255,255,255,0.08) !important;
+    transform: none !important;
+}
+
+.tb-tab i {
+    font-size: 12px !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+}
+
+.tb-tab span {
+    display: inline !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+}
+
+/* Active states */
+.active-design {
+    background: linear-gradient(135deg, #1a6bff, #4da6ff) !important;
+    color: #fff !important;
+    box-shadow: 0 3px 12px rgba(77,166,255,0.4) !important;
+}
+.active-content {
+    background: linear-gradient(135deg, #16a34a, #2ecc71) !important;
+    color: #fff !important;
+    box-shadow: 0 3px 12px rgba(46,204,113,0.4) !important;
+}
+.active-settings {
+    background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
+    color: #fff !important;
+    box-shadow: 0 3px 12px rgba(168,85,247,0.4) !important;
+}
+
+
+/* OLD: hide spans in old toolbar buttons — now only applies to old-style buttons */
+.pro-toolbar .btn span:not(.tb-label),
+.pro-toolbar .toolbar-group button span:not(.tb-label) {
     display: none !important;
+}
+
+/* NEW: always show tab labels and action button labels */
+.tb-tab .tb-label,
+.tb-action-btn .tb-label,
+.tb-cta-btn span {
+    display: inline !important;
 }
 
 .pro-toolbar .btn,
@@ -32,6 +112,10 @@
 .pro-toolbar .toolbar-group button i {
     margin: 0 !important;
     font-size: 16px;
+}
+/* Don't override new tb- button icons */
+.tb-tab i, .tb-action-btn i, .tb-icon-btn i, .tb-cta-btn i {
+    margin: 0 !important;
 }
 
 /* Keep user status text visible */
@@ -620,4 +704,295 @@
 [dir="rtl"] .toolbar-more-menu {
     left: auto;
     right: 0;
+}
+
+/* ============================================================
+   NEW TOOLBAR REDESIGN — 3-Zone Layout
+   ============================================================ */
+
+/* Reset old conflicting rules for new classes */
+.tb-zone, .tb-zone * { box-sizing: border-box; }
+
+/* ── Base Zones ───────────────────────────────────────────── */
+.tb-zone {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.tb-left  { flex: 0 0 auto; gap: 8px; }
+.tb-center { flex: 1 1 auto; justify-content: center; gap: 4px; }
+.tb-right { flex: 0 0 auto; gap: 6px; justify-content: flex-end; }
+
+/* ── Logo ─────────────────────────────────────────────────── */
+.tb-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    transition: opacity .2s;
+}
+.tb-logo:hover { opacity: 0.8; }
+.tb-logo-text { font-size: 0.88rem; font-weight: 800; }
+
+/* ── Divider ──────────────────────────────────────────────── */
+.tb-divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(77, 166, 255, 0.18);
+    flex-shrink: 0;
+    margin: 0 2px;
+}
+
+/* ── History (Undo/Redo) ──────────────────────────────────── */
+.tb-history { display: flex; align-items: center; gap: 2px; }
+
+/* ── Icon-only Buttons ────────────────────────────────────── */
+.tb-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary, #8899aa);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s cubic-bezier(.34,1.2,.64,1);
+    font-family: inherit;
+    flex-shrink: 0;
+}
+.tb-icon-btn:hover {
+    background: rgba(77,166,255,.1);
+    border-color: rgba(77,166,255,.25);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+.tb-icon-btn:active { transform: translateY(0) scale(.96); }
+.tb-icon-btn:disabled { opacity: .35; cursor: not-allowed; transform: none !important; }
+
+/* ── Action Buttons (icon + label) ───────────────────────── */
+.tb-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(77,166,255,.18);
+    background: rgba(255,255,255,.04);
+    color: var(--text-secondary, #8899aa);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s cubic-bezier(.34,1.2,.64,1);
+    font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.tb-action-btn i { font-size: 13px; }
+.tb-action-btn:hover {
+    background: rgba(77,166,255,.12);
+    border-color: rgba(77,166,255,.35);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+.tb-action-btn:active { transform: translateY(0) scale(.97); }
+
+/* Caret inside action btn */
+.tb-caret {
+    font-size: 9px !important;
+    opacity: .6;
+    margin-right: -2px;
+}
+
+/* Language button accent */
+.tb-lang { font-size: 0.75rem !important; letter-spacing: .5px; }
+
+/* ── Tools Dropdown ───────────────────────────────────────── */
+.tb-dropdown-wrap { position: relative; }
+
+.tb-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    /* RTL: auto-flip via JS or CSS if needed */
+    right: 0;
+    min-width: 220px;
+    background: var(--form-bg, #0d1b2e);
+    border: 1px solid rgba(77,166,255,.2);
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 16px 48px rgba(0,0,0,.5);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(.97);
+    transition: all .2s cubic-bezier(.34,1.3,.64,1);
+    z-index: 9990;
+    list-style: none;
+    margin: 0;
+}
+[dir="rtl"] .tb-dropdown-menu { right: auto; left: 0; }
+
+.tb-dropdown-wrap:hover .tb-dropdown-menu,
+.tb-dropdown-wrap.open .tb-dropdown-menu,
+.tb-dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* Keep open when hovering the menu itself */
+.tb-dropdown-menu:hover { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+
+.tb-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.83rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 9px;
+    text-align: right;
+    text-decoration: none;
+    transition: background .15s, transform .15s;
+    font-family: inherit;
+}
+.tb-dropdown-item:hover {
+    background: rgba(77,166,255,.1);
+    transform: translateX(-3px);
+}
+[dir="ltr"] .tb-dropdown-item:hover { transform: translateX(3px); }
+
+.tb-dropdown-item i { width: 18px; text-align: center; font-size: 0.88rem; flex-shrink: 0; }
+.tb-dropdown-item kbd {
+    margin-right: auto;
+    font-size: 0.68rem; padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    color: var(--text-secondary);
+    font-family: monospace;
+    margin-left: auto;
+}
+
+.tb-dropdown-divider {
+    height: 1px;
+    background: rgba(255,255,255,.07);
+    margin: 5px 4px;
+}
+
+.tb-danger { color: #e74c3c !important; }
+.tb-danger i { color: #e74c3c !important; }
+.tb-danger:hover { background: rgba(231,76,60,.1) !important; }
+
+/* ── CTA Button (Save & Share) ────────────────────────────── */
+.tb-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 18px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .25s cubic-bezier(.34,1.2,.64,1);
+    font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(102,126,234,.35);
+}
+.tb-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102,126,234,.5);
+    filter: brightness(1.08);
+}
+.tb-cta-btn:active { transform: translateY(0) scale(.97); }
+
+/* ── Auto-save Badge ──────────────────────────────────────── */
+.tb-autosave {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ── User Pills ───────────────────────────────────────────── */
+.tb-user-text {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+.tb-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: rgba(77,166,255,.12);
+    border: 1px solid rgba(77,166,255,.25);
+    color: var(--accent-primary, #4da6ff);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .2s;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.tb-pill-btn:hover { background: rgba(77,166,255,.22); border-color: rgba(77,166,255,.4); }
+
+/* ── Mobile More Button ───────────────────────────────────── */
+.tb-mobile-more { display: none; }
+
+/* ── Responsive Mobile ────────────────────────────────────── */
+@media (max-width: 768px) {
+    /* Hide large items */
+    .tb-logo-text,
+    .tb-center,
+    .user-status-bar,
+    .tb-autosave,
+    .download-container { display: none !important; }
+
+    .tb-mobile-more { display: flex !important; }
+
+    .tb-right { gap: 4px; }
+    .tb-cta-btn { padding: 0 12px; font-size: 0.78rem; }
+    .tb-cta-btn span { display: none; } /* Icon only on mobile */
+    .tb-cta-btn { width: 36px; padding: 0; justify-content: center; border-radius: 50%; }
+}
+
+/* ── Preview Mode: hide toolbar ───────────────────────────── */
+body.preview-mode-active .pro-toolbar { display: none !important; }
+
+/* ── Toolbar Nav Icons (Home / Gallery / Blog) ────────────── */
+.tb-nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+.tb-nav-icons .tb-icon-btn {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
