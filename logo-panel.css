@@ -1,0 +1,355 @@
+/* ============================================================
+   Logo Panel — Premium v2 CSS
+   lp- prefix to avoid conflicts
+   ============================================================ */
+
+/* ── Summary / Header ──────────────────────────────────────── */
+.lp-accordion > summary.lp-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background: rgba(77,166,255,0.06);
+    border-radius: 10px;
+    transition: background .2s;
+}
+.lp-accordion > summary.lp-summary:hover { background: rgba(77,166,255,0.1); }
+.lp-summary-icon { color: var(--accent-primary, #4da6ff); font-size: 14px; }
+.lp-summary > span:nth-child(2) { flex: 1; }
+
+/* ── Toggle Switch ─────────────────────────────────────────── */
+.lp-toggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    margin-right: auto;
+}
+.lp-toggle input { display: none; }
+.lp-toggle-track {
+    width: 36px;
+    height: 20px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    transition: background .25s;
+}
+.lp-toggle input:checked ~ .lp-toggle-track { background: #2ecc71; border-color: #2ecc71; }
+.lp-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform .25s cubic-bezier(.34,1.2,.64,1);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.lp-toggle input:checked ~ .lp-toggle-track .lp-toggle-thumb { transform: translateX(-16px); }
+
+/* Small toggle variant */
+.lp-toggle-sm .lp-toggle-track { width: 28px; height: 16px; }
+.lp-toggle-sm .lp-toggle-thumb { width: 11px; height: 11px; top: 1.5px; right: 2px; }
+.lp-toggle-sm input:checked ~ .lp-toggle-track .lp-toggle-thumb { transform: translateX(-12px); }
+
+/* ── Panel Body ────────────────────────────────────────────── */
+.lp-body {
+    padding: 14px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+}
+
+/* ── Sections ──────────────────────────────────────────────── */
+.lp-section {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    overflow: hidden;
+    min-width: 0;
+}
+.lp-section:last-child { border-bottom: none; }
+.lp-grid-2 {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 10px;
+    overflow: hidden;
+}
+.lp-grid-2 > * { min-width: 0; overflow: hidden; }
+.lp-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary, #8899aa);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+.lp-label i { font-size: 11px; color: var(--accent-primary, #4da6ff); }
+
+/* ── Upload Zone ───────────────────────────────────────────── */
+.lp-upload-zone {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1.5px dashed rgba(77,166,255,0.3);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 4px;
+    transition: border-color .2s, background .2s;
+    cursor: pointer;
+}
+.lp-upload-zone:hover {
+    border-color: rgba(77,166,255,0.6);
+    background: rgba(77,166,255,0.04);
+}
+.lp-preview-wrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+}
+.lp-preview-img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 4px;
+}
+.lp-spinner-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.lp-upload-actions { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.lp-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(77,166,255,0.15), rgba(77,166,255,0.08));
+    border: 1px solid rgba(77,166,255,0.3);
+    color: var(--accent-primary, #4da6ff);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: inherit;
+}
+.lp-upload-btn:hover {
+    background: rgba(77,166,255,0.22);
+    border-color: rgba(77,166,255,0.5);
+    transform: translateY(-1px);
+}
+.lp-upload-btn small { font-size: 0.68rem; opacity: 0.7; font-weight: 400; }
+
+/* ── URL Input ─────────────────────────────────────────────── */
+.lp-input {
+    width: 100%;
+    padding: 8px 11px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color .2s;
+    outline: none;
+}
+.lp-input:focus { border-color: rgba(77,166,255,0.5); background: rgba(77,166,255,0.04); }
+
+/* ── Slider ────────────────────────────────────────────────── */
+.lp-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+}
+.lp-slider {
+    flex: 1;
+    min-width: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.12);
+    outline: none;
+    cursor: pointer;
+}
+.lp-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent-primary, #4da6ff);
+    border: 2px solid rgba(255,255,255,0.8);
+    box-shadow: 0 0 6px rgba(77,166,255,0.5);
+    cursor: pointer;
+    transition: transform .15s;
+}
+.lp-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.lp-slider-val {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent-primary, #4da6ff);
+    min-width: 34px;
+    text-align: center;
+}
+
+/* ── Alignment Buttons ─────────────────────────────────────── */
+.lp-align-btns {
+    display: flex;
+    gap: 4px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+}
+.lp-align-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+    height: 30px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-secondary, #8899aa);
+    cursor: pointer;
+    transition: all .2s;
+    font-size: 12px;
+}
+.lp-align-btn input { display: none; }
+.lp-align-btn:hover { background: rgba(77,166,255,0.1); border-color: rgba(77,166,255,0.3); color: var(--text-primary); }
+.lp-align-btn.lp-align-active {
+    background: rgba(77,166,255,0.2);
+    border-color: rgba(77,166,255,0.5);
+    color: var(--accent-primary, #4da6ff);
+}
+
+/* ── Color Swatches ────────────────────────────────────────── */
+.lp-swatches { display: flex; gap: 5px; align-items: center; overflow: hidden; }
+.lp-swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all .2s;
+    flex-shrink: 0;
+}
+.lp-swatch:hover { transform: scale(1.1); }
+.lp-swatch.lp-swatch-active { border-color: var(--accent-primary, #4da6ff); box-shadow: 0 0 8px rgba(77,166,255,0.5); }
+
+/* ── Color Picker ──────────────────────────────────────────── */
+.lp-color-pick {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+}
+
+/* ── Shadow Sub-Accordion ──────────────────────────────────── */
+.lp-sub-accordion { margin: 0; }
+.lp-sub-summary {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 0;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary, #8899aa);
+    list-style: none;
+    user-select: none;
+    transition: color .2s;
+}
+.lp-sub-summary:hover { color: var(--text-primary); }
+.lp-sub-summary .lp-toggle { margin-right: auto; }
+
+/* ── Placement Pills ───────────────────────────────────────── */
+.lp-placement-btns { display: flex; gap: 8px; }
+.lp-place-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    color: var(--text-secondary, #8899aa);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: inherit;
+}
+.lp-place-btn input { display: none; }
+.lp-place-btn:hover { background: rgba(77,166,255,0.07); border-color: rgba(77,166,255,0.25); color: var(--text-primary); }
+.lp-place-btn.lp-place-active {
+    background: rgba(77,166,255,0.15);
+    border-color: rgba(77,166,255,0.45);
+    color: var(--accent-primary, #4da6ff);
+}
+
+/* ── D-Pad ─────────────────────────────────────────────────── */
+.lp-dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: fit-content;
+    margin: 0 auto;
+}
+.lp-dpad-row { display: flex; gap: 4px; align-items: center; }
+.lp-dpad-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary, #8899aa);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s cubic-bezier(.34,1.2,.64,1);
+}
+.lp-dpad-btn:hover {
+    background: rgba(77,166,255,0.15);
+    border-color: rgba(77,166,255,0.4);
+    color: var(--accent-primary, #4da6ff);
+    transform: scale(1.1);
+}
+.lp-dpad-btn:active { transform: scale(0.95); }
+.lp-dpad-center {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.15);
+    font-size: 10px;
+}

@@ -38,6 +38,7 @@
     <link rel="stylesheet" href="toast.css">
     <link rel="stylesheet" href="editor-enhancements.css?v=1.0">
     <link rel="stylesheet" href="toolbar-enhancements.css?v=1.0">
+    <link rel="stylesheet" href="logo-panel.css?v=1.0">
 
     <!-- المكتبات الخارجية -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
@@ -419,240 +420,515 @@
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
 
-            <details class="fieldset-accordion">
-                <summary>الشعار</summary>
-                <div class="fieldset-content">
-                    <fieldset class="fieldset" id="logo-drop-zone">
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <legend>الشعار (Logo)</legend>
+            <!-- ═══ LOGO PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" open>
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-image"></i></span>
+                    <span>الشعار</span>
+                    <!-- Toggle Switch -->
+                    <label class="lp-toggle" title="إظهار / إخفاء الشعار" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-logo" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
 
-                        <!-- قسم الرفع والرابط -->
-                        <div class="form-group">
-                            <label style="display: flex; align-items: center; cursor: pointer; color: var(--accent-primary); font-weight: 600; margin-bottom: 15px; background: rgba(77,166,255,0.05); padding: 8px; border-radius: 6px;">
-                                <input type="checkbox" id="visibility-logo" checked style="width: auto; margin-inline-end: 10px;">
-                                <span>إظهار الشعار على الكارت</span>
+                <div class="fieldset-content lp-body" id="logo-drop-zone">
+                    <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة هنا</span></div>
+
+                    <!-- ① Upload Zone -->
+                    <div class="lp-upload-zone" id="lp-upload-zone-click">
+                        <div class="lp-preview-wrap">
+                            <img id="logo-preview" src="mc-prime-nfc.png" alt="معاينة الشعار" class="lp-preview-img">
+                            <div class="lp-spinner-wrap"><div class="spinner" id="logo-spinner" style="display:none;"></div></div>
+                        </div>
+                        <div class="lp-upload-actions">
+                            <label for="input-logo-upload" class="lp-upload-btn">
+                                <i class="fas fa-cloud-upload-alt"></i> رفع صورة
+                                <small>(سيتم طلب القص)</small>
                             </label>
-                            <label for="input-logo">رابط الشعار</label>
-                            <input type="text" id="input-logo" value="mc-prime-nfc.png"
-                                data-update-target="card-logo-img" data-update-property="src">
+                            <input type="file" id="input-logo-upload" accept="image/*" style="display:none;">
+                            <div class="input-error-msg" id="logo-upload-error"></div>
                         </div>
-                        <div class="form-group">
-                            <label for="input-logo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
-                            <div class="logo-upload-group">
-                                <img id="logo-preview" src="mc-prime-nfc.png" alt="معاينة الشعار المرفوع">
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="input-logo-upload" accept="image/*">
-                                    <div class="input-error-msg" id="logo-upload-error"></div>
-                                </div>
-                                <div class="spinner" id="logo-spinner" style="display: none;"></div>
-                            </div>
-                        </div>
+                    </div>
 
-                        <!-- قسم الحجم والمحاذاة -->
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="logo-size">حجم الشعار</label>
+                    <!-- URL Input -->
+                    <div class="lp-section">
+                        <label class="lp-label" for="input-logo">
+                            <i class="fas fa-link"></i> رابط الصورة
+                        </label>
+                        <input type="text" id="input-logo" value="mc-prime-nfc.png"
+                            class="lp-input"
+                            data-update-target="card-logo-img" data-update-property="src"
+                            placeholder="https://... أو مسار محلي">
+                    </div>
+
+                    <!-- ② Size + Alignment -->
+                    <div class="lp-section lp-grid-2">
+                        <div>
+                            <label class="lp-label"><i class="fas fa-expand-arrows-alt"></i> الحجم</label>
+                            <div class="lp-slider-wrap">
                                 <input type="range" id="logo-size" min="10" max="80" value="10"
-                                    data-update-target="card-logo" data-update-property="style.width"
-                                    data-update-unit="%">
-                            </div>
-                            <div class="form-group">
-                                <label for="logo-align-group">محاذاة الشعار</label>
-                                <div class="radio-group" id="logo-align-group">
-                                    <label><input type="radio" name="logo-align" value="flex-start"> يسار</label>
-                                    <label><input type="radio" name="logo-align" value="center" checked> وسط</label>
-                                    <label><input type="radio" name="logo-align" value="flex-end"> يمين</label>
-                                </div>
+                                    class="lp-slider"
+                                    data-update-target="card-logo" data-update-property="style.width" data-update-unit="%"
+                                    oninput="this.nextElementSibling.textContent=this.value+'%'">
+                                <span class="lp-slider-val">10%</span>
                             </div>
                         </div>
-
-                        <!-- قسم الخلفية والشفافية -->
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="logo-opacity">شفافية الشعار</label>
-                                <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
-                                    data-update-target="card-logo-img" data-update-property="style.opacity">
+                        <div>
+                            <label class="lp-label"><i class="fas fa-align-center"></i> المحاذاة</label>
+                            <div class="lp-align-btns" id="logo-align-group">
+                                <label class="lp-align-btn" title="يسار">
+                                    <input type="radio" name="logo-align" value="flex-start">
+                                    <i class="fas fa-align-right"></i>
+                                </label>
+                                <label class="lp-align-btn lp-align-active" title="وسط">
+                                    <input type="radio" name="logo-align" value="center" checked>
+                                    <i class="fas fa-align-center"></i>
+                                </label>
+                                <label class="lp-align-btn" title="يمين">
+                                    <input type="radio" name="logo-align" value="flex-end">
+                                    <i class="fas fa-align-left"></i>
+                                </label>
                             </div>
-                            <div class="form-group">
-                                <label for="logo-bg-color">خلفية الشعار</label>
-                                <select id="logo-bg-color">
-                                    <option value="transparent">بدون</option>
+                        </div>
+                    </div>
+
+                    <!-- ③ Opacity + Background -->
+                    <div class="lp-section lp-grid-2">
+                        <div>
+                            <label class="lp-label"><i class="fas fa-circle-half-stroke"></i> الشفافية</label>
+                            <div class="lp-slider-wrap">
+                                <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
+                                    class="lp-slider"
+                                    data-update-target="card-logo-img" data-update-property="style.opacity"
+                                    oninput="this.nextElementSibling.textContent=Math.round(this.value*100)+'%'">
+                                <span class="lp-slider-val">100%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="lp-label"><i class="fas fa-fill-drip"></i> الخلفية</label>
+                            <div class="lp-swatches">
+                                <button type="button" class="lp-swatch lp-swatch-active" data-bg="transparent" title="بدون"
+                                    style="background:repeating-conic-gradient(#aaa 0% 25%,transparent 0% 50%) 0/10px 10px;"
+                                    onclick="lpSetBg(this,'transparent')"></button>
+                                <button type="button" class="lp-swatch" data-bg="#ffffff" title="أبيض"
+                                    style="background:#ffffff;"
+                                    onclick="lpSetBg(this,'#ffffff')"></button>
+                                <button type="button" class="lp-swatch" data-bg="#000000" title="أسود"
+                                    style="background:#000000;"
+                                    onclick="lpSetBg(this,'#000000')"></button>
+                                <!-- Hidden select for JS compatibility -->
+                                <select id="logo-bg-color" style="display:none;">
+                                    <option value="transparent" selected>بدون</option>
                                     <option value="#ffffff">أبيض</option>
                                     <option value="#000000">أسود</option>
                                 </select>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- قسم الظل -->
-                        <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>ظل الشعار</legend>
-                            <div class="form-group">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="logo-shadow-enabled"
-                                        style="width: auto; margin-inline-end: 10px;">
-                                    <span>تفعيل الظل</span>
-                                </label>
-                            </div>
-                            <div class="control-grid" id="logo-shadow-controls" style="display: none;">
-                                <div class="form-group">
-                                    <label for="logo-shadow-blur">حدة الظل</label>
-                                    <input type="range" id="logo-shadow-blur" min="0" max="40" value="10">
-                                </div>
-                                <div class="form-group">
-                                    <label for="logo-shadow-color">لون الظل</label>
-                                    <input type="color" id="logo-shadow-color" value="#000000">
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <!-- قسم الموضع والتحريك -->
-                        <div class="placement-control">
-                            <label>مكان العنصر</label>
-                            <div class="radio-group">
-                                <label><input type="radio" name="placement-logo" value="front" checked> أمامي</label>
-                                <label><input type="radio" name="placement-logo" value="back"> خلفي</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="margin-top: 15px;">
-                            <label>تحريك دقيق (بالبكسل)</label>
-                            <div class="position-controls-grid" data-target-id="card-logo">
-                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i
-                                        class="fas fa-arrow-up"></i></button>
-                                <div class="controls-row">
-                                    <button type="button" class="btn-icon move-btn" data-direction="left"
-                                        title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                    <button type="button" class="btn-icon move-btn" data-direction="right"
-                                        title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                </div>
-                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i
-                                        class="fas fa-arrow-down"></i></button>
-                            </div>
-                        </div>
-                    </fieldset>
-                </div>
-            </details>
-
-            <details class="fieldset-accordion">
-                <summary>الصورة الشخصية</summary>
-                <div class="fieldset-content">
-                    <fieldset class="fieldset" id="photo-controls-fieldset">
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <legend>الصورة الشخصية</legend>
-
-                        <!-- قسم الرفع والرابط -->
-                        <div class="form-group">
-                            <label style="display: flex; align-items: center; cursor: pointer; color: var(--accent-primary); font-weight: 600; margin-bottom: 15px; background: rgba(77,166,255,0.05); padding: 8px; border-radius: 6px;">
-                                <input type="checkbox" id="visibility-photo" checked style="width: auto; margin-inline-end: 10px;">
-                                <span>إظهار الصورة الشخصية على الكارت</span>
+                    <!-- ④ Shadow (collapsible) -->
+                    <details class="lp-sub-accordion">
+                        <summary class="lp-sub-summary">
+                            <i class="fas fa-droplet"></i> ظل الشعار
+                            <label class="lp-toggle lp-toggle-sm" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="logo-shadow-enabled">
+                                <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
                             </label>
-                            <label for="input-photo-url">رابط الصورة</label>
-                            <input type="url" id="input-photo-url">
-                        </div>
-                        <div class="form-group">
-                            <label for="input-photo-upload">أو ارفع صورة (سيتم طلب قصها)</label>
-                            <div class="logo-upload-group">
-                                <img id="photo-preview" src="" alt="معاينة الصورة الشخصية"
-                                    style="display: none; background-color: var(--accent-secondary); border-radius: 50%; object-fit: cover; width: 50px; height: 50px;">
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="input-photo-upload" accept="image/*">
-                                    <div class="input-error-msg" id="photo-upload-error"></div>
-                                </div>
-                                <div class="spinner" id="photo-spinner" style="display: none;"></div>
-                            </div>
-                        </div>
-
-                        <!-- قسم الحجم والشكل والمحاذاة -->
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="photo-size">حجم الصورة</label>
-                                <input type="range" id="photo-size" min="15" max="50" value="25">
-                            </div>
-                            <div class="form-group">
-                                <label>شكل الصورة</label>
-                                <div class="radio-group">
-                                    <label><input type="radio" name="photo-shape" value="circle" checked> دائري</label>
-                                    <label><input type="radio" name="photo-shape" value="square"> مربع</label>
+                        </summary>
+                        <div class="lp-section lp-grid-2" id="logo-shadow-controls">
+                            <div>
+                                <label class="lp-label">حدة الظل</label>
+                                <div class="lp-slider-wrap">
+                                    <input type="range" id="logo-shadow-blur" min="0" max="40" value="10" class="lp-slider"
+                                        oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                    <span class="lp-slider-val">10px</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="photo-align-group">محاذاة الصورة</label>
-                            <div class="radio-group" id="photo-align-group">
-                                <label><input type="radio" name="photo-align" value="flex-start"> يسار</label>
-                                <label><input type="radio" name="photo-align" value="center" checked> وسط</label>
-                                <label><input type="radio" name="photo-align" value="flex-end"> يمين</label>
+                            <div>
+                                <label class="lp-label">لون الظل</label>
+                                <input type="color" id="logo-shadow-color" value="#000000" class="lp-color-pick">
                             </div>
                         </div>
+                    </details>
 
+                    <!-- ⑤ Placement pills -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-layer-group"></i> مكان العنصر</label>
+                        <div class="lp-placement-btns">
+                            <label class="lp-place-btn lp-place-active" title="الواجهة الأمامية">
+                                <input type="radio" name="placement-logo" value="front" checked>
+                                <i class="fas fa-id-card"></i> أمامي
+                            </label>
+                            <label class="lp-place-btn" title="الواجهة الخلفية">
+                                <input type="radio" name="placement-logo" value="back">
+                                <i class="fas fa-id-card-alt"></i> خلفي
+                            </label>
+                        </div>
+                    </div>
 
-                        <!-- قسم الإطار والشفافية -->
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="photo-opacity">شفافية الصورة</label>
-                                <input type="range" id="photo-opacity" min="0" max="1" step="0.05" value="1">
+                    <!-- ⑥ D-Pad Position Control -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-arrows-up-down-left-right"></i> تحريك دقيق</label>
+                        <div class="lp-dpad position-controls-grid" data-target-id="card-logo">
+                            <div class="lp-dpad-row">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="up" title="للأعلى">
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
                             </div>
-                            <div class="form-group">
-                                <label for="photo-border-width">عرض الإطار (px)</label>
-                                <input type="range" id="photo-border-width" min="0" max="10" value="2">
+                            <div class="lp-dpad-row">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="left" title="لليسار">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="right" title="لليمين">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
                             </div>
-                            <div class="form-group">
-                                <label for="photo-border-color">لون الإطار</label>
-                                <input type="color" id="photo-border-color" value="#ffffff">
+                            <div class="lp-dpad-row">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="down" title="للأسفل">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- قسم الظل -->
-                        <fieldset class="fieldset" style="margin-top: 15px;">
-                            <legend>ظل الصورة</legend>
-                            <div class="form-group">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="photo-shadow-enabled"
-                                        style="width: auto; margin-inline-end: 10px;">
-                                    <span>تفعيل الظل</span>
-                                </label>
-                            </div>
-                            <div class="control-grid" id="photo-shadow-controls" style="display: none;">
-                                <div class="form-group">
-                                    <label for="photo-shadow-blur">حدة الظل</label>
-                                    <input type="range" id="photo-shadow-blur" min="0" max="40" value="10">
-                                </div>
-                                <div class="form-group">
-                                    <label for="photo-shadow-color">لون الظل</label>
-                                    <input type="color" id="photo-shadow-color" value="#000000">
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <!-- قسم الموضع والتحريك -->
-                        <div class="placement-control">
-                            <label>مكان الصورة</label>
-                            <div class="radio-group">
-                                <label><input type="radio" name="placement-photo" value="front" checked> أمامي</label>
-                                <label><input type="radio" name="placement-photo" value="back"> خلفي</label>
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="margin-top: 15px;">
-                            <label>تحريك دقيق (بالبكسل)</label>
-                            <div class="position-controls-grid" data-target-id="card-personal-photo-wrapper">
-                                <button type="button" class="btn-icon move-btn" data-direction="up" title="للأعلى"><i
-                                        class="fas fa-arrow-up"></i></button>
-                                <div class="controls-row">
-                                    <button type="button" class="btn-icon move-btn" data-direction="left"
-                                        title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                    <button type="button" class="btn-icon move-btn" data-direction="right"
-                                        title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                </div>
-                                <button type="button" class="btn-icon move-btn" data-direction="down" title="للأسفل"><i
-                                        class="fas fa-arrow-down"></i></button>
-                            </div>
-                        </div>
-                    </fieldset>
                 </div>
             </details>
+
+            <!-- Logo Panel Inline JS -->
+            <script>
+            // Swatch background setter
+            function lpSetBg(btn, val) {
+                document.querySelectorAll('.lp-swatch').forEach(function(s){ s.classList.remove('lp-swatch-active'); });
+                btn.classList.add('lp-swatch-active');
+                var sel = document.getElementById('logo-bg-color');
+                if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', {bubbles:true})); }
+            }
+            // Sync align radio → active class
+            document.querySelectorAll('#logo-align-group input[type=radio]').forEach(function(r){
+                r.addEventListener('change', function(){
+                    document.querySelectorAll('.lp-align-btn').forEach(function(b){ b.classList.remove('lp-align-active'); });
+                    r.closest('.lp-align-btn').classList.add('lp-align-active');
+                });
+            });
+            // Sync placement radio → active class
+            document.querySelectorAll('[name="placement-logo"]').forEach(function(r){
+                r.addEventListener('change', function(){
+                    document.querySelectorAll('.lp-place-btn').forEach(function(b){ b.classList.remove('lp-place-active'); });
+                    r.closest('.lp-place-btn').classList.add('lp-place-active');
+                });
+            });
+            // D-pad: wire up move buttons directly to EventManager
+            (function() {
+                function wireDpad() {
+                    var dpad = document.querySelector('.lp-dpad.position-controls-grid');
+                    if (!dpad) { setTimeout(wireDpad, 400); return; }
+                    dpad.querySelectorAll('.move-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            var dir = btn.dataset.direction;
+                            if (typeof EventManager !== 'undefined' && EventManager.moveElement) {
+                                EventManager.moveElement('card-logo', dir);
+                            }
+                        });
+                    });
+                }
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', function(){ setTimeout(wireDpad, 600); });
+                } else {
+                    setTimeout(wireDpad, 600);
+                }
+            })();
+            </script>
+
+
+
+            <!-- ═══ PROFILE PHOTO PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" open>
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-user-circle"></i></span>
+                    <span>الصورة الشخصية</span>
+                    <!-- Toggle Switch -->
+                    <label class="lp-toggle" title="إظهار / إخفاء الصورة" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-photo" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body" id="photo-controls-fieldset">
+                    <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة هنا</span></div>
+
+                    <!-- ① Upload Zone -->
+                    <div class="lp-upload-zone" id="lp-photo-upload-zone-click" onclick="document.getElementById('input-photo-upload').click();">
+                        <div class="lp-preview-wrap" style="border-radius: 50%; overflow: hidden;">
+                            <img id="photo-preview" src="" alt="" class="lp-preview-img" style="display:none; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: none; padding: 0;">
+                            <div id="photo-placeholder" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(77,166,255,0.1); border-radius: 50%; border: 1px dashed rgba(77,166,255,0.4);">
+                                <i class="fas fa-user" style="font-size: 24px; color: var(--accent-primary);"></i>
+                            </div>
+                            <div class="lp-spinner-wrap"><div class="spinner" id="photo-spinner" style="display:none;"></div></div>
+                        </div>
+                        <div class="lp-upload-actions">
+                            <label class="lp-upload-btn" style="pointer-events: none;">
+                                <i class="fas fa-cloud-upload-alt"></i> رفع صورة
+                                <small>(سيتم طلب القص)</small>
+                            </label>
+                            <input type="file" id="input-photo-upload" accept="image/*" style="display:none;">
+                            <div class="input-error-msg" id="photo-upload-error"></div>
+                        </div>
+                    </div>
+
+                    <!-- URL Input -->
+                    <div class="lp-section">
+                        <label class="lp-label" for="input-photo-url">
+                            <i class="fas fa-link"></i> رابط الصورة
+                        </label>
+                        <input type="url" id="input-photo-url" class="lp-input" placeholder="https://... أو مسار محلي">
+                    </div>
+
+                    <!-- ② Shape -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-shapes"></i> الشكل</label>
+                        <div class="lp-align-btns shape-btns" id="photo-shape-group">
+                            <label class="lp-align-btn lp-align-active" title="دائري">
+                                <input type="radio" name="photo-shape" value="circle" checked>
+                                <div style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor;"></div>
+                            </label>
+                            <label class="lp-align-btn" title="مربع بحواف دائرية">
+                                <input type="radio" name="photo-shape" value="rounded">
+                                <div style="width: 16px; height: 16px; border-radius: 4px; border: 2px solid currentColor;"></div>
+                            </label>
+                            <label class="lp-align-btn" title="مربع">
+                                <input type="radio" name="photo-shape" value="square">
+                                <div style="width: 16px; height: 16px; border: 2px solid currentColor;"></div>
+                            </label>
+                            <label class="lp-align-btn" title="سداسي">
+                                <input type="radio" name="photo-shape" value="hexagon">
+                                <div style="width: 16px; height: 16px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); background: currentColor;"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- ③ Size & Border Width -->
+                    <div class="lp-section lp-grid-2">
+                        <div>
+                            <label class="lp-label"><i class="fas fa-expand-arrows-alt"></i> الحجم</label>
+                            <div class="lp-slider-wrap">
+                                <input type="range" id="photo-size" min="15" max="50" value="25" class="lp-slider"
+                                    oninput="this.nextElementSibling.textContent=this.value+'%'">
+                                <span class="lp-slider-val">25%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="lp-label"><i class="fas fa-border-all"></i> سُمك الإطار</label>
+                            <div class="lp-slider-wrap">
+                                <input type="range" id="photo-border-width" min="0" max="10" value="2" class="lp-slider"
+                                    oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                <span class="lp-slider-val">2px</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ④ Alignment & Opacity -->
+                    <div class="lp-section lp-grid-2">
+                        <div>
+                            <label class="lp-label"><i class="fas fa-circle-half-stroke"></i> الشفافية</label>
+                            <div class="lp-slider-wrap">
+                                <input type="range" id="photo-opacity" min="0" max="1" step="0.05" value="1" class="lp-slider"
+                                    oninput="this.nextElementSibling.textContent=Math.round(this.value*100)+'%'">
+                                <span class="lp-slider-val">100%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="lp-label"><i class="fas fa-align-center"></i> المحاذاة</label>
+                            <div class="lp-align-btns" id="photo-align-group">
+                                <label class="lp-align-btn" title="يسار">
+                                    <input type="radio" name="photo-align" value="flex-start">
+                                    <i class="fas fa-align-right"></i>
+                                </label>
+                                <label class="lp-align-btn lp-align-active" title="وسط">
+                                    <input type="radio" name="photo-align" value="center" checked>
+                                    <i class="fas fa-align-center"></i>
+                                </label>
+                                <label class="lp-align-btn" title="يمين">
+                                    <input type="radio" name="photo-align" value="flex-end">
+                                    <i class="fas fa-align-left"></i>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ⑤ Border Color -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-palette"></i> لون الإطار</label>
+                        <div class="lp-swatches" style="margin-top: 5px;">
+                            <button type="button" class="lp-swatch" data-bg="transparent" title="بدون"
+                                style="background:repeating-conic-gradient(#aaa 0% 25%,transparent 0% 50%) 0/10px 10px;"
+                                onclick="lpSetBorderColor(this, 'transparent')"></button>
+                            <button type="button" class="lp-swatch lp-swatch-active" data-bg="#ffffff" title="أبيض"
+                                style="background:#ffffff;"
+                                onclick="lpSetBorderColor(this, '#ffffff')"></button>
+                            <button type="button" class="lp-swatch" data-bg="#f1c40f" title="ذهبي"
+                                style="background:#f1c40f;"
+                                onclick="lpSetBorderColor(this, '#f1c40f')"></button>
+                            <button type="button" class="lp-swatch" data-bg="#4da6ff" title="أزرق"
+                                style="background:#4da6ff;"
+                                onclick="lpSetBorderColor(this, '#4da6ff')"></button>
+                            <button type="button" class="lp-swatch" data-bg="#a855f7" title="بنفسجي"
+                                style="background:#a855f7;"
+                                onclick="lpSetBorderColor(this, '#a855f7')"></button>
+                            <button type="button" class="lp-swatch" data-bg="#000000" title="أسود"
+                                style="background:#000000;"
+                                onclick="lpSetBorderColor(this, '#000000')"></button>
+                            <!-- Hidden input for JS compatibility -->
+                            <input type="color" id="photo-border-color" value="#ffffff" style="display:none; visibility:hidden;">
+                        </div>
+                    </div>
+
+                    <!-- ⑥ Shadow (collapsible) -->
+                    <details class="lp-sub-accordion">
+                        <summary class="lp-sub-summary">
+                            <i class="fas fa-droplet"></i> ظل الصورة
+                            <label class="lp-toggle lp-toggle-sm" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="photo-shadow-enabled">
+                                <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                            </label>
+                        </summary>
+                        <div class="lp-section lp-grid-2" id="photo-shadow-controls">
+                            <div>
+                                <label class="lp-label">حدة الظل</label>
+                                <div class="lp-slider-wrap">
+                                    <input type="range" id="photo-shadow-blur" min="0" max="40" value="10" class="lp-slider"
+                                        oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                    <span class="lp-slider-val">10px</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="lp-label">لون الظل</label>
+                                <input type="color" id="photo-shadow-color" value="#000000" class="lp-color-pick">
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- ⑦ Placement pills -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-layer-group"></i> مكان العنصر</label>
+                        <div class="lp-placement-btns">
+                            <label class="lp-place-btn lp-place-active" title="الواجهة الأمامية">
+                                <input type="radio" name="placement-photo" value="front" checked>
+                                <i class="fas fa-id-card"></i> أمامي
+                            </label>
+                            <label class="lp-place-btn" title="الواجهة الخلفية">
+                                <input type="radio" name="placement-photo" value="back">
+                                <i class="fas fa-id-card-alt"></i> خلفي
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- ⑧ D-Pad Position Control -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-arrows-up-down-left-right"></i> تحريك دقيق</label>
+                        <div class="lp-dpad position-controls-grid" data-target-id="card-personal-photo-wrapper">
+                            <div class="lp-dpad-row">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="up" title="للأعلى">
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
+                            </div>
+                            <div class="lp-dpad-row">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="left" title="لليسار">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="right" title="لليمين">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="lp-dpad-row">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="down" title="للأسفل">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </details>
+
+            <!-- Photo Panel Inline JS -->
+            <script>
+            // Photo Border Color Swatch sync
+            function lpSetBorderColor(btn, val) {
+                var container = btn.closest('.lp-swatches');
+                container.querySelectorAll('.lp-swatch').forEach(function(s){ s.classList.remove('lp-swatch-active'); });
+                btn.classList.add('lp-swatch-active');
+                var inp = document.getElementById('photo-border-color');
+                if (inp) { 
+                    inp.value = val === 'transparent' ? '#000000' : val; // input color cant be transparent, but we can set dataset or handle in js if needed
+                    // Add property so JS knows it is transparent.
+                    inp.dataset.transparent = (val === 'transparent');
+                    inp.dispatchEvent(new Event('input', {bubbles:true})); 
+                    inp.dispatchEvent(new Event('change', {bubbles:true})); 
+                }
+            }
+
+            // Sync shape radio → active class
+            document.querySelectorAll('#photo-shape-group input[type=radio]').forEach(function(r){
+                r.addEventListener('change', function(){
+                    document.querySelectorAll('#photo-shape-group .lp-align-btn').forEach(function(b){ b.classList.remove('lp-align-active'); });
+                    r.closest('.lp-align-btn').classList.add('lp-align-active');
+                });
+            });
+
+            // Sync align radio → active class
+            document.querySelectorAll('#photo-align-group input[type=radio]').forEach(function(r){
+                r.addEventListener('change', function(){
+                    document.querySelectorAll('#photo-align-group .lp-align-btn').forEach(function(b){ b.classList.remove('lp-align-active'); });
+                    r.closest('.lp-align-btn').classList.add('lp-align-active');
+                });
+            });
+
+            // Sync placement radio → active class
+            document.querySelectorAll('[name="placement-photo"]').forEach(function(r){
+                r.addEventListener('change', function(){
+                    document.querySelectorAll('input[name="placement-photo"]').forEach(function(ir){
+                        ir.closest('.lp-place-btn').classList.remove('lp-place-active');
+                    });
+                    r.closest('.lp-place-btn').classList.add('lp-place-active');
+                });
+            });
+
+            // Handle preview image toggle
+            document.getElementById('input-photo-upload').addEventListener('change', function(){
+                var img = document.getElementById('photo-preview');
+                var placeholder = document.getElementById('photo-placeholder');
+                if(this.files && this.files.length > 0) {
+                    // Actual preview logic is handled by Cropper JS, but we can visually toggle placeholder
+                    img.style.display = 'block';
+                    placeholder.style.display = 'none';
+                }
+            });
+
+            // D-pad: wire up move buttons directly to EventManager
+            (function() {
+                function wirePhotoDpad() {
+                    var dpad = document.querySelector('.lp-dpad[data-target-id="card-personal-photo-wrapper"]');
+                    if (!dpad) { setTimeout(wirePhotoDpad, 400); return; }
+                    var wired = dpad.dataset.wired;
+                    if(wired) return;
+                    dpad.querySelectorAll('.move-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            var dir = btn.dataset.direction;
+                            if (typeof EventManager !== 'undefined' && EventManager.moveElement) {
+                                EventManager.moveElement('card-personal-photo-wrapper', dir);
+                            }
+                        });
+                    });
+                    dpad.dataset.wired = "true";
+                }
+                setTimeout(wirePhotoDpad, 800);
+            })();
+            </script>
 
             <details class="fieldset-accordion" id="name-tagline-accordion">
                 <summary>الاسم والمسمى الوظيفي</summary>
