@@ -544,7 +544,10 @@ const CardManager = {
     handleMasterSocialToggle() {
         const isEnabled = DOMElements.buttons.toggleMasterSocial ? DOMElements.buttons.toggleMasterSocial.checked : true;
         if (DOMElements.socialControlsWrapper) {
-            DOMElements.socialControlsWrapper.style.display = isEnabled ? 'block' : 'none';
+            // Keep controls visible always, but use flex to match the new layout
+            DOMElements.socialControlsWrapper.style.display = 'flex';
+            DOMElements.socialControlsWrapper.style.flexDirection = 'column';
+            DOMElements.socialControlsWrapper.style.gap = '12px';
         }
         this.updateSocialLinks();
     },

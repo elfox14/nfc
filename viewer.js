@@ -348,17 +348,8 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '';
 
         const showSocial = (inputs['toggle-master-social'] === undefined || inputs['toggle-master-social'] === true);
-        if (!showSocial) {
-            container.innerHTML = `
-                <div class="no-links-message" style="margin-top: 20px; text-align: center; color: var(--text-secondary);">
-                    <i class="fas fa-eye-slash" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
-                    <p>${i18n.ownerHiddenContact}</p>
-                </div>
-            `;
-            const h2 = container.previousElementSibling;
-            if (h2 && h2.tagName === 'H2') h2.style.display = 'none';
-            return;
-        }
+        // Note: don't return early here — other content (phones etc.) must still render.
+        // Social links will be skipped below based on this flag.
 
         const linksHTML = [];
         const dynamicData = data.dynamic || {};
@@ -420,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return a;
         };
 
+        // Static social links (email, website, WhatsApp, etc.) — always visible in contact section
         Object.entries(staticSocial).forEach(([key, linkData]) => {
             if (linkData && linkData.value && platforms[key]) {
                 const el = createLinkElement(key, linkData.value);
@@ -427,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Phone numbers — always visible
         if (dynamicData.phones) {
             const whatsappNumberClean = (staticSocial.whatsapp && staticSocial.whatsapp.value)
                 ? staticSocial.whatsapp.value.replace(/\D/g, '') : '';
@@ -446,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Dynamic social links — always visible in contact section
         if (dynamicData.social) {
             dynamicData.social.forEach(link => {
                 if (link && link.value && link.platform && platforms[link.platform]) {
