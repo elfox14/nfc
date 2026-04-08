@@ -7,9 +7,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>محرر بطاقات العمل الذكية | MC PRIME</title>
+    <title>Smart Business Card Editor | MC PRIME</title>
     <meta name="description"
-        content="استخدم محرر MC PRIME لتصميم وتخصيص بطاقة عملك الذكية (NFC) مجاناً. تحكم كامل في الألوان، Image URLوط، الشعار، ومعلومات الاتصال.">    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
+        content="Use editor MC PRIME to design and customize your smart business card (NFC) Freeً. Full Color Control، Image URL، Logo، and Contact Info.">    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
 
     <!-- Google Tag Manager -->
     <script>(function (w, d, s, l, i) {
@@ -32,7 +32,7 @@
     <!-- Cropper.js CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
-    <!-- ملفات التنسيق الخاصة بالمشروع -->
+    <!-- Project CSS files -->
     <link rel="stylesheet" href="style.css?v=2.0">
     <link rel="stylesheet" href="mobile.css?v=2.0">
     <link rel="stylesheet" href="toast.css">
@@ -40,14 +40,14 @@
     <link rel="stylesheet" href="toolbar-enhancements.css?v=1.0">
     <link rel="stylesheet" href="logo-panel.css?v=1.0">
 
-    <!-- المكتبات الخارجية -->
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
 
-    <!-- ملفات الجافاسكريبت الخاصة بالمشروع (الترتيب مهم) -->
+    <!-- Project JS Files (Order matters) -->
     <script src="lang-switcher.js" defer></script>
     <script src="/nfc/auth.js" defer></script>
     <script src="security-utils.js" defer></script>
@@ -125,7 +125,7 @@
         <div class="tb-zone tb-left">
 
             <!-- Logo -->
-            <a href="index.html" class="tb-logo" title="العودة إلى Home">
+            <a href="index.html" class="tb-logo" title="Return to Home">
                 <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME Logo" style="height:30px;width:auto;">
                 <span class="tb-logo-text">MC PRIME</span>
             </a>
@@ -134,7 +134,7 @@
             <div class="tb-divider"></div>
 
             <!-- Nav Icons -->
-            <nav class="tb-nav-icons" aria-label="التنقل">
+            <nav class="tb-nav-icons" aria-label="Navigation">
                 <a href="index.html" class="tb-icon-btn" title="Home">
                     <i class="fas fa-home"></i>
                 </a>
@@ -150,10 +150,10 @@
 
             <!-- Undo / Redo -->
             <div class="tb-history">
-                <button id="undo-btn" class="tb-icon-btn" title="تراجع (Ctrl+Z)" aria-label="تراجع" disabled>
+                <button id="undo-btn" class="tb-icon-btn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>
                     <i class="fas fa-undo"></i>
                 </button>
-                <button id="redo-btn" class="tb-icon-btn" title="إعادة (Ctrl+Y)" aria-label="إعادة" disabled>
+                <button id="redo-btn" class="tb-icon-btn" title="Redo (Ctrl+Y)" aria-label="Redo" disabled>
                     <i class="fas fa-redo"></i>
                 </button>
             </div>
@@ -164,19 +164,19 @@
         <div class="tb-zone tb-center">
 
             <!-- Preview -->
-            <button id="preview-mode-btn" class="tb-action-btn" title="وضع الPreview (Ctrl+P)" aria-label="Preview">
+            <button id="preview-mode-btn" class="tb-action-btn" title="Mode Preview (Ctrl+P)" aria-label="Preview">
                 <i class="fas fa-eye"></i>
                 <span class="tb-label">Preview</span>
             </button>
 
             <!-- Language -->
-            <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="تبديل اللغة">
+            <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="Switch Language">
                 <i class="fas fa-language"></i>
                 <span class="tb-label">EN</span>
             </button>
 
             <!-- Theme -->
-            <button id="theme-toggle-btn" class="tb-icon-btn" title="تبديل Appearance & Styling (Dark/Light)" aria-label="Toggle Theme">
+            <button id="theme-toggle-btn" class="tb-icon-btn" title="Toggle Appearance & Styling (Dark/Light)" aria-label="Toggle Theme">
                 <i class="fas fa-sun"></i>
             </button>
 
@@ -231,7 +231,7 @@
             <div class="tb-divider"></div>
 
             <!-- Auto-save Indicator -->
-            <div id="autosave-indicator" class="tb-autosave autosave-indicator" title="حالة الحفظ التلقائي">
+            <div id="autosave-indicator" class="tb-autosave autosave-indicator" title="Autosave Status">
                 <i class="fas fa-cloud-check"></i>
                 <span id="autosave-status">Saved</span>
             </div>
@@ -260,7 +260,7 @@
 
             <!-- Mobile More -->
             <div class="toolbar-more-container">
-                <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="المزيد" aria-label="More Options">
+                <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="More" aria-label="More Options">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
             </div>
@@ -274,27 +274,27 @@
         <aside class="pro-sidebar pro-sidebar-left" id="panel-design">
 
             <fieldset class="fieldset" id="layout-fieldset-source">
-                <legend>التخطيط</legend>
+                <legend>Layout</legend>
                 <div class="layout-selector-grid">
                     <label class="layout-option">
                         <input type="radio" name="layout-select-visual" value="classic" checked>
                         <div class="layout-preview-box">
                             <i class="far fa-id-card"></i>
-                            <span>كلاسيكي</span>
+                            <span>Classic</span>
                         </div>
                     </label>
                     <label class="layout-option">
                         <input type="radio" name="layout-select-visual" value="modern">
                         <div class="layout-preview-box">
                             <i class="fas fa-columns"></i>
-                            <span>عصري</span>
+                            <span>Modern</span>
                         </div>
                     </label>
                     <label class="layout-option">
                         <input type="radio" name="layout-select-visual" value="vertical">
                         <div class="layout-preview-box">
                             <i class="fas fa-mobile-alt"></i>
-                            <span>طولي</span>
+                            <span>Vertical</span>
                         </div>
                     </label>
                 </div>
@@ -302,15 +302,15 @@
             </fieldset>
 
             <fieldset class="fieldset" id="designs-fieldset-source">
-                <legend>التصاميم الجاهزة</legend>
+                <legend>Premade Designs</legend>
                 <div class="form-group">
-                    <label>اختر تصميمًا جاهزًا</label>
+                    <label>Choose Template</label>
                     <div id="theme-gallery" class="theme-gallery-grid"></div>
                     <div class="form-group" id="ai-suggestion-group"
                         style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
-                        <label>تحتاج إلهاماً؟</label>
+                        <label>Need Inspiration?</label>
                         <button id="ai-suggest-btn" class="btn btn-secondary" style="width: 100%;">
-                            <i class="fas fa-magic"></i> <span>اقتراح تصميم ذكي</span>
+                            <i class="fas fa-magic"></i> <span>Smart Design Suggestion</span>
                         </button>
                         <div class="spinner" id="ai-spinner" style="display: none; margin: 10px auto 0;"></div>
                     </div>
@@ -319,52 +319,48 @@
             </fieldset>
 
             <details class="fieldset-accordion" id="backgrounds-accordion">
-                <summary>الBackات والألوان</summary>
+                <summary>Backgrounds & Colors</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" style="padding: 10px;">
-                        <legend>الواجهة الFrontة</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
+                        <legend>Front Face</legend>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
                         <div class="form-group"><label>Image URL</label>
                             <div class="control-grid"><input type="color" id="front-bg-start" value="#2a3d54"><input
                                     type="color" id="front-bg-end" value="#223246"></div>
                         </div>
                         <div class="form-group">
-                            <label for="front-bg-upload">Upload Image للBackة</label>
+                            <label for="front-bg-upload">Upload Background Image</label>
                             <div class="file-input-group">
                                 <input type="file" id="front-bg-upload" accept="image/*">
                                 <button type="button" class="remove-image-btn" id="remove-front-bg-btn"
-                                    style="display: none;" title="إزالة الصورة"
-                                    aria-label="إزالة صورة Image URL الFrontة"><i class="fas fa-times"
+                                    style="display: none;" title="Remove Image"
+                                    aria-label="Remove Image Image URL Frontة"><i class="fas fa-times"
                                         aria-hidden="true"></i></button>
                                 <div class="spinner" id="front-bg-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">شفافية Image URL فوق
-                                الصورة</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
+                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">Background Transparency over image</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
                                 value="0"></div>
                     </fieldset>
                     <fieldset class="fieldset" style="padding: 10px; margin-top: 15px;">
-                        <legend>الواجهة Image URL</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
+                        <legend>Back Image</legend>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
                         <div class="form-group"><label>Image URL</label>
                             <div class="control-grid"><input type="color" id="back-bg-start" value="#2a3d54"><input
                                     type="color" id="back-bg-end" value="#223246"></div>
                         </div>
                         <div class="form-group">
-                            <label for="back-bg-upload">Upload Image للBackة</label>
+                            <label for="back-bg-upload">Upload Background Image</label>
                             <div class="file-input-group">
                                 <input type="file" id="back-bg-upload" accept="image/*">
                                 <button type="button" class="remove-image-btn" id="remove-back-bg-btn"
-                                    style="display: none;" title="إزالة الصورة"
-                                    aria-label="إزالة صورة Image URL Image URL"><i class="fas fa-times"
+                                    style="display: none;" title="Remove Image"
+                                    aria-label="Remove Image Image URL Image URL"><i class="fas fa-times"
                                         aria-hidden="true"></i></button>
                                 <div class="spinner" id="back-bg-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">شفافية Image URL فوق
-                                الصورة</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
+                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">Background Transparency over image</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
                                 value="0"></div>
                     </fieldset>
                 </div>
@@ -382,7 +378,7 @@
                             <div class="card-content-layer card-front-content-layer" id="card-front-content">
 
                                 <div id="card-logo" data-input-target-id="logo-drop-zone">
-                                    <img src="mc-prime-nfc.png" alt="شعار MC PRIME لتصميم بطاقات العمل الذكية"
+                                    <img src="mc-prime-nfc.png" alt="Logo MC PRIME to design smart business cards"
                                         class="logo-front" id="card-logo-img">
                                 </div>
 
@@ -410,9 +406,9 @@
                     </div>
                 </div>
 
-                <button id="flip-card-btn-mobile" class="btn btn-secondary" title="تقليب الكارت">
+                <button id="flip-card-btn-mobile" class="btn btn-secondary" title="Flip Card">
                     <i class="fas fa-sync-alt"></i>
-                    <span>تقليب الكارت</span>
+                    <span>Flip Card</span>
                 </button>
 
             </main>
@@ -424,21 +420,21 @@
             <details class="fieldset-accordion lp-accordion" open>
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-image"></i></span>
-                    <span>الشعار</span>
+                    <span>Logo</span>
                     <!-- Toggle Switch -->
-                    <label class="lp-toggle" title="Show / Hide الشعار" onclick="event.stopPropagation()">
+                    <label class="lp-toggle" title="Show / Hide Logo" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-logo" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
                     </label>
                 </summary>
 
                 <div class="fieldset-content lp-body" id="logo-drop-zone">
-                    <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة هنا</span></div>
+                    <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
 
                     <!-- ① Upload Zone -->
                     <div class="lp-upload-zone" id="lp-upload-zone-click">
                         <div class="lp-preview-wrap">
-                            <img id="logo-preview" src="mc-prime-nfc.png" alt="Preview الشعار" class="lp-preview-img">
+                            <img id="logo-preview" src="mc-prime-nfc.png" alt="Preview Logo" class="lp-preview-img">
                             <div class="lp-spinner-wrap"><div class="spinner" id="logo-spinner" style="display:none;"></div></div>
                         </div>
                         <div class="lp-upload-actions">
@@ -459,7 +455,7 @@
                         <input type="text" id="input-logo" value="mc-prime-nfc.png"
                             class="lp-input"
                             data-update-target="card-logo-img" data-update-property="src"
-                            placeholder="https://... أو مسار محلي">
+                            placeholder="https://... or local path">
                     </div>
 
                     <!-- ② Size + Alignment -->
@@ -477,15 +473,15 @@
                         <div>
                             <label class="lp-label"><i class="fas fa-align-center"></i> Image URL</label>
                             <div class="lp-align-btns" id="logo-align-group">
-                                <label class="lp-align-btn" title="يسار">
+                                <label class="lp-align-btn" title="Left">
                                     <input type="radio" name="logo-align" value="flex-start">
                                     <i class="fas fa-align-right"></i>
                                 </label>
-                                <label class="lp-align-btn lp-align-active" title="وسط">
+                                <label class="lp-align-btn lp-align-active" title="Center">
                                     <input type="radio" name="logo-align" value="center" checked>
                                     <i class="fas fa-align-center"></i>
                                 </label>
-                                <label class="lp-align-btn" title="يمين">
+                                <label class="lp-align-btn" title="Right">
                                     <input type="radio" name="logo-align" value="flex-end">
                                     <i class="fas fa-align-left"></i>
                                 </label>
@@ -508,20 +504,20 @@
                         <div>
                             <label class="lp-label"><i class="fas fa-fill-drip"></i> Image URL</label>
                             <div class="lp-swatches">
-                                <button type="button" class="lp-swatch lp-swatch-active" data-bg="transparent" title="بدون"
+                                <button type="button" class="lp-swatch lp-swatch-active" data-bg="transparent" title="None"
                                     style="background:repeating-conic-gradient(#aaa 0% 25%,transparent 0% 50%) 0/10px 10px;"
                                     onclick="lpSetBg(this,'transparent')"></button>
-                                <button type="button" class="lp-swatch" data-bg="#ffffff" title="أبيض"
+                                <button type="button" class="lp-swatch" data-bg="#ffffff" title="White"
                                     style="background:#ffffff;"
                                     onclick="lpSetBg(this,'#ffffff')"></button>
-                                <button type="button" class="lp-swatch" data-bg="#000000" title="أسود"
+                                <button type="button" class="lp-swatch" data-bg="#000000" title="Black"
                                     style="background:#000000;"
                                     onclick="lpSetBg(this,'#000000')"></button>
                                 <!-- Hidden select for JS compatibility -->
                                 <select id="logo-bg-color" style="display:none;">
-                                    <option value="transparent" selected>بدون</option>
-                                    <option value="#ffffff">أبيض</option>
-                                    <option value="#000000">أسود</option>
+                                    <option value="transparent" selected>None</option>
+                                    <option value="#ffffff">White</option>
+                                    <option value="#000000">Black</option>
                                 </select>
                             </div>
                         </div>
@@ -530,7 +526,7 @@
                     <!-- ④ Shadow (collapsible) -->
                     <details class="lp-sub-accordion">
                         <summary class="lp-sub-summary">
-                            <i class="fas fa-droplet"></i> ظل الشعار
+                            <i class="fas fa-droplet"></i> Logo Shadow
                             <label class="lp-toggle lp-toggle-sm" onclick="event.stopPropagation()">
                                 <input type="checkbox" id="logo-shadow-enabled">
                                 <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -556,11 +552,11 @@
                     <div class="lp-section">
                         <label class="lp-label"><i class="fas fa-layer-group"></i> Image URL</label>
                         <div class="lp-placement-btns">
-                            <label class="lp-place-btn lp-place-active" title="الواجهة الFrontة">
+                            <label class="lp-place-btn lp-place-active" title="Front Face">
                                 <input type="radio" name="placement-logo" value="front" checked>
                                 <i class="fas fa-id-card"></i> Front
                             </label>
-                            <label class="lp-place-btn" title="الواجهة Image URL">
+                            <label class="lp-place-btn" title="Back Image">
                                 <input type="radio" name="placement-logo" value="back">
                                 <i class="fas fa-id-card-alt"></i> Back
                             </label>
@@ -572,21 +568,21 @@
                         <label class="lp-label"><i class="fas fa-arrows-up-down-left-right"></i> Image URL</label>
                         <div class="lp-dpad position-controls-grid" data-target-id="card-logo">
                             <div class="lp-dpad-row">
-                                <button type="button" class="lp-dpad-btn move-btn" data-direction="up" title="للأعلى">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="up" title="Up">
                                     <i class="fas fa-chevron-up"></i>
                                 </button>
                             </div>
                             <div class="lp-dpad-row">
-                                <button type="button" class="lp-dpad-btn move-btn" data-direction="left" title="لليسار">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="left" title="Left">
                                     <i class="fas fa-chevron-left"></i>
                                 </button>
                                 <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
-                                <button type="button" class="lp-dpad-btn move-btn" data-direction="right" title="لليمين">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="right" title="Right">
                                     <i class="fas fa-chevron-right"></i>
                                 </button>
                             </div>
                             <div class="lp-dpad-row">
-                                <button type="button" class="lp-dpad-btn move-btn" data-direction="down" title="للأسفل">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="down" title="Down">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
                             </div>
@@ -648,16 +644,16 @@
             <details class="fieldset-accordion lp-accordion" open>
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-user-circle"></i></span>
-                    <span>الصورة الشخصية</span>
+                    <span>Profile Picture</span>
                     <!-- Toggle Switch -->
-                    <label class="lp-toggle" title="Show / Hide الصورة" onclick="event.stopPropagation()">
+                    <label class="lp-toggle" title="Show / Hide Image" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-photo" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
                     </label>
                 </summary>
 
                 <div class="fieldset-content lp-body" id="photo-controls-fieldset">
-                    <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة هنا</span></div>
+                    <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
 
                     <!-- ① Upload Zone -->
                     <div class="lp-upload-zone" id="lp-photo-upload-zone-click" onclick="document.getElementById('input-photo-upload').click();">
@@ -683,26 +679,26 @@
                         <label class="lp-label" for="input-photo-url">
                             <i class="fas fa-link"></i> Image URL
                         </label>
-                        <input type="url" id="input-photo-url" class="lp-input" placeholder="https://... أو مسار محلي">
+                        <input type="url" id="input-photo-url" class="lp-input" placeholder="https://... or local path">
                     </div>
 
                     <!-- ② Shape -->
                     <div class="lp-section">
                         <label class="lp-label"><i class="fas fa-shapes"></i> Image URL</label>
                         <div class="lp-align-btns shape-btns" id="photo-shape-group">
-                            <label class="lp-align-btn lp-align-active" title="دائري">
+                            <label class="lp-align-btn lp-align-active" title="Rounded">
                                 <input type="radio" name="photo-shape" value="circle" checked>
                                 <div style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor;"></div>
                             </label>
-                            <label class="lp-align-btn" title="مربع بحواف دائرية">
+                            <label class="lp-align-btn" title="Rounded Square">
                                 <input type="radio" name="photo-shape" value="rounded">
                                 <div style="width: 16px; height: 16px; border-radius: 4px; border: 2px solid currentColor;"></div>
                             </label>
-                            <label class="lp-align-btn" title="مربع">
+                            <label class="lp-align-btn" title="Square">
                                 <input type="radio" name="photo-shape" value="square">
                                 <div style="width: 16px; height: 16px; border: 2px solid currentColor;"></div>
                             </label>
-                            <label class="lp-align-btn" title="سداسي">
+                            <label class="lp-align-btn" title="Hexagon">
                                 <input type="radio" name="photo-shape" value="hexagon">
                                 <div style="width: 16px; height: 16px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); background: currentColor;"></div>
                             </label>
@@ -742,15 +738,15 @@
                         <div>
                             <label class="lp-label"><i class="fas fa-align-center"></i> Image URL</label>
                             <div class="lp-align-btns" id="photo-align-group">
-                                <label class="lp-align-btn" title="يسار">
+                                <label class="lp-align-btn" title="Left">
                                     <input type="radio" name="photo-align" value="flex-start">
                                     <i class="fas fa-align-right"></i>
                                 </label>
-                                <label class="lp-align-btn lp-align-active" title="وسط">
+                                <label class="lp-align-btn lp-align-active" title="Center">
                                     <input type="radio" name="photo-align" value="center" checked>
                                     <i class="fas fa-align-center"></i>
                                 </label>
-                                <label class="lp-align-btn" title="يمين">
+                                <label class="lp-align-btn" title="Right">
                                     <input type="radio" name="photo-align" value="flex-end">
                                     <i class="fas fa-align-left"></i>
                                 </label>
@@ -762,22 +758,22 @@
                     <div class="lp-section">
                         <label class="lp-label"><i class="fas fa-palette"></i> Image URL</label>
                         <div class="lp-swatches" style="margin-top: 5px;">
-                            <button type="button" class="lp-swatch" data-bg="transparent" title="بدون"
+                            <button type="button" class="lp-swatch" data-bg="transparent" title="None"
                                 style="background:repeating-conic-gradient(#aaa 0% 25%,transparent 0% 50%) 0/10px 10px;"
                                 onclick="lpSetBorderColor(this, 'transparent')"></button>
-                            <button type="button" class="lp-swatch lp-swatch-active" data-bg="#ffffff" title="أبيض"
+                            <button type="button" class="lp-swatch lp-swatch-active" data-bg="#ffffff" title="White"
                                 style="background:#ffffff;"
                                 onclick="lpSetBorderColor(this, '#ffffff')"></button>
-                            <button type="button" class="lp-swatch" data-bg="#f1c40f" title="ذهبي"
+                            <button type="button" class="lp-swatch" data-bg="#f1c40f" title="Gold"
                                 style="background:#f1c40f;"
                                 onclick="lpSetBorderColor(this, '#f1c40f')"></button>
-                            <button type="button" class="lp-swatch" data-bg="#4da6ff" title="أزرق"
+                            <button type="button" class="lp-swatch" data-bg="#4da6ff" title="Blue"
                                 style="background:#4da6ff;"
                                 onclick="lpSetBorderColor(this, '#4da6ff')"></button>
-                            <button type="button" class="lp-swatch" data-bg="#a855f7" title="بنفسجي"
+                            <button type="button" class="lp-swatch" data-bg="#a855f7" title="Purple"
                                 style="background:#a855f7;"
                                 onclick="lpSetBorderColor(this, '#a855f7')"></button>
-                            <button type="button" class="lp-swatch" data-bg="#000000" title="أسود"
+                            <button type="button" class="lp-swatch" data-bg="#000000" title="Black"
                                 style="background:#000000;"
                                 onclick="lpSetBorderColor(this, '#000000')"></button>
                             <!-- Hidden input for JS compatibility -->
@@ -788,7 +784,7 @@
                     <!-- ⑥ Shadow (collapsible) -->
                     <details class="lp-sub-accordion">
                         <summary class="lp-sub-summary">
-                            <i class="fas fa-droplet"></i> ظل الصورة
+                            <i class="fas fa-droplet"></i> Image Shadow
                             <label class="lp-toggle lp-toggle-sm" onclick="event.stopPropagation()">
                                 <input type="checkbox" id="photo-shadow-enabled">
                                 <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -814,11 +810,11 @@
                     <div class="lp-section">
                         <label class="lp-label"><i class="fas fa-layer-group"></i> Image URL</label>
                         <div class="lp-placement-btns">
-                            <label class="lp-place-btn lp-place-active" title="الواجهة الFrontة">
+                            <label class="lp-place-btn lp-place-active" title="Front Face">
                                 <input type="radio" name="placement-photo" value="front" checked>
                                 <i class="fas fa-id-card"></i> Front
                             </label>
-                            <label class="lp-place-btn" title="الواجهة Image URL">
+                            <label class="lp-place-btn" title="Back Image">
                                 <input type="radio" name="placement-photo" value="back">
                                 <i class="fas fa-id-card-alt"></i> Back
                             </label>
@@ -830,21 +826,21 @@
                         <label class="lp-label"><i class="fas fa-arrows-up-down-left-right"></i> Image URL</label>
                         <div class="lp-dpad position-controls-grid" data-target-id="card-personal-photo-wrapper">
                             <div class="lp-dpad-row">
-                                <button type="button" class="lp-dpad-btn move-btn" data-direction="up" title="للأعلى">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="up" title="Up">
                                     <i class="fas fa-chevron-up"></i>
                                 </button>
                             </div>
                             <div class="lp-dpad-row">
-                                <button type="button" class="lp-dpad-btn move-btn" data-direction="left" title="لليسار">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="left" title="Left">
                                     <i class="fas fa-chevron-left"></i>
                                 </button>
                                 <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
-                                <button type="button" class="lp-dpad-btn move-btn" data-direction="right" title="لليمين">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="right" title="Right">
                                     <i class="fas fa-chevron-right"></i>
                                 </button>
                             </div>
                             <div class="lp-dpad-row">
-                                <button type="button" class="lp-dpad-btn move-btn" data-direction="down" title="للأسفل">
+                                <button type="button" class="lp-dpad-btn move-btn" data-direction="down" title="Down">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
                             </div>
@@ -933,7 +929,7 @@
             <details class="fieldset-accordion lp-accordion" open id="name-accordion">
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-user-tag"></i></span>
-                    <span>الاسم الكامل</span>
+                    <span>Full Name</span>
                     <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-name" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -942,7 +938,7 @@
 
                 <div class="fieldset-content lp-body" id="name-controls-fieldset">
                     <div class="lp-section" style="padding-top:0;">
-                        <textarea id="input-name_ar" class="lp-input" rows="1" data-lang="ar" data-update-target="card-name" data-update-property="innerText" placeholder="الاسم الكامل"></textarea>
+                        <textarea id="input-name_ar" class="lp-input" rows="1" data-lang="ar" data-update-target="card-name" data-update-property="innerText" placeholder="Full Name"></textarea>
                         <textarea id="input-name_en" class="lp-input" rows="1" data-lang="en" style="display:none;" data-update-target="card-name" data-update-property="innerText" placeholder="Full Name"></textarea>
                     </div>
                     
@@ -1009,7 +1005,7 @@
             <details class="fieldset-accordion lp-accordion" open id="tagline-accordion">
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-briefcase"></i></span>
-                    <span>المسمى الوظيفي</span>
+                    <span>Job Title</span>
                     <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-tagline" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -1018,7 +1014,7 @@
 
                 <div class="fieldset-content lp-body" id="tagline-controls-fieldset">
                     <div class="lp-section" style="padding-top:0;">
-                        <textarea id="input-tagline_ar" class="lp-input" rows="1" data-lang="ar" data-update-target="card-tagline" data-update-property="innerText" placeholder="المسمى الوظيفي أو النشاط"></textarea>
+                        <textarea id="input-tagline_ar" class="lp-input" rows="1" data-lang="ar" data-update-target="card-tagline" data-update-property="innerText" placeholder="Job Title or Business"></textarea>
                         <textarea id="input-tagline_en" class="lp-input" rows="1" data-lang="en" style="display:none;" data-update-target="card-tagline" data-update-property="innerText" placeholder="Job Title / Company"></textarea>
                     </div>
 
@@ -1330,7 +1326,7 @@
             <details class="fieldset-accordion lp-accordion" id="qr-code-accordion">
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-qrcode"></i></span>
-                    <span>رمز QR</span>
+                    <span>QR Code</span>
                     <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-qr" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -1349,15 +1345,15 @@
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px;">
                             <label class="lp-qr-src-btn lp-qr-active" data-val="auto-card" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(77,166,255,0.45);background:rgba(77,166,255,0.15);color:var(--accent-primary);font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;">
                                 <input type="radio" name="qr-source" value="auto-card" checked style="display:none;">
-                                <i class="fas fa-id-card"></i> رابط البطاقة
+                                <i class="fas fa-id-card"></i> Card Link
                             </label>
                             <label class="lp-qr-src-btn" data-val="auto-vcard" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
                                 <input type="radio" name="qr-source" value="auto-vcard" style="display:none;">
-                                <i class="fas fa-address-book"></i> بيانات vCard
+                                <i class="fas fa-address-book"></i> vCard Data
                             </label>
                             <label class="lp-qr-src-btn" data-val="custom" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
                                 <input type="radio" name="qr-source" value="custom" style="display:none;">
-                                <i class="fas fa-pen"></i> رابط مخصص
+                                <i class="fas fa-pen"></i> Custom Link
                             </label>
                             <label class="lp-qr-src-btn" data-val="upload" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
                                 <input type="radio" name="qr-source" value="upload" style="display:none;">
@@ -1370,7 +1366,7 @@
                             <button id="generate-auto-qr-btn" class="lp-upload-btn" style="width:100%;justify-content:center;background:linear-gradient(135deg,rgba(77,166,255,0.25),rgba(77,166,255,0.1));border-color:rgba(77,166,255,0.5);">
                                 <i class="fas fa-qrcode"></i> Generate QR Code
                             </button>
-                            <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:8px;text-align:center;line-height:1.5;">يحفظ تصميمك وينشئ رمز QR لرابط مشاركة البطاقة</p>
+                            <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:8px;text-align:center;line-height:1.5;">Saves your design and creates a sharing URL & QR code</p>
                         </div>
 
                         <!-- Custom URL input -->
@@ -1382,7 +1378,7 @@
                         <div class="form-group" id="qr-upload-group" style="display:none; margin-top:8px;">
                             <div class="lp-upload-zone" style="flex-direction:column;gap:8px;text-align:center;" onclick="document.getElementById('input-qr-upload').click()">
                                 <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:var(--accent-primary);"></i>
-                                <span style="font-size:0.78rem;color:var(--text-secondary);">اUpload Image QR (أقل من 2MB)</span>
+                                <span style="font-size:0.78rem;color:var(--text-secondary);">Upload QR Image (<2MB)</span>
                                 <input type="file" id="input-qr-upload" accept="image/*" style="display:none;">
                             </div>
                             <div class="input-error-msg" id="qr-upload-error"></div>
@@ -1416,12 +1412,12 @@
                         <div class="lp-section">
                             <label class="lp-label"><i class="fas fa-th"></i> Image URL</label>
                             <select id="qr-dots-type" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
-                                <option value="square">مربعات (Square)</option>
-                                <option value="dots">نقاط (Dots)</option>
-                                <option value="rounded" selected>دائري (Rounded)</option>
-                                <option value="classy">أنيق (Classy)</option>
-                                <option value="classy-rounded">أنيق دائري</option>
-                                <option value="extra-rounded">دائري جداً</option>
+                                <option value="square">Squares (Square)</option>
+                                <option value="dots">Dots (Rounded)</option>
+                                <option value="rounded" selected>Rounded</option>
+                                <option value="classy">Classy</option>
+                                <option value="classy-rounded">Elegant Rounded</option>
+                                <option value="extra-rounded">Extra Rounded</option>
                             </select>
                         </div>
 
@@ -1429,9 +1425,9 @@
                         <div class="lp-section">
                             <label class="lp-label"><i class="fas fa-border-all"></i> Image URL</label>
                             <select id="qr-corners-type" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
-                                <option value="square">مربعات (Square)</option>
-                                <option value="dot">نقاط (Dot)</option>
-                                <option value="extra-rounded" selected>دائري (Extra Rounded)</option>
+                                <option value="square">Squares (Square)</option>
+                                <option value="dot">Dots (Dot)</option>
+                                <option value="extra-rounded" selected>Extra Rounded</option>
                             </select>
                         </div>
 
@@ -1559,7 +1555,7 @@
             <details class="fieldset-accordion lp-accordion" id="contact-info-accordion">
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-share-alt"></i></span>
-                    <span>بيانات التواصل</span>
+                    <span>Contact Info</span>
                     <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
                         <input type="checkbox" id="toggle-master-social" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -1840,7 +1836,7 @@
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-share" style="display: none;">
             <fieldset class="fieldset">
-                <legend>الحفظ والمشاركة</legend>
+                <legend>Save & Share</legend>
                 <div class="form-group">
                     <button class="btn btn-primary mobile-action-btn" data-trigger-id="save-share-btn"
                         style="width: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; font-weight: 600;">
@@ -1862,7 +1858,7 @@
             </fieldset>
 
             <fieldset class="fieldset">
-                <legend>الPreview</legend>
+                <legend>Preview</legend>
                 <div class="control-grid">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-front">
                         <i class="fas fa-image"></i> Save to Gallery
@@ -1894,7 +1890,7 @@
             </fieldset>
 
             <fieldset class="fieldset">
-                <legend>أخرى</legend>
+                <legend>Other</legend>
                 <div class="form-group">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="share-editor-btn"
                         style="width: 100%;">
@@ -1910,7 +1906,7 @@
             </fieldset>
 
             <fieldset class="fieldset mobile-user-section" id="mobile-user-section">
-                <legend>الحساب</legend>
+                <legend>Account</legend>
                 <div class="form-group" id="mobile-user-login-container">
                     <a href="login.html" id="mobile-user-login-link" class="btn btn-secondary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center;">
@@ -1945,31 +1941,31 @@
     <div id="export-loading-overlay" class="modal-overlay">
         <div class="modal-content" style="text-align: center;">
             <div class="spinner" style="margin: 0 auto 15px auto;"></div>
-            <p>جاري تجهيز الصورة عالية الجودة، قد يستغرق الأمر بضع لحظات...</p>
+            <p>Preparing high quality image, this may take a few moments...</p>
         </div>
     </div>
 
     <div id="export-modal-overlay" class="modal-overlay">
         <div class="modal-content">
-            <h3>خيارات التصدير</h3>
-            <button id="export-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
+            <h3>Export Options</h3>
+            <button id="export-modal-close" class="modal-close" aria-label="Close">&times;</button>
             <div class="form-group">
-                <label for="export-format">نوع الملف</label>
+                <label for="export-format">File Type</label>
                 <select id="export-format">
-                    <option value="png">PNG (جودة عالية)</option>
-                    <option value="jpeg">JPEG (حجم أصغر)</option>
+                    <option value="png">PNG (High Quality)</option>
+                    <option value="jpeg">JPEG (Smaller size)</option>
                 </select>
             </div>
             <div class="form-group" id="export-quality-group" style="display: none;">
-                <label for="export-quality">الجودة (1-100)</label>
+                <label for="export-quality">Quality (1-100)</label>
                 <div class="quality-slider-wrapper">
                     <input type="range" id="export-quality" min="10" max="100" value="92">
                     <span id="export-quality-value">92</span>
                 </div>
             </div>
             <div class="form-group">
-                <label>حجم الصورة (الدقة) <i class="fas fa-question-circle"
-                        data-tooltip="اختر 2x أو 3x للحصول على جودة مناسبة للطباعة." aria-hidden="true"></i></label>
+                <label>Image Size (Resolution) <i class="fas fa-question-circle"
+                        data-tooltip="Select 2x or 3x For printing quality." aria-hidden="true"></i></label>
                 <div class="scale-buttons">
                     <button class="scale-btn" data-scale="1">1x (Web)</button>
                     <button class="scale-btn selected" data-scale="2">2x (Print)</button>
@@ -1984,8 +1980,8 @@
 
     <div id="gallery-modal-overlay" class="modal-overlay">
         <div class="modal-content gallery-modal">
-            <h3>معرض التصاميم الSavedة</h3>
-            <button id="gallery-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
+            <h3>Saved Designs Gallery</h3>
+            <button id="gallery-modal-close" class="modal-close" aria-label="Close">&times;</button>
             <div id="gallery-grid" class="gallery-grid">
             </div>
             <div class="modal-footer">
@@ -2000,8 +1996,8 @@
     <div id="share-fallback-modal-overlay" class="modal-overlay">
         <div class="modal-content">
             <h3>Share Link</h3>
-            <button id="share-fallback-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
-            <p>متصفحك لا يدعم المشاركة المباشرة. استخدم أحد الخيارات التالية:</p>
+            <button id="share-fallback-modal-close" class="modal-close" aria-label="Close">&times;</button>
+            <p>Your browser doesn't support direct sharing. Use one of these options:</p>
             <div class="share-fallback-buttons">
                 <a id="share-email" target="_blank"><i class="fas fa-envelope" aria-hidden="true"></i> Email</a>
                 <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> Image URL</a>
@@ -2011,22 +2007,21 @@
         </div>
     </div>
 
-    <!-- === مودال التحرير الجماعي الجديد === -->
+    <!-- === New Co-editing Modal === -->
     <div id="collab-modal-overlay" class="modal-overlay">
         <div class="modal-content">
-            <h3>جلسة التحرير الجماعي</h3>
-            <button id="collab-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
-            <p>شارك هذا الرابط مع الآخرين لدعوتهم للتحرير معك في الوقت الفعلي.</p>
+            <h3>Co-editing Session</h3>
+            <button id="collab-modal-close" class="modal-close" aria-label="Close">&times;</button>
+            <p>Share this link with others to invite them to co-edit in real-time.</p>
             <div class="form-group">
-                <label for="collab-link-input">رابط الجلسة</label>
+                <label for="collab-link-input">Session Link</label>
                 <div style="display: flex; gap: 10px;">
                     <input type="text" id="collab-link-input" readonly style="flex-grow: 1;">
                     <button id="copy-collab-link-btn" class="btn btn-secondary"
                         style="width: auto; margin-top: 0;">Copy</button>
                 </div>
             </div>
-            <p style="font-size: 0.8rem; color: var(--text-secondary);">ملاحظة: أي شخص لديه هذا الرابط يمكنه تعديل
-                تصميمك. ستنتهي الجلسة عند إغلاق الصفحة.</p>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">Note: Anyone with this link can edit your design. Session ends when page is closed.</p>
             <div id="collab-status" style="margin-top: 15px; font-weight: bold;">Status: Disconnected</div>
         </div>
     </div>
@@ -2039,13 +2034,13 @@
     <div id="qrcode-container" class="visually-hidden"></div>
     <div id="qr-code-temp-generator"></div>
 
-    <button id="back-to-top-btn" title="الرجوع للأعلى" aria-label="الرجوع إلى أعلى الصفحة"><i class="fas fa-arrow-up"
+    <button id="back-to-top-btn" title="Back to Top" aria-label="Back to Top"><i class="fas fa-arrow-up"
             aria-hidden="true"></i></button>
 
     <div id="help-modal-overlay" class="modal-overlay">
         <div class="modal-content" style="max-width: 700px;">
-            <h3 style="text-align: center; margin-top: 0;">مركز المساعدة</h3>
-            <button id="help-modal-close" class="modal-close" aria-label="إغلاق">&times;</button>
+            <h3 style="text-align: center; margin-top: 0;">Help Center</h3>
+            <button id="help-modal-close" class="modal-close" aria-label="Close">&times;</button>
 
             <nav class="help-tabs-nav">
                 <button class="help-tab-btn active" data-tab-target="tab-video-tutorial">
@@ -2058,50 +2053,46 @@
 
             <div class="help-tabs-content">
                 <div id="tab-video-tutorial" class="help-tab-pane active">
-                    <h4>شرح سريع لوظائف المحرر</h4>
-                    <p>شاهد هذا الفيديو القصير (دقيقة واحدة) لمعرفة كيفية استخدام أهم الميزات.</p>
+                    <h4>Quick Editor Guide</h4>
+                    <p>Watch this short video (1 minute) to learn how to use the key features.</p>
                     <div class="video-container">
                         <iframe src="" title="YouTube video player" frameborder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowfullscreen></iframe>
                     </div>
                     <hr>
-                    <h4>شروحات متحركة (GIFs)</h4>
+                    <h4>Animated Guides (GIFs)</h4>
                     <div class="gif-grid">
                         <div>
-                            <p><strong>1. تغيير مكان العناصر</strong></p>
+                            <p><strong>1. Change Element Position</strong></p>
                             <img src="https://media.giphy.com/media/3o7TKSjRrfIPjeI6e4/giphy.gif"
-                                alt="شرح متحرك لكيفية سحب وإفلات العناصر">
+                                alt="Animated guide: How to drag and drop elements">
                         </div>
                         <div>
-                            <p><strong>2. رفع شعار خاص بك</strong></p>
+                            <p><strong>2. Upload your own logo</strong></p>
                             <img src="https://media.giphy.com/media/l41lUj1oeHo1h2b1S/giphy.gif"
-                                alt="شرح متحرك لكيفية رفع شعار">
+                                alt="Animated guide: How to upload logo">
                         </div>
                     </div>
                 </div>
 
                 <div id="tab-faq" class="help-tab-pane">
                     <details class="fieldset-accordion" open>
-                        <summary>كيف أغير مكان الشعار أو الاسم؟</summary>
+                        <summary>How do I change the logo or name position?</summary>
                         <div class="fieldset-content">
-                            <p>ببساطة، اضغط على العنصر الذي تريد تحريكه (مثل الشعار أو مربع النص) واستمر بالضغط مع
-                                سحبه
-                                إلى Image URL الجديد على البطاقة.</p>
+                            <p>Simply press and hold the element you want to move and drag it to the new position.</p>
                         </div>
                     </details>
                     <details class="fieldset-accordion">
-                        <summary>لا يظهر رمز الـ QR، ماذا أفعل؟</summary>
+                        <summary>QR Code doesn't appear, what should I do?</summary>
                         <div class="fieldset-content">
-                            <p>تأكد من اختيار مصدر للرمز من قسم "رمز الاستجابة السريعة (QR)". الخيار الموصى به هو
-                                "رابط
-                                البطاقة"، وبعد اختياره اضغط على زر "إنشاء/تحديث QR Code".</p>
+                            <p>Ensure a source is selected from 'QR Code' section. Recommended is 'Card Link', then click 'Generate/Update QR Code'.</p>
                         </div>
                     </details>
                     <details class="fieldset-accordion">
-                        <summary>كيف أحفظ التصميم كصورة؟</summary>
+                        <summary>How do I save the design as an image?</summary>
                         <div class="fieldset-content">
-                            <p>من شريط الPreview العلوي، اضغط على زر "Preview" واختر "صورة الواجهة" أو "صورة Image URL".
+                            <p>From the top preview bar, click 'Preview' and select 'Front Image' or 'Back Image'.
                             </p>
                         </div>
                     </details>
@@ -2110,17 +2101,17 @@
         </div>
     </div>
 
-    <!-- مودال قص الصور الجديد -->
+    <!-- New Image Crop Modal -->
     <div id="crop-modal-overlay" class="modal-overlay">
         <div class="modal-content crop-modal-content">
-            <h3>قص الصورة</h3>
+            <h3>Crop Image</h3>
             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 15px;">
-                حرّك الصورة لتحديد الجزء المطلوب ثم اضغط "تأكيد".
+                Move the image to select the desired area then press 'Confirm'.
             </p>
 
-            <!-- الحاوية الجديدة التي سيتم تعبئتها بواسطة JavaScript -->
+            <!-- New container populated by JS -->
             <div id="crop-image-container">
-                <!-- سيتم إنشاء عنصر IMG هنا ديناميكياً -->
+                <!-- IMG element will be created here dynamically -->
             </div>
 
             <div class="modal-footer" style="justify-content: flex-end;">
@@ -2134,7 +2125,7 @@
     <div id="ai-backgrounds-modal" class="ai-modal-overlay" style="display: none;">
         <div class="ai-modal">
             <div class="ai-modal-header">
-                <h3><i class="fas fa-magic"></i> Backات بالذكاء الاصطناعي</h3>
+                <h3><i class="fas fa-magic"></i> AI Backgrounds</h3>
                 <button id="close-ai-modal" class="ai-modal-close">&times;</button>
             </div>
             <div class="ai-modal-body">
@@ -2148,7 +2139,7 @@
                             <div class="pattern-overlay geometric-pattern"></div>
                             <i class="fas fa-shapes"></i>
                         </div>
-                        <span>هندسي</span>
+                        <span>Geometric</span>
                     </div>
 
                     <!-- Gradient Pattern -->
@@ -2157,7 +2148,7 @@
                             style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                             <i class="fas fa-fill-drip"></i>
                         </div>
-                        <span>تدرج لوني</span>
+                        <span>Gradient</span>
                     </div>
 
                     <!-- Abstract Pattern -->
@@ -2167,7 +2158,7 @@
                             <div class="pattern-overlay abstract-pattern"></div>
                             <i class="fas fa-paint-brush"></i>
                         </div>
-                        <span>تجريدي</span>
+                        <span>Abstract</span>
                     </div>
 
                     <!-- Waves Pattern -->
@@ -2177,7 +2168,7 @@
                             <div class="pattern-overlay waves-pattern"></div>
                             <i class="fas fa-water"></i>
                         </div>
-                        <span>موجات</span>
+                        <span>Waves</span>
                     </div>
 
                     <!-- Dots Pattern -->
@@ -2187,7 +2178,7 @@
                             <div class="pattern-overlay dots-pattern"></div>
                             <i class="fas fa-braille"></i>
                         </div>
-                        <span>نقاط</span>
+                        <span>Dots</span>
                     </div>
 
                     <!-- Lines Pattern -->
@@ -2197,7 +2188,7 @@
                             <div class="pattern-overlay lines-pattern"></div>
                             <i class="fas fa-grip-lines"></i>
                         </div>
-                        <span>خطوط</span>
+                        <span>Lines</span>
                     </div>
 
                     <!-- Triangles Pattern -->
@@ -2207,7 +2198,7 @@
                             <div class="pattern-overlay triangles-pattern"></div>
                             <i class="fas fa-play"></i>
                         </div>
-                        <span>مثلثات</span>
+                        <span>Triangles</span>
                     </div>
 
                     <!-- Noise Pattern -->
@@ -2217,29 +2208,29 @@
                             <div class="pattern-overlay noise-pattern"></div>
                             <i class="fas fa-random"></i>
                         </div>
-                        <span>ضوضاء</span>
+                        <span>Noise</span>
                     </div>
                 </div>
 
                 <div class="ai-color-picker-section">
-                    <h4><i class="fas fa-palette"></i> اختر Image URL الأساسي</h4>
+                    <h4><i class="fas fa-palette"></i> Select Base Color</h4>
                     <div class="ai-color-options">
                         <button class="ai-color-btn" data-color="#667eea" style="background: #667eea;"
-                            title="بنفسجي"></button>
+                            title="Purple"></button>
                         <button class="ai-color-btn" data-color="#f5576c" style="background: #f5576c;"
-                            title="وردي"></button>
+                            title="Pink"></button>
                         <button class="ai-color-btn" data-color="#4facfe" style="background: #4facfe;"
-                            title="أزرق"></button>
+                            title="Blue"></button>
                         <button class="ai-color-btn" data-color="#00f2fe" style="background: #00f2fe;"
-                            title="سماوي"></button>
+                            title="Cyan"></button>
                         <button class="ai-color-btn" data-color="#43e97b" style="background: #43e97b;"
-                            title="أخضر"></button>
+                            title="Green"></button>
                         <button class="ai-color-btn" data-color="#fa709a" style="background: #fa709a;"
-                            title="فوشيا"></button>
+                            title="Fuchsia"></button>
                         <button class="ai-color-btn" data-color="#fee140" style="background: #fee140;"
-                            title="أصفر"></button>
+                            title="Yellow"></button>
                         <button class="ai-color-btn" data-color="#30cfd0" style="background: #30cfd0;"
-                            title="تركواز"></button>
+                            title="Turquoise"></button>
                     </div>
                 </div>
 
@@ -2263,11 +2254,11 @@
     <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" data-target="panel-elements">
             <i class="fas fa-pen"></i>
-            <span>المحتوى</span>
+            <span>Content</span>
         </button>
         <button class="mobile-nav-item" data-target="panel-design">
             <i class="fas fa-palette"></i>
-            <span>التصميم</span>
+            <span>Design</span>
         </button>
         <button class="mobile-nav-item" data-target="panel-share">
             <i class="fas fa-share-square"></i>
@@ -2280,49 +2271,49 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>MC PRIME</h3>
-                    <p>نقدم حلول بطاقات العمل الذكية NFC للأفراد والشركات.</p>
+                    <p>We provide smart NFC business card solutions for individuals and businesses.</p>
                 </div>
                 <div class="footer-section">
-                    <h3>روابط سريعة</h3>
+                    <h3>Quick Links</h3>
                     <ul role="list">
-                        <li><a href="index.html#features">المميزات</a></li>
+                        <li><a href="index.html#features">Features</a></li>
                         <li><a href="gallery.html">Home</a></li>
                         <li><a href="blog.html">Home</a></li>
-                        <li><a href="editor.html">محرر التصميم</a></li>
+                        <li><a href="editor.html">Design Editor</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>الدعم</h3>
+                    <h3>Support</h3>
                     <ul role="list">
-                        <li><a href="index.html#faq">الأسئلة الشائعة</a></li>
-                        <li><a href="contact.html">اتصل بنا</a></li>
-                        <li><a href="privacy.html">سياسة الخصوصية</a></li>
+                        <li><a href="index.html#faq">FAQ</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>تابعنا</h3>
+                    <h3>Follow Us</h3>
                     <div class="social-links">
                         <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="Image URL" title="زر صفحتنا على Image URL">
+                            aria-label="Image URL" title="Our page button on Image URL">
                             <i class="fab fa-facebook-f" aria-hidden="true"></i>
                         </a>
                         <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="إنستغرام" title="تابعنا على إنستغرام">
+                            aria-label="Instagram" title="Follow Us on Instagram">
                             <i class="fab fa-instagram" aria-hidden="true"></i>
                         </a>
                         <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="لينكد إن" title="تواصل معنا على لينكد إن">
+                            aria-label="LinkedIn" title="Connect on LinkedIn">
                             <i class="fab fa-linkedin-in" aria-hidden="true"></i>
                         </a>
                         <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener noreferrer"
-                            aria-label="Image URL" title="تواصل معنا على Image URL">
+                            aria-label="Image URL" title="Contact us on Image URL">
                             <i class="fab fa-whatsapp" aria-hidden="true"></i>
                         </a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 MC PRIME. جميع الحقوق Savedة.</p>
+                <p>&copy; 2025 MC PRIME. All rights reserved.</p>
             </div>
         </div>
     </footer>

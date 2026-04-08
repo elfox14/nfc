@@ -7,7 +7,6 @@
 const Auth = {
 
     getBaseUrl() {
-        if (window.__API_BASE_URL) return window.__API_BASE_URL;
         const p = window.location.protocol;
         const h = window.location.hostname;
         if (p === 'file:') return 'https://nfc-vjy6.onrender.com';
