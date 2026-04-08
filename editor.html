@@ -48,6 +48,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
 
     <!-- ملفات الجافاسكريبت الخاصة بالمشروع (الترتيب مهم) -->
+    <script src="api-config.js"></script>
     <script src="lang-switcher.js" defer></script>
     <script src="/nfc/auth.js" defer></script>
     <script src="security-utils.js" defer></script>
@@ -929,704 +930,912 @@
                 setTimeout(wirePhotoDpad, 800);
             })();
             </script>
+            <!-- ═══ NAME PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" open id="name-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-user-tag"></i></span>
+                    <span>الاسم الكامل</span>
+                    <label class="lp-toggle" title="إظهار / إخفاء" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-name" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
 
-            <details class="fieldset-accordion" id="name-tagline-accordion">
-                <summary>الاسم والمسمى الوظيفي</summary>
-                <div class="fieldset-content">
-                    <div class="form-group">
-                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--accent-primary); font-weight: 600; margin-bottom: 15px; background: rgba(77,166,255,0.05); padding: 8px; border-radius: 6px;">
-                            <input type="checkbox" id="visibility-name" checked style="width: auto; margin-inline-end: 10px;">
-                            <span>إظهار الاسم على الكارت</span>
-                        </label>
-                        <label for="input-name_ar">الاسم الكامل</label>
-                        <!-- UPDATED: Dual language fields -->
-                        <textarea id="input-name_ar" rows="2" data-lang="ar" data-update-target="card-name"
-                            data-update-property="innerText"></textarea>
-                        <textarea id="input-name_en" rows="2" data-lang="en" style="display:none;"
-                            data-update-target="card-name" data-update-property="innerText"
-                            placeholder="Full Name"></textarea>
+                <div class="fieldset-content lp-body" id="name-controls-fieldset">
+                    <div class="lp-section" style="padding-top:0;">
+                        <textarea id="input-name_ar" class="lp-input" rows="1" data-lang="ar" data-update-target="card-name" data-update-property="innerText" placeholder="الاسم الكامل"></textarea>
+                        <textarea id="input-name_en" class="lp-input" rows="1" data-lang="en" style="display:none;" data-update-target="card-name" data-update-property="innerText" placeholder="Full Name"></textarea>
                     </div>
-                    <div class="control-grid">
-                        <div class="form-group"><label for="name-font-size">حجم الخط</label><input type="range"
-                                id="name-font-size" min="16" max="48" value="22" data-update-target="card-name"
-                                data-update-property="style.fontSize" data-update-unit="px"></div>
-                        <div class="form-group"><label for="name-color">اللون</label><input type="color" id="name-color"
-                                value="#e6f0f7" data-update-target="card-name" data-update-property="style.color"></div>
-                    </div>
-                    <div class="form-group"><label for="name-font">الخط</label><select id="name-font"
-                            data-update-target="card-name" data-update-property="style.fontFamily">
-                            <option value="'Tajawal', sans-serif">Tajawal</option>
-                            <option value="'Cairo', sans-serif">Cairo</option>
-                            <option value="'Lalezar', cursive">Lalezar</option>
-                        </select></div>
-                    <div class="placement-control">
-                        <label>مكان الاسم</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="placement-name" value="front" checked> أمامي</label>
-                            <label><input type="radio" name="placement-name" value="back"> خلفي</label>
-                        </div>
-                    </div>
-
-                    <details class="fieldset-accordion"
-                        style="margin-top: 10px; background: transparent; border: none;">
-                        <summary
-                            style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                            خيارات متقدمة (تحريك دقيق)</summary>
-                        <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                            <div class="form-group">
-                                <label>تحريك دقيق (بالبكسل)</label>
-                                <div class="position-controls-grid" data-target-id="card-name">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up"
-                                        title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                    <div class="controls-row">
-                                        <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                        <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                    </div>
-                                    <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-
-                    <hr style="border-color: var(--accent-secondary); margin: 20px 0;">
-                    <div class="form-group">
-                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--accent-primary); font-weight: 600; margin-bottom: 15px; background: rgba(77,166,255,0.05); padding: 8px; border-radius: 6px;">
-                            <input type="checkbox" id="visibility-tagline" checked style="width: auto; margin-inline-end: 10px;">
-                            <span>إظهار المسمى الوظيفي على الكارت</span>
-                        </label>
-                        <label for="input-tagline_ar">النشاط/المسمى الوظيفي</label>
-                        <!-- UPDATED: Dual language fields -->
-                        <textarea id="input-tagline_ar" rows="2" data-lang="ar" data-update-target="card-tagline"
-                            data-update-property="innerText"></textarea>
-                        <textarea id="input-tagline_en" rows="2" data-lang="en" style="display:none;"
-                            data-update-target="card-tagline" data-update-property="innerText"
-                            placeholder="Job Title / Company"></textarea>
-                    </div>
-                    <div class="control-grid">
-                        <div class="form-group"><label for="tagline-font-size">حجم الخط</label><input type="range"
-                                id="tagline-font-size" min="12" max="32" value="14" data-update-target="card-tagline"
-                                data-update-property="style.fontSize" data-update-unit="px"></div>
-                        <div class="form-group"><label for="tagline-color">اللون</label><input type="color"
-                                id="tagline-color" value="#4da6ff" data-update-target="card-tagline"
-                                data-update-property="style.color"></div>
-                    </div>
-                    <div class="form-group"><label for="tagline-font">الخط</label><select id="tagline-font"
-                            data-update-target="card-tagline" data-update-property="style.fontFamily">
-                            <option value="'Tajawal', sans-serif">Tajawal</option>
-                            <option value="'Cairo', sans-serif">Cairo</option>
-                            <option value="'Lalezar', cursive">Lalezar</option>
-                        </select></div>
-                    <div class="placement-control">
-                        <label>مكان المسمى الوظيفي</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="placement-tagline" value="front" checked> أمامي</label>
-                            <label><input type="radio" name="placement-tagline" value="back"> خلفي</label>
-                        </div>
-                    </div>
-
-                    <details class="fieldset-accordion"
-                        style="margin-top: 10px; background: transparent; border: none;">
-                        <summary
-                            style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                            خيارات متقدمة (تحريك دقيق)</summary>
-                        <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                            <div class="form-group">
-                                <label>تحريك دقيق (بالبكسل)</label>
-                                <div class="position-controls-grid" data-target-id="card-tagline">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up"
-                                        title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                    <div class="controls-row">
-                                        <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                        <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                    </div>
-                                    <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-                </div>
-            </details>
-
-            <details class="fieldset-accordion" id="phones-accordion">
-                <summary>أرقام الهواتف</summary>
-                <div class="fieldset-content">
-                    <div class="form-group">
-                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--accent-primary); font-weight: 600; margin-bottom: 15px; background: rgba(77,166,255,0.05); padding: 8px; border-radius: 6px;">
-                            <input type="checkbox" id="visibility-phones" checked style="width: auto; margin-inline-end: 10px;">
-                            <span>إظهار أرقام الهاتف على الكارت</span>
-                        </label>
-                        <label for="toggle-phone-buttons" style="display: flex; align-items: center; cursor: pointer;">
-                            <input type="checkbox" id="toggle-phone-buttons" checked
-                                style="width: auto; margin-inline-end: 10px;">
-                            <span>إظهار كأزرار</span>
-                        </label>
-                    </div>
-                    <div id="phone-text-controls">
-                        <h4>تنسيق الأرقام كنص</h4>
-                        <div class="form-group">
-                            <label>شكل العرض</label>
-                            <div class="radio-group">
-                                <label><input type="radio" name="phone-text-layout" value="row" checked> أفقي</label>
-                                <label><input type="radio" name="phone-text-layout" value="column"> رأسي</label>
-                            </div>
-                        </div>
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="phone-text-size">حجم الخط</label>
-                                <input type="range" id="phone-text-size" min="10" max="24" value="14">
-                            </div>
-                            <div class="form-group">
-                                <label for="phone-text-color">لون الخط</label>
-                                <input type="color" id="phone-text-color" value="#e6f0f7">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="phone-text-font">الخط</label>
-                            <select id="phone-text-font">
+                    
+                    <div class="lp-section lp-grid-2">
+                        <div>
+                            <label class="lp-label"><i class="fas fa-text-width"></i> الخط</label>
+                            <select id="name-font" class="lp-input lp-select" data-update-target="card-name" data-update-property="style.fontFamily" style="height:32px; padding-top:0; padding-bottom:0;">
                                 <option value="'Tajawal', sans-serif">Tajawal</option>
                                 <option value="'Cairo', sans-serif">Cairo</option>
                                 <option value="'Lalezar', cursive">Lalezar</option>
                             </select>
                         </div>
+                        <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                            <label class="lp-label"><i class="fas fa-palette"></i> اللون</label>
+                            <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                <input type="color" id="name-color" value="#e6f0f7" class="lp-color-pick" data-update-target="card-name" data-update-property="style.color">
+                            </div>
+                        </div>
                     </div>
-                    <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
-                    <div id="phone-numbers-container"></div>
-                    <button id="add-phone-btn" class="btn btn-secondary"><i class="fas fa-plus" aria-hidden="true"></i>
-                        إضافة رقم هاتف</button>
-                    <h4>تصميم الأزرار</h4>
-                    <div class="control-grid">
-                        <div class="form-group"><label for="phone-btn-bg-color">لون الزر</label><input type="color"
-                                id="phone-btn-bg-color" value="#4da6ff"></div>
-                        <div class="form-group"><label for="phone-btn-text-color">لون النص</label><input type="color"
-                                id="phone-btn-text-color" value="#ffffff"></div>
+
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-text-height"></i> الحجم</label>
+                        <div class="lp-slider-wrap">
+                            <input type="range" id="name-font-size" min="16" max="48" value="22" class="lp-slider"
+                                data-update-target="card-name" data-update-property="style.fontSize" data-update-unit="px"
+                                oninput="this.nextElementSibling.textContent=this.value+'px'">
+                            <span class="lp-slider-val">22px</span>
+                        </div>
                     </div>
-                    <div class="form-group"><label for="phone-btn-font-size">حجم خط الزر</label><input type="range"
-                            id="phone-btn-font-size" min="10" max="24" value="12"></div>
-                    <div class="form-group"><label for="phone-btn-padding">حجم حشو الزر (Padding)</label><input
-                            type="range" id="phone-btn-padding" min="4" max="16" value="6"></div>
-                    <div class="form-group"><label for="phone-btn-font">خط الزر</label><select id="phone-btn-font">
-                            <option value="'Poppins', sans-serif">Poppins</option>
-                            <option value="'Tajawal', sans-serif">Tajawal</option>
-                            <option value="'Cairo', sans-serif">Cairo</option>
-                        </select></div>
+
+                    <div class="lp-section" style="border:none; padding-bottom:0;">
+                        <label class="lp-label"><i class="fas fa-layer-group"></i> المكان</label>
+                        <div class="lp-placement-btns">
+                            <label class="lp-place-btn lp-place-active">
+                                <input type="radio" name="placement-name" value="front" checked> <i class="fas fa-id-card"></i> أمامي
+                            </label>
+                            <label class="lp-place-btn">
+                                <input type="radio" name="placement-name" value="back"> <i class="fas fa-id-card-alt"></i> خلفي
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- ADVANCED MOVEMENT DPAD -->
+                    <details class="lp-sub-accordion" style="margin-top: 10px;">
+                        <summary class="lp-sub-summary">
+                            <i class="fas fa-arrows-up-down-left-right"></i> التحريك الدقيق
+                        </summary>
+                        <div class="lp-section" style="border:none;">
+                            <div class="lp-dpad position-controls-grid" data-target-id="card-name">
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                <div class="lp-dpad-row">
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button>
+                                    <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                            </div>
+                        </div>
+                    </details>
                 </div>
             </details>
 
-            <details class="fieldset-accordion" id="qr-code-accordion">
-                <summary>رمز الاستجابة السريعة (QR)</summary>
-                <div class="fieldset-content">
-                    <div class="placement-control" style="border-top: none; padding-top: 0; margin-top: 0;">
-                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--accent-primary); font-weight: 600; margin-bottom: 15px; background: rgba(77,166,255,0.05); padding: 8px; border-radius: 6px;">
-                            <input type="checkbox" id="visibility-qr" checked style="width: auto; margin-inline-end: 10px;">
-                            <span>إظهار رمز QR على الكارت</span>
-                        </label>
-                        <label>مكان رمز QR</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="placement-qr" value="front"> أمامي</label>
-                            <label><input type="radio" name="placement-qr" value="back" checked> خلفي</label>
+            <!-- ═══ TAGLINE PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" open id="tagline-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-briefcase"></i></span>
+                    <span>المسمى الوظيفي</span>
+                    <label class="lp-toggle" title="إظهار / إخفاء" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-tagline" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body" id="tagline-controls-fieldset">
+                    <div class="lp-section" style="padding-top:0;">
+                        <textarea id="input-tagline_ar" class="lp-input" rows="1" data-lang="ar" data-update-target="card-tagline" data-update-property="innerText" placeholder="المسمى الوظيفي أو النشاط"></textarea>
+                        <textarea id="input-tagline_en" class="lp-input" rows="1" data-lang="en" style="display:none;" data-update-target="card-tagline" data-update-property="innerText" placeholder="Job Title / Company"></textarea>
+                    </div>
+
+                    <div class="lp-section lp-grid-2">
+                        <div>
+                            <label class="lp-label"><i class="fas fa-text-width"></i> الخط</label>
+                            <select id="tagline-font" class="lp-input lp-select" data-update-target="card-tagline" data-update-property="style.fontFamily" style="height:32px; padding-top:0; padding-bottom:0;">
+                                <option value="'Tajawal', sans-serif">Tajawal</option>
+                                <option value="'Cairo', sans-serif">Cairo</option>
+                                <option value="'Lalezar', cursive">Lalezar</option>
+                            </select>
                         </div>
-                    </div>
-                    <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
-                    <div class="form-group">
-                        <label>مصدر QR Code</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="qr-source" value="auto-card" checked> رابط البطاقة (مُوصى
-                                به)</label>
-                            <label><input type="radio" name="qr-source" value="auto-vcard"> بيانات الاتصال
-                                (vCard)</label>
-                            <label><input type="radio" name="qr-source" value="custom"> استخدام رابط</label>
-                            <label><input type="radio" name="qr-source" value="upload"> رفع صورة</label>
-                        </div>
-                    </div>
-
-                    <div id="qr-auto-card-group" style="display: block;">
-                        <button id="generate-auto-qr-btn" class="btn btn-primary"><i class="fas fa-qrcode"></i>
-                            إنشاء/تحديث QR Code</button>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">يقوم هذا الخيار بحفظ
-                            تصميمك وإنشاء QR Code لرابط المشاركة الخاص ببطاقتك.</p>
-                    </div>
-
-                    <!-- تخصيص QR Code -->
-                    <div id="qr-customization-group"
-                        style="margin-top: 15px; border-top: 1px dashed var(--accent-secondary); padding-top: 15px;">
-                        <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-primary);">تخصيص المظهر</h4>
-
-                        <div class="control-grid">
-                            <div class="form-group">
-                                <label for="qr-dots-color">لون الرمز</label>
-                                <div class="color-input-wrapper"
-                                    style="display: flex; align-items: center; border: 1px solid var(--accent-secondary); border-radius: 6px; padding: 0 5px;">
-                                    <input type="color" id="qr-dots-color" value="#000000"
-                                        style="border: none; padding: 0; height: 35px; width: 40px;">
-                                    <span style="font-size: 12px; margin-right: 5px;">اختر اللون</span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="qr-bg-color">لون الخلفية</label>
-                                <div class="color-input-wrapper"
-                                    style="display: flex; align-items: center; border: 1px solid var(--accent-secondary); border-radius: 6px; padding: 0 5px;">
-                                    <input type="color" id="qr-bg-color" value="#ffffff"
-                                        style="border: none; padding: 0; height: 35px; width: 40px;">
-                                    <span style="font-size: 12px; margin-right: 5px;">اختر اللون</span>
-                                </div>
+                        <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                            <label class="lp-label"><i class="fas fa-palette"></i> اللون</label>
+                            <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                <input type="color" id="tagline-color" value="#4da6ff" class="lp-color-pick" data-update-target="card-tagline" data-update-property="style.color">
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="qr-dots-type">شكل النقاط</label>
-                            <select id="qr-dots-type">
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-text-height"></i> الحجم</label>
+                        <div class="lp-slider-wrap">
+                            <input type="range" id="tagline-font-size" min="12" max="32" value="14" class="lp-slider"
+                                data-update-target="card-tagline" data-update-property="style.fontSize" data-update-unit="px"
+                                oninput="this.nextElementSibling.textContent=this.value+'px'">
+                            <span class="lp-slider-val">14px</span>
+                        </div>
+                    </div>
+
+                    <div class="lp-section" style="border:none; padding-bottom:0;">
+                        <label class="lp-label"><i class="fas fa-layer-group"></i> المكان</label>
+                        <div class="lp-placement-btns">
+                            <label class="lp-place-btn lp-place-active">
+                                <input type="radio" name="placement-tagline" value="front" checked> <i class="fas fa-id-card"></i> أمامي
+                            </label>
+                            <label class="lp-place-btn">
+                                <input type="radio" name="placement-tagline" value="back"> <i class="fas fa-id-card-alt"></i> خلفي
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- ADVANCED MOVEMENT DPAD -->
+                    <details class="lp-sub-accordion" style="margin-top: 10px;">
+                        <summary class="lp-sub-summary">
+                            <i class="fas fa-arrows-up-down-left-right"></i> التحريك الدقيق
+                        </summary>
+                        <div class="lp-section" style="border:none;">
+                            <div class="lp-dpad position-controls-grid" data-target-id="card-tagline">
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                <div class="lp-dpad-row">
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button>
+                                    <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </details>
+
+            <!-- Name/Tagline Inline JS & Photo Shape Fix -->
+            <script>
+            // Force Photo Shape immediately logic
+            document.querySelectorAll('input[name="photo-shape"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    var shape = this.value;
+                    var wrapper = document.getElementById('card-personal-photo-wrapper');
+                    var preview = document.getElementById('card-personal-photo');
+                    var img = document.getElementById('card-personal-photo-img');
+                    
+                    if(!wrapper && typeof DOMElements !== 'undefined' && DOMElements.draggable) {
+                        wrapper = DOMElements.draggable.photo;
+                    }
+
+                    if (wrapper) {
+                        wrapper.style.borderRadius = shape === 'circle' ? '50%' : (shape === 'rounded' ? '15%' : '0');
+                        wrapper.style.clipPath = shape === 'hexagon' ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' : 'none';
+                        if (preview) {
+                            preview.style.borderRadius = wrapper.style.borderRadius;
+                            preview.style.clipPath = wrapper.style.clipPath;
+                        }
+                        if (img) {
+                             img.style.borderRadius = wrapper.style.borderRadius;
+                             img.style.clipPath = wrapper.style.clipPath;
+                        }
+                    }
+                });
+            });
+
+            setTimeout(function() {
+                var checkedShape = document.querySelector('input[name="photo-shape"]:checked');
+                if(checkedShape) checkedShape.dispatchEvent(new Event('change'));
+            }, 500);
+
+            // Sync placement pills for Name and Tagline
+            document.querySelectorAll('input[name="placement-name"], input[name="placement-tagline"]').forEach(function(r){
+                r.addEventListener('change', function(){
+                    var name = this.name;
+                    document.querySelectorAll('input[name="'+name+'"]').forEach(function(ir){
+                        ir.closest('.lp-place-btn').classList.remove('lp-place-active');
+                    });
+                    this.closest('.lp-place-btn').classList.add('lp-place-active');
+                });
+            });
+
+            // Wire D-pads for name and tagline
+            (function() {
+                function wireTextDpads() {
+                    var dpads = document.querySelectorAll('#name-accordion .lp-dpad:not([data-wired="true"]), #tagline-accordion .lp-dpad:not([data-wired="true"])');
+                    if (dpads.length === 0) { setTimeout(wireTextDpads, 500); return; }
+                    dpads.forEach(function(dpad) {
+                        var target = dpad.dataset.targetId;
+                        dpad.querySelectorAll('.move-btn').forEach(function(btn) {
+                            btn.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                var dir = btn.dataset.direction;
+                                if (typeof EventManager !== 'undefined' && EventManager.moveElement) {
+                                    EventManager.moveElement(target, dir);
+                                }
+                            });
+                        });
+                        dpad.dataset.wired = "true";
+                    });
+                }
+                setTimeout(wireTextDpads, 800);
+            })();
+            </script>
+
+            <!-- ═══ PHONES PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" id="phones-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-phone-alt"></i></span>
+                    <span>أرقام الهواتف</span>
+                    <label class="lp-toggle" title="إظهار / إخفاء" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-phones" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+                
+                <div class="fieldset-content lp-body">
+
+                    <!-- ① Manage Numbers Card -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-list-ol"></i> إدارة الأرقام</span>
+                        </div>
+                        <div class="lp-section" style="padding-top:0; border:none;">
+                            <div id="phone-numbers-container"></div>
+                            <button id="add-phone-btn" class="lp-upload-btn" style="width:100%; justify-content:center; margin-top:8px;">
+                                <i class="fas fa-plus"></i> إضافة رقم هاتف
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ② Display Style Card -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-paint-roller"></i> المظهر والتنسيق</span>
+                        </div>
+                        
+                        <div class="lp-section" style="padding-top:0;">
+                            <!-- Segmented Control for Layout Mode -->
+                            <div class="lp-segment-control" style="display:flex; background:rgba(0,0,0,0.3); border-radius:8px; padding:4px; margin-bottom:12px;">
+                                <label style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;" class="toggle-phone-text">
+                                    <input type="radio" name="phone-mode-fake" value="text" style="display:none;">
+                                    <i class="fas fa-align-left"></i> كنص
+                                </label>
+                                <label style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;" class="toggle-phone-btn active-mode">
+                                    <input type="radio" name="phone-mode-fake" value="buttons" style="display:none;" checked>
+                                    <i class="fas fa-stop"></i> كأزرار
+                                </label>
+                                <!-- Real checkbox hidden, toggled via JS to keep compatibility -->
+                                <input type="checkbox" id="toggle-phone-buttons" checked style="display:none;">
+                            </div>
+
+                            <!-- TEXT SETTINGS -->
+                            <div id="phone-text-controls" style="display: none;">
+                                <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0;">
+                                    <div>
+                                        <label class="lp-label">شكل العرض</label>
+                                        <div class="lp-align-btns">
+                                            <label class="lp-align-btn lp-align-active">
+                                                <input type="radio" name="phone-text-layout" value="row" checked> أفقي
+                                            </label>
+                                            <label class="lp-align-btn">
+                                                <input type="radio" name="phone-text-layout" value="column"> رأسي
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                                        <label class="lp-label">اللون</label>
+                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                            <input type="color" id="phone-text-color" value="#e6f0f7" class="lp-color-pick">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lp-section">
+                                    <label class="lp-label">حجم الخط</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="phone-text-size" min="10" max="24" value="14" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">14px</span>
+                                    </div>
+                                </div>
+                                <div class="lp-section" style="border:none; padding-bottom:0;">
+                                    <label class="lp-label">الخط</label>
+                                    <select id="phone-text-font" class="lp-input lp-select" style="height:32px; padding-top:0; padding-bottom:0;">
+                                        <option value="'Tajawal', sans-serif">Tajawal</option>
+                                        <option value="'Cairo', sans-serif">Cairo</option>
+                                        <option value="'Lalezar', cursive">Lalezar</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- BUTTON SETTINGS -->
+                            <div id="phone-btn-controls">
+                                <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0px;">
+                                    <div>
+                                        <label class="lp-label">لون الزر</label>
+                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                            <input type="color" id="phone-btn-bg-color" value="#4da6ff" class="lp-color-pick">
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                                        <label class="lp-label">لون النص</label>
+                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                            <input type="color" id="phone-btn-text-color" value="#ffffff" class="lp-color-pick">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lp-section">
+                                    <label class="lp-label">حجم الخط</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="phone-btn-font-size" min="10" max="24" value="12" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">12px</span>
+                                    </div>
+                                </div>
+                                <div class="lp-section">
+                                    <label class="lp-label">التباعد (Padding)</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="phone-btn-padding" min="4" max="16" value="6" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">6px</span>
+                                    </div>
+                                </div>
+                                <div class="lp-section" style="border:none; padding-bottom:0;">
+                                    <label class="lp-label">الخط</label>
+                                    <select id="phone-btn-font" class="lp-input lp-select" style="height:32px; padding-top:0; padding-bottom:0;">
+                                        <option value="'Poppins', sans-serif">Poppins</option>
+                                        <option value="'Tajawal', sans-serif">Tajawal</option>
+                                        <option value="'Cairo', sans-serif">Cairo</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <script>
+            // Inline logic for phone UI segment control to match pre-existing JS hooks
+            document.querySelectorAll('input[name="phone-mode-fake"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    var isButtonMode = (this.value === 'buttons');
+                    
+                    // Update visual segmented control styling
+                    document.querySelector('.toggle-phone-text').style.background = isButtonMode ? 'transparent' : 'var(--accent-primary)';
+                    document.querySelector('.toggle-phone-text').style.color = isButtonMode ? 'var(--text-secondary)' : '#fff';
+                    document.querySelector('.toggle-phone-text ').style.boxShadow = isButtonMode ? 'none' : '0 2px 4px rgba(0,0,0,0.2)';
+                    
+                    document.querySelector('.toggle-phone-btn').style.background = isButtonMode ? 'var(--accent-primary)' : 'transparent';
+                    document.querySelector('.toggle-phone-btn').style.color = isButtonMode ? '#fff' : 'var(--text-secondary)';
+                    document.querySelector('.toggle-phone-btn ').style.boxShadow = isButtonMode ? '0 2px 4px rgba(0,0,0,0.2)' : 'none';
+
+                    // Toggle visibility of setting panels
+                    document.getElementById('phone-text-controls').style.display = isButtonMode ? 'none' : 'block';
+                    document.getElementById('phone-btn-controls').style.display = isButtonMode ? 'block' : 'none';
+
+                    // Sync hidden checkbox and fire event to trigger original script-main.js logic
+                    var checkbox = document.getElementById('toggle-phone-buttons');
+                    if (checkbox.checked !== isButtonMode) {
+                        checkbox.checked = isButtonMode;
+                        checkbox.dispatchEvent(new Event('input', { bubbles: true }));
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                        if (typeof CardManager !== 'undefined' && CardManager.updatePhoneButtonsVisibility) {
+                            CardManager.updatePhoneButtonsVisibility();
+                        }
+                    }
+                });
+            });
+
+            // Trigger once visually
+            var ev = new Event('change');
+            var fakeRadio = document.querySelector('input[name="phone-mode-fake"]:checked');
+            if(fakeRadio) fakeRadio.dispatchEvent(ev);
+
+            // Sync layout align buttons for phone-text
+            document.querySelectorAll('input[name="phone-text-layout"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    document.querySelectorAll('input[name="phone-text-layout"]').forEach(function(r){
+                        r.closest('.lp-align-btn').classList.remove('lp-align-active');
+                    });
+                    this.closest('.lp-align-btn').classList.add('lp-align-active');
+                });
+            });
+            </script>
+
+            <!-- ═══ QR CODE PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" id="qr-code-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-qrcode"></i></span>
+                    <span>رمز QR</span>
+                    <label class="lp-toggle" title="إظهار / إخفاء" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-qr" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body">
+
+                    <!-- ① SOURCE CARD -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-link"></i> مصدر الرمز</span>
+                        </div>
+
+                        <!-- Segment control for QR source -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px;">
+                            <label class="lp-qr-src-btn lp-qr-active" data-val="auto-card" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(77,166,255,0.45);background:rgba(77,166,255,0.15);color:var(--accent-primary);font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="auto-card" checked style="display:none;">
+                                <i class="fas fa-id-card"></i> رابط البطاقة
+                            </label>
+                            <label class="lp-qr-src-btn" data-val="auto-vcard" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="auto-vcard" style="display:none;">
+                                <i class="fas fa-address-book"></i> بيانات vCard
+                            </label>
+                            <label class="lp-qr-src-btn" data-val="custom" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="custom" style="display:none;">
+                                <i class="fas fa-pen"></i> رابط مخصص
+                            </label>
+                            <label class="lp-qr-src-btn" data-val="upload" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="upload" style="display:none;">
+                                <i class="fas fa-upload"></i> رفع صورة
+                            </label>
+                        </div>
+
+                        <!-- Auto Card Button -->
+                        <div id="qr-auto-card-group" style="display:block;">
+                            <button id="generate-auto-qr-btn" class="lp-upload-btn" style="width:100%;justify-content:center;background:linear-gradient(135deg,rgba(77,166,255,0.25),rgba(77,166,255,0.1));border-color:rgba(77,166,255,0.5);">
+                                <i class="fas fa-qrcode"></i> إنشاء / تحديث QR
+                            </button>
+                            <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:8px;text-align:center;line-height:1.5;">يحفظ تصميمك وينشئ رمز QR لرابط مشاركة البطاقة</p>
+                        </div>
+
+                        <!-- Custom URL input -->
+                        <div class="form-group" id="qr-url-group" style="display:none; margin-top:8px;">
+                            <input type="url" id="input-qr-url" value="mcprime_qr.png" class="lp-input" placeholder="https://...">
+                        </div>
+
+                        <!-- Upload input -->
+                        <div class="form-group" id="qr-upload-group" style="display:none; margin-top:8px;">
+                            <div class="lp-upload-zone" style="flex-direction:column;gap:8px;text-align:center;" onclick="document.getElementById('input-qr-upload').click()">
+                                <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:var(--accent-primary);"></i>
+                                <span style="font-size:0.78rem;color:var(--text-secondary);">ارفع صورة QR (أقل من 2MB)</span>
+                                <input type="file" id="input-qr-upload" accept="image/*" style="display:none;">
+                            </div>
+                            <div class="input-error-msg" id="qr-upload-error"></div>
+                            <div class="spinner" id="qr-spinner" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- ② APPEARANCE CARD -->
+                    <div class="lp-card" id="qr-customization-group">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-paint-brush"></i> المظهر</span>
+                        </div>
+
+                        <!-- Colors -->
+                        <div class="lp-section lp-grid-2" style="padding-top:0;">
+                            <div>
+                                <label class="lp-label"><i class="fas fa-circle"></i> لون الرمز</label>
+                                <div class="lp-color-pick-wrap">
+                                    <input type="color" id="qr-dots-color" value="#000000" class="lp-color-pick">
+                                </div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                                <label class="lp-label"><i class="fas fa-circle" style="color:#ccc;"></i> لون الخلفية</label>
+                                <div class="lp-color-pick-wrap">
+                                    <input type="color" id="qr-bg-color" value="#ffffff" class="lp-color-pick">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dots type -->
+                        <div class="lp-section">
+                            <label class="lp-label"><i class="fas fa-th"></i> شكل النقاط</label>
+                            <select id="qr-dots-type" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
                                 <option value="square">مربعات (Square)</option>
                                 <option value="dots">نقاط (Dots)</option>
                                 <option value="rounded" selected>دائري (Rounded)</option>
                                 <option value="classy">أنيق (Classy)</option>
-                                <option value="classy-rounded">أنيق دائري (Classy Rounded)</option>
-                                <option value="extra-rounded">دائري جداً (Extra Rounded)</option>
+                                <option value="classy-rounded">أنيق دائري</option>
+                                <option value="extra-rounded">دائري جداً</option>
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label for="qr-corners-type">شكل الزوايا</label>
-                            <select id="qr-corners-type">
+                        <!-- Corners type -->
+                        <div class="lp-section">
+                            <label class="lp-label"><i class="fas fa-border-all"></i> شكل الزوايا</label>
+                            <select id="qr-corners-type" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
                                 <option value="square">مربعات (Square)</option>
                                 <option value="dot">نقاط (Dot)</option>
                                 <option value="extra-rounded" selected>دائري (Extra Rounded)</option>
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label style="display: flex; align-items: center; cursor: pointer;">
-                                <input type="checkbox" id="qr-use-logo" checked
-                                    style="width: auto; margin-inline-end: 10px;">
-                                تضمين الشعار في المنتصف
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-group" id="qr-url-group" style="display: none;">
-                        <label for="input-qr-url">رابط صورة QR Code</label>
-                        <input type="url" id="input-qr-url" value="mcprime_qr.png">
-                    </div>
-
-                    <div class="form-group" id="qr-upload-group" style="display: none;">
-                        <label for="input-qr-upload">ارفع صورة QR Code (أقل من 2MB)</label>
-                        <div class="file-input-wrapper">
-                            <input type="file" id="input-qr-upload" accept="image/*">
-                            <div class="input-error-msg" id="qr-upload-error"></div>
-                        </div>
-                        <div class="spinner" id="qr-spinner" style="display: none;"></div>
-                    </div>
-
-                    <hr style="border-color: var(--accent-secondary); margin: 20px 0;">
-
-                    <div class="form-group">
-                        <label for="qr-size">حجم QR Code</label>
-                        <input type="range" id="qr-size" min="15" max="50" value="30">
-                    </div>
-
-                    <details class="fieldset-accordion"
-                        style="margin-top: 10px; background: transparent; border: none;">
-                        <summary
-                            style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                            خيارات متقدمة (تحريك دقيق)</summary>
-                        <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                            <div class="form-group">
-                                <label>تحريك دقيق (بالبكسل)</label>
-                                <div class="position-controls-grid" data-target-id="qr-code-wrapper">
-                                    <button type="button" class="btn-icon move-btn" data-direction="up"
-                                        title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                    <div class="controls-row">
-                                        <button type="button" class="btn-icon move-btn" data-direction="left"
-                                            title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                        <button type="button" class="btn-icon move-btn" data-direction="right"
-                                            title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                    </div>
-                                    <button type="button" class="btn-icon move-btn" data-direction="down"
-                                        title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                </div>
+                        <!-- Logo toggle -->
+                        <div class="lp-section" style="border:none;padding-bottom:0;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <label class="lp-label" style="margin-bottom:0;"><i class="fas fa-star"></i> تضمين الشعار في المنتصف</label>
+                                <label class="lp-toggle lp-toggle-sm" onclick="event.stopPropagation()">
+                                    <input type="checkbox" id="qr-use-logo" checked>
+                                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                                </label>
                             </div>
                         </div>
-                    </details>
+                    </div>
+
+                    <!-- ③ SIZE & POSITION CARD -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-expand-arrows-alt"></i> الحجم والموضع</span>
+                        </div>
+
+                        <!-- Size slider -->
+                        <div class="lp-section" style="padding-top:0;">
+                            <label class="lp-label"><i class="fas fa-arrows-alt"></i> الحجم</label>
+                            <div class="lp-slider-wrap">
+                                <input type="range" id="qr-size" min="15" max="50" value="30" class="lp-slider"
+                                    oninput="this.nextElementSibling.textContent=this.value+'%'">
+                                <span class="lp-slider-val">30%</span>
+                            </div>
+                        </div>
+
+                        <!-- Placement -->
+                        <div class="lp-section">
+                            <label class="lp-label"><i class="fas fa-layer-group"></i> الموضع</label>
+                            <div class="lp-placement-btns" id="qr-placement-btns">
+                                <label class="lp-place-btn">
+                                    <input type="radio" name="placement-qr" value="front"> <i class="fas fa-id-card"></i> أمامي
+                                </label>
+                                <label class="lp-place-btn lp-place-active">
+                                    <input type="radio" name="placement-qr" value="back" checked> <i class="fas fa-id-card-alt"></i> خلفي
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- D-Pad -->
+                        <div class="lp-section" style="border:none;padding-bottom:0;">
+                            <label class="lp-label"><i class="fas fa-arrows-up-down-left-right"></i> التحريك الدقيق</label>
+                            <div class="lp-dpad position-controls-grid" data-target-id="qr-code-wrapper">
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                <div class="lp-dpad-row">
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button>
+                                    <div class="lp-dpad-center"><i class="fas fa-qrcode" style="font-size:8px;opacity:0.3;"></i></div>
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </details>
 
-            <details class="fieldset-accordion" id="contact-info-accordion">
-                <summary>بيانات التواصل</summary>
-                <div class="fieldset-content">
+            <script>
+            // QR Source Segment Control
+            (function() {
+                var srcBtns = document.querySelectorAll('.lp-qr-src-btn');
+                srcBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        // Update styles
+                        srcBtns.forEach(function(b) {
+                            b.style.background = 'rgba(255,255,255,0.03)';
+                            b.style.borderColor = 'rgba(255,255,255,0.08)';
+                            b.style.color = 'var(--text-secondary)';
+                        });
+                        btn.style.background = 'rgba(77,166,255,0.15)';
+                        btn.style.borderColor = 'rgba(77,166,255,0.45)';
+                        btn.style.color = 'var(--accent-primary)';
 
-                    <div class="form-group">
-                        <label for="toggle-master-social" style="display: flex; align-items: center; cursor: pointer;">
-                            <input type="checkbox" id="toggle-master-social" checked
-                                style="width: auto; margin-inline-end: 10px;">
-                            <span>إظهار قسم التواصل (الروابط)</span>
-                        </label>
-                    </div>
-                    <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
+                        // Select radio
+                        var radio = btn.querySelector('input[type="radio"]');
+                        if (radio) {
+                            radio.checked = true;
+                            radio.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
 
-                    <div id="social-controls-wrapper">
+                        // Show/hide conditional groups
+                        var val = btn.dataset.val;
+                        document.getElementById('qr-auto-card-group').style.display = val === 'auto-card' ? 'block' : 'none';
+                        document.getElementById('qr-url-group').style.display = val === 'custom' ? 'block' : 'none';
+                        document.getElementById('qr-upload-group').style.display = val === 'upload' ? 'block' : 'none';
+                        // qr-customization-group stays visible for all except upload
+                        document.getElementById('qr-customization-group').style.display = val === 'upload' ? 'none' : 'block';
+                    });
+                });
 
-                        <div class="form-group">
-                            <label for="toggle-social-buttons"
-                                style="display: flex; align-items: center; cursor: pointer;">
-                                <input type="checkbox" id="toggle-social-buttons" checked
-                                    style="width: auto; margin-inline-end: 10px;">
-                                <span>إظهار كأزرار</span>
-                            </label>
+                // QR Placement pills sync
+                document.querySelectorAll('#qr-placement-btns input[type="radio"]').forEach(function(r) {
+                    r.addEventListener('change', function() {
+                        document.querySelectorAll('#qr-placement-btns .lp-place-btn').forEach(function(p) {
+                            p.classList.remove('lp-place-active');
+                        });
+                        r.closest('.lp-place-btn').classList.add('lp-place-active');
+                    });
+                });
+
+                // Wire QR D-pad
+                function wireQrDpad() {
+                    var dpad = document.querySelector('#qr-code-accordion .lp-dpad:not([data-wired="true"])');
+                    if (!dpad) { setTimeout(wireQrDpad, 600); return; }
+                    dpad.querySelectorAll('.move-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            if (typeof EventManager !== 'undefined' && EventManager.moveElement) {
+                                EventManager.moveElement('qr-code-wrapper', btn.dataset.direction);
+                            }
+                        });
+                    });
+                    dpad.dataset.wired = 'true';
+                }
+                setTimeout(wireQrDpad, 800);
+            })();
+            </script>
+
+            <!-- ═══ SOCIAL / CONTACT PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" id="contact-info-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-share-alt"></i></span>
+                    <span>بيانات التواصل</span>
+                    <label class="lp-toggle" title="إظهار / إخفاء" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="toggle-master-social" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body">
+                <div id="social-controls-wrapper" style="display:block;">
+
+                    <!-- ① DISPLAY STYLE CARD -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-paint-roller"></i> المظهر والتنسيق</span>
                         </div>
-                        <div id="social-text-controls" style="display: none;">
-                            <h4>تنسيق الروابط كنص (عام)</h4>
-                            <div class="control-grid">
-                                <div class="form-group">
-                                    <label for="social-text-size">حجم الخط (الافتراضي)</label>
-                                    <input type="range" id="social-text-size" min="10" max="24" value="12">
+
+                        <!-- Segment: Buttons vs Text -->
+                        <div style="display:flex; background:rgba(0,0,0,0.3); border-radius:8px; padding:4px; gap:4px; margin-bottom:12px;">
+                            <label class="social-mode-btn" data-mode="buttons" style="flex:1;text-align:center;padding:7px;border-radius:6px;font-size:0.8rem;font-weight:700;cursor:pointer;background:var(--accent-primary);color:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.2);transition:all .2s;">
+                                <input type="radio" name="social-mode-fake" value="buttons" style="display:none;" checked>
+                                <i class="fas fa-th-large"></i> كأزرار
+                            </label>
+                            <label class="social-mode-btn" data-mode="text" style="flex:1;text-align:center;padding:7px;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;background:transparent;color:var(--text-secondary);transition:all .2s;">
+                                <input type="radio" name="social-mode-fake" value="text" style="display:none;">
+                                <i class="fas fa-align-left"></i> كنص
+                            </label>
+                            <!-- Hidden real checkbox for JS compatibility -->
+                            <input type="checkbox" id="toggle-social-buttons" checked style="display:none;">
+                        </div>
+
+                        <!-- BUTTON STYLE settings -->
+                        <div id="social-btn-style">
+                            <div class="lp-section lp-grid-2" style="padding-top:0;">
+                                <div>
+                                    <label class="lp-label"><i class="fas fa-circle"></i> لون الزر</label>
+                                    <div class="lp-color-pick-wrap"><input type="color" id="back-buttons-bg-color" value="#364f6b" class="lp-color-pick"></div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="social-text-color">لون الخط (الافتراضي)</label>
-                                    <input type="color" id="social-text-color" value="#e6f0f7">
+                                <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                                    <label class="lp-label"><i class="fas fa-font"></i> لون النص</label>
+                                    <div class="lp-color-pick-wrap"><input type="color" id="back-buttons-text-color" value="#aab8c2" class="lp-color-pick"></div>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="social-text-font">الخط (الافتراضي)</label>
-                                <select id="social-text-font">
+                            <div class="lp-section">
+                                <label class="lp-label"><i class="fas fa-expand"></i> حجم الأيقونات</label>
+                                <div class="lp-slider-wrap">
+                                    <input type="range" id="back-buttons-size" min="10" max="20" value="10" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                    <span class="lp-slider-val">10px</span>
+                                </div>
+                            </div>
+                            <div class="lp-section" style="border:none;padding-bottom:0;">
+                                <label class="lp-label"><i class="fas fa-font"></i> الخط</label>
+                                <select id="back-buttons-font" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
+                                    <option value="'Poppins', sans-serif">Poppins</option>
+                                    <option value="'Tajawal', sans-serif">Tajawal</option>
+                                    <option value="'Cairo', sans-serif">Cairo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- TEXT STYLE settings -->
+                        <div id="social-text-controls" style="display:none;">
+                            <div class="lp-section lp-grid-2" style="padding-top:0;">
+                                <div>
+                                    <label class="lp-label"><i class="fas fa-text-height"></i> حجم الخط</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="social-text-size" min="10" max="24" value="12" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">12px</span>
+                                    </div>
+                                </div>
+                                <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                                    <label class="lp-label"><i class="fas fa-palette"></i> اللون</label>
+                                    <div class="lp-color-pick-wrap"><input type="color" id="social-text-color" value="#e6f0f7" class="lp-color-pick"></div>
+                                </div>
+                            </div>
+                            <div class="lp-section" style="border:none;padding-bottom:0;">
+                                <label class="lp-label"><i class="fas fa-font"></i> الخط</label>
+                                <select id="social-text-font" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
                                     <option value="'Tajawal', sans-serif">Tajawal</option>
                                     <option value="'Cairo', sans-serif">Cairo</option>
                                     <option value="'Poppins', sans-serif">Poppins</option>
                                 </select>
                             </div>
                         </div>
-
-                        <h4>تصميم أزرار التواصل</h4>
-                        <div class="form-group">
-                            <label for="back-buttons-size">حجم الأيقونات</label>
-                            <input type="range" id="back-buttons-size" min="10" max="20" value="10">
-                        </div>
-                        <div class="control-grid">
-                            <div class="form-group"><label for="back-buttons-bg-color">لون الزر</label><input
-                                    type="color" id="back-buttons-bg-color" value="#364f6b"></div>
-                            <div class="form-group"><label for="back-buttons-text-color">لون النص</label><input
-                                    type="color" id="back-buttons-text-color" value="#aab8c2"></div>
-                        </div>
-                        <div class="form-group"><label for="back-buttons-font">خط الأزرار</label><select
-                                id="back-buttons-font">
-                                <option value="'Poppins', sans-serif">Poppins</option>
-                                <option value="'Tajawal', sans-serif">Tajawal</option>
-                                <option value="'Cairo', sans-serif">Cairo</option>
-                            </select></div>
-
-                        <hr style="border-color: var(--accent-secondary); margin: 15px 0;">
-
-                        <div class="form-group" id="form-group-static-email">
-                            <label for="input-email">البريد الإلكتروني</label>
-                            <input type="email" id="input-email" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-email" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-email" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background: transparent; border: none;">
-                                <summary
-                                    style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
-                                <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                    <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
-                                        <div class="position-controls-grid" data-target-id="social-link-static-email">
-                                            <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                            <div class="controls-row">
-                                                <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                                <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                            </div>
-                                            <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-                                <div class="fieldset-content" style="padding: 10px;">
-                                    <div class="control-grid">
-                                        <div class="form-group">
-                                            <label for="input-static-email-color">لون الخط</label>
-                                            <input type="color" id="input-static-email-color" value="#e6f0f7"
-                                                data-input-type="static-social-style">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="input-static-email-size">حجم الخط</label>
-                                            <input type="range" id="input-static-email-size" min="10" max="24"
-                                                value="12" data-input-type="static-social-style">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-                        <div class="form-group" id="form-group-static-website">
-                            <label for="input-website">الموقع الإلكتروني</label>
-                            <input type="url" id="input-website" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-website" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-website" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background: transparent; border: none;">
-                                <summary
-                                    style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
-                                <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                    <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
-                                        <div class="position-controls-grid" data-target-id="social-link-static-website">
-                                            <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                            <div class="controls-row">
-                                                <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                                <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                            </div>
-                                            <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-                                <div class="fieldset-content" style="padding: 10px;">
-                                    <div class="control-grid">
-                                        <div class="form-group">
-                                            <label for="input-static-website-color">لون الخط</label>
-                                            <input type="color" id="input-static-website-color" value="#e6f0f7"
-                                                data-input-type="static-social-style">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="input-static-website-size">حجم الخط</label>
-                                            <input type="range" id="input-static-website-size" min="10" max="24"
-                                                value="12" data-input-type="static-social-style">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-                        <div class="form-group" id="form-group-static-whatsapp">
-                            <label for="input-whatsapp">واتساب</label>
-                            <input type="text" id="input-whatsapp" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-whatsapp" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-whatsapp" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background: transparent; border: none;">
-                                <summary
-                                    style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
-                                <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                    <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
-                                        <div class="position-controls-grid"
-                                            data-target-id="social-link-static-whatsapp">
-                                            <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                            <div class="controls-row">
-                                                <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                                <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                            </div>
-                                            <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-                                <div class="fieldset-content" style="padding: 10px;">
-                                    <div class="control-grid">
-                                        <div class="form-group">
-                                            <label for="input-static-whatsapp-color">لون الخط</label>
-                                            <input type="color" id="input-static-whatsapp-color" value="#e6f0f7"
-                                                data-input-type="static-social-style">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="input-static-whatsapp-size">حجم الخط</label>
-                                            <input type="range" id="input-static-whatsapp-size" min="10" max="24"
-                                                value="12" data-input-type="static-social-style">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-                        <div class="form-group" id="form-group-static-facebook">
-                            <label for="input-facebook">فيسبوك</label>
-                            <input type="url" id="input-facebook" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-facebook" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-facebook" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background: transparent; border: none;">
-                                <summary
-                                    style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
-                                <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                    <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
-                                        <div class="position-controls-grid"
-                                            data-target-id="social-link-static-facebook">
-                                            <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                            <div class="controls-row">
-                                                <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                                <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                            </div>
-                                            <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-                                <div class="fieldset-content" style="padding: 10px;">
-                                    <div class="control-grid">
-                                        <div class="form-group">
-                                            <label for="input-static-facebook-color">لون الخط</label>
-                                            <input type="color" id="input-static-facebook-color" value="#e6f0f7"
-                                                data-input-type="static-social-style">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="input-static-facebook-size">حجم الخط</label>
-                                            <input type="range" id="input-static-facebook-size" min="10" max="24"
-                                                value="12" data-input-type="static-social-style">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-                        <div class="form-group" id="form-group-static-linkedin">
-                            <label for="input-linkedin">لينكدإن</label>
-                            <input type="url" id="input-linkedin" value="">
-                            <div class="placement-control">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="placement-static-linkedin" value="front">
-                                        أمامي</label>
-                                    <label><input type="radio" name="placement-static-linkedin" value="back" checked>
-                                        خلفي</label>
-                                </div>
-                            </div>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background: transparent; border: none;">
-                                <summary
-                                    style="padding: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
-                                    خيارات متقدمة (تحريك دقيق)</summary>
-                                <div class="fieldset-content" style="border: none; padding-top: 10px;">
-                                    <div class="form-group">
-                                        <label>تحريك دقيق (بالبكسل)</label>
-                                        <div class="position-controls-grid"
-                                            data-target-id="social-link-static-linkedin">
-                                            <button type="button" class="btn-icon move-btn" data-direction="up"
-                                                title="للأعلى"><i class="fas fa-arrow-up"></i></button>
-                                            <div class="controls-row">
-                                                <button type="button" class="btn-icon move-btn" data-direction="left"
-                                                    title="لليسار"><i class="fas fa-arrow-left"></i></button>
-                                                <button type="button" class="btn-icon move-btn" data-direction="right"
-                                                    title="لليمين"><i class="fas fa-arrow-right"></i></button>
-                                            </div>
-                                            <button type="button" class="btn-icon move-btn" data-direction="down"
-                                                title="للأسفل"><i class="fas fa-arrow-down"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details class="fieldset-accordion"
-                                style="margin-top: 10px; background-color: var(--page-bg);">
-                                <summary style="padding: 8px 12px; font-size: 0.9rem;">تنسيقات خاصة (للنص)</summary>
-                                <div class="fieldset-content" style="padding: 10px;">
-                                    <div class="control-grid">
-                                        <div class="form-group">
-                                            <label for="input-static-linkedin-color">لون الخط</label>
-                                            <input type="color" id="input-static-linkedin-color" value="#e6f0f7"
-                                                data-input-type="static-social-style">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="input-static-linkedin-size">حجم الخط</label>
-                                            <input type="range" id="input-static-linkedin-size" min="10" max="24"
-                                                value="12" data-input-type="static-social-style">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-                        </div>
-                        <hr>
-                        <h4>سحب وإفلات الأيقونات</h4>
-                        <p style="font-size:12px; color:var(--text-secondary); margin-top:-10px; margin-bottom:10px;">
-                            اسحب أيقونة وأفلتها على البطاقة لإضافتها.</p>
-                        <!-- NEW: Social Icon Palette for Drag & Drop -->
-                        <div id="social-icon-palette" class="social-icon-palette-grid">
-                            <!-- Populated by JavaScript -->
-                        </div>
-                        <hr>
-                        <h4>إضافة روابط أخرى</h4>
-                        <div class="add-social-group">
-                            <div class="form-group">
-                                <label for="social-media-type">اختر المنصة</label>
-                                <select id="social-media-type"></select>
-                            </div>
-                            <button id="add-social-btn" class="btn btn-secondary" title="إضافة رابط"
-                                aria-label="إضافة رابط تواصل اجتماعي"><i class="fas fa-plus"
-                                    aria-hidden="true"></i></button>
-                        </div>
-                        <div class="form-group">
-                            <label for="social-media-input">ادخل الرابط أو المعرف</label>
-                            <input type="text" id="social-media-input" placeholder="الرابط هنا...">
-                        </div>
-                        <div id="dynamic-social-links-container"></div>
-
-
                     </div>
+
+                    <!-- ② STATIC FIELDS CARD -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-list-ul"></i> حقول التواصل الثابتة</span>
+                        </div>
+
+                        <!-- Helper macro: one static field row -->
+                        <!-- Email -->
+                        <div class="lp-section" id="form-group-static-email" style="padding-top:0;">
+                            <label class="lp-label"><i class="fas fa-envelope" style="color:#a78bfa;"></i> البريد الإلكتروني</label>
+                            <input type="email" id="input-email" value="" class="lp-input" placeholder="example@email.com" style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-email" value="front" style="display:none;"> أمامي
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-email" value="back" checked style="display:none;"> خلفي
+                                </label>
+                            </div>
+                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> تحريك دقيق</summary>
+                                <div class="lp-dpad position-controls-grid" data-target-id="social-link-static-email" style="margin-top:8px;">
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button><div class="lp-dpad-center"></div><button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button></div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                                </div>
+                                <!-- Per-field text style -->
+                                <div class="lp-grid-2" style="margin-top:8px;gap:8px;">
+                                    <div><label class="lp-label" style="margin-bottom:4px;">اللون</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-email-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">الحجم</label><div class="lp-slider-wrap"><input type="range" id="input-static-email-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <!-- Website -->
+                        <div class="lp-section" id="form-group-static-website">
+                            <label class="lp-label"><i class="fas fa-globe" style="color:#4da6ff;"></i> الموقع الإلكتروني</label>
+                            <input type="url" id="input-website" value="" class="lp-input" placeholder="https://..." style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-website" value="front" style="display:none;"> أمامي
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-website" value="back" checked style="display:none;"> خلفي
+                                </label>
+                            </div>
+                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> تحريك دقيق</summary>
+                                <div class="lp-dpad position-controls-grid" data-target-id="social-link-static-website" style="margin-top:8px;">
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button><div class="lp-dpad-center"></div><button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button></div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                                </div>
+                                <div class="lp-grid-2" style="margin-top:8px;gap:8px;">
+                                    <div><label class="lp-label" style="margin-bottom:4px;">اللون</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-website-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">الحجم</label><div class="lp-slider-wrap"><input type="range" id="input-static-website-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <!-- WhatsApp -->
+                        <div class="lp-section" id="form-group-static-whatsapp">
+                            <label class="lp-label"><i class="fab fa-whatsapp" style="color:#25d366;"></i> واتساب</label>
+                            <input type="text" id="input-whatsapp" value="" class="lp-input" placeholder="+966..." style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-whatsapp" value="front" style="display:none;"> أمامي
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-whatsapp" value="back" checked style="display:none;"> خلفي
+                                </label>
+                            </div>
+                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> تحريك دقيق</summary>
+                                <div class="lp-dpad position-controls-grid" data-target-id="social-link-static-whatsapp" style="margin-top:8px;">
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button><div class="lp-dpad-center"></div><button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button></div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                                </div>
+                                <div class="lp-grid-2" style="margin-top:8px;gap:8px;">
+                                    <div><label class="lp-label" style="margin-bottom:4px;">اللون</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-whatsapp-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">الحجم</label><div class="lp-slider-wrap"><input type="range" id="input-static-whatsapp-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <!-- Facebook -->
+                        <div class="lp-section" id="form-group-static-facebook">
+                            <label class="lp-label"><i class="fab fa-facebook-f" style="color:#1877f2;"></i> فيسبوك</label>
+                            <input type="url" id="input-facebook" value="" class="lp-input" placeholder="facebook.com/..." style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-facebook" value="front" style="display:none;"> أمامي
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-facebook" value="back" checked style="display:none;"> خلفي
+                                </label>
+                            </div>
+                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> تحريك دقيق</summary>
+                                <div class="lp-dpad position-controls-grid" data-target-id="social-link-static-facebook" style="margin-top:8px;">
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button><div class="lp-dpad-center"></div><button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button></div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                                </div>
+                                <div class="lp-grid-2" style="margin-top:8px;gap:8px;">
+                                    <div><label class="lp-label" style="margin-bottom:4px;">اللون</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-facebook-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">الحجم</label><div class="lp-slider-wrap"><input type="range" id="input-static-facebook-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <!-- LinkedIn -->
+                        <div class="lp-section" id="form-group-static-linkedin" style="border:none;padding-bottom:0;">
+                            <label class="lp-label"><i class="fab fa-linkedin-in" style="color:#0a66c2;"></i> لينكدإن</label>
+                            <input type="url" id="input-linkedin" value="" class="lp-input" placeholder="linkedin.com/in/..." style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-linkedin" value="front" style="display:none;"> أمامي
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-linkedin" value="back" checked style="display:none;"> خلفي
+                                </label>
+                            </div>
+                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> تحريك دقيق</summary>
+                                <div class="lp-dpad position-controls-grid" data-target-id="social-link-static-linkedin" style="margin-top:8px;">
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button><div class="lp-dpad-center"></div><button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button></div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                                </div>
+                                <div class="lp-grid-2" style="margin-top:8px;gap:8px;">
+                                    <div><label class="lp-label" style="margin-bottom:4px;">اللون</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-linkedin-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">الحجم</label><div class="lp-slider-wrap"><input type="range" id="input-static-linkedin-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <!-- Hidden elements kept for JS compatibility (dynamic social) -->
+                    <div style="display:none;" aria-hidden="true">
+                        <div id="social-icon-palette" class="social-icon-palette-grid"></div>
+                        <div id="dynamic-social-links-container"></div>
+                        <select id="social-media-type"></select>
+                        <input type="text" id="social-media-input">
+                        <button id="add-social-btn"></button>
+                    </div>
+
+
                 </div>
             </details>
+
+            <script>
+            // Social mode segment control
+            (function() {
+                document.querySelectorAll('input[name="social-mode-fake"]').forEach(function(radio) {
+                    radio.addEventListener('change', function() {
+                        var isBtnMode = (this.value === 'buttons');
+                        // Style pills
+                        document.querySelectorAll('.social-mode-btn').forEach(function(b) {
+                            var isActive = b.dataset.mode === (isBtnMode ? 'buttons' : 'text');
+                            b.style.background = isActive ? 'var(--accent-primary)' : 'transparent';
+                            b.style.color = isActive ? '#fff' : 'var(--text-secondary)';
+                            b.style.boxShadow = isActive ? '0 2px 5px rgba(0,0,0,0.2)' : 'none';
+                        });
+                        // Show/hide panels
+                        document.getElementById('social-btn-style').style.display = isBtnMode ? 'block' : 'none';
+                        document.getElementById('social-text-controls').style.display = isBtnMode ? 'none' : 'block';
+                        // Sync hidden checkbox
+                        var cb = document.getElementById('toggle-social-buttons');
+                        if (cb.checked !== isBtnMode) {
+                            cb.checked = isBtnMode;
+                            cb.dispatchEvent(new Event('input', {bubbles:true}));
+                            cb.dispatchEvent(new Event('change', {bubbles:true}));
+                        }
+                    });
+                });
+
+                // Static field placement pill sync
+                document.querySelectorAll('.static-place-label').forEach(function(lbl) {
+                    lbl.addEventListener('click', function() {
+                        var grp = this.closest('div');
+                        grp.querySelectorAll('.static-place-label').forEach(function(l) {
+                            l.style.background = 'transparent';
+                            l.style.color = 'var(--text-secondary)';
+                        });
+                        this.style.background = 'var(--accent-primary)';
+                        this.style.color = '#fff';
+                        var r = this.querySelector('input[type="radio"]');
+                        if(r) { r.checked = true; r.dispatchEvent(new Event('change',{bubbles:true})); }
+                    });
+                });
+            })();
+            </script>
+
+
 
         </aside>
 
@@ -2196,6 +2405,50 @@
         });
     });
 })();
+</script>
+
+<script>
+// ── Accordion Init: close all panels on load ──────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+
+    // 1. Close all top-level fieldset-accordion panels
+    document.querySelectorAll('details.fieldset-accordion').forEach(function(d) {
+        d.removeAttribute('open');
+    });
+
+    // 2. Fix social-controls-wrapper: JS sets display:block but parent is flex,
+    //    so we upgrade it to display:flex + column to match .lp-body context
+    var scw = document.getElementById('social-controls-wrapper');
+    if (scw) {
+        // Override because handleMasterSocialToggle sets display:'block'
+        // Patch the style setter to use 'flex' instead
+        var origDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'style');
+        var origSetDisplay = CSSStyleDeclaration.prototype.__defineSetter__;
+
+        // Simpler: just watch for changes via MutationObserver
+        var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(m) {
+                if (m.attributeName === 'style') {
+                    var disp = scw.style.display;
+                    if (disp === 'block') {
+                        scw.style.display = 'flex';
+                        scw.style.flexDirection = 'column';
+                        scw.style.gap = '12px';
+                    }
+                }
+            });
+        });
+        observer.observe(scw, { attributes: true, attributeFilter: ['style'] });
+
+        // Also fix initial state
+        if (scw.style.display !== 'none') {
+            scw.style.display = 'flex';
+            scw.style.flexDirection = 'column';
+            scw.style.gap = '12px';
+        }
+    }
+
+});
 </script>
 </body>
 
