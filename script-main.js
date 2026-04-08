@@ -46,9 +46,6 @@ const i18nMain = {
     shareTitle: _isEnglishPage ? 'My Digital Business Card' : 'بطاقة العمل الرقمية الخاصة بي',
     shareText: _isEnglishPage ? 'Check out my digital business card:' : 'اطلع على بطاقتي الرقمية:',
     copyLinkFailed: _isEnglishPage ? 'Could not copy link automatically. Please copy it manually.' : 'لم نتمكن من نسخ الرابط تلقائياً. يرجى نسخه يدوياً.',
-    loadSuccess: _isEnglishPage ? 'Design loaded successfully from link.' : 'تم تحميل التصميم من الرابط بنجاح.',
-    loadError: _isEnglishPage ? 'Failed to load design from link. Design might not exist or server error.' : 'فشل تحميل التصميم من الرابط. قد يكون التصميم غير موجود أو هناك خطأ في الخادم.',
-    loginRequired: _isEnglishPage ? 'You must be logged in to share your card.' : 'يجب تسجيل الدخول أولاً لمشاركة بطاقتك.',
 };
 
 const CollaborationManager = {
@@ -693,45 +690,29 @@ const ShareManager = {
         const params = new URLSearchParams(window.location.search);
         const designId = params.get('id');
 
-        // Do not load if there is a collaborative session ID
+        // لا تقم بالتحميل إذا كان هناك معرف جلسة تحرير جماعي
         if (params.has('collabId')) {
             return false;
         }
 
         if (designId) {
             try {
-                // Build auth headers if user is logged in
-                const headers = {};
-                if (typeof Auth !== 'undefined') {
-                    const authHeaders = Auth.getHeader();
-                    if (authHeaders.Authorization) {
-                        headers['Authorization'] = authHeaders.Authorization;
-                    }
-                }
-
-                const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`, { headers });
-                if (!response.ok) throw new Error('Design not found or server error (status: ' + response.status + ')');
+                const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`);
+                if (!response.ok) throw new Error('Design not found or server error');
 
                 const state = await response.json();
-
-                // Clear localStorage so the server design is not overwritten on next save
-                try { localStorage.removeItem(Config.LOCAL_STORAGE_KEY); } catch(e) {}
-
                 StateManager.applyState(state, false);
                 Config.currentDesignId = designId; // Store loaded ID
-                UIManager.announce(i18nMain.loadSuccess);
+                UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
 
-                // Keep ?id in history so saves update the correct design
-                // (EditorUserStatus will use Config.currentDesignId, so no need to have it in URL)
-                // But do replace state so browser back button works cleanly
                 const newUrl = new URL(window.location.href);
-                // Don't remove the id — just do a replaceState without id to keep it clean
                 newUrl.searchParams.delete('id');
-                window.history.replaceState({}, document.title, newUrl.pathname + (newUrl.search || ''));
+                window.history.replaceState({}, document.title, newUrl.pathname + newUrl.search);
                 return true;
             } catch (e) {
                 console.error("Failed to load state from URL:", e);
-                UIManager.announce(i18nMain.loadError);
+                UIManager.announce("فشل تحميل التصميم من الرابط.");
+                window.history.replaceState({}, document.title, window.location.pathname);
                 return false;
             }
         }
@@ -1335,16 +1316,16 @@ const App = {
         const loadedFromUrl = await ShareManager.loadFromUrl();
         if (loadedFromUrl) {
             HistoryManager.pushState(StateManager.getStateObject());
-            UIManager.announce(i18nMain.loadSuccess);
+            UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
         } else if (!CollaborationManager.isActive) {
             const loadedFromStorage = StateManager.load();
             if (loadedFromStorage) {
                 HistoryManager.pushState(StateManager.getStateObject());
-                UIManager.announce(_isEnglishPage ? 'Saved design restored.' : 'تم استعادة التصميم المحفوظ.');
+                UIManager.announce("تم استعادة التصميم المحفوظ.");
             } else {
                 StateManager.applyState(Config.defaultState, false);
                 HistoryManager.pushState(Config.defaultState);
-                UIManager.announce(_isEnglishPage ? 'Default design loaded.' : 'تم تحميل التصميم الافتراضي.');
+                UIManager.announce("تم تحميل التصميم الافتراضي.");
             }
         }
 
