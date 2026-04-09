@@ -9,7 +9,7 @@
 
     <title>Smart Business Card Editor | MC PRIME</title>
     <meta name="description"
-        content="Use editor MC PRIME to design and customize your smart business card (NFC) Freeً. Full Color Control، Image URL، Logo، and Contact Info.">    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
+        content="Use the MC PRIME editor to design and customize your smart NFC business card for free. Full control over colors, fonts, logo, and contact information.">    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
 
     <!-- Google Tag Manager -->
     <script>(function (w, d, s, l, i) {
@@ -32,7 +32,7 @@
     <!-- Cropper.js CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
-    <!-- Project CSS files -->
+    <!-- Project stylesheets -->
     <link rel="stylesheet" href="style.css?v=2.0">
     <link rel="stylesheet" href="mobile.css?v=2.0">
     <link rel="stylesheet" href="toast.css">
@@ -40,26 +40,51 @@
     <link rel="stylesheet" href="toolbar-enhancements.css?v=1.0">
     <link rel="stylesheet" href="logo-panel.css?v=1.0">
 
-    <!-- External Libraries -->
+    <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
 
-    <!-- Project JS Files (Order matters) -->
-    <script src="lang-switcher.js" defer></script>
-    <script src="/nfc/auth.js" defer></script>
+    <!-- Project JavaScript files (order matters) -->
     <script src="security-utils.js" defer></script>
     <script src="mobile.js" defer></script>
-    <script src="script-core.js" defer></script>
+    <script src="/nfc/auth.js" defer></script>
     <script src="state-manager-proxy.js" defer></script>
+    <script src="lang-switcher.js" defer></script>
+    <script src="script-core.js" defer></script>
     <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
     <script src="script-main.js" defer></script>
 
     <script src="editor-enhancements.js" defer></script>
     <script src="editor-user-status.js" defer></script>
+    <script src="ai-backgrounds.js" defer></script>
+
+    <!-- English placeholder initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set English placeholders for input fields
+            setTimeout(function () {
+                const nameInput = document.getElementById('input-name_ar');
+                const taglineInput = document.getElementById('input-tagline_ar');
+
+                if (nameInput) {
+                    nameInput.placeholder = 'Your Full Name Here';
+                    if (!nameInput.value || nameInput.value === 'اسمك الكامل هنا') {
+                        nameInput.value = 'Your Full Name Here';
+                    }
+                }
+                if (taglineInput) {
+                    taglineInput.placeholder = 'Job Title / Company';
+                    if (!taglineInput.value || taglineInput.value === 'المسمى الوظيفي / الشركة') {
+                        taglineInput.value = 'Job Title / Company';
+                    }
+                }
+            }, 100);
+        });
+    </script>
 
     <style>
         /* =============================================================== */
@@ -119,13 +144,42 @@
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
-    <header class="pro-toolbar" id="pro-toolbar">
+    <header class="pro-toolbar" id="pro-toolbar" style="direction: ltr; flex-direction: row;">
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const langBtn = document.getElementById('lang-toggle-btn');
+                if (langBtn) {
+                    const setLangText = () => {
+                        const label = langBtn.querySelector('.tb-label');
+                        if (label && label.textContent.trim() !== 'ع') {
+                            label.textContent = 'ع';
+                            langBtn.style.fontFamily = "'Tajawal', sans-serif";
+                            langBtn.style.fontWeight = "bold";
+                        } else if (!label && langBtn.textContent.trim() !== 'ع') {
+                            langBtn.innerHTML = 'ع'; // Fallback if no tb-label span is present
+                        }
+                    };
+
+                    // Initial set
+                    setTimeout(setLangText, 100);
+
+                    // Observer to prevent unwarranted changes
+                    const observer = new MutationObserver((mutations) => {
+                        observer.disconnect();
+                        setLangText();
+                        observer.observe(langBtn, { childList: true, characterData: true, subtree: true });
+                    });
+
+                    observer.observe(langBtn, { childList: true, characterData: true, subtree: true });
+                }
+            });
+        </script>
 
         <!-- ═══ ZONE 1: LEFT — Brand + History ═══ -->
         <div class="tb-zone tb-left">
 
             <!-- Logo -->
-            <a href="index.html" class="tb-logo" title="Return to Home">
+            <a href="index-en.html" class="tb-logo" title="Back to Home">
                 <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME Logo" style="height:30px;width:auto;">
                 <span class="tb-logo-text">MC PRIME</span>
             </a>
@@ -135,13 +189,13 @@
 
             <!-- Nav Icons -->
             <nav class="tb-nav-icons" aria-label="Navigation">
-                <a href="index.html" class="tb-icon-btn" title="Home">
+                <a href="index-en.html" class="tb-icon-btn" title="Home">
                     <i class="fas fa-home"></i>
                 </a>
-                <a href="gallery.html" class="tb-icon-btn" title="Home">
+                <a href="gallery-en.html" class="tb-icon-btn" title="Gallery">
                     <i class="fas fa-images"></i>
                 </a>
-                <a href="blog.html" class="tb-icon-btn" title="Home">
+                <a href="blog-en.html" class="tb-icon-btn" title="Blog">
                     <i class="fas fa-newspaper"></i>
                 </a>
             </nav>
@@ -164,19 +218,19 @@
         <div class="tb-zone tb-center">
 
             <!-- Preview -->
-            <button id="preview-mode-btn" class="tb-action-btn" title="Mode Preview (Ctrl+P)" aria-label="Preview">
+            <button id="preview-mode-btn" class="tb-action-btn" title="Preview Mode (Ctrl+P)" aria-label="Preview">
                 <i class="fas fa-eye"></i>
                 <span class="tb-label">Preview</span>
             </button>
 
             <!-- Language -->
-            <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="Switch Language">
+            <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="Toggle Language" onclick="window.location.href='editor.html'">
                 <i class="fas fa-language"></i>
-                <span class="tb-label">EN</span>
+                <span class="tb-label">ع</span>
             </button>
 
             <!-- Theme -->
-            <button id="theme-toggle-btn" class="tb-icon-btn" title="Toggle Appearance & Styling (Dark/Light)" aria-label="Toggle Theme">
+            <button id="theme-toggle-btn" class="tb-icon-btn" title="Toggle Theme (Dark/Light)" aria-label="Toggle Theme">
                 <i class="fas fa-sun"></i>
             </button>
 
@@ -186,7 +240,7 @@
             <div class="tb-dropdown-wrap" id="tools-dropdown-wrap">
                 <button class="tb-action-btn tb-tools-trigger" id="tools-menu-btn" aria-haspopup="true" aria-expanded="false">
                     <i class="fas fa-tools"></i>
-                    <span class="tb-label">Preview</span>
+                    <span class="tb-label">Tools</span>
                     <i class="fas fa-chevron-down tb-caret"></i>
                 </button>
                 <div class="tb-dropdown-menu" id="tools-dropdown-menu" role="menu">
@@ -195,17 +249,19 @@
                     </a>
                     <div class="tb-dropdown-divider"></div>
                     <button id="show-gallery-btn" class="tb-dropdown-item" role="menuitem">
-                        <i class="fas fa-images" style="color:#4da6ff;"></i> Home
+                        <i class="fas fa-images" style="color:#4da6ff;"></i> Gallery
                         <kbd>Ctrl+G</kbd>
                     </button>
                     <button id="save-to-gallery-btn" class="tb-dropdown-item" role="menuitem">
-                        <i class="fas fa-bookmark" style="color:#f1c40f;"></i> Editor Guide
+                        <i class="fas fa-bookmark" style="color:#f1c40f;"></i> Save to Gallery
                     </button>
+                    <!--
                     <button id="start-collab-btn" class="tb-dropdown-item" role="menuitem">
-                        <i class="fas fa-users" style="color:#a855f7;"></i> Editor Guide
+                        <i class="fas fa-users" style="color:#a855f7;"></i> Collab Edit
                     </button>
+                    -->
                     <button id="share-editor-btn" class="tb-dropdown-item" role="menuitem">
-                        <i class="fas fa-link" style="color:#2ecc71;"></i> Editor Guide
+                        <i class="fas fa-link" style="color:#2ecc71;"></i> Copy Editor Link
                     </button>
                     <div class="tb-dropdown-divider"></div>
                     <button id="reset-design-btn" class="tb-dropdown-item tb-danger" role="menuitem">
@@ -223,15 +279,15 @@
             <!-- User Status -->
             <div class="user-status-bar" id="user-status-bar">
                 <span id="user-status-text" class="tb-user-text">Guest</span>
-                <a href="login.html" id="user-login-link" class="tb-pill-btn">Login</a>
-                <a href="dashboard.html" id="user-dashboard-link" class="tb-pill-btn" style="display:none;">Save to Gallery</a>
-                <button id="user-logout-btn" class="tb-pill-btn" style="display:none;">Login</button>
+                <a href="login-en.html" id="user-login-link" class="tb-pill-btn">Login</a>
+                <a href="dashboard-en.html" id="user-dashboard-link" class="tb-pill-btn" style="display:none;">Dashboard</a>
+                <button id="user-logout-btn" class="tb-pill-btn" style="display:none;">Logout</button>
             </div>
 
             <div class="tb-divider"></div>
 
             <!-- Auto-save Indicator -->
-            <div id="autosave-indicator" class="tb-autosave autosave-indicator" title="Autosave Status">
+            <div id="autosave-indicator" class="tb-autosave autosave-indicator" title="Auto-save status">
                 <i class="fas fa-cloud-check"></i>
                 <span id="autosave-status">Saved</span>
             </div>
@@ -240,22 +296,22 @@
             <div class="download-container tb-dropdown-wrap">
                 <button id="download-options-btn" class="tb-action-btn">
                     <i class="fas fa-download"></i>
-                    <span class="tb-label">Preview</span>
+                    <span class="tb-label">Download</span>
                     <i class="fas fa-chevron-down tb-caret"></i>
                 </button>
                 <ul id="download-menu" class="dropdown-menu tb-dropdown-menu" style="min-width:210px;">
                     <li><button id="download-png-front"><i class="fas fa-image"></i> Front Image (PNG)</button></li>
                     <li><button id="download-png-back"><i class="fas fa-image"></i> Back Image (PNG)</button></li>
                     <li><button id="download-pdf"><i class="fas fa-file-pdf"></i> PDF File</button></li>
-                    <li><button id="download-vcf"><i class="fas fa-address-card"></i> Save to Gallery</button></li>
-                    <li><button id="download-qrcode"><i class="fas fa-qrcode"></i> Save to Gallery</button></li>
+                    <li><button id="download-vcf"><i class="fas fa-address-card"></i> Contact (VCF)</button></li>
+                    <li><button id="download-qrcode"><i class="fas fa-qrcode"></i> QR Code</button></li>
                 </ul>
             </div>
 
             <!-- PRIMARY CTA -->
             <button id="save-share-btn" class="tb-cta-btn">
                 <i class="fas fa-paper-plane"></i>
-                <span id="save-btn-text">Save Design</span>
+                <span id="save-btn-text">Save & Share</span>
             </button>
 
             <!-- Mobile More -->
@@ -269,7 +325,6 @@
     </header>
 
     <div class="pro-layout">
-
 
         <aside class="pro-sidebar pro-sidebar-left" id="panel-design">
 
@@ -302,15 +357,15 @@
             </fieldset>
 
             <fieldset class="fieldset" id="designs-fieldset-source">
-                <legend>Premade Designs</legend>
+                <legend>Ready Designs</legend>
                 <div class="form-group">
-                    <label>Choose Template</label>
+                    <label>Choose a ready design</label>
                     <div id="theme-gallery" class="theme-gallery-grid"></div>
                     <div class="form-group" id="ai-suggestion-group"
                         style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
-                        <label>Need Inspiration?</label>
+                        <label>Need inspiration?</label>
                         <button id="ai-suggest-btn" class="btn btn-secondary" style="width: 100%;">
-                            <i class="fas fa-magic"></i> <span>Smart Design Suggestion</span>
+                            <i class="fas fa-magic"></i> <span>Suggest a Smart Design</span>
                         </button>
                         <div class="spinner" id="ai-spinner" style="display: none; margin: 10px auto 0;"></div>
                     </div>
@@ -322,9 +377,10 @@
                 <summary>Backgrounds & Colors</summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" style="padding: 10px;">
-                        <legend>Front Face</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
-                        <div class="form-group"><label>Image URL</label>
+                        <legend>Front Side</legend>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
+                                here</span></div>
+                        <div class="form-group"><label>Background Color</label>
                             <div class="control-grid"><input type="color" id="front-bg-start" value="#2a3d54"><input
                                     type="color" id="front-bg-end" value="#223246"></div>
                         </div>
@@ -334,18 +390,25 @@
                                 <input type="file" id="front-bg-upload" accept="image/*">
                                 <button type="button" class="remove-image-btn" id="remove-front-bg-btn"
                                     style="display: none;" title="Remove Image"
-                                    aria-label="Remove Image Image URL Frontة"><i class="fas fa-times"
+                                    aria-label="Remove front background image"><i class="fas fa-times"
                                         aria-hidden="true"></i></button>
                                 <div class="spinner" id="front-bg-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">Background Transparency over image</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
+                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">Color Overlay
+                                Opacity</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
                                 value="0"></div>
+                        <div class="form-group" style="margin-top: 15px;">
+                            <button id="open-ai-bg-btn" class="btn btn-secondary" style="width: 100%;">
+                                <i class="fas fa-magic"></i> AI Backgrounds
+                            </button>
+                        </div>
                     </fieldset>
                     <fieldset class="fieldset" style="padding: 10px; margin-top: 15px;">
-                        <legend>Back Image</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
-                        <div class="form-group"><label>Image URL</label>
+                        <legend>Back Side</legend>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
+                                here</span></div>
+                        <div class="form-group"><label>Background Color</label>
                             <div class="control-grid"><input type="color" id="back-bg-start" value="#2a3d54"><input
                                     type="color" id="back-bg-end" value="#223246"></div>
                         </div>
@@ -355,12 +418,13 @@
                                 <input type="file" id="back-bg-upload" accept="image/*">
                                 <button type="button" class="remove-image-btn" id="remove-back-bg-btn"
                                     style="display: none;" title="Remove Image"
-                                    aria-label="Remove Image Image URL Image URL"><i class="fas fa-times"
+                                    aria-label="Remove back background image"><i class="fas fa-times"
                                         aria-hidden="true"></i></button>
                                 <div class="spinner" id="back-bg-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">Background Transparency over image</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
+                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">Color Overlay
+                                Opacity</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
                                 value="0"></div>
                     </fieldset>
                 </div>
@@ -370,6 +434,9 @@
 
         <main class="pro-canvas">
             <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
+                <!-- Smart Snapping Guides -->
+                <div id="snap-guide-v" class="snap-guide-vertical"></div>
+                <div id="snap-guide-h" class="snap-guide-horizontal"></div>
                 <div class="card-flipper-container">
                     <div class="card-flipper">
                         <div class="business-card card-face card-front" id="card-front-preview">
@@ -378,7 +445,7 @@
                             <div class="card-content-layer card-front-content-layer" id="card-front-content">
 
                                 <div id="card-logo" data-input-target-id="logo-drop-zone">
-                                    <img src="mc-prime-nfc.png" alt="Logo MC PRIME to design smart business cards"
+                                    <img src="mc-prime-nfc.png" alt="MC PRIME Smart Business Card Logo"
                                         class="logo-front" id="card-logo-img">
                                 </div>
 
@@ -434,13 +501,13 @@
                     <!-- ① Upload Zone -->
                     <div class="lp-upload-zone" id="lp-upload-zone-click">
                         <div class="lp-preview-wrap">
-                            <img id="logo-preview" src="mc-prime-nfc.png" alt="Preview Logo" class="lp-preview-img">
+                            <img id="logo-preview" src="mc-prime-nfc.png" alt="Logo preview" class="lp-preview-img">
                             <div class="lp-spinner-wrap"><div class="spinner" id="logo-spinner" style="display:none;"></div></div>
                         </div>
                         <div class="lp-upload-actions">
                             <label for="input-logo-upload" class="lp-upload-btn">
                                 <i class="fas fa-cloud-upload-alt"></i> Upload Image
-                                <small>(Crop Prompt)</small>
+                                <small>(Cropping required)</small>
                             </label>
                             <input type="file" id="input-logo-upload" accept="image/*" style="display:none;">
                             <div class="input-error-msg" id="logo-upload-error"></div>
@@ -461,7 +528,7 @@
                     <!-- ② Size + Alignment -->
                     <div class="lp-section lp-grid-2">
                         <div>
-                            <label class="lp-label"><i class="fas fa-expand-arrows-alt"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-expand-arrows-alt"></i> Size</label>
                             <div class="lp-slider-wrap">
                                 <input type="range" id="logo-size" min="10" max="80" value="10"
                                     class="lp-slider"
@@ -471,11 +538,11 @@
                             </div>
                         </div>
                         <div>
-                            <label class="lp-label"><i class="fas fa-align-center"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-align-center"></i> Alignment</label>
                             <div class="lp-align-btns" id="logo-align-group">
                                 <label class="lp-align-btn" title="Left">
                                     <input type="radio" name="logo-align" value="flex-start">
-                                    <i class="fas fa-align-right"></i>
+                                    <i class="fas fa-align-left"></i>
                                 </label>
                                 <label class="lp-align-btn lp-align-active" title="Center">
                                     <input type="radio" name="logo-align" value="center" checked>
@@ -483,7 +550,7 @@
                                 </label>
                                 <label class="lp-align-btn" title="Right">
                                     <input type="radio" name="logo-align" value="flex-end">
-                                    <i class="fas fa-align-left"></i>
+                                    <i class="fas fa-align-right"></i>
                                 </label>
                             </div>
                         </div>
@@ -492,7 +559,7 @@
                     <!-- ③ Opacity + Background -->
                     <div class="lp-section lp-grid-2">
                         <div>
-                            <label class="lp-label"><i class="fas fa-circle-half-stroke"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-circle-half-stroke"></i> Opacity</label>
                             <div class="lp-slider-wrap">
                                 <input type="range" id="logo-opacity" min="0" max="1" step="0.05" value="1"
                                     class="lp-slider"
@@ -502,7 +569,7 @@
                             </div>
                         </div>
                         <div>
-                            <label class="lp-label"><i class="fas fa-fill-drip"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-fill-drip"></i> Background</label>
                             <div class="lp-swatches">
                                 <button type="button" class="lp-swatch lp-swatch-active" data-bg="transparent" title="None"
                                     style="background:repeating-conic-gradient(#aaa 0% 25%,transparent 0% 50%) 0/10px 10px;"
@@ -534,7 +601,7 @@
                         </summary>
                         <div class="lp-section lp-grid-2" id="logo-shadow-controls">
                             <div>
-                                <label class="lp-label">Image URL</label>
+                                <label class="lp-label">Shadow Blur</label>
                                 <div class="lp-slider-wrap">
                                     <input type="range" id="logo-shadow-blur" min="0" max="40" value="10" class="lp-slider"
                                         oninput="this.nextElementSibling.textContent=this.value+'px'">
@@ -542,7 +609,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="lp-label">Image URL</label>
+                                <label class="lp-label">Shadow Color</label>
                                 <input type="color" id="logo-shadow-color" value="#000000" class="lp-color-pick">
                             </div>
                         </div>
@@ -550,13 +617,13 @@
 
                     <!-- ⑤ Placement pills -->
                     <div class="lp-section">
-                        <label class="lp-label"><i class="fas fa-layer-group"></i> Image URL</label>
+                        <label class="lp-label"><i class="fas fa-layer-group"></i> Placement</label>
                         <div class="lp-placement-btns">
-                            <label class="lp-place-btn lp-place-active" title="Front Face">
+                            <label class="lp-place-btn lp-place-active" title="Front Side">
                                 <input type="radio" name="placement-logo" value="front" checked>
                                 <i class="fas fa-id-card"></i> Front
                             </label>
-                            <label class="lp-place-btn" title="Back Image">
+                            <label class="lp-place-btn" title="Back Side">
                                 <input type="radio" name="placement-logo" value="back">
                                 <i class="fas fa-id-card-alt"></i> Back
                             </label>
@@ -565,7 +632,7 @@
 
                     <!-- ⑥ D-Pad Position Control -->
                     <div class="lp-section">
-                        <label class="lp-label"><i class="fas fa-arrows-up-down-left-right"></i> Image URL</label>
+                        <label class="lp-label"><i class="fas fa-arrows-up-down-left-right"></i> Fine Position</label>
                         <div class="lp-dpad position-controls-grid" data-target-id="card-logo">
                             <div class="lp-dpad-row">
                                 <button type="button" class="lp-dpad-btn move-btn" data-direction="up" title="Up">
@@ -588,38 +655,41 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </details>
 
             <!-- Logo Panel Inline JS -->
             <script>
-            // Swatch background setter
             function lpSetBg(btn, val) {
-                document.querySelectorAll('.lp-swatch').forEach(function(s){ s.classList.remove('lp-swatch-active'); });
+                var container = btn.closest('.lp-swatches');
+                container.querySelectorAll('.lp-swatch').forEach(function(s){ s.classList.remove('lp-swatch-active'); });
                 btn.classList.add('lp-swatch-active');
                 var sel = document.getElementById('logo-bg-color');
-                if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', {bubbles:true})); }
+                if(sel) { 
+                    sel.value = val; 
+                    sel.dispatchEvent(new Event('change', {bubbles:true})); 
+                }
             }
-            // Sync align radio → active class
             document.querySelectorAll('#logo-align-group input[type=radio]').forEach(function(r){
                 r.addEventListener('change', function(){
-                    document.querySelectorAll('.lp-align-btn').forEach(function(b){ b.classList.remove('lp-align-active'); });
+                    document.querySelectorAll('#logo-align-group .lp-align-btn').forEach(function(b){ b.classList.remove('lp-align-active'); });
                     r.closest('.lp-align-btn').classList.add('lp-align-active');
                 });
             });
-            // Sync placement radio → active class
             document.querySelectorAll('[name="placement-logo"]').forEach(function(r){
                 r.addEventListener('change', function(){
-                    document.querySelectorAll('.lp-place-btn').forEach(function(b){ b.classList.remove('lp-place-active'); });
+                    document.querySelectorAll('input[name="placement-logo"]').forEach(function(ir){
+                        ir.closest('.lp-place-btn').classList.remove('lp-place-active');
+                    });
                     r.closest('.lp-place-btn').classList.add('lp-place-active');
                 });
             });
-            // D-pad: wire up move buttons directly to EventManager
             (function() {
-                function wireDpad() {
-                    var dpad = document.querySelector('.lp-dpad.position-controls-grid');
-                    if (!dpad) { setTimeout(wireDpad, 400); return; }
+                function wireLogoDpad() {
+                    var dpad = document.querySelector('.lp-dpad[data-target-id="card-logo"]');
+                    if (!dpad) { setTimeout(wireLogoDpad, 400); return; }
+                    var wired = dpad.dataset.wired;
+                    if(wired) return;
                     dpad.querySelectorAll('.move-btn').forEach(function(btn) {
                         btn.addEventListener('click', function(e) {
                             e.preventDefault();
@@ -629,24 +699,19 @@
                             }
                         });
                     });
+                    dpad.dataset.wired = "true";
                 }
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', function(){ setTimeout(wireDpad, 600); });
-                } else {
-                    setTimeout(wireDpad, 600);
-                }
+                setTimeout(wireLogoDpad, 500);
             })();
             </script>
 
-
-
-            <!-- ═══ PROFILE PHOTO PANEL — Premium v2 ═══ -->
+            <!-- ═══ PHOTO PANEL — Premium v2 ═══ -->
             <details class="fieldset-accordion lp-accordion" open>
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-user-circle"></i></span>
-                    <span>Profile Picture</span>
+                    <span>Personal Photo</span>
                     <!-- Toggle Switch -->
-                    <label class="lp-toggle" title="Show / Hide Image" onclick="event.stopPropagation()">
+                    <label class="lp-toggle" title="Show / Hide Photo" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-photo" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
                     </label>
@@ -656,18 +721,18 @@
                     <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
 
                     <!-- ① Upload Zone -->
-                    <div class="lp-upload-zone" id="lp-photo-upload-zone-click" onclick="document.getElementById('input-photo-upload').click();">
-                        <div class="lp-preview-wrap" style="border-radius: 50%; overflow: hidden;">
-                            <img id="photo-preview" src="" alt="" class="lp-preview-img" style="display:none; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: none; padding: 0;">
-                            <div id="photo-placeholder" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(77,166,255,0.1); border-radius: 50%; border: 1px dashed rgba(77,166,255,0.4);">
-                                <i class="fas fa-user" style="font-size: 24px; color: var(--accent-primary);"></i>
+                    <div class="lp-upload-zone" id="lp-upload-zone-photo">
+                        <div class="lp-preview-wrap">
+                            <img id="photo-preview" src="" alt="Photo Preview" class="lp-preview-img" style="display:none; border-radius:50%; object-fit:cover;">
+                            <div class="lp-preview-placeholder" id="photo-placeholder">
+                                <i class="fas fa-user"></i>
                             </div>
                             <div class="lp-spinner-wrap"><div class="spinner" id="photo-spinner" style="display:none;"></div></div>
                         </div>
                         <div class="lp-upload-actions">
                             <label class="lp-upload-btn" style="pointer-events: none;">
-                                <i class="fas fa-cloud-upload-alt"></i> Upload Image
-                                <small>(Crop Prompt)</small>
+                                <i class="fas fa-cloud-upload-alt"></i> Upload Photo
+                                <small>(Cropping required)</small>
                             </label>
                             <input type="file" id="input-photo-upload" accept="image/*" style="display:none;">
                             <div class="input-error-msg" id="photo-upload-error"></div>
@@ -677,16 +742,16 @@
                     <!-- URL Input -->
                     <div class="lp-section">
                         <label class="lp-label" for="input-photo-url">
-                            <i class="fas fa-link"></i> Image URL
+                            <i class="fas fa-link"></i> Photo URL
                         </label>
                         <input type="url" id="input-photo-url" class="lp-input" placeholder="https://... or local path">
                     </div>
 
                     <!-- ② Shape -->
                     <div class="lp-section">
-                        <label class="lp-label"><i class="fas fa-shapes"></i> Image URL</label>
+                        <label class="lp-label"><i class="fas fa-shapes"></i> Shape</label>
                         <div class="lp-align-btns shape-btns" id="photo-shape-group">
-                            <label class="lp-align-btn lp-align-active" title="Rounded">
+                            <label class="lp-align-btn lp-align-active" title="Circle">
                                 <input type="radio" name="photo-shape" value="circle" checked>
                                 <div style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor;"></div>
                             </label>
@@ -708,7 +773,7 @@
                     <!-- ③ Size & Border Width -->
                     <div class="lp-section lp-grid-2">
                         <div>
-                            <label class="lp-label"><i class="fas fa-expand-arrows-alt"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-expand-arrows-alt"></i> Size</label>
                             <div class="lp-slider-wrap">
                                 <input type="range" id="photo-size" min="15" max="50" value="25" class="lp-slider"
                                     oninput="this.nextElementSibling.textContent=this.value+'%'">
@@ -716,7 +781,7 @@
                             </div>
                         </div>
                         <div>
-                            <label class="lp-label"><i class="fas fa-border-all"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-border-all"></i> Border Width</label>
                             <div class="lp-slider-wrap">
                                 <input type="range" id="photo-border-width" min="0" max="10" value="2" class="lp-slider"
                                     oninput="this.nextElementSibling.textContent=this.value+'px'">
@@ -728,7 +793,7 @@
                     <!-- ④ Alignment & Opacity -->
                     <div class="lp-section lp-grid-2">
                         <div>
-                            <label class="lp-label"><i class="fas fa-circle-half-stroke"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-circle-half-stroke"></i> Opacity</label>
                             <div class="lp-slider-wrap">
                                 <input type="range" id="photo-opacity" min="0" max="1" step="0.05" value="1" class="lp-slider"
                                     oninput="this.nextElementSibling.textContent=Math.round(this.value*100)+'%'">
@@ -736,11 +801,11 @@
                             </div>
                         </div>
                         <div>
-                            <label class="lp-label"><i class="fas fa-align-center"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-align-center"></i> Alignment</label>
                             <div class="lp-align-btns" id="photo-align-group">
                                 <label class="lp-align-btn" title="Left">
                                     <input type="radio" name="photo-align" value="flex-start">
-                                    <i class="fas fa-align-right"></i>
+                                    <i class="fas fa-align-left"></i>
                                 </label>
                                 <label class="lp-align-btn lp-align-active" title="Center">
                                     <input type="radio" name="photo-align" value="center" checked>
@@ -748,7 +813,7 @@
                                 </label>
                                 <label class="lp-align-btn" title="Right">
                                     <input type="radio" name="photo-align" value="flex-end">
-                                    <i class="fas fa-align-left"></i>
+                                    <i class="fas fa-align-right"></i>
                                 </label>
                             </div>
                         </div>
@@ -756,7 +821,7 @@
 
                     <!-- ⑤ Border Color -->
                     <div class="lp-section">
-                        <label class="lp-label"><i class="fas fa-palette"></i> Image URL</label>
+                        <label class="lp-label"><i class="fas fa-palette"></i> Border Color</label>
                         <div class="lp-swatches" style="margin-top: 5px;">
                             <button type="button" class="lp-swatch" data-bg="transparent" title="None"
                                 style="background:repeating-conic-gradient(#aaa 0% 25%,transparent 0% 50%) 0/10px 10px;"
@@ -784,7 +849,7 @@
                     <!-- ⑥ Shadow (collapsible) -->
                     <details class="lp-sub-accordion">
                         <summary class="lp-sub-summary">
-                            <i class="fas fa-droplet"></i> Image Shadow
+                            <i class="fas fa-droplet"></i> Photo Shadow
                             <label class="lp-toggle lp-toggle-sm" onclick="event.stopPropagation()">
                                 <input type="checkbox" id="photo-shadow-enabled">
                                 <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -792,7 +857,7 @@
                         </summary>
                         <div class="lp-section lp-grid-2" id="photo-shadow-controls">
                             <div>
-                                <label class="lp-label">Image URL</label>
+                                <label class="lp-label">Shadow Blur</label>
                                 <div class="lp-slider-wrap">
                                     <input type="range" id="photo-shadow-blur" min="0" max="40" value="10" class="lp-slider"
                                         oninput="this.nextElementSibling.textContent=this.value+'px'">
@@ -800,7 +865,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="lp-label">Image URL</label>
+                                <label class="lp-label">Shadow Color</label>
                                 <input type="color" id="photo-shadow-color" value="#000000" class="lp-color-pick">
                             </div>
                         </div>
@@ -808,13 +873,13 @@
 
                     <!-- ⑦ Placement pills -->
                     <div class="lp-section">
-                        <label class="lp-label"><i class="fas fa-layer-group"></i> Image URL</label>
+                        <label class="lp-label"><i class="fas fa-layer-group"></i> Placement</label>
                         <div class="lp-placement-btns">
-                            <label class="lp-place-btn lp-place-active" title="Front Face">
+                            <label class="lp-place-btn lp-place-active" title="Front Side">
                                 <input type="radio" name="placement-photo" value="front" checked>
                                 <i class="fas fa-id-card"></i> Front
                             </label>
-                            <label class="lp-place-btn" title="Back Image">
+                            <label class="lp-place-btn" title="Back Side">
                                 <input type="radio" name="placement-photo" value="back">
                                 <i class="fas fa-id-card-alt"></i> Back
                             </label>
@@ -823,7 +888,7 @@
 
                     <!-- ⑧ D-Pad Position Control -->
                     <div class="lp-section">
-                        <label class="lp-label"><i class="fas fa-arrows-up-down-left-right"></i> Image URL</label>
+                        <label class="lp-label"><i class="fas fa-arrows-up-down-left-right"></i> Fine Position</label>
                         <div class="lp-dpad position-controls-grid" data-target-id="card-personal-photo-wrapper">
                             <div class="lp-dpad-row">
                                 <button type="button" class="lp-dpad-btn move-btn" data-direction="up" title="Up">
@@ -898,7 +963,6 @@
                 var img = document.getElementById('photo-preview');
                 var placeholder = document.getElementById('photo-placeholder');
                 if(this.files && this.files.length > 0) {
-                    // Actual preview logic is handled by Cropper JS, but we can visually toggle placeholder
                     img.style.display = 'block';
                     placeholder.style.display = 'none';
                 }
@@ -925,6 +989,7 @@
                 setTimeout(wirePhotoDpad, 800);
             })();
             </script>
+
             <!-- ═══ NAME PANEL — Premium v2 ═══ -->
             <details class="fieldset-accordion lp-accordion" open id="name-accordion">
                 <summary class="lp-summary">
@@ -938,21 +1003,21 @@
 
                 <div class="fieldset-content lp-body" id="name-controls-fieldset">
                     <div class="lp-section" style="padding-top:0;">
-                        <textarea id="input-name_ar" class="lp-input" rows="1" data-lang="ar" data-update-target="card-name" data-update-property="innerText" placeholder="Full Name"></textarea>
-                        <textarea id="input-name_en" class="lp-input" rows="1" data-lang="en" style="display:none;" data-update-target="card-name" data-update-property="innerText" placeholder="Full Name"></textarea>
+                        <textarea id="input-name_ar" class="lp-input" rows="1" data-lang="ar" style="display:none;" data-update-target="card-name" data-update-property="innerText" placeholder="الاسم الكامل"></textarea>
+                        <textarea id="input-name_en" class="lp-input" rows="1" data-lang="en" data-update-target="card-name" data-update-property="innerText" placeholder="Your Full Name Here"></textarea>
                     </div>
                     
                     <div class="lp-section lp-grid-2">
                         <div>
-                            <label class="lp-label"><i class="fas fa-text-width"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-text-width"></i> Font</label>
                             <select id="name-font" class="lp-input lp-select" data-update-target="card-name" data-update-property="style.fontFamily" style="height:32px; padding-top:0; padding-bottom:0;">
+                                <option value="'Poppins', sans-serif">Poppins</option>
                                 <option value="'Tajawal', sans-serif">Tajawal</option>
                                 <option value="'Cairo', sans-serif">Cairo</option>
-                                <option value="'Lalezar', cursive">Lalezar</option>
                             </select>
                         </div>
                         <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                            <label class="lp-label"><i class="fas fa-palette"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-palette"></i> Color</label>
                             <div class="lp-color-pick-wrap" style="margin-top:2px;">
                                 <input type="color" id="name-color" value="#e6f0f7" class="lp-color-pick" data-update-target="card-name" data-update-property="style.color">
                             </div>
@@ -960,7 +1025,7 @@
                     </div>
 
                     <div class="lp-section">
-                        <label class="lp-label"><i class="fas fa-text-height"></i> Image URL</label>
+                        <label class="lp-label"><i class="fas fa-text-height"></i> Size</label>
                         <div class="lp-slider-wrap">
                             <input type="range" id="name-font-size" min="16" max="48" value="22" class="lp-slider"
                                 data-update-target="card-name" data-update-property="style.fontSize" data-update-unit="px"
@@ -970,7 +1035,7 @@
                     </div>
 
                     <div class="lp-section" style="border:none; padding-bottom:0;">
-                        <label class="lp-label"><i class="fas fa-layer-group"></i> Image URL</label>
+                        <label class="lp-label"><i class="fas fa-layer-group"></i> Placement</label>
                         <div class="lp-placement-btns">
                             <label class="lp-place-btn lp-place-active">
                                 <input type="radio" name="placement-name" value="front" checked> <i class="fas fa-id-card"></i> Front
@@ -984,7 +1049,7 @@
                     <!-- ADVANCED MOVEMENT DPAD -->
                     <details class="lp-sub-accordion" style="margin-top: 10px;">
                         <summary class="lp-sub-summary">
-                            <i class="fas fa-arrows-up-down-left-right"></i> Image URL
+                            <i class="fas fa-arrows-up-down-left-right"></i> Fine Position
                         </summary>
                         <div class="lp-section" style="border:none;">
                             <div class="lp-dpad position-controls-grid" data-target-id="card-name">
@@ -1014,21 +1079,21 @@
 
                 <div class="fieldset-content lp-body" id="tagline-controls-fieldset">
                     <div class="lp-section" style="padding-top:0;">
-                        <textarea id="input-tagline_ar" class="lp-input" rows="1" data-lang="ar" data-update-target="card-tagline" data-update-property="innerText" placeholder="Job Title or Business"></textarea>
-                        <textarea id="input-tagline_en" class="lp-input" rows="1" data-lang="en" style="display:none;" data-update-target="card-tagline" data-update-property="innerText" placeholder="Job Title / Company"></textarea>
+                        <textarea id="input-tagline_ar" class="lp-input" rows="1" data-lang="ar" style="display:none;" data-update-target="card-tagline" data-update-property="innerText" placeholder="المسمى الوظيفي أو النشاط"></textarea>
+                        <textarea id="input-tagline_en" class="lp-input" rows="1" data-lang="en" data-update-target="card-tagline" data-update-property="innerText" placeholder="Job Title / Company"></textarea>
                     </div>
 
                     <div class="lp-section lp-grid-2">
                         <div>
-                            <label class="lp-label"><i class="fas fa-text-width"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-text-width"></i> Font</label>
                             <select id="tagline-font" class="lp-input lp-select" data-update-target="card-tagline" data-update-property="style.fontFamily" style="height:32px; padding-top:0; padding-bottom:0;">
+                                <option value="'Poppins', sans-serif">Poppins</option>
                                 <option value="'Tajawal', sans-serif">Tajawal</option>
                                 <option value="'Cairo', sans-serif">Cairo</option>
-                                <option value="'Lalezar', cursive">Lalezar</option>
                             </select>
                         </div>
                         <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                            <label class="lp-label"><i class="fas fa-palette"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-palette"></i> Color</label>
                             <div class="lp-color-pick-wrap" style="margin-top:2px;">
                                 <input type="color" id="tagline-color" value="#4da6ff" class="lp-color-pick" data-update-target="card-tagline" data-update-property="style.color">
                             </div>
@@ -1036,7 +1101,7 @@
                     </div>
 
                     <div class="lp-section">
-                        <label class="lp-label"><i class="fas fa-text-height"></i> Image URL</label>
+                        <label class="lp-label"><i class="fas fa-text-height"></i> Size</label>
                         <div class="lp-slider-wrap">
                             <input type="range" id="tagline-font-size" min="12" max="32" value="14" class="lp-slider"
                                 data-update-target="card-tagline" data-update-property="style.fontSize" data-update-unit="px"
@@ -1046,7 +1111,7 @@
                     </div>
 
                     <div class="lp-section" style="border:none; padding-bottom:0;">
-                        <label class="lp-label"><i class="fas fa-layer-group"></i> Image URL</label>
+                        <label class="lp-label"><i class="fas fa-layer-group"></i> Placement</label>
                         <div class="lp-placement-btns">
                             <label class="lp-place-btn lp-place-active">
                                 <input type="radio" name="placement-tagline" value="front" checked> <i class="fas fa-id-card"></i> Front
@@ -1060,7 +1125,7 @@
                     <!-- ADVANCED MOVEMENT DPAD -->
                     <details class="lp-sub-accordion" style="margin-top: 10px;">
                         <summary class="lp-sub-summary">
-                            <i class="fas fa-arrows-up-down-left-right"></i> Image URL
+                            <i class="fas fa-arrows-up-down-left-right"></i> Fine Position
                         </summary>
                         <div class="lp-section" style="border:none;">
                             <div class="lp-dpad position-controls-grid" data-target-id="card-tagline">
@@ -1094,236 +1159,61 @@
                     if (wrapper) {
                         wrapper.style.borderRadius = shape === 'circle' ? '50%' : (shape === 'rounded' ? '15%' : '0');
                         wrapper.style.clipPath = shape === 'hexagon' ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' : 'none';
-                        if (preview) {
-                            preview.style.borderRadius = wrapper.style.borderRadius;
-                            preview.style.clipPath = wrapper.style.clipPath;
-                        }
-                        if (img) {
-                             img.style.borderRadius = wrapper.style.borderRadius;
-                             img.style.clipPath = wrapper.style.clipPath;
+                        if(img) {
+                            img.style.borderRadius = wrapper.style.borderRadius;
+                            img.style.clipPath = wrapper.style.clipPath;
                         }
                     }
                 });
             });
 
-            setTimeout(function() {
-                var checkedShape = document.querySelector('input[name="photo-shape"]:checked');
-                if(checkedShape) checkedShape.dispatchEvent(new Event('change'));
-            }, 500);
-
-            // Sync placement pills for Name and Tagline
-            document.querySelectorAll('input[name="placement-name"], input[name="placement-tagline"]').forEach(function(r){
+            // Name Placement
+            document.querySelectorAll('[name="placement-name"]').forEach(function(r){
                 r.addEventListener('change', function(){
-                    var name = this.name;
-                    document.querySelectorAll('input[name="'+name+'"]').forEach(function(ir){
+                    document.querySelectorAll('input[name="placement-name"]').forEach(function(ir){
                         ir.closest('.lp-place-btn').classList.remove('lp-place-active');
                     });
-                    this.closest('.lp-place-btn').classList.add('lp-place-active');
+                    r.closest('.lp-place-btn').classList.add('lp-place-active');
+                });
+            });
+            // Tagline Placement
+            document.querySelectorAll('[name="placement-tagline"]').forEach(function(r){
+                r.addEventListener('change', function(){
+                    document.querySelectorAll('input[name="placement-tagline"]').forEach(function(ir){
+                        ir.closest('.lp-place-btn').classList.remove('lp-place-active');
+                    });
+                    r.closest('.lp-place-btn').classList.add('lp-place-active');
                 });
             });
 
-            // Wire D-pads for name and tagline
+            // Name/Tagline D-pad
             (function() {
-                function wireTextDpads() {
-                    var dpads = document.querySelectorAll('#name-accordion .lp-dpad:not([data-wired="true"]), #tagline-accordion .lp-dpad:not([data-wired="true"])');
-                    if (dpads.length === 0) { setTimeout(wireTextDpads, 500); return; }
-                    dpads.forEach(function(dpad) {
-                        var target = dpad.dataset.targetId;
-                        dpad.querySelectorAll('.move-btn').forEach(function(btn) {
-                            btn.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                var dir = btn.dataset.direction;
-                                if (typeof EventManager !== 'undefined' && EventManager.moveElement) {
-                                    EventManager.moveElement(target, dir);
-                                }
-                            });
+                function wireTextDpad(id) {
+                    var dpad = document.querySelector('.lp-dpad[data-target-id="'+id+'"]');
+                    if (!dpad) return false;
+                    if(dpad.dataset.wired) return true;
+                    dpad.querySelectorAll('.move-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            if (typeof EventManager !== 'undefined' && EventManager.moveElement) {
+                                EventManager.moveElement(id, btn.dataset.direction);
+                            }
                         });
-                        dpad.dataset.wired = "true";
                     });
+                    dpad.dataset.wired = "true";
+                    return true;
                 }
-                setTimeout(wireTextDpads, 800);
+                function tryWire() {
+                    var w1 = wireTextDpad('card-name');
+                    var w2 = wireTextDpad('card-tagline');
+                    if(!w1 || !w2) setTimeout(tryWire, 500);
+                }
+                setTimeout(tryWire, 500);
             })();
             </script>
 
-            <!-- ═══ PHONES PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" id="phones-accordion">
-                <summary class="lp-summary">
-                    <span class="lp-summary-icon"><i class="fas fa-phone-alt"></i></span>
-                    <span>Phone Numbers</span>
-                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="visibility-phones" checked>
-                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
-                    </label>
-                </summary>
-                
-                <div class="fieldset-content lp-body">
-
-                    <!-- ① Manage Numbers Card -->
-                    <div class="lp-card">
-                        <div class="lp-card-header">
-                            <span class="lp-card-title"><i class="fas fa-list-ol"></i> Appearance & Styling</span>
-                        </div>
-                        <div class="lp-section" style="padding-top:0; border:none;">
-                            <div id="phone-numbers-container"></div>
-                            <button id="add-phone-btn" class="lp-upload-btn" style="width:100%; justify-content:center; margin-top:8px;">
-                                <i class="fas fa-plus"></i> Add Phone Number
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- ② Display Style Card -->
-                    <div class="lp-card">
-                        <div class="lp-card-header">
-                            <span class="lp-card-title"><i class="fas fa-paint-roller"></i> Appearance & Styling</span>
-                        </div>
-                        
-                        <div class="lp-section" style="padding-top:0;">
-                            <!-- Segmented Control for Layout Mode -->
-                            <div class="lp-segment-control" style="display:flex; background:rgba(0,0,0,0.3); border-radius:8px; padding:4px; margin-bottom:12px;">
-                                <label style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;" class="toggle-phone-text">
-                                    <input type="radio" name="phone-mode-fake" value="text" style="display:none;">
-                                    <i class="fas fa-align-left"></i> As Text
-                                </label>
-                                <label style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;" class="toggle-phone-btn active-mode">
-                                    <input type="radio" name="phone-mode-fake" value="buttons" style="display:none;" checked>
-                                    <i class="fas fa-stop"></i> As Buttons
-                                </label>
-                                <!-- Real checkbox hidden, toggled via JS to keep compatibility -->
-                                <input type="checkbox" id="toggle-phone-buttons" checked style="display:none;">
-                            </div>
-
-                            <!-- TEXT SETTINGS -->
-                            <div id="phone-text-controls" style="display: none;">
-                                <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0;">
-                                    <div>
-                                        <label class="lp-label">Image URL</label>
-                                        <div class="lp-align-btns">
-                                            <label class="lp-align-btn lp-align-active">
-                                                <input type="radio" name="phone-text-layout" value="row" checked> Horizontal
-                                            </label>
-                                            <label class="lp-align-btn">
-                                                <input type="radio" name="phone-text-layout" value="column"> Vertical
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                                        <label class="lp-label">Image URL</label>
-                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
-                                            <input type="color" id="phone-text-color" value="#e6f0f7" class="lp-color-pick">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="lp-section">
-                                    <label class="lp-label">Image URL</label>
-                                    <div class="lp-slider-wrap">
-                                        <input type="range" id="phone-text-size" min="10" max="24" value="14" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
-                                        <span class="lp-slider-val">14px</span>
-                                    </div>
-                                </div>
-                                <div class="lp-section" style="border:none; padding-bottom:0;">
-                                    <label class="lp-label">Image URL</label>
-                                    <select id="phone-text-font" class="lp-input lp-select" style="height:32px; padding-top:0; padding-bottom:0;">
-                                        <option value="'Tajawal', sans-serif">Tajawal</option>
-                                        <option value="'Cairo', sans-serif">Cairo</option>
-                                        <option value="'Lalezar', cursive">Lalezar</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- BUTTON SETTINGS -->
-                            <div id="phone-btn-controls">
-                                <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0px;">
-                                    <div>
-                                        <label class="lp-label">Image URL</label>
-                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
-                                            <input type="color" id="phone-btn-bg-color" value="#4da6ff" class="lp-color-pick">
-                                        </div>
-                                    </div>
-                                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                                        <label class="lp-label">Image URL</label>
-                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
-                                            <input type="color" id="phone-btn-text-color" value="#ffffff" class="lp-color-pick">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="lp-section">
-                                    <label class="lp-label">Image URL</label>
-                                    <div class="lp-slider-wrap">
-                                        <input type="range" id="phone-btn-font-size" min="10" max="24" value="12" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
-                                        <span class="lp-slider-val">12px</span>
-                                    </div>
-                                </div>
-                                <div class="lp-section">
-                                    <label class="lp-label">Image URL</label>
-                                    <div class="lp-slider-wrap">
-                                        <input type="range" id="phone-btn-padding" min="4" max="16" value="6" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
-                                        <span class="lp-slider-val">6px</span>
-                                    </div>
-                                </div>
-                                <div class="lp-section" style="border:none; padding-bottom:0;">
-                                    <label class="lp-label">Image URL</label>
-                                    <select id="phone-btn-font" class="lp-input lp-select" style="height:32px; padding-top:0; padding-bottom:0;">
-                                        <option value="'Poppins', sans-serif">Poppins</option>
-                                        <option value="'Tajawal', sans-serif">Tajawal</option>
-                                        <option value="'Cairo', sans-serif">Cairo</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </details>
-
-            <script>
-            // Inline logic for phone UI segment control to match pre-existing JS hooks
-            document.querySelectorAll('input[name="phone-mode-fake"]').forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    var isButtonMode = (this.value === 'buttons');
-                    
-                    // Update visual segmented control styling
-                    document.querySelector('.toggle-phone-text').style.background = isButtonMode ? 'transparent' : 'var(--accent-primary)';
-                    document.querySelector('.toggle-phone-text').style.color = isButtonMode ? 'var(--text-secondary)' : '#fff';
-                    document.querySelector('.toggle-phone-text ').style.boxShadow = isButtonMode ? 'none' : '0 2px 4px rgba(0,0,0,0.2)';
-                    
-                    document.querySelector('.toggle-phone-btn').style.background = isButtonMode ? 'var(--accent-primary)' : 'transparent';
-                    document.querySelector('.toggle-phone-btn').style.color = isButtonMode ? '#fff' : 'var(--text-secondary)';
-                    document.querySelector('.toggle-phone-btn ').style.boxShadow = isButtonMode ? '0 2px 4px rgba(0,0,0,0.2)' : 'none';
-
-                    // Toggle visibility of setting panels
-                    document.getElementById('phone-text-controls').style.display = isButtonMode ? 'none' : 'block';
-                    document.getElementById('phone-btn-controls').style.display = isButtonMode ? 'block' : 'none';
-
-                    // Sync hidden checkbox and fire event to trigger original script-main.js logic
-                    var checkbox = document.getElementById('toggle-phone-buttons');
-                    if (checkbox.checked !== isButtonMode) {
-                        checkbox.checked = isButtonMode;
-                        checkbox.dispatchEvent(new Event('input', { bubbles: true }));
-                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-                        if (typeof CardManager !== 'undefined' && CardManager.updatePhoneButtonsVisibility) {
-                            CardManager.updatePhoneButtonsVisibility();
-                        }
-                    }
-                });
-            });
-
-            // Trigger once visually
-            var ev = new Event('change');
-            var fakeRadio = document.querySelector('input[name="phone-mode-fake"]:checked');
-            if(fakeRadio) fakeRadio.dispatchEvent(ev);
-
-            // Sync layout align buttons for phone-text
-            document.querySelectorAll('input[name="phone-text-layout"]').forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    document.querySelectorAll('input[name="phone-text-layout"]').forEach(function(r){
-                        r.closest('.lp-align-btn').classList.remove('lp-align-active');
-                    });
-                    this.closest('.lp-align-btn').classList.add('lp-align-active');
-                });
-            });
-            </script>
-
             <!-- ═══ QR CODE PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" id="qr-code-accordion">
+            <details class="fieldset-accordion lp-accordion" open id="qr-code-accordion">
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-qrcode"></i></span>
                     <span>QR Code</span>
@@ -1333,210 +1223,179 @@
                     </label>
                 </summary>
 
-                <div class="fieldset-content lp-body">
+                <div class="fieldset-content lp-body" id="qr-controls-fieldset">
 
-                    <!-- ① SOURCE CARD -->
-                    <div class="lp-card">
-                        <div class="lp-card-header">
-                            <span class="lp-card-title"><i class="fas fa-link"></i> Appearance & Styling</span>
-                        </div>
-
-                        <!-- Segment control for QR source -->
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px;">
-                            <label class="lp-qr-src-btn lp-qr-active" data-val="auto-card" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(77,166,255,0.45);background:rgba(77,166,255,0.15);color:var(--accent-primary);font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;">
-                                <input type="radio" name="qr-source" value="auto-card" checked style="display:none;">
+                    <!-- ① Source Selection -->
+                    <div class="lp-section" style="padding-top:0;">
+                        <label class="lp-label"><i class="fas fa-link"></i> Data Source</label>
+                        <div class="lp-placement-btns" style="flex-wrap: wrap; gap:4px;">
+                            <label class="lp-place-btn lp-place-active" title="Link to this card" style="flex:1 1 45%;">
+                                <input type="radio" name="qr-source" value="auto-card" checked>
                                 <i class="fas fa-id-card"></i> Card Link
                             </label>
-                            <label class="lp-qr-src-btn" data-val="auto-vcard" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
-                                <input type="radio" name="qr-source" value="auto-vcard" style="display:none;">
-                                <i class="fas fa-address-book"></i> vCard Data
+                            <label class="lp-place-btn" title="Download vCard" style="flex:1 1 45%;">
+                                <input type="radio" name="qr-source" value="auto-vcard">
+                                <i class="fas fa-address-book"></i> vCard
                             </label>
-                            <label class="lp-qr-src-btn" data-val="custom" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
-                                <input type="radio" name="qr-source" value="custom" style="display:none;">
-                                <i class="fas fa-pen"></i> Custom Link
+                            <label class="lp-place-btn" title="Custom Link" style="flex:1 1 45%;">
+                                <input type="radio" name="qr-source" value="custom">
+                                <i class="fas fa-external-link-alt"></i> Custom
                             </label>
-                            <label class="lp-qr-src-btn" data-val="upload" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
-                                <input type="radio" name="qr-source" value="upload" style="display:none;">
-                                <i class="fas fa-upload"></i> Upload Image
+                            <label class="lp-place-btn" title="Upload Image" style="flex:1 1 45%;">
+                                <input type="radio" name="qr-source" value="upload">
+                                <i class="fas fa-upload"></i> Upload
                             </label>
-                        </div>
-
-                        <!-- Auto Card Button -->
-                        <div id="qr-auto-card-group" style="display:block;">
-                            <button id="generate-auto-qr-btn" class="lp-upload-btn" style="width:100%;justify-content:center;background:linear-gradient(135deg,rgba(77,166,255,0.25),rgba(77,166,255,0.1));border-color:rgba(77,166,255,0.5);">
-                                <i class="fas fa-qrcode"></i> Generate QR Code
-                            </button>
-                            <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:8px;text-align:center;line-height:1.5;">Saves your design and creates a sharing URL & QR code</p>
-                        </div>
-
-                        <!-- Custom URL input -->
-                        <div class="form-group" id="qr-url-group" style="display:none; margin-top:8px;">
-                            <input type="url" id="input-qr-url" value="mcprime_qr.png" class="lp-input" placeholder="https://...">
-                        </div>
-
-                        <!-- Upload input -->
-                        <div class="form-group" id="qr-upload-group" style="display:none; margin-top:8px;">
-                            <div class="lp-upload-zone" style="flex-direction:column;gap:8px;text-align:center;" onclick="document.getElementById('input-qr-upload').click()">
-                                <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:var(--accent-primary);"></i>
-                                <span style="font-size:0.78rem;color:var(--text-secondary);">Upload QR Image (<2MB)</span>
-                                <input type="file" id="input-qr-upload" accept="image/*" style="display:none;">
-                            </div>
-                            <div class="input-error-msg" id="qr-upload-error"></div>
-                            <div class="spinner" id="qr-spinner" style="display:none;"></div>
                         </div>
                     </div>
 
-                    <!-- ② APPEARANCE CARD -->
-                    <div class="lp-card" id="qr-customization-group">
-                        <div class="lp-card-header">
-                            <span class="lp-card-title"><i class="fas fa-paint-brush"></i> Appearance & Styling</span>
-                        </div>
+                    <!-- Options for 'auto-card' -->
+                    <div id="qr-auto-card-group" class="lp-section" style="background:rgba(77,166,255,0.1); border-radius:8px; border:1px solid rgba(77,166,255,0.2);">
+                        <button id="generate-auto-qr-btn" class="lp-upload-btn" style="width:100%; border-color:var(--accent-primary); background:var(--accent-primary); color:#fff; font-weight:600;">
+                            <i class="fas fa-magic"></i> Generate QR Code
+                        </button>
+                        <p style="font-size: 11px; color: var(--text-secondary); text-align:center; margin-top: 6px; margin-bottom:0;">Generates a QR for your card's share link.</p>
+                    </div>
 
-                        <!-- Colors -->
-                        <div class="lp-section lp-grid-2" style="padding-top:0;">
-                            <div>
-                                <label class="lp-label"><i class="fas fa-circle"></i> Image URL</label>
-                                <div class="lp-color-pick-wrap">
-                                    <input type="color" id="qr-dots-color" value="#000000" class="lp-color-pick">
-                                </div>
-                            </div>
-                            <div style="display:flex;flex-direction:column;align-items:flex-end;">
-                                <label class="lp-label"><i class="fas fa-circle" style="color:#ccc;"></i> Image URL</label>
-                                <div class="lp-color-pick-wrap">
-                                    <input type="color" id="qr-bg-color" value="#ffffff" class="lp-color-pick">
-                                </div>
+                    <!-- Options for 'custom' -->
+                    <div id="qr-url-group" class="lp-section" style="display:none; background:rgba(255,255,255,0.05); border-radius:8px;">
+                        <label class="lp-label">Image URL / Data</label>
+                        <input type="text" id="input-qr-url" class="lp-input" value="mcprime_qr.png" placeholder="https://...">
+                    </div>
+
+                    <!-- Options for 'upload' -->
+                    <div id="qr-upload-group" class="lp-section" style="display:none; background:rgba(255,255,255,0.05); border-radius:8px;">
+                        <label class="lp-upload-btn mb-0" style="width:100%;">
+                            <i class="fas fa-cloud-upload-alt"></i> Upload QR Image
+                            <input type="file" id="input-qr-upload" accept="image/*" style="display:none;">
+                        </label>
+                        <div class="input-error-msg" id="qr-upload-error"></div>
+                        <div class="spinner" id="qr-spinner" style="display:none; margin:10px auto;"></div>
+                    </div>
+
+                    <!-- ② Styling (only relevant if we are generating QR, but let's keep it generally visible or JS managed) -->
+                    <div id="qr-customization-group" class="lp-section lp-grid-2">
+                        <div>
+                            <label class="lp-label"><i class="fas fa-palette"></i> QR Color</label>
+                            <div class="lp-color-pick-wrap" style="height:32px;">
+                                <input type="color" id="qr-color" value="#000000" class="lp-color-pick">
                             </div>
                         </div>
-
-                        <!-- Dots type -->
-                        <div class="lp-section">
-                            <label class="lp-label"><i class="fas fa-th"></i> Image URL</label>
-                            <select id="qr-dots-type" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
-                                <option value="square">Squares (Square)</option>
-                                <option value="dots">Dots (Rounded)</option>
+                        <div>
+                            <label class="lp-label"><i class="fas fa-fill-drip"></i> Background</label>
+                            <div class="lp-color-pick-wrap" style="height:32px;">
+                                <input type="color" id="qr-bg-color" value="#ffffff" class="lp-color-pick">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0; padding-top:0;">
+                        <div>
+                            <label class="lp-label"><i class="fas fa-ellipsis-h"></i> Dot Style</label>
+                            <select id="qr-dots-type" class="lp-input lp-select" style="height:32px; padding:0 8px;">
+                                <option value="square">Square</option>
+                                <option value="dots">Dots</option>
                                 <option value="rounded" selected>Rounded</option>
                                 <option value="classy">Classy</option>
-                                <option value="classy-rounded">Elegant Rounded</option>
-                                <option value="extra-rounded">Extra Rounded</option>
                             </select>
                         </div>
-
-                        <!-- Corners type -->
-                        <div class="lp-section">
-                            <label class="lp-label"><i class="fas fa-border-all"></i> Image URL</label>
-                            <select id="qr-corners-type" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
-                                <option value="square">Squares (Square)</option>
-                                <option value="dot">Dots (Dot)</option>
-                                <option value="extra-rounded" selected>Extra Rounded</option>
+                        <div>
+                            <label class="lp-label"><i class="fas fa-vector-square"></i> Corner Style</label>
+                            <select id="qr-corners-type" class="lp-input lp-select" style="height:32px; padding:0 8px;">
+                                <option value="square">Square</option>
+                                <option value="dot">Dot</option>
+                                <option value="extra-rounded" selected>Rounded</option>
                             </select>
-                        </div>
-
-                        <!-- Logo toggle -->
-                        <div class="lp-section" style="border:none;padding-bottom:0;">
-                            <div style="display:flex;align-items:center;justify-content:space-between;">
-                                <label class="lp-label" style="margin-bottom:0;"><i class="fas fa-star"></i> Image URL</label>
-                                <label class="lp-toggle lp-toggle-sm" onclick="event.stopPropagation()">
-                                    <input type="checkbox" id="qr-use-logo" checked>
-                                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
-                                </label>
-                            </div>
                         </div>
                     </div>
 
-                    <!-- ③ SIZE & POSITION CARD -->
-                    <div class="lp-card">
-                        <div class="lp-card-header">
-                            <span class="lp-card-title"><i class="fas fa-expand-arrows-alt"></i> Appearance & Styling</span>
-                        </div>
+                    <div class="lp-section" style="padding-top:10px;">
+                        <label class="lp-toggle-row" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox" id="qr-use-logo" checked>
+                            <span style="font-size:0.85rem; font-weight:500;">Include Card Logo inside QR</span>
+                        </label>
+                    </div>
 
-                        <!-- Size slider -->
-                        <div class="lp-section" style="padding-top:0;">
-                            <label class="lp-label"><i class="fas fa-arrows-alt"></i> Image URL</label>
-                            <div class="lp-slider-wrap">
-                                <input type="range" id="qr-size" min="15" max="50" value="30" class="lp-slider"
-                                    oninput="this.nextElementSibling.textContent=this.value+'%'">
-                                <span class="lp-slider-val">30%</span>
-                            </div>
+                    <!-- ③ Size -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-expand-arrows-alt"></i> Size</label>
+                        <div class="lp-slider-wrap">
+                            <input type="range" id="qr-size" min="15" max="50" value="30" class="lp-slider"
+                                oninput="this.nextElementSibling.textContent=this.value+'%'">
+                            <span class="lp-slider-val">30%</span>
                         </div>
+                    </div>
 
-                        <!-- Placement -->
-                        <div class="lp-section">
-                            <label class="lp-label"><i class="fas fa-layer-group"></i> Image URL</label>
-                            <div class="lp-placement-btns" id="qr-placement-btns">
-                                <label class="lp-place-btn">
-                                    <input type="radio" name="placement-qr" value="front"> <i class="fas fa-id-card"></i> Front
-                                </label>
-                                <label class="lp-place-btn lp-place-active">
-                                    <input type="radio" name="placement-qr" value="back" checked> <i class="fas fa-id-card-alt"></i> Back
-                                </label>
-                            </div>
+                    <!-- ④ Placement pills -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-layer-group"></i> Placement</label>
+                        <div class="lp-placement-btns">
+                            <label class="lp-place-btn" title="Front Side">
+                                <input type="radio" name="placement-qr" value="front">
+                                <i class="fas fa-id-card"></i> Front
+                            </label>
+                            <label class="lp-place-btn lp-place-active" title="Back Side">
+                                <input type="radio" name="placement-qr" value="back" checked>
+                                <i class="fas fa-id-card-alt"></i> Back
+                            </label>
                         </div>
+                    </div>
 
-                        <!-- D-Pad -->
-                        <div class="lp-section" style="border:none;padding-bottom:0;">
-                            <label class="lp-label"><i class="fas fa-arrows-up-down-left-right"></i> Image URL</label>
+                    <!-- ⑤ Advanced Position -->
+                    <details class="lp-sub-accordion" style="margin-top: 10px;">
+                        <summary class="lp-sub-summary">
+                            <i class="fas fa-arrows-up-down-left-right"></i> Fine Position
+                        </summary>
+                        <div class="lp-section" style="border:none;">
                             <div class="lp-dpad position-controls-grid" data-target-id="qr-code-wrapper">
                                 <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
                                 <div class="lp-dpad-row">
                                     <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button>
-                                    <div class="lp-dpad-center"><i class="fas fa-qrcode" style="font-size:8px;opacity:0.3;"></i></div>
+                                    <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
                                     <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button>
                                 </div>
                                 <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
                             </div>
                         </div>
-                    </div>
-
+                    </details>
                 </div>
             </details>
 
             <script>
-            // QR Source Segment Control
+            // QR Source logic
+            document.querySelectorAll('[name="qr-source"]').forEach(function(r){
+                r.addEventListener('change', function(){
+                    // Active Pill class
+                    document.querySelectorAll('input[name="qr-source"]').forEach(function(ir){
+                        ir.closest('.lp-place-btn').classList.remove('lp-place-active');
+                    });
+                    this.closest('.lp-place-btn').classList.add('lp-place-active');
+
+                    // Show/hide sections
+                    var val = this.value;
+                    document.getElementById('qr-auto-card-group').style.display = (val==='auto-card' || val==='auto-vcard') ? 'block' : 'none';
+                    document.getElementById('qr-url-group').style.display = (val==='custom') ? 'block' : 'none';
+                    document.getElementById('qr-upload-group').style.display = (val==='upload') ? 'block' : 'none';
+                    document.getElementById('qr-customization-group').style.display = (val==='auto-card' || val==='auto-vcard') ? 'flex' : 'none';
+                });
+            });
+
+            // QR Placement
+            document.querySelectorAll('[name="placement-qr"]').forEach(function(r){
+                r.addEventListener('change', function(){
+                    document.querySelectorAll('input[name="placement-qr"]').forEach(function(ir){
+                        ir.closest('.lp-place-btn').classList.remove('lp-place-active');
+                    });
+                    this.closest('.lp-place-btn').classList.add('lp-place-active');
+                });
+            });
+
+            // DPAD
             (function() {
-                var srcBtns = document.querySelectorAll('.lp-qr-src-btn');
-                srcBtns.forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        // Update styles
-                        srcBtns.forEach(function(b) {
-                            b.style.background = 'rgba(255,255,255,0.03)';
-                            b.style.borderColor = 'rgba(255,255,255,0.08)';
-                            b.style.color = 'var(--text-secondary)';
-                        });
-                        btn.style.background = 'rgba(77,166,255,0.15)';
-                        btn.style.borderColor = 'rgba(77,166,255,0.45)';
-                        btn.style.color = 'var(--accent-primary)';
-
-                        // Select radio
-                        var radio = btn.querySelector('input[type="radio"]');
-                        if (radio) {
-                            radio.checked = true;
-                            radio.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-
-                        // Show/hide conditional groups
-                        var val = btn.dataset.val;
-                        document.getElementById('qr-auto-card-group').style.display = val === 'auto-card' ? 'block' : 'none';
-                        document.getElementById('qr-url-group').style.display = val === 'custom' ? 'block' : 'none';
-                        document.getElementById('qr-upload-group').style.display = val === 'upload' ? 'block' : 'none';
-                        // qr-customization-group stays visible for all except upload
-                        document.getElementById('qr-customization-group').style.display = val === 'upload' ? 'none' : 'block';
-                    });
-                });
-
-                // QR Placement pills sync
-                document.querySelectorAll('#qr-placement-btns input[type="radio"]').forEach(function(r) {
-                    r.addEventListener('change', function() {
-                        document.querySelectorAll('#qr-placement-btns .lp-place-btn').forEach(function(p) {
-                            p.classList.remove('lp-place-active');
-                        });
-                        r.closest('.lp-place-btn').classList.add('lp-place-active');
-                    });
-                });
-
-                // Wire QR D-pad
-                function wireQrDpad() {
-                    var dpad = document.querySelector('#qr-code-accordion .lp-dpad:not([data-wired="true"])');
-                    if (!dpad) { setTimeout(wireQrDpad, 600); return; }
+                function wireQRDpad() {
+                    var dpad = document.querySelector('.lp-dpad[data-target-id="qr-code-wrapper"]');
+                    if (!dpad) { setTimeout(wireQRDpad, 400); return; }
+                    var wired = dpad.dataset.wired;
+                    if(wired) return;
                     dpad.querySelectorAll('.move-btn').forEach(function(btn) {
                         btn.addEventListener('click', function(e) {
                             e.preventDefault();
@@ -1545,9 +1404,9 @@
                             }
                         });
                     });
-                    dpad.dataset.wired = 'true';
+                    dpad.dataset.wired = "true";
                 }
-                setTimeout(wireQrDpad, 800);
+                setTimeout(wireQRDpad, 500);
             })();
             </script>
 
@@ -1589,23 +1448,23 @@
                         <div id="social-btn-style">
                             <div class="lp-section lp-grid-2" style="padding-top:0;">
                                 <div>
-                                    <label class="lp-label"><i class="fas fa-circle"></i> Image URL</label>
+                                    <label class="lp-label"><i class="fas fa-circle"></i> Button Color</label>
                                     <div class="lp-color-pick-wrap"><input type="color" id="back-buttons-bg-color" value="#364f6b" class="lp-color-pick"></div>
                                 </div>
                                 <div style="display:flex;flex-direction:column;align-items:flex-end;">
-                                    <label class="lp-label"><i class="fas fa-font"></i> Image URL</label>
+                                    <label class="lp-label"><i class="fas fa-font"></i> Text Color</label>
                                     <div class="lp-color-pick-wrap"><input type="color" id="back-buttons-text-color" value="#aab8c2" class="lp-color-pick"></div>
                                 </div>
                             </div>
                             <div class="lp-section">
-                                <label class="lp-label"><i class="fas fa-expand"></i> Image URL</label>
+                                <label class="lp-label"><i class="fas fa-expand"></i> Icon Size</label>
                                 <div class="lp-slider-wrap">
                                     <input type="range" id="back-buttons-size" min="10" max="20" value="10" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
                                     <span class="lp-slider-val">10px</span>
                                 </div>
                             </div>
                             <div class="lp-section" style="border:none;padding-bottom:0;">
-                                <label class="lp-label"><i class="fas fa-font"></i> Image URL</label>
+                                <label class="lp-label"><i class="fas fa-font"></i> Font</label>
                                 <select id="back-buttons-font" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
                                     <option value="'Poppins', sans-serif">Poppins</option>
                                     <option value="'Tajawal', sans-serif">Tajawal</option>
@@ -1618,19 +1477,19 @@
                         <div id="social-text-controls" style="display:none;">
                             <div class="lp-section lp-grid-2" style="padding-top:0;">
                                 <div>
-                                    <label class="lp-label"><i class="fas fa-text-height"></i> Image URL</label>
+                                    <label class="lp-label"><i class="fas fa-text-height"></i> Font Size</label>
                                     <div class="lp-slider-wrap">
                                         <input type="range" id="social-text-size" min="10" max="24" value="12" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
                                         <span class="lp-slider-val">12px</span>
                                     </div>
                                 </div>
                                 <div style="display:flex;flex-direction:column;align-items:flex-end;">
-                                    <label class="lp-label"><i class="fas fa-palette"></i> Image URL</label>
+                                    <label class="lp-label"><i class="fas fa-palette"></i> Color</label>
                                     <div class="lp-color-pick-wrap"><input type="color" id="social-text-color" value="#e6f0f7" class="lp-color-pick"></div>
                                 </div>
                             </div>
                             <div class="lp-section" style="border:none;padding-bottom:0;">
-                                <label class="lp-label"><i class="fas fa-font"></i> Image URL</label>
+                                <label class="lp-label"><i class="fas fa-font"></i> Font</label>
                                 <select id="social-text-font" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
                                     <option value="'Tajawal', sans-serif">Tajawal</option>
                                     <option value="'Cairo', sans-serif">Cairo</option>
@@ -1643,13 +1502,12 @@
                     <!-- ② STATIC FIELDS CARD -->
                     <div class="lp-card">
                         <div class="lp-card-header">
-                            <span class="lp-card-title"><i class="fas fa-list-ul"></i> Appearance & Styling</span>
+                            <span class="lp-card-title"><i class="fas fa-list-ul"></i> Fixed Contact Fields</span>
                         </div>
 
-                        <!-- Helper macro: one static field row -->
                         <!-- Email -->
                         <div class="lp-section" id="form-group-static-email" style="padding-top:0;">
-                            <label class="lp-label"><i class="fas fa-envelope" style="color:#a78bfa;"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-envelope" style="color:#a78bfa;"></i> Email Address</label>
                             <input type="email" id="input-email" value="" class="lp-input" placeholder="example@email.com" style="margin-bottom:8px;">
                             <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
                                 <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
@@ -1659,7 +1517,7 @@
                                     <input type="radio" name="placement-static-email" value="back" checked style="display:none;"> Back
                                 </label>
                             </div>
-                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> Image URL</summary>
+                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> Fine Position</summary>
                                 <div class="lp-dpad position-controls-grid" data-target-id="social-link-static-email" style="margin-top:8px;">
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button><div class="lp-dpad-center"></div><button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button></div>
@@ -1667,15 +1525,15 @@
                                 </div>
                                 <!-- Per-field text style -->
                                 <div class="lp-grid-2" style="margin-top:8px;gap:8px;">
-                                    <div><label class="lp-label" style="margin-bottom:4px;">Image URL</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-email-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
-                                    <div><label class="lp-label" style="margin-bottom:4px;">Image URL</label><div class="lp-slider-wrap"><input type="range" id="input-static-email-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">Color</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-email-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">Size</label><div class="lp-slider-wrap"><input type="range" id="input-static-email-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
                                 </div>
                             </details>
                         </div>
 
                         <!-- Website -->
                         <div class="lp-section" id="form-group-static-website">
-                            <label class="lp-label"><i class="fas fa-globe" style="color:#4da6ff;"></i> Image URL</label>
+                            <label class="lp-label"><i class="fas fa-globe" style="color:#4da6ff;"></i> Website</label>
                             <input type="url" id="input-website" value="" class="lp-input" placeholder="https://..." style="margin-bottom:8px;">
                             <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
                                 <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
@@ -1685,23 +1543,23 @@
                                     <input type="radio" name="placement-static-website" value="back" checked style="display:none;"> Back
                                 </label>
                             </div>
-                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> Image URL</summary>
+                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> Fine Position</summary>
                                 <div class="lp-dpad position-controls-grid" data-target-id="social-link-static-website" style="margin-top:8px;">
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button><div class="lp-dpad-center"></div><button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button></div>
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
                                 </div>
                                 <div class="lp-grid-2" style="margin-top:8px;gap:8px;">
-                                    <div><label class="lp-label" style="margin-bottom:4px;">Image URL</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-website-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
-                                    <div><label class="lp-label" style="margin-bottom:4px;">Image URL</label><div class="lp-slider-wrap"><input type="range" id="input-static-website-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">Color</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-website-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">Size</label><div class="lp-slider-wrap"><input type="range" id="input-static-website-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
                                 </div>
                             </details>
                         </div>
 
                         <!-- WhatsApp -->
                         <div class="lp-section" id="form-group-static-whatsapp">
-                            <label class="lp-label"><i class="fab fa-whatsapp" style="color:#25d366;"></i> Image URL</label>
-                            <input type="text" id="input-whatsapp" value="" class="lp-input" placeholder="+966..." style="margin-bottom:8px;">
+                            <label class="lp-label"><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp</label>
+                            <input type="text" id="input-whatsapp" value="" class="lp-input" placeholder="+1..." style="margin-bottom:8px;">
                             <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
                                 <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
                                     <input type="radio" name="placement-static-whatsapp" value="front" style="display:none;"> Front
@@ -1710,22 +1568,22 @@
                                     <input type="radio" name="placement-static-whatsapp" value="back" checked style="display:none;"> Back
                                 </label>
                             </div>
-                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> Image URL</summary>
+                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> Fine Position</summary>
                                 <div class="lp-dpad position-controls-grid" data-target-id="social-link-static-whatsapp" style="margin-top:8px;">
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button><div class="lp-dpad-center"></div><button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button></div>
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
                                 </div>
                                 <div class="lp-grid-2" style="margin-top:8px;gap:8px;">
-                                    <div><label class="lp-label" style="margin-bottom:4px;">Image URL</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-whatsapp-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
-                                    <div><label class="lp-label" style="margin-bottom:4px;">Image URL</label><div class="lp-slider-wrap"><input type="range" id="input-static-whatsapp-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">Color</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-whatsapp-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">Size</label><div class="lp-slider-wrap"><input type="range" id="input-static-whatsapp-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
                                 </div>
                             </details>
                         </div>
 
                         <!-- Facebook -->
                         <div class="lp-section" id="form-group-static-facebook">
-                            <label class="lp-label"><i class="fab fa-facebook-f" style="color:#1877f2;"></i> Image URL</label>
+                            <label class="lp-label"><i class="fab fa-facebook-f" style="color:#1877f2;"></i> Facebook</label>
                             <input type="url" id="input-facebook" value="" class="lp-input" placeholder="facebook.com/..." style="margin-bottom:8px;">
                             <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
                                 <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
@@ -1735,22 +1593,22 @@
                                     <input type="radio" name="placement-static-facebook" value="back" checked style="display:none;"> Back
                                 </label>
                             </div>
-                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> Image URL</summary>
+                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> Fine Position</summary>
                                 <div class="lp-dpad position-controls-grid" data-target-id="social-link-static-facebook" style="margin-top:8px;">
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button><div class="lp-dpad-center"></div><button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button></div>
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
                                 </div>
                                 <div class="lp-grid-2" style="margin-top:8px;gap:8px;">
-                                    <div><label class="lp-label" style="margin-bottom:4px;">Image URL</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-facebook-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
-                                    <div><label class="lp-label" style="margin-bottom:4px;">Image URL</label><div class="lp-slider-wrap"><input type="range" id="input-static-facebook-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">Color</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-facebook-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">Size</label><div class="lp-slider-wrap"><input type="range" id="input-static-facebook-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
                                 </div>
                             </details>
                         </div>
 
                         <!-- LinkedIn -->
                         <div class="lp-section" id="form-group-static-linkedin" style="border:none;padding-bottom:0;">
-                            <label class="lp-label"><i class="fab fa-linkedin-in" style="color:#0a66c2;"></i> Image URL</label>
+                            <label class="lp-label"><i class="fab fa-linkedin-in" style="color:#0a66c2;"></i> LinkedIn</label>
                             <input type="url" id="input-linkedin" value="" class="lp-input" placeholder="linkedin.com/in/..." style="margin-bottom:8px;">
                             <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
                                 <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
@@ -1760,15 +1618,15 @@
                                     <input type="radio" name="placement-static-linkedin" value="back" checked style="display:none;"> Back
                                 </label>
                             </div>
-                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> Image URL</summary>
+                            <details style="margin-top:8px;"><summary style="font-size:0.72rem;color:var(--text-secondary);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;"><i class="fas fa-crosshairs" style="color:var(--accent-primary);"></i> Fine Position</summary>
                                 <div class="lp-dpad position-controls-grid" data-target-id="social-link-static-linkedin" style="margin-top:8px;">
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button><div class="lp-dpad-center"></div><button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button></div>
                                     <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
                                 </div>
                                 <div class="lp-grid-2" style="margin-top:8px;gap:8px;">
-                                    <div><label class="lp-label" style="margin-bottom:4px;">Image URL</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-linkedin-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
-                                    <div><label class="lp-label" style="margin-bottom:4px;">Image URL</label><div class="lp-slider-wrap"><input type="range" id="input-static-linkedin-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">Color</label><div class="lp-color-pick-wrap"><input type="color" id="input-static-linkedin-color" value="#e6f0f7" class="lp-color-pick" data-input-type="static-social-style"></div></div>
+                                    <div><label class="lp-label" style="margin-bottom:4px;">Size</label><div class="lp-slider-wrap"><input type="range" id="input-static-linkedin-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
                                 </div>
                             </details>
                         </div>
@@ -1782,7 +1640,6 @@
                         <input type="text" id="social-media-input">
                         <button id="add-social-btn"></button>
                     </div>
-
 
                 </div>
             </details>
@@ -1805,7 +1662,7 @@
                         document.getElementById('social-text-controls').style.display = isBtnMode ? 'none' : 'block';
                         // Sync hidden checkbox
                         var cb = document.getElementById('toggle-social-buttons');
-                        if (cb.checked !== isBtnMode) {
+                        if (cb && cb.checked !== isBtnMode) {
                             cb.checked = isBtnMode;
                             cb.dispatchEvent(new Event('input', {bubbles:true}));
                             cb.dispatchEvent(new Event('change', {bubbles:true}));
@@ -1824,13 +1681,15 @@
                         this.style.background = 'var(--accent-primary)';
                         this.style.color = '#fff';
                         var r = this.querySelector('input[type="radio"]');
-                        if(r) { r.checked = true; r.dispatchEvent(new Event('change',{bubbles:true})); }
+                        if (r) {
+                            r.checked = true;
+                            r.dispatchEvent(new Event('change', {bubbles:true}));
+                        }
                     });
                 });
             })();
-            </script>
-
-
+            </script>    </div>
+            </details>
 
         </aside>
 
@@ -1838,9 +1697,15 @@
             <fieldset class="fieldset">
                 <legend>Save & Share</legend>
                 <div class="form-group">
-                    <button class="btn btn-primary mobile-action-btn" data-trigger-id="save-share-btn"
+                    <button class="btn btn-primary mobile-action-btn" data-trigger-id="save-to-cloud-btn"
                         style="width: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; font-weight: 600;">
-                        <i class="fas fa-paper-plane"></i> <span id="mobile-save-btn-text">Save Design</span>
+                        <i class="fas fa-cloud-upload-alt"></i> Save Design
+                    </button>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-success mobile-action-btn" data-trigger-id="share-card-btn"
+                        style="width: 100%;">
+                        <i class="fas fa-share-alt"></i> Share Card
                     </button>
                 </div>
                 <div class="form-group">
@@ -1852,19 +1717,19 @@
                 <div class="form-group">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn"
                         style="width: 100%;">
-                        <i class="fas fa-images"></i> Save to Gallery
+                        <i class="fas fa-images"></i> View Gallery
                     </button>
                 </div>
             </fieldset>
 
             <fieldset class="fieldset">
-                <legend>Preview</legend>
+                <legend>Download</legend>
                 <div class="control-grid">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-front">
-                        <i class="fas fa-image"></i> Save to Gallery
+                        <i class="fas fa-image"></i> Front (PNG)
                     </button>
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-back">
-                        <i class="fas fa-image"></i> Save to Gallery
+                        <i class="fas fa-image"></i> Back (PNG)
                     </button>
                 </div>
                 <div class="control-grid" style="margin-top: 10px;">
@@ -1872,19 +1737,19 @@
                         <i class="fas fa-file-pdf"></i> PDF
                     </button>
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-vcf">
-                        <i class="fas fa-address-card"></i> Save to Gallery
-                    </button>
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-html"
-                        style="width: 100%;">
-                        <i class="fas fa-globe"></i> Save to Gallery
+                        <i class="fas fa-address-card"></i> Contact (VCF)
                     </button>
                 </div>
                 <div class="form-group" style="margin-top: 10px;">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-qrcode"
                         style="width: 100%;">
-                        <i class="fas fa-qrcode"></i> Save to Gallery
+                        <i class="fas fa-qrcode"></i> QR Code
+                    </button>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-html"
+                        style="width: 100%;">
+                        <i class="fas fa-globe"></i> Web Package (HTML)
                     </button>
                 </div>
             </fieldset>
@@ -1894,7 +1759,7 @@
                 <div class="form-group">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="share-editor-btn"
                         style="width: 100%;">
-                        <i class="fas fa-edit"></i> Save to Gallery
+                        <i class="fas fa-edit"></i> Share Editor Link
                     </button>
                 </div>
                 <div class="form-group">
@@ -1908,27 +1773,28 @@
             <fieldset class="fieldset mobile-user-section" id="mobile-user-section">
                 <legend>Account</legend>
                 <div class="form-group" id="mobile-user-login-container">
-                    <a href="login.html" id="mobile-user-login-link" class="btn btn-secondary mobile-action-btn"
+                    <a href="login-en.html" id="mobile-user-login-link" class="btn btn-secondary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center;">
-                        <i class="fas fa-sign-in-alt"></i> Save to Gallery
+                        <i class="fas fa-sign-in-alt"></i> Login
                     </a>
                 </div>
                 <div class="form-group" id="mobile-user-signup-container">
-                    <a href="signup.html" id="mobile-user-signup-link" class="btn btn-primary mobile-action-btn"
+                    <a href="signup-en.html" id="mobile-user-signup-link" class="btn btn-primary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white;">
-                        <i class="fas fa-user-plus"></i> Save Design
+                        <i class="fas fa-user-plus"></i> Sign Up
                     </a>
                 </div>
                 <div class="form-group" id="mobile-user-dashboard-container" style="display: none;">
-                    <a href="dashboard.html" id="mobile-user-dashboard-link" class="btn btn-secondary mobile-action-btn"
+                    <a href="dashboard-en.html" id="mobile-user-dashboard-link"
+                        class="btn btn-secondary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center;">
-                        <i class="fas fa-tachometer-alt"></i> Save to Gallery
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
                     </a>
                 </div>
                 <div class="form-group" id="mobile-user-logout-container" style="display: none;">
                     <a href="#" id="mobile-user-logout-btn" class="btn btn-secondary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center; color: #dc3545; border-color: #dc3545;">
-                        <i class="fas fa-sign-out-alt"></i> Save to Gallery
+                        <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </div>
             </fieldset>
@@ -1941,7 +1807,7 @@
     <div id="export-loading-overlay" class="modal-overlay">
         <div class="modal-content" style="text-align: center;">
             <div class="spinner" style="margin: 0 auto 15px auto;"></div>
-            <p>Preparing high quality image, this may take a few moments...</p>
+            <p>Preparing high-quality image, this may take a moment...</p>
         </div>
     </div>
 
@@ -1953,7 +1819,7 @@
                 <label for="export-format">File Type</label>
                 <select id="export-format">
                     <option value="png">PNG (High Quality)</option>
-                    <option value="jpeg">JPEG (Smaller size)</option>
+                    <option value="jpeg">JPEG (Smaller Size)</option>
                 </select>
             </div>
             <div class="form-group" id="export-quality-group" style="display: none;">
@@ -1965,11 +1831,11 @@
             </div>
             <div class="form-group">
                 <label>Image Size (Resolution) <i class="fas fa-question-circle"
-                        data-tooltip="Select 2x or 3x For printing quality." aria-hidden="true"></i></label>
+                        data-tooltip="Choose 2x or 3x for print-quality images." aria-hidden="true"></i></label>
                 <div class="scale-buttons">
                     <button class="scale-btn" data-scale="1">1x (Web)</button>
                     <button class="scale-btn selected" data-scale="2">2x (Print)</button>
-                    <button class="scale-btn" data-scale="3">1x (Web)</button>
+                    <button class="scale-btn" data-scale="3">3x (Ultra)</button>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1988,7 +1854,7 @@
                 <button id="gallery-select-all">Select All</button>
                 <button id="gallery-deselect-all">Deselect All</button>
                 <button id="gallery-download-zip" class="modal-confirm" disabled><i class="fas fa-file-archive"
-                        aria-hidden="true"></i> Confirm Export</button>
+                        aria-hidden="true"></i> Download Selected (ZIP)</button>
             </div>
         </div>
     </div>
@@ -1997,22 +1863,22 @@
         <div class="modal-content">
             <h3>Share Link</h3>
             <button id="share-fallback-modal-close" class="modal-close" aria-label="Close">&times;</button>
-            <p>Your browser doesn't support direct sharing. Use one of these options:</p>
+            <p>Your browser doesn't support direct sharing. Use one of the following options:</p>
             <div class="share-fallback-buttons">
                 <a id="share-email" target="_blank"><i class="fas fa-envelope" aria-hidden="true"></i> Email</a>
-                <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> Image URL</a>
+                <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp</a>
                 <a id="share-twitter" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i> Twitter</a>
                 <button id="share-copy-link"><i class="fas fa-copy" aria-hidden="true"></i> Copy Link</button>
             </div>
         </div>
     </div>
 
-    <!-- === New Co-editing Modal === -->
+    <!-- === Collaborative Editing Modal === -->
     <div id="collab-modal-overlay" class="modal-overlay">
         <div class="modal-content">
-            <h3>Co-editing Session</h3>
+            <h3>Collaborative Editing Session</h3>
             <button id="collab-modal-close" class="modal-close" aria-label="Close">&times;</button>
-            <p>Share this link with others to invite them to co-edit in real-time.</p>
+            <p>Share this link with others to invite them to edit with you in real-time.</p>
             <div class="form-group">
                 <label for="collab-link-input">Session Link</label>
                 <div style="display: flex; gap: 10px;">
@@ -2021,7 +1887,8 @@
                         style="width: auto; margin-top: 0;">Copy</button>
                 </div>
             </div>
-            <p style="font-size: 0.8rem; color: var(--text-secondary);">Note: Anyone with this link can edit your design. Session ends when page is closed.</p>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">Note: Anyone with this link can edit your
+                design. The session will end when you close this page.</p>
             <div id="collab-status" style="margin-top: 15px; font-weight: bold;">Status: Disconnected</div>
         </div>
     </div>
@@ -2034,7 +1901,7 @@
     <div id="qrcode-container" class="visually-hidden"></div>
     <div id="qr-code-temp-generator"></div>
 
-    <button id="back-to-top-btn" title="Back to Top" aria-label="Back to Top"><i class="fas fa-arrow-up"
+    <button id="back-to-top-btn" title="Back to Top" aria-label="Back to top of page"><i class="fas fa-arrow-up"
             aria-hidden="true"></i></button>
 
     <div id="help-modal-overlay" class="modal-overlay">
@@ -2047,13 +1914,13 @@
                     <i class="fas fa-play-circle"></i> Video Tutorial
                 </button>
                 <button class="help-tab-btn" data-tab-target="tab-faq">
-                    <i class="fas fa-question-circle"></i> Video Tutorial
+                    <i class="fas fa-question-circle"></i> FAQ
                 </button>
             </nav>
 
             <div class="help-tabs-content">
                 <div id="tab-video-tutorial" class="help-tab-pane active">
-                    <h4>Quick Editor Guide</h4>
+                    <h4>Quick Guide to Editor Features</h4>
                     <p>Watch this short video (1 minute) to learn how to use the key features.</p>
                     <div class="video-container">
                         <iframe src="" title="YouTube video player" frameborder="0"
@@ -2061,38 +1928,42 @@
                             allowfullscreen></iframe>
                     </div>
                     <hr>
-                    <h4>Animated Guides (GIFs)</h4>
+                    <h4>Animated Tutorials (GIFs)</h4>
                     <div class="gif-grid">
                         <div>
-                            <p><strong>1. Change Element Position</strong></p>
+                            <p><strong>1. Moving Elements</strong></p>
                             <img src="https://media.giphy.com/media/3o7TKSjRrfIPjeI6e4/giphy.gif"
-                                alt="Animated guide: How to drag and drop elements">
+                                alt="Animated guide on how to drag and drop elements">
                         </div>
                         <div>
-                            <p><strong>2. Upload your own logo</strong></p>
+                            <p><strong>2. Uploading Your Logo</strong></p>
                             <img src="https://media.giphy.com/media/l41lUj1oeHo1h2b1S/giphy.gif"
-                                alt="Animated guide: How to upload logo">
+                                alt="Animated guide on how to upload a logo">
                         </div>
                     </div>
                 </div>
 
                 <div id="tab-faq" class="help-tab-pane">
                     <details class="fieldset-accordion" open>
-                        <summary>How do I change the logo or name position?</summary>
+                        <summary>How do I move the logo or name?</summary>
                         <div class="fieldset-content">
-                            <p>Simply press and hold the element you want to move and drag it to the new position.</p>
+                            <p>Simply click and hold the element you want to move (such as the logo or text box) and
+                                drag it
+                                to the new position on the card.</p>
                         </div>
                     </details>
                     <details class="fieldset-accordion">
-                        <summary>QR Code doesn't appear, what should I do?</summary>
+                        <summary>The QR code isn't showing, what do I do?</summary>
                         <div class="fieldset-content">
-                            <p>Ensure a source is selected from 'QR Code' section. Recommended is 'Card Link', then click 'Generate/Update QR Code'.</p>
+                            <p>Make sure to select a source for the QR code in the "QR Code" section. The recommended
+                                option is "Card Link", then click the "Generate/Update QR Code" button.</p>
                         </div>
                     </details>
                     <details class="fieldset-accordion">
                         <summary>How do I save the design as an image?</summary>
                         <div class="fieldset-content">
-                            <p>From the top preview bar, click 'Preview' and select 'Front Image' or 'Back Image'.
+                            <p>From the top toolbar, click the "Download" button and select "Front Image" or "Back
+                                Image".
                             </p>
                         </div>
                     </details>
@@ -2101,25 +1972,35 @@
         </div>
     </div>
 
-    <!-- New Image Crop Modal -->
+    <!-- NEW: Crop Modal -->
     <div id="crop-modal-overlay" class="modal-overlay">
         <div class="modal-content crop-modal-content">
             <h3>Crop Image</h3>
             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 15px;">
-                Move the image to select the desired area then press 'Confirm'.
+                Move the image to select the area, then click 'Confirm'.
             </p>
 
-            <!-- New container populated by JS -->
             <div id="crop-image-container">
-                <!-- IMG element will be created here dynamically -->
+                <!-- Image element created dynamically -->
             </div>
 
             <div class="modal-footer" style="justify-content: flex-end;">
                 <button id="cancel-crop-btn" class="btn btn-secondary" style="width: auto;">Cancel</button>
-                <button id="confirm-crop-btn" class="modal-confirm" style="width: auto; flex-grow: 1;">Confirm Export</button>
+                <button id="confirm-crop-btn" class="modal-confirm" style="width: auto; flex-grow: 1;">Confirm
+                    Crop</button>
             </div>
         </div>
     </div>
+
+    <!-- NEW: Floating button to exit preview mode -->
+    <button id="exit-preview-btn" class="btn btn-secondary"
+        style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">
+        <i class="fas fa-times"></i> Exit Preview
+    </button>
+
+
+
+
 
     <!-- AI Backgrounds Modal -->
     <div id="ai-backgrounds-modal" class="ai-modal-overlay" style="display: none;">
@@ -2213,7 +2094,7 @@
                 </div>
 
                 <div class="ai-color-picker-section">
-                    <h4><i class="fas fa-palette"></i> Select Base Color</h4>
+                    <h4><i class="fas fa-palette"></i> Choose Base Color</h4>
                     <div class="ai-color-options">
                         <button class="ai-color-btn" data-color="#667eea" style="background: #667eea;"
                             title="Purple"></button>
@@ -2234,22 +2115,101 @@
                     </div>
                 </div>
 
-                <div class="ai-apply-section">
-                    <button id="ai-apply-front" class="btn btn-primary">
-                        <i class="fas fa-check"></i> Apply to Front
-                    </button>
-                    <button id="ai-apply-back" class="btn btn-secondary">
-                        <i class="fas fa-check"></i> Apply to Back
+                <div class="ai-modal-footer">
+                    <button id="apply-ai-bg-btn" class="btn btn-primary" disabled>
+                        <i class="fas fa-check"></i> Apply Background
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- NEW: Floating button to exit preview mode -->
-    <button id="exit-preview-btn" class="btn btn-secondary"
-        style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">
-        <i class="fas fa-times"></i> Exit Preview
-    </button>
+
+    <div id="export-loading-overlay" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <div class="spinner" style="margin: 0 auto 15px auto;"></div>
+            <p>Preparing high-quality image, this may take a few moments...</p>
+        </div>
+    </div>
+
+    <div id="export-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Export Options</h3>
+            <button id="export-modal-close" class="modal-close" aria-label="Close">&times;</button>
+            <div class="form-group">
+                <label for="export-format">File Type</label>
+                <select id="export-format">
+                    <option value="png">PNG (High Quality)</option>
+                    <option value="jpeg">JPEG (Smaller Size)</option>
+                </select>
+            </div>
+            <div class="form-group" id="export-quality-group" style="display: none;">
+                <label for="export-quality">Quality (1-100)</label>
+                <div class="quality-slider-wrapper">
+                    <input type="range" id="export-quality" min="10" max="100" value="92">
+                    <span id="export-quality-value">92</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Image Size (Resolution) <i class="fas fa-question-circle"
+                        data-tooltip="Choose 2x or 3x for print-ready quality." aria-hidden="true"></i></label>
+                <div class="scale-buttons">
+                    <button class="scale-btn" data-scale="1">1x (Web)</button>
+                    <button class="scale-btn selected" data-scale="2">2x (Print)</button>
+                    <button class="scale-btn" data-scale="3">3x (Ultra)</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirm-export-btn" class="modal-confirm">Confirm Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gallery-modal-overlay" class="modal-overlay">
+        <div class="modal-content gallery-modal">
+            <h3>Saved Designs Gallery</h3>
+            <button id="gallery-modal-close" class="modal-close" aria-label="Close">&times;</button>
+            <div id="gallery-grid" class="gallery-grid">
+            </div>
+            <div class="modal-footer">
+                <button id="gallery-select-all">Select All</button>
+                <button id="gallery-deselect-all">Deselect All</button>
+                <button id="gallery-download-zip" class="modal-confirm" disabled><i class="fas fa-file-archive"
+                        aria-hidden="true"></i> Download Selected (ZIP)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="share-fallback-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Share Link</h3>
+            <button id="share-fallback-modal-close" class="modal-close" aria-label="Close">&times;</button>
+            <p>Your browser does not support direct sharing. Use one of the following options:</p>
+            <div class="share-fallback-buttons">
+                <a id="share-email" target="_blank"><i class="fas fa-envelope" aria-hidden="true"></i> Email</a>
+                <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp</a>
+                <a id="share-twitter" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i> Twitter</a>
+                <button id="share-copy-link"><i class="fas fa-copy" aria-hidden="true"></i> Copy Link</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="collab-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Collaboration Session</h3>
+            <button id="collab-modal-close" class="modal-close" aria-label="Close">&times;</button>
+            <p>Share this link with others to invite them to edit with you in real-time.</p>
+            <div class="form-group">
+                <label for="collab-link-input">Session Link</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="collab-link-input" readonly style="flex-grow: 1;">
+                    <button id="copy-collab-link-btn" class="btn btn-secondary"
+                        style="width: auto; margin-top: 0;">Copy</button>
+                </div>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">Note: Anyone with this link can edit your design. The session will end when you close the page.</p>
+            <div id="collab-status" style="margin-top: 15px; font-weight: bold;">Status: Disconnected</div>
+        </div>
+    </div>
 
     <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" data-target="panel-elements">
@@ -2262,7 +2222,7 @@
         </button>
         <button class="mobile-nav-item" data-target="panel-share">
             <i class="fas fa-share-square"></i>
-            <span>Save Design</span>
+            <span>Save & Share</span>
         </button>
     </nav>
     <!-- Footer -->
@@ -2271,42 +2231,42 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>MC PRIME</h3>
-                    <p>We provide smart NFC business card solutions for individuals and businesses.</p>
+                    <p>We provide smart NFC business card solutions for individuals and companies.</p>
                 </div>
                 <div class="footer-section">
                     <h3>Quick Links</h3>
                     <ul role="list">
-                        <li><a href="index.html#features">Features</a></li>
-                        <li><a href="gallery.html">Home</a></li>
-                        <li><a href="blog.html">Home</a></li>
-                        <li><a href="editor.html">Design Editor</a></li>
+                        <li><a href="index-en.html#features">Features</a></li>
+                        <li><a href="gallery-en.html">Gallery</a></li>
+                        <li><a href="blog-en.html">Blog</a></li>
+                        <li><a href="editor-en.html">Design Editor</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h3>Support</h3>
                     <ul role="list">
-                        <li><a href="index.html#faq">FAQ</a></li>
-                        <li><a href="contact.html">Contact Us</a></li>
-                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="index-en.html#faq">FAQ</a></li>
+                        <li><a href="contact-en.html">Contact Us</a></li>
+                        <li><a href="privacy-en.html">Privacy Policy</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h3>Follow Us</h3>
                     <div class="social-links">
                         <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="Image URL" title="Our page button on Image URL">
+                            aria-label="Facebook" title="Visit our Facebook page">
                             <i class="fab fa-facebook-f" aria-hidden="true"></i>
                         </a>
                         <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="Instagram" title="Follow Us on Instagram">
+                            aria-label="Instagram" title="Follow us on Instagram">
                             <i class="fab fa-instagram" aria-hidden="true"></i>
                         </a>
                         <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="LinkedIn" title="Connect on LinkedIn">
+                            aria-label="LinkedIn" title="Connect with us on LinkedIn">
                             <i class="fab fa-linkedin-in" aria-hidden="true"></i>
                         </a>
                         <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener noreferrer"
-                            aria-label="Image URL" title="Contact us on Image URL">
+                            aria-label="WhatsApp" title="Contact us on WhatsApp">
                             <i class="fab fa-whatsapp" aria-hidden="true"></i>
                         </a>
                     </div>
@@ -2318,34 +2278,37 @@
         </div>
     </footer>
 
-    <!-- Mobile More Menu (Moved to body to avoid overflow issues) -->
+    <!-- Mobile More Menu (Floating) -->
     <div id="toolbar-more-menu-floating" class="toolbar-more-menu">
         <!-- User Status Bar (Mobile) -->
         <div id="mobile-menu-user-status"
-            style="padding: 10px 16px; border-bottom: 1px solid var(--accent-secondary); margin-bottom: 5px; text-align: right; display: flex; flex-direction: column; gap: 8px;">
-            <span id="mobile-menu-user-text" style="font-weight: bold; color: var(--accent-primary);">Guest</span>
-            <div style="display: flex; gap: 5px; justify-content: flex-end;">
-                <a href="dashboard.html" id="mobile-menu-dashboard-link" class="btn btn-secondary"
-                    style="display: none; padding: 4px 8px; font-size: 12px;"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            style="padding: 10px 16px; border-bottom: 1px solid var(--accent-secondary); margin-bottom: 5px; text-align: left; display: flex; flex-direction: column; gap: 8px;">
+            <span id="mobile-menu-user-text" style="font-weight: bold; color: var(--accent-primary);"><i class="fas fa-user-circle" style="margin-right:5px;"></i>Guest</span>
+            <div style="display: flex; gap: 5px; justify-content: flex-start;">
+                <a href="dashboard-en.html" id="mobile-menu-dashboard-link" class="btn btn-secondary"
+                    style="display: none; padding: 4px 8px; font-size: 12px;"><i class="fas fa-tachometer-alt"></i>
+                    Dashboard</a>
             </div>
         </div>
 
         <!-- Navigation Links (Mobile Only) -->
-        <a href="index.html" class="menu-item-link"><i class="fas fa-home"></i> Home</a>
-        <a href="gallery.html" class="menu-item-link"><i class="fas fa-images"></i> Home</a>
-        <a href="blog.html" class="menu-item-link"><i class="fas fa-blog"></i> Home</a>
+        <a href="index-en.html" class="menu-item-link"><i class="fas fa-home"></i> Home</a>
+        <a href="gallery-en.html" class="menu-item-link"><i class="fas fa-images"></i> Gallery</a>
+        <a href="blog-en.html" class="menu-item-link"><i class="fas fa-blog"></i> Blog</a>
         <hr class="mobile-only-hr">
 
-        <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> Appearance & Styling</button>
-        <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> Home</button>
+        <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> Theme</button>
+        <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> Gallery</button>
         <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> Save to Gallery</button>
         <button id="start-collab-btn-menu"><i class="fas fa-users"></i> Collaborate</button>
         <button id="share-editor-btn-menu"><i class="fas fa-link"></i> Share Link</button>
         <hr>
-        <a href="login.html" id="mobile-menu-login-link" class="menu-item-link"><i class="fas fa-sign-in-alt"></i> Home</a>
-        <a href="signup.html" id="mobile-menu-signup-link" class="menu-item-link"><i class="fas fa-user-plus"></i> Home</a>
+        <a href="login-en.html" id="mobile-menu-login-link" class="menu-item-link"><i class="fas fa-sign-in-alt"></i>
+            Login</a>
+        <a href="signup-en.html" id="mobile-menu-signup-link" class="menu-item-link"><i class="fas fa-user-plus"></i>
+            Sign Up</a>
         <button id="mobile-menu-logout-btn" style="color: #dc3545; display: none;"><i class="fas fa-sign-out-alt"></i>
-            Save to Gallery</button>
+            Logout</button>
         <hr>
         <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> Reset</button>
     </div>
@@ -2353,47 +2316,117 @@
     <!-- [NEW] Editor Premium Enhancements -->
     <script src="toolbar-tab-nav.js"></script>
     <script src="editor-premium.js" defer></script>
-<script src="editor-premium-v2.js" defer></script>
+    <script src="editor-premium-v2.js" defer></script>
 
-<!-- Toolbar 3-Zone: Tools dropdown toggle -->
 <script>
+// ── Mobile Proxy Bindings ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    // Buttons with data-trigger-id automatically click their desktop counterparts
+    document.querySelectorAll('[data-trigger-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-trigger-id');
+            const targetBtn = document.getElementById(targetId);
+            if (targetBtn) targetBtn.click();
+        });
+    });
+
+    // Buttons with specific IDs ending in -menu also proxy (fallback)
+    document.querySelectorAll('[id$="-menu"]').forEach(btn => {
+        const baseId = btn.id.replace('-menu', '');
+        const targetBtn = document.getElementById(baseId);
+        if (targetBtn) {
+            btn.addEventListener('click', () => targetBtn.click());
+        }
+    });
+});
+</script>
+
+<script>
+// ── Toolbar Dropdowns: Tools & Download ────────────────────────────────────
 (function() {
     document.addEventListener('DOMContentLoaded', function() {
-        var toolsBtn = document.getElementById('tools-menu-btn');
-        var toolsMenu = document.getElementById('tools-dropdown-menu');
-        var toolsWrap = document.getElementById('tools-dropdown-wrap');
-        if (!toolsBtn || !toolsMenu) return;
+        const toolsWrap = document.getElementById('tools-dropdown-wrap');
+        const toolsBtn = document.getElementById('tools-menu-btn');
+        const dlWrap = document.querySelector('.download-container.tb-dropdown-wrap');
+        const dlBtn = document.getElementById('download-options-btn');
 
-        var open = false;
-        function toggle(state) {
-            open = (state !== undefined) ? state : !open;
-            toolsWrap.classList.toggle('open', open);
-            toolsBtn.setAttribute('aria-expanded', open);
+        if (dlWrap) dlWrap.id = 'download-options-wrap';
+
+        function toggleMenu(wrap, btn, forceState) {
+            if (!wrap || !btn) return;
+            const isOpen = wrap.classList.contains('open');
+            const nextState = (forceState !== undefined) ? forceState : !isOpen;
+            
+            wrap.classList.toggle('open', nextState);
+            btn.setAttribute('aria-expanded', nextState);
+            
+            // If opening this one, close the other
+            if (nextState) {
+                if (wrap === toolsWrap && dlWrap) toggleMenu(dlWrap, dlBtn, false);
+                if (wrap === dlWrap && toolsWrap) toggleMenu(toolsWrap, toolsBtn, false);
+            }
         }
 
-        toolsBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggle();
-        });
+        if (toolsBtn) {
+            toolsBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMenu(toolsWrap, toolsBtn);
+            });
+        }
+
+        if (dlBtn) {
+            dlBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMenu(dlWrap, dlBtn);
+            });
+        }
 
         document.addEventListener('click', function(e) {
-            if (open && !toolsWrap.contains(e.target)) toggle(false);
+            if (toolsWrap && toolsWrap.classList.contains('open') && !toolsWrap.contains(e.target)) {
+                toggleMenu(toolsWrap, toolsBtn, false);
+            }
+            if (dlWrap && dlWrap.classList.contains('open') && !dlWrap.contains(e.target)) {
+                toggleMenu(dlWrap, dlBtn, false);
+            }
         });
 
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && open) toggle(false);
+            if (e.key === 'Escape') {
+                toggleMenu(toolsWrap, toolsBtn, false);
+                toggleMenu(dlWrap, dlBtn, false);
+            }
         });
 
-        // Close menu when an item is clicked
-        toolsMenu.querySelectorAll('.tb-dropdown-item').forEach(function(item) {
-            item.addEventListener('click', function() { toggle(false); });
+        // Close menu when a tool or download item is clicked
+        document.querySelectorAll('.tb-dropdown-menu .tb-dropdown-item, .tb-dropdown-menu li button').forEach(item => {
+            item.addEventListener('click', () => {
+                setTimeout(() => {
+                    toggleMenu(toolsWrap, toolsBtn, false);
+                    toggleMenu(dlWrap, dlBtn, false);
+                }, 100);
+            });
         });
+
+        // 2. Mobile 'More' Menu Toggle
+        const moreBtn = document.getElementById('toolbar-more-btn');
+        const moreMenu = document.getElementById('toolbar-more-menu-floating');
+        if (moreBtn && moreMenu) {
+            moreBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                moreMenu.classList.toggle('show');
+            });
+            document.addEventListener('click', function(e) {
+                if (!moreMenu.contains(e.target) && e.target !== moreBtn) {
+                    moreMenu.classList.remove('show');
+                }
+            });
+        }
     });
 })();
 </script>
 
 <script>
-// ── Accordion Init: close all panels on load ──────────────────────────────
+// ── Accordion Init & Global Fixes ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
 
     // 1. Close all top-level fieldset-accordion panels
@@ -2402,20 +2435,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 2. Fix social-controls-wrapper: JS sets display:block but parent is flex,
-    //    so we upgrade it to display:flex + column to match .lp-body context
+    //    so we upgrade it to display:flex + column
     var scw = document.getElementById('social-controls-wrapper');
     if (scw) {
-        // Override because handleMasterSocialToggle sets display:'block'
-        // Patch the style setter to use 'flex' instead
-        var origDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'style');
-        var origSetDisplay = CSSStyleDeclaration.prototype.__defineSetter__;
-
-        // Simpler: just watch for changes via MutationObserver
         var observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(m) {
                 if (m.attributeName === 'style') {
-                    var disp = scw.style.display;
-                    if (disp === 'block') {
+                    if (scw.style.display === 'block') {
                         scw.style.display = 'flex';
                         scw.style.flexDirection = 'column';
                         scw.style.gap = '12px';
@@ -2425,17 +2451,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         observer.observe(scw, { attributes: true, attributeFilter: ['style'] });
 
-        // Also fix initial state
         if (scw.style.display !== 'none') {
             scw.style.display = 'flex';
             scw.style.flexDirection = 'column';
             scw.style.gap = '12px';
         }
     }
-
 });
 </script>
 </body>
-
 
 </html>

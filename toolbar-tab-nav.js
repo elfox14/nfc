@@ -140,10 +140,12 @@
             '.tbs-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:12px;}' +
             '.tbs-title{font-size:.82rem;font-weight:700;color:var(--text-primary);margin:0 0 12px;display:flex;align-items:center;gap:7px;}' +
             '.tbs-row{display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:var(--text-primary);margin-bottom:8px;}' +
-            '.tbs-btn{padding:4px 11px;border-radius:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--text-primary);font-size:.75rem;cursor:pointer;font-family:inherit;}' +
-            '.tbs-btn:hover{background:rgba(255,255,255,.14);}' +
-            '.tbs-full-btn{width:100%;padding:8px 12px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text-primary);font-size:.82rem;cursor:pointer;font-family:inherit;text-align:right;display:flex;align-items:center;gap:8px;margin-bottom:7px;transition:background .2s;}' +
-            '.tbs-full-btn:hover{background:rgba(255,255,255,.1);}' +
+            '.tbs-btn{padding:4px 11px;border-radius:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--text-primary);font-size:.75rem;cursor:pointer;font-family:inherit;transition:transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s;}' +
+            '.tbs-btn:hover{background:rgba(255,255,255,.14);transform:translateY(-1px);}' +
+            '.tbs-btn:active{transform:scale(0.96);}' +
+            '.tbs-full-btn{width:100%;padding:8px 12px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text-primary);font-size:.82rem;cursor:pointer;font-family:inherit;text-align:right;display:flex;align-items:center;gap:8px;margin-bottom:7px;transition:transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s;}' +
+            '.tbs-full-btn:hover{background:rgba(255,255,255,.1);transform:translateY(-1px);}' +
+            '.tbs-full-btn:active{transform:scale(0.98);}' +
             '.tbs-danger-btn{background:rgba(231,76,60,.08)!important;border-color:rgba(231,76,60,.3)!important;color:#e74c3c!important;}';
         document.head.appendChild(s);
     }

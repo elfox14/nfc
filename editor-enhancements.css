@@ -8,6 +8,16 @@
     --editor-save-indicator-bg: rgba(46, 204, 113, 0.9);
     --editor-gradient-start: #4da6ff;
     --editor-gradient-end: #2d86ff;
+    --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn-ai-suggest, .toolbar-logo, .toolbar-nav-link, .progress-step, .progress-step::after, .step-circle, .step-label, .autosave-indicator, .pro-toolbar .btn::before, .exit-fullscreen-btn, .fieldset-accordion, .fieldset-accordion summary::after, .mobile-bottom-btn, .zoom-btn {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
 }
 
 /* ===========================================
@@ -48,12 +58,10 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(155, 89, 182, 0.3);
     white-space: nowrap;
     flex: 0 0 auto;
     width: auto;
+    transition: transform 0.3s var(--ease-out-quint), box-shadow 0.3s var(--ease-out-quint), background 0.3s;
 }
 
 .btn-ai-suggest span {
@@ -62,9 +70,14 @@
 }
 
 .btn-ai-suggest:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(155, 89, 182, 0.5);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 15px rgba(155, 89, 182, 0.5);
     background: linear-gradient(135deg, #a569bd, #9b59b6);
+}
+
+.btn-ai-suggest:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 6px rgba(155, 89, 182, 0.3);
 }
 
 .btn-ai-suggest i {
@@ -267,7 +280,7 @@ html[dir="rtl"] .toolbar-nav {
     font-size: 14px;
     font-weight: 700;
     color: var(--text-secondary, #bcc9d4);
-    transition: all 0.3s ease;
+    transition: transform 0.4s var(--ease-out-quint), background 0.3s, border-color 0.3s, color 0.3s;
     border: 3px solid transparent;
     position: relative;
     z-index: 1;
@@ -339,7 +352,7 @@ body.has-progress-bar .pro-layout {
     gap: 8px;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: opacity 0.4s var(--ease-out-quint), transform 0.4s var(--ease-out-quint), visibility 0.4s;
     z-index: 1001;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
@@ -347,6 +360,7 @@ body.has-progress-bar .pro-layout {
 .autosave-indicator.show {
     opacity: 1;
     visibility: visible;
+    transform: translateX(-50%) translateY(5px);
 }
 
 .autosave-indicator.saving {
@@ -663,13 +677,13 @@ html[dir="rtl"] .fieldset-accordion summary::after {
 }
 
 .fieldset-accordion .fieldset-content {
-    animation: slideDown 0.3s ease-out;
+    animation: slideDown 0.4s var(--ease-out-quint) forwards;
 }
 
 @keyframes slideDown {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-8px);
     }
 
     to {

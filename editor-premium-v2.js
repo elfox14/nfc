@@ -19,15 +19,19 @@
             background: 'rgba(10,18,30,0.97)', backdropFilter: 'blur(16px)',
             border: `1px solid ${color}55`, borderRadius: '50px',
             padding: '10px 24px', color, fontWeight: '700', fontSize: '0.85rem',
-            zIndex: '99999', transition: 'all .3s cubic-bezier(.34,1.56,.64,1)',
+            zIndex: '99999', transition: 'opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
             opacity: '0', pointerEvents: 'none', fontFamily: 'Tajawal,sans-serif',
             whiteSpace: 'nowrap', boxShadow: `0 8px 30px rgba(0,0,0,0.4)`
         });
         document.body.appendChild(el);
+        // Reduced motion check
+        const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (isReduced) { el.style.transitionDuration = '0.01ms'; }
+        
         requestAnimationFrame(() => requestAnimationFrame(() => {
             el.style.opacity = '1'; el.style.transform = 'translateX(-50%) translateY(0)';
         }));
-        setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 350); }, dur);
+        setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(-50%) translateY(-10px)'; setTimeout(() => el.remove(), 450); }, dur);
     }
 
     function getState() {
@@ -105,7 +109,7 @@
                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
                     ${colors.map(c => `
                         <div class="ep2-swatch-color" data-color="${c}" title="${c}"
-                            style="width:32px;height:32px;border-radius:7px;background:${c};cursor:pointer;border:2px solid transparent;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+                            style="width:32px;height:32px;border-radius:7px;background:${c};cursor:pointer;border:2px solid transparent;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
                         </div>`).join('')}
                 </div>
                 <div style="font-size:0.68rem;color:var(--text-secondary);margin-top:5px;">${isAr ? 'انقر للتطبيق على البطاقة' : 'Click to apply to card'}</div>`;
@@ -602,7 +606,7 @@
         .ep2-overlay {
             position:fixed;inset:0;background:rgba(0,0,0,0.76);backdrop-filter:blur(8px);
             z-index:99992;display:flex;align-items:center;justify-content:center;
-            opacity:0;pointer-events:none;transition:opacity .3s;
+            opacity:0;pointer-events:none;transition:opacity .4s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .ep2-overlay.show { opacity:1;pointer-events:all; }
         .ep2-modal {
@@ -610,10 +614,14 @@
             border-radius:18px;padding:24px;width:90vw;max-width:440px;
             box-shadow:0 24px 60px rgba(0,0,0,0.6);
             transform:translateY(18px) scale(.97);
-            transition:transform .35s cubic-bezier(.34,1.3,.64,1);
+            transition:transform .4s cubic-bezier(0.22, 1, 0.36, 1), opacity .4s cubic-bezier(0.22, 1, 0.36, 1);
+            opacity:0;
             max-height:88vh;overflow-y:auto;
         }
-        .ep2-overlay.show .ep2-modal { transform:translateY(0) scale(1); }
+        .ep2-overlay.show .ep2-modal { transform:translateY(0) scale(1); opacity:1; }
+        @media (prefers-reduced-motion: reduce) {
+            .ep2-overlay, .ep2-modal { transition-duration: 0.01ms !important; }
+        }
         .ep2-head {
             display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.05rem;
             color:var(--text-primary);margin-bottom:16px;
