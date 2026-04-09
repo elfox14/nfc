@@ -3,6 +3,19 @@
    lp- prefix to avoid conflicts
    ============================================================ */
 
+:root {
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-accordion *, .lp-toggle-thumb, .lp-slider::-webkit-slider-thumb, .lp-swatch, .lp-upload-btn, .lp-dpad-btn, .lp-place-btn, .lp-align-btn {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+
 /* ── Summary / Header ──────────────────────────────────────── */
 .lp-accordion > summary.lp-summary {
     display: flex;
@@ -49,7 +62,7 @@
     height: 14px;
     border-radius: 50%;
     background: #fff;
-    transition: transform .25s cubic-bezier(.34,1.2,.64,1);
+    transition: transform .25s var(--ease-out-expo);
     box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 .lp-toggle input:checked ~ .lp-toggle-track .lp-toggle-thumb { transform: translateX(-16px); }
@@ -138,6 +151,10 @@
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.1);
     padding: 4px;
+    transition: transform 0.3s var(--ease-out-quint);
+}
+.lp-upload-zone:hover .lp-preview-img {
+    transform: scale(1.05);
 }
 .lp-spinner-wrap {
     position: absolute;
@@ -165,7 +182,11 @@
 .lp-upload-btn:hover {
     background: rgba(77,166,255,0.22);
     border-color: rgba(77,166,255,0.5);
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 4px 12px rgba(77,166,255,0.15);
+}
+.lp-upload-btn:active {
+    transform: translateY(0) scale(0.98);
 }
 .lp-upload-btn small { font-size: 0.68rem; opacity: 0.7; font-weight: 400; }
 
@@ -213,9 +234,15 @@
     border: 2px solid rgba(255,255,255,0.8);
     box-shadow: 0 0 6px rgba(77,166,255,0.5);
     cursor: pointer;
-    transition: transform .15s;
+    transition: transform 0.25s var(--ease-out-quint), box-shadow 0.25s var(--ease-out-quint);
 }
-.lp-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.lp-slider::-webkit-slider-thumb:hover { 
+    transform: scale(1.3);
+    box-shadow: 0 0 10px rgba(77,166,255,0.8);
+}
+.lp-slider:active::-webkit-slider-thumb {
+    transform: scale(1.1);
+}
 .lp-slider-val {
     font-size: 0.72rem;
     font-weight: 700;
@@ -262,10 +289,11 @@
     border-radius: 6px;
     border: 2px solid transparent;
     cursor: pointer;
-    transition: all .2s;
+    transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s var(--ease-out-expo), border-color 0.25s;
     flex-shrink: 0;
 }
-.lp-swatch:hover { transform: scale(1.1); }
+.lp-swatch:hover { transform: scale(1.15) translateY(-2px); }
+.lp-swatch:active { transform: scale(0.95); }
 .lp-swatch.lp-swatch-active { border-color: var(--accent-primary, #4da6ff); box-shadow: 0 0 8px rgba(77,166,255,0.5); }
 
 /* ── Color Picker ──────────────────────────────────────────── */
@@ -317,7 +345,13 @@
     font-family: inherit;
 }
 .lp-place-btn input { display: none; }
-.lp-place-btn:hover { background: rgba(77,166,255,0.07); border-color: rgba(77,166,255,0.25); color: var(--text-primary); }
+.lp-place-btn:hover { 
+    background: rgba(77,166,255,0.07); 
+    border-color: rgba(77,166,255,0.25); 
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+.lp-place-btn:active { transform: scale(0.96); }
 .lp-place-btn.lp-place-active {
     background: rgba(77,166,255,0.15);
     border-color: rgba(77,166,255,0.45);
@@ -346,15 +380,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all .2s cubic-bezier(.34,1.2,.64,1);
+    transition: transform 0.3s var(--ease-out-quint), color 0.2s, background 0.2s, border-color 0.2s;
 }
 .lp-dpad-btn:hover {
     background: rgba(77,166,255,0.15);
     border-color: rgba(77,166,255,0.4);
     color: var(--accent-primary, #4da6ff);
-    transform: scale(1.1);
+    transform: scale(1.1) translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
-.lp-dpad-btn:active { transform: scale(0.95); }
+.lp-dpad-btn:active { transform: scale(0.9); box-shadow: none; }
 .lp-dpad-center {
     width: 34px;
     height: 34px;
