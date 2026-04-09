@@ -1,0 +1,162 @@
+--- phones-accordion ---
+<details class="fieldset-accordion lp-accordion" id="phones-accordion">
+<summary class="lp-summary">
+<span class="lp-summary-icon"><i class="fas fa-phone-alt"></i></span>
+<span>أرقام الهواتف</span>
+<label class="lp-toggle" onclick="event.stopPropagation()" title="إظهار / إخفاء">
+<input checked="" id="visibility-phones" type="checkbox"/>
+<span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+</label>
+</summary>
+<div class="fieldset-content lp-body">
+<!-- ① Manage Numbers Card -->
+<div class="lp-card">
+<div class="lp-card-header">
+<span class="lp-card-title"><i class="fas fa-list-ol"></i> إدارة الأرقام</span>
+</div>
+<div class="lp-section" style="padding-top:0; border:none;">
+<div id="phone-numbers-container"></div>
+<button class="lp-upload-btn" id="add-phone-btn" style="width:100%; justify-content:center; margin-top:8px;">
+<i class="fas fa-plus"></i> إضافة رقم هاتف
+                            </button>
+</div>
+</div>
+<!-- ② Display Style Card -->
+<div class="lp-card">
+<div class="lp-card-header">
+<span class="lp-card-title"><i class="fas fa-paint-roller"></i> المظهر والتنسيق</span>
+</div>
+<div class="lp-section" style="padding-top:0;">
+<!-- Segmented Control for Layout Mode -->
+<div class="lp-segment-control" style="display:flex; background:rgba(0,0,0,0.3); border-radius:8px; padding:4px; margin-bottom:12px;">
+<label class="toggle-phone-text" style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;">
+<input name="phone-mode-fake" style="display:none;" type="radio" value="text"/>
+<i class="fas fa-align-left"></i> كنص
+                                </label>
+<label class="toggle-phone-btn active-mode" style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;">
+<input checked="" name="phone-mode-fake" style="display:none;" type="radio" value="buttons"/>
+<i class="fas fa-stop"></i> كأزرار
+                                </label>
+<!-- Real checkbox hidden, toggled via JS to keep compatibility -->
+<input checked="" id="toggle-phone-buttons" style="display:none;" type="checkbox"/>
+</div>
+<!-- TEXT SETTINGS -->
+<div id="phone-text-controls" style="display: none;">
+<div class="lp-section lp-grid-2" style="border:none; padding-bottom:0;">
+<div>
+<label class="lp-label">شكل العرض</label>
+<div class="lp-align-btns">
+<label class="lp-align-btn lp-align-active">
+<input checked="" name="phone-text-layout" type="radio" value="row"/> أفقي
+                                            </label>
+<label class="lp-align-btn">
+<input name="phone-text-layout" type="radio" value="column"/> رأسي
+                                            </label>
+</div>
+</div>
+<div style="display:flex; flex-direction:column; align-items:flex-end;">
+<label class="lp-label">اللون</label>
+<div class="lp-color-pick-wrap" style="margin-top:2px;">
+<input class="lp-color-pick" id="phone-text-color" type="color" value="#e6f0f7"/>
+</div>
+</div>
+</div>
+<div class="lp-section">
+<label class="lp-label">حجم الخط</label>
+<div class="lp-slider-wrap">
+<input class="lp-slider" id="phone-text-size" max="24" min="10" oninput="this.nextElementSibling.textContent=this.value+'px'" type="range" value="14"/>
+<span class="lp-slider-val">14px</span>
+</div>
+</div>
+<div class="lp-section" style="border:none; padding-bottom:0;">
+<label class="lp-label">الخط</label>
+<select class="lp-input lp-select" id="phone-text-font" style="height:32px; padding-top:0; padding-bottom:0;">
+<option value="'Tajawal', sans-serif">Tajawal</option>
+<option value="'Cairo', sans-serif">Cairo</option>
+<option value="'Lalezar', cursive">Lalezar</option>
+</select>
+</div>
+</div>
+<!-- BUTTON SETTINGS -->
+<div id="phone-btn-controls">
+<div class="lp-section lp-grid-2" style="border:none; padding-bottom:0px;">
+<div>
+<label class="lp-label">لون الزر</label>
+<div class="lp-color-pick-wrap" style="margin-top:2px;">
+<input class="lp-color-pick" id="phone-btn-bg-color" type="color" value="#4da6ff"/>
+</div>
+</div>
+<div style="display:flex; flex-direction:column; align-items:flex-end;">
+<label class="lp-label">لون النص</label>
+<div class="lp-color-pick-wrap" style="margin-top:2px;">
+<input class="lp-color-pick" id="phone-btn-text-color" type="color" value="#ffffff"/>
+</div>
+</div>
+</div>
+<div class="lp-section">
+<label class="lp-label">حجم الخط</label>
+<div class="lp-slider-wrap">
+<input class="lp-slider" id="phone-btn-font-size" max="24" min="10" oninput="this.nextElementSibling.textContent=this.value+'px'" type="range" value="12"/>
+<span class="lp-slider-val">12px</span>
+</div>
+</div>
+<div class="lp-section">
+<label class="lp-label">التباعد (Padding)</label>
+<div class="lp-slider-wrap">
+<input class="lp-slider" id="phone-btn-padding" max="16" min="4" oninput="this.nextElementSibling.textContent=this.value+'px'" type="range" value="6"/>
+<span class="lp-slider-val">6px</span>
+</div>
+</div>
+<div class="lp-section" style="border:none; padding-bottom:0;">
+<label class="lp-label">الخط</label>
+<select class="lp-input lp-select" id="phone-btn-font" style="height:32px; padding-top:0; padding-bottom:0;">
+<option value="'Poppins', sans-serif">Poppins</option>
+<option value="'Tajawal', sans-serif">Tajawal</option>
+<option value="'Cairo', sans-serif">Cairo</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+</div>
+</details>
+
+--- start-collab-btn ---
+<button class="tb-dropdown-item" id="start-collab-btn" role="menuitem">
+<i class="fas fa-users" style="color:#a855f7;"></i> تحرير جماعي
+                    </button>
+
+--- qr-placement-btns ---
+<div class="lp-placement-btns" id="qr-placement-btns">
+<label class="lp-place-btn">
+<input name="placement-qr" type="radio" value="front"/> <i class="fas fa-id-card"></i> أمامي
+                                </label>
+<label class="lp-place-btn lp-place-active">
+<input checked="" name="placement-qr" type="radio" value="back"/> <i class="fas fa-id-card-alt"></i> خلفي
+                                </label>
+</div>
+
+--- qr-dots-color ---
+<div class="lp-color-pick-wrap">
+<input class="lp-color-pick" id="qr-dots-color" type="color" value="#000000"/>
+</div>
+
+--- lp-photo-upload-zone-click ---
+<div class="lp-upload-zone" id="lp-photo-upload-zone-click" onclick="document.getElementById('input-photo-upload').click();">
+<div class="lp-preview-wrap" style="border-radius: 50%; overflow: hidden;">
+<img alt="" class="lp-preview-img" id="photo-preview" src="" style="display:none; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: none; padding: 0;"/>
+<div id="photo-placeholder" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(77,166,255,0.1); border-radius: 50%; border: 1px dashed rgba(77,166,255,0.4);">
+<i class="fas fa-user" style="font-size: 24px; color: var(--accent-primary);"></i>
+</div>
+<div class="lp-spinner-wrap"><div class="spinner" id="photo-spinner" style="display:none;"></div></div>
+</div>
+<div class="lp-upload-actions">
+<label class="lp-upload-btn" style="pointer-events: none;">
+<i class="fas fa-cloud-upload-alt"></i> رفع صورة
+                                <small>(سيتم طلب القص)</small>
+</label>
+<input accept="image/*" id="input-photo-upload" style="display:none;" type="file"/>
+<div class="input-error-msg" id="photo-upload-error"></div>
+</div>
+</div>
+
