@@ -181,8 +181,8 @@ const CardManager = {
         const nameInput = document.getElementById(`input-name_${lang}`);
         const taglineInput = document.getElementById(`input-tagline_${lang}`);
 
-        DOMElements.draggable.name.innerText = nameInput ? nameInput.value : '';
-        DOMElements.draggable.tagline.innerText = taglineInput ? taglineInput.value : '';
+        DOMElements.draggable.name.innerText = (nameInput && nameInput.value) ? nameInput.value : (lang === 'en' ? 'Your Name Here' : 'اسمك هنا');
+        DOMElements.draggable.tagline.innerText = (taglineInput && taglineInput.value) ? taglineInput.value : (lang === 'en' ? 'Job Title / Company' : 'المسمى الوظيفي / الشركة');
 
         const dir = lang === 'ar' ? 'rtl' : 'ltr';
         DOMElements.draggable.name.dir = dir;
@@ -212,6 +212,22 @@ const CardManager = {
         if (logoImg) {
             logoImg.style.backgroundColor = bgColor;
         }
+    },
+
+    updateLogoStyles() {
+        const logoWrapper = DOMElements.draggable.logo;
+        const logoImg = DOMElements.draggable.logoImg;
+        if (!logoWrapper || !logoImg) return;
+
+        const size = document.getElementById('logo-size').value;
+        const opacity = document.getElementById('logo-opacity').value;
+
+        logoWrapper.style.width = `${size}%`;
+        logoWrapper.style.opacity = opacity;
+        
+        this.updateLogoAlignment();
+        this.updateLogoShadow();
+        this.updateLogoBackground();
     },
 
     updateLogoShadow() {
@@ -495,8 +511,9 @@ const CardManager = {
             }
         }
 
-        this.updateCardForLanguageChange(state.currentLanguage || 'ar');
+        this.updateCardForLanguageChange(state.currentLanguage || (document.documentElement.lang === 'en' ? 'en' : 'ar'));
 
+        this.updateLogoStyles();
         this.updatePersonalPhotoStyles();
         this.renderPhoneButtons();
         this.updateSocialLinks();

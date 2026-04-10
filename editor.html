@@ -60,6 +60,7 @@
 
     <script src="editor-enhancements.js" defer></script>
     <script src="editor-user-status.js" defer></script>
+    <script src="ai-backgrounds.js" defer></script>
 
     <style>
         /* =============================================================== */
@@ -366,6 +367,12 @@
                         <div class="form-group" style="display: none;"><label for="back-bg-opacity">شفافية اللون فوق
                                 الصورة</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
                                 value="0"></div>
+                        <div class="form-group" style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
+                            <label>تحتاج إلهاماً؟</label>
+                            <button id="ai-backgrounds-btn" class="btn btn-secondary" style="width: 100%; background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2)); border-color: rgba(102, 126, 234, 0.5);">
+                                <i class="fas fa-magic"></i> <span>خلفيات ابتكارية (AI)</span>
+                            </button>
+                        </div>
                     </fieldset>
                 </div>
             </details>
@@ -2369,45 +2376,116 @@
     <script src="editor-premium.js" defer></script>
 <script src="editor-premium-v2.js" defer></script>
 
-<!-- Toolbar 3-Zone: Tools dropdown toggle -->
+<!-- Toolbar Dropdowns & Mobile Fallbacks -->
 <script>
+// ── Mobile Proxy Bindings ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    // Buttons with data-trigger-id automatically click their desktop counterparts
+    document.querySelectorAll('[data-trigger-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-trigger-id');
+            const targetBtn = document.getElementById(targetId);
+            if (targetBtn) targetBtn.click();
+        });
+    });
+
+    // Buttons with specific IDs ending in -menu also proxy (fallback)
+    document.querySelectorAll('[id$="-menu"]').forEach(btn => {
+        const baseId = btn.id.replace('-menu', '');
+        const targetBtn = document.getElementById(baseId);
+        if (targetBtn) {
+            btn.addEventListener('click', () => targetBtn.click());
+        }
+    });
+});
+</script>
+
+<script>
+// ── Toolbar Dropdowns: Tools & Download ────────────────────────────────────
 (function() {
     document.addEventListener('DOMContentLoaded', function() {
-        var toolsBtn = document.getElementById('tools-menu-btn');
-        var toolsMenu = document.getElementById('tools-dropdown-menu');
-        var toolsWrap = document.getElementById('tools-dropdown-wrap');
-        if (!toolsBtn || !toolsMenu) return;
+        const toolsWrap = document.getElementById('tools-dropdown-wrap');
+        const toolsBtn = document.getElementById('tools-menu-btn');
+        const dlWrap = document.querySelector('.download-container.tb-dropdown-wrap');
+        const dlBtn = document.getElementById('download-options-btn');
 
-        var open = false;
-        function toggle(state) {
-            open = (state !== undefined) ? state : !open;
-            toolsWrap.classList.toggle('open', open);
-            toolsBtn.setAttribute('aria-expanded', open);
+        if (dlWrap) dlWrap.id = 'download-options-wrap';
+
+        function toggleMenu(wrap, btn, forceState) {
+            if (!wrap || !btn) return;
+            const isOpen = wrap.classList.contains('open');
+            const nextState = (forceState !== undefined) ? forceState : !isOpen;
+            
+            wrap.classList.toggle('open', nextState);
+            btn.setAttribute('aria-expanded', nextState);
+            
+            // If opening this one, close the other
+            if (nextState) {
+                if (wrap === toolsWrap && dlWrap) toggleMenu(dlWrap, dlBtn, false);
+                if (wrap === dlWrap && toolsWrap) toggleMenu(toolsWrap, toolsBtn, false);
+            }
         }
 
-        toolsBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggle();
-        });
+        if (toolsBtn) {
+            toolsBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMenu(toolsWrap, toolsBtn);
+            });
+        }
+
+        if (dlBtn) {
+            dlBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMenu(dlWrap, dlBtn);
+            });
+        }
 
         document.addEventListener('click', function(e) {
-            if (open && !toolsWrap.contains(e.target)) toggle(false);
+            if (toolsWrap && toolsWrap.classList.contains('open') && !toolsWrap.contains(e.target)) {
+                toggleMenu(toolsWrap, toolsBtn, false);
+            }
+            if (dlWrap && dlWrap.classList.contains('open') && !dlWrap.contains(e.target)) {
+                toggleMenu(dlWrap, dlBtn, false);
+            }
         });
 
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && open) toggle(false);
+            if (e.key === 'Escape') {
+                toggleMenu(toolsWrap, toolsBtn, false);
+                toggleMenu(dlWrap, dlBtn, false);
+            }
         });
 
-        // Close menu when an item is clicked
-        toolsMenu.querySelectorAll('.tb-dropdown-item').forEach(function(item) {
-            item.addEventListener('click', function() { toggle(false); });
+        // Close menu when a tool or download item is clicked
+        document.querySelectorAll('.tb-dropdown-menu .tb-dropdown-item, .tb-dropdown-menu li button').forEach(item => {
+            item.addEventListener('click', () => {
+                setTimeout(() => {
+                    toggleMenu(toolsWrap, toolsBtn, false);
+                    toggleMenu(dlWrap, dlBtn, false);
+                }, 100);
+            });
         });
+
+        // 2. Mobile 'More' Menu Toggle
+        const moreBtn = document.getElementById('toolbar-more-btn');
+        const moreMenu = document.getElementById('toolbar-more-menu-floating');
+        if (moreBtn && moreMenu) {
+            moreBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                moreMenu.classList.toggle('show');
+            });
+            document.addEventListener('click', function(e) {
+                if (!moreMenu.contains(e.target) && e.target !== moreBtn) {
+                    moreMenu.classList.remove('show');
+                }
+            });
+        }
     });
 })();
 </script>
 
 <script>
-// ── Accordion Init: close all panels on load ──────────────────────────────
+// ── Accordion Init & Global Fixes ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
 
     // 1. Close all top-level fieldset-accordion panels
@@ -2416,20 +2494,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 2. Fix social-controls-wrapper: JS sets display:block but parent is flex,
-    //    so we upgrade it to display:flex + column to match .lp-body context
+    //    so we upgrade it to display:flex + column
     var scw = document.getElementById('social-controls-wrapper');
     if (scw) {
-        // Override because handleMasterSocialToggle sets display:'block'
-        // Patch the style setter to use 'flex' instead
-        var origDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'style');
-        var origSetDisplay = CSSStyleDeclaration.prototype.__defineSetter__;
-
-        // Simpler: just watch for changes via MutationObserver
         var observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(m) {
                 if (m.attributeName === 'style') {
-                    var disp = scw.style.display;
-                    if (disp === 'block') {
+                    if (scw.style.display === 'block') {
                         scw.style.display = 'flex';
                         scw.style.flexDirection = 'column';
                         scw.style.gap = '12px';
@@ -2439,14 +2510,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         observer.observe(scw, { attributes: true, attributeFilter: ['style'] });
 
-        // Also fix initial state
         if (scw.style.display !== 'none') {
             scw.style.display = 'flex';
             scw.style.flexDirection = 'column';
             scw.style.gap = '12px';
         }
     }
-
 });
 </script>
 </body>

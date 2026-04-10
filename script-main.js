@@ -46,6 +46,15 @@ const i18nMain = {
     shareTitle: _isEnglishPage ? 'My Digital Business Card' : 'بطاقة العمل الرقمية الخاصة بي',
     shareText: _isEnglishPage ? 'Check out my digital business card:' : 'اطلع على بطاقتي الرقمية:',
     copyLinkFailed: _isEnglishPage ? 'Could not copy link automatically. Please copy it manually.' : 'لم نتمكن من نسخ الرابط تلقائياً. يرجى نسخه يدوياً.',
+    designSaved: _isEnglishPage ? 'Design saved to gallery successfully!' : 'تم حفظ التصميم في المعرض بنجاح!',
+    saveGalleryError: _isEnglishPage ? 'Failed to save design to gallery. There might be a problem loading components.' : 'فشل حفظ التصميم في المعرض. قد تكون هناك مشكلة في تحميل المكونات اللازمة.',
+    confirmDelete: _isEnglishPage ? 'Are you sure you want to delete "{name}"?' : 'هل أنت متأكد من حذف "{name}"؟',
+    galleryEmpty: _isEnglishPage ? 'The gallery is empty. Save your current design to start.' : 'المعرض فارغ. قم بحفظ تصميمك الحالي للبدء.',
+    load: _isEnglishPage ? 'Load' : 'تحميل',
+    designLoaded: _isEnglishPage ? 'Design loaded from link successfully.' : 'تم تحميل التصميم من الرابط بنجاح.',
+    designRestored: _isEnglishPage ? 'Saved design restored.' : 'تم استعادة التصميم المحفوظ.',
+    defaultLoaded: _isEnglishPage ? 'Default design loaded.' : 'تم تحميل التصميم الافتراضي.',
+    creating: _isEnglishPage ? 'Creating...' : 'جاري الإنشاء...',
 };
 
 const CollaborationManager = {
@@ -80,12 +89,12 @@ const CollaborationManager = {
 
     async startSession() {
         const startBtn = document.getElementById('start-collab-btn');
-        UIManager.setButtonLoadingState(startBtn, true, 'جاري الإنشاء...');
+        UIManager.setButtonLoadingState(startBtn, true, i18nMain.creating);
         try {
             // 3. احفظ التصميم للحصول على ID فريد
             const designId = await ShareManager.saveDesign();
             if (!designId) {
-                throw new Error('فشل حفظ التصميم لإنشاء جلسة.');
+                throw new Error(_isEnglishPage ? 'Failed to save design for session.' : 'فشل حفظ التصميم لإنشاء جلسة.');
             }
             this.collabId = designId;
 
@@ -431,16 +440,16 @@ const GalleryManager = {
         try {
             const state = StateManager.getStateObject();
             const thumbnail = await ExportManager.captureElement(DOMElements.cardFront, 0.5).then(canvas => canvas.toDataURL('image/jpeg', 0.5));
-            this.designs.push({ name: `تصميم ${this.designs.length + 1}`, timestamp: Date.now(), state, thumbnail });
+            this.designs.push({ name: (_isEnglishPage ? 'Design ' : 'تصميم ') + (this.designs.length + 1), timestamp: Date.now(), state, thumbnail });
             this.saveDesigns();
-            UIManager.announce('تم حفظ التصميم في المعرض بنجاح!');
+            UIManager.announce(i18nMain.designSaved);
         } catch (error) {
             console.error("Failed to add design to gallery:", error);
-            alert("فشل حفظ التصميم في المعرض. قد تكون هناك مشكلة في تحميل المكونات اللازمة.");
+            alert(i18nMain.saveGalleryError);
             throw error;
         }
     },
-    deleteDesign(index) { if (confirm(`هل أنت متأكد من حذف "${this.designs[index].name}"؟`)) { this.designs.splice(index, 1); this.saveDesigns(); this.render(); } },
+    deleteDesign(index) { if (confirm(i18nMain.confirmDelete.replace('{name}', this.designs[index].name))) { this.designs.splice(index, 1); this.saveDesigns(); this.render(); } },
     loadDesignToEditor(index) { const design = this.designs[index]; if (design) { StateManager.applyState(design.state); UIManager.hideModal(DOMElements.galleryModal.overlay, DOMElements.buttons.showGallery); } },
     toggleRename(itemElement, index) {
         const nameSpan = itemElement.querySelector('.gallery-item-name-span'); const nameInput = itemElement.querySelector('.gallery-item-name-input'); const renameBtn = itemElement.querySelector('.gallery-rename-btn'); const icon = renameBtn.querySelector('i');
@@ -453,7 +462,7 @@ const GalleryManager = {
     },
     render() {
         const grid = DOMElements.galleryModal.grid; grid.innerHTML = '';
-        if (this.designs.length === 0) { const p = document.createElement('p'); p.textContent = 'المعرض فارغ. قم بحفظ تصميمك الحالي للبدء.'; grid.appendChild(p); return; }
+        if (this.designs.length === 0) { const p = document.createElement('p'); p.textContent = i18nMain.galleryEmpty; grid.appendChild(p); return; }
         this.designs.forEach((design, index) => {
             const item = document.createElement('div'); item.className = 'gallery-item';
             const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.className = 'gallery-item-select'; checkbox.dataset.index = index; checkbox.onchange = () => this.updateSelectionState();
@@ -470,7 +479,7 @@ const GalleryManager = {
                 if (text) { button.append(icon, ` ${text}`); } else { button.appendChild(icon); }
                 button.onclick = clickHandler; if (isDanger) button.classList.add('danger'); return button;
             };
-            const loadBtn = createButton('تحميل', 'fas fa-edit', () => this.loadDesignToEditor(index));
+            const loadBtn = createButton(i18nMain.load, 'fas fa-edit', () => this.loadDesignToEditor(index));
             const renameBtn = createButton('', 'fas fa-pencil-alt', () => this.toggleRename(item, index)); renameBtn.classList.add('gallery-rename-btn');
             const deleteBtn = createButton('', 'fas fa-trash', () => this.deleteDesign(index), true);
             actionsDiv.append(loadBtn, renameBtn, deleteBtn);
@@ -515,8 +524,8 @@ const GalleryManager = {
 
         } catch (e) {
             console.error("ZIP export failed:", e);
-            UIManager.announce("حدث خطأ أثناء تصدير الملف المضغوط.");
-            alert("فشل تصدير الملف المضغوط. قد تكون هناك مشكلة في تحميل المكونات اللازمة.");
+            UIManager.announce(_isEnglishPage ? 'Error exporting ZIP file.' : "حدث خطأ أثناء تصدير الملف المضغوط.");
+            alert(_isEnglishPage ? 'Failed to export ZIP. Problem loading components.' : "فشل تصدير الملف المضغوط. قد تكون هناك مشكلة في تحميل المكونات اللازمة.");
             throw e;
         }
     }
@@ -676,9 +685,9 @@ const ShareManager = {
         DOMElements.shareModal.copyLink.onclick = () => {
             Utils.copyTextToClipboard(url).then(success => {
                 if (success) {
-                    UIManager.announce('تم نسخ الرابط!');
+                    UIManager.announce(i18nMain.linkCopied || 'تم نسخ الرابط!');
                     if (typeof MobileUtils !== 'undefined' && MobileUtils.isMobile()) {
-                        MobileUtils.showMobileToast('تم نسخ الرابط! 📋', 'success');
+                        MobileUtils.showMobileToast((i18nMain.linkCopied || 'تم نسخ الرابط!') + ' 📋', 'success');
                     }
                 }
             });
@@ -703,7 +712,7 @@ const ShareManager = {
                 const state = await response.json();
                 StateManager.applyState(state, false);
                 Config.currentDesignId = designId; // Store loaded ID
-                UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
+                UIManager.announce(i18nMain.designLoaded);
 
                 const newUrl = new URL(window.location.href);
                 newUrl.searchParams.delete('id');
@@ -711,7 +720,7 @@ const ShareManager = {
                 return true;
             } catch (e) {
                 console.error("Failed to load state from URL:", e);
-                UIManager.announce("فشل تحميل التصميم من الرابط.");
+                UIManager.announce(_isEnglishPage ? 'Failed to load design from link.' : "فشل تحميل التصميم من الرابط.");
                 window.history.replaceState({}, document.title, window.location.pathname);
                 return false;
             }
@@ -774,6 +783,7 @@ const EventManager = {
                 if (input.id.includes('photo-')) CardManager.updatePersonalPhotoStyles();
                 if (input.id.includes('phone-btn')) CardManager.updatePhoneButtonStyles();
 
+                if (input.id === 'logo-size' || input.id === 'logo-opacity') CardManager.updateLogoStyles();
                 if (input.name === 'logo-align') CardManager.updateLogoAlignment();
                 if (input.id === 'logo-bg-color') CardManager.updateLogoBackground();
                 if (input.id.startsWith('logo-shadow-')) CardManager.updateLogoShadow();
@@ -1034,10 +1044,40 @@ const EventManager = {
         DOMElements.layoutSelect.addEventListener('change', e => CardManager.applyLayout(e.target.value));
 
 
+        DOMElements.buttons.showGallery.addEventListener('click', (e) => {
+            GalleryManager.render();
+            UIManager.showModal(DOMElements.galleryModal.overlay, e.currentTarget);
+        });
+
+        DOMElements.buttons.saveToGallery.addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            UIManager.setButtonLoadingState(btn, true);
+            try { await GalleryManager.addCurrentDesign(); }
+            finally { UIManager.setButtonLoadingState(btn, false); }
+        });
+
         DOMElements.buttons.shareEditor.addEventListener('click', () => {
             if (typeof gtag === 'function') { gtag('event', 'share_editor'); }
             ShareManager.shareEditor();
         });
+        
+        if (DOMElements.buttons.startCollab) {
+            DOMElements.buttons.startCollab.addEventListener('click', () => {
+                if (typeof CollaborationManager !== 'undefined') {
+                    CollaborationManager.startSession();
+                }
+            });
+        }
+
+        const toolsMenuBtn = document.getElementById('tools-menu-btn');
+        const toolsMenu = document.getElementById('tools-dropdown-menu');
+        if (toolsMenuBtn && toolsMenu) {
+            toolsMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toolsMenu.classList.toggle('show');
+            });
+            window.addEventListener('click', () => toolsMenu.classList.remove('show'));
+        }
 
         DOMElements.draggable.logo.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('logo-drop-zone'); });
         DOMElements.draggable.photo.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('photo-controls-fieldset'); });
@@ -1234,8 +1274,8 @@ const App = {
 
             themeGallery: document.getElementById('theme-gallery'),
             layoutSelect: document.getElementById('layout-select'), liveAnnouncer: document.getElementById('live-announcer'), saveToast: document.getElementById('save-toast'),
-            nameInput: document.getElementById('input-name_ar'),
-            taglineInput: document.getElementById('input-tagline_ar'),
+            nameInput: document.getElementById(document.documentElement.lang === 'en' ? 'input-name_en' : 'input-name_ar'),
+            taglineInput: document.getElementById(document.documentElement.lang === 'en' ? 'input-tagline_en' : 'input-tagline_ar'),
             qrImageUrlInput: document.getElementById('input-qr-url'),
             qrCodeContainer: document.getElementById('qrcode-container'),
             qrCodeTempGenerator: document.getElementById('qr-code-temp-generator'),
@@ -1281,6 +1321,7 @@ const App = {
                 showGallery: document.getElementById('show-gallery-btn'),
                 saveShare: document.getElementById('save-share-btn'),
                 shareEditor: document.getElementById('share-editor-btn'),
+                startCollab: document.getElementById('start-collab-btn'),
                 downloadOptions: document.getElementById('download-options-btn'),
                 downloadPngFront: document.getElementById('download-png-front'),
                 downloadPngBack: document.getElementById('download-png-back'),
@@ -1316,16 +1357,16 @@ const App = {
         const loadedFromUrl = await ShareManager.loadFromUrl();
         if (loadedFromUrl) {
             HistoryManager.pushState(StateManager.getStateObject());
-            UIManager.announce("تم تحميل التصميم من الرابط بنجاح.");
+            UIManager.announce(i18nMain.designLoaded);
         } else if (!CollaborationManager.isActive) {
             const loadedFromStorage = StateManager.load();
             if (loadedFromStorage) {
                 HistoryManager.pushState(StateManager.getStateObject());
-                UIManager.announce("تم استعادة التصميم المحفوظ.");
+                UIManager.announce(i18nMain.designRestored);
             } else {
                 StateManager.applyState(Config.defaultState, false);
                 HistoryManager.pushState(Config.defaultState);
-                UIManager.announce("تم تحميل التصميم الافتراضي.");
+                UIManager.announce(i18nMain.defaultLoaded);
             }
         }
 

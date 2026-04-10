@@ -48,16 +48,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
 
     <!-- Project JavaScript files (order matters) -->
+    <script src="lang-switcher.js" defer></script>
+    <script src="/nfc/auth.js" defer></script>
     <script src="security-utils.js" defer></script>
     <script src="mobile.js" defer></script>
-    <script src="/nfc/auth.js" defer></script>
-    <script src="state-manager-proxy.js" defer></script>
-    <script src="lang-switcher.js" defer></script>
     <script src="script-core.js" defer></script>
+    <script src="state-manager-proxy.js" defer></script>
     <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
     <script src="script-main.js" defer></script>
-
     <script src="editor-enhancements.js" defer></script>
     <script src="editor-user-status.js" defer></script>
     <script src="ai-backgrounds.js" defer></script>
@@ -244,7 +243,7 @@
                     <i class="fas fa-chevron-down tb-caret"></i>
                 </button>
                 <div class="tb-dropdown-menu" id="tools-dropdown-menu" role="menu">
-                    <a href="how-to-use-editor.html" class="tb-dropdown-item" target="_blank">
+                    <a href="how-to-use-editor-en.html" class="tb-dropdown-item" target="_blank">
                         <i class="fas fa-book-open" style="color:#10b981;"></i> Editor Guide
                     </a>
                     <div class="tb-dropdown-divider"></div>
@@ -255,11 +254,9 @@
                     <button id="save-to-gallery-btn" class="tb-dropdown-item" role="menuitem">
                         <i class="fas fa-bookmark" style="color:#f1c40f;"></i> Save to Gallery
                     </button>
-                    <!--
                     <button id="start-collab-btn" class="tb-dropdown-item" role="menuitem">
-                        <i class="fas fa-users" style="color:#a855f7;"></i> Collab Edit
+                        <i class="fas fa-users" style="color:#a855f7;"></i> Collaborative Edit
                     </button>
-                    -->
                     <button id="share-editor-btn" class="tb-dropdown-item" role="menuitem">
                         <i class="fas fa-link" style="color:#2ecc71;"></i> Copy Editor Link
                     </button>
@@ -373,13 +370,15 @@
                 </div>
             </fieldset>
 
-            <details class="fieldset-accordion" id="backgrounds-accordion">
-                <summary>Backgrounds & Colors</summary>
+            <details class="fieldset-accordion lp-accordion" id="backgrounds-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-palette"></i></span>
+                    <span class="lp-summary-label">Backgrounds & Colors</span>
+                </summary>
                 <div class="fieldset-content">
                     <fieldset class="fieldset" style="padding: 10px;">
                         <legend>Front Side</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
-                                here</span></div>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
                         <div class="form-group"><label>Background Color</label>
                             <div class="control-grid"><input type="color" id="front-bg-start" value="#2a3d54"><input
                                     type="color" id="front-bg-end" value="#223246"></div>
@@ -395,19 +394,12 @@
                                 <div class="spinner" id="front-bg-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">Color Overlay
-                                Opacity</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
-                                value="0"></div>
-                        <div class="form-group" style="margin-top: 15px;">
-                            <button id="open-ai-bg-btn" class="btn btn-secondary" style="width: 100%;">
-                                <i class="fas fa-magic"></i> AI Backgrounds
-                            </button>
-                        </div>
+                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">Color Overlay Opacity</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05" value="0"></div>
                     </fieldset>
+
                     <fieldset class="fieldset" style="padding: 10px; margin-top: 15px;">
                         <legend>Back Side</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
-                                here</span></div>
+                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
                         <div class="form-group"><label>Background Color</label>
                             <div class="control-grid"><input type="color" id="back-bg-start" value="#2a3d54"><input
                                     type="color" id="back-bg-end" value="#223246"></div>
@@ -423,9 +415,14 @@
                                 <div class="spinner" id="back-bg-spinner" style="display: none;"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">Color Overlay
-                                Opacity</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
-                                value="0"></div>
+                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">Color Overlay Opacity</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05" value="0"></div>
+                        
+                        <div class="form-group" style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
+                            <label>Need Inspiration?</label>
+                            <button id="ai-backgrounds-btn" class="btn btn-secondary" style="width: 100%; background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2)); border-color: rgba(102, 126, 234, 0.5);">
+                                <i class="fas fa-magic"></i> <span>AI Backgrounds</span>
+                            </button>
+                        </div>
                     </fieldset>
                 </div>
             </details>
@@ -452,10 +449,10 @@
                                 <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
                                 </div>
                                 <h1 id="card-name" data-input-target-id="name-tagline-accordion"
-                                    style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;">
+                                    style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;">Your Name Here
                                 </h1>
                                 <h2 class="tagline" id="card-tagline" data-input-target-id="name-tagline-accordion"
-                                    style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">
+                                    style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">Job Title / Company
                                 </h2>
                                 <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
                                 <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
@@ -487,7 +484,7 @@
             <details class="fieldset-accordion lp-accordion" open>
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-image"></i></span>
-                    <span>Logo</span>
+                    <span class="lp-summary-label">Logo</span>
                     <!-- Toggle Switch -->
                     <label class="lp-toggle" title="Show / Hide Logo" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-logo" checked>
@@ -655,6 +652,8 @@
                             </div>
                         </div>
                     </div>
+                    
+
                 </div>
             </details>
 
@@ -709,7 +708,7 @@
             <details class="fieldset-accordion lp-accordion" open>
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-user-circle"></i></span>
-                    <span>Personal Photo</span>
+                    <span class="lp-summary-label">Personal Photo</span>
                     <!-- Toggle Switch -->
                     <label class="lp-toggle" title="Show / Hide Photo" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-photo" checked>
@@ -988,19 +987,13 @@
                 }
                 setTimeout(wirePhotoDpad, 800);
             })();
-
-            // Auto-apply default photo shape on load
-            setTimeout(function() {
-                  var checkedShape = document.querySelector('input[name="photo-shape"]:checked');
-                    if(checkedShape) checkedShape.dispatchEvent(new Event('change'));
-                    }, 500);
             </script>
 
             <!-- ═══ NAME PANEL — Premium v2 ═══ -->
             <details class="fieldset-accordion lp-accordion" open id="name-accordion">
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-user-tag"></i></span>
-                    <span>Full Name</span>
+                    <span class="lp-summary-label">Full Name</span>
                     <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-name" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -1076,7 +1069,7 @@
             <details class="fieldset-accordion lp-accordion" open id="tagline-accordion">
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-briefcase"></i></span>
-                    <span>Job Title</span>
+                    <span class="lp-summary-label">Job Title</span>
                     <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-tagline" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -1148,6 +1141,190 @@
                 </div>
             </details>
 
+            <!-- ═══ PHONE NUMBERS PANEL — Premium v2 ═══ -->
+            <details class="lp-details-final lp-accordion" id="phones-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-phone-alt"></i></span>
+                    <span class="lp-summary-label">Phone Numbers</span>
+                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-phones" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+                
+                <div class="fieldset-content lp-body">
+
+                    <!-- ① Manage Numbers Card -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-list-ol"></i> Manage Numbers</span>
+                        </div>
+                        <div class="lp-section" style="padding-top:0; border:none;">
+                            <div id="phone-numbers-container"></div>
+                            <button id="add-phone-btn" class="lp-upload-btn" style="width:100%; justify-content:center; margin-top:8px;">
+                                <i class="fas fa-plus"></i> Add Phone Number
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ② Display Style Card -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-paint-roller"></i> Style & Layout</span>
+                        </div>
+                        
+                        <div class="lp-section" style="padding-top:0;">
+                            <!-- Segmented Control for Layout Mode -->
+                            <div class="lp-segment-control" style="display:flex; background:rgba(0,0,0,0.3); border-radius:8px; padding:4px; margin-bottom:12px;">
+                                <label style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;" class="toggle-phone-text">
+                                    <input type="radio" name="phone-mode-fake" value="text" style="display:none;">
+                                    <i class="fas fa-align-left"></i> As Text
+                                </label>
+                                <label style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;" class="toggle-phone-btn active-mode">
+                                    <input type="radio" name="phone-mode-fake" value="buttons" style="display:none;" checked>
+                                    <i class="fas fa-stop"></i> As Buttons
+                                </label>
+                                <!-- Real checkbox hidden, toggled via JS to keep compatibility -->
+                                <input type="checkbox" id="toggle-phone-buttons" checked style="display:none;">
+                            </div>
+
+                            <!-- TEXT SETTINGS -->
+                            <div id="phone-text-controls" style="display: none;">
+                                <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0;">
+                                    <div>
+                                        <label class="lp-label">Layout</label>
+                                        <div class="lp-align-btns">
+                                            <label class="lp-align-btn lp-align-active">
+                                                <input type="radio" name="phone-text-layout" value="row" checked> Horizontal
+                                            </label>
+                                            <label class="lp-align-btn">
+                                                <input type="radio" name="phone-text-layout" value="column"> Vertical
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                                        <label class="lp-label">Color</label>
+                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                            <input type="color" id="phone-text-color" value="#e6f0f7" class="lp-color-pick">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lp-section">
+                                    <label class="lp-label">Font Size</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="phone-text-size" min="10" max="24" value="14" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">14px</span>
+                                    </div>
+                                </div>
+                                <div class="lp-section" style="border:none; padding-bottom:0;">
+                                    <label class="lp-label">Font</label>
+                                    <select id="phone-text-font" class="lp-input lp-select" style="height:32px; padding-top:0; padding-bottom:0;">
+                                        <option value="'Tajawal', sans-serif">Tajawal</option>
+                                        <option value="'Cairo', sans-serif">Cairo</option>
+                                        <option value="'Lalezar', cursive">Lalezar</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- BUTTON SETTINGS -->
+                            <div id="phone-btn-controls">
+                                <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0px;">
+                                    <div>
+                                        <label class="lp-label">Bg Color</label>
+                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                            <input type="color" id="phone-btn-bg-color" value="#4da6ff" class="lp-color-pick">
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                                        <label class="lp-label">Text Color</label>
+                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                            <input type="color" id="phone-btn-text-color" value="#ffffff" class="lp-color-pick">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lp-section">
+                                    <label class="lp-label">Font Size</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="phone-btn-font-size" min="10" max="24" value="12" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">12px</span>
+                                    </div>
+                                </div>
+                                <div class="lp-section">
+                                    <label class="lp-label">Padding</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="phone-btn-padding" min="4" max="16" value="6" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">6px</span>
+                                    </div>
+                                </div>
+                                <div class="lp-section" style="border:none; padding-bottom:0;">
+                                    <label class="lp-label">Font</label>
+                                    <select id="phone-btn-font" class="lp-input lp-select" style="height:32px; padding-top:0; padding-bottom:0;">
+                                        <option value="'Poppins', sans-serif">Poppins</option>
+                                        <option value="'Tajawal', sans-serif">Tajawal</option>
+                                        <option value="'Cairo', sans-serif">Cairo</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ADVANCED MOVEMENT DPAD -->
+                    <details class="lp-sub-accordion" style="margin-top: 10px;">
+                        <summary class="lp-sub-summary">
+                            <i class="fas fa-arrows-up-down-left-right"></i> Fine Position
+                        </summary>
+                        <div class="lp-section" style="border:none;">
+                            <div class="lp-dpad position-controls-grid" data-target-id="card-phone-wrapper">
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                <div class="lp-dpad-row">
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button>
+                                    <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </details>
+
+            <script>
+            // Inline logic for phone UI segment control
+            document.querySelectorAll('#phones-accordion input[name="phone-mode-fake"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    var isButtonMode = (this.value === 'buttons');
+                    var accordion = document.getElementById('phones-accordion');
+                    
+                    // Update visual segmented control styling
+                    accordion.querySelector('.toggle-phone-text').style.background = isButtonMode ? 'transparent' : 'var(--accent-primary)';
+                    accordion.querySelector('.toggle-phone-text').style.color = isButtonMode ? 'var(--text-secondary)' : '#fff';
+                    accordion.querySelector('.toggle-phone-text ').style.boxShadow = isButtonMode ? 'none' : '0 2px 4px rgba(0,0,0,0.2)';
+                    
+                    accordion.querySelector('.toggle-phone-btn').style.background = isButtonMode ? 'var(--accent-primary)' : 'transparent';
+                    accordion.querySelector('.toggle-phone-btn').style.color = isButtonMode ? '#fff' : 'var(--text-secondary)';
+                    accordion.querySelector('.toggle-phone-btn ').style.boxShadow = isButtonMode ? '0 2px 4px rgba(0,0,0,0.2)' : 'none';
+
+                    // Toggle visibility of setting panels
+                    document.getElementById('phone-text-controls').style.display = isButtonMode ? 'none' : 'block';
+                    document.getElementById('phone-btn-controls').style.display = isButtonMode ? 'block' : 'none';
+
+                    // Sync hidden checkbox and fire event to trigger script-main.js logic
+                    var checkbox = document.getElementById('toggle-phone-buttons');
+                    if (checkbox && checkbox.checked !== isButtonMode) {
+                        checkbox.checked = isButtonMode;
+                        checkbox.dispatchEvent(new Event('input', { bubbles: true }));
+                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            });
+
+            // Trigger once visually for English
+            setTimeout(function(){
+                var fakeRadio = document.querySelector('#phones-accordion input[name="phone-mode-fake"]:checked');
+                if(fakeRadio) fakeRadio.dispatchEvent(new Event('change'));
+            }, 100);
+            </script>
+
             <!-- Name/Tagline Inline JS & Photo Shape Fix -->
             <script>
             // Force Photo Shape immediately logic
@@ -1169,11 +1346,6 @@
                             img.style.borderRadius = wrapper.style.borderRadius;
                             img.style.clipPath = wrapper.style.clipPath;
                         }
-                                      var preview = document.getElementById('card-personal-photo');
-                                                    if (preview) {
-                                                                        preview.style.borderRadius = wrapper.style.borderRadius;
-                                                                                        preview.style.clipPath = wrapper.style.clipPath;
-                                                                                                      }
                     }
                 });
             });
@@ -1223,105 +1395,13 @@
             })();
             </script>
 
-        <!-- ==== PHONE NUMBERS PANEL ==== -->            
-                 <details class="fieldset-accordion lp-accordion" id="phones-accordion"></details>
-                             <summary class="lp-summary">
-                                                <span class="lp-summary-icon"><i class="fas fa-phone"></i></span>
-                                                                <span>Phone Numbers</span>
-                                                                                <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
-                                                                                                        <input type="checkbox" id="visibility-phones" checked>
-                                                                                                                            <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
-                                                                                                                                            </label>
-                                                                                                                                                        </summary>
-                                                                                                                                                                    <div class="fieldset-content lp-body" id="phones-controls-fieldset">
-                                                                                                                                                                                        <!-- Manage Numbers -->
-                                                                                                                                                                                                         <div class="lp-section" style="padding-top:0;">
-                                                                                                                                                                                                                                <button type="button" class="lp-btn lp-btn-secondary" id="manage-phones-btn" style="width:100%;margin-bottom:8px;">
-                                                                                                                                                                                                                                                            <i class="fas fa-list"></i> Manage Numbers
-                                                                                                                                                                                                                                                                                </button>
-                                                                                                                                                                                                                                                                                                    <div id="phones-list-wrapper" style="margin-bottom:8px;"></div>
-                                                                                                                                                                                                                                                                                                                        <button type="button" class="lp-btn lp-btn-primary" id="add-phone-btn" style="width:100%;margin-bottom:12px;">
-                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-plus"></i> Add Phone Number
-                                                                                                                                                                                                                                                                                                                                                                        </button>
-                                                                                                                                                                                                                                                                                                                                                                                        </div>
-
-                                                                                                                                                                                                                                                                                                                                                                                                        <!-- Appearance & Formatting -->
-                                                                                                                                                                                                                                                                                                                                                                                                                         <div class="lp-section">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="lp-row" style="margin-bottom:10px;">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="lp-label">Display As</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="lp-segment-control" style="display:flex;">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <button type="button" class="toggle-phone-text lp-seg-btn" data-mode="text" style="padding:4px 10px;border-radius:4px 0 0 4px;">Text</button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <button type="button" class="toggle-phone-btn lp-seg-btn" data-mode="buttons" style="padding:4px 10px;border-radius:0 4px 4px 0;background:var(--accent-primary);color:#fff;">Buttons</button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <input type="radio" name="phone-mode-fake" value="text" style="display:none;">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input type="radio" name="phone-mode-fake" value="buttons" style="display:none;" checked>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <input type="checkbox" id="toggle-phone-buttons" checked style="display:none;">
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <!-- TEXT mode controls -->
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 <div id="phone-text-controls" style="display:none;">
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div style="display:flex;gap:6px;">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <label style="cursor:pointer;"><input type="radio" name="phone-text-layout" value="row" checked> Horizontal</label>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <label style="cursor:pointer;"><input type="radio" name="phone-text-layout" value="column"> Vertical</label>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div></div>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="lp-row"><span class="lp-label">Font Size</span><input type="range" id="phone-text-size" min="10" max="24" value="14" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'"><span>14px</span></div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="lp-row"><span class="lp-label">Font</span><select id="phone-text-font" class="lp-input lp-select" style="height:32px;padding:0;"><option value="'Poppins', sans-serif">Poppins</option><option value="'Tajawal', sans-serif">Tajawal</option><option value="'Cairo', sans-serif">Cairo</option></select></div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <!-- BUTTON mode controls -->
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             <div id="phone-btn-controls" style="display:block;">
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="lp-row"><span class="lp-label">Text Color</span><input type="color" id="phone-btn-text-color" value="#ffffff" class="lp-color-pick"></div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="lp-row"><span class="lp-label">Font Size</span><input type="range" id="phone-btn-font-size" min="10" max="24" value="12" class="lp-slider" oninput="this.nextElementSibling.textContent=this.value+'px'"><span>12px</span></div>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="lp-row"><span class="lp-label">Font</span><select id="phone-btn-font" class="lp-input lp-select" style="height:32px;padding:0;"><option value="'Poppins', sans-serif">Poppins</option><option value="'Tajawal', sans-serif">Tajawal</option><option value="'Cairo', sans-serif">Cairo</option></select></div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <script>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             document.querySelectorAll('input[name="phone-mode-fake"]').forEach(function(radio) { radio.addEventListener('change', function() {
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        var isButtonMode = (this.value === 'buttons');
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                document.querySelector('.toggle-phone-text').style.background = isButtonMode ? 'transparent' : 'var(--accent-primary)';
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        document.querySelector('.toggle-phone-btn').style.background = isButtonMode ? 'var(--accent-primary)' : 'transparent';
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                document.querySelector('.toggle-phone-btn').style.color = isButtonMode ? '#fff' : 'var(--text-secondary)';
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        document.getElementById('phone-text-controls').style.display = isButtonMode ? 'none' : 'block';
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                document.getElementById('phone-btn-controls').style.display = isButtonMode ? 'block' : 'none';
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        var checkbox = document.getElementById('toggle-phone-buttons');
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                if (checkbox && checkbox.checked !== isButtonMode) {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                checkbox.checked = isButtonMode;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            checkbox.dispatchEvent(new Event('input', { bubbles: true }));
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    if (typeof CardManager !== 'undefined' && CardManager.updatePhoneButtonsVisibility) {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        CardManager.updatePhoneButtonsVisibility();
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    });
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    });
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    document.querySelectorAll('#phones-accordion .toggle-phone-text, #phones-accordion .toggle-phone-btn').forEach(function(btn) {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            btn.addEventListener('click', function() {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        var mode = btn.dataset.mode;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                var radio = document.querySelector('input[name="phone-mode-fake"][value="'+mode+'"]');
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            });
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            });
 
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </script>        
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div><!-- /phones-controls-fieldset -->
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </details><!-- /phones-accordion -->
-<!-- ═══ QR CODE PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open id="qr-code-accordion">
+            <!-- ═══ QR CODE PANEL — Premium v2 ═══ -->
+            <details class="lp-details-final lp-accordion" open id="qr-code-accordion">
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-qrcode"></i></span>
-                    <span>QR Code</span>
+                    <span class="lp-summary-label">QR Code</span>
                     <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-qr" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -1382,7 +1462,7 @@
                         <div>
                             <label class="lp-label"><i class="fas fa-palette"></i> QR Color</label>
                             <div class="lp-color-pick-wrap" style="height:32px;">
-                                <input type="color" id="qr-dots-color" value="#000000" class="lp-color-pick">
+                                <input type="color" id="qr-color" value="#000000" class="lp-color-pick">
                             </div>
                         </div>
                         <div>
@@ -1400,7 +1480,9 @@
                                 <option value="square">Square</option>
                                 <option value="dots">Dots</option>
                                 <option value="rounded" selected>Rounded</option>
-                                <option value="classy">Classy</option><option value="classy-rounded">Classy Rounded</option><option value="extra-rounded">Extra Rounded</option>
+                                <option value="classy">Classy</option>
+                                <option value="classy-rounded">Classy Rounded</option>
+                                <option value="extra-rounded">Extra Rounded</option>
                             </select>
                         </div>
                         <div>
@@ -1516,10 +1598,10 @@
             </script>
 
             <!-- ═══ SOCIAL / CONTACT PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" id="contact-info-accordion">
+            <details class="lp-details-final lp-accordion" id="contact-info-accordion">
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-share-alt"></i></span>
-                    <span>Contact Info</span>
+                    <span class="lp-summary-label">Contact Info</span>
                     <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
                         <input type="checkbox" id="toggle-master-social" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
@@ -2105,7 +2187,11 @@
 
 
 
-
+    <!-- NEW: Floating button to exit preview mode -->
+    <button id="exit-preview-btn" class="btn btn-secondary"
+        style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">
+        <i class="fas fa-times"></i> Exit Preview
+    </button>
 
     <!-- AI Backgrounds Modal -->
     <div id="ai-backgrounds-modal" class="ai-modal-overlay" style="display: none;">
@@ -2229,93 +2315,6 @@
         </div>
     </div>
 
-    <div id="export-loading-overlay" class="modal-overlay">
-        <div class="modal-content" style="text-align: center;">
-            <div class="spinner" style="margin: 0 auto 15px auto;"></div>
-            <p>Preparing high-quality image, this may take a few moments...</p>
-        </div>
-    </div>
-
-    <div id="export-modal-overlay" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Export Options</h3>
-            <button id="export-modal-close" class="modal-close" aria-label="Close">&times;</button>
-            <div class="form-group">
-                <label for="export-format">File Type</label>
-                <select id="export-format">
-                    <option value="png">PNG (High Quality)</option>
-                    <option value="jpeg">JPEG (Smaller Size)</option>
-                </select>
-            </div>
-            <div class="form-group" id="export-quality-group" style="display: none;">
-                <label for="export-quality">Quality (1-100)</label>
-                <div class="quality-slider-wrapper">
-                    <input type="range" id="export-quality" min="10" max="100" value="92">
-                    <span id="export-quality-value">92</span>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Image Size (Resolution) <i class="fas fa-question-circle"
-                        data-tooltip="Choose 2x or 3x for print-ready quality." aria-hidden="true"></i></label>
-                <div class="scale-buttons">
-                    <button class="scale-btn" data-scale="1">1x (Web)</button>
-                    <button class="scale-btn selected" data-scale="2">2x (Print)</button>
-                    <button class="scale-btn" data-scale="3">3x (Ultra)</button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="confirm-export-btn" class="modal-confirm">Confirm Save</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="gallery-modal-overlay" class="modal-overlay">
-        <div class="modal-content gallery-modal">
-            <h3>Saved Designs Gallery</h3>
-            <button id="gallery-modal-close" class="modal-close" aria-label="Close">&times;</button>
-            <div id="gallery-grid" class="gallery-grid">
-            </div>
-            <div class="modal-footer">
-                <button id="gallery-select-all">Select All</button>
-                <button id="gallery-deselect-all">Deselect All</button>
-                <button id="gallery-download-zip" class="modal-confirm" disabled><i class="fas fa-file-archive"
-                        aria-hidden="true"></i> Download Selected (ZIP)</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="share-fallback-modal-overlay" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Share Link</h3>
-            <button id="share-fallback-modal-close" class="modal-close" aria-label="Close">&times;</button>
-            <p>Your browser does not support direct sharing. Use one of the following options:</p>
-            <div class="share-fallback-buttons">
-                <a id="share-email" target="_blank"><i class="fas fa-envelope" aria-hidden="true"></i> Email</a>
-                <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp</a>
-                <a id="share-twitter" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i> Twitter</a>
-                <button id="share-copy-link"><i class="fas fa-copy" aria-hidden="true"></i> Copy Link</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="collab-modal-overlay" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Collaboration Session</h3>
-            <button id="collab-modal-close" class="modal-close" aria-label="Close">&times;</button>
-            <p>Share this link with others to invite them to edit with you in real-time.</p>
-            <div class="form-group">
-                <label for="collab-link-input">Session Link</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="collab-link-input" readonly style="flex-grow: 1;">
-                    <button id="copy-collab-link-btn" class="btn btn-secondary"
-                        style="width: auto; margin-top: 0;">Copy</button>
-                </div>
-            </div>
-            <p style="font-size: 0.8rem; color: var(--text-secondary);">Note: Anyone with this link can edit your design. The session will end when you close the page.</p>
-            <div id="collab-status" style="margin-top: 15px; font-weight: bold;">Status: Disconnected</div>
-        </div>
-    </div>
-
     <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" data-target="panel-elements">
             <i class="fas fa-pen"></i>
@@ -2419,32 +2418,8 @@
     </div>
 
     <!-- [NEW] Editor Premium Enhancements -->
-    <script src="toolbar-tab-nav.js"></script>
     <script src="editor-premium.js" defer></script>
-    <script src="editor-premium-v2.js" defer></script>
-
-<script>
-// ── Mobile Proxy Bindings ──────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
-    // Buttons with data-trigger-id automatically click their desktop counterparts
-    document.querySelectorAll('[data-trigger-id]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const targetId = btn.getAttribute('data-trigger-id');
-            const targetBtn = document.getElementById(targetId);
-            if (targetBtn) targetBtn.click();
-        });
-    });
-
-    // Buttons with specific IDs ending in -menu also proxy (fallback)
-    document.querySelectorAll('[id$="-menu"]').forEach(btn => {
-        const baseId = btn.id.replace('-menu', '');
-        const targetBtn = document.getElementById(baseId);
-        if (targetBtn) {
-            btn.addEventListener('click', () => targetBtn.click());
-        }
-    });
-});
-</script>
+<script src="editor-premium-v2.js" defer></script>
 
 <script>
 // ── Toolbar Dropdowns: Tools & Download ────────────────────────────────────

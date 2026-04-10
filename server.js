@@ -459,7 +459,7 @@ function handleMulterErrors(err, req, res, next) {
 function assertAdmin(req, res) {
   const expected = process.env.ADMIN_TOKEN || '';
   const provided = req.headers['x-admin-token'] || '';
-  if (!expected || expected !== provided) {
+  if (!expected || expected.length !== provided.length || !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided))) {
     res.status(401).json({ error: 'Unauthorized' });
     return false;
   }
@@ -770,6 +770,15 @@ app.post('/api/auth/register', [
       path: '/api/auth'
     });
 
+    // Set access token as HttpOnly Secure cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/'
+    });
+
     res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
 
   } catch (err) {
@@ -830,6 +839,15 @@ app.post('/api/auth/login', [
       sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/api/auth'
+    });
+
+    // Set access token as HttpOnly Secure cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/'
     });
 
     console.log(`[Login] Successful login for: ${email}. Token issued.`);
@@ -968,6 +986,15 @@ app.get('/api/auth/google/callback', async (req, res) => {
       path: '/api/auth'
     });
 
+    // Set access token as HttpOnly Secure cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/'
+    });
+
     // Send auth data to the popup opener via postMessage
     const script = `
       (function() {
@@ -978,7 +1005,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
               success: true,
               token: ${JSON.stringify(accessToken)},
               user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
-            }, '*');
+            }, 'https://mcprim.com');
           }
         } catch (e) {}
         window.close();
@@ -1008,7 +1035,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
               type: 'google-auth',
               success: false,
               error: ${JSON.stringify(errorMessage)}
-            }, '*');
+            }, 'https://mcprim.com');
           }
         } catch (e) {}
         window.close();
@@ -1057,11 +1084,17 @@ app.post('/api/auth/forgot-password', [
       { $set: { resetToken, resetTokenExpiry: new Date(Date.now() + 3600000) } }
     );
 
-    // TODO: Send email with reset link
-    // For now, log the reset link (in production, use email service)
     const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
     const resetLink = `${baseUrl}/reset-password.html?token=${resetToken}`;
-    console.log(`[ForgotPassword] Reset link for ${email}: ${resetLink}`);
+    
+    // Send email using EmailService
+    try {
+      const emailContent = EmailService.passwordResetEmail(user.name || 'مستخدم', resetLink);
+      await EmailService.send({ to: email, subject: emailContent.subject, html: emailContent.html });
+      console.log(`[ForgotPassword] Reset link sent to ${email}`);
+    } catch (emailErr) {
+      console.warn('[ForgotPassword] Email sending failed:', emailErr.message);
+    }
 
     res.json({ success: true });
 
@@ -1212,6 +1245,15 @@ app.post('/api/auth/refresh', async (req, res) => {
       path: '/api/auth'
     });
 
+    // Set new access token cookie
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/'
+    });
+
     res.json({ success: true, token: newAccessToken, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
@@ -1234,12 +1276,18 @@ app.post('/api/auth/logout', async (req, res) => {
       );
     }
 
-    // Clear the cookie
+    // Clear the cookies
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: true,
       sameSite: 'None',
       path: '/api/auth'
+    });
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      path: '/'
     });
 
     res.json({ success: true });

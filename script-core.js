@@ -20,7 +20,7 @@ const Config = {
     },
 
     defaultState: {
-        currentLanguage: 'ar', // NEW: To manage the current language
+        currentLanguage: document.documentElement.lang || 'ar', // Detect from page lang attribute
         inputs: {
             'layout-select': 'classic',
             'layout-select-visual': 'classic',

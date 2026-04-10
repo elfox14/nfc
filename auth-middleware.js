@@ -3,10 +3,15 @@ const config = require('./config');
 
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+    let token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+
+    // Fallback to HttpOnly cookie for access token
+    if (!token && req.cookies && req.cookies.accessToken) {
+        token = req.cookies.accessToken;
+    }
 
     if (!token) {
-        console.warn('[AuthMiddleware] No token provided in Authorization header');
+        console.warn('[AuthMiddleware] No token provided');
         return res.status(401).json({ error: 'Access denied. No token provided.' });
     }
 
@@ -18,6 +23,10 @@ const verifyToken = (req, res, next) => {
         }
         
         const decoded = jwt.verify(token, secret);
+        if (decoded.type !== 'access') {
+            console.warn(`[AuthMiddleware] Invalid token type: ${decoded.type}`);
+            return res.status(403).json({ error: 'Invalid token type.' });
+        }
         req.user = decoded; // { userId: "...", email: "..." }
         console.log(`[AuthMiddleware] Token verified for user: ${decoded.email} (${decoded.userId})`);
         next();

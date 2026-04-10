@@ -6,6 +6,35 @@
 (function () {
     'use strict';
 
+    // Localization
+    const isEnglish = document.documentElement.lang === 'en';
+    const T = {
+        beforeAfterTitle: isEnglish ? 'Before / After Comparison (B)' : 'مقارنة قبل / بعد (B)',
+        beforeAfterLabel: isEnglish ? 'Before/After Comparison' : 'مقارنة قبل/بعد',
+        backToCurrent: isEnglish ? 'Back to Current Design' : 'العودة للتصميم الحالي',
+        showingDefault: isEnglish ? 'Showing: Default Design' : 'يعرض الآن: التصميم الافتراضي',
+        showingCurrent: isEnglish ? 'Showing: Your Current Design' : 'يعرض الآن: تصميمك الحالي',
+        fontFamily: isEnglish ? "'Poppins', sans-serif" : "'Tajawal', sans-serif",
+        saved: isEnglish ? 'Saved' : 'تم الحفظ',
+        saving: isEnglish ? 'Saving...' : 'جاري الحفظ...',
+        lastSaved: isEnglish ? 'Last Saved:' : 'آخر حفظ:',
+        saveError: isEnglish ? 'Save error' : 'خطأ في الحفظ',
+        savedDesignFound: isEnglish ? 'Saved design found' : 'تم العثور على تصميم محفوظ',
+        restore: isEnglish ? 'Restore' : 'استعادة',
+        dismiss: isEnglish ? 'Dismiss' : 'تجاهل',
+        designRestored: isEnglish ? 'Design restored' : 'تم استعادة التصميم',
+        saveDesign: isEnglish ? 'Save Design' : 'حفظ التصميم',
+        undo: isEnglish ? 'Undo' : 'تراجع',
+        redo: isEnglish ? 'Redo' : 'إعادة',
+        fullPreview: isEnglish ? 'Full Preview' : 'معاينة كاملة',
+        closeWindows: isEnglish ? 'Close Windows' : 'إغلاق النوافذ',
+        showShortcuts: isEnglish ? 'Show Shortcuts' : 'عرض الاختصارات',
+        moveElement: isEnglish ? 'Move Element' : 'تحريك العنصر',
+        deleteElement: isEnglish ? 'Delete Element' : 'حذف العنصر',
+        keyboardShortcuts: isEnglish ? 'Keyboard Shortcuts' : 'اختصارات لوحة المفاتيح',
+        exitPreview: isEnglish ? 'Exit Preview' : 'خروج من المعاينة'
+    };
+
     // Wait for DOM
     document.addEventListener('DOMContentLoaded', initEditorEnhancements);
 
@@ -39,9 +68,9 @@
             const btn = document.createElement('button');
             btn.id = 'before-after-btn';
             btn.className = 'toolbar-btn';
-            btn.title = 'مقارنة قبل / بعد (B)';
+            btn.title = T.beforeAfterTitle;
             btn.innerHTML = '<i class="fas fa-columns"></i>';
-            btn.setAttribute('aria-label', 'مقارنة قبل/بعد');
+            btn.setAttribute('aria-label', T.beforeAfterLabel);
             toolbar.appendChild(btn);
 
             let isComparing = false;
@@ -58,8 +87,8 @@
                             btn.innerHTML = '<i class="fas fa-eye"></i>';
                             btn.style.background = 'rgba(231,76,60,0.2)';
                             btn.style.borderColor = '#e74c3c';
-                            btn.title = 'العودة للتصميم الحالي';
-                            showBeforeAfterToast('يعرض الآن: التصميم الافتراضي', '#e74c3c');
+                            btn.title = T.backToCurrent;
+                            showBeforeAfterToast(T.showingDefault, '#e74c3c');
                         }
                     }
                 } else {
@@ -72,8 +101,8 @@
                     btn.innerHTML = '<i class="fas fa-columns"></i>';
                     btn.style.background = '';
                     btn.style.borderColor = '';
-                    btn.title = 'مقارنة قبل / بعد (B)';
-                    showBeforeAfterToast('يعرض الآن: تصميمك الحالي', '#2ecc71');
+                    btn.title = T.beforeAfterTitle;
+                    showBeforeAfterToast(T.showingCurrent, '#2ecc71');
                 }
             });
 
@@ -97,7 +126,7 @@
             zIndex: '9999', display: 'flex', alignItems: 'center', gap: '8px',
             boxShadow: `0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px ${color}33`,
             transition: 'all 0.35s cubic-bezier(0.34,1.56,0.64,1)',
-            opacity: '0', fontFamily: 'Tajawal, sans-serif'
+            opacity: '0', fontFamily: T.fontFamily
         });
         t.innerHTML = `<i class="fas fa-columns"></i> ${msg}`;
         document.body.appendChild(t);
@@ -145,7 +174,7 @@
         // Create the floating indicator
         const indicator = document.createElement('div');
         indicator.id = 'auto-save-indicator';
-        indicator.innerHTML = '<i class="fas fa-check-circle"></i> <span id="auto-save-text">تم الحفظ</span>';
+        indicator.innerHTML = '<i class="fas fa-check-circle"></i> <span id="auto-save-text">' + T.saved + '</span>';
         Object.assign(indicator.style, {
             position: 'fixed',
             bottom: '24px',
@@ -182,12 +211,12 @@
                 indicator.style.borderColor = 'rgba(77, 166, 255, 0.4)';
                 indicator.style.color = '#4da6ff';
                 indicator.querySelector('i').className = 'fas fa-circle-notch fa-spin';
-                textEl.textContent = 'جاري الحفظ...';
+                textEl.textContent = T.saving;
             } else {
                 indicator.style.borderColor = 'rgba(46, 204, 113, 0.35)';
                 indicator.style.color = '#2ecc71';
                 indicator.querySelector('i').className = 'fas fa-check-circle';
-                textEl.textContent = 'تم الحفظ';
+                textEl.textContent = T.saved;
             }
 
             // Show
@@ -348,7 +377,7 @@
                 // Show "saving" state
                 indicator.classList.remove('error');
                 indicator.classList.add('saving');
-                statusText.textContent = 'جاري الحفظ...';
+                statusText.textContent = T.saving;
 
                 // Clear previous timeout
                 clearTimeout(saveTimeout);
@@ -356,12 +385,12 @@
                 // After 1.5 seconds, show "saved" state
                 saveTimeout = setTimeout(() => {
                     indicator.classList.remove('saving');
-                    statusText.textContent = 'محفوظ';
+                    statusText.textContent = T.saved;
 
                     // Add timestamp
                     const now = new Date();
                     const time = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-                    indicator.title = `آخر حفظ: ${time}`;
+                    indicator.title = `${T.lastSaved} ${time}`;
                 }, 1500);
             });
         });
@@ -371,14 +400,14 @@
             if (status === 'saving') {
                 indicator.classList.remove('error');
                 indicator.classList.add('saving');
-                statusText.textContent = 'جاري الحفظ...';
+                statusText.textContent = T.saving;
             } else if (status === 'saved') {
                 indicator.classList.remove('saving', 'error');
-                statusText.textContent = 'محفوظ';
+                statusText.textContent = T.saved;
             } else if (status === 'error') {
                 indicator.classList.remove('saving');
                 indicator.classList.add('error');
-                statusText.textContent = 'خطأ في الحفظ';
+                statusText.textContent = T.saveError;
             }
         };
     }
@@ -800,12 +829,12 @@
             <div class="restore-content">
                 <i class="fas fa-history"></i>
                 <div class="restore-text">
-                    <strong>Saved design found</strong>
-                    <span>Last saved: ${time}</span>
+                    <strong>${T.savedDesignFound}</strong>
+                    <span>${T.lastSaved} ${time}</span>
                 </div>
                 <div class="restore-actions">
-                    <button class="btn btn-primary restore-yes">Restore</button>
-                    <button class="btn btn-secondary restore-no">Dismiss</button>
+                    <button class="btn btn-primary restore-yes">${T.restore}</button>
+                    <button class="btn btn-secondary restore-no">${T.dismiss}</button>
                 </div>
             </div>
         `;
@@ -832,7 +861,7 @@
         prompt.querySelector('.restore-yes').addEventListener('click', () => {
             applyState(state);
             prompt.remove();
-            showNotification('Design restored', 'success');
+            showNotification(T.designRestored, 'success');
         });
 
         // Handle dismiss
@@ -887,14 +916,14 @@
     // KEYBOARD SHORTCUTS
     // ===========================================
     const SHORTCUTS = [
-        { keys: ['Ctrl', 'S'], action: 'Save Design', handler: () => document.getElementById('save-to-gallery-btn')?.click() },
-        { keys: ['Ctrl', 'Z'], action: 'Undo', handler: () => document.getElementById('undo-btn')?.click() },
-        { keys: ['Ctrl', 'Y'], action: 'Redo', handler: () => document.getElementById('redo-btn')?.click() },
-        { keys: ['Ctrl', 'P'], action: 'Full Preview', handler: toggleFullPreview },
-        { keys: ['Escape'], action: 'Close Windows', handler: closeModals },
-        { keys: ['?'], action: 'Show Shortcuts', handler: toggleShortcutsModal },
-        { keys: ['Arrows'], action: 'Move Element', handler: () => { } }, // Handled specially in listener
-        { keys: ['Delete'], action: 'Delete Element', handler: deleteSelectedElement }
+        { keys: ['Ctrl', 'S'], action: T.saveDesign, handler: () => document.getElementById('save-to-gallery-btn')?.click() },
+        { keys: ['Ctrl', 'Z'], action: T.undo, handler: () => document.getElementById('undo-btn')?.click() },
+        { keys: ['Ctrl', 'Y'], action: T.redo, handler: () => document.getElementById('redo-btn')?.click() },
+        { keys: ['Ctrl', 'P'], action: T.fullPreview, handler: toggleFullPreview },
+        { keys: ['Escape'], action: T.closeWindows, handler: closeModals },
+        { keys: ['?'], action: T.showShortcuts, handler: toggleShortcutsModal },
+        { keys: ['Arrows'], action: T.moveElement, handler: () => { } }, // Handled specially in listener
+        { keys: ['Delete'], action: T.deleteElement, handler: deleteSelectedElement }
     ];
 
     let selectedElement = null;
@@ -1018,7 +1047,7 @@
         modal.innerHTML = `
             <div class="shortcuts-modal">
                 <div class="shortcuts-modal-header">
-                    <h3><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h3>
+                    <h3><i class="fas fa-keyboard"></i> ${T.keyboardShortcuts}</h3>
                     <button class="shortcuts-modal-close">&times;</button>
                 </div>
                 <div class="shortcuts-modal-body">
@@ -1072,7 +1101,7 @@
         if (!document.querySelector('.exit-fullscreen-btn')) {
             const exitBtn = document.createElement('button');
             exitBtn.className = 'exit-fullscreen-btn';
-            exitBtn.innerHTML = '<i class="fas fa-compress"></i> Exit Preview';
+            exitBtn.innerHTML = '<i class="fas fa-compress"></i> ' + T.exitPreview;
             exitBtn.addEventListener('click', toggleFullPreview);
             document.body.appendChild(exitBtn);
         }

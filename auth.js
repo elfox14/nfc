@@ -25,21 +25,19 @@ const Auth = {
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     isLoggedIn() {
-        return !!localStorage.getItem('authToken');
+        return !!localStorage.getItem('authUser');
     },
 
     setSession(token, user) {
         console.log('[Auth] Setting session:', { user, token: token ? (token.substring(0, 10) + '...') : null });
         this.token = token;
         this.user = user;
-        localStorage.setItem('authToken', token);
         localStorage.setItem('authUser', JSON.stringify(user));
     },
 
     clearSession() {
         this.token = null;
         this.user = null;
-        localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
     },
 
@@ -244,7 +242,7 @@ const Auth = {
             };
 
             const messageHandler = (event) => {
-                if (event.origin !== this.getBaseUrl()) return;
+                if (event.origin !== this.getBaseUrl() && event.origin !== 'https://mcprim.com' && event.origin !== 'https://www.mcprim.com') return;
                 if (!event.data || event.data.type !== 'google-auth' || finished) return;
 
                 finished = true;
