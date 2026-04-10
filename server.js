@@ -466,7 +466,7 @@ function assertAdmin(req, res) {
   return true;
 }
 
-app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async (req, res) => {
+app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
       if (!res.headersSent) {
@@ -504,7 +504,7 @@ app.post('/api/upload-image', upload.single('image'), handleMulterErrors, async 
   }
 });
 
-app.post('/api/save-design', async (req, res) => {
+app.post('/api/save-design', verifyToken, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     let data = req.body || {};
@@ -528,21 +528,8 @@ app.post('/api/save-design', async (req, res) => {
     let shortId = existingId || nanoid(8);
     let isUpdate = false;
 
-    // Require authentication - no anonymous saves allowed
-    let ownerId = null;
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) {
-      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
-    }
-    try {
-      const token = authHeader.split(' ')[1];
-      const secret = process.env.JWT_SECRET;
-      if (!secret) throw new Error('JWT_SECRET not configured');
-      const decoded = jwt.verify(token, secret);
-      ownerId = decoded.userId;
-    } catch (err) {
-      return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً لحفظ التصميم / You must be logged in to save a design.' });
-    }
+    // Retrieve ownerId from authenticated session via verifyToken
+    let ownerId = req.user.userId;
 
     if (existingId) {
       const existingDesign = await db.collection(designsCollectionName).findOne({ shortId: existingId });

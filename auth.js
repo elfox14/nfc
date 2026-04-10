@@ -7,11 +7,9 @@
 const Auth = {
 
     getBaseUrl() {
-        const p = window.location.protocol;
         const h = window.location.hostname;
-        if (p === 'file:') return 'https://nfc-vjy6.onrender.com';
         if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:3000';
-        return 'https://nfc-vjy6.onrender.com';
+        return 'https://mcprim.com';
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
@@ -21,7 +19,7 @@ const Auth = {
     get API_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
 
-    token: localStorage.getItem('authToken'),
+    token: null,
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     isLoggedIn() {
@@ -42,8 +40,7 @@ const Auth = {
     },
 
     getHeader() {
-        const token = localStorage.getItem('authToken');
-        return token ? { Authorization: `Bearer ${token}` } : {};
+        return {};
     },
 
     isEnglish() {
@@ -151,6 +148,7 @@ const Auth = {
     async apiFetchWithRefresh(url, options = {}) {
         // Ensure headers exist
         options.headers = options.headers || {};
+        options.credentials = 'include';
         
         // Add Authorization header if we have a token
         if (this.token) {
