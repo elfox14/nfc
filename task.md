@@ -1,10 +1,25 @@
 # NFC Digital Card Project
 
 - [x] Implement Element Visibility Toggle
-- [x] Fix Card Layout Shrinking
-- [x] Show Hidden Elements in Contact Info (Profile Header)
-- [x] Move Save Buttons to Profile Header
-- [ ] Implement Technical Design Polish (Impeccable)
+- [x] Transform `.pro-toolbar` to `display: grid`
+    - [x] Set `grid-template-columns: 1fr auto 1fr`
+    - [x] Configure zone alignment (Start/Center/End)
+- [x] Standardize Button UI
+    - [x] Force uniform height (40px)
+    - [x] Restore Username Display (CSS)
+    - [x] Update `.tb-user-text` to `display: inline-block`
+    - [x] Add `max-width` and `text-overflow: ellipsis`
+- [x] Fix Auth Toggle Visibility
+    - [x] Ensure `.tb-pill-btn` doesn't block JS-driven `display: none`
+- [x] Populate "More" Menu (HTML)
+    - [x] Add `ul#toolbar-more-menu` to `editor.html`
+    - [x] Add items: Home, Gallery, Blog
+- [x] Style "More" Dropdown (CSS)
+    - [x] Add trigger / menu interaction styles
+- [x] Verify AR/EN Parity
+- [x] Adjust `editor-enhancements.css` layout padding
+- [x] Verify fix in `editor.html` and `editor-en.html`
+- [x] Verify responsive behavior
 
 ## Design Context
 

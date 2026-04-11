@@ -385,7 +385,11 @@ const CardManager = {
                 }
             });
 
-            phoneLink.addEventListener('click', (e) => { e.preventDefault(); UIManager.navigateToAndHighlight(wrapper.dataset.controlId); });
+            phoneLink.addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                UIManager.navigateToAndHighlight(wrapper.dataset.controlId); 
+            });
 
             wrapper.appendChild(phoneLink);
 

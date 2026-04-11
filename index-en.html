@@ -2,11 +2,11 @@
 <html lang="en" dir="ltr">
 
 <head>
-  <!-- SEO: Canonical + Hreflang -->
-  <link rel="canonical" href="https://www.mcprim.com/nfc/index-en.html" />
-  <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/" />
-  <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/index-en.html" />
-  <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/" />
+    <!-- SEO: Canonical + Hreflang -->
+    <link rel="canonical" href="https://www.mcprim.com/nfc/index-en.html" />
+    <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/" />
+    <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/index-en.html" />
+    <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Google Tag Manager -->
@@ -172,7 +172,8 @@
             }
         ]
     }
-    </script>    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
+    </script>
+    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
 
     <!-- Preconnect for external resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -298,7 +299,8 @@
     <!-- Language Switcher -->
     <script src="/nfc/lang-switcher.js" defer></script>
     <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790" crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
+        crossorigin="anonymous"></script>
     <style>
         /* ===== Flip Card - Hero Preview ===== */
         .flip-card-wrapper {
@@ -307,6 +309,7 @@
             height: 160px;
             cursor: pointer;
         }
+
         .flip-card-inner {
             position: relative;
             width: 100%;
@@ -315,81 +318,212 @@
             transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
             animation: autoFlip 4s ease-in-out infinite;
         }
+
         @keyframes autoFlip {
-            0%, 40%   { transform: rotateY(0deg); }
-            50%, 90%  { transform: rotateY(180deg); }
-            100%      { transform: rotateY(0deg); }
+
+            0%,
+            40% {
+                transform: rotateY(0deg);
+            }
+
+            50%,
+            90% {
+                transform: rotateY(180deg);
+            }
+
+            100% {
+                transform: rotateY(0deg);
+            }
         }
-        .flip-card-wrapper:hover .flip-card-inner { animation-play-state: paused; }
-        .flip-card-front, .flip-card-back {
+
+        .flip-card-wrapper:hover .flip-card-inner {
+            animation-play-state: paused;
+        }
+
+        .flip-card-front,
+        .flip-card-back {
             position: absolute;
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             border-radius: 18px;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(77,166,255,0.12);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(77, 166, 255, 0.12);
         }
+
         .flip-card-front {
             background: linear-gradient(135deg, #0f2744 0%, #1a3a60 50%, #1e4a7a 100%);
-            border: 1px solid rgba(77,166,255,0.35);
-            display: flex; flex-direction: column; justify-content: space-between;
+            border: 1px solid rgba(77, 166, 255, 0.35);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             padding: 1.1rem 1.2rem;
         }
-        .fc-top { display: flex; align-items: center; gap: 0.7rem; }
+
+        .fc-top {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
         .fc-avatar {
-            width: 42px; height: 42px; border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
             background: linear-gradient(135deg, #4da6ff, #a78bfa);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 0.8rem; font-weight: 700;
-            box-shadow: 0 4px 14px rgba(77,166,255,0.45); flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(77, 166, 255, 0.45);
+            flex-shrink: 0;
         }
-        .fc-name { color: #e8f4ff; font-size: 0.88rem; font-weight: 700; line-height: 1.2; }
-        .fc-title { color: #7db8e8; font-size: 0.7rem; margin-top: 2px; }
-        .fc-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(77,166,255,0.4), transparent); margin: 0.2rem 0; }
-        .fc-links { display: flex; flex-direction: column; gap: 0.3rem; }
-        .fc-link { display: flex; align-items: center; gap: 0.4rem; color: #bdd8f0; font-size: 0.7rem; }
-        .fc-link i { color: #4da6ff; width: 12px; font-size: 0.65rem; }
-        .fc-bottom { display: flex; align-items: center; justify-content: space-between; }
-        .fc-brand { color: #4da6ff; font-size: 0.62rem; font-weight: 800; letter-spacing: 1px; opacity: 0.8; }
+
+        .fc-name {
+            color: #e8f4ff;
+            font-size: 0.88rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .fc-title {
+            color: #7db8e8;
+            font-size: 0.7rem;
+            margin-top: 2px;
+        }
+
+        .fc-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(77, 166, 255, 0.4), transparent);
+            margin: 0.2rem 0;
+        }
+
+        .fc-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .fc-link {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #bdd8f0;
+            font-size: 0.7rem;
+        }
+
+        .fc-link i {
+            color: #4da6ff;
+            width: 12px;
+            font-size: 0.65rem;
+        }
+
+        .fc-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .fc-brand {
+            color: #4da6ff;
+            font-size: 0.62rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
         .fc-nfc-pill {
-            display: flex; align-items: center; gap: 0.25rem;
-            background: rgba(77,166,255,0.15); border: 1px solid rgba(77,166,255,0.4);
-            border-radius: 20px; padding: 0.15rem 0.5rem;
-            color: #4da6ff; font-size: 0.6rem; font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: rgba(77, 166, 255, 0.15);
+            border: 1px solid rgba(77, 166, 255, 0.4);
+            border-radius: 20px;
+            padding: 0.15rem 0.5rem;
+            color: #4da6ff;
+            font-size: 0.6rem;
+            font-weight: 700;
         }
+
         .flip-card-back {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            border: 1px solid rgba(167,139,250,0.35);
+            border: 1px solid rgba(167, 139, 250, 0.35);
             transform: rotateY(180deg);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 0.6rem; padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 1rem;
         }
+
         .fc-qr-box {
-            width: 72px; height: 72px; background: white; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            color: #0f2744; font-size: 2.2rem;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            width: 72px;
+            height: 72px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f2744;
+            font-size: 2.2rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
         }
-        .fc-scan-label { color: #a78bfa; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.5px; }
-        .fc-back-links { display: flex; gap: 0.5rem; }
+
+        .fc-scan-label {
+            color: #a78bfa;
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .fc-back-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
         .fc-social-icon {
-            width: 28px; height: 28px;
-            background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            color: #a78bfa; font-size: 0.75rem;
+            width: 44px;
+            height: 44px;
+            background: rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a78bfa;
+            font-size: 1.1rem;
         }
+
         .flip-card-front::after {
-            content: ''; position: absolute; top: 0; left: -100%;
-            width: 60%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
             animation: shine 4s ease-in-out infinite;
+            transform: translateX(-200%);
         }
+
         @keyframes shine {
-            0%, 45%, 100% { left: -100%; }
-            20% { left: 150%; }
+
+            0%,
+            45%,
+            100% {
+                transform: translateX(-200%);
+            }
+
+            20% {
+                transform: translateX(200%);
+            }
         }
     </style>
+
 <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
@@ -426,8 +560,8 @@
     <nav class="navbar" id="navbar">
         <div class="container nav-content">
             <a href="/nfc/index-en.html" class="nav-logo">
-                <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME" loading="eager"
-                    width="150" height="45">
+                <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME" loading="eager" width="150"
+                    height="45">
             </a>
             <ul class="nav-links" id="nav-links">
                 <li><a href="#features">Features</a></li>
@@ -465,57 +599,57 @@
 
                     <!-- Floating Card Preview -->
                     <div class="hero-card-preview">
-<div class="flip-card-wrapper" role="img" aria-label="Smart business card demo">
-                    <div class="flip-card-inner">
-                        <!-- FRONT -->
-                        <div class="flip-card-front">
-                            <div class="fc-top">
-                                <div class="fc-avatar">M.A</div>
-                                <div>
-                                    <div class="fc-name">Mohammed Ahmed</div>
-                                    <div class="fc-title">Web Developer &amp; Freelancer</div>
+                        <div class="flip-card-wrapper" role="img" aria-label="Smart business card demo">
+                            <div class="flip-card-inner">
+                                <!-- FRONT -->
+                                <div class="flip-card-front">
+                                    <div class="fc-top">
+                                        <div class="fc-avatar">M.A</div>
+                                        <div>
+                                            <div class="fc-name">Mohammed Ahmed</div>
+                                            <div class="fc-title">Web Developer &amp; Freelancer</div>
+                                        </div>
+                                    </div>
+                                    <div class="fc-divider"></div>
+                                    <div class="fc-links">
+                                        <div class="fc-link"><i class="fas fa-phone"></i> +966 5x xxx xxxx</div>
+                                        <div class="fc-link"><i class="fas fa-envelope"></i> hello@mcprim.com</div>
+                                        <div class="fc-link"><i class="fas fa-globe"></i> mcprim.com</div>
+                                    </div>
+                                    <div class="fc-bottom">
+                                        <span class="fc-brand">MC PRIME</span>
+                                        <span class="fc-nfc-pill"><i class="fas fa-wifi"></i> NFC</span>
+                                    </div>
+                                </div>
+                                <!-- BACK -->
+                                <div class="flip-card-back">
+                                    <div class="fc-qr-box"><i class="fas fa-qrcode"></i></div>
+                                    <div class="fc-scan-label">Scan to share your info</div>
+                                    <div class="fc-back-links">
+                                        <div class="fc-social-icon"><i class="fab fa-linkedin-in"></i></div>
+                                        <div class="fc-social-icon"><i class="fab fa-instagram"></i></div>
+                                        <div class="fc-social-icon"><i class="fab fa-facebook-f"></i></div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="fc-divider"></div>
-                            <div class="fc-links">
-                                <div class="fc-link"><i class="fas fa-phone"></i> +966 5x xxx xxxx</div>
-                                <div class="fc-link"><i class="fas fa-envelope"></i> hello@mcprim.com</div>
-                                <div class="fc-link"><i class="fas fa-globe"></i> mcprim.com</div>
-                            </div>
-                            <div class="fc-bottom">
-                                <span class="fc-brand">MC PRIME</span>
-                                <span class="fc-nfc-pill"><i class="fas fa-wifi"></i> NFC</span>
-                            </div>
                         </div>
-                        <!-- BACK -->
-                        <div class="flip-card-back">
-                            <div class="fc-qr-box"><i class="fas fa-qrcode"></i></div>
-                            <div class="fc-scan-label">Scan to share your info</div>
-                            <div class="fc-back-links">
-                                <div class="fc-social-icon"><i class="fab fa-linkedin-in"></i></div>
-                                <div class="fc-social-icon"><i class="fab fa-instagram"></i></div>
-                                <div class="fc-social-icon"><i class="fab fa-facebook-f"></i></div>
+                        <!-- Trust Badges -->
+                        <div class="trust-badges reveal">
+                            <div class="trust-badge">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>100% Secure</span>
+                            </div>
+                            <div class="trust-badge">
+                                <i class="fas fa-dollar-sign"></i>
+                                <span>Completely Free</span>
+                            </div>
+                            <div class="trust-badge">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Unlimited Updates</span>
                             </div>
                         </div>
                     </div>
                 </div>
-                    <!-- Trust Badges -->
-                    <div class="trust-badges reveal">
-                        <div class="trust-badge">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>100% Secure</span>
-                        </div>
-                        <div class="trust-badge">
-                            <i class="fas fa-dollar-sign"></i>
-                            <span>Completely Free</span>
-                        </div>
-                        <div class="trust-badge">
-                            <i class="fas fa-sync-alt"></i>
-                            <span>Unlimited Updates</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </section>
 
         <!-- Features Section -->
@@ -531,7 +665,7 @@
                     <article class="feature-card reveal">
                         <div class="feature-icon" aria-hidden="true">🌿</div>
                         <h3>Eco-Friendly</h3>
-                                                <p>Save on recurring printing costs while reducing your carbon footprint — both at once.</p>
+                        <p>Save on recurring printing costs while reducing your carbon footprint — both at once.</p>
                     </article>
                     <article class="feature-card reveal">
                         <div class="feature-icon" aria-hidden="true">🔄</div>
@@ -539,12 +673,12 @@
                         <p>Update your information anytime without needing to reprint your card.</p>
                     </article>
                     <article class="feature-card reveal">
-                    <div class="feature-icon" aria-hidden="true"><i class="fas fa-chart-line"
-                        style="color: #fa709a;"></i></div>
-                    <h3>Instant Analytics</h3>
-                    <p>Track how many people view your card and where they come from to improve your outreach.</p>
-                </article
-                ><article class="feature-card reveal">
+                        <div class="feature-icon" aria-hidden="true"><i class="fas fa-chart-line"
+                                style="color: #fa709a;"></i></div>
+                        <h3>Instant Analytics</h3>
+                        <p>Track how many people view your card and where they come from to improve your outreach.</p>
+                    </article>
+                    <article class="feature-card reveal">
                         <div class="feature-icon" aria-hidden="true">🎨</div>
                         <h3>Professional Designs</h3>
                         <p>Choose from dozens of ready-made templates or design your own custom card.</p>
@@ -594,43 +728,37 @@
                 <div class="gallery-slider-wrapper reveal">
                     <div class="gallery-slider" id="gallery-slider">
                         <div class="gallery-preview-card">
-                            <div
-                                style="height: 150px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                            <div class="gallery-card-img bg-gradient-brand">
                                 <i class="fas fa-user-tie"></i>
                             </div>
                             <div class="card-name">Professional Design</div>
                         </div>
                         <div class="gallery-preview-card">
-                            <div
-                                style="height: 150px; background: linear-gradient(135deg, #f093fb, #f5576c); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                            <div class="gallery-card-img bg-gradient-pink">
                                 <i class="fas fa-palette"></i>
                             </div>
                             <div class="card-name">Creative Design</div>
                         </div>
                         <div class="gallery-preview-card">
-                            <div
-                                style="height: 150px; background: linear-gradient(135deg, #4facfe, #00f2fe); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                            <div class="gallery-card-img bg-gradient-blue">
                                 <i class="fas fa-briefcase"></i>
                             </div>
                             <div class="card-name">Corporate Design</div>
                         </div>
                         <div class="gallery-preview-card">
-                            <div
-                                style="height: 150px; background: linear-gradient(135deg, #43e97b, #38f9d7); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                            <div class="gallery-card-img bg-gradient-green">
                                 <i class="fas fa-leaf"></i>
                             </div>
                             <div class="card-name">Modern Design</div>
                         </div>
                         <div class="gallery-preview-card">
-                            <div
-                                style="height: 150px; background: linear-gradient(135deg, #fa709a, #fee140); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                            <div class="gallery-card-img bg-gradient-orange">
                                 <i class="fas fa-camera"></i>
                             </div>
                             <div class="card-name">Photographer Design</div>
                         </div>
                         <div class="gallery-preview-card">
-                            <div
-                                style="height: 150px; background: linear-gradient(135deg, #a18cd1, #fbc2eb); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                            <div class="gallery-card-img bg-gradient-purple">
                                 <i class="fas fa-code"></i>
                             </div>
                             <div class="card-name">Developer Design</div>
@@ -701,139 +829,153 @@
                     </a>
                 </div>
 
-        <!-- Use Cases Section -->
-        <section id="use-cases" class="use-cases-section" aria-labelledby="use-cases-title">
-            <div class="container">
-                <h2 id="use-cases-title">Custom Solutions for Every Field</h2>
-                <div class="use-cases-grid">
-                    <a href="/nfc/nfc-for-freelancers-en.html">
-                        <article class="use-case-card reveal">
-                            <div class="feature-icon" aria-hidden="true">💼</div>
-                            <h3>For Freelancers</h3>
-                            <p>Showcase your work and skills in an innovative way.</p>
-                        </article>
-                    </a>
-                    <article class="use-case-card reveal">
-                        <div class="feature-icon" aria-hidden="true">🏢</div>
-                        <h3>For Companies</h3>
-                        <p>Unified and customized solutions by country.</p>
-                        <div class="country-links">
-                            <a href="/nfc/nfc-for-companies-egypt-en.html">Egypt</a>
-                            <a href="/nfc/nfc-for-companies-saudi-en.html">Saudi Arabia</a>
-                            <a href="/nfc/nfc-for-companies-uae-en.html">UAE</a>
+                <!-- Use Cases Section -->
+                <section id="use-cases" class="use-cases-section" aria-labelledby="use-cases-title">
+                    <div class="container">
+                        <h2 id="use-cases-title">Custom Solutions for Every Field</h2>
+                        <div class="use-cases-grid">
+                            <a href="/nfc/nfc-for-freelancers-en.html">
+                                <article class="use-case-card reveal">
+                                    <div class="feature-icon" aria-hidden="true">💼</div>
+                                    <h3>For Freelancers</h3>
+                                    <p>Showcase your work and skills in an innovative way.</p>
+                                </article>
+                            </a>
+                            <article class="use-case-card reveal">
+                                <div class="feature-icon" aria-hidden="true">🏢</div>
+                                <h3>For Companies</h3>
+                                <p>Unified and customized solutions by country.</p>
+                                <div class="country-links">
+                                    <a href="/nfc/nfc-for-companies-egypt-en.html">Egypt</a>
+                                    <a href="/nfc/nfc-for-companies-saudi-en.html">Saudi Arabia</a>
+                                    <a href="/nfc/nfc-for-companies-uae-en.html">UAE</a>
+                                </div>
+                            </article>
+                            <a href="/nfc/nfc-for-restaurants-en.html">
+                                <article class="use-case-card reveal">
+                                    <div class="feature-icon" aria-hidden="true">🍴</div>
+                                    <h3>For Restaurants</h3>
+                                    <p>Turn your card into an effective digital menu.</p>
+                                </article>
+                            </a>
                         </div>
-                    </article>
-                    <a href="/nfc/nfc-for-restaurants-en.html">
-                        <article class="use-case-card reveal">
-                            <div class="feature-icon" aria-hidden="true">🍴</div>
-                            <h3>For Restaurants</h3>
-                            <p>Turn your card into an effective digital menu.</p>
-                        </article>
-                    </a>
-                </div>
-            </div>
-        </section>
+                    </div>
+                </section>
 
-        <!-- FAQ Section -->
-        <section id="faq" class="faq-section" aria-labelledby="faq-title">
-            <div class="container">
-                <h2 id="faq-title">Frequently Asked Questions</h2>
-                <div class="faq-list">
-                    <article class="faq-item reveal">
-                        <details>
-                            <summary class="faq-question" role="button" aria-expanded="false">
-                                <h3>What is the real value of this card?</h3>
-                            </summary>
-                            <div class="faq-answer">
-                                <p>It's more than just a card — it's a modern marketing tool. It saves you printing
-                                    costs, is eco-friendly, and allows you to update your information instantly,
-                                    ensuring your details are always accurate for your clients.</p>
-                            </div>
-                        </details>
-                    </article>
-                    <article class="faq-item reveal">
-                        <details>
-                            <summary class="faq-question" role="button" aria-expanded="false">
-                                <h3>How is my data and privacy secured?</h3>
-                            </summary>
-                            <div class="faq-answer">
-                                <p>We take privacy seriously. Your data is used only to display your card and we do not
-                                    share or sell it to any third party. You can view our full privacy policy for more
-                                    details.</p>
-                            </div>
-                        </details>
-                    </article>
-                    <article class="faq-item reveal">
-                        <details>
-                            <summary class="faq-question" role="button" aria-expanded="false">
-                                <h3>Do you offer technical support?</h3>
-                            </summary>
-                            <div class="faq-answer">
-                                <p>Absolutely. We provide full support to help you through any step. If you encounter
-                                    any issues while designing your card or have any questions, you can contact us
-                                    directly through our contact page.</p>
-                            </div>
-                        </details>
-                    </article>
-                    <article class="faq-item reveal">
-                        <details>
-                            <summary class="faq-question" role="button" aria-expanded="false">
-                                <h3>How do I order a physical NFC card?</h3>
-                            </summary>
-                            <div class="faq-answer">
-                                <p>After designing and saving your card, you can contact us through the "Contact Us"
-                                    page to order a physical NFC card. We will program the card with your digital card
-                                    link and ship it to you.</p>
-                            </div>
-                        </details>
-                    </article>
-                    <article class="faq-item reveal">
-                        <details>
-                            <summary class="faq-question" role="button" aria-expanded="false">
-                                <h3>Which phones are compatible with NFC cards?</h3>
-                            </summary>
-                            <div class="faq-answer">
-                                <p>Most modern smartphones support NFC, including: iPhone 7 and newer (iOS 11+), and all
-                                    NFC-enabled Android phones (most phones since 2015). You can check your phone
-                                    settings to confirm.</p>
-                            </div>
-                        </details>
-                    </article>
-                    <article class="faq-item reveal">
-                        <details>
-                            <summary class="faq-question" role="button" aria-expanded="false">
-                                <h3>Does the card work with iPhone?</h3>
-                            </summary>
-                            <div class="faq-answer">
-                                <p>Yes! iPhone 7 and newer support reading NFC cards. For iPhones, just bring the phone
-                                    close to the card and a notification will appear to open your card page. You can
-                                    also always scan the QR code as an alternative.</p>
-                            </div>
-                        </details>
-                    </article>
-                    <article class="faq-item reveal">
-                        <details>
-                            <summary class="faq-question" role="button" aria-expanded="false">
-                                <h3>How long does shipping take?</h3>
-                            </summary>
-                            <div class="faq-answer">
-                                <p>We ship cards within 3-5 business days within Egypt, and 7-14 business days for other
-                                    Arab countries. We'll send you a tracking link once shipped.</p>
-                            </div>
-                        </details>
-                    </article>
-                </div>
-            </div>
-        </section>
+                <!-- FAQ Section -->
+                <section id="faq" class="faq-section" aria-labelledby="faq-title">
+                    <div class="container">
+                        <h2 id="faq-title">Frequently Asked Questions</h2>
+                        <div class="faq-list">
+                            <article class="faq-item reveal">
+                                <details>
+                                    <summary class="faq-question" role="button" aria-expanded="false">
+                                        <h3>What is the real value of this card?</h3>
+                                    </summary>
+                                    <div class="faq-answer">
+                                        <p>It's more than just a card — it's a modern marketing tool. It saves you
+                                            printing
+                                            costs, is eco-friendly, and allows you to update your information instantly,
+                                            ensuring your details are always accurate for your clients.</p>
+                                    </div>
+                                </details>
+                            </article>
+                            <article class="faq-item reveal">
+                                <details>
+                                    <summary class="faq-question" role="button" aria-expanded="false">
+                                        <h3>How is my data and privacy secured?</h3>
+                                    </summary>
+                                    <div class="faq-answer">
+                                        <p>We take privacy seriously. Your data is used only to display your card and we
+                                            do not
+                                            share or sell it to any third party. You can view our full privacy policy
+                                            for more
+                                            details.</p>
+                                    </div>
+                                </details>
+                            </article>
+                            <article class="faq-item reveal">
+                                <details>
+                                    <summary class="faq-question" role="button" aria-expanded="false">
+                                        <h3>Do you offer technical support?</h3>
+                                    </summary>
+                                    <div class="faq-answer">
+                                        <p>Absolutely. We provide full support to help you through any step. If you
+                                            encounter
+                                            any issues while designing your card or have any questions, you can contact
+                                            us
+                                            directly through our contact page.</p>
+                                    </div>
+                                </details>
+                            </article>
+                            <article class="faq-item reveal">
+                                <details>
+                                    <summary class="faq-question" role="button" aria-expanded="false">
+                                        <h3>How do I order a physical NFC card?</h3>
+                                    </summary>
+                                    <div class="faq-answer">
+                                        <p>After designing and saving your card, you can contact us through the "Contact
+                                            Us"
+                                            page to order a physical NFC card. We will program the card with your
+                                            digital card
+                                            link and ship it to you.</p>
+                                    </div>
+                                </details>
+                            </article>
+                            <article class="faq-item reveal">
+                                <details>
+                                    <summary class="faq-question" role="button" aria-expanded="false">
+                                        <h3>Which phones are compatible with NFC cards?</h3>
+                                    </summary>
+                                    <div class="faq-answer">
+                                        <p>Most modern smartphones support NFC, including: iPhone 7 and newer (iOS 11+),
+                                            and all
+                                            NFC-enabled Android phones (most phones since 2015). You can check your
+                                            phone
+                                            settings to confirm.</p>
+                                    </div>
+                                </details>
+                            </article>
+                            <article class="faq-item reveal">
+                                <details>
+                                    <summary class="faq-question" role="button" aria-expanded="false">
+                                        <h3>Does the card work with iPhone?</h3>
+                                    </summary>
+                                    <div class="faq-answer">
+                                        <p>Yes! iPhone 7 and newer support reading NFC cards. For iPhones, just bring
+                                            the phone
+                                            close to the card and a notification will appear to open your card page. You
+                                            can
+                                            also always scan the QR code as an alternative.</p>
+                                    </div>
+                                </details>
+                            </article>
+                            <article class="faq-item reveal">
+                                <details>
+                                    <summary class="faq-question" role="button" aria-expanded="false">
+                                        <h3>How long does shipping take?</h3>
+                                    </summary>
+                                    <div class="faq-answer">
+                                        <p>We ship cards within 3-5 business days within Egypt, and 7-14 business days
+                                            for other
+                                            Arab countries. We'll send you a tracking link once shipped.</p>
+                                    </div>
+                                </details>
+                            </article>
+                        </div>
+                    </div>
+                </section>
 
-        <!-- CTA Section -->
-        <section id="cta" class="cta-section" aria-labelledby="cta-title">
-            <div class="container">
-                <h2 id="cta-title" class="reveal">Ready to Make an Unforgettable Impression?</h2>
-                <p class="reveal">Join thousands of professionals who chose the smart and sustainable solution.</p>
-                <a href="/nfc/editor-en.html" class="btn btn-primary btn-lg reveal">Start Free — In 30 Seconds</a>
-            </div>
-        </section>
+                <!-- CTA Section -->
+                <section id="cta" class="cta-section" aria-labelledby="cta-title">
+                    <div class="container">
+                        <h2 id="cta-title" class="reveal">Ready to Make an Unforgettable Impression?</h2>
+                        <p class="reveal">Join thousands of professionals who chose the smart and sustainable solution.
+                        </p>
+                        <a href="/nfc/editor-en.html" class="btn btn-primary btn-lg reveal">Start Free — In 30
+                            Seconds</a>
+                    </div>
+                </section>
     </main>
 
     <!-- Footer -->
@@ -877,12 +1019,12 @@
                             aria-label="LinkedIn" title="Connect with us on LinkedIn">
                             <i class="fab fa-linkedin-in" aria-hidden="true"></i>
                         </a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; <span id="footer-year"></span> MC PRIME. All rights reserved.</p>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; <span id="footer-year"></span> MC PRIME. All rights reserved.</p>
-            </div>
-        </div>
     </footer>
 
     <!-- Scripts -->
@@ -897,7 +1039,7 @@
             }
         });
 
-                // Dynamic footer year
+        // Dynamic footer year
         const footerYear = document.getElementById('footer-year');
         if (footerYear) footerYear.textContent = new Date().getFullYear();
 
@@ -915,9 +1057,13 @@
         const navToggle = document.getElementById('nav-toggle');
         const navLinks = document.getElementById('nav-links');
 
-        navToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
+        if (navToggle) {
+            navToggle.setAttribute('aria-expanded', 'false');
+            navToggle.addEventListener('click', () => {
+                const isActive = navLinks.classList.toggle('active');
+                navToggle.setAttribute('aria-expanded', isActive);
+            });
+        }
 
         // Close mobile menu on link click
         document.querySelectorAll('.nav-links a').forEach(link => {
@@ -1017,24 +1163,28 @@
 
         // Reading Progress Bar
         const progressBar = document.getElementById('reading-progress');
-        window.addEventListener('scroll', () => {
-            const scrollTop = window.scrollY;
-            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrollPercent = (scrollTop / docHeight) * 100;
-            progressBar.style.width = scrollPercent + '%';
-        });
-
-        // Floating CTA & Back to Top visibility
-        const floatingCTA = document.getElementById('floating-cta');
         const backToTop = document.getElementById('back-to-top');
+        const floatingCTA = document.getElementById('floating-cta');
+        let isScrolling = false;
 
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 500) {
-                floatingCTA.classList.add('visible');
-                backToTop.classList.add('visible');
-            } else {
-                floatingCTA.classList.remove('visible');
-                backToTop.classList.remove('visible');
+            if (!isScrolling) {
+                window.requestAnimationFrame(() => {
+                    const scrollTop = window.scrollY;
+                    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                    const scrollPercent = (scrollTop / docHeight) * 100;
+                    if (progressBar) progressBar.style.width = scrollPercent + '%';
+
+                    if (scrollTop > 500) {
+                        if (floatingCTA) floatingCTA.classList.add('visible');
+                        if (backToTop) backToTop.classList.add('visible');
+                    } else {
+                        if (floatingCTA) floatingCTA.classList.remove('visible');
+                        if (backToTop) backToTop.classList.remove('visible');
+                    }
+                    isScrolling = false;
+                });
+                isScrolling = true;
             }
         });
 

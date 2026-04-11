@@ -1,9 +1,13 @@
-/* ===========================================
-   MC PRIME NFC - Editor Enhancements CSS
-   =========================================== */
-
-/* CSS Variables */
+/* CSS Variables — Premium V2 Glassmorphism */
 :root {
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: blur(16px);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    
+    --accent-glow: 0 0 20px rgba(77, 166, 255, 0.3);
+    --primary-gradient: linear-gradient(135deg, #4da6ff, #2d86ff);
+    
     --editor-progress-height: 4px;
     --editor-save-indicator-bg: rgba(46, 204, 113, 0.9);
     --editor-gradient-start: #4da6ff;
@@ -12,12 +16,202 @@
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .btn-ai-suggest, .toolbar-logo, .toolbar-nav-link, .progress-step, .progress-step::after, .step-circle, .step-label, .autosave-indicator, .pro-toolbar .btn::before, .exit-fullscreen-btn, .fieldset-accordion, .fieldset-accordion summary::after, .mobile-bottom-btn, .zoom-btn {
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-    }
+/* Atmospheric Global Styles */
+body.editor-body {
+    background: radial-gradient(circle at 50% 50%, #1a2a3b 0%, #0f172a 100%);
+    color: #e6f0f7;
+    overflow: hidden; /* Main editor shouldn't scroll, sidebars scan */
+    height: 100vh;
+}
+
+/* ===========================================
+   LAYOUT & SIDEBARS — Glassmorphism V2
+   =========================================== */
+.pro-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr 340px;
+    height: 100vh;
+    padding: 78px 12px 12px 12px; /* Top padding for floating toolbar */
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+.pro-sidebar {
+    background: var(--glass-bg) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    overflow-y: auto;
+    gap: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.pro-sidebar::-webkit-scrollbar { width: 5px; }
+.pro-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+
+.pro-canvas {
+    background: radial-gradient(circle at center, rgba(77, 166, 255, 0.05) 0%, transparent 70%),
+                radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.02) 1px, transparent 0);
+    background-size: 100% 100%, 30px 30px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* ===========================================
+   BENTO ACCORDIONS
+   =========================================== */
+.fieldset-accordion, .lp-accordion {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 16px !important;
+    margin-bottom: 8px !important;
+    transition: all 0.3s var(--ease-out-quint) !important;
+    overflow: hidden;
+}
+
+.fieldset-accordion[open], .lp-accordion[open] {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(77, 166, 255, 0.2) !important;
+    box-shadow: var(--glass-shadow);
+}
+
+.fieldset-accordion summary, .lp-accordion summary {
+    padding: 14px 16px !important;
+    font-weight: 700 !important;
+    font-size: 0.88rem !important;
+    color: #fff !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+}
+
+.fieldset-accordion summary i, .lp-accordion summary .lp-summary-icon {
+    color: var(--editor-gradient-start) !important;
+    font-size: 1.1rem !important;
+    transition: transform 0.3s ease;
+}
+
+.fieldset-accordion[open] summary i, .lp-accordion[open] summary .lp-summary-icon {
+    transform: scale(1.1);
+}
+
+.fieldset-content, .lp-body {
+    padding: 0 16px 16px 16px !important;
+    animation: slideDown 0.4s var(--ease-out-quint) forwards;
+}
+
+/* ──────────────────────────────────────────
+   BENTO UTILITIES & PREMIUM COMPONENTS
+   ────────────────────────────────────────── */
+.lp-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.lp-label-sm {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.lp-color-pick {
+    width: 100%;
+    height: 36px;
+    padding: 2px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.lp-upload-zone-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lp-upload-btn-mini {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(77, 166, 255, 0.1);
+    border: 1px dashed rgba(77, 166, 255, 0.3);
+    border-radius: 10px;
+    color: var(--accent-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lp-upload-btn-mini:hover {
+    background: rgba(77, 166, 255, 0.15);
+    border-color: var(--accent-primary);
+}
+
+.lp-btn-icon-sm {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    border-radius: 8px;
+    color: #e74c3c;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lp-btn-icon-sm:hover {
+    background: #e74c3c;
+    color: white;
+}
+
+.lp-btn-premium {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(77, 166, 255, 0.1), rgba(168, 85, 247, 0.1));
+    border: 1px solid rgba(77, 166, 255, 0.2);
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.lp-btn-premium:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, rgba(77, 166, 255, 0.2), rgba(168, 85, 247, 0.2));
+    border-color: var(--accent-primary);
+    box-shadow: 0 8px 25px rgba(77, 166, 255, 0.2);
+}
+
+.lp-btn-premium i {
+    color: #f1c40f;
+    text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
 }
 
 /* ===========================================
@@ -1107,4 +1301,124 @@ html[dir="rtl"] .fieldset-accordion summary::after {
     100% {
         box-shadow: 0 0 0 0 rgba(77, 166, 255, 0);
     }
+}
+
+/* ------------------------------------------
+   PREMIUM INPUT & UI REFINEMENTS
+   ------------------------------------------ */
+.lp-input, .lp-select {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    border-radius: 10px !important;
+    padding: 8px 12px !important;
+    transition: all 0.2s ease !important;
+}
+
+.lp-input:focus, .lp-select:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 12px rgba(77, 166, 255, 0.25) !important;
+    outline: none !important;
+}
+
+.lp-slider {
+    height: 4px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.lp-slider::-webkit-slider-thumb {
+    width: 16px !important;
+    height: 16px !important;
+    background: #fff !important;
+    border: 2px solid var(--accent-primary) !important;
+    box-shadow: 0 0 10px rgba(77, 166, 255, 0.5) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.lp-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2) !important;
+    box-shadow: 0 0 15px rgba(77, 166, 255, 0.8) !important;
+}
+
+/* D-Pad Modernization */
+.lp-dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px;
+}
+
+.lp-dpad-row {
+    display: flex;
+    gap: 4px;
+}
+
+.lp-dpad-btn {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    color: var(--text-secondary) !important;
+    cursor: pointer;
+    transition: all 0.2s ease !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lp-dpad-btn:hover {
+    background: rgba(77, 166, 255, 0.1) !important;
+    border-color: var(--accent-primary) !important;
+    color: var(--accent-primary) !important;
+    transform: translateY(-1px);
+}
+
+.lp-dpad-center {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 8px;
+}
+
+/* Sub-Accordion Refinement */
+.lp-sub-accordion {
+    margin-top: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.01) !important;
+}
+
+.lp-sub-summary {
+    background: rgba(255, 255, 255, 0.03) !important;
+    padding: 10px 14px !important;
+    font-size: 0.82rem !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-weight: 600 !important;
+    transition: background 0.2s;
+}
+
+.lp-sub-summary:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.lp-sub-summary i {
+    font-size: 12px !important;
+    color: var(--accent-primary) !important;
+}
+
+/* -- Layout Adjustment for Floating Toolbar ------------------ */
+.pro-layout {
+    padding-top: 88px !important;
+    height: 100vh !important;
+    box-sizing: border-box !important;
 }

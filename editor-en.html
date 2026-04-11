@@ -137,7 +137,7 @@
         crossorigin="anonymous"></script>
 </head>
 
-<body>
+<body class="editor-body">
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
@@ -222,11 +222,6 @@
                 <span class="tb-label">Preview</span>
             </button>
 
-            <!-- Language -->
-            <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="Toggle Language" onclick="window.location.href='editor.html'">
-                <i class="fas fa-language"></i>
-                <span class="tb-label">ع</span>
-            </button>
 
             <!-- Theme -->
             <button id="theme-toggle-btn" class="tb-icon-btn" title="Toggle Theme (Dark/Light)" aria-label="Toggle Theme">
@@ -273,13 +268,16 @@
         <!-- ═══ ZONE 3: RIGHT — Status + Save ═══ -->
         <div class="tb-zone tb-right">
 
-            <!-- User Status -->
-            <div class="user-status-bar" id="user-status-bar">
-                <span id="user-status-text" class="tb-user-text">Guest</span>
-                <a href="login-en.html" id="user-login-link" class="tb-pill-btn">Login</a>
-                <a href="dashboard-en.html" id="user-dashboard-link" class="tb-pill-btn" style="display:none;">Dashboard</a>
-                <button id="user-logout-btn" class="tb-pill-btn" style="display:none;">Logout</button>
-            </div>
+            <!-- Language -->
+            <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="Toggle Language" onclick="window.location.href='editor.html'">
+                <i class="fas fa-language"></i>
+                <span class="tb-label">AR</span>
+            </button>
+
+            <div class="tb-divider"></div>
+
+            <!-- User Status: INJECTED BY JS -->
+            <div class="user-status-bar" id="user-status-bar"></div>
 
             <div class="tb-divider"></div>
 
@@ -316,6 +314,13 @@
                 <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="More" aria-label="More Options">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
+                <ul id="toolbar-more-menu" class="tb-mobile-more-menu">
+                    <li><a href="index-en.html" class="tb-dropdown-item"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="gallery-en.html" class="tb-dropdown-item"><i class="fas fa-images"></i> Gallery</a></li>
+                    <li><a href="blog-en.html" class="tb-dropdown-item"><i class="fas fa-newspaper"></i> Blog</a></li>
+                    <div class="tb-dropdown-divider"></div>
+                    <li><button id="reset-design-btn-more" class="tb-dropdown-item tb-danger"><i class="fas fa-trash-alt"></i> Reset Design</button></li>
+                </ul>
             </div>
 
         </div>
@@ -370,60 +375,70 @@
                 </div>
             </fieldset>
 
+            <!-- ═══ BACKGROUNDS PANEL — Premium v2 ═══ -->
             <details class="fieldset-accordion lp-accordion" id="backgrounds-accordion">
                 <summary class="lp-summary">
-                    <span class="lp-summary-icon"><i class="fas fa-palette"></i></span>
-                    <span class="lp-summary-label">Backgrounds & Colors</span>
+                    <span class="lp-summary-icon"><i class="fas fa-layer-group"></i></span>
+                    <span class="lp-summary-label">Background Design</span>
                 </summary>
-                <div class="fieldset-content">
-                    <fieldset class="fieldset" style="padding: 10px;">
-                        <legend>Front Side</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
-                        <div class="form-group"><label>Background Color</label>
-                            <div class="control-grid"><input type="color" id="front-bg-start" value="#2a3d54"><input
-                                    type="color" id="front-bg-end" value="#223246"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="front-bg-upload">Upload Background Image</label>
-                            <div class="file-input-group">
-                                <input type="file" id="front-bg-upload" accept="image/*">
-                                <button type="button" class="remove-image-btn" id="remove-front-bg-btn"
-                                    style="display: none;" title="Remove Image"
-                                    aria-label="Remove front background image"><i class="fas fa-times"
-                                        aria-hidden="true"></i></button>
-                                <div class="spinner" id="front-bg-spinner" style="display: none;"></div>
-                            </div>
-                        </div>
-                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">Color Overlay Opacity</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05" value="0"></div>
-                    </fieldset>
 
-                    <fieldset class="fieldset" style="padding: 10px; margin-top: 15px;">
-                        <legend>Back Side</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image here</span></div>
-                        <div class="form-group"><label>Background Color</label>
-                            <div class="control-grid"><input type="color" id="back-bg-start" value="#2a3d54"><input
-                                    type="color" id="back-bg-end" value="#223246"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="back-bg-upload">Upload Background Image</label>
-                            <div class="file-input-group">
-                                <input type="file" id="back-bg-upload" accept="image/*">
-                                <button type="button" class="remove-image-btn" id="remove-back-bg-btn"
-                                    style="display: none;" title="Remove Image"
-                                    aria-label="Remove back background image"><i class="fas fa-times"
-                                        aria-hidden="true"></i></button>
-                                <div class="spinner" id="back-bg-spinner" style="display: none;"></div>
+                <div class="fieldset-content lp-body" id="background-controls-fieldset">
+                    
+                    <!-- Front Background Bento -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-id-card"></i> Front Side</label>
+                        <div class="lp-grid-2" style="margin-top: 8px;">
+                            <div>
+                                <label class="lp-label-sm">Primary Color</label>
+                                <input type="color" id="front-bg-start" value="#2a3d54" class="lp-color-pick">
+                            </div>
+                            <div>
+                                <label class="lp-label-sm">Secondary Color</label>
+                                <input type="color" id="front-bg-end" value="#223246" class="lp-color-pick">
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">Color Overlay Opacity</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05" value="0"></div>
-                        
-                        <div class="form-group" style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
-                            <label>Need Inspiration?</label>
-                            <button id="ai-backgrounds-btn" class="btn btn-secondary" style="width: 100%; background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2)); border-color: rgba(102, 126, 234, 0.5);">
-                                <i class="fas fa-magic"></i> <span>AI Backgrounds</span>
+                        <div class="lp-upload-zone-mini" style="margin-top: 12px;">
+                            <label for="front-bg-upload" class="lp-upload-btn-mini">
+                                <i class="fas fa-upload"></i> Upload Image
+                                <input type="file" id="front-bg-upload" accept="image/*" style="display:none;">
+                            </label>
+                            <button type="button" class="lp-btn-icon-sm" id="remove-front-bg-btn" style="display: none;">
+                                <i class="fas fa-times"></i>
                             </button>
                         </div>
-                    </fieldset>
+                    </div>
+
+                    <!-- Back Background Bento -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-id-card-alt"></i> Back Side</label>
+                        <div class="lp-grid-2" style="margin-top: 8px;">
+                            <div>
+                                <label class="lp-label-sm">Primary Color</label>
+                                <input type="color" id="back-bg-start" value="#2a3d54" class="lp-color-pick">
+                            </div>
+                            <div>
+                                <label class="lp-label-sm">Secondary Color</label>
+                                <input type="color" id="back-bg-end" value="#223246" class="lp-color-pick">
+                            </div>
+                        </div>
+                        <div class="lp-upload-zone-mini" style="margin-top: 12px;">
+                            <label for="back-bg-upload" class="lp-upload-btn-mini">
+                                <i class="fas fa-upload"></i> Upload Image
+                                <input type="file" id="back-bg-upload" accept="image/*" style="display:none;">
+                            </label>
+                            <button type="button" class="lp-btn-icon-sm" id="remove-back-bg-btn" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Tools Bento -->
+                    <div class="lp-section" style="border:none;">
+                        <button id="ai-backgrounds-btn" class="lp-btn-premium" style="width: 100%;">
+                            <i class="fas fa-magic"></i> <span>AI Backgrounds</span>
+                        </button>
+                    </div>
+
                 </div>
             </details>
 
@@ -448,10 +463,10 @@
 
                                 <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
                                 </div>
-                                <h1 id="card-name" data-input-target-id="name-tagline-accordion"
+                                <h1 id="card-name" data-input-target-id="name-accordion"
                                     style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;">Your Name Here
                                 </h1>
-                                <h2 class="tagline" id="card-tagline" data-input-target-id="name-tagline-accordion"
+                                <h2 class="tagline" id="card-tagline" data-input-target-id="tagline-accordion"
                                     style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">Job Title / Company
                                 </h2>
                                 <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>

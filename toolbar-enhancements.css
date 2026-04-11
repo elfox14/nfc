@@ -88,60 +88,55 @@
 .tb-action-btn .tb-label,
 .tb-cta-btn span {
     display: inline !important;
+    white-space: nowrap !important;
 }
 
 .pro-toolbar .btn,
-.pro-toolbar .toolbar-group button {
-    padding: 8px 12px !important;
+.pro-toolbar .toolbar-group button,
+.pro-toolbar .tb-action-btn,
+.pro-toolbar .tb-icon-btn,
+.pro-toolbar .tb-cta-btn,
+.pro-toolbar .tb-lang,
+.pro-toolbar .user-status-bar a,
+.pro-toolbar .user-status-bar button {
+    margin: 0 !important;
+    padding: 0 14px !important;
     min-width: auto !important;
-    transition: all 0.2s ease !important;
+    height: 40px !important; /* Perfectly standardized height */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    border-radius: 10px !important;
+    font-size: 0.82rem !important;
+    white-space: nowrap !important;
 }
 
-.pro-toolbar .btn:hover,
-.pro-toolbar .toolbar-group button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(77, 166, 255, 0.3);
+.pro-toolbar .tb-icon-btn {
+    padding: 0 !important;
+    width: 40px !important;
 }
 
-.pro-toolbar .btn:active,
-.pro-toolbar .toolbar-group button:active {
-    transform: translateY(0);
-}
-
-.pro-toolbar .btn i,
-.pro-toolbar .toolbar-group button i {
-    margin: 0 !important;
-    font-size: 16px;
-}
-/* Don't override new tb- button icons */
-.tb-tab i, .tb-action-btn i, .tb-icon-btn i, .tb-cta-btn i {
-    margin: 0 !important;
-}
-
-/* Keep user status text visible */
-.pro-toolbar #user-status-text {
-    display: inline !important;
-}
-
-/* Save button special styling */
-.pro-toolbar #save-to-cloud-btn span {
-    display: inline !important;
+.pro-toolbar .tb-caret {
+    margin-right: -4px !important;
 }
 
 /* ================================================
    Auto-save Indicator
    ================================================ */
 .autosave-indicator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: rgba(40, 167, 69, 0.15);
-    border: 1px solid rgba(40, 167, 69, 0.3);
-    border-radius: 20px;
-    font-size: 11px;
-    color: #28a745;
-    transition: all 0.3s ease;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 4px 12px !important;
+    background: rgba(40, 167, 69, 0.15) !important;
+    border: 1px solid rgba(40, 167, 69, 0.3) !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    color: #28a745 !important;
+    height: 28px !important;
+    white-space: nowrap !important;
+    margin: 0 8px !important;
 }
 
 .autosave-indicator i {
@@ -234,7 +229,26 @@
     display: none;
 }
 
-/* Responsive */
+@media (max-width: 1440px) {
+    .tb-zone { gap: 8px !important; }
+    /* NUCLEAR COMPACTION: Hide all text labels in center tools */
+    .tb-center .tb-label { display: none !important; }
+    .tb-center .tb-action-btn { padding: 0 12px !important; }
+    .tb-user-name { max-width: 80px !important; }
+    .tb-logo-text { font-size: 0.75rem; }
+    .pro-toolbar { column-gap: 15px !important; }
+}
+
+@media (max-width: 1200px) {
+    .tb-cta-btn span { display: none !important; } /* Hide Save text too if needed */
+    .tb-cta-btn { width: 40px !important; padding: 0 !important; border-radius: 50% !important; }
+    .pro-toolbar { padding: 0 10px; column-gap: 8px !important; }
+    .tb-zone { gap: 6px !important; }
+    .tb-nav-icons { display: none !important; }
+    .tb-divider { display: none !important; }
+}
+
+/* Base Responsive */
 @media (max-width: 768px) {
 
     /* Hide trial banner on mobile */
@@ -251,8 +265,8 @@
         justify-content: space-between !important;
         overflow-x: hidden;
         /* Prevent scrolling, force fit */
-        height: 50px !important;
-        /* Reduced height */
+        height: 54px !important;
+        /* Slightly more height to prevent clipping */
         align-items: center !important;
     }
 
@@ -700,11 +714,34 @@
     margin: 4px 0;
 }
 
-/* RTL Support */
-[dir="rtl"] .toolbar-more-menu {
-    left: auto;
-    right: 0;
+/* ── Toolbar More Menu (3 Dots) ────────────────────────────── */
+.toolbar-more-container {
+    position: relative;
+    display: initial; /* Ensure it's not hidden on desktop if grid needs it */
 }
+
+.tb-mobile-more-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 180px;
+    background: var(--form-bg, #0d1b2e);
+    border: 1px solid rgba(77,1,255,.2);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 16px 48px rgba(0,0,0,.5);
+    z-index: 9999;
+    list-style: none;
+    margin: 0;
+    display: none; /* Toggled by JS or hover */
+}
+
+.toolbar-more-container:hover .tb-mobile-more-menu,
+.toolbar-more-container.active .tb-mobile-more-menu {
+    display: block !important;
+}
+
+[dir="rtl"] .tb-mobile-more-menu { right: auto; left: 0; }
 
 /* ============================================================
    NEW TOOLBAR REDESIGN — 3-Zone Layout
@@ -714,15 +751,39 @@
 .tb-zone, .tb-zone * { box-sizing: border-box; }
 
 /* ── Base Zones ───────────────────────────────────────────── */
-.tb-zone {
-    display: flex;
+.pro-toolbar {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    height: 64px;
+    background: var(--glass-bg, rgba(255, 255, 255, 0.03)) !important;
+    backdrop-filter: var(--glass-blur, blur(16px)) !important;
+    -webkit-backdrop-filter: var(--glass-blur, blur(16px)) !important;
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08)) !important;
+    border-radius: 20px;
+    display: grid !important; 
+    /* NUCLEAR GRID REFACTOR: Side columns take only what they need, Middle takes the rest */
+    grid-template-columns: auto 1fr auto !important; 
+    column-gap: 20px !important; 
     align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
+    padding: 0 20px;
+    z-index: 1000;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s ease;
+    box-sizing: border-box !important;
 }
-.tb-left  { flex: 0 0 auto; gap: 8px; }
-.tb-center { flex: 1 1 auto; justify-content: center; gap: 4px; }
-.tb-right { flex: 0 0 auto; gap: 6px; justify-content: flex-end; }
+
+.tb-zone {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px;
+    min-width: 0;
+    height: 100%;
+}
+.tb-left  { justify-self: start; justify-content: flex-start; }
+.tb-center { justify-self: center; justify-content: center; }
+.tb-right { justify-self: end; justify-content: flex-end; }
 
 /* ── Logo ─────────────────────────────────────────────────── */
 .tb-logo {
@@ -995,4 +1056,78 @@ body.preview-mode-active .pro-toolbar { display: none !important; }
     display: flex;
     align-items: center;
     justify-content: center;
+}
+/* -- Status Bar Fix ------------------------------------------ */
+.user-status-bar {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important; /* Compact gap */
+    white-space: nowrap !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.user-status-bar * {
+    margin: 0 !important;
+}
+
+.tb-user-pill {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    height: 40px;
+    background: rgba(77, 166, 255, 0.1);
+    border: 1px solid rgba(77, 166, 255, 0.25);
+    border-radius: 20px;
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.tb-user-pill i {
+    font-size: 1.1rem;
+    color: var(--accent-primary);
+    opacity: 0.9;
+}
+
+.tb-user-pill .tb-user-name {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: max-width 0.3s ease;
+}
+
+.tb-user-pill:hover {
+    background: rgba(77, 166, 255, 0.2);
+    border-color: rgba(77, 166, 255, 0.4);
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 12px rgba(77, 166, 255, 0.15);
+    color: #fff;
+}
+
+.tb-user-pill:active {
+    transform: translateY(0);
+}
+
+.tb-pill-btn {
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.tb-pill-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--accent-primary);
 }

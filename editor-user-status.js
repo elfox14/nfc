@@ -64,88 +64,75 @@ const EditorUserStatus = {
 
     updateUserStatus() {
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-
-        // Desktop elements
-        const statusText = document.getElementById('user-status-text');
-        const loginLink = document.getElementById('user-login-link');
-        const signupLink = document.getElementById('user-signup-link');
-        const dashboardLink = document.getElementById('user-dashboard-link');
-        const logoutBtn = document.getElementById('user-logout-btn');
+        const statusBar = document.getElementById('user-status-bar');
         const saveBtn = document.getElementById('save-share-btn');
 
-        // Mobile Menu Elements
-        const mobileMenuUserText = document.getElementById('mobile-menu-user-text');
-        const mobileMenuDashboardLink = document.getElementById('mobile-menu-dashboard-link');
-        const mobileMenuLoginLink = document.getElementById('mobile-menu-login-link');
-        const mobileMenuSignupLink = document.getElementById('mobile-menu-signup-link');
-        const mobileMenuLogoutBtn = document.getElementById('mobile-menu-logout-btn');
-
-        // Mobile Sidebar Elements (Share Panel)
-        const mobileUserLoginContainer = document.getElementById('mobile-user-login-container');
-        const mobileUserSignupContainer = document.getElementById('mobile-user-signup-container');
-        const mobileUserDashboardContainer = document.getElementById('mobile-user-dashboard-container');
-        const mobileUserLogoutContainer = document.getElementById('mobile-user-logout-container');
-
-        if (!statusText || !loginLink || !logoutBtn) return;
+        if (!statusBar) return;
 
         const user = JSON.parse(localStorage.getItem('authUser') || 'null');
         const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!user;
 
+        // Mobile Menu Elements (Floating menu)
+        const mobUserText = document.getElementById('mobile-menu-user-text');
+        const mobDashboard = document.getElementById('mobile-menu-dashboard-link');
+        const mobLogin = document.getElementById('mobile-menu-login-link');
+        const mobSignup = document.getElementById('mobile-menu-signup-link');
+        const mobLogout = document.getElementById('mobile-menu-logout-btn');
+
         if (isLoggedIn && user) {
-            // Logged In Status
+            // AUTHENTICATED STATE
             const userName = user.name || user.email || (isEnglish ? 'User' : 'مستخدم');
+            const dashboardUrl = isEnglish ? 'dashboard-en.html' : 'dashboard.html';
+            const logoutText = isEnglish ? 'Logout' : 'خروج';
 
-            // Desktop
-            statusText.textContent = userName;
-            statusText.style.color = 'var(--accent-primary)';
-            loginLink.style.display = 'none';
-            if (signupLink) signupLink.style.display = 'none';
-            if (dashboardLink) dashboardLink.style.display = 'inline-flex';
-            logoutBtn.style.display = 'inline-flex';
-            logoutBtn.textContent = isEnglish ? 'Logout' : 'خروج';
-            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Save & Share' : 'حفظ و مشاركة';
+            // Desktop Injection
+            statusBar.innerHTML = `
+                <a href="${dashboardUrl}" id="user-status-text" class="tb-user-pill" title="${isEnglish ? 'Dashboard' : 'لوحة التحكم'}">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="tb-user-name">${userName}</span>
+                </a>
+                <button id="user-logout-btn" class="tb-pill-btn">${logoutText}</button>
+            `;
+
+            // Bind logout event
+            const logoutBtn = document.getElementById('user-logout-btn');
+            if (logoutBtn) logoutBtn.onclick = () => this.handleLogout();
 
             // Mobile Menu
-            if (mobileMenuUserText) mobileMenuUserText.textContent = userName;
-            if (mobileMenuDashboardLink) mobileMenuDashboardLink.style.display = 'inline-flex';
-            if (mobileMenuLoginLink) mobileMenuLoginLink.style.display = 'none';
-            if (mobileMenuSignupLink) mobileMenuSignupLink.style.display = 'none';
-            if (mobileMenuLogoutBtn) mobileMenuLogoutBtn.style.display = 'flex';
-
-            // Mobile Sidebar 
-            if (mobileUserLoginContainer) mobileUserLoginContainer.style.display = 'none';
-            if (mobileUserSignupContainer) mobileUserSignupContainer.style.display = 'none';
-            if (mobileUserDashboardContainer) mobileUserDashboardContainer.style.display = 'block';
-            if (mobileUserLogoutContainer) mobileUserLogoutContainer.style.display = 'block';
-
-        } else {
-            // Guest Status
-            // Desktop
-            statusText.textContent = isEnglish ? 'Guest' : 'غير مسجل';
-            statusText.style.color = 'var(--text-secondary)';
-            loginLink.style.display = 'inline-flex';
-            loginLink.textContent = isEnglish ? 'Login' : 'تسجيل دخول';
-            if (signupLink) {
-                signupLink.style.display = 'inline-flex';
-                signupLink.textContent = isEnglish ? 'Sign Up' : 'إنشاء حساب';
-                signupLink.href = isEnglish ? 'signup-en.html' : 'signup.html';
+            if (mobUserText) mobUserText.textContent = userName;
+            if (mobDashboard) mobDashboard.style.display = 'block';
+            if (mobLogin) mobLogin.style.display = 'none';
+            if (mobSignup) mobSignup.style.display = 'none';
+            if (mobLogout) {
+                mobLogout.style.display = 'block';
+                mobLogout.onclick = () => this.handleLogout();
             }
-            if (dashboardLink) dashboardLink.style.display = 'none';
-            logoutBtn.style.display = 'none';
-            if (saveBtn) saveBtn.querySelector('#save-btn-text').textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ ومشاركة';
 
+            if (saveBtn) {
+                const saveTxt = saveBtn.querySelector('#save-btn-text');
+                if (saveTxt) saveTxt.textContent = isEnglish ? 'Save & Share' : 'حفظ و مشاركة';
+            }
+        } else {
+            // GUEST STATE
+            const loginUrl = isEnglish ? 'login-en.html' : 'login.html';
+            const loginText = isEnglish ? 'Login' : 'تسجيل دخول';
+
+            // Desktop Injection
+            statusBar.innerHTML = `
+                <a href="${loginUrl}" id="user-login-link" class="tb-pill-btn">${loginText}</a>
+            `;
+            
             // Mobile Menu
-            if (mobileMenuUserText) mobileMenuUserText.textContent = isEnglish ? 'Guest' : 'غير مسجل';
-            if (mobileMenuDashboardLink) mobileMenuDashboardLink.style.display = 'none';
-            if (mobileMenuLoginLink) mobileMenuLoginLink.style.display = 'flex';
-            if (mobileMenuSignupLink) mobileMenuSignupLink.style.display = 'flex';
-            if (mobileMenuLogoutBtn) mobileMenuLogoutBtn.style.display = 'none';
+            if (mobUserText) mobUserText.textContent = isEnglish ? 'Guest' : 'زائر';
+            if (mobDashboard) mobDashboard.style.display = 'none';
+            if (mobLogin) mobLogin.style.display = 'block';
+            if (mobSignup) mobSignup.style.display = 'block';
+            if (mobLogout) mobLogout.style.display = 'none';
 
-            // Mobile Sidebar
-            if (mobileUserLoginContainer) mobileUserLoginContainer.style.display = 'block';
-            if (mobileUserSignupContainer) mobileUserSignupContainer.style.display = 'block';
-            if (mobileUserDashboardContainer) mobileUserDashboardContainer.style.display = 'none';
-            if (mobileUserLogoutContainer) mobileUserLogoutContainer.style.display = 'none';
+            if (saveBtn) {
+                const saveTxt = saveBtn.querySelector('#save-btn-text');
+                if (saveTxt) saveTxt.textContent = isEnglish ? 'Login to Save' : 'سجّل لحفظ ومشاركة';
+            }
         }
     },
 

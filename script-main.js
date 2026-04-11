@@ -1096,11 +1096,18 @@ const EventManager = {
             window.addEventListener('click', () => toolsMenu.classList.remove('show'));
         }
 
-        DOMElements.draggable.logo.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('logo-drop-zone'); });
-        DOMElements.draggable.photo.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('photo-controls-fieldset'); });
-        DOMElements.draggable.name.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('name-tagline-accordion'); });
-        DOMElements.draggable.tagline.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('name-tagline-accordion'); });
-        DOMElements.draggable.qr.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); UIManager.navigateToAndHighlight('qr-code-accordion'); });
+        const navigateToTarget = (e, fallback) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const targetId = e.currentTarget.dataset.inputTargetId || fallback;
+            UIManager.navigateToAndHighlight(targetId);
+        };
+
+        if (DOMElements.draggable.logo) DOMElements.draggable.logo.addEventListener('click', (e) => navigateToTarget(e, 'logo-drop-zone'));
+        if (DOMElements.draggable.photo) DOMElements.draggable.photo.addEventListener('click', (e) => navigateToTarget(e, 'photo-controls-fieldset'));
+        if (DOMElements.draggable.name) DOMElements.draggable.name.addEventListener('click', (e) => navigateToTarget(e, 'name-accordion'));
+        if (DOMElements.draggable.tagline) DOMElements.draggable.tagline.addEventListener('click', (e) => navigateToTarget(e, 'tagline-accordion'));
+        if (DOMElements.draggable.qr) DOMElements.draggable.qr.addEventListener('click', (e) => navigateToTarget(e, 'qr-code-accordion'));
 
         DOMElements.buttons.togglePhone.addEventListener('input', () => { CardManager.updatePhoneButtonsVisibility(); });
 

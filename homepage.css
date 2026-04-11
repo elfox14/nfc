@@ -673,6 +673,22 @@ section h2 {
     color: white;
 }
 
+/* Gallery Card Tokens */
+.gallery-card-img {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+}
+.bg-gradient-brand { background: linear-gradient(135deg, #667eea, #764ba2); }
+.bg-gradient-pink { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.bg-gradient-blue { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.bg-gradient-green { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.bg-gradient-orange { background: linear-gradient(135deg, #fa709a, #fee140); }
+.bg-gradient-purple { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+
 /* ===========================================
    USE CASES SECTION
    =========================================== */
@@ -1147,6 +1163,7 @@ details[open] .faq-question::after {
 
 /* Floating CTA Button */
 .floating-cta {
+    display: none !important;
     position: fixed;
     bottom: 100px;
     left: 30px;
@@ -1462,15 +1479,30 @@ body.light-mode .theme-toggle .fa-sun {
 }
 
 body.light-mode .navbar.scrolled {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 body.light-mode .feature-card,
 body.light-mode .testimonial-card,
 body.light-mode .faq-item details,
 body.light-mode .use-case-card {
-    background: linear-gradient(145deg, #ffffff, #f0f4f8);
-    border-color: rgba(77, 166, 255, 0.2);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+body.light-mode .feature-card:hover,
+body.light-mode .use-case-card:hover {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-5px);
+    border-color: rgba(77, 166, 255, 0.3);
 }
 
 body.light-mode .floating-card {
@@ -1483,6 +1515,17 @@ body.light-mode .stat-number {
 
 body.light-mode .hero-section::before {
     background: linear-gradient(-45deg, #e8f0ff, #f0f4f8, #e0ebf5, #d8e8ff);
+}
+
+body.light-mode .hero-content h1 {
+    background: none;
+    -webkit-text-fill-color: #111827;
+    color: #111827;
+}
+
+body.light-mode .hero-subtitle {
+    color: #334155;
+    font-weight: 500;
 }
 
 body.light-mode h1,

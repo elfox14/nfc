@@ -114,7 +114,7 @@
         crossorigin="anonymous"></script>
 </head>
 
-<body>
+<body class="editor-body">
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
@@ -170,12 +170,6 @@
                 <span class="tb-label">معاينة</span>
             </button>
 
-            <!-- Language -->
-            <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="تبديل اللغة">
-                <i class="fas fa-language"></i>
-                <span class="tb-label">EN</span>
-            </button>
-
             <!-- Theme -->
             <button id="theme-toggle-btn" class="tb-icon-btn" title="تبديل المظهر (Dark/Light)" aria-label="Toggle Theme">
                 <i class="fas fa-sun"></i>
@@ -221,13 +215,16 @@
         <!-- ═══ ZONE 3: RIGHT — Status + Save ═══ -->
         <div class="tb-zone tb-right">
 
-            <!-- User Status -->
-            <div class="user-status-bar" id="user-status-bar">
-                <span id="user-status-text" class="tb-user-text">غير مسجل</span>
-                <a href="login.html" id="user-login-link" class="tb-pill-btn">تسجيل الدخول</a>
-                <a href="dashboard.html" id="user-dashboard-link" class="tb-pill-btn" style="display:none;">لوحة التحكم</a>
-                <button id="user-logout-btn" class="tb-pill-btn" style="display:none;">خروج</button>
-            </div>
+            <!-- Language -->
+            <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="تبديل اللغة" onclick="window.location.href='editor-en.html'">
+                <i class="fas fa-language"></i>
+                <span class="tb-label">EN</span>
+            </button>
+
+            <div class="tb-divider"></div>
+
+            <!-- User Status: INJECTED BY JS -->
+            <div class="user-status-bar" id="user-status-bar"></div>
 
             <div class="tb-divider"></div>
 
@@ -264,6 +261,13 @@
                 <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="المزيد" aria-label="More Options">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
+                <ul id="toolbar-more-menu" class="tb-mobile-more-menu">
+                    <li><a href="index.html" class="tb-dropdown-item"><i class="fas fa-home"></i> الرئيسية</a></li>
+                    <li><a href="gallery.html" class="tb-dropdown-item"><i class="fas fa-images"></i> المعرض</a></li>
+                    <li><a href="blog.html" class="tb-dropdown-item"><i class="fas fa-newspaper"></i> المدونة</a></li>
+                    <div class="tb-dropdown-divider"></div>
+                    <li><button id="reset-design-btn-more" class="tb-dropdown-item tb-danger"><i class="fas fa-trash-alt"></i> مسح التصميم</button></li>
+                </ul>
             </div>
 
         </div>
@@ -319,61 +323,70 @@
                 </div>
             </fieldset>
 
-            <details class="fieldset-accordion" id="backgrounds-accordion">
-                <summary>الخلفيات والألوان</summary>
-                <div class="fieldset-content">
-                    <fieldset class="fieldset" style="padding: 10px;">
-                        <legend>الواجهة الأمامية</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <div class="form-group"><label>لون الخلفية</label>
-                            <div class="control-grid"><input type="color" id="front-bg-start" value="#2a3d54"><input
-                                    type="color" id="front-bg-end" value="#223246"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="front-bg-upload">رفع صورة للخلفية</label>
-                            <div class="file-input-group">
-                                <input type="file" id="front-bg-upload" accept="image/*">
-                                <button type="button" class="remove-image-btn" id="remove-front-bg-btn"
-                                    style="display: none;" title="إزالة الصورة"
-                                    aria-label="إزالة صورة الخلفية الأمامية"><i class="fas fa-times"
-                                        aria-hidden="true"></i></button>
-                                <div class="spinner" id="front-bg-spinner" style="display: none;"></div>
+            <!-- ═══ BACKGROUNDS PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" id="backgrounds-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-layer-group"></i></span>
+                    <span>تصميم الخلفية</span>
+                </summary>
+
+                <div class="fieldset-content lp-body" id="background-controls-fieldset">
+                    
+                    <!-- Front Background Bento -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-id-card"></i> الواجهة الأمامية</label>
+                        <div class="lp-grid-2" style="margin-top: 8px;">
+                            <div>
+                                <label class="lp-label-sm">اللون الأول</label>
+                                <input type="color" id="front-bg-start" value="#2a3d54" class="lp-color-pick">
+                            </div>
+                            <div>
+                                <label class="lp-label-sm">اللون الثاني</label>
+                                <input type="color" id="front-bg-end" value="#223246" class="lp-color-pick">
                             </div>
                         </div>
-                        <div class="form-group" style="display: none;"><label for="front-bg-opacity">شفافية اللون فوق
-                                الصورة</label><input type="range" id="front-bg-opacity" min="0" max="1" step="0.05"
-                                value="0"></div>
-                    </fieldset>
-                    <fieldset class="fieldset" style="padding: 10px; margin-top: 15px;">
-                        <legend>الواجهة الخلفية</legend>
-                        <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
-                                هنا</span></div>
-                        <div class="form-group"><label>لون الخلفية</label>
-                            <div class="control-grid"><input type="color" id="back-bg-start" value="#2a3d54"><input
-                                    type="color" id="back-bg-end" value="#223246"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="back-bg-upload">رفع صورة للخلفية</label>
-                            <div class="file-input-group">
-                                <input type="file" id="back-bg-upload" accept="image/*">
-                                <button type="button" class="remove-image-btn" id="remove-back-bg-btn"
-                                    style="display: none;" title="إزالة الصورة"
-                                    aria-label="إزالة صورة الخلفية الخلفية"><i class="fas fa-times"
-                                        aria-hidden="true"></i></button>
-                                <div class="spinner" id="back-bg-spinner" style="display: none;"></div>
-                            </div>
-                        </div>
-                        <div class="form-group" style="display: none;"><label for="back-bg-opacity">شفافية اللون فوق
-                                الصورة</label><input type="range" id="back-bg-opacity" min="0" max="1" step="0.05"
-                                value="0"></div>
-                        <div class="form-group" style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
-                            <label>تحتاج إلهاماً؟</label>
-                            <button id="ai-backgrounds-btn" class="btn btn-secondary" style="width: 100%; background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2)); border-color: rgba(102, 126, 234, 0.5);">
-                                <i class="fas fa-magic"></i> <span>خلفيات ابتكارية (AI)</span>
+                        <div class="lp-upload-zone-mini" style="margin-top: 12px;">
+                            <label for="front-bg-upload" class="lp-upload-btn-mini">
+                                <i class="fas fa-upload"></i> رفع صورة للواجهة
+                                <input type="file" id="front-bg-upload" accept="image/*" style="display:none;">
+                            </label>
+                            <button type="button" class="lp-btn-icon-sm" id="remove-front-bg-btn" style="display: none;">
+                                <i class="fas fa-times"></i>
                             </button>
                         </div>
-                    </fieldset>
+                    </div>
+
+                    <!-- Back Background Bento -->
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-id-card-alt"></i> الواجهة الخلفية</label>
+                        <div class="lp-grid-2" style="margin-top: 8px;">
+                            <div>
+                                <label class="lp-label-sm">اللون الأول</label>
+                                <input type="color" id="back-bg-start" value="#2a3d54" class="lp-color-pick">
+                            </div>
+                            <div>
+                                <label class="lp-label-sm">اللون الثاني</label>
+                                <input type="color" id="back-bg-end" value="#223246" class="lp-color-pick">
+                            </div>
+                        </div>
+                        <div class="lp-upload-zone-mini" style="margin-top: 12px;">
+                            <label for="back-bg-upload" class="lp-upload-btn-mini">
+                                <i class="fas fa-upload"></i> رفع صورة للخلفية
+                                <input type="file" id="back-bg-upload" accept="image/*" style="display:none;">
+                            </label>
+                            <button type="button" class="lp-btn-icon-sm" id="remove-back-bg-btn" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Tools Bento -->
+                    <div class="lp-section" style="border:none;">
+                        <button id="ai-backgrounds-btn" class="lp-btn-premium" style="width: 100%;">
+                            <i class="fas fa-magic"></i> <span>خلفيات ابتكارية (AI)</span>
+                        </button>
+                    </div>
+
                 </div>
             </details>
 
@@ -395,10 +408,10 @@
 
                                 <div id="card-personal-photo-wrapper" data-input-target-id="photo-controls-fieldset">
                                 </div>
-                                <h1 id="card-name" data-input-target-id="name-tagline-accordion"
+                                <h1 id="card-name" data-input-target-id="name-accordion"
                                     style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;">
                                 </h1>
-                                <h2 class="tagline" id="card-tagline" data-input-target-id="name-tagline-accordion"
+                                <h2 class="tagline" id="card-tagline" data-input-target-id="tagline-accordion"
                                     style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">
                                 </h2>
                                 <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>

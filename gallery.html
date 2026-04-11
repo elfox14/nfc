@@ -149,6 +149,10 @@
     </nav>
 
     <div class="gallery-container">
+        <div class="gallery-header">
+            <h1>معرض التصاميم</h1>
+            <p>استلهم أفكاراً لبطاقتك القادمة من مجموعة متنوعة من القوالب الجاهزة والمصممة بعناية من قبل مستخدمينا.</p>
+        </div>
 
         <!-- Demo Notice (shown when using fallback) -->
         <div id="demo-notice" class="demo-notice" style="display: none;">
@@ -460,7 +464,7 @@
                 overlay.className = 'thumb-overlay';
                 overlay.innerHTML = `
                     <a href="${viewUrl}" class="thumb-btn preview-btn" ${isDemo ? '' : 'target="_blank"'}><i class="fas fa-eye"></i> معاينة</a>
-                    <a href="${editUrl}" class="thumb-btn" target="_blank"><i class="fas fa-edit"></i> تعديل</a>
+                    <a href="${editUrl}" class="thumb-btn use-template-btn" target="_blank"><i class="fas fa-magic"></i> تعديل</a>
                 `;
                 thumbnailContainer.appendChild(overlay);
 

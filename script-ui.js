@@ -523,7 +523,10 @@ const UIManager = {
             const highlightTarget = targetElement.closest(".fieldset, .form-group, .dynamic-input-group") || targetElement;
             const scrollContainer = highlightTarget.closest(".pro-sidebar");
             if (scrollContainer) {
-                scrollContainer.scrollTo({ top: highlightTarget.offsetTop - 60, behavior: "smooth" });
+                const targetRect = highlightTarget.getBoundingClientRect();
+                const containerRect = scrollContainer.getBoundingClientRect();
+                const scrollTop = scrollContainer.scrollTop + (targetRect.top - containerRect.top) - 60;
+                scrollContainer.scrollTo({ top: scrollTop, behavior: "smooth" });
             } else {
                 highlightTarget.scrollIntoView({ behavior: "smooth", block: "center" });
             }
