@@ -359,4 +359,9 @@ const Auth = {
     },
 };
 
-document.addEventListener('DOMContentLoaded', () => Auth.updateNavAuth());
+document.addEventListener('DOMContentLoaded', async () => {
+    if (window.location.pathname.includes('dashboard')) {
+        await Auth.refreshSession();
+    }
+    Auth.updateNavAuth();
+});
