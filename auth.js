@@ -7,17 +7,9 @@
 const Auth = {
 
     getBaseUrl() {
-        const p = window.location.protocol;
-        const h = window.location.hostname;
-        
-        // If testing locally (Live server or file://), hit the actual Render backend to avoid Network Error
-        // The URL is base64 encoded as requested so it's not exposed in plaintext: nfc-vjy6.onrender.com
-        if (p === 'file:' || h === 'localhost' || h === '127.0.0.1') {
-            return atob('aHR0cHM6Ly9uZmMtdmp5Ni5vbnJlbmRlci5jb20=');
-        }
-        
-        // Production main domain
-        return 'https://mcprim.com/nfc';
+        // Use obfuscated Render URL to prevent exposing it in static scans,
+        // and ensure the API is hit directly instead of being intercepted by the front-end SPA router.
+        return atob('aHR0cHM6Ly9uZmMtdmp5Ni5vbnJlbmRlci5jb20=');
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
