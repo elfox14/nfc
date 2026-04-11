@@ -1599,7 +1599,7 @@
 
                         // Show/hide conditional groups
                         var val = btn.dataset.val;
-                        document.getElementById('qr-auto-card-group').style.display = val === 'auto-card' ? 'block' : 'none';
+                        document.getElementById('qr-auto-card-group').style.display = (val === 'auto-card' || val === 'auto-vcard') ? 'block' : 'none';
                         document.getElementById('qr-url-group').style.display = val === 'custom' ? 'block' : 'none';
                         document.getElementById('qr-upload-group').style.display = val === 'upload' ? 'block' : 'none';
                         // qr-customization-group stays visible for all except upload

@@ -1000,10 +1000,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
               token: ${JSON.stringify(accessToken)},
               user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
             };
-            window.opener.postMessage(msg, 'https://mcprim.com');
-            window.opener.postMessage(msg, 'https://www.mcprim.com');
-            window.opener.postMessage(msg, 'http://localhost:3000');
-            window.opener.postMessage(msg, 'http://127.0.0.1:5500');
+            const origins = ${JSON.stringify(process.env.NODE_ENV === 'production' ? ['https://mcprim.com', 'https://www.mcprim.com'] : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'])};
+            origins.forEach(origin => window.opener.postMessage(msg, origin));
           }
         } catch (e) {}
         window.close();
@@ -1034,10 +1032,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
               success: false,
               error: ${JSON.stringify(errorMessage)}
             };
-            window.opener.postMessage(msg, 'https://mcprim.com');
-            window.opener.postMessage(msg, 'https://www.mcprim.com');
-            window.opener.postMessage(msg, 'http://localhost:3000');
-            window.opener.postMessage(msg, 'http://127.0.0.1:5500');
+            const origins = ${JSON.stringify(process.env.NODE_ENV === 'production' ? ['https://mcprim.com', 'https://www.mcprim.com'] : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'])};
+            origins.forEach(origin => window.opener.postMessage(msg, origin));
           }
         } catch (e) {}
         window.close();
@@ -1855,9 +1851,14 @@ wss.on('connection', (ws, req) => {
     return;
   }
 
-  // Verify JWT token for WebSocket authentication
   const secret = process.env.JWT_SECRET;
-  if (secret && token) {
+  if (!secret) {
+    console.error('CRITICAL: WebSocket connection rejected because JWT_SECRET is not configured on the server.');
+    ws.close(1011, 'Internal Server Error: Authentication configuration missing');
+    return;
+  }
+  
+  if (token) {
     try {
       jwt.verify(token, secret);
     } catch (err) {
@@ -1865,7 +1866,7 @@ wss.on('connection', (ws, req) => {
       ws.close(1008, 'Invalid authentication token');
       return;
     }
-  } else if (secret && !token) {
+  } else {
     console.log('WebSocket connection rejected: No token provided.');
     ws.close(1008, 'Authentication token required');
     return;

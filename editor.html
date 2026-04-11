@@ -629,8 +629,9 @@
             // D-pad: wire up move buttons directly to EventManager
             (function() {
                 function wireDpad() {
-                    var dpad = document.querySelector('.lp-dpad.position-controls-grid');
+                    var dpad = document.querySelector('.lp-dpad[data-target-id="card-logo"]');
                     if (!dpad) { setTimeout(wireDpad, 400); return; }
+                    if (dpad.dataset.wired) return;
                     dpad.querySelectorAll('.move-btn').forEach(function(btn) {
                         btn.addEventListener('click', function(e) {
                             e.preventDefault();
@@ -640,6 +641,7 @@
                             }
                         });
                     });
+                    dpad.dataset.wired = "true";
                 }
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', function(){ setTimeout(wireDpad, 600); });
@@ -1526,7 +1528,7 @@
 
                         // Show/hide conditional groups
                         var val = btn.dataset.val;
-                        document.getElementById('qr-auto-card-group').style.display = val === 'auto-card' ? 'block' : 'none';
+                        document.getElementById('qr-auto-card-group').style.display = (val === 'auto-card' || val === 'auto-vcard') ? 'block' : 'none';
                         document.getElementById('qr-url-group').style.display = val === 'custom' ? 'block' : 'none';
                         document.getElementById('qr-upload-group').style.display = val === 'upload' ? 'block' : 'none';
                         // qr-customization-group stays visible for all except upload
@@ -1546,8 +1548,9 @@
 
                 // Wire QR D-pad
                 function wireQrDpad() {
-                    var dpad = document.querySelector('#qr-code-accordion .lp-dpad:not([data-wired="true"])');
+                    var dpad = document.querySelector('.lp-dpad[data-target-id="qr-code-wrapper"]');
                     if (!dpad) { setTimeout(wireQrDpad, 600); return; }
+                    if(dpad.dataset.wired) return;
                     dpad.querySelectorAll('.move-btn').forEach(function(btn) {
                         btn.addEventListener('click', function(e) {
                             e.preventDefault();

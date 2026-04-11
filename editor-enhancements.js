@@ -1212,6 +1212,7 @@
             const iconClass = icons[accordion.id];
 
             if (summary && iconClass) {
+                if(summary.querySelector('.lp-summary-icon, .section-icon, i.fas')) return;
                 const icon = document.createElement('i');
                 icon.className = `section-icon ${iconClass}`;
                 summary.insertBefore(icon, summary.firstChild);

@@ -28,4 +28,4 @@ jobs:
     - run: npm test
 
     # Security audit for critical vulnerabilities
-    - run: npm audit --audit-level=critical || true
+    - run: npm audit --audit-level=critical
