@@ -994,12 +994,16 @@ app.get('/api/auth/google/callback', async (req, res) => {
       (function() {
         try {
           if (window.opener && !window.opener.closed) {
-            window.opener.postMessage({
+            const msg = {
               type: 'google-auth',
               success: true,
               token: ${JSON.stringify(accessToken)},
               user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
-            }, 'https://mcprim.com');
+            };
+            window.opener.postMessage(msg, 'https://mcprim.com');
+            window.opener.postMessage(msg, 'https://www.mcprim.com');
+            window.opener.postMessage(msg, 'http://localhost:3000');
+            window.opener.postMessage(msg, 'http://127.0.0.1:5500');
           }
         } catch (e) {}
         window.close();
@@ -1025,11 +1029,15 @@ app.get('/api/auth/google/callback', async (req, res) => {
       (function() {
         try {
           if (window.opener && !window.opener.closed) {
-            window.opener.postMessage({
+            const msg = {
               type: 'google-auth',
               success: false,
               error: ${JSON.stringify(errorMessage)}
-            }, 'https://mcprim.com');
+            };
+            window.opener.postMessage(msg, 'https://mcprim.com');
+            window.opener.postMessage(msg, 'https://www.mcprim.com');
+            window.opener.postMessage(msg, 'http://localhost:3000');
+            window.opener.postMessage(msg, 'http://127.0.0.1:5500');
           }
         } catch (e) {}
         window.close();

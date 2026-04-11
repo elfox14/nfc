@@ -23,7 +23,8 @@ const Auth = {
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     isLoggedIn() {
-        return !!localStorage.getItem('authUser');
+        const userStr = localStorage.getItem('authUser');
+        return !!(userStr && userStr !== 'null' && userStr !== 'undefined');
     },
 
     setSession(token, user) {
