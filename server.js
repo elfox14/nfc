@@ -88,13 +88,20 @@ app.use(cors({
       return cb(null, true);
     }
     // In all environments, check against allowedOrigins with flexible subdomain matching
-    const isAllowed = allowedOrigins.some(baseDomain => {
+    let isAllowed = allowedOrigins.some(baseDomain => {
       if (baseDomain === origin) return true;
       // Compare without protocols and www
       const cleanBase = baseDomain.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
       const cleanOrigin = origin.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
       return cleanBase === cleanOrigin;
     });
+
+    // In local development, allow localhost origins automatically
+    if (!isAllowed && origin && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) {
+        if (process.env.NODE_ENV !== 'production') {
+            isAllowed = true;
+        }
+    }
 
     if (isAllowed) {
       console.log(`[CORS] Request from allowed origin: ${origin}`);
