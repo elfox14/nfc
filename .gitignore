@@ -49,3 +49,10 @@ dist-ssr
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Development / Sensitive Files
+_inject_premium.py
+*.txt
+coverage/
+coverage.zip
+compare_html.py
