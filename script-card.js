@@ -769,11 +769,20 @@ const CardManager = {
 
             const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
 
-            const isUseLogoChecked = document.getElementById('qr-use-logo').checked;
-            const dotsColor = document.getElementById('qr-dots-color').value || "#000000";
-            const bgColor = document.getElementById('qr-bg-color').value || "#ffffff";
-            const dotsType = document.getElementById('qr-dots-type').value || "rounded";
-            const cornersType = document.getElementById('qr-corners-type').value || "extra-rounded";
+            const isUseLogoElement = document.getElementById('qr-use-logo');
+            const isUseLogoChecked = isUseLogoElement ? isUseLogoElement.checked : false;
+            
+            const dotsColorElement = document.getElementById('qr-dots-color') || document.getElementById('qr-color');
+            const dotsColor = dotsColorElement ? dotsColorElement.value : "#000000";
+            
+            const bgColorElement = document.getElementById('qr-bg-color');
+            const bgColor = bgColorElement ? bgColorElement.value : "#ffffff";
+            
+            const dotsTypeElement = document.getElementById('qr-dots-type');
+            const dotsType = dotsTypeElement ? dotsTypeElement.value : "rounded";
+            
+            const cornersTypeElement = document.getElementById('qr-corners-type');
+            const cornersType = cornersTypeElement ? cornersTypeElement.value : "extra-rounded";
 
             const qrCode = new QRCodeStyling({
                 width: 300,
@@ -841,11 +850,20 @@ const CardManager = {
                 safeLogo += (safeLogo.includes('?') ? '&' : '?') + 'cb=' + Date.now();
             }
 
-            const isUseLogoChecked = document.getElementById('qr-use-logo').checked;
-            const dotsColor = document.getElementById('qr-dots-color').value || "#000000";
-            const bgColor = document.getElementById('qr-bg-color').value || "#ffffff";
-            const dotsType = document.getElementById('qr-dots-type').value || "rounded";
-            const cornersType = document.getElementById('qr-corners-type').value || "extra-rounded";
+            const isUseLogoElement = document.getElementById('qr-use-logo');
+            const isUseLogoChecked = isUseLogoElement ? isUseLogoElement.checked : false;
+            
+            const dotsColorElement = document.getElementById('qr-dots-color') || document.getElementById('qr-color');
+            const dotsColor = dotsColorElement ? dotsColorElement.value : "#000000";
+            
+            const bgColorElement = document.getElementById('qr-bg-color');
+            const bgColor = bgColorElement ? bgColorElement.value : "#ffffff";
+            
+            const dotsTypeElement = document.getElementById('qr-dots-type');
+            const dotsType = dotsTypeElement ? dotsTypeElement.value : "rounded";
+            
+            const cornersTypeElement = document.getElementById('qr-corners-type');
+            const cornersType = cornersTypeElement ? cornersTypeElement.value : "extra-rounded";
 
             const qrCode = new QRCodeStyling({
                 width: 300,

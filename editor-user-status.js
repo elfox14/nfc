@@ -24,8 +24,8 @@ const EditorUserStatus = {
 
     // جلب ID التصميم المحفوظ للمستخدم من الخادم عند بدء التشغيل
     async loadExistingDesignId() {
-        const token = localStorage.getItem('authToken');
-        if (!token) return; // لا يوجد توكن = غير مسجل
+        const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
+        if (!isLoggedIn) return; // لا يوجد توكن = غير مسجل
 
         // إذا كان URL يحتوي على ?id= فلا داعي للجلب
         const urlParams = new URLSearchParams(window.location.search);
@@ -89,9 +89,9 @@ const EditorUserStatus = {
         if (!statusText || !loginLink || !logoutBtn) return;
 
         const user = JSON.parse(localStorage.getItem('authUser') || 'null');
-        const token = localStorage.getItem('authToken');
+        const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!user;
 
-        if (token && user) {
+        if (isLoggedIn && user) {
             // Logged In Status
             const userName = user.name || user.email || (isEnglish ? 'User' : 'مستخدم');
 
@@ -191,7 +191,7 @@ const EditorUserStatus = {
 
     async saveToCloud(captureImages = false) {
         const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
-        const token = localStorage.getItem('authToken');
+        const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
         const saveBtn = document.getElementById('save-share-btn');
         const saveBtnText = document.getElementById('save-btn-text');
         // Mobile proxy button in panel-share
@@ -199,7 +199,7 @@ const EditorUserStatus = {
         const mobileSaveProxyOrigHTML = mobileSaveProxyBtn ? mobileSaveProxyBtn.innerHTML : '';
 
         // If not logged in, redirect to login
-        if (!token) {
+        if (!isLoggedIn) {
             const confirmMsg = isEnglish
                 ? 'You must be logged in to save your design.\n\nDo you want to login now?'
                 : 'يجب تسجيل الدخول لحفظ التصميم في حسابك.\n\nهل تريد تسجيل الدخول الآن؟';
@@ -365,10 +365,10 @@ const EditorUserStatus = {
     startAutoSave() {
         // Only auto-save for logged-in users who already have a saved design
         this.autoSaveInterval = setInterval(() => {
-            const token = localStorage.getItem('authToken');
+            const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
             // Only auto-save if user is logged in AND design was previously saved
             // This prevents creating new empty designs on the dashboard
-            if (token && !this.isSaving && typeof Config !== 'undefined' && Config.currentDesignId) {
+            if (isLoggedIn && !this.isSaving && typeof Config !== 'undefined' && Config.currentDesignId) {
                 console.log('[EditorUserStatus] Auto-saving...');
                 // Auto-save: Do NOT capture images (too heavy)
                 this.saveToCloud(false);

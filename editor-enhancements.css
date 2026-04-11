@@ -1087,3 +1087,24 @@ html[dir="rtl"] .fieldset-accordion summary::after {
 .lp-body {
     padding: 15px !important;
 }
+/* ===========================================
+   CLICK TO EDIT HIGHLIGHT
+   =========================================== */
+.click-to-edit-highlight {
+    animation: highlightPulse 1s ease;
+    border: 1px solid var(--accent-primary) !important;
+    box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.3) !important;
+    border-radius: 6px;
+}
+
+@keyframes highlightPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(77, 166, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0);
+    }
+}

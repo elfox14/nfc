@@ -286,8 +286,8 @@ window.MobileUtils = {
     // --- معالج المشاركة على الموبايل ---
     handleMobileShare: async (proxyBtn) => {
         // التحقق من تسجيل الدخول أولاً
-        const token = localStorage.getItem('authToken');
-        if (!token) {
+        const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
+        if (!isLoggedIn) {
             const isEnglish = document.documentElement.lang.includes('en');
             MobileUtils.showMobileToast(
                 isEnglish ? 'Please log in to share your card' : 'يجب تسجيل الدخول لمشاركة بطاقتك',
@@ -319,8 +319,6 @@ window.MobileUtils = {
         if (!cardsWrapper) return;
 
         cardsWrapper.addEventListener('click', (e) => {
-            if (!window.MobileUtils.isMobile()) return;
-
             const clickableElement = e.target.closest('.draggable-on-card');
             if (!clickableElement) return;
 
@@ -333,7 +331,12 @@ window.MobileUtils = {
             const targetControl = document.getElementById(targetControlId);
             if (!targetControl) return;
 
-            MobileUtils.switchView('panel-elements');
+            if (window.MobileUtils && window.MobileUtils.isMobile()) {
+                MobileUtils.switchView('panel-elements');
+            } else {
+                const navItem = document.querySelector('[data-target="panel-elements"]');
+                if (navItem) navItem.click();
+            }
 
             setTimeout(() => {
                 targetControl.scrollIntoView({ behavior: 'smooth', block: 'center' });

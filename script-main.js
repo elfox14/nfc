@@ -299,13 +299,23 @@ const ExportManager = {
     getVCardString() {
         const state = StateManager.getStateObject();
         const lang = state.currentLanguage || 'ar';
-        const nameInput = document.getElementById(`input-name_${lang}`);
-        const taglineInput = document.getElementById(`input-tagline_${lang}`);
+        let nameInput = document.getElementById(`input-name_${lang}`);
+        let taglineInput = document.getElementById(`input-tagline_${lang}`);
 
-        const name = nameInput.value.replace(/\n/g, ' ').split(' ');
+        if (!nameInput) {
+            nameInput = document.getElementById('input-name_en') || document.getElementById('input-name_ar');
+        }
+        if (!taglineInput) {
+            taglineInput = document.getElementById('input-tagline_en') || document.getElementById('input-tagline_ar');
+        }
+
+        const nameValue = nameInput ? nameInput.value : '';
+        const taglineValue = taglineInput ? taglineInput.value : '';
+
+        const name = nameValue.replace(/\n/g, ' ').split(' ');
         const firstName = name.slice(0, -1).join(' ');
         const lastName = name.slice(-1).join(' ');
-        let vCard = `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${nameInput.value}\nORG:${taglineInput.value.replace(/\n/g, ' ')}\nTITLE:${taglineInput.value.replace(/\n/g, ' ')}\n`;
+        let vCard = `BEGIN:VCARD\nVERSION:3.0\nN:${lastName};${firstName};;;\nFN:${nameValue}\nORG:${taglineValue.replace(/\n/g, ' ')}\nTITLE:${taglineValue.replace(/\n/g, ' ')}\n`;
 
         if (state.dynamic.staticSocial.email && state.dynamic.staticSocial.email.value) {
             vCard += `EMAIL;TYPE=PREF,INTERNET:${state.dynamic.staticSocial.email.value}\n`;
@@ -614,8 +624,8 @@ const ShareManager = {
 
     async shareCard() {
         // Check if user is logged in
-        const token = localStorage.getItem('authToken');
-        if (!token) {
+        const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
+        if (!isLoggedIn) {
             alert(i18nMain.loginRequired || 'يجب تسجيل الدخول أولاً لمشاركة بطاقتك. / You must be logged in to share your card.');
             return;
         }

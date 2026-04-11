@@ -611,7 +611,6 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            Auth.token = localStorage.getItem('authToken'); 
             Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); 
             
             if (!Auth.isLoggedIn()) {

@@ -33,12 +33,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
     <!-- Project stylesheets -->
-    <link rel="stylesheet" href="style.css?v=2.0">
-    <link rel="stylesheet" href="mobile.css?v=2.0">
-    <link rel="stylesheet" href="toast.css">
-    <link rel="stylesheet" href="editor-enhancements.css?v=1.0">
-    <link rel="stylesheet" href="toolbar-enhancements.css?v=1.0">
-    <link rel="stylesheet" href="logo-panel.css?v=1.0">
+    <link rel="stylesheet" href="style.css?v=3.5">
+    <link rel="stylesheet" href="mobile.css?v=3.5">
+    <link rel="stylesheet" href="toast.css?v=3.5">
+    <link rel="stylesheet" href="editor-enhancements.css?v=3.5">
+    <link rel="stylesheet" href="toolbar-enhancements.css?v=3.5">
+    <link rel="stylesheet" href="logo-panel.css?v=3.5">
 
     <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
@@ -1346,6 +1346,10 @@
                             img.style.borderRadius = wrapper.style.borderRadius;
                             img.style.clipPath = wrapper.style.clipPath;
                         }
+                        if(preview) {
+                            preview.style.borderRadius = wrapper.style.borderRadius;
+                            preview.style.clipPath = wrapper.style.clipPath;
+                        }
                     }
                 });
             });
@@ -1398,7 +1402,7 @@
 
 
             <!-- ═══ QR CODE PANEL — Premium v2 ═══ -->
-            <details class="lp-details-final lp-accordion" open id="qr-code-accordion">
+            <details class="fieldset-accordion lp-accordion" open id="qr-code-accordion">
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-qrcode"></i></span>
                     <span class="lp-summary-label">QR Code</span>
@@ -1408,75 +1412,86 @@
                     </label>
                 </summary>
 
-                <div class="fieldset-content lp-body" id="qr-controls-fieldset">
+                <div class="fieldset-content lp-body">
 
-                    <!-- ① Source Selection -->
-                    <div class="lp-section" style="padding-top:0;">
-                        <label class="lp-label"><i class="fas fa-link"></i> Data Source</label>
-                        <div class="lp-placement-btns" style="flex-wrap: wrap; gap:4px;">
-                            <label class="lp-place-btn lp-place-active" title="Link to this card" style="flex:1 1 45%;">
-                                <input type="radio" name="qr-source" value="auto-card" checked>
+                    <div id="version-debug-tag" style="background:rgba(77,166,255,0.2); color:#4da6ff; font-size:10px; padding:2px 8px; border-radius:4px; margin-bottom:10px; display:inline-block; font-weight:bold; border:1px solid rgba(77,166,255,0.3);">VERSION 3.5 [PREMIUM]</div>
+                    <!-- ① SOURCE CARD -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-link"></i> Data Source</span>
+                        </div>
+
+                        <!-- Segment control for QR source -->
+                        <div id="qr-source-grid" style="display:grid !important; grid-template-columns:1fr 1fr !important; grid-template-rows: auto auto !important; gap:8px !important; margin-bottom:12px !important;">
+                            <label class="lp-qr-src-btn lp-qr-active" data-val="auto-card" style="display:flex !important;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid rgba(77,166,255,0.45);background:rgba(77,166,255,0.15);color:var(--accent-primary);font-size:0.8rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="auto-card" checked style="display:none;">
                                 <i class="fas fa-id-card"></i> Card Link
                             </label>
-                            <label class="lp-place-btn" title="Download vCard" style="flex:1 1 45%;">
-                                <input type="radio" name="qr-source" value="auto-vcard">
+                            <label class="lp-qr-src-btn" data-val="auto-vcard" style="display:flex !important;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="auto-vcard" style="display:none;">
                                 <i class="fas fa-address-book"></i> vCard
                             </label>
-                            <label class="lp-place-btn" title="Custom Link" style="flex:1 1 45%;">
-                                <input type="radio" name="qr-source" value="custom">
-                                <i class="fas fa-external-link-alt"></i> Custom
+                            <label class="lp-qr-src-btn" data-val="custom" style="display:flex !important;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="custom" style="display:none;">
+                                <i class="fas fa-pen"></i> Custom
                             </label>
-                            <label class="lp-place-btn" title="Upload Image" style="flex:1 1 45%;">
-                                <input type="radio" name="qr-source" value="upload">
+                            <label class="lp-qr-src-btn" data-val="upload" style="display:flex !important;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="upload" style="display:none;">
                                 <i class="fas fa-upload"></i> Upload
                             </label>
                         </div>
-                    </div>
 
-                    <!-- Options for 'auto-card' -->
-                    <div id="qr-auto-card-group" class="lp-section" style="background:rgba(77,166,255,0.1); border-radius:8px; border:1px solid rgba(77,166,255,0.2);">
-                        <button id="generate-auto-qr-btn" class="lp-upload-btn" style="width:100%; border-color:var(--accent-primary); background:var(--accent-primary); color:#fff; font-weight:600;">
-                            <i class="fas fa-magic"></i> Generate QR Code
-                        </button>
-                        <p style="font-size: 11px; color: var(--text-secondary); text-align:center; margin-top: 6px; margin-bottom:0;">Generates a QR for your card's share link.</p>
-                    </div>
-
-                    <!-- Options for 'custom' -->
-                    <div id="qr-url-group" class="lp-section" style="display:none; background:rgba(255,255,255,0.05); border-radius:8px;">
-                        <label class="lp-label">Image URL / Data</label>
-                        <input type="text" id="input-qr-url" class="lp-input" value="mcprime_qr.png" placeholder="https://...">
-                    </div>
-
-                    <!-- Options for 'upload' -->
-                    <div id="qr-upload-group" class="lp-section" style="display:none; background:rgba(255,255,255,0.05); border-radius:8px;">
-                        <label class="lp-upload-btn mb-0" style="width:100%;">
-                            <i class="fas fa-cloud-upload-alt"></i> Upload QR Image
-                            <input type="file" id="input-qr-upload" accept="image/*" style="display:none;">
-                        </label>
-                        <div class="input-error-msg" id="qr-upload-error"></div>
-                        <div class="spinner" id="qr-spinner" style="display:none; margin:10px auto;"></div>
-                    </div>
-
-                    <!-- ② Styling (only relevant if we are generating QR, but let's keep it generally visible or JS managed) -->
-                    <div id="qr-customization-group" class="lp-section lp-grid-2">
-                        <div>
-                            <label class="lp-label"><i class="fas fa-palette"></i> QR Color</label>
-                            <div class="lp-color-pick-wrap" style="height:32px;">
-                                <input type="color" id="qr-color" value="#000000" class="lp-color-pick">
-                            </div>
+                        <!-- Auto Card Button -->
+                        <div id="qr-auto-card-group" style="display:block;">
+                            <button id="generate-auto-qr-btn" class="lp-upload-btn" style="width:100%;justify-content:center;background:linear-gradient(135deg,rgba(77,166,255,0.3),rgba(77,166,255,0.1)) !important;border-color:rgba(77,166,255,0.5) !important;box-shadow:0 4px 12px rgba(77,166,255,0.2) !important;">
+                                <i class="fas fa-qrcode"></i> Create / Update QR
+                            </button>
+                            <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:10px;text-align:center;line-height:1.5;opacity:0.8;">Saves your design and creates a QR for your card share link.</p>
                         </div>
-                        <div>
-                            <label class="lp-label"><i class="fas fa-fill-drip"></i> Background</label>
-                            <div class="lp-color-pick-wrap" style="height:32px;">
-                                <input type="color" id="qr-bg-color" value="#ffffff" class="lp-color-pick">
+
+                        <!-- Custom URL input -->
+                        <div class="form-group" id="qr-url-group" style="display:none; margin-top:8px;">
+                            <input type="url" id="input-qr-url" value="mcprime_qr.png" class="lp-input" placeholder="https://...">
+                        </div>
+
+                        <!-- Upload input -->
+                        <div class="form-group" id="qr-upload-group" style="display:none; margin-top:8px;">
+                            <div class="lp-upload-zone" style="flex-direction:column;gap:8px;text-align:center;" onclick="document.getElementById('input-qr-upload').click()">
+                                <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:var(--accent-primary);"></i>
+                                <span style="font-size:0.78rem;color:var(--text-secondary);">Upload QR Image (Max 2MB)</span>
+                                <input type="file" id="input-qr-upload" accept="image/*" style="display:none;">
                             </div>
+                            <div class="input-error-msg" id="qr-upload-error"></div>
+                            <div class="spinner" id="qr-spinner" style="display:none;"></div>
                         </div>
                     </div>
-                    
-                    <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0; padding-top:0;">
-                        <div>
+
+                    <!-- ② APPEARANCE CARD -->
+                    <div class="lp-card" id="qr-customization-group">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-paint-brush"></i> Appearance</span>
+                        </div>
+
+                        <!-- Colors -->
+                        <div class="lp-section lp-grid-2" style="padding-top:0;">
+                            <div>
+                                <label class="lp-label"><i class="fas fa-circle"></i> QR Color</label>
+                                <div class="lp-color-pick-wrap">
+                                    <input type="color" id="qr-dots-color" value="#000000" class="lp-color-pick">
+                                </div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                                <label class="lp-label"><i class="fas fa-circle" style="color:#ccc;"></i> Background</label>
+                                <div class="lp-color-pick-wrap">
+                                    <input type="color" id="qr-bg-color" value="#ffffff" class="lp-color-pick">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dots type -->
+                        <div class="lp-section">
                             <label class="lp-label"><i class="fas fa-ellipsis-h"></i> Dot Style</label>
-                            <select id="qr-dots-type" class="lp-input lp-select" style="height:32px; padding:0 8px;">
+                            <select id="qr-dots-type" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
                                 <option value="square">Square</option>
                                 <option value="dots">Dots</option>
                                 <option value="rounded" selected>Rounded</option>
@@ -1485,104 +1500,127 @@
                                 <option value="extra-rounded">Extra Rounded</option>
                             </select>
                         </div>
-                        <div>
+
+                        <!-- Corners type -->
+                        <div class="lp-section">
                             <label class="lp-label"><i class="fas fa-vector-square"></i> Corner Style</label>
-                            <select id="qr-corners-type" class="lp-input lp-select" style="height:32px; padding:0 8px;">
+                            <select id="qr-corners-type" class="lp-input lp-select" style="height:32px;padding-top:0;padding-bottom:0;">
                                 <option value="square">Square</option>
                                 <option value="dot">Dot</option>
-                                <option value="extra-rounded" selected>Rounded</option>
+                                <option value="extra-rounded" selected>Extra Rounded</option>
                             </select>
                         </div>
-                    </div>
 
-                    <div class="lp-section" style="padding-top:10px;">
-                        <label class="lp-toggle-row" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
-                            <input type="checkbox" id="qr-use-logo" checked>
-                            <span style="font-size:0.85rem; font-weight:500;">Include Card Logo inside QR</span>
-                        </label>
-                    </div>
-
-                    <!-- ③ Size -->
-                    <div class="lp-section">
-                        <label class="lp-label"><i class="fas fa-expand-arrows-alt"></i> Size</label>
-                        <div class="lp-slider-wrap">
-                            <input type="range" id="qr-size" min="15" max="50" value="30" class="lp-slider"
-                                oninput="this.nextElementSibling.textContent=this.value+'%'">
-                            <span class="lp-slider-val">30%</span>
-                        </div>
-                    </div>
-
-                    <!-- ④ Placement pills -->
-                    <div class="lp-section">
-                        <label class="lp-label"><i class="fas fa-layer-group"></i> Placement</label>
-                        <div class="lp-placement-btns">
-                            <label class="lp-place-btn" title="Front Side">
-                                <input type="radio" name="placement-qr" value="front">
-                                <i class="fas fa-id-card"></i> Front
-                            </label>
-                            <label class="lp-place-btn lp-place-active" title="Back Side">
-                                <input type="radio" name="placement-qr" value="back" checked>
-                                <i class="fas fa-id-card-alt"></i> Back
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- ⑤ Advanced Position -->
-                    <details class="lp-sub-accordion" style="margin-top: 10px;">
-                        <summary class="lp-sub-summary">
-                            <i class="fas fa-arrows-up-down-left-right"></i> Fine Position
-                        </summary>
-                        <div class="lp-section" style="border:none;">
-                            <div class="lp-dpad position-controls-grid" data-target-id="qr-code-wrapper">
-                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
-                                <div class="lp-dpad-row">
-                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button>
-                                    <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
-                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button>
-                                </div>
-                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                        <!-- Logo toggle -->
+                        <div class="lp-section" style="border:none;padding-bottom:0;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <label class="lp-label" style="margin-bottom:0;"><i class="fas fa-star"></i> Include Card Logo</label>
+                                <label class="lp-toggle lp-toggle-sm" onclick="event.stopPropagation()">
+                                    <input type="checkbox" id="qr-use-logo" checked>
+                                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                                </label>
                             </div>
                         </div>
-                    </details>
+                    </div>
+
+                    <!-- ③ SIZE & POSITION CARD -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-expand-arrows-alt"></i> Size & Position</span>
+                        </div>
+
+                        <!-- Size slider -->
+                        <div class="lp-section" style="padding-top:0;">
+                            <label class="lp-label"><i class="fas fa-expand"></i> Size</label>
+                            <div class="lp-slider-wrap">
+                                <input type="range" id="qr-size" min="15" max="50" value="30" class="lp-slider"
+                                    oninput="this.nextElementSibling.textContent=this.value+'%'">
+                                <span class="lp-slider-val">30%</span>
+                            </div>
+                        </div>
+
+                        <!-- Placement -->
+                        <div class="lp-section">
+                            <label class="lp-label"><i class="fas fa-layer-group"></i> Placement</label>
+                            <div class="lp-placement-btns" id="qr-placement-btns">
+                                <label class="lp-place-btn">
+                                    <input type="radio" name="placement-qr" value="front"> <i class="fas fa-id-card"></i> Front
+                                </label>
+                                <label class="lp-place-btn lp-place-active">
+                                    <input type="radio" name="placement-qr" value="back" checked> <i class="fas fa-id-card-alt"></i> Back
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- D-Pad -->
+                        <details class="lp-sub-accordion" style="margin-top: 10px;">
+                            <summary class="lp-sub-summary">
+                                <i class="fas fa-arrows-up-down-left-right"></i> Fine Position
+                            </summary>
+                            <div class="lp-section" style="border:none;">
+                                <div class="lp-dpad position-controls-grid" data-target-id="qr-code-wrapper">
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                    <div class="lp-dpad-row">
+                                        <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i class="fas fa-chevron-left"></i></button>
+                                        <div class="lp-dpad-center"><i class="fas fa-qrcode" style="font-size:8px;opacity:0.3;"></i></div>
+                                        <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i class="fas fa-chevron-right"></i></button>
+                                    </div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn" data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
                 </div>
             </details>
 
             <script>
-            // QR Source logic
-            document.querySelectorAll('[name="qr-source"]').forEach(function(r){
-                r.addEventListener('change', function(){
-                    // Active Pill class
-                    document.querySelectorAll('input[name="qr-source"]').forEach(function(ir){
-                        ir.closest('.lp-place-btn').classList.remove('lp-place-active');
-                    });
-                    this.closest('.lp-place-btn').classList.add('lp-place-active');
-
-                    // Show/hide sections
-                    var val = this.value;
-                    document.getElementById('qr-auto-card-group').style.display = (val==='auto-card' || val==='auto-vcard') ? 'block' : 'none';
-                    document.getElementById('qr-url-group').style.display = (val==='custom') ? 'block' : 'none';
-                    document.getElementById('qr-upload-group').style.display = (val==='upload') ? 'block' : 'none';
-                    document.getElementById('qr-customization-group').style.display = (val==='auto-card' || val==='auto-vcard') ? 'flex' : 'none';
-                });
-            });
-
-            // QR Placement
-            document.querySelectorAll('[name="placement-qr"]').forEach(function(r){
-                r.addEventListener('change', function(){
-                    document.querySelectorAll('input[name="placement-qr"]').forEach(function(ir){
-                        ir.closest('.lp-place-btn').classList.remove('lp-place-active');
-                    });
-                    this.closest('.lp-place-btn').classList.add('lp-place-active');
-                });
-            });
-
-            // DPAD
+            // QR Source Segment Control
             (function() {
-                function wireQRDpad() {
-                    var dpad = document.querySelector('.lp-dpad[data-target-id="qr-code-wrapper"]');
-                    if (!dpad) { setTimeout(wireQRDpad, 400); return; }
-                    var wired = dpad.dataset.wired;
-                    if(wired) return;
+                var srcBtns = document.querySelectorAll('.lp-qr-src-btn');
+                srcBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        // Update styles
+                        srcBtns.forEach(function(b) {
+                            b.style.background = 'rgba(255,255,255,0.03)';
+                            b.style.borderColor = 'rgba(255,255,255,0.08)';
+                            b.style.color = 'var(--text-secondary)';
+                        });
+                        btn.style.background = 'rgba(77,166,255,0.15)';
+                        btn.style.borderColor = 'rgba(77,166,255,0.45)';
+                        btn.style.color = 'var(--accent-primary)';
+
+                        // Select radio
+                        var radio = btn.querySelector('input[type="radio"]');
+                        if (radio) {
+                            radio.checked = true;
+                            radio.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+
+                        // Show/hide conditional groups
+                        var val = btn.dataset.val;
+                        document.getElementById('qr-auto-card-group').style.display = val === 'auto-card' ? 'block' : 'none';
+                        document.getElementById('qr-url-group').style.display = val === 'custom' ? 'block' : 'none';
+                        document.getElementById('qr-upload-group').style.display = val === 'upload' ? 'block' : 'none';
+                        // qr-customization-group stays visible for all except upload
+                        document.getElementById('qr-customization-group').style.display = val === 'upload' ? 'none' : 'block';
+                    });
+                });
+
+                // QR Placement pills sync
+                document.querySelectorAll('#qr-placement-btns input[type="radio"]').forEach(function(r) {
+                    r.addEventListener('change', function() {
+                        document.querySelectorAll('#qr-placement-btns .lp-place-btn').forEach(function(p) {
+                            p.classList.remove('lp-place-active');
+                        });
+                        r.closest('.lp-place-btn').classList.add('lp-place-active');
+                    });
+                });
+
+                // Wire QR D-pad
+                function wireQrDpad() {
+                    var dpad = document.querySelector('#qr-code-accordion .lp-dpad:not([data-wired="true"])');
+                    if (!dpad) { setTimeout(wireQrDpad, 600); return; }
                     dpad.querySelectorAll('.move-btn').forEach(function(btn) {
                         btn.addEventListener('click', function(e) {
                             e.preventDefault();
@@ -1591,9 +1629,9 @@
                             }
                         });
                     });
-                    dpad.dataset.wired = "true";
+                    dpad.dataset.wired = 'true';
                 }
-                setTimeout(wireQRDpad, 500);
+                setTimeout(wireQrDpad, 800);
             })();
             </script>
 
@@ -2418,8 +2456,33 @@
     </div>
 
     <!-- [NEW] Editor Premium Enhancements -->
+    <script src="toolbar-tab-nav.js"></script>
     <script src="editor-premium.js" defer></script>
-<script src="editor-premium-v2.js" defer></script>
+    <script src="editor-premium-v2.js" defer></script>
+
+    <!-- Toolbar Dropdowns & Mobile Fallbacks -->
+    <script>
+    // ── Mobile Proxy Bindings ──────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+        // Buttons with data-trigger-id automatically click their desktop counterparts
+        document.querySelectorAll('[data-trigger-id]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-trigger-id');
+                const targetBtn = document.getElementById(targetId);
+                if (targetBtn) targetBtn.click();
+            });
+        });
+
+        // Buttons with specific IDs ending in -menu also proxy (fallback)
+        document.querySelectorAll('[id$="-menu"]').forEach(btn => {
+            const baseId = btn.id.replace('-menu', '');
+            const targetBtn = document.getElementById(baseId);
+            if (targetBtn) {
+                btn.addEventListener('click', () => targetBtn.click());
+            }
+        });
+    });
+    </script>
 
 <script>
 // ── Toolbar Dropdowns: Tools & Download ────────────────────────────────────
