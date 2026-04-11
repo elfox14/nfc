@@ -368,7 +368,14 @@ const ExportManager = {
 
         } catch (error) {
             console.error("Error generating shareable QR code:", error);
-            alert(error.message || "حدث خطأ. لم نتمكن من إنشاء رابط QR Code.");
+            let msg = "حدث خطأ. لم نتمكن من إنشاء رابط QR Code.";
+            if (document.documentElement.lang === 'en') {
+                msg = "An error occurred. We could not generate the QR Code link.";
+            }
+            if (error && error.message && error.message.trim() !== "") {
+                msg += "\n\nError: " + error.message;
+            }
+            alert(msg);
             throw error;
         }
     },

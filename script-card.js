@@ -835,7 +835,11 @@ const CardManager = {
 
             const currentLogo = DOMElements.draggable.logoImg.src;
             const isDefaultLogo = currentLogo.includes('mc-prime-nfc.png');
-            const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
+            let safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
+
+            if (!isDefaultLogo && safeLogo && safeLogo.startsWith('http')) {
+                safeLogo += (safeLogo.includes('?') ? '&' : '?') + 'cb=' + Date.now();
+            }
 
             const isUseLogoChecked = document.getElementById('qr-use-logo').checked;
             const dotsColor = document.getElementById('qr-dots-color').value || "#000000";
@@ -884,7 +888,14 @@ const CardManager = {
 
         } catch (error) {
             console.error("Error generating shareable QR code:", error);
-            alert("حدث خطأ. لم نتمكن من إنشاء رابط QR Code.");
+            let msg = "حدث خطأ. لم نتمكن من إنشاء رابط QR Code.";
+            if (document.documentElement.lang === 'en') {
+                msg = "An error occurred. We could not generate the QR Code link.";
+            }
+            if (error && error.message && error.message.trim() !== "") {
+                msg += "\n\nError: " + error.message;
+            }
+            alert(msg);
         } finally {
             UIManager.setButtonLoadingState(button, false);
         }
