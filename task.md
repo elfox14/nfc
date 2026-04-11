@@ -15,9 +15,10 @@
     - [x] Add `ul#toolbar-more-menu` to `editor.html`
     - [x] Add items: Home, Gallery, Blog
 - [x] Style "More" Dropdown (CSS)
-    - [x] Add trigger / menu interaction styles
-- [x] Verify AR/EN Parity
-- [x] Adjust `editor-enhancements.css` layout padding
+    - [x] Remove restrictive overflow from accordions and sections
+- [x] Fix horizontal clipping in upload zones
+- [x] Add sidebar bottom padding for scroll safety
+- [x] Verify fix across multiple panels
 - [x] Verify fix in `editor.html` and `editor-en.html`
 - [x] Verify responsive behavior
 

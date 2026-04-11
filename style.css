@@ -827,9 +827,10 @@ html.ltr .dynamic-social-link span {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    gap: 20px;
-    width: 510px; /* <--- CHANGED FROM 100% */
-    max-width: 95%; /* <--- ADDED */
+    gap: 30px; /* More breathing room */
+    width: 100%; 
+    max-width: 510px;
+    margin: 0 auto;
     flex-shrink: 0;
     border-radius: 15px;
 }
@@ -857,13 +858,13 @@ html.ltr .dynamic-social-link span {
 .business-card {
     width: 100%;
     height: 100%;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border-radius: 20px; /* Modernized radius */
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     position: relative;
     background-color: #000;
     flex-shrink: 0;
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 #card-name,

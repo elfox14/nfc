@@ -63,8 +63,22 @@ body.editor-body {
     align-items: center;
     justify-content: center;
     position: relative;
-    overflow: hidden;
+    overflow: auto !important; /* Allow scrolling if content is large */
     border: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 40px; /* Safe space around the cards */
+}
+
+/* Canvas scrollbar customization */
+.pro-canvas::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.pro-canvas::-webkit-scrollbar-thumb {
+    background: rgba(77, 166, 255, 0.2);
+    border-radius: 10px;
+}
+.pro-canvas::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 /* ===========================================
@@ -76,7 +90,6 @@ body.editor-body {
     border-radius: 16px !important;
     margin-bottom: 8px !important;
     transition: all 0.3s var(--ease-out-quint) !important;
-    overflow: hidden;
 }
 
 .fieldset-accordion[open], .lp-accordion[open] {
@@ -1414,6 +1427,17 @@ html[dir="rtl"] .fieldset-accordion summary::after {
 .lp-sub-summary i {
     font-size: 12px !important;
     color: var(--accent-primary) !important;
+}
+
+.pro-sidebar {
+    padding-bottom: 200px !important; /* Extra space for scroll safety */
+}
+
+/* Fix for possible height issues in details content */
+.fieldset-accordion .fieldset-content, 
+.lp-accordion .lp-body {
+    max-height: none !important;
+    overflow: visible !important;
 }
 
 /* -- Layout Adjustment for Floating Toolbar ------------------ */
