@@ -7,8 +7,9 @@
 const Auth = {
 
     getBaseUrl() {
+        const p = window.location.protocol;
         const h = window.location.hostname;
-        if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:3000';
+        if (p === 'file:' || h === 'localhost' || h === '127.0.0.1') return 'http://localhost:3000';
         return 'https://mcprim.com';
     },
 
