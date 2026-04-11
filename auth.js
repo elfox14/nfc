@@ -10,7 +10,7 @@ const Auth = {
         const p = window.location.protocol;
         const h = window.location.hostname;
         if (p === 'file:' || h === 'localhost' || h === '127.0.0.1') return 'http://localhost:3000';
-        return 'https://mcprim.com';
+        return 'https://mcprim.com/nfc';
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },
