@@ -234,24 +234,26 @@ const Auth = {
             }
 
             let finished = false;
+            let popupCheckInterval = null;
 
-            const cleanup = () => {
+            const finish = (result) => {
+                if (finished) return;
+                finished = true;
                 window.removeEventListener('message', messageHandler);
+                if (popupCheckInterval) clearInterval(popupCheckInterval);
                 if (popup && !popup.closed) popup.close();
+                resolve(result);
             };
 
             const messageHandler = (event) => {
                 if (event.origin !== this.getBaseUrl() && event.origin !== 'https://mcprim.com' && event.origin !== 'https://www.mcprim.com') return;
                 if (!event.data || event.data.type !== 'google-auth' || finished) return;
 
-                finished = true;
-                cleanup();
-
                 if (event.data.success) {
                     this.setSession(event.data.token, event.data.user);
-                    resolve({ success: true });
+                    finish({ success: true });
                 } else {
-                    resolve({
+                    finish({
                         success: false,
                         error: event.data.error || (
                             document.documentElement.lang === 'en'
@@ -264,11 +266,42 @@ const Auth = {
 
             window.addEventListener('message', messageHandler);
 
-            setTimeout(() => {
+            // Poll for popup closure — primary fallback when postMessage fails
+            // (e.g., when Google's COOP headers null out window.opener)
+            popupCheckInterval = setInterval(async () => {
                 if (finished) return;
-                finished = true;
-                cleanup();
-                resolve({
+                try {
+                    if (popup.closed) {
+                        console.log('[Auth] Popup closed. Checking session via refresh...');
+                        // Popup closed without postMessage — try refreshSession using HttpOnly cookies
+                        const refreshed = await this.refreshSession();
+                        if (refreshed) {
+                            console.log('[Auth] Session recovered via cookie refresh after popup close');
+                            finish({ success: true });
+                        } else {
+                            // Also check if localStorage was updated (e.g., by #gauth redirect)
+                            const userStr = localStorage.getItem('authUser');
+                            if (userStr && userStr !== 'null') {
+                                this.user = JSON.parse(userStr);
+                                console.log('[Auth] Session recovered from localStorage after popup close');
+                                finish({ success: true });
+                            } else {
+                                console.warn('[Auth] Popup closed but no session found');
+                                finish({
+                                    success: false,
+                                    error: document.documentElement.lang === 'en'
+                                        ? 'Login window closed. Please try again.'
+                                        : 'تم إغلاق نافذة تسجيل الدخول. حاول مرة أخرى.'
+                                });
+                            }
+                        }
+                    }
+                } catch (e) { /* popup.closed may throw if cross-origin */ }
+            }, 1000);
+
+            // Safety timeout — 2 minutes max
+            setTimeout(() => {
+                finish({
                     success: false,
                     error: document.documentElement.lang === 'en'
                         ? 'Timeout. Try again.'
@@ -362,7 +395,10 @@ const Auth = {
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.location.pathname.includes('dashboard')) {
-        await Auth.refreshSession();
+        // Only refresh if not already logged in (e.g., from #gauth hash or localStorage)
+        if (!Auth.isLoggedIn()) {
+            await Auth.refreshSession();
+        }
     }
     Auth.updateNavAuth();
 });

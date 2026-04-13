@@ -989,22 +989,45 @@ app.get('/api/auth/google/callback', async (req, res) => {
       path: '/'
     });
 
-    // Send auth data to the popup opener via postMessage
+    // Build the dashboard URL for fallback redirect
+    const dashboardPage = lang === 'en'
+      ? `${frontendBase}/dashboard-en.html`
+      : `${frontendBase}/dashboard.html`;
+
+    const gauthData = encodeURIComponent(JSON.stringify({ token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } }));
+
+    // Send auth data to the popup opener via postMessage, with fallback redirect
     const script = `
       (function() {
+        var hasOpener = false;
         try {
-          if (window.opener && !window.opener.closed) {
-            const msg = {
+          hasOpener = !!(window.opener && !window.opener.closed);
+        } catch (e) {}
+
+        if (hasOpener) {
+          // Path 1: Popup flow — send postMessage to opener window, then close
+          try {
+            var msg = {
               type: 'google-auth',
               success: true,
               token: ${JSON.stringify(accessToken)},
               user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
             };
-            const origins = ${JSON.stringify(process.env.NODE_ENV === 'production' ? ['https://mcprim.com', 'https://www.mcprim.com'] : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'])};
-            origins.forEach(origin => window.opener.postMessage(msg, origin));
-          }
-        } catch (e) {}
-        window.close();
+            var origins = ${JSON.stringify(process.env.NODE_ENV === 'production' ? ['https://mcprim.com', 'https://www.mcprim.com'] : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'])};
+            origins.forEach(function(origin) { window.opener.postMessage(msg, origin); });
+          } catch (e) { console.error('[GoogleAuth] postMessage failed:', e); }
+
+          // Close the popup
+          window.close();
+
+          // If popup didn't close, fallback to redirect
+          setTimeout(function() {
+            window.location.replace(${JSON.stringify(dashboardPage)} + '#gauth=' + ${JSON.stringify(gauthData)});
+          }, 1000);
+        } else {
+          // Path 2: No opener (popup lost reference, or redirected tab) — go directly to dashboard
+          window.location.replace(${JSON.stringify(dashboardPage)} + '#gauth=' + ${JSON.stringify(gauthData)});
+        }
       })();
     `;
 
@@ -1022,21 +1045,27 @@ app.get('/api/auth/google/callback', async (req, res) => {
     console.error('Google OAuth error:', err);
     const errorMessage = err.message || 'Authentication failed';
     
-    // Send error to the popup opener via postMessage
+    // Send error to the popup opener via postMessage, with fallback redirect
     const script = `
       (function() {
         try {
           if (window.opener && !window.opener.closed) {
-            const msg = {
+            var msg = {
               type: 'google-auth',
               success: false,
               error: ${JSON.stringify(errorMessage)}
             };
-            const origins = ${JSON.stringify(process.env.NODE_ENV === 'production' ? ['https://mcprim.com', 'https://www.mcprim.com'] : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'])};
-            origins.forEach(origin => window.opener.postMessage(msg, origin));
+            var origins = ${JSON.stringify(process.env.NODE_ENV === 'production' ? ['https://mcprim.com', 'https://www.mcprim.com'] : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'])};
+            origins.forEach(function(origin) { window.opener.postMessage(msg, origin); });
           }
-        } catch (e) {}
+        } catch (e) { console.error('[GoogleAuth] postMessage error failed:', e); }
+
         window.close();
+
+        // Fallback: redirect to login page with error
+        setTimeout(function() {
+          window.location.replace(${JSON.stringify(loginPage)} + '?error=' + ${JSON.stringify(encodeURIComponent(errorMessage))});
+        }, 500);
       })();
     `;
 
