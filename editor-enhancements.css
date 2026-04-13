@@ -17,23 +17,29 @@
 }
 
 /* Atmospheric Global Styles */
-body.editor-body {
-    background: radial-gradient(circle at 50% 50%, #1a2a3b 0%, #0f172a 100%);
-    color: #e6f0f7;
-    overflow: hidden; /* Main editor shouldn't scroll, sidebars scan */
-    height: 100vh;
+body.editor-body, html {
+    background: radial-gradient(circle at 50% 50%, #1a2a3b 0%, #0f172a 100%) !important;
+    color: #e6f0f7 !important;
+    overflow-y: auto !important; /* Force scrolling at the document level */
+    overflow-x: hidden !important;
+    height: auto !important; /* Prevent height locking */
+    min-height: 100vh !important;
+    margin: 0 !important;
 }
 
 /* ===========================================
    LAYOUT & SIDEBARS — Glassmorphism V2
    =========================================== */
-.pro-layout {
-    display: grid;
-    grid-template-columns: 340px 1fr 340px;
-    height: 100vh;
-    padding: 78px 12px 12px 12px; /* Top padding for floating toolbar */
-    gap: 12px;
-    box-sizing: border-box;
+/* Desktop-only grid layout — never applies on mobile */
+@media (min-width: 1025px) {
+    .pro-layout {
+        display: grid;
+        grid-template-columns: 340px 1fr 340px;
+        min-height: 100vh;
+        padding: 88px 12px 12px 12px;
+        gap: 12px;
+        box-sizing: border-box;
+    }
 }
 
 .pro-sidebar {
@@ -1440,9 +1446,497 @@ html[dir="rtl"] .fieldset-accordion summary::after {
     overflow: visible !important;
 }
 
-/* -- Layout Adjustment for Floating Toolbar ------------------ */
-.pro-layout {
-    padding-top: 88px !important;
-    height: 100vh !important;
-    box-sizing: border-box !important;
+body.editor-body {
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+    padding: 0 !important; /* Remove old fixed-toolbar gap */
+}
+
+html {
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* --- Structural Re-Architecture: Document Scroll + Sticky Sidebars (DESKTOP ONLY) --- */
+@media (min-width: 1025px) {
+    .pro-layout {
+        height: auto !important;
+        min-height: calc(100vh - 60px) !important;
+        overflow: visible !important;
+        box-sizing: border-box !important;
+        display: grid !important; 
+        grid-template-rows: auto !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+
+    .pro-toolbar {
+        position: sticky !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 1100 !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+
+    .pro-sidebar {
+        position: sticky !important;
+        top: 60px !important;
+        height: calc(100vh - 60px) !important;
+        overflow-y: auto !important;
+        z-index: 1000 !important;
+        padding-top: 10px !important;
+    }
+
+    .pro-canvas {
+        padding-top: 5px !important;
+        padding-bottom: 20px !important;
+        height: auto !important;
+        min-height: calc(100vh - 60px) !important;
+        overflow-y: visible !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+    }
+
+    .cards-wrapper {
+        min-height: 750px !important;
+        flex: 1 0 auto !important;
+        width: 100% !important;
+    }
+}
+
+
+/* Compact Footer for Editor - Now at end of body scroll */
+.editor-body .site-footer {
+    position: relative !important;
+    z-index: 1050 !important;
+    background: var(--form-bg);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 40px 0 !important;
+    margin-top: 0 !important;
+}
+
+/* ===========================================================================
+   MOBILE LAYOUT OVERHAUL — Professional App-Like Experience
+   Overrides the sticky-sidebar desktop architecture for screens ≤ 1024px
+   =========================================================================== */
+@media (max-width: 1024px) {
+
+    /* --- 1. REVERT DESKTOP ARCHITECTURE --- */
+    body.editor-body {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important; /* App shell — no document scroll */
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    html {
+        height: 100vh !important;
+        overflow: hidden !important;
+    }
+
+    .pro-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        gap: 0 !important;
+        overflow: hidden !important;
+        grid-template-columns: 1fr !important; /* Kill 3-column grid */
+        grid-template-rows: 1fr !important;
+        flex: 1 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+    }
+
+    /* Hide footer on mobile — app-like experience */
+    .editor-body .site-footer {
+        display: none !important;
+    }
+
+    /* --- 2. TOOLBAR — Compact & Fixed --- */
+    .pro-toolbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 2100 !important;
+        height: 50px !important;
+        min-height: 50px !important;
+        padding: 0 10px !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        background: rgba(15, 23, 42, 0.95) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        display: flex !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Hide desktop-only toolbar elements */
+    .tb-zone.tb-center { display: none !important; }
+    .tb-nav-icons { display: none !important; }
+    .tb-divider { display: none !important; }
+    .tb-label { display: none !important; }
+    .tb-autosave { display: none !important; }
+    .user-status-bar { display: none !important; }
+    .download-container { display: none !important; }
+    .tb-history { display: none !important; }
+    #save-share-btn { display: none !important; }
+
+    /* Mobile toolbar zones */
+    .tb-zone.tb-left {
+        flex: 0 0 auto !important;
+        gap: 6px !important;
+    }
+
+    .tb-zone.tb-right {
+        flex: 1 !important;
+        justify-content: flex-end !important;
+        gap: 6px !important;
+    }
+
+    .tb-logo-text { display: none !important; }
+
+    .tb-logo img {
+        height: 26px !important;
+    }
+
+    .tb-icon-btn {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        font-size: 14px !important;
+    }
+
+    .tb-action-btn {
+        padding: 6px 10px !important;
+        font-size: 13px !important;
+        min-width: auto !important;
+    }
+
+    /* --- 3. CARD PREVIEW AREA — Fixed Top --- */
+    .pro-canvas {
+        position: fixed !important;
+        top: 50px !important; /* Below toolbar */
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        height: 38vh !important;
+        min-height: 0 !important;
+        z-index: 100 !important;
+        background: radial-gradient(ellipse at center, #1a2a3b 0%, #0f172a 100%) !important;
+        border-bottom: 1px solid rgba(77, 166, 255, 0.15) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+        padding: 10px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        grid-column: 1 / -1 !important; /* Span full width if grid persists */
+        grid-row: 1 !important;
+        box-sizing: border-box !important;
+    }
+
+    .cards-wrapper {
+        min-height: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transform-origin: center center !important;
+    }
+
+    /* Scale card to fit the preview area */
+    .card-flipper-container {
+        transform: scale(1) !important;
+        transform-origin: center center !important;
+    }
+
+    /* Flip button styling for mobile */
+    #flip-card-btn-mobile {
+        display: inline-flex !important;
+        position: absolute !important;
+        bottom: -30px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 110 !important;
+        background: rgba(77, 166, 255, 0.15) !important;
+        border: 1px solid rgba(77, 166, 255, 0.3) !important;
+        color: #4da6ff !important;
+        backdrop-filter: blur(10px) !important;
+        padding: 6px 16px !important;
+        border-radius: 20px !important;
+        font-size: 0.75rem !important;
+        gap: 6px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    #flip-card-btn-mobile:active {
+        transform: translateX(-50%) scale(0.95) !important;
+        background: rgba(77, 166, 255, 0.25) !important;
+    }
+
+    /* --- 4. SIDEBAR PANELS — Full Width, Tab-Switched --- */
+    .pro-sidebar {
+        position: fixed !important;
+        top: calc(50px + 38vh) !important; /* toolbar + preview */
+        bottom: 64px !important; /* bottom nav */
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        height: auto !important;
+        z-index: 50 !important;
+        display: none !important; /* Hidden by default, JS toggles */
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 16px 14px 20px 14px !important;
+        padding-top: 16px !important;
+        background: rgba(15, 23, 42, 0.98) !important;
+        backdrop-filter: blur(12px) !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-sizing: border-box !important;
+        grid-column: 1 / -1 !important; /* Span full width if grid persists */
+    }
+
+    .pro-sidebar.active-view {
+        display: block !important;
+        animation: mobileSlideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    }
+
+    /* Glassmorphism for sidebar sections */
+    .pro-sidebar .fieldset,
+    .pro-sidebar fieldset {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-radius: 14px !important;
+        padding: 14px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .pro-sidebar .fieldset legend,
+    .pro-sidebar fieldset legend {
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        color: #8bb8e8 !important;
+        padding: 0 8px !important;
+    }
+
+    /* Accordion styling for mobile */
+    .pro-sidebar .fieldset-accordion summary,
+    .pro-sidebar .lp-summary {
+        padding: 12px 14px !important;
+        font-size: 0.9rem !important;
+        border-radius: 10px !important;
+        transition: background 0.2s ease !important;
+    }
+
+    .pro-sidebar .fieldset-accordion summary:active,
+    .pro-sidebar .lp-summary:active {
+        background: rgba(77, 166, 255, 0.08) !important;
+    }
+
+    /* Form inputs — larger touch targets */
+    .pro-sidebar input[type="text"],
+    .pro-sidebar input[type="number"],
+    .pro-sidebar input[type="url"],
+    .pro-sidebar input[type="email"],
+    .pro-sidebar input[type="tel"],
+    .pro-sidebar select,
+    .pro-sidebar textarea {
+        font-size: 16px !important; /* Prevents iOS zoom */
+        padding: 12px !important;
+        border-radius: 10px !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    .pro-sidebar input:focus,
+    .pro-sidebar select:focus,
+    .pro-sidebar textarea:focus {
+        border-color: rgba(77, 166, 255, 0.4) !important;
+        box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.1) !important;
+        outline: none !important;
+    }
+
+    /* Buttons in sidebar */
+    .pro-sidebar .btn {
+        padding: 12px 16px !important;
+        border-radius: 10px !important;
+        font-size: 0.85rem !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .pro-sidebar .btn:active {
+        transform: scale(0.97) !important;
+    }
+
+    /* Range sliders — bigger touch area */
+    .pro-sidebar input[type="range"] {
+        height: 6px !important;
+        -webkit-appearance: none !important;
+        border-radius: 3px !important;
+    }
+
+    /* Color inputs */
+    .pro-sidebar input[type="color"] {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 10px !important;
+        padding: 2px !important;
+        cursor: pointer !important;
+    }
+
+    /* --- 5. BOTTOM NAVIGATION — Glassmorphism & Interactive --- */
+    .mobile-bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 64px !important;
+        z-index: 2200 !important;
+        background: rgba(15, 23, 42, 0.92) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3) !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        padding: 0 !important;
+        padding-bottom: env(safe-area-inset-bottom) !important;
+    }
+
+    .mobile-nav-item {
+        background: none !important;
+        border: none !important;
+        color: rgba(255, 255, 255, 0.45) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        font-size: 0.68rem !important;
+        font-weight: 500 !important;
+        padding: 8px 16px !important;
+        cursor: pointer !important;
+        transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+        position: relative !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .mobile-nav-item i {
+        font-size: 1.15rem !important;
+        transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    }
+
+    .mobile-nav-item span {
+        letter-spacing: 0.3px !important;
+        transition: color 0.25s ease, transform 0.25s ease !important;
+    }
+
+    /* Active state — glow effect */
+    .mobile-nav-item.active {
+        color: #4da6ff !important;
+    }
+
+    .mobile-nav-item.active i {
+        transform: translateY(-2px) scale(1.1) !important;
+        filter: drop-shadow(0 0 8px rgba(77, 166, 255, 0.4)) !important;
+    }
+
+    .mobile-nav-item.active::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 28px !important;
+        height: 3px !important;
+        background: linear-gradient(90deg, #4da6ff, #2d86ff) !important;
+        border-radius: 0 0 4px 4px !important;
+    }
+
+    /* Press feedback */
+    .mobile-nav-item:active {
+        transform: scale(0.92) !important;
+    }
+
+    /* --- 6. SCROLLBAR STYLING --- */
+    .pro-sidebar::-webkit-scrollbar {
+        width: 3px !important;
+    }
+
+    .pro-sidebar::-webkit-scrollbar-track {
+        background: transparent !important;
+    }
+
+    .pro-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(77, 166, 255, 0.2) !important;
+        border-radius: 3px !important;
+    }
+
+    /* --- 7. MODALS — Full screen on mobile --- */
+    .modal-overlay {
+        z-index: 9999 !important;
+    }
+
+    .modal-content {
+        width: 92% !important;
+        max-width: 400px !important;
+        max-height: 85vh !important;
+        border-radius: 16px !important;
+    }
+
+    /* --- 8. TOOLBAR MORE MENU --- */
+    .toolbar-more-menu,
+    #toolbar-more-menu-floating {
+        position: fixed !important;
+        top: 50px !important;
+        right: 10px !important;
+        z-index: 2300 !important;
+        min-width: 200px !important;
+        background: rgba(15, 23, 42, 0.96) !important;
+        backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+        overflow: hidden !important;
+    }
+
+    /* --- 9. HIDE DESKTOP PRINT STYLES --- */
+    #card-back-preview {
+        display: block !important;
+    }
+}
+
+/* Panel slide-up animation */
+@keyframes mobileSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

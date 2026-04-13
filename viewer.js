@@ -450,7 +450,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (container.children.length === 0) {
-            container.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">${i18n.noLinksAvailable}</p>`;
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary); opacity: 0.7;">
+                    <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 15px; display: block; color: var(--accent-primary);"></i>
+                    <p style="font-size: 0.95rem; line-height: 1.5;">${i18n.ownerHiddenContact || 'No contact information available at the moment'}</p>
+                </div>`;
         }
     };
 
@@ -1240,9 +1244,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const setupMobileMenu = () => {
+        const toggle = document.getElementById('mobile-menu-toggle');
+        const navLinks = document.querySelector('.viewer-nav .nav-links');
+        
+        if (!toggle || !navLinks) return;
+
+        // Create overlay if missing
+        let overlay = document.querySelector('.mobile-menu-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'mobile-menu-overlay';
+            document.body.appendChild(overlay);
+        }
+
+        const toggleMenu = () => {
+            navLinks.classList.toggle('active');
+            overlay.classList.toggle('active');
+            toggle.querySelector('i').className = navLinks.classList.contains('active') ? 'fas fa-times' : 'fas fa-bars';
+            document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+        };
+
+        toggle.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+        
+        // Close menu when a link is clicked
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (navLinks.classList.contains('active')) toggleMenu();
+            });
+        });
+    };
+
     const initializeViewer = async () => {
         setupThemeToggle();
         setupMobileTabs();
+        setupMobileMenu();
 
         try {
             let data = null;

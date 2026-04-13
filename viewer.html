@@ -7,9 +7,9 @@
             w[l] = w[l] || []; w[l].push({
                 'gtm.start':
                     new Date().getTime(), event: 'gtm.js'
-            }); var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+                }); var f = d.getElementsByTagName(s)[0],
+                    j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                        'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
     <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
@@ -52,7 +52,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-    <link rel="stylesheet" href="viewer.css">
+    <link rel="stylesheet" href="viewer.css?v=3.0">
     <script src="lang-switcher.js" defer></script>
 
     <meta name="color-scheme" content="light dark">
@@ -104,6 +104,9 @@
             <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME Logo"
                 style="height: 32px; width: auto;">
         </a>
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="تبديل القائمة">
+            <i class="fas fa-bars"></i>
+        </button>
         <div class="nav-links">
             <a href="index.html">الرئيسية</a>
             <a href="gallery.html">المعرض</a>

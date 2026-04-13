@@ -176,6 +176,9 @@
     // 3. SCROLL-TRIGGERED ANIMATIONS for side columns
     // ════════════════════════════════════════════════════════════════════════
     function initScrollAnimations() {
+        // Skip scroll animations on mobile — the tab system handles visibility
+        if (window.innerWidth <= 1024) return;
+
         const style = document.createElement('style');
         style.textContent = `
         @keyframes slideInLeft {

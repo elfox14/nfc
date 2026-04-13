@@ -33,12 +33,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
     <!-- Project stylesheets -->
-    <link rel="stylesheet" href="style.css?v=3.5">
-    <link rel="stylesheet" href="mobile.css?v=3.5">
-    <link rel="stylesheet" href="toast.css?v=3.5">
-    <link rel="stylesheet" href="editor-enhancements.css?v=3.5">
-    <link rel="stylesheet" href="toolbar-enhancements.css?v=3.5">
-    <link rel="stylesheet" href="logo-panel.css?v=3.5">
+    <link rel="stylesheet" href="style.css?v=4.2">
+    <link rel="stylesheet" href="mobile.css?v=4.2">
+    <link rel="stylesheet" href="toast.css?v=4.2">
+    <link rel="stylesheet" href="editor-enhancements.css?v=5.5">
+    <link rel="stylesheet" href="toolbar-enhancements.css?v=4.2">
+    <link rel="stylesheet" href="logo-panel.css?v=4.2">
 
     <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
@@ -2041,6 +2041,49 @@
         </aside>
 
     </div>
+    
+    <!-- Footer moved outside the entire layout -->
+    <footer class="site-footer" role="contentinfo" style="margin-top: 0; width: 100%;">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>MC PRIME</h3>
+                    <p>Premium NFC smart business card solutions for individuals and companies.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul role="list">
+                        <li><a href="index.html#features">Features</a></li>
+                        <li><a href="gallery.html">Gallery</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="editor-en.html">Design Editor</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <ul role="list">
+                        <li><a href="index.html#faq">FAQ</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-links" style="display: flex; gap: 10px;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="current-year-footer-en">2026</span> All rights reserved to MC PRIME.</p>
+            </div>
+        </div>
+    </footer>
 
     <div class="visually-hidden" aria-live="polite" id="live-announcer"></div>
     <div id="save-toast" class="toast"></div>
@@ -2232,15 +2275,7 @@
         </div>
     </div>
 
-    <!-- NEW: Floating button to exit preview mode -->
-    <button id="exit-preview-btn" class="btn btn-secondary"
-        style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">
-        <i class="fas fa-times"></i> Exit Preview
-    </button>
-
-
-
-    <!-- NEW: Floating button to exit preview mode -->
+    <!-- Floating button to exit preview mode -->
     <button id="exit-preview-btn" class="btn btn-secondary"
         style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;">
         <i class="fas fa-times"></i> Exit Preview
@@ -2382,58 +2417,11 @@
             <span>Save & Share</span>
         </button>
     </nav>
-    <!-- Footer -->
-    <footer class="site-footer" role="contentinfo">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>MC PRIME</h3>
-                    <p>We provide smart NFC business card solutions for individuals and companies.</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Quick Links</h3>
-                    <ul role="list">
-                        <li><a href="index-en.html#features">Features</a></li>
-                        <li><a href="gallery-en.html">Gallery</a></li>
-                        <li><a href="blog-en.html">Blog</a></li>
-                        <li><a href="editor-en.html">Design Editor</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Support</h3>
-                    <ul role="list">
-                        <li><a href="index-en.html#faq">FAQ</a></li>
-                        <li><a href="contact-en.html">Contact Us</a></li>
-                        <li><a href="privacy-en.html">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Follow Us</h3>
-                    <div class="social-links">
-                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="Facebook" title="Visit our Facebook page">
-                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="Instagram" title="Follow us on Instagram">
-                            <i class="fab fa-instagram" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="LinkedIn" title="Connect with us on LinkedIn">
-                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener noreferrer"
-                            aria-label="WhatsApp" title="Contact us on WhatsApp">
-                            <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 MC PRIME. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <script>
+        // Set dynamic year for editor footer
+        const editorYearSpan = document.getElementById('editor-footer-year');
+        if (editorYearSpan) editorYearSpan.textContent = new Date().getFullYear();
+    </script>
 
     <!-- Mobile More Menu (Floating) -->
     <div id="toolbar-more-menu-floating" class="toolbar-more-menu">

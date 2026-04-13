@@ -161,6 +161,8 @@
     // 3. LIVE VIEW COUNTER (localStorage-based with session tracking)
     // ================================================================
     function initViewCounter() {
+        if (document.getElementById('view-counter-badge')) return; // Prevent duplicates
+
         const cardId = getCardId();
         if (!cardId) return;
 

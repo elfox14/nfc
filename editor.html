@@ -33,12 +33,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
     <!-- ملفات التنسيق الخاصة بالمشروع -->
-    <link rel="stylesheet" href="style.css?v=2.0">
-    <link rel="stylesheet" href="mobile.css?v=2.0">
+    <link rel="stylesheet" href="style.css?v=2.2">
+    <link rel="stylesheet" href="mobile.css?v=2.2">
     <link rel="stylesheet" href="toast.css">
-    <link rel="stylesheet" href="editor-enhancements.css?v=1.0">
-    <link rel="stylesheet" href="toolbar-enhancements.css?v=1.0">
-    <link rel="stylesheet" href="logo-panel.css?v=1.0">
+    <link rel="stylesheet" href="editor-enhancements.css?v=3.5">
+    <link rel="stylesheet" href="toolbar-enhancements.css?v=1.3">
+    <link rel="stylesheet" href="logo-panel.css?v=1.3">
 
     <!-- المكتبات الخارجية -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
@@ -218,7 +218,7 @@
             <!-- Language -->
             <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="تبديل اللغة" onclick="window.location.href='editor-en.html'">
                 <i class="fas fa-language"></i>
-                <span class="tb-label">EN</span>
+                <span class="tb-label">e</span>
             </button>
 
             <div class="tb-divider"></div>
@@ -1962,6 +1962,49 @@
         </aside>
 
     </div>
+    
+    <!-- Footer moved outside the entire layout -->
+    <footer class="site-footer" role="contentinfo" style="margin-top: 0; width: 100%;">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>MC PRIME</h3>
+                    <p>نقدم حلول بطاقات العمل الذكية NFC للأفراد والشركات.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <ul role="list">
+                        <li><a href="index.html#features">المميزات</a></li>
+                        <li><a href="gallery.html">المعرض</a></li>
+                        <li><a href="blog.html">المدونة</a></li>
+                        <li><a href="editor.html">محرر التصميم</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الدعم</h3>
+                    <ul role="list">
+                        <li><a href="index.html#faq">الأسئلة الشائعة</a></li>
+                        <li><a href="contact.html">اتصل بنا</a></li>
+                        <li><a href="privacy.html">سياسة الخصوصية</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>تابعنا</h3>
+                    <div class="social-links" style="display: flex; gap: 10px;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="فيسبوك">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="إنستغرام">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="current-year-footer">2026</span> جميع الحقوق محفوظة لـ MC PRIME.</p>
+            </div>
+        </div>
+    </footer>
 
     <div class="visually-hidden" aria-live="polite" id="live-announcer"></div>
     <div id="save-toast" class="toast"></div>
@@ -2299,58 +2342,6 @@
             <span>حفظ ومشاركة</span>
         </button>
     </nav>
-    <!-- Footer -->
-    <footer class="site-footer" role="contentinfo">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>MC PRIME</h3>
-                    <p>نقدم حلول بطاقات العمل الذكية NFC للأفراد والشركات.</p>
-                </div>
-                <div class="footer-section">
-                    <h3>روابط سريعة</h3>
-                    <ul role="list">
-                        <li><a href="index.html#features">المميزات</a></li>
-                        <li><a href="gallery.html">المعرض</a></li>
-                        <li><a href="blog.html">المدونة</a></li>
-                        <li><a href="editor.html">محرر التصميم</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>الدعم</h3>
-                    <ul role="list">
-                        <li><a href="index.html#faq">الأسئلة الشائعة</a></li>
-                        <li><a href="contact.html">اتصل بنا</a></li>
-                        <li><a href="privacy.html">سياسة الخصوصية</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>تابعنا</h3>
-                    <div class="social-links">
-                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="فيسبوك" title="زر صفحتنا على فيسبوك">
-                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="إنستغرام" title="تابعنا على إنستغرام">
-                            <i class="fab fa-instagram" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="لينكد إن" title="تواصل معنا على لينكد إن">
-                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener noreferrer"
-                            aria-label="واتساب" title="تواصل معنا على واتساب">
-                            <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 MC PRIME. جميع الحقوق محفوظة.</p>
-            </div>
-        </div>
-    </footer>
 
     <!-- Mobile More Menu (Moved to body to avoid overflow issues) -->
     <div id="toolbar-more-menu-floating" class="toolbar-more-menu">
