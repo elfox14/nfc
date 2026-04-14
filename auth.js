@@ -168,9 +168,9 @@ const Auth = {
             }
 
             const data = await res.json();
-            if (data.success && data.user) {
+            if (data.success) {
                 console.log('[Auth] Session initialized successfully via token');
-                this.setSession(null, data.user);
+                if (data.user) this.setSession(null, data.user);
                 return true;
             }
         } catch (err) {
