@@ -1441,9 +1441,10 @@ app.get('/api/auth/me', verifyToken, async (req, res) => {
   }
 });
 
-// Secure session initialization from a short-lived one-time code (OAuth success)
 // POST /api/auth/session-init
-// Exchanges a short-lived session-init token (from Google OAuth popup) for real session cookies
+// Verifies the short-lived one-time token sent via postMessage from Google OAuth popup.
+// Cookies are already set by /google/callback — this just confirms the token is valid
+// and returns user data so the frontend can initialize its session state.
 app.post('/api/auth/session-init', async (req, res) => {
   try {
     const { initToken } = req.body;
@@ -1451,35 +1452,17 @@ app.post('/api/auth/session-init', async (req, res) => {
 
     const decoded = jwt.verify(initToken, process.env.JWT_SECRET);
 
-    // Strict type check — reject any other token type
     if (decoded.type !== 'session-init') {
       return res.status(401).json({ error: 'Invalid token type' });
     }
 
-    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    console.log(`[SessionInit] Confirmed for: ${decoded.email}`);
 
-    // Issue real session cookies
-    const accessToken = createAccessToken({ userId: decoded.userId, email: decoded.email });
-    const refreshTokenValue = createRefreshToken();
-    const hashedRefresh = hashToken(refreshTokenValue);
-
-    await db.collection(usersCollectionName).updateOne(
-      { userId: decoded.userId },
-      { $set: { refreshTokenHash: hashedRefresh } }
-    );
-
-    console.log(`[SessionInit] Session established for: ${decoded.email}`);
-
-    res
-      .cookie('accessToken', accessToken, {
-        httpOnly: true, secure: true, sameSite: 'None',
-        maxAge: 15 * 60 * 1000, path: '/'
-      })
-      .cookie('refreshToken', refreshTokenValue, {
-        httpOnly: true, secure: true, sameSite: 'None',
-        maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth'
-      })
-      .json({ success: true });
+    // Cookies were already set by /google/callback — just return user info
+    res.json({
+      success: true,
+      user: { userId: decoded.userId, email: decoded.email }
+    });
 
   } catch {
     return res.status(401).json({ error: 'Invalid or expired session token' });
