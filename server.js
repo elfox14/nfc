@@ -1012,8 +1012,15 @@ app.get('/api/auth/google/callback', async (req, res) => {
       ? ['https://mcprim.com', 'https://www.mcprim.com']
       : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'];
 
-    // Send success signal to popup opener via postMessage (no sensitive data)
-    // The frontend will call /api/auth/me or refreshSession() to get user data from cookies
+    // SECURITY: Generate a very short-lived (60s), one-time-use token to initialize the session
+    // This allows the SPA to boot even if third-party cookies are blocked by the browser.
+    const sessionInitToken = jwt.sign(
+      { userId: user.userId, email: user.email, type: 'session-init' },
+      config.JWT_SECRET,
+      { expiresIn: '60s' }
+    );
+
+    // Send success signal to popup opener via postMessage
     const script = `
       (function() {
         var hasOpener = false;
@@ -1026,7 +1033,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
           try {
             var msg = {
               type: 'google-auth',
-              success: true
+              success: true,
+              initToken: ${JSON.stringify(sessionInitToken)}
             };
             var origins = ${JSON.stringify(allowedOriginsArray)};
             origins.forEach(function(origin) { window.opener.postMessage(msg, origin); });
@@ -1354,6 +1362,30 @@ app.get('/api/auth/me', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Get user info error:', err);
     res.status(500).json({ error: 'Failed to get user info' });
+  }
+});
+
+// Secure session initialization from a short-lived one-time code (OAuth success)
+app.post('/api/auth/session-init', async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Initialization token missing' });
+
+    const decoded = jwt.verify(token, config.JWT_SECRET);
+    if (decoded.type !== 'session-init') {
+      return res.status(403).json({ error: 'Invalid token type' });
+    }
+
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const user = await db.collection(usersCollectionName).findOne({ userId: decoded.userId });
+    if (!user) return res.status(404).json({ error: 'User no longer exists' });
+
+    console.log(`[SessionInit] Successful boot for: ${user.email}`);
+    res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
+
+  } catch (err) {
+    console.warn('[SessionInit] Failed:', err.message);
+    res.status(401).json({ error: 'Initialization failed or expired' });
   }
 });
 

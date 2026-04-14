@@ -18,6 +18,7 @@ const Auth = {
     get API_LOGOUT() { return `${this.getBaseUrl()}/api/auth/logout`; },
     get API_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
+    get API_SESSION_INIT() { return `${this.getBaseUrl()}/api/auth/session-init`; },
 
     token: null, // Legacy — auth now uses HttpOnly cookies
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
@@ -150,6 +151,33 @@ const Auth = {
         return false;
     },
 
+    async sessionInit(token) {
+        console.log('[Auth] Initializing session via token...');
+        try {
+            const res = await fetch(this.API_SESSION_INIT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ token }),
+            });
+
+            if (!res.ok) {
+                console.warn('[Auth] sessionInit failed with status:', res.status);
+                return false;
+            }
+
+            const data = await res.json();
+            if (data.success && data.user) {
+                console.log('[Auth] Session initialized successfully via token');
+                this.setSession(null, data.user);
+                return true;
+            }
+        } catch (err) {
+            console.error('[Auth] sessionInit error:', err);
+        }
+        return false;
+    },
+
     // Singleton promise to prevent concurrent refreshes
     _refreshPromise: null,
 
@@ -251,10 +279,19 @@ const Auth = {
                 if (!event.data || event.data.type !== 'google-auth' || finished) return;
 
                 if (event.data.success) {
-                    // SECURITY: Token is in HttpOnly cookies — retrieve user data via refreshSession
-                    console.log('[Auth] Google OAuth success signal received, refreshing session from cookies...');
-                    const refreshed = await this.refreshSession();
-                    if (refreshed) {
+                    // SECURITY: Try to initialize via one-time token first (bypasses third-party cookie blocking)
+                    // If no token, fallback to refreshSession which relies on cookies.
+                    let initialized = false;
+                    if (event.data.initToken) {
+                        initialized = await this.sessionInit(event.data.initToken);
+                    }
+
+                    if (!initialized) {
+                        console.log('[Auth] No init token or init failed, trying cookie-based refresh...');
+                        initialized = await this.refreshSession();
+                    }
+
+                    if (initialized) {
                         finish({ success: true });
                     } else {
                         finish({
