@@ -1,5 +1,7 @@
 'use strict';
 
+const { Resend } = require('resend');
+
 /**
  * Email Service Module
  * Handles sending transactional emails (verification, password reset, etc.)
@@ -110,26 +112,21 @@ const EmailService = {
     /**
      * Send with Resend
      */
-    async _sendWithResend({ to, subject, html, apiKey, fromEmail }) {
+    async _sendWithResend({ to, subject, html, text, apiKey, fromEmail, fromName }) {
         try {
-            const response = await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    from: fromEmail,
-                    to: [to],
-                    subject,
-                    html
-                })
+            const resend = new Resend(apiKey);
+            const from = fromName ? `${fromName} <${fromEmail}>` : fromEmail;
+            const { data, error } = await resend.emails.send({
+                from,
+                to: [to],
+                subject,
+                html,
+                text
             });
 
-            const data = await response.json();
-            if (!response.ok) {
-                console.error('[EmailService] Resend error:', data);
-                return { success: false, error: data };
+            if (error) {
+                console.error('[EmailService] Resend error:', error);
+                return { success: false, error: error.message };
             }
 
             return { success: true, provider: 'resend', id: data.id };
