@@ -180,7 +180,7 @@
         }
 
         .nav-links a {
-            color: var(--text-secondary-color);
+            color: #ffffff;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.95rem;
@@ -228,6 +228,9 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(77, 166, 255, 0.2);
             transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-primary.nav-cta:hover {
@@ -242,14 +245,61 @@
             color: white;
             font-size: 1.5rem;
             cursor: pointer;
+            padding: 5px;
+            z-index: 1002;
         }
 
         @media (max-width: 991px) {
+            .nav-content {
+                padding: 0 15px;
+            }
+
+            .nav-logo img {
+                height: 35px;
+            }
+
             .nav-links {
                 display: none;
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 100%;
+                height: 100vh;
+                background: rgba(18, 28, 41, 0.98);
+                backdrop-filter: blur(25px);
+                -webkit-backdrop-filter: blur(25px);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 1001;
+                gap: 2rem;
             }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links a {
+                font-size: 1.5rem;
+                padding: 10px;
+                color: #ffffff;
+            }
+
+            .nav-links a[aria-current="page"]::after {
+                bottom: -2px;
+            }
+
+            .nav-cta {
+                display: none !important; /* Hide CTA button on mobile to save space */
+            }
+
             .mobile-menu-toggle {
                 display: block;
+            }
+
+            .lang-btn {
+                padding: 4px 10px;
+                font-size: 0.8rem;
             }
         }
 
