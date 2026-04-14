@@ -17,11 +17,16 @@ const EmailService = {
         fromName: process.env.EMAIL_FROM_NAME || 'MC PRIME NFC'
     },
 
-    // Fail-fast: warn loudly if production is using console provider
+    // Fail-fast: warn loudly about email configuration problems in production
     _productionCheck: (function() {
         const provider = process.env.EMAIL_PROVIDER || 'console';
-        if (process.env.NODE_ENV === 'production' && provider === 'console') {
-            console.error('FATAL: EMAIL_PROVIDER is set to "console" in production. Verification and password-reset emails will NOT be delivered to users. Set EMAIL_PROVIDER to "sendgrid" or "resend".');
+        const apiKey = process.env.EMAIL_API_KEY || '';
+        if (process.env.NODE_ENV === 'production') {
+            if (provider === 'console') {
+                console.error('FATAL: EMAIL_PROVIDER is set to "console" in production. Verification and password-reset emails will NOT be delivered to users. Set EMAIL_PROVIDER to "sendgrid" or "resend".');
+            } else if (!apiKey) {
+                console.error(`FATAL: EMAIL_PROVIDER is "${provider}" but EMAIL_API_KEY is not set. Emails will fail at send time.`);
+            }
         }
     })(),
 
