@@ -82,14 +82,14 @@ if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
 
 app.use(cors({
   origin: (origin, cb) => {
-    // In production, block requests with no origin to prevent server-to-server abuse
-    // In development, allow them for tools like Postman/curl
+    // Requests with no origin (health checks, Render monitoring, curl, server-to-server)
+    // In production: allow through but WITHOUT CORS headers (browsers can't abuse this)
+    // In development: allow with full CORS headers for Postman/curl convenience
     if (!origin) {
       if (process.env.NODE_ENV === 'production') {
-        console.warn('[CORS] Request with no origin BLOCKED in production');
-        return cb(new Error('Origin header required in production'));
+        // cb(null, false) = proceed without CORS headers (safe: browsers always send Origin)
+        return cb(null, false);
       }
-      console.log('[CORS] Request with no origin allowed (dev mode)');
       return cb(null, true);
     }
     // In all environments, check against allowedOrigins with flexible subdomain matching
