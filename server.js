@@ -795,7 +795,7 @@ app.post('/api/auth/register', [
 // Login
 app.post('/api/auth/login', [
   body('email').isEmail().normalizeEmail(),
-  body('password').exists()
+  body('password').isLength({ max: 128 }).withMessage('Password too long')
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
