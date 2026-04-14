@@ -1165,7 +1165,8 @@ app.post('/api/auth/forgot-password', [
 });
 
 // Reset Password - Set New Password
-app.post('/api/auth/reset-password/:token', [
+app.post('/api/auth/reset-password', authLimiter, [
+  body('token').notEmpty().withMessage('Token is required'),
   body('password').isLength({ min: 6, max: 128 })
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -1176,8 +1177,7 @@ app.post('/api/auth/reset-password/:token', [
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
-    const { token } = req.params;
-    const { password } = req.body;
+    const { token, password } = req.body; // Token now comes from body
 
     // Verify token
     const secret = process.env.JWT_SECRET;
@@ -1412,6 +1412,33 @@ app.post('/api/auth/session-init', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User no longer exists' });
 
     console.log(`[SessionInit] Successful boot for: ${user.email}`);
+
+    // SECURITY: Explicitly set cookies in the bootstrap phase to ensure persistence
+    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    const refreshToken = createRefreshToken();
+    const hashedRefresh = hashToken(refreshToken);
+
+    await db.collection(usersCollectionName).updateOne(
+      { userId: user.userId },
+      { $set: { refreshTokenHash: hashedRefresh } }
+    );
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/api/auth'
+    });
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 15 * 60 * 1000,
+      path: '/'
+    });
+
     res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
