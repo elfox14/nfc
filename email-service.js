@@ -17,15 +17,19 @@ const EmailService = {
         fromName: process.env.EMAIL_FROM_NAME || 'MC PRIME NFC'
     },
 
-    // Fail-fast: warn loudly about email configuration problems in production
+    // Fail-fast: Stop the server if email configuration is invalid in production
     _productionCheck: (function() {
         const provider = process.env.EMAIL_PROVIDER || 'console';
         const apiKey = process.env.EMAIL_API_KEY || '';
         if (process.env.NODE_ENV === 'production') {
             if (provider === 'console') {
-                console.error('FATAL: EMAIL_PROVIDER is set to "console" in production. Verification and password-reset emails will NOT be delivered to users. Set EMAIL_PROVIDER to "sendgrid" or "resend".');
+                const msg = 'FATAL: EMAIL_PROVIDER is set to "console" in production. Verification and password-reset emails will NOT be delivered. Set EMAIL_PROVIDER to "sendgrid" or "resend".';
+                console.error(msg);
+                throw new Error(msg);
             } else if (!apiKey) {
-                console.error(`FATAL: EMAIL_PROVIDER is "${provider}" but EMAIL_API_KEY is not set. Emails will fail at send time.`);
+                const msg = `FATAL: EMAIL_PROVIDER is "${provider}" but EMAIL_API_KEY is not set. Emails will fail at send time.`;
+                console.error(msg);
+                throw new Error(msg);
             }
         }
     })(),
@@ -138,6 +142,18 @@ const EmailService = {
     // ========== Email Templates ==========
 
     /**
+     * Escape HTML special characters to prevent XSS in email templates
+     */
+    _escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    },
+
+    /**
      * Verification Email Template
      */
     verificationEmail(userName, verifyUrl) {
@@ -145,7 +161,7 @@ const EmailService = {
             subject: 'تأكيد بريدك الإلكتروني - MC PRIME',
             html: `
                 <div style="font-family: 'Tajawal', Arial, sans-serif; direction: rtl; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <h2 style="color: #4DA6FF;">مرحباً ${userName}!</h2>
+                    <h2 style="color: #4DA6FF;">مرحباً ${this._escapeHtml(userName)}!</h2>
                     <p>شكراً لتسجيلك في MC PRIME. لتأكيد بريدك الإلكتروني، اضغط على الزر أدناه:</p>
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="${verifyUrl}" style="background: linear-gradient(135deg, #4DA6FF, #00E5FF); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">تأكيد البريد الإلكتروني</a>
@@ -166,7 +182,7 @@ const EmailService = {
             subject: 'إعادة تعيين كلمة المرور - MC PRIME',
             html: `
                 <div style="font-family: 'Tajawal', Arial, sans-serif; direction: rtl; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <h2 style="color: #4DA6FF;">مرحباً ${userName}!</h2>
+                    <h2 style="color: #4DA6FF;">مرحباً ${this._escapeHtml(userName)}!</h2>
                     <p>تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. اضغط على الزر أدناه:</p>
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="${resetUrl}" style="background: linear-gradient(135deg, #4DA6FF, #00E5FF); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">إعادة تعيين كلمة المرور</a>
@@ -184,8 +200,8 @@ const EmailService = {
             subject: 'طلب حفظ بطاقة جديد - MC PRIME',
             html: `
                 <div style="font-family: 'Tajawal', Arial, sans-serif; direction: rtl; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <h2 style="color: #4DA6FF;">مرحباً ${ownerName}!</h2>
-                    <p>المستخدم <strong>${requesterName}</strong> يرغب في حفظ بطاقتك <strong>"${cardName}"</strong>.</p>
+                    <h2 style="color: #4DA6FF;">مرحباً ${this._escapeHtml(ownerName)}!</h2>
+                    <p>المستخدم <strong>${this._escapeHtml(requesterName)}</strong> يرغب في حفظ بطاقتك <strong>"${this._escapeHtml(cardName)}"</strong>.</p>
                     <p>يمكنك قبول أو رفض الطلب من لوحة التحكم.</p>
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="${requestLink}" style="background: linear-gradient(135deg, #4DA6FF, #00E5FF); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">عرض الطلبات</a>

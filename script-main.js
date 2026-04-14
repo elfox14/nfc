@@ -127,15 +127,21 @@ const CollaborationManager = {
 
         this.ws = new WebSocket(wsUrl);
 
-        this.ws.onopen = () => {
-            console.log('WebSocket connection opened, sending auth...');
-            // Send authentication token as first message (not in URL)
-            const token = (typeof Auth !== 'undefined' && Auth.token) || localStorage.getItem('authToken');
-            if (token) {
-                this.ws.send(JSON.stringify({ type: 'auth', token: token }));
-            } else {
-                console.error('WebSocket: No auth token available');
-                this.ws.close(1008, 'No auth token');
+        this.ws.onopen = async () => {
+            console.log('WebSocket connection opened, fetching auth token...');
+            try {
+                // Fetch a short-lived token via cookies for WebSocket auth
+                const res = await fetch('/api/auth/ws-token', { credentials: 'include' });
+                const data = await res.json();
+                if (data.success && data.token) {
+                    this.ws.send(JSON.stringify({ type: 'auth', token: data.token }));
+                } else {
+                    console.error('WebSocket: Failed to get auth token');
+                    this.ws.close(1008, 'No auth token');
+                }
+            } catch (err) {
+                console.error('WebSocket: Auth token fetch failed:', err);
+                this.ws.close(1008, 'Auth token fetch failed');
             }
         };
 

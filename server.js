@@ -66,7 +66,7 @@ app.use(helmet.contentSecurityPolicy({
     imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com"],
     mediaSrc: ["'self'", "data:"],
     frameSrc: ["'self'", "https://www.youtube.com"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com", "ws:", "wss:"],
+    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com", `wss://${process.env.RENDER_EXTERNAL_HOSTNAME || 'nfc-vjy6.onrender.com'}`],
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
   },
@@ -695,7 +695,7 @@ app.patch('/api/design/:id/element/:elementId', verifyToken, async (req, res) =>
 // Register
 app.post('/api/auth/register', [
   body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
+  body('password').isLength({ min: 6, max: 128 }),
   body('name').trim().notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -779,7 +779,8 @@ app.post('/api/auth/register', [
       path: '/'
     });
 
-    res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
+    // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
+    res.status(201).json({ success: true, user: { name, email, userId, isVerified: false } });
 
   } catch (err) {
     if (err.code === 11000) {
@@ -851,7 +852,8 @@ app.post('/api/auth/login', [
     });
 
     console.log(`[Login] Successful login for: ${email}. Token issued.`);
-    res.json({ success: true, token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } });
+    // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
+    res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Login error:', err);
@@ -1141,7 +1143,7 @@ app.post('/api/auth/forgot-password', [
 
 // Reset Password - Set New Password
 app.post('/api/auth/reset-password/:token', [
-  body('password').isLength({ min: 6 })
+  body('password').isLength({ min: 6, max: 128 })
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -1289,7 +1291,8 @@ app.post('/api/auth/refresh', async (req, res) => {
       path: '/'
     });
 
-    res.json({ success: true, token: newAccessToken, user: { name: user.name, email: user.email, userId: user.userId } });
+    // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
+    res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Token refresh error:', err);
@@ -1347,6 +1350,18 @@ app.get('/api/auth/me', verifyToken, async (req, res) => {
     console.error('Get user info error:', err);
     res.status(500).json({ error: 'Failed to get user info' });
   }
+});
+
+// Issue a short-lived token for WebSocket authentication
+// WebSocket can't send cookies, so the client fetches this token via HTTP (with cookies),
+// then sends it as the first WebSocket message
+app.get('/api/auth/ws-token', verifyToken, (req, res) => {
+  const wsToken = jwt.sign(
+    { userId: req.user.userId, email: req.user.email, type: 'access' },
+    config.JWT_SECRET,
+    { expiresIn: '30s' } // Very short-lived — only for WebSocket handshake
+  );
+  res.json({ success: true, token: wsToken });
 });
 
 // Get User Profile/Designs

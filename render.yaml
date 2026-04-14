@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: nfc-business-card-editor
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: NODE_ENV
+        value: production

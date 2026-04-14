@@ -19,39 +19,32 @@ const Auth = {
     get API_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
 
-    token: localStorage.getItem('authToken') || null,
+    token: null, // Legacy — auth now uses HttpOnly cookies
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     isLoggedIn() {
         const userStr = localStorage.getItem('authUser');
-        const tokenStr = localStorage.getItem('authToken');
-        return !!(userStr && userStr !== 'null' && userStr !== 'undefined' && tokenStr);
+        return !!(userStr && userStr !== 'null' && userStr !== 'undefined');
     },
 
+    // SECURITY: Token is in HttpOnly cookies only — we only store user info in localStorage
     setSession(token, user) {
-        console.log('[Auth] Setting session:', { user, token: token ? (token.substring(0, 10) + '...') : null });
-        this.token = token;
+        // 'token' parameter kept for backward compatibility but no longer stored
+        console.log('[Auth] Setting session:', { user: user?.email });
         this.user = user;
         localStorage.setItem('authUser', JSON.stringify(user));
-        if (token) {
-            localStorage.setItem('authToken', token);
-        }
+        // Do NOT store token in localStorage — HttpOnly cookies handle auth
     },
 
     clearSession() {
-        this.token = null;
         this.user = null;
         localStorage.removeItem('authUser');
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('authToken'); // Clean up legacy token if present
     },
 
     getHeader() {
-        // Include token from memory or localStorage
-        const t = this.token || localStorage.getItem('authToken');
-        if (t) {
-            this.token = t;
-            return { 'Authorization': 'Bearer ' + t };
-        }
+        // SECURITY: Auth is handled by HttpOnly cookies (credentials: 'include')
+        // No longer sending Authorization header with token from localStorage
         return {};
     },
 
@@ -76,7 +69,7 @@ const Auth = {
             const data = await res.json();
 
             if (data.success) {
-                this.setSession(data.token, data.user);
+                this.setSession(null, data.user);
                 return { success: true };
             }
 
@@ -105,7 +98,7 @@ const Auth = {
             const data = await res.json();
 
             if (data.success) {
-                this.setSession(data.token, data.user);
+                this.setSession(null, data.user);
                 return { success: true };
             }
 
@@ -135,7 +128,7 @@ const Auth = {
                 // Only clear session if 401/403 AND no valid token in localStorage
                 // (Don't clear if session was set via #gauth redirect but cookies are blocked)
                 if (res.status === 401 || res.status === 403) {
-                    if (!localStorage.getItem('authToken')) {
+                    if (!localStorage.getItem('authUser')) {
                         this.clearSession();
                     }
                 }
@@ -144,9 +137,9 @@ const Auth = {
 
             const data = await res.json();
 
-            if (data.success && data.token && data.user) {
+            if (data.success && data.user) {
                 console.log('[Auth] Session refreshed successfully');
-                this.setSession(data.token, data.user);
+                this.setSession(null, data.user);
                 return true;
             } else {
                 console.warn('[Auth] Refresh failed:', data.error || 'Unknown error');
@@ -163,14 +156,8 @@ const Auth = {
     async apiFetchWithRefresh(url, options = {}) {
         // Ensure headers exist
         options.headers = options.headers || {};
+        // SECURITY: Auth is handled by HttpOnly cookies
         options.credentials = 'include';
-        
-        // Add Authorization header if we have a token (memory or localStorage)
-        const currentToken = this.token || localStorage.getItem('authToken');
-        if (currentToken) {
-            this.token = currentToken;
-            options.headers['Authorization'] = `Bearer ${currentToken}`;
-        }
 
         try {
             let res = await fetch(url, options);
@@ -190,9 +177,7 @@ const Auth = {
 
                 if (refreshed) {
                     console.log('[Auth] Refresh successful, retrying original request...');
-                    // Update header with new token
-                    options.headers['Authorization'] = `Bearer ${this.token}`;
-                    // Retry original request
+                    // Cookies updated by refresh — just retry
                     res = await fetch(url, options);
                 } else {
                     console.error('[Auth] Refresh failed, logging out.');
@@ -296,13 +281,9 @@ const Auth = {
             // Storage event listener — catches when popup/redirect writes to localStorage
             const storageHandler = (e) => {
                 if (finished) return;
-                if (e.key === 'authToken' && e.newValue) {
-                    console.log('[Auth] Token detected via storage event');
-                    this.token = e.newValue;
-                    const userStr = localStorage.getItem('authUser');
-                    if (userStr && userStr !== 'null') {
-                        this.user = JSON.parse(userStr);
-                    }
+                if (e.key === 'authUser' && e.newValue && e.newValue !== 'null') {
+                    console.log('[Auth] User detected via storage event');
+                    this.user = JSON.parse(e.newValue);
                     window.removeEventListener('storage', storageHandler);
                     finish({ success: true });
                 }
@@ -314,15 +295,11 @@ const Auth = {
             popupCheckInterval = setInterval(async () => {
                 if (finished) return;
 
-                // Check 1: Did localStorage get a token? (from #gauth redirect in popup)
-                const storedToken = localStorage.getItem('authToken');
-                if (storedToken) {
-                    console.log('[Auth] Token found in localStorage (from popup redirect)');
-                    this.token = storedToken;
-                    const userStr = localStorage.getItem('authUser');
-                    if (userStr && userStr !== 'null') {
-                        this.user = JSON.parse(userStr);
-                    }
+                // Check 1: Did localStorage get a user? (from redirect in popup)
+                const storedUser = localStorage.getItem('authUser');
+                if (storedUser && storedUser !== 'null') {
+                    console.log('[Auth] User found in localStorage (from popup redirect)');
+                    this.user = JSON.parse(storedUser);
                     window.removeEventListener('storage', storageHandler);
                     finish({ success: true });
                     return;
@@ -342,11 +319,9 @@ const Auth = {
                         finish({ success: true });
                     } else {
                         // Re-check localStorage one more time
-                        const tokenNow = localStorage.getItem('authToken');
-                        if (tokenNow) {
-                            this.token = tokenNow;
-                            const u = localStorage.getItem('authUser');
-                            if (u && u !== 'null') this.user = JSON.parse(u);
+                        const userNow = localStorage.getItem('authUser');
+                        if (userNow && userNow !== 'null') {
+                            this.user = JSON.parse(userNow);
                             window.removeEventListener('storage', storageHandler);
                             finish({ success: true });
                         } else {
