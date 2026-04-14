@@ -19,12 +19,13 @@ const Auth = {
     get API_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
 
-    token: null,
+    token: localStorage.getItem('authToken') || null,
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     isLoggedIn() {
         const userStr = localStorage.getItem('authUser');
-        return !!(userStr && userStr !== 'null' && userStr !== 'undefined');
+        const tokenStr = localStorage.getItem('authToken');
+        return !!(userStr && userStr !== 'null' && userStr !== 'undefined' && tokenStr);
     },
 
     setSession(token, user) {
@@ -32,15 +33,25 @@ const Auth = {
         this.token = token;
         this.user = user;
         localStorage.setItem('authUser', JSON.stringify(user));
+        if (token) {
+            localStorage.setItem('authToken', token);
+        }
     },
 
     clearSession() {
         this.token = null;
         this.user = null;
         localStorage.removeItem('authUser');
+        localStorage.removeItem('authToken');
     },
 
     getHeader() {
+        // Include token from memory or localStorage
+        const t = this.token || localStorage.getItem('authToken');
+        if (t) {
+            this.token = t;
+            return { 'Authorization': 'Bearer ' + t };
+        }
         return {};
     },
 
@@ -121,9 +132,12 @@ const Auth = {
 
             if (!res.ok) {
                 console.warn('[Auth] Refresh request failed with status:', res.status);
-                // فقط امسح الجلسة إذا كان الخطأ 401 أو 403 (Unauthorized/Forbidden)
+                // Only clear session if 401/403 AND no valid token in localStorage
+                // (Don't clear if session was set via #gauth redirect but cookies are blocked)
                 if (res.status === 401 || res.status === 403) {
-                    this.clearSession();
+                    if (!localStorage.getItem('authToken')) {
+                        this.clearSession();
+                    }
                 }
                 return false;
             }
@@ -151,9 +165,11 @@ const Auth = {
         options.headers = options.headers || {};
         options.credentials = 'include';
         
-        // Add Authorization header if we have a token
-        if (this.token) {
-            options.headers['Authorization'] = `Bearer ${this.token}`;
+        // Add Authorization header if we have a token (memory or localStorage)
+        const currentToken = this.token || localStorage.getItem('authToken');
+        if (currentToken) {
+            this.token = currentToken;
+            options.headers['Authorization'] = `Bearer ${currentToken}`;
         }
 
         try {
@@ -266,38 +282,75 @@ const Auth = {
 
             window.addEventListener('message', messageHandler);
 
-            // Poll for popup closure — primary fallback when postMessage fails
-            // (e.g., when Google's COOP headers null out window.opener)
+            // Storage event listener — catches when popup/redirect writes to localStorage
+            const storageHandler = (e) => {
+                if (finished) return;
+                if (e.key === 'authToken' && e.newValue) {
+                    console.log('[Auth] Token detected via storage event');
+                    this.token = e.newValue;
+                    const userStr = localStorage.getItem('authUser');
+                    if (userStr && userStr !== 'null') {
+                        this.user = JSON.parse(userStr);
+                    }
+                    window.removeEventListener('storage', storageHandler);
+                    finish({ success: true });
+                }
+            };
+            window.addEventListener('storage', storageHandler);
+
+            // Poll for popup closure OR localStorage changes
+            // COOP headers from Google may block popup.closed, so we also check localStorage
             popupCheckInterval = setInterval(async () => {
                 if (finished) return;
-                try {
-                    if (popup.closed) {
-                        console.log('[Auth] Popup closed. Checking session via refresh...');
-                        // Popup closed without postMessage — try refreshSession using HttpOnly cookies
-                        const refreshed = await this.refreshSession();
-                        if (refreshed) {
-                            console.log('[Auth] Session recovered via cookie refresh after popup close');
+
+                // Check 1: Did localStorage get a token? (from #gauth redirect in popup)
+                const storedToken = localStorage.getItem('authToken');
+                if (storedToken) {
+                    console.log('[Auth] Token found in localStorage (from popup redirect)');
+                    this.token = storedToken;
+                    const userStr = localStorage.getItem('authUser');
+                    if (userStr && userStr !== 'null') {
+                        this.user = JSON.parse(userStr);
+                    }
+                    window.removeEventListener('storage', storageHandler);
+                    finish({ success: true });
+                    return;
+                }
+
+                // Check 2: Try popup.closed (may throw due to COOP)
+                let popupClosed = false;
+                try { popupClosed = popup.closed; } catch (e) { /* COOP blocks this */ }
+
+                if (popupClosed) {
+                    console.log('[Auth] Popup closed detected. Trying cookie refresh...');
+                    // Try refreshSession (uses HttpOnly cookies set during OAuth callback)
+                    const refreshed = await this.refreshSession();
+                    if (refreshed) {
+                        console.log('[Auth] Session recovered via cookie refresh');
+                        window.removeEventListener('storage', storageHandler);
+                        finish({ success: true });
+                    } else {
+                        // Re-check localStorage one more time
+                        const tokenNow = localStorage.getItem('authToken');
+                        if (tokenNow) {
+                            this.token = tokenNow;
+                            const u = localStorage.getItem('authUser');
+                            if (u && u !== 'null') this.user = JSON.parse(u);
+                            window.removeEventListener('storage', storageHandler);
                             finish({ success: true });
                         } else {
-                            // Also check if localStorage was updated (e.g., by #gauth redirect)
-                            const userStr = localStorage.getItem('authUser');
-                            if (userStr && userStr !== 'null') {
-                                this.user = JSON.parse(userStr);
-                                console.log('[Auth] Session recovered from localStorage after popup close');
-                                finish({ success: true });
-                            } else {
-                                console.warn('[Auth] Popup closed but no session found');
-                                finish({
-                                    success: false,
-                                    error: document.documentElement.lang === 'en'
-                                        ? 'Login window closed. Please try again.'
-                                        : 'تم إغلاق نافذة تسجيل الدخول. حاول مرة أخرى.'
-                                });
-                            }
+                            console.warn('[Auth] Popup closed but no session found');
+                            window.removeEventListener('storage', storageHandler);
+                            finish({
+                                success: false,
+                                error: document.documentElement.lang === 'en'
+                                    ? 'Login window closed. Please try again.'
+                                    : 'تم إغلاق نافذة تسجيل الدخول. حاول مرة أخرى.'
+                            });
                         }
                     }
-                } catch (e) { /* popup.closed may throw if cross-origin */ }
-            }, 1000);
+                }
+            }, 1500);
 
             // Safety timeout — 2 minutes max
             setTimeout(() => {
