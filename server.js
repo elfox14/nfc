@@ -155,7 +155,10 @@ MongoClient.connect(mongoUrl)
       console.warn('Some indexes may already exist:', indexErr.message);
     }
   })
-  .catch(err => { console.error('Mongo connect error', err); /* process.exit(1); */ });
+  .catch(err => { 
+    console.error('Mongo connect error', err); 
+    process.exit(1); 
+  });
 
 const rootDir = __dirname;
 
@@ -438,6 +441,8 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
+app.use('/api/auth/verify-email', authLimiter);
 
 const storage = multer.memoryStorage();
 const upload = multer({
