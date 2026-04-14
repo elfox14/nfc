@@ -70,10 +70,10 @@ app.use(helmet.contentSecurityPolicy({
     scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
     styleSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com", "https://i.imgur.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com"],
+    imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com", "https://*.mcprim.com", "https://i.imgur.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com"],
     mediaSrc: ["'self'", "data:"],
     frameSrc: ["'self'", "https://www.youtube.com"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com", `wss://${process.env.RENDER_EXTERNAL_HOSTNAME || 'nfc-vjy6.onrender.com'}`],
+    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://*.mcprim.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com", `wss://${process.env.RENDER_EXTERNAL_HOSTNAME || 'nfc-vjy6.onrender.com'}`],
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
   },
@@ -505,7 +505,35 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
       .webp({ quality: 85 })
       .toBuffer();
 
-    // Try to upload to Cloudinary (Persistent storage)
+    // Phase 1: Try External Upload (Priority 1)
+    if (process.env.EXTERNAL_UPLOAD_URL) {
+      try {
+        const formData = new FormData();
+        const blob = new Blob([processedBuffer], { type: 'image/webp' });
+        formData.append('file', blob, 'image.webp');
+        if (process.env.UPLOAD_SECRET) {
+          formData.append('secret', process.env.UPLOAD_SECRET);
+        }
+
+        const externalResponse = await fetch(process.env.EXTERNAL_UPLOAD_URL, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (externalResponse.ok) {
+          const result = await externalResponse.json();
+          if (result.success && result.url) {
+            console.log('[Upload] Image uploaded to external server:', result.url);
+            return res.json({ success: true, url: result.url, external: true });
+          }
+        }
+        console.warn('[Upload] External upload returned error status:', externalResponse.status);
+      } catch (externalErr) {
+        console.warn('[Upload] External upload failed, falling back to Cloudinary:', externalErr.message);
+      }
+    }
+
+    // Phase 2: Try Cloudinary (Priority 2)
     if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
       try {
         const result = await new Promise((resolve, reject) => {
