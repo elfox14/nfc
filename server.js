@@ -32,6 +32,7 @@ const useragent = require('express-useragent');
 const http = require('http');
 const { WebSocketServer } = require('ws');
 const url = require('url');
+const cloudinary = require('cloudinary').v2;
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
@@ -46,9 +47,15 @@ const port = process.env.PORT || 3000;
 app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : 0);
 app.disable('x-powered-by');
 
+// Cloudinary Configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 // --- START: SECURITY HEADERS (HELMET) ---
 app.use(helmet.frameguard({ action: 'deny' }));
-app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
 app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));
 // CSP nonce middleware — generates a unique nonce per request
@@ -63,7 +70,7 @@ app.use(helmet.contentSecurityPolicy({
     scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
     styleSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com"],
+    imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com", "https://i.imgur.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com"],
     mediaSrc: ["'self'", "data:"],
     frameSrc: ["'self'", "https://www.youtube.com"],
     connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com", `wss://${process.env.RENDER_EXTERNAL_HOSTNAME || 'nfc-vjy6.onrender.com'}`],
@@ -95,10 +102,9 @@ app.use(cors({
     // In all environments, check against allowedOrigins with flexible subdomain matching
     let isAllowed = allowedOrigins.some(baseDomain => {
       if (baseDomain === origin) return true;
-      // Compare without protocols and www
-      const cleanBase = baseDomain.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
-      const cleanOrigin = origin.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
-      return cleanBase === cleanOrigin;
+      // Compare strictly with protocols, but handle www
+      const normalizeUrl = o => o.replace(/^(https?:\/\/)(www\.)?/, '$1').toLowerCase();
+      return normalizeUrl(baseDomain) === normalizeUrl(origin);
     });
 
     // In local development, allow localhost origins automatically
@@ -499,14 +505,38 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
       .webp({ quality: 85 })
       .toBuffer();
 
-    // Try to upload to external hosting (persistent storage)
-    // الحفظ المحلي (Fallback/Development)
+    // Try to upload to Cloudinary (Persistent storage)
+    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+      try {
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: 'mcprim', resource_type: 'image', format: 'webp' },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          uploadStream.end(processedBuffer);
+        });
+
+        console.log('[Upload] Image uploaded to Cloudinary:', result.secure_url);
+        return res.json({
+          success: true,
+          url: result.secure_url,
+          cloud: true
+        });
+      } catch (cloudErr) {
+        console.warn('[Upload] Cloudinary upload failed, falling back to local:', cloudErr.message);
+      }
+    }
+
+    // fallback: Local storage (Ephemeral/Development)
     const filename = nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
     await fs.promises.writeFile(out, processedBuffer);
 
     const base = absoluteBaseUrl(req);
-    console.log('[Upload] Image saved locally:', filename);
+    console.log('[Upload] Image saved locally (Fallback):', filename);
 
     return res.json({
       success: true,
