@@ -26,7 +26,7 @@
 ## 🚀 البدء السريع
 
 ### المتطلبات
-- Node.js 18+
+- Node.js 20+
 - MongoDB Atlas (أو محلي)
 - حساب Cloudinary (للصور)
 
@@ -89,8 +89,10 @@ nfc/
 | POST | `/api/auth/register` | تسجيل مستخدم جديد |
 | POST | `/api/auth/login` | تسجيل الدخول |
 | POST | `/api/auth/forgot-password` | طلب استعادة كلمة المرور |
-| POST | `/api/auth/reset-password/:token` | تعيين كلمة مرور جديدة |
-| GET | `/api/auth/verify-email/:token` | تأكيد البريد الإلكتروني |
+| POST | `/api/auth/reset-password` | تعيين كلمة مرور جديدة (token في body) |
+| POST | `/api/auth/verify-email` | تأكيد البريد الإلكتروني (token في body) |
+| POST | `/api/auth/session-init` | تهيئة الجلسة (OAuth Bootstrap) |
+| GET | `/api/auth/me` | جلب بيانات المستخدم الحالي |
 | GET | `/api/user/designs` | جلب تصاميم المستخدم |
 | POST | `/api/save-design` | حفظ تصميم جديد |
 | GET | `/api/get-design/:id` | جلب تصميم |

@@ -1,10 +1,10 @@
 openapi: 3.0.3
 info:
   title: MC PRIME NFC API
-  version: 1.0.0
+  version: 1.1.0
   description: >
     Core REST APIs powering the NFC Digital Business Card platform.
-    Features Native Authentications, Caching optimizations, and Social Object validations.
+    Features Native Authentication, Cloud Storage (Cloudinary), and Secure Session Management.
 servers:
   - url: https://api.mcprim.com
     description: Production Server
@@ -89,6 +89,91 @@ paths:
       responses:
         '200':
           description: Logged out effectively clearing HttpOnly Cookies.
+
+  /api/auth/forgot-password:
+    post:
+      summary: Request a password reset link via email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset link sent (if email exists)
+        '400':
+          description: Invalid email format
+
+  /api/auth/reset-password:
+    post:
+      summary: Reset password using a valid token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - password
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  minLength: 6
+      responses:
+        '200':
+          description: Password reset successfully
+        '400':
+          description: Invalid or expired token
+
+  /api/auth/verify-email:
+    post:
+      summary: Verify email address using a token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Email verified successfully
+        '400':
+          description: Invalid or expired token
+
+  /api/auth/session-init:
+    post:
+      summary: Initialize session from an OAuth short-lived token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - initToken
+              properties:
+                initToken:
+                  type: string
+      responses:
+        '200':
+          description: Session established (Cookies issued)
+        '401':
+          description: Invalid or expired initialization token
 
   /api/save-design:
     post:
