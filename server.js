@@ -739,10 +739,10 @@ app.post('/api/auth/register', [
     if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
 
-    // Store verification token
+    // Store verification token hash
     await db.collection(usersCollectionName).updateOne(
       { userId },
-      { $set: { verificationToken } }
+      { $set: { verificationTokenHash: hashToken(verificationToken) } }
     );
 
     // Send verification email (non-blocking)
@@ -1016,7 +1016,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     // This allows the SPA to boot even if third-party cookies are blocked by the browser.
     const sessionInitToken = jwt.sign(
       { userId: user.userId, email: user.email, type: 'session-init' },
-      config.JWT_SECRET,
+      process.env.JWT_SECRET,
       { expiresIn: '60s' }
     );
 
@@ -1036,7 +1036,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
               success: true,
               initToken: ${JSON.stringify(sessionInitToken)}
             };
-            var origins = ${JSON.stringify(allowedOriginsArray)};
+            var origins = ${JSON.stringify(allowedOrigins)};
             origins.forEach(function(origin) { window.opener.postMessage(msg, origin); });
           } catch (e) { console.error('[GoogleAuth] postMessage failed:', e); }
 
@@ -1128,10 +1128,10 @@ app.post('/api/auth/forgot-password', [
     if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     const resetToken = jwt.sign({ userId: user.userId, email: user.email, type: 'password-reset' }, secret, { expiresIn: '1h' });
 
-    // Store reset token in DB
+    // Store reset token hash in DB
     await db.collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { resetToken, resetTokenExpiry: new Date(Date.now() + 3600000) } }
+      { $set: { resetTokenHash: hashToken(resetToken), resetTokenExpiry: new Date(Date.now() + 3600000) } }
     );
 
     const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
@@ -1180,8 +1180,11 @@ app.post('/api/auth/reset-password/:token', [
       return res.status(400).json({ error: 'رابط غير صالح أو منتهي الصلاحية' });
     }
 
-    // Find user and verify token matches
-    const user = await db.collection(usersCollectionName).findOne({ userId: decoded.userId, resetToken: token });
+    // Find user and verify token hash matches
+    const user = await db.collection(usersCollectionName).findOne({ 
+      userId: decoded.userId, 
+      resetTokenHash: hashToken(token) 
+    });
     if (!user) {
       return res.status(400).json({ error: 'رابط غير صالح أو منتهي الصلاحية' });
     }
@@ -1198,7 +1201,10 @@ app.post('/api/auth/reset-password/:token', [
     // Update password and clear reset token
     await db.collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { password: hashedPassword }, $unset: { resetToken: '', resetTokenExpiry: '' } }
+      { 
+        $set: { password: hashedPassword }, 
+        $unset: { resetTokenHash: '', resetTokenExpiry: '' } 
+      }
     );
 
     console.log(`[ResetPassword] Password updated for user: ${user.email}`);
@@ -1210,12 +1216,13 @@ app.post('/api/auth/reset-password/:token', [
   }
 });
 
-// Verify Email
-app.get('/api/auth/verify-email/:token', async (req, res) => {
+// Verify Email endpoint - switched to POST for better security
+app.post('/api/auth/verify-email', authLimiter, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
-    const { token } = req.params;
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token missing' });
 
     // Verify token
     const secret = process.env.JWT_SECRET;
@@ -1228,8 +1235,11 @@ app.get('/api/auth/verify-email/:token', async (req, res) => {
       return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
     }
 
-    // Find user and verify token matches
-    const user = await db.collection(usersCollectionName).findOne({ userId: decoded.userId, verificationToken: token });
+    // Find user and verify hashed token matches
+    const user = await db.collection(usersCollectionName).findOne({ 
+      userId: decoded.userId, 
+      verificationTokenHash: hashToken(token) 
+    });
     if (!user) {
       return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
     }
@@ -1242,7 +1252,7 @@ app.get('/api/auth/verify-email/:token', async (req, res) => {
     // Update user as verified
     await db.collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { isVerified: true }, $unset: { verificationToken: '' } }
+      { $set: { isVerified: true }, $unset: { verificationTokenHash: '' } }
     );
 
     console.log(`[VerifyEmail] Email verified for user: ${user.email}`);
@@ -1371,7 +1381,7 @@ app.post('/api/auth/session-init', async (req, res) => {
     const { token } = req.body;
     if (!token) return res.status(400).json({ error: 'Initialization token missing' });
 
-    const decoded = jwt.verify(token, config.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.type !== 'session-init') {
       return res.status(403).json({ error: 'Invalid token type' });
     }
@@ -1395,7 +1405,7 @@ app.post('/api/auth/session-init', async (req, res) => {
 app.get('/api/auth/ws-token', verifyToken, (req, res) => {
   const wsToken = jwt.sign(
     { userId: req.user.userId, email: req.user.email, type: 'access' },
-    config.JWT_SECRET,
+    process.env.JWT_SECRET,
     { expiresIn: '30s' } // Very short-lived — only for WebSocket handshake
   );
   res.json({ success: true, token: wsToken });
