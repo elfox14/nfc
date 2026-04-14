@@ -122,23 +122,44 @@ const CollaborationManager = {
         }
 
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        // SECURITY: Do NOT put token in URL — send via first message instead
         const wsUrl = `${protocol}//${window.location.host}?collabId=${collabId}`;
 
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {
-            console.log('WebSocket connection established for collaboration.');
-            this.isActive = true;
-            this.updateStatus('متصل');
-            document.body.classList.add('collaboration-active');
+            console.log('WebSocket connection opened, sending auth...');
+            // Send authentication token as first message (not in URL)
+            const token = (typeof Auth !== 'undefined' && Auth.token) || localStorage.getItem('authToken');
+            if (token) {
+                this.ws.send(JSON.stringify({ type: 'auth', token: token }));
+            } else {
+                console.error('WebSocket: No auth token available');
+                this.ws.close(1008, 'No auth token');
+            }
         };
 
         this.ws.onmessage = (event) => {
             try {
-                const state = JSON.parse(event.data);
-                console.log('Received state from collaborator:', state);
-                // 6. طبق التحديثات الواردة من الآخرين
-                StateManager.applyState(state, false);
+                const data = JSON.parse(event.data);
+
+                // Handle auth response
+                if (data.type === 'auth') {
+                    if (data.success) {
+                        console.log('WebSocket authenticated and connected for collaboration.');
+                        this.isActive = true;
+                        this.updateStatus('متصل');
+                        document.body.classList.add('collaboration-active');
+                    } else {
+                        console.error('WebSocket authentication failed');
+                        this.updateStatus('فشل المصادقة');
+                    }
+                    return;
+                }
+
+                // Normal collaboration messages
+                console.log('Received state from collaborator:', data);
+                StateManager.applyState(data, false);
             } catch (error) {
                 console.error('Error processing incoming message:', error);
             }

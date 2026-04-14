@@ -82,9 +82,14 @@ if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    // In production, block requests with no origin to prevent server-to-server abuse
+    // In development, allow them for tools like Postman/curl
     if (!origin) {
-      console.log('[CORS] Request with no origin allowed');
+      if (process.env.NODE_ENV === 'production') {
+        console.warn('[CORS] Request with no origin BLOCKED in production');
+        return cb(new Error('Origin header required in production'));
+      }
+      console.log('[CORS] Request with no origin allowed (dev mode)');
       return cb(null, true);
     }
     // In all environments, check against allowedOrigins with flexible subdomain matching
@@ -990,13 +995,17 @@ app.get('/api/auth/google/callback', async (req, res) => {
     });
 
     // Build the dashboard URL for fallback redirect
+    // SECURITY: Token is already in HttpOnly cookies — do NOT put it in URL hash
     const dashboardPage = lang === 'en'
       ? `${frontendBase}/dashboard-en.html`
       : `${frontendBase}/dashboard.html`;
 
-    const gauthData = encodeURIComponent(JSON.stringify({ token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } }));
+    const allowedOriginsArray = process.env.NODE_ENV === 'production'
+      ? ['https://mcprim.com', 'https://www.mcprim.com']
+      : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'];
 
-    // Send auth data to the popup opener via postMessage, with fallback redirect
+    // Send success signal to popup opener via postMessage (no sensitive data)
+    // The frontend will call /api/auth/me or refreshSession() to get user data from cookies
     const script = `
       (function() {
         var hasOpener = false;
@@ -1005,28 +1014,26 @@ app.get('/api/auth/google/callback', async (req, res) => {
         } catch (e) {}
 
         if (hasOpener) {
-          // Path 1: Popup flow — send postMessage to opener window, then close
+          // Path 1: Popup flow — send success signal to opener, then close
           try {
             var msg = {
               type: 'google-auth',
-              success: true,
-              token: ${JSON.stringify(accessToken)},
-              user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
+              success: true
             };
-            var origins = ${JSON.stringify(process.env.NODE_ENV === 'production' ? ['https://mcprim.com', 'https://www.mcprim.com'] : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'])};
+            var origins = ${JSON.stringify(allowedOriginsArray)};
             origins.forEach(function(origin) { window.opener.postMessage(msg, origin); });
           } catch (e) { console.error('[GoogleAuth] postMessage failed:', e); }
 
           // Close the popup
           window.close();
 
-          // If popup didn't close, fallback to redirect
+          // If popup didn't close, fallback to redirect (no token in URL)
           setTimeout(function() {
-            window.location.replace(${JSON.stringify(dashboardPage)} + '#gauth=' + ${JSON.stringify(gauthData)});
+            window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1');
           }, 1000);
         } else {
-          // Path 2: No opener (popup lost reference, or redirected tab) — go directly to dashboard
-          window.location.replace(${JSON.stringify(dashboardPage)} + '#gauth=' + ${JSON.stringify(gauthData)});
+          // Path 2: No opener — redirect to dashboard (cookies carry the session)
+          window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1');
         }
       })();
     `;
@@ -1322,6 +1329,22 @@ app.post('/api/auth/logout', async (req, res) => {
   } catch (err) {
     console.error('Logout error:', err);
     res.status(500).json({ error: 'Logout failed' });
+  }
+});
+
+// Get current authenticated user info (used after OAuth redirect instead of URL hash)
+app.get('/api/auth/me', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const user = await db.collection(usersCollectionName).findOne(
+      { userId: req.user.userId },
+      { projection: { name: 1, email: 1, userId: 1, isVerified: 1, _id: 0 } }
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ success: true, user });
+  } catch (err) {
+    console.error('Get user info error:', err);
+    res.status(500).json({ error: 'Failed to get user info' });
   }
 });
 
@@ -1656,7 +1679,24 @@ app.get('/api/get-design/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
-    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    // SECURITY: Use projection to return only public design data, exclude internal fields
+    const doc = await db.collection(designsCollectionName).findOne(
+      { shortId: id },
+      { projection: {
+        'data.inputs': 1,
+        'data.dynamic': 1,
+        'data.imageUrls': 1,
+        'data.template': 1,
+        'data.cardBack': 1,
+        'data.elements': 1,
+        'data.sharedToGallery': 1,
+        'data.cardFrontBg': 1,
+        'data.cardBackBg': 1,
+        'data.layout': 1,
+        'data.currentLanguage': 1,
+        '_id': 0
+      }}
+    );
     if (!doc || !doc.data) return res.status(404).json({ error: 'Design not found or data missing' });
 
     res.json(doc.data);
@@ -1669,16 +1709,22 @@ app.get('/api/get-design/:id', async (req, res) => {
 });
 
 // Get Card Statistics
-app.get('/api/card-stats/:id', async (req, res) => {
+// SECURITY: Card stats require authentication and ownership verification
+app.get('/api/card-stats/:id', verifyToken, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne(
       { shortId: id },
-      { projection: { views: 1, createdAt: 1, lastModified: 1, shortId: 1 } }
+      { projection: { views: 1, createdAt: 1, lastModified: 1, shortId: 1, ownerId: 1 } }
     );
 
     if (!doc) return res.status(404).json({ error: 'Design not found' });
+
+    // Verify ownership — only the card owner can see detailed stats
+    if (doc.ownerId && doc.ownerId !== req.user.userId) {
+      return res.status(403).json({ error: 'Access denied: you do not own this design' });
+    }
 
     res.json({
       success: true,
@@ -1789,8 +1835,9 @@ app.get('/sitemap.xml', async (req, res) => {
     const blogPosts = [];
     let designUrls = [];
     if (db) {
+      // SECURITY: Only include designs shared to gallery in the sitemap
       const docs = await db.collection(designsCollectionName)
-        .find({})
+        .find({ 'data.sharedToGallery': true })
         .project({ shortId: 1, createdAt: 1 })
         .sort({ createdAt: -1 })
         .limit(5000)
@@ -1869,10 +1916,9 @@ const wss = new WebSocketServer({ server });
 const rooms = new Map();
 
 wss.on('connection', (ws, req) => {
-  // 4. استخراج `collabId` و `token` من رابط الاتصال
+  // SECURITY: Extract only collabId from URL — token comes via first message
   const parameters = new url.URL(req.url, `ws://${req.headers.host}`).searchParams;
   const collabId = parameters.get('collabId');
-  const token = parameters.get('token');
 
   if (!collabId) {
     console.log('Connection rejected: No collabId provided.');
@@ -1886,59 +1932,75 @@ wss.on('connection', (ws, req) => {
     ws.close(1011, 'Internal Server Error: Authentication configuration missing');
     return;
   }
-  
-  if (token) {
-    try {
-      jwt.verify(token, secret);
-    } catch (err) {
-      console.log('WebSocket connection rejected: Invalid token.');
-      ws.close(1008, 'Invalid authentication token');
-      return;
+
+  // SECURITY: Do NOT accept token from URL query string.
+  // Wait for the first message to authenticate.
+  let authenticated = false;
+
+  // Set a timeout — if no auth message within 10 seconds, disconnect
+  const authTimeout = setTimeout(() => {
+    if (!authenticated) {
+      console.log(`WebSocket auth timeout for room: ${collabId}`);
+      ws.close(1008, 'Authentication timeout');
     }
-  } else {
-    console.log('WebSocket connection rejected: No token provided.');
-    ws.close(1008, 'Authentication token required');
-    return;
-  }
+  }, 10000);
 
-  // 5. الانضمام إلى الغرفة
-  if (!rooms.has(collabId)) {
-    rooms.set(collabId, new Set());
-  }
-  const room = rooms.get(collabId);
-  room.add(ws);
-
-  console.log(`Client connected to room: ${collabId}. Room size: ${room.size}`);
-
-  // 6. التعامل مع الرسائل الواردة من العميل
-  ws.on('message', (message) => {
+  // Listen for the first message as an auth message
+  ws.once('message', (message) => {
     try {
-      // بث الرسالة (حالة التصميم الجديدة) إلى جميع العملاء الآخرين في نفس الغرفة
-      room.forEach(client => {
-        if (client !== ws && client.readyState === ws.OPEN) {
-          client.send(message.toString());
+      const data = JSON.parse(message.toString());
+      if (data.type === 'auth' && data.token) {
+        jwt.verify(data.token, secret);
+        authenticated = true;
+        clearTimeout(authTimeout);
+
+        // Join the room after successful authentication
+        if (!rooms.has(collabId)) {
+          rooms.set(collabId, new Set());
         }
-      });
-    } catch (error) {
-      console.error('Error broadcasting message:', error);
-    }
-  });
+        const room = rooms.get(collabId);
+        room.add(ws);
 
-  // 7. التعامل مع انقطاع الاتصال (تنظيف)
-  ws.on('close', () => {
-    if (room) {
-      room.delete(ws);
-      console.log(`Client disconnected from room: ${collabId}. Room size: ${room.size}`);
-      // إذا كانت الغرفة فارغة، قم بإزالتها لتوفير الذاكرة
-      if (room.size === 0) {
-        rooms.delete(collabId);
-        console.log(`Room ${collabId} is now empty and has been closed.`);
+        console.log(`Client authenticated and joined room: ${collabId}. Room size: ${room.size}`);
+        ws.send(JSON.stringify({ type: 'auth', success: true }));
+
+        // Now register the normal message handler for collaboration
+        ws.on('message', (msg) => {
+          try {
+            room.forEach(client => {
+              if (client !== ws && client.readyState === ws.OPEN) {
+                client.send(msg.toString());
+              }
+            });
+          } catch (error) {
+            console.error('Error broadcasting message:', error);
+          }
+        });
+
+        // Handle disconnect — cleanup
+        ws.on('close', () => {
+          room.delete(ws);
+          console.log(`Client disconnected from room: ${collabId}. Room size: ${room.size}`);
+          if (room.size === 0) {
+            rooms.delete(collabId);
+            console.log(`Room ${collabId} is now empty and has been closed.`);
+          }
+        });
+      } else {
+        console.log('WebSocket connection rejected: First message was not auth.');
+        clearTimeout(authTimeout);
+        ws.close(1008, 'Authentication required as first message');
       }
+    } catch (err) {
+      console.log('WebSocket connection rejected: Invalid auth token.');
+      clearTimeout(authTimeout);
+      ws.close(1008, 'Invalid authentication token');
     }
   });
 
   ws.on('error', (error) => {
     console.error('WebSocket error:', error);
+    clearTimeout(authTimeout);
   });
 });
 

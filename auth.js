@@ -261,13 +261,24 @@ const Auth = {
                 resolve(result);
             };
 
-            const messageHandler = (event) => {
+            const messageHandler = async (event) => {
                 if (event.origin !== this.getBaseUrl() && event.origin !== 'https://mcprim.com' && event.origin !== 'https://www.mcprim.com') return;
                 if (!event.data || event.data.type !== 'google-auth' || finished) return;
 
                 if (event.data.success) {
-                    this.setSession(event.data.token, event.data.user);
-                    finish({ success: true });
+                    // SECURITY: Token is in HttpOnly cookies — retrieve user data via refreshSession
+                    console.log('[Auth] Google OAuth success signal received, refreshing session from cookies...');
+                    const refreshed = await this.refreshSession();
+                    if (refreshed) {
+                        finish({ success: true });
+                    } else {
+                        finish({
+                            success: false,
+                            error: document.documentElement.lang === 'en'
+                                ? 'Authentication succeeded but session could not be established. Please try again.'
+                                : 'نجحت المصادقة لكن لم نتمكن من إنشاء الجلسة. حاول مرة أخرى.'
+                        });
+                    }
                 } else {
                     finish({
                         success: false,

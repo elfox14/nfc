@@ -17,6 +17,14 @@ const EmailService = {
         fromName: process.env.EMAIL_FROM_NAME || 'MC PRIME NFC'
     },
 
+    // Fail-fast: warn loudly if production is using console provider
+    _productionCheck: (function() {
+        const provider = process.env.EMAIL_PROVIDER || 'console';
+        if (process.env.NODE_ENV === 'production' && provider === 'console') {
+            console.error('FATAL: EMAIL_PROVIDER is set to "console" in production. Verification and password-reset emails will NOT be delivered to users. Set EMAIL_PROVIDER to "sendgrid" or "resend".');
+        }
+    })(),
+
     /**
      * Send an email
      * @param {Object} options - Email options
