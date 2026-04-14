@@ -1442,64 +1442,47 @@ app.get('/api/auth/me', verifyToken, async (req, res) => {
 });
 
 // Secure session initialization from a short-lived one-time code (OAuth success)
+// POST /api/auth/session-init
+// Exchanges a short-lived session-init token (from Google OAuth popup) for real session cookies
 app.post('/api/auth/session-init', async (req, res) => {
   try {
     const { initToken } = req.body;
-    if (!initToken) {
-      console.warn('[SessionInit] Missing token in request body');
-      return res.status(400).json({ error: 'Initialization token missing' });
-    }
+    if (!initToken) return res.status(400).json({ error: 'Token required' });
 
-    let decoded;
-    try {
-      decoded = jwt.verify(initToken, process.env.JWT_SECRET);
-    } catch (jwtErr) {
-      console.warn('[SessionInit] JWT verification failed:', jwtErr.message);
-      return res.status(401).json({ error: 'Invalid or expired token' });
-    }
+    const decoded = jwt.verify(initToken, process.env.JWT_SECRET);
 
+    // Strict type check — reject any other token type
     if (decoded.type !== 'session-init') {
-      console.warn('[SessionInit] Invalid token type:', decoded.type);
-      return res.status(403).json({ error: 'Invalid token type' });
+      return res.status(401).json({ error: 'Invalid token type' });
     }
 
     if (!db) return res.status(500).json({ error: 'DB not connected' });
-    const user = await db.collection(usersCollectionName).findOne({ userId: decoded.userId });
-    if (!user) return res.status(404).json({ error: 'User no longer exists' });
 
-    console.log(`[SessionInit] Successful boot for: ${user.email}`);
-
-    // SECURITY: Explicitly set cookies in the bootstrap phase to ensure persistence
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
-    const refreshToken = createRefreshToken();
-    const hashedRefresh = hashToken(refreshToken);
+    // Issue real session cookies
+    const accessToken = createAccessToken({ userId: decoded.userId, email: decoded.email });
+    const refreshTokenValue = createRefreshToken();
+    const hashedRefresh = hashToken(refreshTokenValue);
 
     await db.collection(usersCollectionName).updateOne(
-      { userId: user.userId },
+      { userId: decoded.userId },
       { $set: { refreshTokenHash: hashedRefresh } }
     );
 
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/api/auth'
-    });
+    console.log(`[SessionInit] Session established for: ${decoded.email}`);
 
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      maxAge: 15 * 60 * 1000,
-      path: '/'
-    });
+    res
+      .cookie('accessToken', accessToken, {
+        httpOnly: true, secure: true, sameSite: 'None',
+        maxAge: 15 * 60 * 1000, path: '/'
+      })
+      .cookie('refreshToken', refreshTokenValue, {
+        httpOnly: true, secure: true, sameSite: 'None',
+        maxAge: 7 * 24 * 60 * 60 * 1000, path: '/api/auth'
+      })
+      .json({ success: true });
 
-    res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
-
-  } catch (err) {
-    console.warn('[SessionInit] Failed:', err.message);
-    res.status(401).json({ error: 'Initialization failed or expired' });
+  } catch {
+    return res.status(401).json({ error: 'Invalid or expired session token' });
   }
 });
 
