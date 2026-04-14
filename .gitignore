@@ -72,3 +72,8 @@ temp.txt
 test-log.txt
 test-ssh.txt
 jest_err.txt
+
+# Test Coverage
+coverage/
+*.spec.html
+lcov*
