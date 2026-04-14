@@ -1008,9 +1008,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
       ? `${frontendBase}/dashboard-en.html`
       : `${frontendBase}/dashboard.html`;
 
-    const allowedOriginsArray = process.env.NODE_ENV === 'production'
-      ? ['https://mcprim.com', 'https://www.mcprim.com']
-      : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'];
+
 
     // SECURITY: Generate a very short-lived (60s), one-time-use token to initialize the session
     // This allows the SPA to boot even if third-party cookies are blocked by the browser.
@@ -1088,7 +1086,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
               success: false,
               error: ${JSON.stringify(errorMessage)}
             };
-            var origins = ${JSON.stringify(process.env.NODE_ENV === 'production' ? ['https://mcprim.com', 'https://www.mcprim.com'] : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'])};
+            var origins = ${JSON.stringify(allowedOrigins)};
             origins.forEach(function(origin) { window.opener.postMessage(msg, origin); });
           }
         } catch (e) { console.error('[GoogleAuth] postMessage error failed:', e); }
@@ -1388,15 +1386,15 @@ app.get('/api/auth/me', verifyToken, async (req, res) => {
 // Secure session initialization from a short-lived one-time code (OAuth success)
 app.post('/api/auth/session-init', async (req, res) => {
   try {
-    const { token } = req.body;
-    if (!token) {
+    const { initToken } = req.body;
+    if (!initToken) {
       console.warn('[SessionInit] Missing token in request body');
       return res.status(400).json({ error: 'Initialization token missing' });
     }
 
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      decoded = jwt.verify(initToken, process.env.JWT_SECRET);
     } catch (jwtErr) {
       console.warn('[SessionInit] JWT verification failed:', jwtErr.message);
       return res.status(401).json({ error: 'Invalid or expired token' });

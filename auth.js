@@ -158,7 +158,7 @@ const Auth = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ token }),
+                body: JSON.stringify({ initToken: token }),
             });
 
             if (!res.ok) {
