@@ -1037,7 +1037,17 @@ app.get('/api/auth/google/callback', async (req, res) => {
               initToken: ${JSON.stringify(sessionInitToken)}
             };
             var origins = ${JSON.stringify(allowedOrigins)};
-            origins.forEach(function(origin) { window.opener.postMessage(msg, origin); });
+            origins.forEach(function(base) {
+              try {
+                window.opener.postMessage(msg, base);
+                // Also try variant (www <-> non-www) to ensure target match
+                if (base.includes('://www.')) {
+                  window.opener.postMessage(msg, base.replace('://www.', '://'));
+                } else {
+                  window.opener.postMessage(msg, base.replace('://', '://www.'));
+                }
+              } catch (e) {}
+            });
           } catch (e) { console.error('[GoogleAuth] postMessage failed:', e); }
 
           // Close the popup
@@ -1379,10 +1389,21 @@ app.get('/api/auth/me', verifyToken, async (req, res) => {
 app.post('/api/auth/session-init', async (req, res) => {
   try {
     const { token } = req.body;
-    if (!token) return res.status(400).json({ error: 'Initialization token missing' });
+    if (!token) {
+      console.warn('[SessionInit] Missing token in request body');
+      return res.status(400).json({ error: 'Initialization token missing' });
+    }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (jwtErr) {
+      console.warn('[SessionInit] JWT verification failed:', jwtErr.message);
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
     if (decoded.type !== 'session-init') {
+      console.warn('[SessionInit] Invalid token type:', decoded.type);
       return res.status(403).json({ error: 'Invalid token type' });
     }
 

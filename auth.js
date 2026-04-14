@@ -163,6 +163,7 @@ const Auth = {
 
             if (!res.ok) {
                 console.warn('[Auth] sessionInit failed with status:', res.status);
+                this.lastInitError = `HTTP ${res.status}`;
                 return false;
             }
 
@@ -174,9 +175,13 @@ const Auth = {
             }
         } catch (err) {
             console.error('[Auth] sessionInit error:', err);
+            this.lastInitError = err.message || 'Network Error';
         }
         return false;
     },
+
+    // Variable to store the last error for UI feedback
+    lastInitError: null,
 
     // Singleton promise to prevent concurrent refreshes
     _refreshPromise: null,
@@ -275,7 +280,21 @@ const Auth = {
             };
 
             const messageHandler = async (event) => {
-                if (event.origin !== this.getBaseUrl() && event.origin !== 'https://mcprim.com' && event.origin !== 'https://www.mcprim.com') return;
+                // SECURITY: Verify the origin is either the API URL or your frontends
+                const allowed = [this.getBaseUrl(), 'https://mcprim.com', 'https://www.mcprim.com'];
+                const isAllowed = allowed.some(origin => {
+                    if (event.origin === origin) return true;
+                    // Flexible matching (www vs non-www)
+                    const cleanEvent = event.origin.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
+                    const cleanOrigin = origin.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
+                    return cleanEvent === cleanOrigin;
+                });
+
+                if (!isAllowed) {
+                    console.warn('[Auth] Blocked message from unknown origin:', event.origin);
+                    return;
+                }
+
                 if (!event.data || event.data.type !== 'google-auth' || finished) return;
 
                 if (event.data.success) {
@@ -294,11 +313,12 @@ const Auth = {
                     if (initialized) {
                         finish({ success: true });
                     } else {
+                        const errorReason = this.lastInitError ? ` (${this.lastInitError})` : '';
                         finish({
                             success: false,
                             error: document.documentElement.lang === 'en'
-                                ? 'Authentication succeeded but session could not be established. Please try again.'
-                                : 'نجحت المصادقة لكن لم نتمكن من إنشاء الجلسة. حاول مرة أخرى.'
+                                ? `Authentication succeeded but session could not be established${errorReason}. Please try again.`
+                                : `نجحت المصادقة لكن لم نتمكن من إنشاء الجلسة${errorReason}. حاول مرة أخرى.`
                         });
                     }
                 } else {
