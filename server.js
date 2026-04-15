@@ -990,13 +990,7 @@ app.get('/api/auth/google', (req, res) => {
   const nonce = crypto.randomBytes(16).toString('hex');
   
   // Set a short-lived cookie to store the nonce
-  res.cookie('oauth_nonce', nonce, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'None',
-    maxAge: 10 * 60 * 1000, // 10 minutes
-    path: '/api/auth'
-  });
+  res.cookie('oauth_nonce', nonce, getCookieOptions('/api/auth', 10 * 60 * 1000));
 
   // Include the nonce in the state
   const lang = (req.query.lang === 'en') ? 'en' : 'ar';
@@ -1024,7 +1018,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 
   const cookieNonce = req.cookies?.oauth_nonce;
-  res.clearCookie('oauth_nonce', { path: '/api/auth', httpOnly: true, secure: true, sameSite: 'None' });
+  res.clearCookie('oauth_nonce', getCookieOptions('/api/auth'));
 
   // Verify CSRF nonce
   if (!stateNonce || !cookieNonce || stateNonce !== cookieNonce) {
