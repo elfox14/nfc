@@ -11,6 +11,8 @@
 
 # Backup files — may contain secrets
 *.bak
+*.html.bak
+mcprim.com_*.html
 
 # Sensitive local files
 cookies.txt

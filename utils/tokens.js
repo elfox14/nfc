@@ -29,8 +29,10 @@ function createRefreshToken() {
  * @returns {string} Hashed hex string
  */
 function hashToken(token) {
-    const hmacSecret = process.env.TOKEN_HASH_SECRET || process.env.JWT_SECRET;
-    if (!hmacSecret) throw new Error('TOKEN_HASH_SECRET or JWT_SECRET must be set for token hashing.');
+    const hmacSecret = process.env.TOKEN_HASH_SECRET;
+    if (!hmacSecret) {
+        throw new Error('TOKEN_HASH_SECRET is required but not configured. Fallback to JWT_SECRET is disabled for security.');
+    }
     return crypto.createHmac('sha256', hmacSecret).update(token).digest('hex');
 }
 

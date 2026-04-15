@@ -13,7 +13,7 @@
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         window.__API_BASE_URL = 'http://localhost:3000';
     } else {
-        // Production backend — change this if your backend URL changes
-        window.__API_BASE_URL = 'https://nfc-vjy6.onrender.com';
+        // Use relative paths in production to prevent bypassing CDN/WAF
+        window.__API_BASE_URL = '';
     }
 })();

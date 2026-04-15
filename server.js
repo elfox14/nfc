@@ -125,7 +125,7 @@ app.use(cors({
   optionsSuccessStatus: 200 // Some legacy browsers crash on 204
 }));
 
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50kb' }));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
@@ -580,7 +580,7 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
   }
 });
 
-app.post('/api/save-design', verifyToken, async (req, res) => {
+app.post('/api/save-design', verifyToken, express.json({ limit: '5mb' }), async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     let data = req.body || {};
@@ -2049,91 +2049,69 @@ const wss = new WebSocketServer({ server });
 const rooms = new Map();
 
 wss.on('connection', (ws, req) => {
-  // SECURITY: Extract only collabId from URL — token comes via first message
   const parameters = new url.URL(req.url, `ws://${req.headers.host}`).searchParams;
   const collabId = parameters.get('collabId');
+  const token = parameters.get('token');
 
-  if (!collabId) {
-    console.log('Connection rejected: No collabId provided.');
-    ws.close(1008, 'collabId is required');
+  if (!collabId || !token) {
+    console.log(`Connection rejected: Missing ${!collabId ? 'collabId' : 'token'}.`);
+    ws.close(1008, 'Authentication required');
     return;
   }
 
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    console.error('CRITICAL: WebSocket connection rejected because JWT_SECRET is not configured on the server.');
-    ws.close(1011, 'Internal Server Error: Authentication configuration missing');
+    console.error('CRITICAL: WebSocket connection rejected because JWT_SECRET is not configured.');
+    ws.close(1011, 'Internal Server Error');
     return;
   }
 
-  // SECURITY: Do NOT accept token from URL query string.
-  // Wait for the first message to authenticate.
-  let authenticated = false;
-
-  // Set a timeout — if no auth message within 10 seconds, disconnect
-  const authTimeout = setTimeout(() => {
-    if (!authenticated) {
-      console.log(`WebSocket auth timeout for room: ${collabId}`);
-      ws.close(1008, 'Authentication timeout');
+  try {
+    const decoded = jwt.verify(token, secret);
+    if (decoded.type !== 'access') {
+      throw new Error('Invalid token type');
     }
-  }, 10000);
+    
+    ws.userId = decoded.userId;
 
-  // Listen for the first message as an auth message
-  ws.once('message', (message) => {
-    try {
-      const data = JSON.parse(message.toString());
-      if (data.type === 'auth' && data.token) {
-        jwt.verify(data.token, secret);
-        authenticated = true;
-        clearTimeout(authTimeout);
+    // Join the room
+    if (!rooms.has(collabId)) {
+      rooms.set(collabId, new Set());
+    }
+    const room = rooms.get(collabId);
+    room.add(ws);
 
-        // Join the room after successful authentication
-        if (!rooms.has(collabId)) {
-          rooms.set(collabId, new Set());
-        }
-        const room = rooms.get(collabId);
-        room.add(ws);
-
-        console.log(`Client authenticated and joined room: ${collabId}. Room size: ${room.size}`);
-        ws.send(JSON.stringify({ type: 'auth', success: true }));
-
-        // Now register the normal message handler for collaboration
-        ws.on('message', (msg) => {
-          try {
-            room.forEach(client => {
-              if (client !== ws && client.readyState === ws.OPEN) {
-                client.send(msg.toString());
-              }
-            });
-          } catch (error) {
-            console.error('Error broadcasting message:', error);
+    console.log(`Client authenticated: ${ws.userId} joined room: ${collabId}. Room size: ${room.size}`);
+    
+    // Normal message handler for collaboration
+    ws.on('message', (msg) => {
+      try {
+        room.forEach(client => {
+          if (client !== ws && client.readyState === ws.OPEN) {
+            client.send(msg.toString());
           }
         });
-
-        // Handle disconnect — cleanup
-        ws.on('close', () => {
-          room.delete(ws);
-          console.log(`Client disconnected from room: ${collabId}. Room size: ${room.size}`);
-          if (room.size === 0) {
-            rooms.delete(collabId);
-            console.log(`Room ${collabId} is now empty and has been closed.`);
-          }
-        });
-      } else {
-        console.log('WebSocket connection rejected: First message was not auth.');
-        clearTimeout(authTimeout);
-        ws.close(1008, 'Authentication required as first message');
+      } catch (error) {
+        console.error('Error broadcasting message:', error);
       }
-    } catch (err) {
-      console.log('WebSocket connection rejected: Invalid auth token.');
-      clearTimeout(authTimeout);
-      ws.close(1008, 'Invalid authentication token');
-    }
-  });
+    });
+
+    // Handle disconnect — cleanup
+    ws.on('close', () => {
+      room.delete(ws);
+      console.log(`Client disconnected from room: ${collabId}. Room size: ${room.size}`);
+      if (room.size === 0) {
+        rooms.delete(collabId);
+      }
+    });
+
+  } catch (err) {
+    console.log('WebSocket connection rejected: Invalid or expired token.');
+    ws.close(1008, 'Invalid authentication token');
+  }
 
   ws.on('error', (error) => {
     console.error('WebSocket error:', error);
-    clearTimeout(authTimeout);
   });
 });
 
