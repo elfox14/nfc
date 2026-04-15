@@ -5,20 +5,7 @@ const request = require('supertest');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Mock ioredis
-jest.mock('ioredis', () => {
-    return jest.fn().mockImplementation(() => ({
-        on: jest.fn(),
-        call: jest.fn(),
-        once: jest.fn(),
-        quit: jest.fn()
-    }));
-});
-
-// Mock rate-limit-redis
-jest.mock('rate-limit-redis', () => ({
-    RedisStore: jest.fn().mockImplementation(() => ({}))
-}));
+// Note: Redis mock removed — server.js does not use Redis.
 
 // Mock MongoDB
 const mockCollection = {
@@ -75,13 +62,13 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             expect(res.status).toBe(201);
             expect(res.body.success).toBe(true);
+            expect(res.body.token).toBeDefined();
             expect(res.body.user.email).toBe('test@example.com');
 
-            // Check if Access Token and Refresh Token HttpOnly Cookies are Set
+            // Check if Refresh Token HttpOnly Cookie is Set
             const cookies = res.headers['set-cookie'];
             expect(cookies).toBeDefined();
             expect(cookies.some(c => c.includes('refreshToken='))).toBeTruthy();
-            expect(cookies.some(c => c.includes('accessToken='))).toBeTruthy();
         });
 
         it('Should reject duplicate emails', async () => {
@@ -118,11 +105,11 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             expect(res.status).toBe(200);
             expect(res.body.success).toBe(true);
+            expect(res.body.token).toBeDefined();
 
             const cookies = res.headers['set-cookie'];
             expect(cookies).toBeDefined();
             expect(cookies.some(c => c.includes('refreshToken='))).toBeTruthy();
-            expect(cookies.some(c => c.includes('accessToken='))).toBeTruthy();
         });
 
         it('Should reject incorrect password', async () => {

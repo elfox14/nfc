@@ -34,9 +34,6 @@ const { WebSocketServer } = require('ws');
 const url = require('url');
 const cloudinary = require('cloudinary').v2;
 
-const Redis = require('ioredis');
-const { RedisStore } = require('rate-limit-redis');
-
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
 
@@ -58,16 +55,6 @@ cloudinary.config({
 });
 
 // --- START: SECURITY HEADERS (HELMET) ---
-// --- START: REDIS CLIENT SETUP ---
-const redisClient = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : null;
-if (redisClient) {
-  redisClient.on('connect', () => console.log('Redis connected'));
-  redisClient.on('error', (err) => console.error('Redis error:', err));
-} else {
-  console.warn('REDIS_URL not set. Rate limiting will be in-memory (ephemeral).');
-}
-// --- END: REDIS CLIENT SETUP ---
-
 app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.noSniff());
 app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));
@@ -98,19 +85,6 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s
 // Fail-fast: in production, ALLOWED_ORIGINS must be explicitly set
 if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
   throw new Error('FATAL: ALLOWED_ORIGINS must be set in production. Refusing to start with open CORS.');
-}
-
-// SECURITY: Shared helper for secure session cookies
-function getCookieOptions(path, maxAge = null) {
-  const isProd = process.env.NODE_ENV === 'production';
-  const options = {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'None' : 'Lax',
-    path
-  };
-  if (maxAge !== null) options.maxAge = maxAge;
-  return options;
 }
 
 app.use(cors({
@@ -457,11 +431,7 @@ const apiLimiter = rateLimit({
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
-  message: 'Too many requests from this IP, please try again after 15 minutes',
-  store: redisClient ? new RedisStore({
-    sendCommand: (...args) => redisClient.call(...args),
-    prefix: 'rl:api:'
-  }) : undefined
+  message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api/', apiLimiter);
 
@@ -472,11 +442,7 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'محاولات كثيرة جداً. حاول مرة أخرى بعد 15 دقيقة.' },
-  skipSuccessfulRequests: true, // Don't count successful logins
-  store: redisClient ? new RedisStore({
-    sendCommand: (...args) => redisClient.call(...args),
-    prefix: 'rl:auth:'
-  }) : undefined
+  skipSuccessfulRequests: true // Don't count successful logins
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
@@ -524,58 +490,13 @@ function assertAdmin(req, res) {
   return true;
 }
 
-// SECURITY: Middleware to verify the Origin header for sensitive state-changing requests.
-// This provides an additional layer of protection against CSRF for cookies with sameSite: 'None'.
-function verifyOrigin(req, res, next) {
-  const origin = req.headers.origin;
-  const method = req.method;
-
-  // Only check Origin for state-changing methods (POST, PUT, DELETE, PATCH)
-  if (['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-    return next();
-  }
-
-  if (!origin) {
-    // Some legitimate requests (e.g. server-to-server or non-browser) might lack Origin.
-    // In production, we are stricter for sensitive API routes.
-    if (process.env.NODE_ENV === 'production') {
-      console.warn(`[Security] Missing Origin header on ${method} ${req.path}`);
-      return res.status(403).json({ error: 'Origin header required for this request' });
-    }
-    return next();
-  }
-
-  const isAllowed = allowedOrigins.some(baseDomain => {
-    if (baseDomain === origin) return true;
-    const normalizeUrl = o => o.replace(/^(https?:\/\/)(www\.)?/, '$1').toLowerCase();
-    return normalizeUrl(baseDomain) === normalizeUrl(origin);
-  });
-
-  if (!isAllowed) {
-    console.warn(`[Security] Origin BLOCKED: ${origin} for ${method} ${req.path}`);
-    return res.status(403).json({ error: 'Unauthorized origin' });
-  }
-
-  next();
-}
-
-app.post('/api/upload-image', verifyToken, verifyOrigin, upload.single('image'), handleMulterErrors, async (req, res) => {
+app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
       if (!res.headersSent) {
         return res.status(400).json({ error: 'لم يتم تقديم أي ملف صورة.' });
       }
       return;
-    }
-
-    // SECURITY: Validate Magic Bytes using file-type (Dynamic import for ESM support)
-    const { fileTypeFromBuffer } = await import('file-type');
-    const type = await fileTypeFromBuffer(req.file.buffer);
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-
-    if (!type || !allowedMimeTypes.includes(type.mime)) {
-      console.warn(`[UploadImage] Rejected file with invalid magic bytes: ${type ? type.mime : 'unknown'}`);
-      return res.status(400).json({ error: 'نوع الملف غير صالح أو تم التلاعب به.' });
     }
 
     // Process image with sharp
@@ -659,7 +580,7 @@ app.post('/api/upload-image', verifyToken, verifyOrigin, upload.single('image'),
   }
 });
 
-app.post('/api/save-design', verifyToken, verifyOrigin, async (req, res) => {
+app.post('/api/save-design', verifyToken, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     let data = req.body || {};
@@ -776,7 +697,7 @@ app.post('/api/save-design', verifyToken, verifyOrigin, async (req, res) => {
 });
 
 // PATCH element property
-app.patch('/api/design/:id/element/:elementId', verifyToken, verifyOrigin, async (req, res) => {
+app.patch('/api/design/:id/element/:elementId', verifyToken, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const { id, elementId } = req.params;
@@ -903,8 +824,23 @@ app.post('/api/auth/register', [
       { $set: { refreshTokenHash: hashedRefresh } }
     );
 
-    res.cookie('refreshToken', refreshTokenValue, getCookieOptions('/api/auth', 7 * 24 * 60 * 60 * 1000));
-    res.cookie('accessToken', accessToken, getCookieOptions('/', 15 * 60 * 1000));
+    // Set refresh token as HttpOnly Secure cookie
+    res.cookie('refreshToken', refreshTokenValue, {
+      httpOnly: true,
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/auth'
+    });
+
+    // Set access token as HttpOnly Secure cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/'
+    });
 
     // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
     res.status(201).json({ success: true, user: { name, email, userId, isVerified: false } });
@@ -960,8 +896,23 @@ app.post('/api/auth/login', [
       { $set: { refreshTokenHash: hashedRefresh } }
     );
 
-    res.cookie('refreshToken', refreshTokenValue, getCookieOptions('/api/auth', 7 * 24 * 60 * 60 * 1000));
-    res.cookie('accessToken', accessToken, getCookieOptions('/', 15 * 60 * 1000));
+    // Set refresh token as HttpOnly Secure cookie
+    res.cookie('refreshToken', refreshTokenValue, {
+      httpOnly: true,
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/auth'
+    });
+
+    // Set access token as HttpOnly Secure cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/'
+    });
 
     console.log(`[Login] Successful login for: ${email}. Token issued.`);
     // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
@@ -986,30 +937,9 @@ app.get('/api/auth/google', (req, res) => {
   const host = req.get('host');
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
-  // SECURITY: Get optional client-side nonce passed from auth.js
-  const clientNonce = req.query.nonce || '';
-
-  // SECURITY: Generate a random internal nonce if client didn't provide one (fallback)
-  const internalNonce = crypto.randomBytes(16).toString('hex');
-  const finalNonce = clientNonce || internalNonce;
-  
-  // Set a short-lived cookie for backward compatibility (optional fallback)
-  res.cookie('oauth_nonce', finalNonce, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Lax',
-    maxAge: 15 * 60 * 1000,
-    path: '/'
-  });
-
-  // SECURITY: Wrap the nonce and lang in a SIGNED JWT state.
-  // This ensures the state returned by Google was definitely issued by us.
+  // Only store the language (ar/en) in state — rebuild full redirect URL from PUBLIC_BASE_URL
   const lang = (req.query.lang === 'en') ? 'en' : 'ar';
-  const statePayload = jwt.sign(
-    { lang, nonce: finalNonce, iat: Math.floor(Date.now() / 1000) },
-    process.env.JWT_SECRET,
-    { expiresIn: '1h' } // Increased from 15m to 1h for resilience
-  );
+  const statePayload = Buffer.from(JSON.stringify({ lang })).toString('base64url');
 
   const scope = 'email profile';
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=${encodeURIComponent(statePayload)}`;
@@ -1021,44 +951,13 @@ app.get('/api/auth/google', (req, res) => {
 app.get('/api/auth/google/callback', async (req, res) => {
   const { code, error, state } = req.query;
 
-  // Determine language and verify nonce from state
+  // Determine language from state
   let lang = 'ar';
-  let stateNonce = null;
-
   if (state) {
     try {
-      // SECURITY: Sanitize and Verify the state was signed by us
-      const stateStr = String(state).trim();
-      const decoded = jwt.verify(stateStr, process.env.JWT_SECRET);
-      
+      const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
       if (decoded.lang === 'en') lang = 'en';
-      stateNonce = decoded.nonce;
-      console.log(`[GoogleAuth] Signed state verified. Nonce: ${stateNonce}`);
-    } catch (e) {
-      console.error('[GoogleAuth] State verification failed!', {
-        error: e.message,
-        type: e.name,
-        stateLength: state ? state.length : 0,
-        hasSecret: !!process.env.JWT_SECRET
-      });
-      
-      const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
-      const loginPage = `${frontendBase}/${lang === 'en' ? 'login-en.html' : 'login.html'}`;
-      return res.redirect(`${loginPage}?error=csrf_invalid_state`);
-    }
-  }
-
-  const cookieNonce = req.cookies?.oauth_nonce;
-  console.log(`[GoogleAuth] Callback validation. State Nonce: ${stateNonce}, Cookie Nonce: ${cookieNonce}`);
-  res.clearCookie('oauth_nonce', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax' });
-
-  // SECURITY: Primary check is now the SIGNED STATE. 
-  // We only require either the signed state nonce OR the cookie nonce to match.
-  // This ensures security while being resilient to cookie blocking.
-  if (!stateNonce) {
-    const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
-    const loginPage = lang === 'en' ? `${frontendBase}/login-en.html` : `${frontendBase}/login.html`;
-    return res.redirect(`${loginPage}?error=csrf_missing_state`);
+    } catch (e) { /* use default */ }
   }
 
   // Build the absolute redirect URL to the FRONTEND (mcprim.com), not the Render backend
@@ -1143,9 +1042,23 @@ app.get('/api/auth/google/callback', async (req, res) => {
       { $set: { refreshTokenHash: hashedRefresh } }
     );
 
-    const isProd = process.env.NODE_ENV === 'production';
-    res.cookie('refreshToken', refreshTokenValue, getCookieOptions('/api/auth', 7 * 24 * 60 * 60 * 1000));
-    res.cookie('accessToken', accessToken, getCookieOptions('/', 15 * 60 * 1000));
+    // Set refresh token as HttpOnly Secure cookie
+    res.cookie('refreshToken', refreshTokenValue, {
+      httpOnly: true,
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/api/auth'
+    });
+
+    // Set access token as HttpOnly Secure cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/'
+    });
 
     // Build the dashboard URL for fallback redirect
     // SECURITY: Token is already in HttpOnly cookies — do NOT put it in URL hash
@@ -1177,8 +1090,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
             var msg = {
               type: 'google-auth',
               success: true,
-              initToken: ${JSON.stringify(sessionInitToken)},
-              nonce: ${JSON.stringify(stateNonce)}
+              initToken: ${JSON.stringify(sessionInitToken)}
             };
             var origins = ${JSON.stringify(allowedOrigins)};
             origins.forEach(function(base) {
@@ -1451,9 +1363,22 @@ app.post('/api/auth/refresh', async (req, res) => {
     );
 
     // Set new refresh token cookie
-    res.cookie('refreshToken', newRefreshToken, getCookieOptions('/api/auth', 7 * 24 * 60 * 60 * 1000));
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: true, // required for sameSite: 'None'
+      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/api/auth'
+    });
+
     // Set new access token cookie
-    res.cookie('accessToken', newAccessToken, getCookieOptions('/', 15 * 60 * 1000));
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/'
+    });
 
     // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
     res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
@@ -1479,8 +1404,18 @@ app.post('/api/auth/logout', async (req, res) => {
     }
 
     // Clear the cookies
-    res.clearCookie('refreshToken', getCookieOptions('/api/auth'));
-    res.clearCookie('accessToken', getCookieOptions('/'));
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      path: '/api/auth'
+    });
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      path: '/'
+    });
 
     res.json({ success: true });
 

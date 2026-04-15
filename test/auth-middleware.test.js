@@ -35,7 +35,7 @@ describe('Auth Middleware', () => {
 
     test('should call next() and attach user if token is valid', () => {
         req.headers['authorization'] = 'Bearer validtoken';
-        const mockUser = { userId: '123', email: 'test@example.com', type: 'access' };
+        const mockUser = { userId: '123', email: 'test@example.com' };
         jwt.verify.mockReturnValue(mockUser);
 
         verifyToken(req, res, next);
