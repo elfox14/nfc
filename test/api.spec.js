@@ -5,7 +5,17 @@ const request = require('supertest');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Note: Redis mock removed — server.js does not use Redis.
+// Mock Redis to prevent real connection attempts during tests
+jest.mock('redis', () => ({
+    createClient: jest.fn(() => ({
+        on: jest.fn(),
+        get: jest.fn(),
+        setEx: jest.fn(),
+        connect: jest.fn().mockResolvedValue(true),
+        isReady: true,
+        sendCommand: jest.fn()
+    }))
+}));
 
 // Mock MongoDB
 const mockCollection = {
@@ -36,8 +46,7 @@ jest.setTimeout(30000);
 
 // Setup Test Environment Variables
 process.env.NODE_ENV = 'test';
-// SECURITY: Use a strong random secret for each test run (never hardcode secrets)
-process.env.JWT_SECRET = require('crypto').randomBytes(32).toString('hex');
+process.env.JWT_SECRET = 'secret123';
 process.env.MONGO_URI = 'mongodb://fake-uri';
 process.env.PUBLIC_BASE_URL = 'http://localhost:3000';
 

@@ -56,19 +56,3 @@ _inject_premium.py
 coverage/
 coverage.zip
 compare_html.py
-
-# PHP scripts (not used in this Node.js project)
-*.php
-
-# Explicit dev artifacts that must never be committed
-leftovers.json
-remaining_arabic.json
-missing_*.txt
-missing_*.json
-headers.txt
-gitignore.txt
-out.txt
-temp.txt
-test-log.txt
-test-ssh.txt
-jest_err.txt

@@ -23,15 +23,12 @@ function createRefreshToken() {
 }
 
 /**
- * Hashes a token for secure storage in the database.
- * Uses HMAC-SHA-256 with a server secret to prevent rainbow-table attacks.
+ * Hashes a token for secure storage in the database
  * @param {string} token The plain text token
  * @returns {string} Hashed hex string
  */
 function hashToken(token) {
-    const hmacSecret = process.env.TOKEN_HASH_SECRET || process.env.JWT_SECRET;
-    if (!hmacSecret) throw new Error('TOKEN_HASH_SECRET or JWT_SECRET must be set for token hashing.');
-    return crypto.createHmac('sha256', hmacSecret).update(token).digest('hex');
+    return crypto.createHash('sha256').update(token).digest('hex');
 }
 
 module.exports = {
