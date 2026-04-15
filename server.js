@@ -1008,7 +1008,7 @@ app.get('/api/auth/google', (req, res) => {
   const statePayload = jwt.sign(
     { lang, nonce: finalNonce, iat: Math.floor(Date.now() / 1000) },
     process.env.JWT_SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: '1h' } // Increased from 15m to 1h for resilience
   );
 
   const scope = 'email profile';
@@ -1027,14 +1027,21 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
   if (state) {
     try {
-      // SECURITY: Verify the state was signed by us using JWT_SECRET
-      const decoded = jwt.verify(state, process.env.JWT_SECRET);
+      // SECURITY: Sanitize and Verify the state was signed by us
+      const stateStr = String(state).trim();
+      const decoded = jwt.verify(stateStr, process.env.JWT_SECRET);
+      
       if (decoded.lang === 'en') lang = 'en';
       stateNonce = decoded.nonce;
       console.log(`[GoogleAuth] Signed state verified. Nonce: ${stateNonce}`);
     } catch (e) {
-      console.error('[GoogleAuth] State verification failed:', e.message);
-      // Fallback: If JWT verification fails, we reject the request even if code is present.
+      console.error('[GoogleAuth] State verification failed!', {
+        error: e.message,
+        type: e.name,
+        stateLength: state ? state.length : 0,
+        hasSecret: !!process.env.JWT_SECRET
+      });
+      
       const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
       const loginPage = `${frontendBase}/${lang === 'en' ? 'login-en.html' : 'login.html'}`;
       return res.redirect(`${loginPage}?error=csrf_invalid_state`);
