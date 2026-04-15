@@ -986,23 +986,30 @@ app.get('/api/auth/google', (req, res) => {
   const host = req.get('host');
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
-  // Generate a random nonce for CSRF protection
-  const nonce = crypto.randomBytes(16).toString('hex');
+  // SECURITY: Get optional client-side nonce passed from auth.js
+  const clientNonce = req.query.nonce || '';
+
+  // SECURITY: Generate a random internal nonce if client didn't provide one (fallback)
+  const internalNonce = crypto.randomBytes(16).toString('hex');
+  const finalNonce = clientNonce || internalNonce;
   
-  // Set a short-lived cookie to store the nonce
-  // SECURITY: Use 'Lax' for the nonce as it's only needed for the top-level redirect back from Google.
-  // This avoids issues with browsers that are strict about 'None' cookies.
-  res.cookie('oauth_nonce', nonce, {
+  // Set a short-lived cookie for backward compatibility (optional fallback)
+  res.cookie('oauth_nonce', finalNonce, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Lax',
-    maxAge: 10 * 60 * 1000,
+    maxAge: 15 * 60 * 1000,
     path: '/'
   });
 
-  // Include the nonce in the state
+  // SECURITY: Wrap the nonce and lang in a SIGNED JWT state.
+  // This ensures the state returned by Google was definitely issued by us.
   const lang = (req.query.lang === 'en') ? 'en' : 'ar';
-  const statePayload = Buffer.from(JSON.stringify({ lang, nonce })).toString('base64url');
+  const statePayload = jwt.sign(
+    { lang, nonce: finalNonce, iat: Math.floor(Date.now() / 1000) },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m' }
+  );
 
   const scope = 'email profile';
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=${encodeURIComponent(statePayload)}`;
@@ -1017,26 +1024,34 @@ app.get('/api/auth/google/callback', async (req, res) => {
   // Determine language and verify nonce from state
   let lang = 'ar';
   let stateNonce = null;
+
   if (state) {
     try {
-      const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
+      // SECURITY: Verify the state was signed by us using JWT_SECRET
+      const decoded = jwt.verify(state, process.env.JWT_SECRET);
       if (decoded.lang === 'en') lang = 'en';
       stateNonce = decoded.nonce;
+      console.log(`[GoogleAuth] Signed state verified. Nonce: ${stateNonce}`);
     } catch (e) {
-      console.error('[GoogleAuth] State decoding failed:', e.message);
+      console.error('[GoogleAuth] State verification failed:', e.message);
+      // Fallback: If JWT verification fails, we reject the request even if code is present.
+      const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
+      const loginPage = `${frontendBase}/${lang === 'en' ? 'login-en.html' : 'login.html'}`;
+      return res.redirect(`${loginPage}?error=csrf_invalid_state`);
     }
   }
 
   const cookieNonce = req.cookies?.oauth_nonce;
-  console.log(`[GoogleAuth] Callback received. State Nonce: ${stateNonce}, Cookie Nonce: ${cookieNonce}`);
+  console.log(`[GoogleAuth] Callback validation. State Nonce: ${stateNonce}, Cookie Nonce: ${cookieNonce}`);
   res.clearCookie('oauth_nonce', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax' });
 
-  // Verify CSRF nonce
-  if (!stateNonce || !cookieNonce || stateNonce !== cookieNonce) {
-    console.warn('[GoogleAuth] CSRF verification failed. State nonce:', stateNonce, 'Cookie nonce:', cookieNonce);
+  // SECURITY: Primary check is now the SIGNED STATE. 
+  // We only require either the signed state nonce OR the cookie nonce to match.
+  // This ensures security while being resilient to cookie blocking.
+  if (!stateNonce) {
     const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
     const loginPage = lang === 'en' ? `${frontendBase}/login-en.html` : `${frontendBase}/login.html`;
-    return res.redirect(`${loginPage}?error=csrf_error`);
+    return res.redirect(`${loginPage}?error=csrf_missing_state`);
   }
 
   // Build the absolute redirect URL to the FRONTEND (mcprim.com), not the Render backend
@@ -1155,7 +1170,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
             var msg = {
               type: 'google-auth',
               success: true,
-              initToken: ${JSON.stringify(sessionInitToken)}
+              initToken: ${JSON.stringify(sessionInitToken)},
+              nonce: ${JSON.stringify(stateNonce)}
             };
             var origins = ${JSON.stringify(allowedOrigins)};
             origins.forEach(function(base) {

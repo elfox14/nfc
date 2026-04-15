@@ -251,8 +251,13 @@ const Auth = {
             const left = (window.innerWidth - width) / 2;
             const top = (window.innerHeight - height) / 2;
 
+            // SECURITY: Generate a random nonce for CSRF protection
+            const nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+                .map(b => b.toString(16).padStart(2, '0')).join('');
+            sessionStorage.setItem('oauth_nonce', nonce);
+
             const popup = window.open(
-                `${this.getBaseUrl()}/api/auth/google?lang=${document.documentElement.lang.includes('en') ? 'en' : 'ar'}`,
+                `${this.getBaseUrl()}/api/auth/google?lang=${document.documentElement.lang.includes('en') ? 'en' : 'ar'}&nonce=${nonce}`,
                 'Google Sign In',
                 `width=${width},height=${height},left=${left},top=${top}`
             );
@@ -296,6 +301,21 @@ const Auth = {
                 }
 
                 if (!event.data || event.data.type !== 'google-auth' || finished) return;
+
+                // SECURITY: Verify the nonce returned from the API matches our local session nonce
+                const localNonce = sessionStorage.getItem('oauth_nonce');
+                sessionStorage.removeItem('oauth_nonce'); // One-time use
+
+                if (!event.data.nonce || event.data.nonce !== localNonce) {
+                    console.error('[Auth] CSRF Nonce mismatch!', { received: event.data.nonce, local: localNonce });
+                    finish({
+                        success: false,
+                        error: document.documentElement.lang === 'en'
+                            ? 'Security verification failed (CSRF). Please try again.'
+                            : 'فشل التحقق الأمني (CSRF). حاول مرة أخرى.'
+                    });
+                    return;
+                }
 
                 if (event.data.success) {
                     // SECURITY: Try to initialize via one-time token first (bypasses third-party cookie blocking)
