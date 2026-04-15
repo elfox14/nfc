@@ -116,36 +116,34 @@ const CollaborationManager = {
         }
     },
 
-    async connect(collabId) {
-        if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
-            return; // متصل بالفعل أو جاري الاتصال
+    connect(collabId) {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            return; // متصل بالفعل
         }
 
-        this.updateStatus(_isEnglishPage ? 'Connecting...' : 'جاري الاتصال...');
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        // SECURITY: Do NOT put token in URL — send via first message instead
+        const wsUrl = `${protocol}//${window.location.host}?collabId=${collabId}`;
 
-        try {
-            // SECURITY: Fetch a short-lived token via cookies for WebSocket auth BEFORE connecting
-            const res = await fetch('/api/auth/ws-token', { credentials: 'include' });
-            const data = await res.json();
-            
-            if (!data.success || !data.token) {
-                console.error('WebSocket: Failed to get auth token');
-                this.updateStatus(_isEnglishPage ? 'Auth Failed' : 'فشل المصادقة');
-                return;
+        this.ws = new WebSocket(wsUrl);
+
+        this.ws.onopen = async () => {
+            console.log('WebSocket connection opened, fetching auth token...');
+            try {
+                // Fetch a short-lived token via cookies for WebSocket auth
+                const res = await fetch('/api/auth/ws-token', { credentials: 'include' });
+                const data = await res.json();
+                if (data.success && data.token) {
+                    this.ws.send(JSON.stringify({ type: 'auth', token: data.token }));
+                } else {
+                    console.error('WebSocket: Failed to get auth token');
+                    this.ws.close(1008, 'No auth token');
+                }
+            } catch (err) {
+                console.error('WebSocket: Auth token fetch failed:', err);
+                this.ws.close(1008, 'Auth token fetch failed');
             }
-
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            // SECURITY: Token is now sent in URL to allow immediate server-side validation during handshake
-            const wsUrl = `${protocol}//${window.location.host}?collabId=${collabId}&token=${data.token}`;
-
-            this.ws = new WebSocket(wsUrl);
-
-            this.ws.onopen = () => {
-                console.log('WebSocket connection opened and authenticated.');
-                this.isActive = true;
-                this.updateStatus(_isEnglishPage ? 'Connected' : 'متصل');
-                document.body.classList.add('collaboration-active');
-            };
+        };
 
         this.ws.onmessage = (event) => {
             try {
