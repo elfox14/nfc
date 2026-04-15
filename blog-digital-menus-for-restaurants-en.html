@@ -22,9 +22,10 @@
     <title>Digital Menu for Restaurants - MC PRIME</title>
     <meta name="description"
         content="Discover the benefits of a Digital Menu (QR Code) for your restaurant and how it helps increase sales and improve customer experience." />    <link rel="icon" id="favicon" href="https://www.mcprim.com/nfc/mc-prime-nfc.png" type="image/png" />
-    <link rel="stylesheet" href="viewer.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <script src="lang-switcher.js" defer></script>
 
     <script type="application/ld+json">
   {
@@ -77,169 +78,97 @@
   </script>
 
     <style>
-        :root {
-            --primary-color: #4da6ff;
-            --background-color: #0b131e;
-            --surface-color: rgba(36, 52, 71, 0.4);
-            --text-primary-color: #ffffff;
-            --text-secondary-color: #a0aec0;
-            --nav-bg: rgba(28, 42, 59, 0.95);
-        }
-
         body {
             margin: 0;
-            background-color: #111a26;
-            color: var(--text-primary-color);
-            font-family: 'Inter', sans-serif;
+            background: #1e2a38;
+            font-family: 'Inter', 'Poppins', sans-serif;
+            color: #eef3f7;
+            direction: ltr;
+            padding: 24px;
+            box-sizing: border-box;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            line-height: 1.6;
         }
 
-        .viewer-nav {
-            background: var(--nav-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 12px 0;
-            margin-bottom: 40px;
-        }
-
-        .article-hero {
+        h1 {
+            color: #6ec1ff;
             text-align: center;
-            padding: 40px 15px;
-            background: radial-gradient(circle at center, rgba(77, 166, 255, 0.05) 0%, transparent 70%);
-        }
-
-        .article-hero h1 {
-            font-size: 2.8rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 24px;
-            letter-spacing: -1px;
-            line-height: 1.2;
+            font-weight: 700;
+            margin-bottom: 32px;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 15px 60px 15px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 24px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
             flex-grow: 1;
         }
 
         .section-box {
-            background: rgba(36, 52, 71, 0.4);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 32px;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            flex: 1 1 33%;
+            min-width: 280px;
+            background: #253a5b;
+            border: 2px solid #2a5ca4;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            justify-content: flex-start;
+            transition: border-color 0.3s ease;
         }
 
         .section-box:hover {
-            transform: translateY(-8px);
-            border-color: rgba(77, 166, 255, 0.3);
-            background-color: rgba(36, 52, 71, 0.6);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: #4099ff;
         }
 
         .section-box h2 {
-            font-size: 1.6rem;
-            margin: 0 0 16px 0;
-            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #6ec1ff;
+            text-align: center;
             font-weight: 700;
         }
 
         .section-box p {
-            font-size: 1.05rem;
-            color: var(--text-secondary-color);
-            margin-bottom: 0;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #cbd6e7;
+            margin-bottom: 12px;
         }
 
         .section-box strong {
-            color: white;
-            display: block;
-            margin-top: 12px;
+            color: #7bb5ff;
         }
 
-        .site-footer {
-            background: #0f172a;
-            padding: 80px 0 40px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            margin-top: auto;
+        footer {
+            background: #27496e;
+            padding: 14px 0;
+            text-align: center;
+            color: #c6eaf7;
+            border-top: 1.5px solid #205081;
+            font-size: 1.05rem;
+            margin-top: 36px;
         }
 
-        .footer-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 4rem;
-        }
-
-        .footer-section h3 {
-            color: white;
-            margin-bottom: 1.5rem;
-        }
-
-        .footer-section ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .footer-section ul li {
-            margin-bottom: 0.8rem;
-        }
-
-        .footer-section a {
-            color: var(--text-secondary-color);
+        footer a {
+            color: #20a8dd;
+            margin: 0 10px;
             text-decoration: none;
-            transition: color 0.3s ease;
         }
 
-        .footer-section a:hover {
-            color: var(--primary-color);
+        footer a:hover {
+            text-decoration: underline;
         }
 
-        .social-links {
-            display: flex;
-            gap: 15px;
-        }
-
-        .social-links a {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            transition: all 0.3s ease;
-        }
-
-        .social-links a:hover {
-            background: var(--primary-color);
-            transform: translateY(-3px);
-        }
-
-        @media (max-width: 900px) {
-            .footer-content { grid-template-columns: 1fr 1fr; gap: 2rem; }
-            .article-hero h1 { font-size: 2.2rem; }
-        }
-
-        @media (max-width: 600px) {
-            .footer-content { grid-template-columns: 1fr; }
-            .container { grid-template-columns: 1fr; }
+        @media (max-width: 950px) {
+            .section-box {
+                flex: 1 1 100%;
+            }
         }
     </style>
     <!-- Google AdSense -->
@@ -252,35 +181,10 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    <nav class="viewer-nav" id="navbar">
-        <div class="container nav-content" style="padding-bottom: 0;">
-            <a href="/nfc/index-en.html" class="nav-logo">
-                <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME" width="150" height="45">
-            </a>
-            <ul class="nav-links" id="nav-links">
-                <li><a href="/nfc/index-en.html">Home</a></li>
-                <li><a href="/nfc/gallery-en.html">Gallery</a></li>
-                <li><a href="/nfc/blog-en.html">Blog</a></li>
-                <li><a href="/nfc/dashboard-en.html">Dashboard</a></li>
-            </ul>
-            <div class="nav-actions" style="display: flex; align-items: center; gap: 15px;">
-                <button onclick="switchLanguage('ar')" class="lang-btn">عربي</button>
-                <a href="/nfc/editor-en.html" class="btn btn-primary nav-cta" style="padding: 8px 16px; font-size: 0.9rem;">Get Started</a>
-            </div>
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-    </nav>
-
-    <div class="article-hero">
-        <div class="container" style="display: block; padding-bottom: 0;">
-            <h1>Digital Menu for Restaurants: A Complete New Experience</h1>
-            <div style="margin: 0 auto; max-width: 800px;">
-                <img src="images/blog-restaurants.svg" alt="Digital Restaurant Menu"
-                    style="width: 100%; height: auto; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
-            </div>
-        </div>
+    <h1>Digital Menu for Restaurants: A Complete New Experience</h1>
+    <div style="text-align: center; margin: 20px auto; max-width: 800px;">
+        <img src="images/blog-restaurants.svg" alt="Digital Restaurant Menu"
+            style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
     </div>
     <div class="container">
         <section class="section-box">
@@ -313,53 +217,14 @@
                 experience.</p>
         </section>
     </div>
-    <footer class="site-footer" role="contentinfo">
-        <div class="container" style="display: block; padding-bottom: 0;">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>MC PRIME</h3>
-                    <p>We provide smart NFC business card solutions for individuals and companies.</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Quick Links</h3>
-                    <ul role="list">
-                        <li><a href="/nfc/index-en.html#features">Features</a></li>
-                        <li><a href="/nfc/gallery-en.html">Gallery</a></li>
-                        <li><a href="/nfc/blog-en.html">Blog</a></li>
-                        <li><a href="/nfc/dashboard-en.html">Dashboard</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Support</h3>
-                    <ul role="list">
-                        <li><a href="/nfc/index-en.html#faq">FAQ</a></li>
-                        <li><a href="/nfc/contact-en.html">Contact Us</a></li>
-                        <li><a href="/nfc/privacy-en.html">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Follow Us</h3>
-                    <div class="social-links">
-                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom" style="text-align: center; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-                <p>&copy; 2025 MC PRIME. All rights reserved.</p>
-            </div>
-        </div>
+    <footer>
+        All Rights Reserved &copy; 2025 |
+        <a href="index-en.html">Home</a> |
+        <a href="blog-en.html">Blog</a> |
+        <a href="about-en.html">About Us</a> |
+        <a href="contact-en.html">Contact Us</a> |
+        <a href="privacy-en.html">Privacy Policy</a>
     </footer>
-
-    <script src="viewer.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof setupMobileMenu === 'function') {
-                setupMobileMenu();
-            }
-        });
-    </script>
 </body>
 
 </html>

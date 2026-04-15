@@ -508,8 +508,7 @@
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null');
-            Auth.token = localStorage.getItem('authToken') || null;
+            Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); 
             
             if (!Auth.isLoggedIn()) {
                 await Auth.refreshSession();
