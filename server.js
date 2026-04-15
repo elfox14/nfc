@@ -990,7 +990,15 @@ app.get('/api/auth/google', (req, res) => {
   const nonce = crypto.randomBytes(16).toString('hex');
   
   // Set a short-lived cookie to store the nonce
-  res.cookie('oauth_nonce', nonce, getCookieOptions('/api/auth', 10 * 60 * 1000));
+  // SECURITY: Use 'Lax' for the nonce as it's only needed for the top-level redirect back from Google.
+  // This avoids issues with browsers that are strict about 'None' cookies.
+  res.cookie('oauth_nonce', nonce, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    maxAge: 10 * 60 * 1000,
+    path: '/'
+  });
 
   // Include the nonce in the state
   const lang = (req.query.lang === 'en') ? 'en' : 'ar';
@@ -1014,11 +1022,14 @@ app.get('/api/auth/google/callback', async (req, res) => {
       const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
       if (decoded.lang === 'en') lang = 'en';
       stateNonce = decoded.nonce;
-    } catch (e) { /* use default */ }
+    } catch (e) {
+      console.error('[GoogleAuth] State decoding failed:', e.message);
+    }
   }
 
   const cookieNonce = req.cookies?.oauth_nonce;
-  res.clearCookie('oauth_nonce', getCookieOptions('/api/auth'));
+  console.log(`[GoogleAuth] Callback received. State Nonce: ${stateNonce}, Cookie Nonce: ${cookieNonce}`);
+  res.clearCookie('oauth_nonce', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax' });
 
   // Verify CSRF nonce
   if (!stateNonce || !cookieNonce || stateNonce !== cookieNonce) {
