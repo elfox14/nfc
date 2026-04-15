@@ -4,12 +4,19 @@
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 
-// Mock Redis
-jest.mock('redis', () => ({
-    createClient: jest.fn(() => ({
-        on: jest.fn(), get: jest.fn(), setEx: jest.fn(), connect: jest.fn().mockResolvedValue(true),
-        isReady: true, sendCommand: jest.fn()
-    }))
+// Mock ioredis
+jest.mock('ioredis', () => {
+    return jest.fn().mockImplementation(() => ({
+        on: jest.fn(),
+        call: jest.fn(),
+        once: jest.fn(),
+        quit: jest.fn()
+    }));
+});
+
+// Mock rate-limit-redis
+jest.mock('rate-limit-redis', () => ({
+    RedisStore: jest.fn().mockImplementation(() => ({}))
 }));
 
 // Mock MongoDB
