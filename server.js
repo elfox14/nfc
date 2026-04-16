@@ -1834,25 +1834,14 @@ app.get('/api/get-design/:id', async (req, res) => {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
     // SECURITY: Use projection to return only public design data, exclude internal fields
-    const doc = await db.collection(designsCollectionName).findOne(
-      { shortId: id },
-      { projection: {
-        'data.inputs': 1,
-        'data.dynamic': 1,
-        'data.imageUrls': 1,
-        'data.template': 1,
-        'data.cardBack': 1,
-        'data.elements': 1,
-        'data.sharedToGallery': 1,
-        'data.cardFrontBg': 1,
-        'data.cardBackBg': 1,
-        'data.layout': 1,
-        'data.currentLanguage': 1,
-        '_id': 0
-      }}
-    );
-    if (!doc || !doc.data) return res.status(404).json({ error: 'Design not found or data missing' });
+    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    
+    if (!doc || !doc.data) {
+      console.warn(`[API] Design not found for shortId: ${id}`);
+      return res.status(404).json({ error: 'Design not found or data missing' });
+    }
 
+    console.log(`[API] Design found for shortId: ${id}. Returning data.`);
     res.json(doc.data);
   } catch (e) {
     console.error('Get design error:', e);
