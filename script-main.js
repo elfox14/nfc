@@ -767,6 +767,7 @@ const ShareManager = {
                 if (state && (state.inputs || state.dynamic)) {
                     console.log("[ShareManager] Valid design data confirmed. Initializing editor...");
                     Config.currentDesignId = designId;
+                    localStorage.setItem('nfc:currentDesignId', designId); // Persist ID
                     StateManager.applyState(state, false);
                     return true;
                 } else {
@@ -1421,10 +1422,12 @@ const App = {
         CollaborationManager.init();
         EventManager.bindEvents();
 
+        // Persistence: Recover currentDesignId if available
+        Config.currentDesignId = Config.currentDesignId || localStorage.getItem('nfc:currentDesignId');
+
         const loadedFromUrl = await ShareManager.loadFromUrl();
         if (loadedFromUrl) {
             HistoryManager.pushState(StateManager.getStateObject());
-            // Announcement is already done inside loadFromUrl or handled here
             UIManager.announce(i18nMain.designLoaded);
         } else if (!CollaborationManager.isActive) {
             const loadedFromStorage = StateManager.load();

@@ -653,13 +653,11 @@ app.post('/api/save-design', verifyToken, async (req, res) => {
     } else {
       // If user already has a design, update it instead of failing
       if (ownerId) {
-        const designCount = await db.collection(designsCollectionName).countDocuments({ ownerId });
-        if (designCount >= 1) {
-          // Find the existing design and update it
-          const existingDesign = await db.collection(designsCollectionName).findOne({ ownerId });
-          if (existingDesign) {
-            shortId = existingDesign.shortId;
-            isUpdate = true;
+        const searchQuery = existingId ? { shortId: existingId, ownerId } : { ownerId };
+        const existingDesign = await db.collection(designsCollectionName).findOne(searchQuery);
+        if (existingDesign) {
+          shortId = existingDesign.shortId;
+          isUpdate = true;
             // Preserve existing captured images if not re-capturing now
             if (existingDesign.data?.imageUrls) {
               if (!data.imageUrls) data.imageUrls = {};
