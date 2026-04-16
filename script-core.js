@@ -14,6 +14,7 @@ const Config = {
     GALLERY_STORAGE_KEY: 'digitalCardGallery_v2',
     MAX_LOGO_SIZE_MB: 10,
     MAX_BG_SIZE_MB: 10,
+    DEBUG_MODE: true, // Set to false to hide debug logs in production
 
     SCRIPT_URLS: {
         html2canvas: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',

@@ -746,7 +746,7 @@ const ShareManager = {
         if (params.has('collabId')) return false;
 
         if (designId) {
-            console.log('[DEBUG] loadFromUrl - designId from URL:', designId);
+            if (Config.DEBUG_MODE) console.log('[DEBUG] loadFromUrl - designId from URL:', designId);
             
             try {
                 const fetchUrl = `${Config.API_BASE_URL}/api/get-design/${designId}`;
@@ -754,14 +754,14 @@ const ShareManager = {
                     credentials: 'include'
                 });
                 
-                console.log('[DEBUG] API response status:', response.status);
+                if (Config.DEBUG_MODE) console.log('[DEBUG] API response status:', response.status);
                 
                 if (!response.ok) {
                     throw new Error(`Fetch failed with status ${response.status}`);
                 }
 
                 const result = await response.json();
-                console.log('[DEBUG] API result:', result);
+                if (Config.DEBUG_MODE) console.log('[DEBUG] API result:', result);
                 console.log("[ShareManager] API data received. Waiting for DOM readiness...");
                 
                 // Ensure DOM is ready before applying state
@@ -790,9 +790,9 @@ const ShareManager = {
                 UIManager.announce(_isEnglishPage ? 'Failed to load design from link.' : "فشل جلب التصميم من الرابط.");
                 return false;
             } finally {
-                const newUrl = new URL(window.location.href);
-                newUrl.searchParams.delete('id');
-                window.history.replaceState({}, document.title, newUrl.pathname + newUrl.search);
+                // SECURITY & UX: We no longer strip the ID from the URL.
+                // Keeping the ID allows for page refreshes and reliable editing sessions.
+                console.log("[ShareManager] URL ID preserved for session stability.");
             }
         }
         return false;
@@ -1437,23 +1437,38 @@ const App = {
         // 2. Event Binding (Crucial to have listeners before applying state)
         EventManager.bindEvents();
 
-        // 3. Design Identity Recovery (from URL or LocalStorage)
-        if (!Config.currentDesignId) {
+        // 3. Design Identity Recovery (Priority: URL > LocalStorage)
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlDesignId = urlParams.get('id');
+
+        if (urlDesignId) {
+            console.log(`[App] URL 'id' detected: ${urlDesignId}. Prioritizing server load.`);
+        } else if (!Config.currentDesignId) {
             Config.currentDesignId = localStorage.getItem('nfc:editingDesignId') || null;
-            console.log(`[App] Recovered design identity from localStorage: ${Config.currentDesignId}`);
+            if (Config.currentDesignId) {
+                console.log(`[App] Recovered design identity from localStorage: ${Config.currentDesignId}`);
+            }
         }
 
         const loadedFromUrl = await ShareManager.loadFromUrl();
         
         // 4. Full State Application
         if (loadedFromUrl) {
-            console.log("[App] Design loaded from URL. Pushing history...");
+            console.log("[App] Design successfully loaded from URL.");
             HistoryManager.pushState(StateManager.getStateObject());
             UIManager.announce(i18nMain.designLoaded);
+        } else if (urlDesignId) {
+            // CRITICAL FIX: If a URL ID was provided but load failed, do NOT fall back to storage.
+            // This prevents loading a different previous card by mistake.
+            console.warn("[App] Failed to load the specific design from URL. Loading defaults to prevent data confusion.");
+            StateManager.applyState(Config.defaultState, false);
+            HistoryManager.pushState(Config.defaultState);
+            UIManager.announce(_isEnglishPage ? 'Could not load the requested design.' : "تعذر تحميل التصميم المطلوب.");
         } else if (!CollaborationManager.isActive) {
+            // FALLBACK: Only use storage if no specific ID was requested via URL
             const loadedFromStorage = StateManager.load();
             if (loadedFromStorage) {
-                console.log("[App] Design restored from local storage. Pushing history...");
+                console.log("[App] Design restored from local storage.");
                 HistoryManager.pushState(StateManager.getStateObject());
                 UIManager.announce(i18nMain.designRestored);
             } else {
