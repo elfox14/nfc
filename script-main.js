@@ -750,7 +750,9 @@ const ShareManager = {
             
             try {
                 const fetchUrl = `${Config.API_BASE_URL}/api/get-design/${designId}`;
-                const response = await fetch(fetchUrl);
+                const response = await fetch(fetchUrl, {
+                    credentials: 'include'
+                });
                 
                 if (!response.ok) {
                     const errText = `Fetch failed: ${response.status} ${response.statusText}`;
@@ -767,7 +769,7 @@ const ShareManager = {
                 if (state && (state.inputs || state.dynamic)) {
                     console.log("[ShareManager] Valid design data confirmed. Initializing editor...");
                     Config.currentDesignId = designId;
-                    localStorage.setItem('nfc:currentDesignId', designId); // Persist ID
+                    localStorage.setItem('nfc:editingDesignId', designId); // Persist ID
                     StateManager.applyState(state, false);
                     return true;
                 } else {
@@ -1423,7 +1425,9 @@ const App = {
         EventManager.bindEvents();
 
         // Persistence: Recover currentDesignId if available
-        Config.currentDesignId = Config.currentDesignId || localStorage.getItem('nfc:currentDesignId');
+        if (!Config.currentDesignId) {
+            Config.currentDesignId = localStorage.getItem('nfc:editingDesignId') || null;
+        }
 
         const loadedFromUrl = await ShareManager.loadFromUrl();
         if (loadedFromUrl) {

@@ -5,7 +5,11 @@ const Config = {
     // ... existing config ...
     GTM_CONTAINER_ID: 'GTM-PLL5SLNM', // GTM Container ID
 
-    API_BASE_URL: (typeof Auth !== 'undefined' && Auth.getBaseUrl) ? Auth.getBaseUrl() : 'https://nfc-vjy6.onrender.com',
+    API_BASE_URL: (typeof window !== 'undefined' && window.__API_BASE_URL)
+                  ? window.__API_BASE_URL
+                  : (typeof Auth !== 'undefined' && Auth.getBaseUrl) 
+                      ? Auth.getBaseUrl() 
+                      : 'https://nfc-vjy6.onrender.com',
     LOCAL_STORAGE_KEY: 'digitalCardEditorState_v20',
     GALLERY_STORAGE_KEY: 'digitalCardGallery_v2',
     MAX_LOGO_SIZE_MB: 10,
