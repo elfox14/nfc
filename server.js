@@ -1021,15 +1021,25 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
     if (!user) {
       const userId = nanoid(10);
-      await db.collection(usersCollectionName).insertOne({
+      const newUser = {
         userId,
         email: googleUser.email,
         name: googleUser.name || googleUser.email.split('@')[0],
         googleId: googleUser.id,
         isVerified: true,
         createdAt: new Date()
-      });
-      user = { userId, email: googleUser.email, name: googleUser.name };
+      };
+      await db.collection(usersCollectionName).insertOne(newUser);
+      user = newUser;
+    } else {
+      // If user exists but name is missing, update it from Google
+      if (!user.name && googleUser.name) {
+        await db.collection(usersCollectionName).updateOne(
+          { userId: user.userId },
+          { $set: { name: googleUser.name } }
+        );
+        user.name = googleUser.name;
+      }
     }
 
     // Generate tokens
@@ -1090,7 +1100,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
             var msg = {
               type: 'google-auth',
               success: true,
-              initToken: ${JSON.stringify(sessionInitToken)}
+              initToken: ${JSON.stringify(sessionInitToken)},
+              user: { userId: user.userId, email: user.email, name: user.name }
             };
             var origins = ${JSON.stringify(allowedOrigins)};
             origins.forEach(function(base) {
@@ -1458,10 +1469,20 @@ app.post('/api/auth/session-init', async (req, res) => {
 
     console.log(`[SessionInit] Confirmed for: ${decoded.email}`);
 
+    // Fetch the full user from DB to ensure we have the name
+    const user = await db.collection(usersCollectionName).findOne(
+      { userId: decoded.userId },
+      { projection: { name: 1, email: 1, userId: 1 } }
+    );
+
+    if (!user) {
+      return res.status(401).json({ error: 'User not found during initialization' });
+    }
+
     // Cookies were already set by /google/callback — just return user info
     res.json({
       success: true,
-      user: { userId: decoded.userId, email: decoded.email }
+      user: { userId: user.userId, email: user.email, name: user.name }
     });
 
   } catch {
