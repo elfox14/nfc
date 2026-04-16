@@ -30,7 +30,8 @@ function dataURLtoFile(dataurl, filename) {
             return null;
         }
 
-        const bstr = atob(base64Data);
+        const bstr = typeof safeAtob === 'function' ? safeAtob(base64Data) : atob(base64Data);
+        if (!bstr) throw new Error("Decoding failed");
         let n = bstr.length;
         const u8arr = new Uint8Array(n);
         while (n--) {

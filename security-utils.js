@@ -165,6 +165,23 @@ function handleError(error, context = '') {
     showToast(userMessage, 'error');
 }
 
+/**
+ * فك تشفير Base64 بشكل آمن يدعم URL encoding ويمنع الانهيار
+ * @param {string} str - النص المشفر
+ * @returns {string|null}
+ */
+function safeAtob(str) {
+    if (!str) return null;
+    try {
+        // atob يتطلب Base64 نقي بدون URL encoding
+        const cleaned = str.replace(/-/g, '+').replace(/_/g, '/');
+        return atob(cleaned);
+    } catch(e) {
+        console.warn('[Security] Invalid base64 string:', str);
+        return null;
+    }
+}
+
 // تصدير الوظائف للاستخدام في ملفات أخرى
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -173,6 +190,12 @@ if (typeof module !== 'undefined' && module.exports) {
         isValidURL,
         sanitizeURL,
         showToast,
-        handleError
+        handleError,
+        safeAtob
     };
+}
+
+// Make it global if not in a module environment
+if (typeof window !== 'undefined') {
+    window.safeAtob = safeAtob;
 }

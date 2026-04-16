@@ -746,7 +746,7 @@ const ShareManager = {
         if (params.has('collabId')) return false;
 
         if (designId) {
-            console.log(`[ShareManager] URL id detected: ${designId}`);
+            console.log('[DEBUG] loadFromUrl - designId from URL:', designId);
             
             try {
                 const fetchUrl = `${Config.API_BASE_URL}/api/get-design/${designId}`;
@@ -754,11 +754,14 @@ const ShareManager = {
                     credentials: 'include'
                 });
                 
+                console.log('[DEBUG] API response status:', response.status);
+                
                 if (!response.ok) {
                     throw new Error(`Fetch failed with status ${response.status}`);
                 }
 
                 const result = await response.json();
+                console.log('[DEBUG] API result:', result);
                 console.log("[ShareManager] API data received. Waiting for DOM readiness...");
                 
                 // Ensure DOM is ready before applying state
