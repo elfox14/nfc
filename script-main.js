@@ -755,31 +755,35 @@ const ShareManager = {
                 });
                 
                 if (!response.ok) {
-                    const errText = `Fetch failed: ${response.status} ${response.statusText}`;
-                    console.error(`[ShareManager] ${errText}`);
-                    throw new Error(errText);
+                    throw new Error(`Fetch failed with status ${response.status}`);
                 }
 
                 const result = await response.json();
-                console.log("[ShareManager] API Result received:", result);
+                console.log("[ShareManager] API data received. Waiting for DOM readiness...");
                 
-                // Extract state (server usually returns doc.data)
+                // Ensure DOM is ready before applying state
+                await new Promise(resolve => {
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', resolve, { once: true });
+                    } else {
+                        resolve();
+                    }
+                });
+
                 let state = result.inputs ? result : (result.data || result);
 
                 if (state && (state.inputs || state.dynamic)) {
-                    console.log("[ShareManager] Valid design data confirmed. Initializing editor...");
+                    console.log("[ShareManager] DOM ready. Applying design state...");
                     Config.currentDesignId = designId;
-                    localStorage.setItem('nfc:editingDesignId', designId); // Persist ID
+                    localStorage.setItem('nfc:editingDesignId', designId);
                     StateManager.applyState(state, false);
                     return true;
                 } else {
-                    console.error("[ShareManager] Received data is not a valid design state:", result);
-                    throw new Error("Invalid design data structure");
+                    console.error("[ShareManager] Invalid structure in received design data.");
+                    return false;
                 }
             } catch (e) {
-                console.error("[ShareManager] Load from URL critical failure:", e);
-                // Reveal the error locally to help debug
-                // alert(`[ShareManager Debug]\nفشل في جلب التصميم: ${e.message}\nتأكد من وجود الـ ID في قاعدة البيانات.`);
+                console.error("[ShareManager] Critical failure in loadFromUrl:", e);
                 UIManager.announce(_isEnglishPage ? 'Failed to load design from link.' : "فشل جلب التصميم من الرابط.");
                 return false;
             } finally {
@@ -1417,33 +1421,44 @@ const App = {
             }
         });
 
+        // 1. UI Build & Core Discovery
         ImageCropper.init();
         UIManager.init();
         UIManager.fetchAndPopulateBackgrounds();
-        GalleryManager.init();
-        CollaborationManager.init();
+
+        // 2. Event Binding (Crucial to have listeners before applying state)
         EventManager.bindEvents();
 
-        // Persistence: Recover currentDesignId if available
+        // 3. Design Identity Recovery (from URL or LocalStorage)
         if (!Config.currentDesignId) {
             Config.currentDesignId = localStorage.getItem('nfc:editingDesignId') || null;
+            console.log(`[App] Recovered design identity from localStorage: ${Config.currentDesignId}`);
         }
 
         const loadedFromUrl = await ShareManager.loadFromUrl();
+        
+        // 4. Full State Application
         if (loadedFromUrl) {
+            console.log("[App] Design loaded from URL. Pushing history...");
             HistoryManager.pushState(StateManager.getStateObject());
             UIManager.announce(i18nMain.designLoaded);
         } else if (!CollaborationManager.isActive) {
             const loadedFromStorage = StateManager.load();
             if (loadedFromStorage) {
+                console.log("[App] Design restored from local storage. Pushing history...");
                 HistoryManager.pushState(StateManager.getStateObject());
                 UIManager.announce(i18nMain.designRestored);
             } else {
+                console.log("[App] No saved design found. Loading defaults...");
                 StateManager.applyState(Config.defaultState, false);
                 HistoryManager.pushState(Config.defaultState);
                 UIManager.announce(i18nMain.defaultLoaded);
             }
         }
+
+        // 5. Final Sub-Manager initialization
+        GalleryManager.init();
+        CollaborationManager.init();
 
         const initialQrSource = document.querySelector('input[name="qr-source"]:checked')?.value || 'auto-card';
         DOMElements.qrUrlGroup.style.display = initialQrSource === 'custom' ? 'block' : 'none';

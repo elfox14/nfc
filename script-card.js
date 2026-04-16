@@ -461,12 +461,22 @@ const CardManager = {
     updateCardBackgrounds() {
         const setBg = (imageLayer, gradientLayer, startId, endId, image, opacityId) => {
             if (!imageLayer || !gradientLayer) return;
-            const startColor = document.getElementById(startId).value;
-            const endColor = document.getElementById(endId).value;
+            
+            const startEl = document.getElementById(startId);
+            const endEl = document.getElementById(endId);
+            const opacityEl = document.getElementById(opacityId);
 
-            let opacity = document.getElementById(opacityId).value;
-            const opacityControl = document.getElementById(opacityId).closest('.form-group');
+            if (!startEl || !endEl || !opacityEl) {
+                console.warn(`[Background] Missing control elements for background update: ${startId}, ${endId}, ${opacityId}`);
+                return;
+            }
 
+            const startColor = startEl.value;
+            const endColor = endEl.value;
+            let opacity = opacityEl.value;
+            
+            const opacityControl = opacityEl.closest('.form-group');
+            
             if (!image) {
                 opacity = 1;
                 if (opacityControl) opacityControl.style.display = 'none';
