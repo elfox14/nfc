@@ -658,26 +658,26 @@ app.post('/api/save-design', verifyToken, async (req, res) => {
         if (existingDesign) {
           shortId = existingDesign.shortId;
           isUpdate = true;
-            // Preserve existing captured images if not re-capturing now
-            if (existingDesign.data?.imageUrls) {
-              if (!data.imageUrls) data.imageUrls = {};
-              const existing = existingDesign.data.imageUrls;
-              if (!data.imageUrls.capturedFront && existing.capturedFront) {
-                data.imageUrls.capturedFront = existing.capturedFront;
-              }
-              if (!data.imageUrls.capturedBack && existing.capturedBack) {
-                data.imageUrls.capturedBack = existing.capturedBack;
-              }
+          // Preserve existing captured images if not re-capturing now
+          if (existingDesign.data?.imageUrls) {
+            if (!data.imageUrls) data.imageUrls = {};
+            const existing = existingDesign.data.imageUrls;
+            if (!data.imageUrls.capturedFront && existing.capturedFront) {
+              data.imageUrls.capturedFront = existing.capturedFront;
             }
-            const updateExisting = { data, ownerId, lastModified: new Date() };
-            await db.collection(designsCollectionName).updateOne(
-              { shortId },
-              { $set: updateExisting }
-            );
-            return res.json({ success: true, id: shortId });
+            if (!data.imageUrls.capturedBack && existing.capturedBack) {
+              data.imageUrls.capturedBack = existing.capturedBack;
+            }
           }
+          const updateExisting = { data, ownerId, lastModified: new Date() };
+          await db.collection(designsCollectionName).updateOne(
+            { shortId: shortId },
+            { $set: updateExisting }
+          );
+          return res.json({ success: true, id: shortId });
         }
       }
+
       await db.collection(designsCollectionName).insertOne({
         shortId,
         ...updateDoc,
@@ -685,6 +685,7 @@ app.post('/api/save-design', verifyToken, async (req, res) => {
         views: 0
       });
     }
+
     res.json({ success: true, id: shortId });
   } catch (e) {
     console.error('Save design error:', e);
