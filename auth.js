@@ -9,7 +9,12 @@ const Auth = {
     getBaseUrl() {
         // Use obfuscated Render URL to prevent exposing it in static scans,
         // and ensure the API is hit directly instead of being intercepted by the front-end SPA router.
-        return atob('aHR0cHM6Ly9uZmMtdmp5Ni5vbnJlbmRlci5jb20=');
+        try {
+            return atob('aHR0cHM6Ly9uZmMtdmp5Ni5vbnJlbmRlci5jb20=');
+        } catch (e) {
+            console.error("[Auth] Failed to decode base URL:", e);
+            return '';
+        }
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },

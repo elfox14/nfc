@@ -7,20 +7,38 @@
  * @returns {File}
  */
 function dataURLtoFile(dataurl, filename) {
-    if (!dataurl || typeof dataurl !== 'string') return null;
-    let arr = dataurl.split(',');
-    if (arr.length < 2) return null;
+    if (!dataurl || typeof dataurl !== 'string' || !dataurl.includes(',')) {
+        return null;
+    }
+
     try {
-        let mime = arr[0].match(/:(.*?);/)[1],
-            bstr = atob(arr[1]),
-            n = bstr.length,
-            u8arr = new Uint8Array(n);
+        const arr = dataurl.split(',');
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        if (!mimeMatch) return null;
+
+        const mime = mimeMatch[1];
+        let base64Data = arr[1];
+
+        // Defensive: Remove any potential whitespace
+        base64Data = base64Data.trim();
+
+        // Validation: Ensure it's a valid base64 string
+        // Base64 regex: [A-Za-z0-9+/]*={0,2}
+        const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+        if (!base64Regex.test(base64Data)) {
+            console.warn("[script-ui] dataURLtoFile: Invalid base64 sequence detected");
+            return null;
+        }
+
+        const bstr = atob(base64Data);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
         while (n--) {
             u8arr[n] = bstr.charCodeAt(n);
         }
         return new File([u8arr], filename, { type: mime });
     } catch (e) {
-        console.error("[script-ui] atob decoding failed:", e);
+        console.error("[script-ui] dataURLtoFile: Decoding failed", { error: e.message, dataPreview: dataurl.substring(0, 30) + '...' });
         return null;
     }
 }

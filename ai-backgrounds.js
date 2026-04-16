@@ -46,8 +46,14 @@
         const applyFrontBtn = document.getElementById('ai-apply-front');
         const applyBackBtn = document.getElementById('ai-apply-back');
 
-        if (!aiBtn || !modal) {
-            console.log('AI Backgrounds: Elements not found, skipping initialization');
+        if (!aiBtn || !modal || !closeBtn || !applyFrontBtn || !applyBackBtn) {
+            console.warn('AI Backgrounds: Some UI elements not found, skipping initialization.', {
+                aiBtn: !!aiBtn,
+                modal: !!modal,
+                closeBtn: !!closeBtn,
+                applyFrontBtn: !!applyFrontBtn,
+                applyBackBtn: !!applyBackBtn
+            });
             return;
         }
 
