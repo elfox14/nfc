@@ -764,9 +764,9 @@ const ShareManager = {
                 // Ensure DOM is ready before applying state
                 await new Promise(resolve => {
                     if (document.readyState === 'loading') {
-                        document.addEventListener('DOMContentLoaded', resolve, { once: true });
+                        document.addEventListener('DOMContentLoaded', () => setTimeout(resolve, 100), { once: true });
                     } else {
-                        resolve();
+                        setTimeout(resolve, 100);
                     }
                 });
 

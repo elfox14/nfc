@@ -466,16 +466,15 @@ const CardManager = {
             const endEl = document.getElementById(endId);
             const opacityEl = document.getElementById(opacityId);
 
-            if (!startEl || !endEl || !opacityEl) {
-                console.warn(`[Background] Missing control elements for background update: ${startId}, ${endId}, ${opacityId}`);
-                return;
-            }
+            if (!startEl || !endEl) return;
 
             const startColor = startEl.value;
             const endColor = endEl.value;
-            let opacity = opacityEl.value;
             
-            const opacityControl = opacityEl.closest('.form-group');
+            // Use 1 as default if opacity element is missing
+            let opacity = opacityEl ? opacityEl.value : 1;
+            
+            const opacityControl = opacityEl ? opacityEl.closest('.form-group') : null;
             
             if (!image) {
                 opacity = 1;
