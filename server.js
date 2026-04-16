@@ -1833,15 +1833,27 @@ app.get('/api/get-design/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
-    // SECURITY: Use projection to return only public design data, exclude internal fields
-    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    const { ObjectId } = require('mongodb');
     
+    // 1. Try to find by shortId first
+    let doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    
+    // 2. Fallback: Try to find by ObjectId if 1 fails and it's a valid hex string
+    if (!doc && id.length === 24 && /^[0-9a-fA-F]+$/.test(id)) {
+      try {
+        doc = await db.collection(designsCollectionName).findOne({ _id: new ObjectId(id) });
+        if (doc) console.log(`[API] Design found using fallback ObjectId: ${id}`);
+      } catch (err) {
+        // Not a valid ObjectId even if it's 24 chars
+      }
+    }
+
     if (!doc || !doc.data) {
-      console.warn(`[API] Design not found for shortId: ${id}`);
+      console.warn(`[API] Design not found for ID: ${id}`);
       return res.status(404).json({ error: 'Design not found or data missing' });
     }
 
-    console.log(`[API] Design found for shortId: ${id}. Returning data.`);
+    console.log(`[API] Design found for ID: ${id}. Returning data.`);
     res.json(doc.data);
   } catch (e) {
     console.error('Get design error:', e);

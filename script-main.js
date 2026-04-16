@@ -743,48 +743,43 @@ const ShareManager = {
         const params = new URLSearchParams(window.location.search);
         const designId = params.get('id');
 
-        // لا تقم بالتحميل إذا كان هناك معرف جلسة تحرير جماعي
-        if (params.has('collabId')) {
-            return false;
-        }
+        if (params.has('collabId')) return false;
 
         if (designId) {
-            console.log(`[ShareManager] URL id detected: ${designId}. Attempting to fetch from: ${Config.API_BASE_URL}/api/get-design/${designId}`);
+            console.log(`[ShareManager] URL id detected: ${designId}`);
             
             try {
-                const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`);
+                const fetchUrl = `${Config.API_BASE_URL}/api/get-design/${designId}`;
+                const response = await fetch(fetchUrl);
+                
                 if (!response.ok) {
-                    console.error(`[ShareManager] Design fetch failed with status: ${response.status}. This usually means the design ID is incorrect or on a different server.`);
-                    throw new Error('Design not found or server error');
+                    const errText = `Fetch failed: ${response.status} ${response.statusText}`;
+                    console.error(`[ShareManager] ${errText}`);
+                    throw new Error(errText);
                 }
 
                 const result = await response.json();
                 console.log("[ShareManager] API Result received:", result);
                 
-                // IMPORTANT: In server.js (line 1856), it responds with doc.data
-                // So result is likely the state itself: { inputs: ..., dynamic: ..., imageUrls: ... }
-                let state = result;
-                
-                // Backwards compatibility / structure safety
-                if (result.data && !result.inputs) {
-                    state = result.data;
-                }
+                // Extract state (server usually returns doc.data)
+                let state = result.inputs ? result : (result.data || result);
 
                 if (state && (state.inputs || state.dynamic)) {
-                    console.log("[ShareManager] Valid state object confirmed. Applying to editor UI...");
-                    Config.currentDesignId = designId; // Crucial for "Save" to be an "Update"
+                    console.log("[ShareManager] Valid design data confirmed. Initializing editor...");
+                    Config.currentDesignId = designId;
                     StateManager.applyState(state, false);
                     return true;
                 } else {
-                    console.error("[ShareManager] The JSON received does not contain valid editor state (missing inputs/dynamic):", result);
-                    throw new Error("Invalid design data");
+                    console.error("[ShareManager] Received data is not a valid design state:", result);
+                    throw new Error("Invalid design data structure");
                 }
             } catch (e) {
-                console.error("[ShareManager] Critical failure in loadFromUrl:", e);
-                UIManager.announce(_isEnglishPage ? 'Failed to load design from link.' : "فشل تحميل التصميم من الرابط.");
+                console.error("[ShareManager] Load from URL critical failure:", e);
+                // Reveal the error locally to help debug
+                // alert(`[ShareManager Debug]\nفشل في جلب التصميم: ${e.message}\nتأكد من وجود الـ ID في قاعدة البيانات.`);
+                UIManager.announce(_isEnglishPage ? 'Failed to load design from link.' : "فشل جلب التصميم من الرابط.");
                 return false;
             } finally {
-                // Clear the ID from the URL only AFTER we've processed it
                 const newUrl = new URL(window.location.href);
                 newUrl.searchParams.delete('id');
                 window.history.replaceState({}, document.title, newUrl.pathname + newUrl.search);
