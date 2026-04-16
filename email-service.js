@@ -1,5 +1,7 @@
 'use strict';
 
+const { Resend } = require('resend');
+
 /**
  * Email Service Module
  * Handles sending transactional emails (verification, password reset, etc.)
@@ -16,6 +18,23 @@ const EmailService = {
         fromEmail: process.env.EMAIL_FROM_ADDRESS || 'noreply@mcprim.com',
         fromName: process.env.EMAIL_FROM_NAME || 'MC PRIME NFC'
     },
+
+    // Fail-fast: Stop the server if email configuration is invalid in production
+    _productionCheck: (function() {
+        const provider = process.env.EMAIL_PROVIDER || 'console';
+        const apiKey = process.env.EMAIL_API_KEY || '';
+        if (process.env.NODE_ENV === 'production') {
+            if (provider === 'console') {
+                const msg = 'FATAL: EMAIL_PROVIDER is set to "console" in production. Verification and password-reset emails will NOT be delivered. Set EMAIL_PROVIDER to "sendgrid" or "resend".';
+                console.error(msg);
+                throw new Error(msg);
+            } else if (!apiKey) {
+                const msg = `FATAL: EMAIL_PROVIDER is "${provider}" but EMAIL_API_KEY is not set. Emails will fail at send time.`;
+                console.error(msg);
+                throw new Error(msg);
+            }
+        }
+    })(),
 
     /**
      * Send an email
@@ -93,26 +112,21 @@ const EmailService = {
     /**
      * Send with Resend
      */
-    async _sendWithResend({ to, subject, html, apiKey, fromEmail }) {
+    async _sendWithResend({ to, subject, html, text, apiKey, fromEmail, fromName }) {
         try {
-            const response = await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    from: fromEmail,
-                    to: [to],
-                    subject,
-                    html
-                })
+            const resend = new Resend(apiKey);
+            const from = fromName ? `${fromName} <${fromEmail}>` : fromEmail;
+            const { data, error } = await resend.emails.send({
+                from,
+                to: [to],
+                subject,
+                html,
+                text
             });
 
-            const data = await response.json();
-            if (!response.ok) {
-                console.error('[EmailService] Resend error:', data);
-                return { success: false, error: data };
+            if (error) {
+                console.error('[EmailService] Resend error:', error);
+                return { success: false, error: error.message };
             }
 
             return { success: true, provider: 'resend', id: data.id };
@@ -125,6 +139,18 @@ const EmailService = {
     // ========== Email Templates ==========
 
     /**
+     * Escape HTML special characters to prevent XSS in email templates
+     */
+    _escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    },
+
+    /**
      * Verification Email Template
      */
     verificationEmail(userName, verifyUrl) {
@@ -132,7 +158,7 @@ const EmailService = {
             subject: 'تأكيد بريدك الإلكتروني - MC PRIME',
             html: `
                 <div style="font-family: 'Tajawal', Arial, sans-serif; direction: rtl; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <h2 style="color: #4DA6FF;">مرحباً ${userName}!</h2>
+                    <h2 style="color: #4DA6FF;">مرحباً ${this._escapeHtml(userName)}!</h2>
                     <p>شكراً لتسجيلك في MC PRIME. لتأكيد بريدك الإلكتروني، اضغط على الزر أدناه:</p>
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="${verifyUrl}" style="background: linear-gradient(135deg, #4DA6FF, #00E5FF); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">تأكيد البريد الإلكتروني</a>
@@ -153,7 +179,7 @@ const EmailService = {
             subject: 'إعادة تعيين كلمة المرور - MC PRIME',
             html: `
                 <div style="font-family: 'Tajawal', Arial, sans-serif; direction: rtl; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <h2 style="color: #4DA6FF;">مرحباً ${userName}!</h2>
+                    <h2 style="color: #4DA6FF;">مرحباً ${this._escapeHtml(userName)}!</h2>
                     <p>تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. اضغط على الزر أدناه:</p>
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="${resetUrl}" style="background: linear-gradient(135deg, #4DA6FF, #00E5FF); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">إعادة تعيين كلمة المرور</a>
@@ -171,8 +197,8 @@ const EmailService = {
             subject: 'طلب حفظ بطاقة جديد - MC PRIME',
             html: `
                 <div style="font-family: 'Tajawal', Arial, sans-serif; direction: rtl; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <h2 style="color: #4DA6FF;">مرحباً ${ownerName}!</h2>
-                    <p>المستخدم <strong>${requesterName}</strong> يرغب في حفظ بطاقتك <strong>"${cardName}"</strong>.</p>
+                    <h2 style="color: #4DA6FF;">مرحباً ${this._escapeHtml(ownerName)}!</h2>
+                    <p>المستخدم <strong>${this._escapeHtml(requesterName)}</strong> يرغب في حفظ بطاقتك <strong>"${this._escapeHtml(cardName)}"</strong>.</p>
                     <p>يمكنك قبول أو رفض الطلب من لوحة التحكم.</p>
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="${requestLink}" style="background: linear-gradient(135deg, #4DA6FF, #00E5FF); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">عرض الطلبات</a>

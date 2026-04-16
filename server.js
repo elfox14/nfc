@@ -1,6 +1,6 @@
 // server.js (الكود الكامل والنهائي مع ميزة التحرير الجماعي)
 
-require('dotenv').config();
+require('dotenv').config({ override: false });
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required. Please set it in your environment variables.');
@@ -32,6 +32,7 @@ const useragent = require('express-useragent');
 const http = require('http');
 const { WebSocketServer } = require('ws');
 const url = require('url');
+const cloudinary = require('cloudinary').v2;
 
 const window = (new JSDOM('')).window;
 const DOMPurify = DOMPurifyFactory(window);
@@ -46,9 +47,15 @@ const port = process.env.PORT || 3000;
 app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : 0);
 app.disable('x-powered-by');
 
+// Cloudinary Configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 // --- START: SECURITY HEADERS (HELMET) ---
 app.use(helmet.frameguard({ action: 'deny' }));
-app.use(helmet.xssFilter());
 app.use(helmet.noSniff());
 app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));
 // CSP nonce middleware — generates a unique nonce per request
@@ -63,10 +70,10 @@ app.use(helmet.contentSecurityPolicy({
     scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
     styleSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    imgSrc: ["'self'", "data:", "https:", "https://i.imgur.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com"],
+    imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com", "https://*.mcprim.com", "https://i.imgur.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com"],
     mediaSrc: ["'self'", "data:"],
     frameSrc: ["'self'", "https://www.youtube.com"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com", "ws:", "wss:"],
+    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://*.mcprim.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com", `wss://${process.env.RENDER_EXTERNAL_HOSTNAME || 'nfc-vjy6.onrender.com'}`],
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
   },
@@ -82,18 +89,22 @@ if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    // Requests with no origin (health checks, Render monitoring, curl, server-to-server)
+    // In production: allow through but WITHOUT CORS headers (browsers can't abuse this)
+    // In development: allow with full CORS headers for Postman/curl convenience
     if (!origin) {
-      console.log('[CORS] Request with no origin allowed');
+      if (process.env.NODE_ENV === 'production') {
+        // cb(null, false) = proceed without CORS headers (safe: browsers always send Origin)
+        return cb(null, false);
+      }
       return cb(null, true);
     }
     // In all environments, check against allowedOrigins with flexible subdomain matching
     let isAllowed = allowedOrigins.some(baseDomain => {
       if (baseDomain === origin) return true;
-      // Compare without protocols and www
-      const cleanBase = baseDomain.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
-      const cleanOrigin = origin.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
-      return cleanBase === cleanOrigin;
+      // Compare strictly with protocols, but handle www
+      const normalizeUrl = o => o.replace(/^(https?:\/\/)(www\.)?/, '$1').toLowerCase();
+      return normalizeUrl(baseDomain) === normalizeUrl(origin);
     });
 
     // In local development, allow localhost origins automatically
@@ -150,7 +161,10 @@ MongoClient.connect(mongoUrl)
       console.warn('Some indexes may already exist:', indexErr.message);
     }
   })
-  .catch(err => { console.error('Mongo connect error', err); /* process.exit(1); */ });
+  .catch(err => { 
+    console.error('Mongo connect error', err); 
+    process.exit(1); 
+  });
 
 const rootDir = __dirname;
 
@@ -164,7 +178,8 @@ function absoluteBaseUrl(req) {
 }
 
 const FIELDS_TO_SANITIZE = [
-  'input-name', 'input-tagline',
+  'input-name', 'input-name_ar', 'input-name_en',
+  'input-tagline', 'input-tagline_ar', 'input-tagline_en',
   'input-email', 'input-website',
   'input-whatsapp', 'input-facebook', 'input-linkedin'
 ];
@@ -432,6 +447,8 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
+app.use('/api/auth/verify-email', authLimiter);
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -488,14 +505,66 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
       .webp({ quality: 85 })
       .toBuffer();
 
-    // Try to upload to external hosting (persistent storage)
-    // الحفظ المحلي (Fallback/Development)
+    // Phase 1: Try External Upload (Priority 1)
+    if (process.env.EXTERNAL_UPLOAD_URL) {
+      try {
+        const formData = new FormData();
+        const blob = new Blob([processedBuffer], { type: 'image/webp' });
+        formData.append('file', blob, 'image.webp');
+        if (process.env.UPLOAD_SECRET) {
+          formData.append('secret', process.env.UPLOAD_SECRET);
+        }
+
+        const externalResponse = await fetch(process.env.EXTERNAL_UPLOAD_URL, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (externalResponse.ok) {
+          const result = await externalResponse.json();
+          if (result.success && result.url) {
+            console.log('[Upload] Image uploaded to external server:', result.url);
+            return res.json({ success: true, url: result.url, external: true });
+          }
+        }
+        console.warn('[Upload] External upload returned error status:', externalResponse.status);
+      } catch (externalErr) {
+        console.warn('[Upload] External upload failed, falling back to Cloudinary:', externalErr.message);
+      }
+    }
+
+    // Phase 2: Try Cloudinary (Priority 2)
+    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+      try {
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: 'mcprim', resource_type: 'image', format: 'webp' },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          uploadStream.end(processedBuffer);
+        });
+
+        console.log('[Upload] Image uploaded to Cloudinary:', result.secure_url);
+        return res.json({
+          success: true,
+          url: result.secure_url,
+          cloud: true
+        });
+      } catch (cloudErr) {
+        console.warn('[Upload] Cloudinary upload failed, falling back to local:', cloudErr.message);
+      }
+    }
+
+    // fallback: Local storage (Ephemeral/Development)
     const filename = nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
     await fs.promises.writeFile(out, processedBuffer);
 
     const base = absoluteBaseUrl(req);
-    console.log('[Upload] Image saved locally:', filename);
+    console.log('[Upload] Image saved locally (Fallback):', filename);
 
     return res.json({
       success: true,
@@ -689,7 +758,7 @@ app.patch('/api/design/:id/element/:elementId', verifyToken, async (req, res) =>
 // Register
 app.post('/api/auth/register', [
   body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
+  body('password').isLength({ min: 6, max: 128 }),
   body('name').trim().notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -728,10 +797,10 @@ app.post('/api/auth/register', [
     if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
 
-    // Store verification token
+    // Store verification token hash
     await db.collection(usersCollectionName).updateOne(
       { userId },
-      { $set: { verificationToken } }
+      { $set: { verificationTokenHash: hashToken(verificationToken) } }
     );
 
     // Send verification email (non-blocking)
@@ -773,7 +842,8 @@ app.post('/api/auth/register', [
       path: '/'
     });
 
-    res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
+    // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
+    res.status(201).json({ success: true, user: { name, email, userId, isVerified: false } });
 
   } catch (err) {
     if (err.code === 11000) {
@@ -788,7 +858,7 @@ app.post('/api/auth/register', [
 // Login
 app.post('/api/auth/login', [
   body('email').isEmail().normalizeEmail(),
-  body('password').exists()
+  body('password').isLength({ max: 128 }).withMessage('Password too long')
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -845,7 +915,8 @@ app.post('/api/auth/login', [
     });
 
     console.log(`[Login] Successful login for: ${email}. Token issued.`);
-    res.json({ success: true, token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } });
+    // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
+    res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Login error:', err);
@@ -989,22 +1060,63 @@ app.get('/api/auth/google/callback', async (req, res) => {
       path: '/'
     });
 
-    // Send auth data to the popup opener via postMessage
+    // Build the dashboard URL for fallback redirect
+    // SECURITY: Token is already in HttpOnly cookies — do NOT put it in URL hash
+    const dashboardPage = lang === 'en'
+      ? `${frontendBase}/dashboard-en.html`
+      : `${frontendBase}/dashboard.html`;
+
+
+
+    // SECURITY: Generate a very short-lived (60s), one-time-use token to initialize the session
+    // This allows the SPA to boot even if third-party cookies are blocked by the browser.
+    const sessionInitToken = jwt.sign(
+      { userId: user.userId, email: user.email, type: 'session-init' },
+      process.env.JWT_SECRET,
+      { expiresIn: '60s' }
+    );
+
+    // Send success signal to popup opener via postMessage
     const script = `
       (function() {
+        var hasOpener = false;
         try {
-          if (window.opener && !window.opener.closed) {
-            const msg = {
+          hasOpener = !!(window.opener && !window.opener.closed);
+        } catch (e) {}
+
+        if (hasOpener) {
+          // Path 1: Popup flow — send success signal to opener, then close
+          try {
+            var msg = {
               type: 'google-auth',
               success: true,
-              token: ${JSON.stringify(accessToken)},
-              user: ${JSON.stringify({ name: user.name, email: user.email, userId: user.userId })}
+              initToken: ${JSON.stringify(sessionInitToken)}
             };
-            const origins = ${JSON.stringify(process.env.NODE_ENV === 'production' ? ['https://mcprim.com', 'https://www.mcprim.com'] : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'])};
-            origins.forEach(origin => window.opener.postMessage(msg, origin));
-          }
-        } catch (e) {}
-        window.close();
+            var origins = ${JSON.stringify(allowedOrigins)};
+            origins.forEach(function(base) {
+              try {
+                window.opener.postMessage(msg, base);
+                // Also try variant (www <-> non-www) to ensure target match
+                if (base.includes('://www.')) {
+                  window.opener.postMessage(msg, base.replace('://www.', '://'));
+                } else {
+                  window.opener.postMessage(msg, base.replace('://', '://www.'));
+                }
+              } catch (e) {}
+            });
+          } catch (e) { console.error('[GoogleAuth] postMessage failed:', e); }
+
+          // Close the popup
+          window.close();
+
+          // If popup didn't close, fallback to redirect (no token in URL)
+          setTimeout(function() {
+            window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1');
+          }, 1000);
+        } else {
+          // Path 2: No opener — redirect to dashboard (cookies carry the session)
+          window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1');
+        }
       })();
     `;
 
@@ -1022,21 +1134,27 @@ app.get('/api/auth/google/callback', async (req, res) => {
     console.error('Google OAuth error:', err);
     const errorMessage = err.message || 'Authentication failed';
     
-    // Send error to the popup opener via postMessage
+    // Send error to the popup opener via postMessage, with fallback redirect
     const script = `
       (function() {
         try {
           if (window.opener && !window.opener.closed) {
-            const msg = {
+            var msg = {
               type: 'google-auth',
               success: false,
               error: ${JSON.stringify(errorMessage)}
             };
-            const origins = ${JSON.stringify(process.env.NODE_ENV === 'production' ? ['https://mcprim.com', 'https://www.mcprim.com'] : ['http://localhost:3000', 'http://127.0.0.1:5500', 'https://mcprim.com', 'https://www.mcprim.com'])};
-            origins.forEach(origin => window.opener.postMessage(msg, origin));
+            var origins = ${JSON.stringify(allowedOrigins)};
+            origins.forEach(function(origin) { window.opener.postMessage(msg, origin); });
           }
-        } catch (e) {}
+        } catch (e) { console.error('[GoogleAuth] postMessage error failed:', e); }
+
         window.close();
+
+        // Fallback: redirect to login page with error
+        setTimeout(function() {
+          window.location.replace(${JSON.stringify(loginPage)} + '?error=' + ${JSON.stringify(encodeURIComponent(errorMessage))});
+        }, 500);
       })();
     `;
 
@@ -1076,10 +1194,10 @@ app.post('/api/auth/forgot-password', [
     if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
     const resetToken = jwt.sign({ userId: user.userId, email: user.email, type: 'password-reset' }, secret, { expiresIn: '1h' });
 
-    // Store reset token in DB
+    // Store reset token hash in DB
     await db.collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { resetToken, resetTokenExpiry: new Date(Date.now() + 3600000) } }
+      { $set: { resetTokenHash: hashToken(resetToken), resetTokenExpiry: new Date(Date.now() + 3600000) } }
     );
 
     const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
@@ -1103,8 +1221,9 @@ app.post('/api/auth/forgot-password', [
 });
 
 // Reset Password - Set New Password
-app.post('/api/auth/reset-password/:token', [
-  body('password').isLength({ min: 6 })
+app.post('/api/auth/reset-password', authLimiter, [
+  body('token').notEmpty().withMessage('Token is required'),
+  body('password').isLength({ min: 6, max: 128 })
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -1114,8 +1233,7 @@ app.post('/api/auth/reset-password/:token', [
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
-    const { token } = req.params;
-    const { password } = req.body;
+    const { token, password } = req.body; // Token now comes from body
 
     // Verify token
     const secret = process.env.JWT_SECRET;
@@ -1128,8 +1246,11 @@ app.post('/api/auth/reset-password/:token', [
       return res.status(400).json({ error: 'رابط غير صالح أو منتهي الصلاحية' });
     }
 
-    // Find user and verify token matches
-    const user = await db.collection(usersCollectionName).findOne({ userId: decoded.userId, resetToken: token });
+    // Find user and verify token hash matches
+    const user = await db.collection(usersCollectionName).findOne({ 
+      userId: decoded.userId, 
+      resetTokenHash: hashToken(token) 
+    });
     if (!user) {
       return res.status(400).json({ error: 'رابط غير صالح أو منتهي الصلاحية' });
     }
@@ -1146,7 +1267,10 @@ app.post('/api/auth/reset-password/:token', [
     // Update password and clear reset token
     await db.collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { password: hashedPassword }, $unset: { resetToken: '', resetTokenExpiry: '' } }
+      { 
+        $set: { password: hashedPassword }, 
+        $unset: { resetTokenHash: '', resetTokenExpiry: '' } 
+      }
     );
 
     console.log(`[ResetPassword] Password updated for user: ${user.email}`);
@@ -1158,12 +1282,13 @@ app.post('/api/auth/reset-password/:token', [
   }
 });
 
-// Verify Email
-app.get('/api/auth/verify-email/:token', async (req, res) => {
+// Verify Email endpoint - switched to POST for better security
+app.post('/api/auth/verify-email', authLimiter, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
 
-    const { token } = req.params;
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token missing' });
 
     // Verify token
     const secret = process.env.JWT_SECRET;
@@ -1176,8 +1301,11 @@ app.get('/api/auth/verify-email/:token', async (req, res) => {
       return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
     }
 
-    // Find user and verify token matches
-    const user = await db.collection(usersCollectionName).findOne({ userId: decoded.userId, verificationToken: token });
+    // Find user and verify hashed token matches
+    const user = await db.collection(usersCollectionName).findOne({ 
+      userId: decoded.userId, 
+      verificationTokenHash: hashToken(token) 
+    });
     if (!user) {
       return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
     }
@@ -1190,7 +1318,7 @@ app.get('/api/auth/verify-email/:token', async (req, res) => {
     // Update user as verified
     await db.collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { isVerified: true }, $unset: { verificationToken: '' } }
+      { $set: { isVerified: true }, $unset: { verificationTokenHash: '' } }
     );
 
     console.log(`[VerifyEmail] Email verified for user: ${user.email}`);
@@ -1252,7 +1380,8 @@ app.post('/api/auth/refresh', async (req, res) => {
       path: '/'
     });
 
-    res.json({ success: true, token: newAccessToken, user: { name: user.name, email: user.email, userId: user.userId } });
+    // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
+    res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Token refresh error:', err);
@@ -1294,6 +1423,62 @@ app.post('/api/auth/logout', async (req, res) => {
     console.error('Logout error:', err);
     res.status(500).json({ error: 'Logout failed' });
   }
+});
+
+// Get current authenticated user info (used after OAuth redirect instead of URL hash)
+app.get('/api/auth/me', verifyToken, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+    const user = await db.collection(usersCollectionName).findOne(
+      { userId: req.user.userId },
+      { projection: { name: 1, email: 1, userId: 1, isVerified: 1, _id: 0 } }
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ success: true, user });
+  } catch (err) {
+    console.error('Get user info error:', err);
+    res.status(500).json({ error: 'Failed to get user info' });
+  }
+});
+
+// POST /api/auth/session-init
+// Verifies the short-lived one-time token sent via postMessage from Google OAuth popup.
+// Cookies are already set by /google/callback — this just confirms the token is valid
+// and returns user data so the frontend can initialize its session state.
+app.post('/api/auth/session-init', async (req, res) => {
+  try {
+    const { initToken } = req.body;
+    if (!initToken) return res.status(400).json({ error: 'Token required' });
+
+    const decoded = jwt.verify(initToken, process.env.JWT_SECRET);
+
+    if (decoded.type !== 'session-init') {
+      return res.status(401).json({ error: 'Invalid token type' });
+    }
+
+    console.log(`[SessionInit] Confirmed for: ${decoded.email}`);
+
+    // Cookies were already set by /google/callback — just return user info
+    res.json({
+      success: true,
+      user: { userId: decoded.userId, email: decoded.email }
+    });
+
+  } catch {
+    return res.status(401).json({ error: 'Invalid or expired session token' });
+  }
+});
+
+// Issue a short-lived token for WebSocket authentication
+// WebSocket can't send cookies, so the client fetches this token via HTTP (with cookies),
+// then sends it as the first WebSocket message
+app.get('/api/auth/ws-token', verifyToken, (req, res) => {
+  const wsToken = jwt.sign(
+    { userId: req.user.userId, email: req.user.email, type: 'access' },
+    process.env.JWT_SECRET,
+    { expiresIn: '30s' } // Very short-lived — only for WebSocket handshake
+  );
+  res.json({ success: true, token: wsToken });
 });
 
 // Get User Profile/Designs
@@ -1627,7 +1812,24 @@ app.get('/api/get-design/:id', async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
-    const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+    // SECURITY: Use projection to return only public design data, exclude internal fields
+    const doc = await db.collection(designsCollectionName).findOne(
+      { shortId: id },
+      { projection: {
+        'data.inputs': 1,
+        'data.dynamic': 1,
+        'data.imageUrls': 1,
+        'data.template': 1,
+        'data.cardBack': 1,
+        'data.elements': 1,
+        'data.sharedToGallery': 1,
+        'data.cardFrontBg': 1,
+        'data.cardBackBg': 1,
+        'data.layout': 1,
+        'data.currentLanguage': 1,
+        '_id': 0
+      }}
+    );
     if (!doc || !doc.data) return res.status(404).json({ error: 'Design not found or data missing' });
 
     res.json(doc.data);
@@ -1640,16 +1842,22 @@ app.get('/api/get-design/:id', async (req, res) => {
 });
 
 // Get Card Statistics
-app.get('/api/card-stats/:id', async (req, res) => {
+// SECURITY: Card stats require authentication and ownership verification
+app.get('/api/card-stats/:id', verifyToken, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
     const doc = await db.collection(designsCollectionName).findOne(
       { shortId: id },
-      { projection: { views: 1, createdAt: 1, lastModified: 1, shortId: 1 } }
+      { projection: { views: 1, createdAt: 1, lastModified: 1, shortId: 1, ownerId: 1 } }
     );
 
     if (!doc) return res.status(404).json({ error: 'Design not found' });
+
+    // Verify ownership — only the card owner can see detailed stats
+    if (doc.ownerId && doc.ownerId !== req.user.userId) {
+      return res.status(403).json({ error: 'Access denied: you do not own this design' });
+    }
 
     res.json({
       success: true,
@@ -1760,8 +1968,9 @@ app.get('/sitemap.xml', async (req, res) => {
     const blogPosts = [];
     let designUrls = [];
     if (db) {
+      // SECURITY: Only include designs shared to gallery in the sitemap
       const docs = await db.collection(designsCollectionName)
-        .find({})
+        .find({ 'data.sharedToGallery': true })
         .project({ shortId: 1, createdAt: 1 })
         .sort({ createdAt: -1 })
         .limit(5000)
@@ -1840,10 +2049,9 @@ const wss = new WebSocketServer({ server });
 const rooms = new Map();
 
 wss.on('connection', (ws, req) => {
-  // 4. استخراج `collabId` و `token` من رابط الاتصال
+  // SECURITY: Extract only collabId from URL — token comes via first message
   const parameters = new url.URL(req.url, `ws://${req.headers.host}`).searchParams;
   const collabId = parameters.get('collabId');
-  const token = parameters.get('token');
 
   if (!collabId) {
     console.log('Connection rejected: No collabId provided.');
@@ -1857,59 +2065,75 @@ wss.on('connection', (ws, req) => {
     ws.close(1011, 'Internal Server Error: Authentication configuration missing');
     return;
   }
-  
-  if (token) {
-    try {
-      jwt.verify(token, secret);
-    } catch (err) {
-      console.log('WebSocket connection rejected: Invalid token.');
-      ws.close(1008, 'Invalid authentication token');
-      return;
+
+  // SECURITY: Do NOT accept token from URL query string.
+  // Wait for the first message to authenticate.
+  let authenticated = false;
+
+  // Set a timeout — if no auth message within 10 seconds, disconnect
+  const authTimeout = setTimeout(() => {
+    if (!authenticated) {
+      console.log(`WebSocket auth timeout for room: ${collabId}`);
+      ws.close(1008, 'Authentication timeout');
     }
-  } else {
-    console.log('WebSocket connection rejected: No token provided.');
-    ws.close(1008, 'Authentication token required');
-    return;
-  }
+  }, 10000);
 
-  // 5. الانضمام إلى الغرفة
-  if (!rooms.has(collabId)) {
-    rooms.set(collabId, new Set());
-  }
-  const room = rooms.get(collabId);
-  room.add(ws);
-
-  console.log(`Client connected to room: ${collabId}. Room size: ${room.size}`);
-
-  // 6. التعامل مع الرسائل الواردة من العميل
-  ws.on('message', (message) => {
+  // Listen for the first message as an auth message
+  ws.once('message', (message) => {
     try {
-      // بث الرسالة (حالة التصميم الجديدة) إلى جميع العملاء الآخرين في نفس الغرفة
-      room.forEach(client => {
-        if (client !== ws && client.readyState === ws.OPEN) {
-          client.send(message.toString());
+      const data = JSON.parse(message.toString());
+      if (data.type === 'auth' && data.token) {
+        jwt.verify(data.token, secret);
+        authenticated = true;
+        clearTimeout(authTimeout);
+
+        // Join the room after successful authentication
+        if (!rooms.has(collabId)) {
+          rooms.set(collabId, new Set());
         }
-      });
-    } catch (error) {
-      console.error('Error broadcasting message:', error);
-    }
-  });
+        const room = rooms.get(collabId);
+        room.add(ws);
 
-  // 7. التعامل مع انقطاع الاتصال (تنظيف)
-  ws.on('close', () => {
-    if (room) {
-      room.delete(ws);
-      console.log(`Client disconnected from room: ${collabId}. Room size: ${room.size}`);
-      // إذا كانت الغرفة فارغة، قم بإزالتها لتوفير الذاكرة
-      if (room.size === 0) {
-        rooms.delete(collabId);
-        console.log(`Room ${collabId} is now empty and has been closed.`);
+        console.log(`Client authenticated and joined room: ${collabId}. Room size: ${room.size}`);
+        ws.send(JSON.stringify({ type: 'auth', success: true }));
+
+        // Now register the normal message handler for collaboration
+        ws.on('message', (msg) => {
+          try {
+            room.forEach(client => {
+              if (client !== ws && client.readyState === ws.OPEN) {
+                client.send(msg.toString());
+              }
+            });
+          } catch (error) {
+            console.error('Error broadcasting message:', error);
+          }
+        });
+
+        // Handle disconnect — cleanup
+        ws.on('close', () => {
+          room.delete(ws);
+          console.log(`Client disconnected from room: ${collabId}. Room size: ${room.size}`);
+          if (room.size === 0) {
+            rooms.delete(collabId);
+            console.log(`Room ${collabId} is now empty and has been closed.`);
+          }
+        });
+      } else {
+        console.log('WebSocket connection rejected: First message was not auth.');
+        clearTimeout(authTimeout);
+        ws.close(1008, 'Authentication required as first message');
       }
+    } catch (err) {
+      console.log('WebSocket connection rejected: Invalid auth token.');
+      clearTimeout(authTimeout);
+      ws.close(1008, 'Invalid authentication token');
     }
   });
 
   ws.on('error', (error) => {
     console.error('WebSocket error:', error);
+    clearTimeout(authTimeout);
   });
 });
 

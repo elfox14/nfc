@@ -18,8 +18,9 @@ const Auth = {
     get API_LOGOUT() { return `${this.getBaseUrl()}/api/auth/logout`; },
     get API_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
+    get API_SESSION_INIT() { return `${this.getBaseUrl()}/api/auth/session-init`; },
 
-    token: null,
+    token: null, // Legacy — auth now uses HttpOnly cookies
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     isLoggedIn() {
@@ -27,20 +28,24 @@ const Auth = {
         return !!(userStr && userStr !== 'null' && userStr !== 'undefined');
     },
 
+    // SECURITY: Token is in HttpOnly cookies only — we only store user info in localStorage
     setSession(token, user) {
-        console.log('[Auth] Setting session:', { user, token: token ? (token.substring(0, 10) + '...') : null });
-        this.token = token;
+        // 'token' parameter kept for backward compatibility but no longer stored
+        console.log('[Auth] Setting session:', { user: user?.email });
         this.user = user;
         localStorage.setItem('authUser', JSON.stringify(user));
+        // Do NOT store token in localStorage — HttpOnly cookies handle auth
     },
 
     clearSession() {
-        this.token = null;
         this.user = null;
         localStorage.removeItem('authUser');
+        localStorage.removeItem('authToken'); // Clean up legacy token if present
     },
 
     getHeader() {
+        // SECURITY: Auth is handled by HttpOnly cookies (credentials: 'include')
+        // No longer sending Authorization header with token from localStorage
         return {};
     },
 
@@ -65,7 +70,7 @@ const Auth = {
             const data = await res.json();
 
             if (data.success) {
-                this.setSession(data.token, data.user);
+                this.setSession(null, data.user);
                 return { success: true };
             }
 
@@ -94,7 +99,7 @@ const Auth = {
             const data = await res.json();
 
             if (data.success) {
-                this.setSession(data.token, data.user);
+                this.setSession(null, data.user);
                 return { success: true };
             }
 
@@ -121,18 +126,21 @@ const Auth = {
 
             if (!res.ok) {
                 console.warn('[Auth] Refresh request failed with status:', res.status);
-                // فقط امسح الجلسة إذا كان الخطأ 401 أو 403 (Unauthorized/Forbidden)
+                // Only clear session if 401/403 AND no valid token in localStorage
+                // (Don't clear if session was set via #gauth redirect but cookies are blocked)
                 if (res.status === 401 || res.status === 403) {
-                    this.clearSession();
+                    if (!localStorage.getItem('authUser')) {
+                        this.clearSession();
+                    }
                 }
                 return false;
             }
 
             const data = await res.json();
 
-            if (data.success && data.token && data.user) {
+            if (data.success && data.user) {
                 console.log('[Auth] Session refreshed successfully');
-                this.setSession(data.token, data.user);
+                this.setSession(null, data.user);
                 return true;
             } else {
                 console.warn('[Auth] Refresh failed:', data.error || 'Unknown error');
@@ -143,18 +151,46 @@ const Auth = {
         return false;
     },
 
+    async sessionInit(token) {
+        console.log('[Auth] Initializing session via token...');
+        try {
+            const res = await fetch(this.API_SESSION_INIT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ initToken: token }),
+            });
+
+            if (!res.ok) {
+                console.warn('[Auth] sessionInit failed with status:', res.status);
+                this.lastInitError = `HTTP ${res.status}`;
+                return false;
+            }
+
+            const data = await res.json();
+            if (data.success) {
+                console.log('[Auth] Session initialized successfully via token');
+                if (data.user) this.setSession(null, data.user);
+                return true;
+            }
+        } catch (err) {
+            console.error('[Auth] sessionInit error:', err);
+            this.lastInitError = err.message || 'Network Error';
+        }
+        return false;
+    },
+
+    // Variable to store the last error for UI feedback
+    lastInitError: null,
+
     // Singleton promise to prevent concurrent refreshes
     _refreshPromise: null,
 
     async apiFetchWithRefresh(url, options = {}) {
         // Ensure headers exist
         options.headers = options.headers || {};
+        // SECURITY: Auth is handled by HttpOnly cookies
         options.credentials = 'include';
-        
-        // Add Authorization header if we have a token
-        if (this.token) {
-            options.headers['Authorization'] = `Bearer ${this.token}`;
-        }
 
         try {
             let res = await fetch(url, options);
@@ -174,9 +210,7 @@ const Auth = {
 
                 if (refreshed) {
                     console.log('[Auth] Refresh successful, retrying original request...');
-                    // Update header with new token
-                    options.headers['Authorization'] = `Bearer ${this.token}`;
-                    // Retry original request
+                    // Cookies updated by refresh — just retry
                     res = await fetch(url, options);
                 } else {
                     console.error('[Auth] Refresh failed, logging out.');
@@ -234,24 +268,61 @@ const Auth = {
             }
 
             let finished = false;
+            let popupCheckInterval = null;
 
-            const cleanup = () => {
+            const finish = (result) => {
+                if (finished) return;
+                finished = true;
                 window.removeEventListener('message', messageHandler);
+                if (popupCheckInterval) clearInterval(popupCheckInterval);
                 if (popup && !popup.closed) popup.close();
+                resolve(result);
             };
 
-            const messageHandler = (event) => {
-                if (event.origin !== this.getBaseUrl() && event.origin !== 'https://mcprim.com' && event.origin !== 'https://www.mcprim.com') return;
+            const messageHandler = async (event) => {
+                // SECURITY: Verify the origin is either the API URL or your frontends
+                const allowed = [this.getBaseUrl(), 'https://mcprim.com', 'https://www.mcprim.com'];
+                const isAllowed = allowed.some(origin => {
+                    if (event.origin === origin) return true;
+                    // Flexible matching (www vs non-www)
+                    const cleanEvent = event.origin.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
+                    const cleanOrigin = origin.replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
+                    return cleanEvent === cleanOrigin;
+                });
+
+                if (!isAllowed) {
+                    console.warn('[Auth] Blocked message from unknown origin:', event.origin);
+                    return;
+                }
+
                 if (!event.data || event.data.type !== 'google-auth' || finished) return;
 
-                finished = true;
-                cleanup();
-
                 if (event.data.success) {
-                    this.setSession(event.data.token, event.data.user);
-                    resolve({ success: true });
+                    // SECURITY: Try to initialize via one-time token first (bypasses third-party cookie blocking)
+                    // If no token, fallback to refreshSession which relies on cookies.
+                    let initialized = false;
+                    if (event.data.initToken) {
+                        initialized = await this.sessionInit(event.data.initToken);
+                    }
+
+                    if (!initialized) {
+                        console.log('[Auth] No init token or init failed, trying cookie-based refresh...');
+                        initialized = await this.refreshSession();
+                    }
+
+                    if (initialized) {
+                        finish({ success: true });
+                    } else {
+                        const errorReason = this.lastInitError ? ` (${this.lastInitError})` : '';
+                        finish({
+                            success: false,
+                            error: document.documentElement.lang === 'en'
+                                ? `Authentication succeeded but session could not be established${errorReason}. Please try again.`
+                                : `نجحت المصادقة لكن لم نتمكن من إنشاء الجلسة${errorReason}. حاول مرة أخرى.`
+                        });
+                    }
                 } else {
-                    resolve({
+                    finish({
                         success: false,
                         error: event.data.error || (
                             document.documentElement.lang === 'en'
@@ -264,11 +335,69 @@ const Auth = {
 
             window.addEventListener('message', messageHandler);
 
-            setTimeout(() => {
+            // Storage event listener — catches when popup/redirect writes to localStorage
+            const storageHandler = (e) => {
                 if (finished) return;
-                finished = true;
-                cleanup();
-                resolve({
+                if (e.key === 'authUser' && e.newValue && e.newValue !== 'null') {
+                    console.log('[Auth] User detected via storage event');
+                    this.user = JSON.parse(e.newValue);
+                    window.removeEventListener('storage', storageHandler);
+                    finish({ success: true });
+                }
+            };
+            window.addEventListener('storage', storageHandler);
+
+            // Poll for popup closure OR localStorage changes
+            // COOP headers from Google may block popup.closed, so we also check localStorage
+            popupCheckInterval = setInterval(async () => {
+                if (finished) return;
+
+                // Check 1: Did localStorage get a user? (from redirect in popup)
+                const storedUser = localStorage.getItem('authUser');
+                if (storedUser && storedUser !== 'null') {
+                    console.log('[Auth] User found in localStorage (from popup redirect)');
+                    this.user = JSON.parse(storedUser);
+                    window.removeEventListener('storage', storageHandler);
+                    finish({ success: true });
+                    return;
+                }
+
+                // Check 2: Try popup.closed (may throw due to COOP)
+                let popupClosed = false;
+                try { popupClosed = popup.closed; } catch (e) { /* COOP blocks this */ }
+
+                if (popupClosed) {
+                    console.log('[Auth] Popup closed detected. Trying cookie refresh...');
+                    // Try refreshSession (uses HttpOnly cookies set during OAuth callback)
+                    const refreshed = await this.refreshSession();
+                    if (refreshed) {
+                        console.log('[Auth] Session recovered via cookie refresh');
+                        window.removeEventListener('storage', storageHandler);
+                        finish({ success: true });
+                    } else {
+                        // Re-check localStorage one more time
+                        const userNow = localStorage.getItem('authUser');
+                        if (userNow && userNow !== 'null') {
+                            this.user = JSON.parse(userNow);
+                            window.removeEventListener('storage', storageHandler);
+                            finish({ success: true });
+                        } else {
+                            console.warn('[Auth] Popup closed but no session found');
+                            window.removeEventListener('storage', storageHandler);
+                            finish({
+                                success: false,
+                                error: document.documentElement.lang === 'en'
+                                    ? 'Login window closed. Please try again.'
+                                    : 'تم إغلاق نافذة تسجيل الدخول. حاول مرة أخرى.'
+                            });
+                        }
+                    }
+                }
+            }, 1500);
+
+            // Safety timeout — 2 minutes max
+            setTimeout(() => {
+                finish({
                     success: false,
                     error: document.documentElement.lang === 'en'
                         ? 'Timeout. Try again.'
@@ -362,7 +491,10 @@ const Auth = {
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.location.pathname.includes('dashboard')) {
-        await Auth.refreshSession();
+        // Only refresh if not already logged in (e.g., from #gauth hash or localStorage)
+        if (!Auth.isLoggedIn()) {
+            await Auth.refreshSession();
+        }
     }
     Auth.updateNavAuth();
 });

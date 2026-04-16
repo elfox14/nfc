@@ -157,8 +157,12 @@
 
             try {
                 const baseUrl = Auth.getBaseUrl();
-                const response = await fetch(`${baseUrl}/api/auth/verify-email/${token}`, {
-                    method: 'GET'
+                const response = await fetch(`${baseUrl}/api/auth/verify-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token })
                 });
 
                 const data = await response.json();

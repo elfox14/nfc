@@ -22,10 +22,9 @@
   <title>5 Innovative Ways to Use NFC Cards at Events - MC PRIME</title>
   <meta name="description"
     content="Turn your smart card into a powerful marketing tool at events and conferences to collect customer data and share your offers." />  <link rel="icon" id="favicon" href="https://www.mcprim.com/nfc/mc-prime-nfc.png" type="image/png" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="viewer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <script src="lang-switcher.js" defer></script>
 
   <script type="application/ld+json">
   {
@@ -77,97 +76,271 @@
   }
   </script>
 
-  <style>
-    body {
-      margin: 0;
-      background: #1e2a38;
-      font-family: 'Inter', 'Poppins', sans-serif;
-      color: #eef3f7;
-      direction: ltr;
-      padding: 24px;
-      box-sizing: border-box;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    <style>
+        :root {
+            --primary-color: #4da6ff;
+            --background-color: #0b131e;
+            --surface-color: rgba(36, 52, 71, 0.4);
+            --text-primary-color: #ffffff;
+            --text-secondary-color: #a0aec0;
+            --nav-bg: rgba(28, 42, 59, 0.95);
+        }
 
-    h1 {
-      text-align: center;
-      color: #6ec1ff;
-      font-weight: 700;
-      margin-bottom: 32px;
-    }
+        body {
+            margin: 0;
+            background-color: #111a26;
+            color: var(--text-primary-color);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      flex-grow: 1;
-    }
+        .viewer-nav {
+            background: var(--nav-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 0;
+            margin-bottom: 40px;
+        }
 
-    .section-box {
-      flex: 1 1 33%;
-      min-width: 280px;
-      background: #253a5b;
-      border: 2px solid #2a5ca4;
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      transition: border-color 0.3s ease;
-      margin-bottom: 20px;
-    }
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
 
-    .section-box:hover {
-      border-color: #4099ff;
-    }
+        .nav-logo img {
+            height: 45px;
+            width: auto;
+            transition: transform 0.3s ease;
+        }
 
-    .section-box h2 {
-      font-size: 1.8rem;
-      margin-top: 0;
-      margin-bottom: 16px;
-      color: #6ec1ff;
-      text-align: center;
-      font-weight: 700;
-    }
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
 
-    .section-box p {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      color: #cbd6e7;
-      margin-bottom: 12px;
-    }
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
 
-    footer {
-      background: #27496e;
-      text-align: center;
-      padding: 14px 0;
-      color: #c6eaf7;
-      border-top: 1.5px solid #205081;
-      font-size: 1.05rem;
-      margin-top: 36px;
-    }
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
 
-    footer a {
-      color: #20a8dd;
-      margin: 0 10px;
-      text-decoration: none;
-    }
+        .lang-btn {
+            background: rgba(77, 166, 255, 0.1);
+            border: 1px solid rgba(77, 166, 255, 0.2);
+            color: var(--primary-color);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-    footer a:hover {
-      text-decoration: underline;
-    }
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
 
-    @media (max-width: 950px) {
-      .section-box {
-        flex: 1 1 100%;
-      }
-    }
-  </style>
+        @media (max-width: 991px) {
+            .nav-links {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background: rgba(28, 42, 59, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 1001;
+                gap: 2.5rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links a {
+                font-size: 1.5rem;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+                z-index: 1002;
+            }
+
+            .mobile-menu-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+                display: none;
+            }
+
+            .mobile-menu-overlay.active {
+                display: block;
+            }
+        }
+
+        .article-hero {
+            text-align: center;
+            padding: 40px 15px;
+            background: radial-gradient(circle at center, rgba(77, 166, 255, 0.05) 0%, transparent 70%);
+        }
+
+        .article-hero h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+            line-height: 1.2;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px 60px 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            flex-grow: 1;
+        }
+
+        .section-box {
+            background: rgba(36, 52, 71, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-box:hover {
+            transform: translateY(-8px);
+            border-color: rgba(77, 166, 255, 0.3);
+            background-color: rgba(36, 52, 71, 0.6);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-box h2 {
+            font-size: 1.6rem;
+            margin: 0 0 16px 0;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .section-box p {
+            font-size: 1.05rem;
+            color: var(--text-secondary-color);
+            margin-bottom: 0;
+        }
+
+        .section-box strong {
+            color: white;
+            display: block;
+            margin-top: 12px;
+        }
+
+        .site-footer {
+            background: #0f172a;
+            padding: 80px 0 40px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+        }
+
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-section a {
+            color: var(--text-secondary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary-color);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 900px) {
+            .footer-content { grid-template-columns: 1fr 1fr; gap: 2rem; }
+            .article-hero h1 { font-size: 2.2rem; }
+        }
+
+        @media (max-width: 600px) {
+            .footer-content { grid-template-columns: 1fr; }
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
     crossorigin="anonymous"></script>
@@ -178,11 +351,36 @@
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
       style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
-  <h1>5 Innovative Ways to Use NFC Cards at Events & Conferences</h1>
-  <div style="text-align: center; margin: 20px auto; max-width: 800px;">
-    <img src="images/blog-events.svg" alt="Using NFC Cards at Events"
-      style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-  </div>
+    <nav class="viewer-nav" id="navbar">
+        <div class="container nav-content" style="padding-bottom: 0;">
+            <a href="/nfc/index-en.html" class="nav-logo">
+                <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME" width="150" height="45">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/nfc/index-en.html">Home</a></li>
+                <li><a href="/nfc/gallery-en.html">Gallery</a></li>
+                <li><a href="/nfc/blog-en.html">Blog</a></li>
+                <li><a href="/nfc/dashboard-en.html">Dashboard</a></li>
+            </ul>
+            <div class="nav-actions" style="display: flex; align-items: center; gap: 15px;">
+                <button onclick="switchLanguage('ar')" class="lang-btn">عربي</button>
+                <a href="/nfc/editor-en.html" class="btn btn-primary nav-cta" style="padding: 8px 16px; font-size: 0.9rem;">Get Started</a>
+            </div>
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="article-hero">
+        <div class="container" style="display: block; padding-bottom: 0;">
+            <h1>5 Innovative Ways to Use NFC Cards at Events & Conferences</h1>
+            <div style="margin: 0 auto; max-width: 800px;">
+                <img src="images/blog-events.svg" alt="Using NFC Cards at Events"
+                    style="width: 100%; height: auto; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+            </div>
+        </div>
+    </div>
   <div class="container">
     <section class="section-box" aria-labelledby="instant-follow-title">
       <h2 id="instant-follow-title">1. Instant Conversion to Subscriber</h2>
@@ -210,14 +408,54 @@
         providing a seamless modern experience.</p>
     </section>
   </div>
-  <footer>
-    All Rights Reserved &copy; 2025 |
-    <a href="index-en.html">Home</a> |
-    <a href="blog-en.html">Blog</a> |
-    <a href="about-en.html">About Us</a> |
-    <a href="contact-en.html">Contact Us</a> |
-    <a href="privacy-en.html">Privacy Policy</a>
-  </footer>
+    <footer class="site-footer" role="contentinfo">
+        <div class="container" style="display: block; padding-bottom: 0;">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>MC PRIME</h3>
+                    <p>We provide smart NFC business card solutions for individuals and companies.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul role="list">
+                        <li><a href="/nfc/index-en.html#features">Features</a></li>
+                        <li><a href="/nfc/gallery-en.html">Gallery</a></li>
+                        <li><a href="/nfc/blog-en.html">Blog</a></li>
+                        <li><a href="/nfc/dashboard-en.html">Dashboard</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <ul role="list">
+                        <li><a href="/nfc/index-en.html#faq">FAQ</a></li>
+                        <li><a href="/nfc/contact-en.html">Contact Us</a></li>
+                        <li><a href="/nfc/privacy-en.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom" style="text-align: center; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <p>&copy; 2025 MC PRIME. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/nfc/lang-switcher.js" defer></script>
+    <script src="viewer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof setupMobileMenu === 'function') {
+                setupMobileMenu();
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -266,14 +266,30 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
                 errorBox.style.display = 'none';
 
+                // Listen for localStorage changes from the popup (cross-tab fallback)
+                let storageResolved = false;
+                const storageHandler = (e) => {
+                    if (e.key === 'authUser' && e.newValue && e.newValue !== 'null') {
+                        storageResolved = true;
+                        window.removeEventListener('storage', storageHandler);
+                        Auth.user = JSON.parse(e.newValue);
+                        window.location.href = getTargetUrl('/nfc/dashboard.html');
+                    }
+                };
+                window.addEventListener('storage', storageHandler);
+
                 try {
                     const result = await Auth.googleSignIn();
+                    window.removeEventListener('storage', storageHandler);
+                    if (storageResolved) return; // Already handled via storage event
                     if (result.success) {
                         window.location.href = getTargetUrl('/nfc/dashboard.html');
                     } else {
                         throw new Error(result.error || 'فشل تسجيل الدخول');
                     }
                 } catch (err) {
+                    if (storageResolved) return;
+                    window.removeEventListener('storage', storageHandler);
                     errorBox.textContent = err.message || 'فشل تسجيل الدخول باستخدام Google';
                     errorBox.style.display = 'block';
                     btn.disabled = false;

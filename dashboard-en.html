@@ -489,26 +489,23 @@
             });
         });
 
-        // Handle Google OAuth redirect — extract auth data from URL hash (#gauth=...)
+        // Handle Google OAuth redirect — session is in HttpOnly cookies, not in URL hash
+        // SECURITY: No longer reads token from URL hash (#gauth=...) — uses cookies instead
         (function () {
-            const hash = window.location.hash;
-            if (hash.startsWith('#gauth=')) {
-                try {
-                    const encoded = hash.slice(7);
-                    const decodedStr = decodeURIComponent(encoded);
-                    const data = JSON.parse(decodedStr);
-                    if (data.token && data.user) {
-                        Auth.setSession(data.token, data.user);
-                        history.replaceState(null, '', window.location.pathname + window.location.search);
-                    }
-                } catch (e) {
-                    console.error('[Auth] Failed to decode gauth hash:', e);
-                }
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('oauthSuccess')) {
+                console.log('[Auth] OAuth redirect detected, session will be established via cookies');
+                // Clean up the URL parameter
+                urlParams.delete('oauthSuccess');
+                const newSearch = urlParams.toString();
+                const cleanUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
+                history.replaceState(null, '', cleanUrl);
             }
         })();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null'); 
+            Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null');
+            Auth.token = localStorage.getItem('authToken') || null;
             
             if (!Auth.isLoggedIn()) {
                 await Auth.refreshSession();
