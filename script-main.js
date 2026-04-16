@@ -749,25 +749,37 @@ const ShareManager = {
         }
 
         if (designId) {
+            console.log(`[ShareManager] URL id detected: ${designId}. Attempting to fetch from: ${Config.API_BASE_URL}/api/get-design/${designId}`);
+            
             try {
                 const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`);
-                if (!response.ok) throw new Error('Design not found or server error');
+                if (!response.ok) {
+                    console.error(`[ShareManager] Fetch failed with status: ${response.status}`);
+                    throw new Error('Design not found or server error');
+                }
 
                 const result = await response.json();
+                console.log("[ShareManager] API Result received:", result);
                 
                 // Handle different response structures: { data: {...} }, { design: {...} }, or direct state
-                const state = result.data || result.design || result;
+                let state = result.data || result.design || result;
                 
+                // Extra security: if 'state' itself has a 'data' property (like from Mongo projection)
+                if (state && state.data && !state.inputs) {
+                    state = state.data;
+                }
+
                 if (state && (state.inputs || state.dynamic)) {
+                    console.log("[ShareManager] Valid state found, applying to editor...");
+                    Config.currentDesignId = designId; // Store early
                     StateManager.applyState(state, false);
-                    Config.currentDesignId = designId; // Store loaded ID for updates
                     return true;
                 } else {
-                    console.error("Invalid state structure received from API:", result);
+                    console.error("[ShareManager] Invalid state structure or missing inputs/dynamic properties:", state);
                     throw new Error("Invalid design data");
                 }
             } catch (e) {
-                console.error("Failed to load state from URL:", e);
+                console.error("[ShareManager] Failed to load state from URL:", e);
                 UIManager.announce(_isEnglishPage ? 'Failed to load design from link.' : "فشل تحميل التصميم من الرابط.");
                 return false;
             } finally {

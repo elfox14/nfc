@@ -1356,8 +1356,10 @@ const StateManager = {
         this.isApplyingState = false;
 
         if (!state.inputs || !state.inputs['layout-select-visual']) {
+            console.log("[StateManager] Layout select missing in state, defaulting to classic");
             CardManager.applyLayout('classic');
         } else {
+            console.log("[StateManager] Applying layout from state:", state.inputs['layout-select-visual']);
             CardManager.applyLayout(state.inputs['layout-select-visual']);
         }
     },
