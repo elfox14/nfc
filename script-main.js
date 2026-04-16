@@ -1425,6 +1425,11 @@ const App = {
         ImageCropper.init();
         UIManager.init();
         UIManager.fetchAndPopulateBackgrounds();
+        
+        console.log('[App] Core components discovery:', {
+            frontBgOpacity: !!DOMElements.frontBgOpacity,
+            backBgOpacity: !!DOMElements.backBgOpacity
+        });
 
         // 2. Event Binding (Crucial to have listeners before applying state)
         EventManager.bindEvents();

@@ -459,13 +459,11 @@ const CardManager = {
     },
 
     updateCardBackgrounds() {
-        const setBg = (imageLayer, gradientLayer, startId, endId, image, opacityId) => {
+        const setBg = (imageLayer, gradientLayer, startId, endId, image, opacityEl) => {
             if (!imageLayer || !gradientLayer) return;
             
             const startEl = document.getElementById(startId);
             const endEl = document.getElementById(endId);
-            const opacityEl = document.getElementById(opacityId);
-
             if (!startEl || !endEl) return;
 
             const startColor = startEl.value;
@@ -474,7 +472,7 @@ const CardManager = {
             // Use 1 as default if opacity element is missing
             let opacity = opacityEl ? opacityEl.value : 1;
             
-            const opacityControl = opacityEl ? opacityEl.closest('.form-group') : null;
+            const opacityControl = opacityEl ? opacityEl.closest('.lp-section-row') : null;
             
             if (!image) {
                 opacity = 1;
@@ -493,12 +491,16 @@ const CardManager = {
         setBg(
             document.getElementById('front-bg-image-layer'),
             document.getElementById('front-bg-gradient-layer'),
-            'front-bg-start', 'front-bg-end', this.frontBgImageUrl, 'front-bg-opacity'
+            'front-bg-start', 'front-bg-end', 
+            this.frontBgImageUrl,
+            DOMElements.frontBgOpacity || null
         );
         setBg(
             document.getElementById('back-bg-image-layer'),
             document.getElementById('back-bg-gradient-layer'),
-            'back-bg-start', 'back-bg-end', this.backBgImageUrl, 'back-bg-opacity'
+            'back-bg-start', 'back-bg-end',
+            this.backBgImageUrl,
+            DOMElements.backBgOpacity || null
         );
     },
 
