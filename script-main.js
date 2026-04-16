@@ -753,20 +753,28 @@ const ShareManager = {
                 const response = await fetch(`${Config.API_BASE_URL}/api/get-design/${designId}`);
                 if (!response.ok) throw new Error('Design not found or server error');
 
-                const state = await response.json();
-                StateManager.applyState(state, false);
-                Config.currentDesignId = designId; // Store loaded ID
-                UIManager.announce(i18nMain.designLoaded);
-
-                const newUrl = new URL(window.location.href);
-                newUrl.searchParams.delete('id');
-                window.history.replaceState({}, document.title, newUrl.pathname + newUrl.search);
-                return true;
+                const result = await response.json();
+                
+                // Handle different response structures: { data: {...} }, { design: {...} }, or direct state
+                const state = result.data || result.design || result;
+                
+                if (state && (state.inputs || state.dynamic)) {
+                    StateManager.applyState(state, false);
+                    Config.currentDesignId = designId; // Store loaded ID for updates
+                    return true;
+                } else {
+                    console.error("Invalid state structure received from API:", result);
+                    throw new Error("Invalid design data");
+                }
             } catch (e) {
                 console.error("Failed to load state from URL:", e);
                 UIManager.announce(_isEnglishPage ? 'Failed to load design from link.' : "فشل تحميل التصميم من الرابط.");
-                window.history.replaceState({}, document.title, window.location.pathname);
                 return false;
+            } finally {
+                // Always clean up the URL unless manually debugging
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.delete('id');
+                window.history.replaceState({}, document.title, newUrl.pathname + newUrl.search);
             }
         }
         return false;
@@ -1408,6 +1416,7 @@ const App = {
         const loadedFromUrl = await ShareManager.loadFromUrl();
         if (loadedFromUrl) {
             HistoryManager.pushState(StateManager.getStateObject());
+            // Announcement is already done inside loadFromUrl or handled here
             UIManager.announce(i18nMain.designLoaded);
         } else if (!CollaborationManager.isActive) {
             const loadedFromStorage = StateManager.load();
