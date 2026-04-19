@@ -761,14 +761,35 @@ summary.secondary-actions-summary {
     /* مطابقة للمحرر */
     width: 100%;
     height: 100%;
-    padding: 8% 5%;
+    padding: 8% 5% 5% 5%;
     display: flex;
     flex-direction: column;
+    justify-content: flex-start; /* Ensure items start at the top after padding */
+    gap: 15px; /* Matching editor's gap */
     align-items: center;
     text-align: center;
     position: relative;
     z-index: 2;
     box-sizing: border-box;
+}
+
+/* Ensure consistent origin for elements */
+#card-logo,
+#card-personal-photo-wrapper,
+#card-name,
+#card-tagline {
+    position: relative !important;
+    margin: 5px 0 !important;
+    top: auto;
+    left: auto;
+    width: auto;
+}
+
+#card-logo img,
+#card-logo-img {
+    max-width: 100%;
+    height: auto;
+    display: block;
 }
 
 .card-background-layer {

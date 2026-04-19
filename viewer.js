@@ -546,7 +546,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (inputs['logo-filter-contrast']) logoFilterArray.push(`contrast(${inputs['logo-filter-contrast']}%)`);
             const logoFilterStyle = logoFilterArray.length > 0 ? `filter: ${logoFilterArray.join(' ')};` : '';
 
-            const logoHTML = `<img src="${inputs['input-logo']}" alt="Logo" style="max-width: ${logoSize}% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; opacity: ${logoOpacity} !important; position: absolute !important; ${logoFilterStyle} ${logoPos}">`;
+            const logoHTML = `
+                <div id="card-logo" style="width: ${logoSize}%; opacity: ${logoOpacity} !important; position: relative !important; margin: 5px 0 !important; ${logoPos}">
+                    <img src="${inputs['input-logo']}" alt="Logo" id="card-logo-img" style="max-width: 100% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; ${logoFilterStyle}">
+                </div>`;
             renderElement(logoHTML, logoPlacement, containers);
         }
 
@@ -569,7 +572,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const photoFilterStyle = photoFilterArray.length > 0 ? `filter: ${photoFilterArray.join(' ')};` : '';
             const photoGlassStyle = inputs['photo-glass-effect'] ? `mix-blend-mode: screen; opacity: 0.9;` : '';
 
-            const photoHTML = `<div style="width: ${photoSize}% !important; padding-top: ${photoSize}%; height: 0; background-image: url(${inputs['input-photo-url']}) !important; background-size: cover !important; background-position: center !important; border-radius: ${photoShape} !important; border: ${photoBorder} !important; position: absolute !important; overflow: hidden; ${photoFilterStyle} ${photoGlassStyle} ${photoPos}"></div>`;
+            const photoHTML = `
+                <div id="card-personal-photo-wrapper" style="width: ${photoSize}% !important; padding-bottom: ${photoSize}%; height: 0; background-image: url(${inputs['input-photo-url']}) !important; background-size: cover !important; background-position: center !important; border-radius: ${photoShape} !important; border: ${photoBorder} !important; position: relative !important; margin: 5px 0 !important; overflow: hidden; ${photoFilterStyle} ${photoGlassStyle} ${photoPos}"></div>`;
             renderElement(photoHTML, photoPlacement, containers);
         }
 
@@ -586,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const nameTransform = inputs['name-uppercase'] ? `text-transform: uppercase !important;` : '';
             const nameGlow = inputs['name-glow'] ? `text-shadow: 0 0 10px ${nameColor}, 0 0 20px ${nameColor} !important;` : '';
 
-            const nameHTML = `<div id="card-name" style="font-size: ${nameSize}px !important; color: ${nameColor} !important; font-family: ${nameFont} !important; position: absolute !important; white-space: pre-wrap; word-break: break-word; ${nameLetterSpacing} ${nameLineHeight} ${nameTransform} ${nameGlow} ${namePos}">${displayName}</div>`;
+            const nameHTML = `<div id="card-name" style="font-size: ${nameSize}px !important; color: ${nameColor} !important; font-family: ${nameFont} !important; position: relative !important; margin: 5px 0 !important; white-space: pre-wrap; word-break: break-word; ${nameLetterSpacing} ${nameLineHeight} ${nameTransform} ${nameGlow} ${namePos}">${displayName}</div>`;
             renderElement(nameHTML, namePlacement, containers);
         }
 
@@ -603,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const taglineTransform = inputs['tagline-uppercase'] ? `text-transform: uppercase !important;` : '';
             const taglineGlow = inputs['tagline-glow'] ? `text-shadow: 0 0 10px ${taglineColor}, 0 0 20px ${taglineColor} !important;` : '';
 
-            const taglineHTML = `<div id="card-tagline" style="font-size: ${taglineSize}px !important; color: ${taglineColor} !important; font-family: ${taglineFont} !important; position: absolute !important; white-space: pre-wrap; word-break: break-word; ${taglineLetterSpacing} ${taglineLineHeight} ${taglineTransform} ${taglineGlow} ${taglinePos}">${displayTagline}</div>`;
+            const taglineHTML = `<div id="card-tagline" style="font-size: ${taglineSize}px !important; color: ${taglineColor} !important; font-family: ${taglineFont} !important; position: relative !important; margin: 5px 0 !important; white-space: pre-wrap; word-break: break-word; ${taglineLetterSpacing} ${taglineLineHeight} ${taglineTransform} ${taglineGlow} ${taglinePos}">${displayTagline}</div>`;
             renderElement(taglineHTML, taglinePlacement, containers);
         }
 
@@ -854,7 +858,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Wait for reflow
         await new Promise(resolve => setTimeout(resolve, 200));
 
-        const captureOptions = { scale: 2, useCORS: true, allowTaint: true, backgroundColor: null, logging: false, imageTimeout: 15000 };
+        const captureOptions = { 
+            scale: 2, 
+            useCORS: true, 
+            allowTaint: true, 
+            backgroundColor: null, 
+            logging: false, 
+            imageTimeout: 15000,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: 510,
+            windowHeight: 330
+        };
 
         try {
             const frontCanvas = await html2canvas(frontCardRenderArea, captureOptions);

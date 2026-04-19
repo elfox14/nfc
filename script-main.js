@@ -841,14 +841,7 @@ const EventManager = {
             });
 
             input.addEventListener('input', () => {
-                if (input.id.startsWith('input-name_') || input.id.startsWith('input-tagline_')) {
-                    const lang = document.body.classList.contains('lang-en') ? 'en' : 'ar';
-                    if (input.dataset.lang === lang) {
-                        CardManager.updateElementFromInput(input);
-                    }
-                } else {
-                    CardManager.updateElementFromInput(input);
-                }
+                CardManager.updateElementFromInput(input);
 
                 if (input.id.includes('photo-')) CardManager.updatePersonalPhotoStyles();
                 if (input.id.includes('phone-btn')) CardManager.updatePhoneButtonStyles();
