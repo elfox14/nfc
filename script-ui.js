@@ -442,27 +442,37 @@ const UIManager = {
         const fileInput = event.target;
         const file = fileInput.files[0];
 
-        errorEl.textContent = "";
-        errorEl.style.display = "none";
+        if (errorEl) {
+            errorEl.textContent = "";
+            errorEl.style.display = "none";
+        }
 
         if (!file) return;
 
         if (!file.type.match(/^image\//)) {
-            errorEl.textContent = "الرجاء اختيار ملف صورة صالح (JPG, PNG).";
-            errorEl.style.display = "block";
+            if (errorEl) {
+                errorEl.textContent = "الرجاء اختيار ملف صورة صالح (JPG, PNG).";
+                errorEl.style.display = "block";
+            } else {
+                alert("الرجاء اختيار ملف صورة صالح (JPG, PNG).");
+            }
             Utils.playSound("error");
             fileInput.value = '';
             return;
         }
         if (file.size > maxSizeMB * 1024 * 1024) {
-            errorEl.textContent = `يجب أن يكون حجم الملف أقل من ${maxSizeMB} ميجابايت.`;
-            errorEl.style.display = "block";
+            if (errorEl) {
+                errorEl.textContent = `يجب أن يكون حجم الملف أقل من ${maxSizeMB} ميجابايت.`;
+                errorEl.style.display = "block";
+            } else {
+                alert(`يجب أن يكون حجم الملف أقل من ${maxSizeMB} ميجابايت.`);
+            }
             Utils.playSound("error");
             fileInput.value = '';
             return;
         }
 
-        spinnerEl.style.display = "block";
+        if (spinnerEl) spinnerEl.style.display = "block";
         try {
             const reader = new FileReader();
 
@@ -472,29 +482,39 @@ const UIManager = {
                 reader.readAsDataURL(file);
             });
 
-            const croppedDataUrl = await ImageCropper.open(localDataUrl, cropOptions.aspectRatio);
+            let finalDataUrl = localDataUrl;
 
-            if (!croppedDataUrl) {
-                spinnerEl.style.display = "none";
-                fileInput.value = '';
-                return;
+            if (!cropOptions.skipCrop) {
+                const croppedDataUrl = await ImageCropper.open(localDataUrl, cropOptions.aspectRatio);
+                if (!croppedDataUrl) {
+                    if (spinnerEl) spinnerEl.style.display = "none";
+                    fileInput.value = '';
+                    return;
+                }
+                finalDataUrl = croppedDataUrl;
             }
 
-            const fileNameClean = file.name.replace(/(\.[\w\d_-]+)$/i, '_cropped.png');
-            const fileToUpload = dataURLtoFile(croppedDataUrl, fileNameClean);
+            const fileNameClean = file.name.replace(/(\.[\w\d_-]+)$/i, cropOptions.skipCrop ? '$1' : '_cropped.png');
+            const fileToUpload = dataURLtoFile(finalDataUrl, fileNameClean);
 
             const imageUrl = await this.uploadImageToServer(fileToUpload);
+
+            if (spinnerEl) spinnerEl.style.display = "none";
 
             Utils.playSound("success");
             onSuccess(imageUrl);
             this.announce("تم رفع الصورة ومعالجتها بنجاح.");
         } catch (error) {
             console.error("Image processing/upload error:", error);
-            errorEl.textContent = "فشل معالجة الصورة أو رفعها. حاول مرة أخرى.";
-            errorEl.style.display = "block";
+            if (errorEl) {
+                errorEl.textContent = "فشل معالجة الصورة أو رفعها. حاول مرة أخرى.";
+                errorEl.style.display = "block";
+            } else {
+                alert("فشل معالجة الصورة أو رفعها. حاول مرة أخرى.");
+            }
             Utils.playSound("error");
         } finally {
-            spinnerEl.style.display = "none";
+            if (spinnerEl) spinnerEl.style.display = "none";
             fileInput.value = '';
         }
     },

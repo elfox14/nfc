@@ -1072,7 +1072,7 @@ const EventManager = {
                 CardManager.frontBgImageUrl = url; DOMElements.buttons.removeFrontBg.style.display = 'block';
                 CardManager.updateCardBackgrounds();
             },
-            // No crop for backgrounds
+            cropOptions: { skipCrop: true }
         }));
 
         DOMElements.fileInputs.backBg.addEventListener('change', e => UIManager.handleImageUpload(e, {
@@ -1081,7 +1081,7 @@ const EventManager = {
                 CardManager.backBgImageUrl = url; DOMElements.buttons.removeBackBg.style.display = 'block';
                 CardManager.updateCardBackgrounds();
             },
-            // No crop for backgrounds
+            cropOptions: { skipCrop: true }
         }));
 
         DOMElements.fileInputs.qrCode.addEventListener('change', e => UIManager.handleImageUpload(e, {
@@ -1090,7 +1090,7 @@ const EventManager = {
                 CardManager.qrCodeImageUrl = imageUrl; DOMElements.qrImageUrlInput.value = imageUrl;
                 CardManager.updateQrCodeDisplay();
             },
-            // No crop for QR codes
+            cropOptions: { skipCrop: true }
         }));
 
         DOMElements.themeGallery.addEventListener('click', (e) => {

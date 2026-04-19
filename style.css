@@ -2061,7 +2061,7 @@ html.ltr .testimonial-card {
     object-fit: contain;
     transition: all 0.3s ease;
     padding: 5px;
-    border-radius: 8px;
+    border-radius: 0; /* Unconstrain the logo */
 }
 
 #logo-shadow-controls {
