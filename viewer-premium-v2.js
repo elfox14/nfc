@@ -306,15 +306,464 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════
+    // 5. STORY CARD GENERATOR — create Instagram/WhatsApp story-ready images
+    // ════════════════════════════════════════════════════════════════════════
+    function initStoryGenerator() {
+        // Inject Story Generator Modal
+        const modal = document.createElement('div');
+        modal.id = 'story-generator-modal';
+        modal.className = 'qr-modal-overlay';
+        modal.innerHTML = `
+            <div class="qr-modal" style="max-width:400px;padding:24px;">
+                <div class="qr-modal-title">
+                    <i class="fab fa-instagram" style="color:#E4405F;"></i>
+                    <span>${isAr ? 'مولّد صورة الستوري' : 'Story Image Generator'}</span>
+                </div>
+                <p class="qr-modal-subtitle" style="margin-bottom:16px;">
+                    ${isAr ? 'اختر الثيم وحمّل صورة جاهزة للستوري' : 'Choose a theme and download a story-ready image'}
+                </p>
+                <div id="story-theme-selector" style="display:flex;gap:8px;margin-bottom:16px;justify-content:center;flex-wrap:wrap;">
+                    <button class="story-theme-btn active" data-theme="midnight" style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);"></button>
+                    <button class="story-theme-btn" data-theme="ocean" style="background:linear-gradient(135deg,#0077b6,#00b4d8,#90e0ef);"></button>
+                    <button class="story-theme-btn" data-theme="sunset" style="background:linear-gradient(135deg,#f72585,#b5179e,#7209b7);"></button>
+                    <button class="story-theme-btn" data-theme="forest" style="background:linear-gradient(135deg,#132a13,#31572c,#4f772d);"></button>
+                    <button class="story-theme-btn" data-theme="gold" style="background:linear-gradient(135deg,#1a1a2e,#c9a227,#f4d03f);"></button>
+                    <button class="story-theme-btn" data-theme="minimal" style="background:linear-gradient(135deg,#fafafa,#e0e0e0,#ffffff);border:1px solid #ccc;"></button>
+                </div>
+                <div id="story-preview-wrapper" style="width:100%;aspect-ratio:9/16;border-radius:16px;overflow:hidden;position:relative;margin-bottom:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);">
+                    <canvas id="story-canvas" style="width:100%;height:100%;display:block;"></canvas>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button id="story-download-btn" class="btn btn-primary" style="flex:1;">
+                        <i class="fas fa-download"></i> ${isAr ? 'تحميل' : 'Download'}
+                    </button>
+                    <button id="story-share-btn" class="btn" style="flex:1;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);">
+                        <i class="fas fa-share-alt"></i> ${isAr ? 'مشاركة' : 'Share'}
+                    </button>
+                </div>
+                <button id="story-close-btn" class="qr-modal-close" style="margin-top:12px;width:100%;">
+                    <i class="fas fa-times"></i> ${isAr ? 'إغلاق' : 'Close'}
+                </button>
+            </div>`;
+        document.body.appendChild(modal);
+
+        // Inject theme button styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .story-theme-btn {
+                width: 40px; height: 40px; border-radius: 50%;
+                border: 3px solid transparent; cursor: pointer;
+                transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            }
+            .story-theme-btn:hover { transform: scale(1.15); }
+            .story-theme-btn.active {
+                border-color: var(--accent-primary, #4da6ff);
+                box-shadow: 0 0 0 3px rgba(77,166,255,0.3), 0 2px 8px rgba(0,0,0,0.2);
+                transform: scale(1.1);
+            }
+        `;
+        document.head.appendChild(style);
+
+        const themes = {
+            midnight: { bg: ['#0f0c29', '#302b63', '#24243e'], text: '#ffffff', sub: '#a0a0c0', accent: '#4da6ff' },
+            ocean:    { bg: ['#0077b6', '#00b4d8', '#90e0ef'], text: '#ffffff', sub: '#d4f1f9', accent: '#00b4d8' },
+            sunset:   { bg: ['#f72585', '#b5179e', '#7209b7'], text: '#ffffff', sub: '#f0c0e0', accent: '#f72585' },
+            forest:   { bg: ['#132a13', '#31572c', '#4f772d'], text: '#ffffff', sub: '#b0d0a0', accent: '#90be6d' },
+            gold:     { bg: ['#1a1a2e', '#16213e', '#0f3460'], text: '#f4d03f', sub: '#c9a227', accent: '#f4d03f' },
+            minimal:  { bg: ['#fafafa', '#f0f0f0', '#ffffff'], text: '#1a1a2e', sub: '#666666', accent: '#4da6ff' }
+        };
+
+        let currentTheme = 'midnight';
+        const canvas = document.getElementById('story-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 1080;
+        canvas.height = 1920;
+
+        async function renderStory() {
+            const theme = themes[currentTheme];
+
+            // Background gradient
+            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            grad.addColorStop(0, theme.bg[0]);
+            grad.addColorStop(0.5, theme.bg[1]);
+            grad.addColorStop(1, theme.bg[2]);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Subtle pattern overlay
+            ctx.globalAlpha = 0.04;
+            for (let i = 0; i < canvas.width; i += 60) {
+                for (let j = 0; j < canvas.height; j += 60) {
+                    ctx.fillStyle = theme.text;
+                    ctx.fillRect(i, j, 1, 1);
+                }
+            }
+            ctx.globalAlpha = 1;
+
+            // Top decoration dots
+            ctx.fillStyle = theme.accent;
+            ctx.globalAlpha = 0.15;
+            ctx.beginPath();
+            ctx.arc(150, 200, 180, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(930, 1700, 220, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Card image
+            const frontImg = document.querySelector('#card-front-display img');
+            if (frontImg && frontImg.complete && frontImg.naturalWidth > 0) {
+                const cardW = 860;
+                const cardH = cardW / (51 / 33);
+                const cardX = (canvas.width - cardW) / 2;
+                const cardY = 460;
+
+                // Card shadow
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                ctx.shadowBlur = 60;
+                ctx.shadowOffsetY = 20;
+                roundRect(ctx, cardX, cardY, cardW, cardH, 24);
+                ctx.fillStyle = '#000';
+                ctx.fill();
+                ctx.restore();
+
+                // Card image with rounded corners
+                ctx.save();
+                roundRect(ctx, cardX, cardY, cardW, cardH, 24);
+                ctx.clip();
+                ctx.drawImage(frontImg, cardX, cardY, cardW, cardH);
+                ctx.restore();
+
+                // Card border glow
+                ctx.save();
+                ctx.strokeStyle = theme.accent;
+                ctx.globalAlpha = 0.3;
+                ctx.lineWidth = 2;
+                roundRect(ctx, cardX, cardY, cardW, cardH, 24);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            // Text: "Digital Business Card" tag
+            ctx.textAlign = 'center';
+            ctx.fillStyle = theme.accent;
+            ctx.font = '600 28px "Poppins", sans-serif';
+            ctx.letterSpacing = '4px';
+            ctx.fillText('✦  DIGITAL BUSINESS CARD  ✦', canvas.width / 2, 350);
+
+            // Name
+            const name = document.getElementById('profile-name')?.textContent?.trim() ||
+                         document.querySelector('#card-name')?.textContent?.trim() || '';
+            if (name) {
+                ctx.fillStyle = theme.text;
+                ctx.font = '800 64px "Cairo", "Tajawal", sans-serif';
+                ctx.fillText(name, canvas.width / 2, 1160);
+            }
+
+            // Tagline
+            const tagline = document.getElementById('profile-tagline')?.textContent?.trim() ||
+                            document.querySelector('#card-tagline')?.textContent?.trim() || '';
+            if (tagline) {
+                ctx.fillStyle = theme.sub;
+                ctx.font = '500 36px "Tajawal", "Poppins", sans-serif';
+                ctx.fillText(tagline, canvas.width / 2, 1220);
+            }
+
+            // QR Code
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}&format=png&qzone=1&color=${theme.text === '#ffffff' ? '1e2d40' : 'ffffff'}&bgcolor=${theme.text === '#ffffff' ? 'ffffff' : '1e2d40'}`;
+            try {
+                const qrImg = await loadImage(qrApiUrl);
+                const qrSize = 200;
+                const qrX = (canvas.width - qrSize) / 2;
+                const qrY = 1320;
+
+                // QR background
+                ctx.save();
+                ctx.fillStyle = '#ffffff';
+                roundRect(ctx, qrX - 16, qrY - 16, qrSize + 32, qrSize + 32, 16);
+                ctx.fill();
+                ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+                ctx.restore();
+
+                // "Scan to connect" text
+                ctx.fillStyle = theme.sub;
+                ctx.font = '500 26px "Tajawal", "Poppins", sans-serif';
+                ctx.fillText(isAr ? '📱 امسح للتواصل' : '📱 Scan to connect', canvas.width / 2, qrY + qrSize + 60);
+            } catch (e) {
+                // QR failed to load — skip
+            }
+
+            // Branding footer
+            ctx.fillStyle = theme.sub;
+            ctx.globalAlpha = 0.5;
+            ctx.font = '500 24px "Poppins", sans-serif';
+            ctx.fillText('Powered by MC PRIME', canvas.width / 2, 1800);
+            ctx.globalAlpha = 1;
+
+            // Divider line
+            ctx.strokeStyle = theme.accent;
+            ctx.globalAlpha = 0.2;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(340, 1760);
+            ctx.lineTo(740, 1760);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        // Theme selection
+        modal.querySelectorAll('.story-theme-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.querySelectorAll('.story-theme-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTheme = btn.dataset.theme;
+                renderStory();
+            });
+        });
+
+        // Download
+        modal.querySelector('#story-download-btn').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'story_card.png';
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+        });
+
+        // Share
+        modal.querySelector('#story-share-btn').addEventListener('click', async () => {
+            try {
+                const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                const file = new File([blob], 'story_card.png', { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: isAr ? 'بطاقتي الرقمية' : 'My Digital Card',
+                        text: isAr ? 'اسحب للأعلى لزيارة بطاقتي!' : 'Swipe up to view my card!'
+                    });
+                } else {
+                    // Fallback: download
+                    const link = document.createElement('a');
+                    link.download = 'story_card.png';
+                    link.href = canvas.toDataURL('image/png', 1.0);
+                    link.click();
+                }
+            } catch (e) {
+                if (e.name !== 'AbortError') console.warn('Share failed', e);
+            }
+        });
+
+        // Close
+        modal.querySelector('#story-close-btn').addEventListener('click', () => modal.classList.remove('show'));
+        modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
+
+        // Intercept "Add to Story" button to show generator instead
+        waitFor('#add-to-story-btn', (btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                modal.classList.add('show');
+                renderStory();
+            }, true);
+        });
+
+        // Also add a dedicated "Story Card" button to the save column if not exists
+        waitFor('#right-column', (col) => {
+            const existingBtn = document.getElementById('story-card-btn');
+            if (existingBtn) return;
+            const btn = document.createElement('button');
+            btn.id = 'story-card-btn';
+            btn.className = 'btn';
+            btn.innerHTML = `<i class="fab fa-instagram"></i> ${isAr ? 'إنشاء صورة ستوري' : 'Create Story Image'}`;
+            btn.style.cssText = 'width:100%;margin-bottom:12px;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;box-shadow:0 4px 15px rgba(247,127,0,0.25);';
+            btn.addEventListener('click', () => {
+                modal.classList.add('show');
+                renderStory();
+            });
+            // Insert after the existing story button or at the top
+            const existingStoryBtn = col.querySelector('#add-to-story-btn');
+            if (existingStoryBtn) {
+                existingStoryBtn.replaceWith(btn);
+            } else {
+                const h2 = col.querySelector('h2');
+                if (h2) h2.after(btn);
+            }
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 6. CONTACT CARD INTERACTIONS — copy feedback + pressed states
+    // ════════════════════════════════════════════════════════════════════════
+    function initContactInteractions() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .contact-link { position: relative; overflow: hidden; }
+            .contact-link .copy-ripple {
+                position: absolute; inset: 0;
+                background: linear-gradient(90deg, transparent, rgba(77,166,255,0.15), transparent);
+                transform: translateX(-100%);
+                animation: copyRipple 0.6s ease forwards;
+                pointer-events: none;
+                border-radius: inherit;
+            }
+            @keyframes copyRipple {
+                to { transform: translateX(100%); }
+            }
+            .contact-link:active {
+                transform: scale(0.97) !important;
+                transition: transform 0.1s ease !important;
+            }
+            /* Long-press copy hint */
+            .contact-link::after {
+                content: '';
+                position: absolute;
+                bottom: 0; left: 0;
+                width: 0%; height: 2px;
+                background: var(--accent-primary, #4da6ff);
+                transition: width 0.3s ease;
+                border-radius: 2px;
+            }
+            .contact-link.copying::after {
+                width: 100%;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Add copy-on-long-press for contact links
+        setTimeout(() => {
+            const links = document.querySelectorAll('#contact-links-container .contact-link');
+            links.forEach(link => {
+                let pressTimer;
+                const getText = () => link.querySelector('span')?.textContent?.trim() || '';
+
+                link.addEventListener('touchstart', () => {
+                    link.classList.add('copying');
+                    pressTimer = setTimeout(() => {
+                        const text = getText();
+                        if (text) {
+                            navigator.clipboard.writeText(text).then(() => {
+                                // Show ripple effect
+                                const ripple = document.createElement('div');
+                                ripple.className = 'copy-ripple';
+                                link.appendChild(ripple);
+                                setTimeout(() => ripple.remove(), 600);
+
+                                // Show toast
+                                const showToast = window.showToast || ((msg) => {
+                                    let c = document.getElementById('toast-container');
+                                    if (!c) return;
+                                    const t = document.createElement('div');
+                                    t.className = 'toast toast-success';
+                                    t.innerHTML = `<i class="fas fa-check-circle"></i><span>${msg}</span>`;
+                                    c.appendChild(t);
+                                    requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+                                    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 2500);
+                                });
+                                showToast(isAr ? 'تم النسخ 📋' : 'Copied 📋');
+                                if ('vibrate' in navigator) navigator.vibrate(15);
+                            }).catch(() => {});
+                        }
+                        link.classList.remove('copying');
+                    }, 600);
+                }, { passive: true });
+
+                link.addEventListener('touchend', () => {
+                    clearTimeout(pressTimer);
+                    link.classList.remove('copying');
+                });
+
+                link.addEventListener('touchmove', () => {
+                    clearTimeout(pressTimer);
+                    link.classList.remove('copying');
+                });
+            });
+        }, 3000);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 7. SAVE BUTTON ATTENTION PULSE — periodic pulse on sticky footer CTA
+    // ════════════════════════════════════════════════════════════════════════
+    function initSaveButtonPulse() {
+        // This enhances the VCF save button in the left column with a subtle attention pulse
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes attentionPulse {
+                0% { box-shadow: 0 4px 15px rgba(46, 204, 113, 0.25); }
+                50% { box-shadow: 0 4px 25px rgba(46, 204, 113, 0.5), 0 0 0 6px rgba(46, 204, 113, 0.1); }
+                100% { box-shadow: 0 4px 15px rgba(46, 204, 113, 0.25); }
+            }
+            #save-vcf-btn.pulse-attention {
+                animation: attentionPulse 2s ease-in-out 3;
+            }
+            /* Success state */
+            .btn-save-success {
+                background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+                transform: scale(1.02);
+                transition: all 0.3s ease !important;
+            }
+            .btn-save-success i {
+                animation: checkBounce 0.5s ease;
+            }
+            @keyframes checkBounce {
+                0% { transform: scale(0); }
+                50% { transform: scale(1.3); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Trigger attention pulse after 5 seconds
+        waitFor('#save-vcf-btn', (btn) => {
+            setTimeout(() => {
+                btn.classList.add('pulse-attention');
+                btn.addEventListener('animationend', () => {
+                    btn.classList.remove('pulse-attention');
+                });
+            }, 5000);
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
     // INIT ALL
     // ════════════════════════════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', () => {
         initScrollAnimations();
         initPrintMode();
         initMapButton();
+        initContactInteractions();
+        initSaveButtonPulse();
 
         // VCF preview — wait for viewer to load card data
         setTimeout(initVCFPreview, 2500);
+
+        // Story generator — wait for card images
+        setTimeout(initStoryGenerator, 3000);
     });
 
 })();

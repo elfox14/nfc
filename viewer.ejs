@@ -397,11 +397,31 @@
             justify-content: space-between;
             padding: 12px 15px;
             margin-bottom: 12px;
-            transition: transform 0.2s, background 0.2s;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: cardSlideIn 0.45s ease forwards;
+        }
+
+        .contact-card:nth-child(1) { animation-delay: 0.1s; }
+        .contact-card:nth-child(2) { animation-delay: 0.2s; }
+        .contact-card:nth-child(3) { animation-delay: 0.3s; }
+        .contact-card:nth-child(4) { animation-delay: 0.4s; }
+        .contact-card:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes cardSlideIn {
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .contact-card:hover {
             background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transform: translateX(-4px);
+        }
+
+        .contact-card:active {
+            transform: scale(0.97);
+            transition: transform 0.1s ease;
         }
 
         .contact-card-main {
@@ -448,6 +468,17 @@
         }
 
         .copy-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+        .copy-btn.copy-success {
+            color: #2ecc71 !important;
+            animation: copyPop 0.4s ease;
+        }
+
+        @keyframes copyPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
 
         .follow-grid {
             display: grid;
@@ -496,7 +527,37 @@
 
         .save-contact-btn:active { transform: scale(0.98); }
 
+        @keyframes savePulse {
+            0% { box-shadow: 0 5px 20px rgba(0, 119, 255, 0.3); }
+            50% { box-shadow: 0 5px 30px rgba(0, 119, 255, 0.55), 0 0 0 8px rgba(0, 119, 255, 0.1); }
+            100% { box-shadow: 0 5px 20px rgba(0, 119, 255, 0.3); }
+        }
+
+        .save-contact-btn.pulse { animation: savePulse 2s ease-in-out 3; }
+
+        .save-contact-btn.saved {
+            background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .save-contact-btn.saved i {
+            animation: copyPop 0.4s ease;
+        }
+
         .footer-powered { font-size: 0.75rem; color: #6b7280; margin-top: 10px; letter-spacing: 1px; text-transform: uppercase; }
+
+        /* Story Generator button */
+        .story-gen-btn {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
         .qr-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -893,7 +954,7 @@
 
             <!-- Contact Actions Row (Share / Call) replacing old actions bar -->
             <div class="secondary-actions">
-                <button class="sec-action-btn" onclick="addToStory()">
+                <button class="sec-action-btn story-gen-btn" onclick="openStoryGenerator()">
                     <i class="fab fa-instagram"></i> ستوري
                 </button>
                 <a href="tel:<%= (dynamic.phones && dynamic.phones[0]) ? dynamic.phones[0].value.replace(/\D/g,'') : '' %>"
@@ -983,7 +1044,7 @@
 
         <!-- STICKY FOOTER -->
         <div class="sticky-footer fade-in-up" style="animation-delay: 0.4s;">
-            <button class="save-contact-btn" onclick="saveContact()">
+            <button class="save-contact-btn" id="ejs-save-btn" onclick="saveContactEnhanced()">
                 <i class="fas fa-user-plus"></i> <span style="font-weight:700">حفظ كجهة اتصال</span>
             </button>
             <div class="footer-powered">
@@ -1098,6 +1159,57 @@ END:VCARD`;
                 a.click();
             }
 
+            // Enhanced save with success animation
+            function saveContactEnhanced() {
+                saveContact();
+                const btn = document.getElementById('ejs-save-btn');
+                if (btn) {
+                    btn.classList.add('saved');
+                    const icon = btn.querySelector('i');
+                    const text = btn.querySelector('span');
+                    if (icon) icon.className = 'fas fa-check-circle';
+                    if (text) text.textContent = 'تم الحفظ ✅';
+                    showToast('تم حفظ جهة الاتصال بنجاح ✅', 'success');
+                    if ('vibrate' in navigator) navigator.vibrate(40);
+                    setTimeout(() => {
+                        btn.classList.remove('saved');
+                        if (icon) icon.className = 'fas fa-user-plus';
+                        if (text) text.textContent = 'حفظ كجهة اتصال';
+                    }, 3000);
+                }
+            }
+
+            // Save button attention pulse
+            setTimeout(() => {
+                const saveBtn = document.getElementById('ejs-save-btn');
+                if (saveBtn) {
+                    saveBtn.classList.add('pulse');
+                    saveBtn.addEventListener('animationend', () => saveBtn.classList.remove('pulse'));
+                }
+            }, 4000);
+
+            // Enhanced copy with button feedback
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                const origClick = btn.getAttribute('onclick');
+                btn.removeAttribute('onclick');
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const text = this.closest('.contact-card')?.querySelector('.contact-text')?.textContent?.trim();
+                    if (text) {
+                        copyToClipboard(text);
+                        this.classList.add('copy-success');
+                        const icon = this.querySelector('i');
+                        if (icon) {
+                            icon.className = 'fas fa-check';
+                            setTimeout(() => {
+                                icon.className = 'fas fa-copy';
+                                this.classList.remove('copy-success');
+                            }, 1500);
+                        }
+                    }
+                });
+            });
+
             async function shareCard() {
                 if (navigator.share) {
                     try {
@@ -1144,6 +1256,216 @@ END:VCARD`;
                     }
                 } catch (err) {
                     console.log('Story share failed:', err);
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // STORY GENERATOR (EJS VERSION)
+            // ═══════════════════════════════════════════════════════════════
+            function openStoryGenerator() {
+                let modal = document.getElementById('ejs-story-modal');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'ejs-story-modal';
+                    modal.className = 'qr-modal-overlay';
+                    modal.innerHTML = `
+                        <div class="qr-modal-box" style="max-width:400px;padding:24px;">
+                            <div class="qr-modal-header" style="margin-bottom:16px;">
+                                <h4><i class="fab fa-instagram" style="color:#E4405F;margin-left:8px;"></i> مولّد صورة الستوري</h4>
+                                <button class="close-btn" onclick="closeStoryModal()">&times;</button>
+                            </div>
+                            <p style="color:#9ca3af;font-size:0.9rem;margin-bottom:16px;text-align:center;">اختر الثيم وحمّل صورة جاهزة للستوري</p>
+                            <div id="ejs-story-themes" style="display:flex;gap:8px;margin-bottom:16px;justify-content:center;flex-wrap:wrap;">
+                                <button class="story-theme-opt active" data-theme="midnight" style="width:40px;height:40px;border-radius:50%;border:3px solid #4da6ff;cursor:pointer;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);box-shadow:0 0 0 3px rgba(77,166,255,0.3);transition:all 0.2s;"></button>
+                                <button class="story-theme-opt" data-theme="ocean" style="width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#0077b6,#00b4d8,#90e0ef);transition:all 0.2s;"></button>
+                                <button class="story-theme-opt" data-theme="sunset" style="width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#f72585,#b5179e,#7209b7);transition:all 0.2s;"></button>
+                                <button class="story-theme-opt" data-theme="forest" style="width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#132a13,#31572c,#4f772d);transition:all 0.2s;"></button>
+                                <button class="story-theme-opt" data-theme="gold" style="width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#1a1a2e,#c9a227,#f4d03f);transition:all 0.2s;"></button>
+                                <button class="story-theme-opt" data-theme="minimal" style="width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#fafafa,#e0e0e0);transition:all 0.2s;"></button>
+                            </div>
+                            <div style="width:100%;aspect-ratio:9/16;border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);">
+                                <canvas id="ejs-story-canvas" style="width:100%;height:100%;display:block;"></canvas>
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <button onclick="downloadStory()" style="flex:1;background:linear-gradient(135deg,#4da6ff,#0077ff);color:#fff;border:none;padding:14px;border-radius:50px;font-size:1rem;cursor:pointer;font-weight:700;font-family:inherit;">
+                                    <i class="fas fa-download"></i> تحميل
+                                </button>
+                                <button onclick="shareStory()" style="flex:1;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border:none;padding:14px;border-radius:50px;font-size:1rem;cursor:pointer;font-weight:700;font-family:inherit;">
+                                    <i class="fas fa-share-alt"></i> مشاركة
+                                </button>
+                            </div>
+                        </div>`;
+                    document.body.appendChild(modal);
+
+                    // Theme buttons
+                    modal.querySelectorAll('.story-theme-opt').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            modal.querySelectorAll('.story-theme-opt').forEach(b => {
+                                b.style.borderColor = 'transparent';
+                                b.style.boxShadow = 'none';
+                            });
+                            btn.style.borderColor = '#4da6ff';
+                            btn.style.boxShadow = '0 0 0 3px rgba(77,166,255,0.3)';
+                            storyTheme = btn.dataset.theme;
+                            renderEjsStory();
+                        });
+                    });
+
+                    modal.addEventListener('click', e => { if (e.target === modal) closeStoryModal(); });
+                }
+
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                renderEjsStory();
+            }
+
+            function closeStoryModal() {
+                const modal = document.getElementById('ejs-story-modal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            let storyTheme = 'midnight';
+            const storyThemes = {
+                midnight: { bg: ['#0f0c29', '#302b63', '#24243e'], text: '#ffffff', sub: '#a0a0c0', accent: '#4da6ff' },
+                ocean:    { bg: ['#0077b6', '#00b4d8', '#90e0ef'], text: '#ffffff', sub: '#d4f1f9', accent: '#00b4d8' },
+                sunset:   { bg: ['#f72585', '#b5179e', '#7209b7'], text: '#ffffff', sub: '#f0c0e0', accent: '#f72585' },
+                forest:   { bg: ['#132a13', '#31572c', '#4f772d'], text: '#ffffff', sub: '#b0d0a0', accent: '#90be6d' },
+                gold:     { bg: ['#1a1a2e', '#16213e', '#0f3460'], text: '#f4d03f', sub: '#c9a227', accent: '#f4d03f' },
+                minimal:  { bg: ['#fafafa', '#f0f0f0', '#ffffff'], text: '#1a1a2e', sub: '#666666', accent: '#4da6ff' }
+            };
+
+            async function renderEjsStory() {
+                const canvas = document.getElementById('ejs-story-canvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                canvas.width = 1080;
+                canvas.height = 1920;
+                const theme = storyThemes[storyTheme];
+
+                // Background
+                const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                grad.addColorStop(0, theme.bg[0]);
+                grad.addColorStop(0.5, theme.bg[1]);
+                grad.addColorStop(1, theme.bg[2]);
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Decorative circles
+                ctx.fillStyle = theme.accent;
+                ctx.globalAlpha = 0.12;
+                ctx.beginPath(); ctx.arc(150, 200, 180, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(930, 1700, 220, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // "DIGITAL BUSINESS CARD" tag
+                ctx.textAlign = 'center';
+                ctx.fillStyle = theme.accent;
+                ctx.font = '600 28px "Poppins", sans-serif';
+                ctx.fillText('✦  DIGITAL BUSINESS CARD  ✦', canvas.width / 2, 350);
+
+                // Card image
+                const frontImg = document.querySelector('#card-front-display img, .card-face.front img');
+                if (frontImg && frontImg.complete && frontImg.naturalWidth > 0) {
+                    const cardW = 860;
+                    const cardH = cardW / (51 / 33);
+                    const cardX = (canvas.width - cardW) / 2;
+                    const cardY = 460;
+
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 60; ctx.shadowOffsetY = 20;
+                    roundR(ctx, cardX, cardY, cardW, cardH, 24); ctx.fillStyle = '#000'; ctx.fill();
+                    ctx.restore();
+
+                    ctx.save();
+                    roundR(ctx, cardX, cardY, cardW, cardH, 24); ctx.clip();
+                    ctx.drawImage(frontImg, cardX, cardY, cardW, cardH);
+                    ctx.restore();
+
+                    ctx.save();
+                    ctx.strokeStyle = theme.accent; ctx.globalAlpha = 0.3; ctx.lineWidth = 2;
+                    roundR(ctx, cardX, cardY, cardW, cardH, 24); ctx.stroke();
+                    ctx.globalAlpha = 1; ctx.restore();
+                }
+
+                // Name
+                ctx.fillStyle = theme.text;
+                ctx.font = '800 64px "Cairo", "Tajawal", sans-serif';
+                ctx.fillText('<%= inputs["input-name"] || "" %>', canvas.width / 2, 1160);
+
+                // Tagline
+                ctx.fillStyle = theme.sub;
+                ctx.font = '500 36px "Tajawal", "Poppins", sans-serif';
+                ctx.fillText('<%= inputs["input-tagline"] || "" %>', canvas.width / 2, 1220);
+
+                // QR Code
+                try {
+                    const qrImg = await loadImg(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}&format=png&qzone=1`);
+                    const qrX = (canvas.width - 200) / 2, qrY = 1320;
+                    ctx.save(); ctx.fillStyle = '#ffffff';
+                    roundR(ctx, qrX - 16, qrY - 16, 232, 232, 16); ctx.fill();
+                    ctx.drawImage(qrImg, qrX, qrY, 200, 200); ctx.restore();
+
+                    ctx.fillStyle = theme.sub;
+                    ctx.font = '500 26px "Tajawal", sans-serif';
+                    ctx.fillText('📱 امسح للتواصل', canvas.width / 2, qrY + 260);
+                } catch(e) {}
+
+                // Branding
+                ctx.fillStyle = theme.sub; ctx.globalAlpha = 0.5;
+                ctx.font = '500 24px "Poppins", sans-serif';
+                ctx.fillText('Powered by MC PRIME', canvas.width / 2, 1800);
+                ctx.globalAlpha = 1;
+            }
+
+            function roundR(ctx, x, y, w, h, r) {
+                ctx.beginPath();
+                ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                ctx.lineTo(x + r, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                ctx.lineTo(x, y + r);
+                ctx.quadraticCurveTo(x, y, x + r, y);
+                ctx.closePath();
+            }
+
+            function loadImg(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            }
+
+            function downloadStory() {
+                const canvas = document.getElementById('ejs-story-canvas');
+                if (!canvas) return;
+                const link = document.createElement('a');
+                link.download = 'story_card.png';
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+                showToast('تم تحميل صورة الستوري 📸', 'success');
+            }
+
+            async function shareStory() {
+                const canvas = document.getElementById('ejs-story-canvas');
+                if (!canvas) return;
+                try {
+                    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                    const file = new File([blob], 'story_card.png', { type: 'image/png' });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({ files: [file], title: '<%= inputs["input-name"] || "بطاقة رقمية" %>', text: 'اسحب للأعلى لزيارة بطاقتي!' });
+                    } else {
+                        downloadStory();
+                    }
+                } catch (e) {
+                    if (e.name !== 'AbortError') showToast('فشلت المشاركة', 'error');
                 }
             }
         </script>
