@@ -32,6 +32,11 @@ body {
   border-bottom: 1px solid var(--glass-border);
 }
 
+.nav-logo img {
+  height: 45px;
+  width: auto;
+}
+
 .gallery-container {
   max-width: 1400px;
   margin: 0 auto;

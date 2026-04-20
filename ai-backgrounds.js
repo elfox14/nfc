@@ -1,239 +1,311 @@
 /**
- * AI Backgrounds Feature
- * Generates AI-style backgrounds with patterns for the card editor
+ * AI Backgrounds Engine
+ * Generates advanced CSS gradients, Mesh gradients, and Data URI SVG patterns
+ * Provides a highly interactive live-preview modal UI.
  */
 
 (function () {
     'use strict';
 
     // State
-    let selectedPattern = 'gradient';
-    let selectedColor = '#667eea';
-
-    // Color pairs for each base color
-    const colorPairs = {
-        '#667eea': '#764ba2',
-        '#f5576c': '#f093fb',
-        '#4facfe': '#00f2fe',
-        '#00f2fe': '#4facfe',
-        '#43e97b': '#38f9d7',
-        '#fa709a': '#fee140',
-        '#fee140': '#fa709a',
-        '#30cfd0': '#330867'
+    const state = {
+        currentStyle: 'cyberpunk',
+        generatedCss: '',
+        generatedColors: { start: '', end: '' },
+        isOpen: false
     };
 
-    // Helper function to get complementary color
-    function getComplementaryColor(color) {
-        return colorPairs[color] || adjustColor(color, 40);
-    }
+    // AI Generation Prompts & Strategies
+    const styles = {
+        cyberpunk: {
+            generate: () => {
+                const hues = [300, 320, 280, 190, 160];
+                const h1 = hues[Math.floor(Math.random() * hues.length)];
+                const h2 = (h1 + 40 + Math.random() * 60) % 360;
+                const h3 = (h1 + 180 + Math.random() * 30) % 360;
+                
+                const c1 = `hsl(${h1}, 100%, 15%)`;
+                const c2 = `hsl(${h2}, 100%, 50%)`;
+                const c3 = `hsl(${h3}, 100%, 50%)`;
+                
+                // SVG Grid Overlay
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M0 0h40v40H0z" fill="none"/><path d="M0 39.5h40M39.5 0v40" stroke="rgba(255,255,255,0.07)" stroke-width="1"/></svg>`;
+                const dataUri = `url("data:image/svg+xml;base64,${btoa(svg)}")`;
 
-    // Helper function to adjust color
-    function adjustColor(color, amount) {
-        const hex = color.replace('#', '');
-        const r = Math.min(255, Math.max(0, parseInt(hex.substr(0, 2), 16) + amount));
-        const g = Math.min(255, Math.max(0, parseInt(hex.substr(2, 2), 16) + amount));
-        const b = Math.min(255, Math.max(0, parseInt(hex.substr(4, 2), 16) + amount));
-        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-    }
+                return {
+                    css: `${dataUri}, radial-gradient(circle at ${Math.random()*100}% ${Math.random()*100}%, ${c2} 0%, transparent 60%), radial-gradient(circle at ${Math.random()*100}% ${Math.random()*100}%, ${c3} 0%, transparent 60%), ${c1}`,
+                    colors: { start: c1, end: c2 }
+                };
+            }
+        },
+        luxury: {
+            generate: () => {
+                const bases = ['#0a0a0a', '#1a1814', '#0d1b2a', '#2c1e16'];
+                const base = bases[Math.floor(Math.random() * bases.length)];
+                const angles = [45, 135, 225, 315];
+                const angle = angles[Math.floor(Math.random() * angles.length)];
+                
+                const g1 = `rgba(212, 175, 55, ${0.4 + Math.random()*0.3})`;
+                const g2 = `rgba(255, 223, 0, ${0.1 + Math.random()*0.2})`;
+                
+                return {
+                    css: `linear-gradient(${angle}deg, ${g1} 0%, transparent 40%), linear-gradient(${angle + 180}deg, ${g2} 0%, transparent 40%), ${base}`,
+                    colors: { start: base, end: '#d4af37' }
+                };
+            }
+        },
+        fluid: {
+            generate: () => {
+                const h = Math.floor(Math.random() * 360);
+                const pos1 = `${Math.floor(Math.random()*100)}% ${Math.floor(Math.random()*100)}%`;
+                const pos2 = `${Math.floor(Math.random()*100)}% ${Math.floor(Math.random()*100)}%`;
+                const pos3 = `${Math.floor(Math.random()*100)}% ${Math.floor(Math.random()*100)}%`;
+                const pos4 = `${Math.floor(Math.random()*100)}% ${Math.floor(Math.random()*100)}%`;
 
-    // Initialize the AI backgrounds feature
+                const c1 = `hsl(${h}, 80%, 60%)`;
+                const c2 = `hsl(${(h + 40) % 360}, 80%, 60%)`;
+                const c3 = `hsl(${(h + 80) % 360}, 80%, 60%)`;
+                const c4 = `hsl(${(h + 120) % 360}, 80%, 60%)`;
+
+                return {
+                    css: `radial-gradient(circle at ${pos1}, ${c1} 0%, transparent 50%), radial-gradient(circle at ${pos2}, ${c2} 0%, transparent 50%), radial-gradient(circle at ${pos3}, ${c3} 0%, transparent 50%), radial-gradient(circle at ${pos4}, ${c4} 0%, transparent 50%), #0f0f0f`,
+                    colors: { start: c1, end: c3 }
+                };
+            }
+        },
+        cosmic: {
+            generate: () => {
+                const c1 = '#090a0f';
+                const c2 = '#1b2735';
+                const angle = Math.floor(Math.random() * 360);
+                
+                // SVG Noise
+                const noiseSVG = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#noiseFilter)" opacity="0.08"/></svg>`;
+                const noiseUri = `url("data:image/svg+xml;base64,${btoa(noiseSVG)}")`;
+
+                const glowColor = `hsl(${Math.random() > 0.5 ? 280 : 200}, 100%, 60%)`;
+
+                return {
+                    css: `${noiseUri}, radial-gradient(ellipse at ${Math.random()*100}% ${Math.random()*100}%, ${glowColor} 0%, transparent 60%), linear-gradient(${angle}deg, ${c1} 0%, ${c2} 100%)`,
+                    colors: { start: c1, end: glowColor }
+                };
+            }
+        },
+        minimal: {
+            generate: () => {
+                const h = Math.floor(Math.random() * 360);
+                const bg = `hsl(${h}, 15%, 95%)`;
+                const s1 = `hsl(${h}, 30%, 85%)`;
+                const s2 = `hsl(${(h + 20) % 360}, 20%, 90%)`;
+
+                const angle1 = Math.random() * 360;
+                const angle2 = Math.random() * 360;
+
+                return {
+                    css: `linear-gradient(${angle1}deg, ${s1} 0%, transparent 40%), linear-gradient(${angle2}deg, ${s2} 0%, transparent 40%), ${bg}`,
+                    colors: { start: bg, end: s1 }
+                };
+            }
+        }
+    };
+
     function init() {
         const aiBtn = document.getElementById('ai-backgrounds-btn');
         const modal = document.getElementById('ai-backgrounds-modal');
         const closeBtn = document.getElementById('close-ai-modal');
-        const patternCards = document.querySelectorAll('.ai-pattern-card');
-        const colorBtns = document.querySelectorAll('.ai-color-btn');
-        const applyFrontBtn = document.getElementById('ai-apply-front');
-        const applyBackBtn = document.getElementById('ai-apply-back');
-
-        if (!aiBtn || !modal || !closeBtn || !applyFrontBtn || !applyBackBtn) {
-            console.warn('AI Backgrounds: Some UI elements not found, skipping initialization.', {
-                aiBtn: !!aiBtn,
-                modal: !!modal,
-                closeBtn: !!closeBtn,
-                applyFrontBtn: !!applyFrontBtn,
-                applyBackBtn: !!applyBackBtn
-            });
+        
+        if (!aiBtn || !modal || !closeBtn) {
+            console.warn('AI Backgrounds Modal missing. Ensure updated HTML structures are present.');
             return;
         }
 
-        // Open modal
-        aiBtn.addEventListener('click', () => {
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        });
-
-        // Close modal
-        closeBtn.addEventListener('click', closeModal);
+        // Bind Open / Close
+        aiBtn.addEventListener('click', () => openModal(modal));
+        closeBtn.addEventListener('click', () => closeModal(modal));
+        
+        // Close on overlay click
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
+            if (e.target === modal) closeModal(modal);
         });
 
-        // Escape key to close
+        // Close on Escape
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.style.display === 'flex') {
-                closeModal();
-            }
+            if (e.key === 'Escape' && state.isOpen) closeModal(modal);
         });
 
-        function closeModal() {
-            modal.style.display = 'none';
-            document.body.style.overflow = '';
-        }
-
-        // Pattern selection
-        patternCards.forEach(card => {
-            card.addEventListener('click', () => {
-                patternCards.forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                selectedPattern = card.dataset.pattern;
+        // Bind Style Chips
+        document.querySelectorAll('.ai-vibe-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                document.querySelectorAll('.ai-vibe-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                state.currentStyle = chip.dataset.style;
+                generateVariant();
             });
         });
 
-        // Color selection
-        colorBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                colorBtns.forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                selectedColor = btn.dataset.color;
+        // Bind Regenerate
+        const regenBtn = document.getElementById('ai-bg-regenerate');
+        if (regenBtn) {
+            regenBtn.addEventListener('click', () => {
+                regenBtn.classList.add('spinning');
+                setTimeout(() => regenBtn.classList.remove('spinning'), 500);
+                generateVariant();
             });
-        });
-
-        // Select first pattern and color by default
-        if (patternCards[0]) patternCards[0].classList.add('selected');
-        if (colorBtns[0]) colorBtns[0].classList.add('selected');
-
-        // Apply to front
-        applyFrontBtn.addEventListener('click', () => {
-            applyBackground('front');
-            closeModal();
-            const lang = document.documentElement.lang || 'ar';
-            showNotification(lang === 'en' ? 'Background applied to front side' : 'تم تطبيق الخلفية على الواجهة الأمامية');
-        });
-
-        // Apply to back
-        applyBackBtn.addEventListener('click', () => {
-            applyBackground('back');
-            closeModal();
-            const lang = document.documentElement.lang || 'ar';
-            showNotification(lang === 'en' ? 'Background applied to back side' : 'تم تطبيق الخلفية على الواجهة الخلفية');
-        });
-
-        console.log('AI Backgrounds: Initialized successfully');
-    }
-
-    // Apply background to card using CardManager
-    function applyBackground(side) {
-        const color1 = selectedColor;
-        const color2 = getComplementaryColor(color1);
-
-        // Get the color input elements
-        const startColorInput = document.getElementById(side === 'front' ? 'front-bg-start' : 'back-bg-start');
-        const endColorInput = document.getElementById(side === 'front' ? 'front-bg-end' : 'back-bg-end');
-        const opacityInput = document.getElementById(side === 'front' ? 'front-bg-opacity' : 'back-bg-opacity');
-
-        if (startColorInput && endColorInput) {
-            // Set the gradient colors
-            startColorInput.value = color1;
-            endColorInput.value = color2;
-
-            // Set opacity to 1 for full visibility
-            if (opacityInput) {
-                opacityInput.value = 1;
-            }
-
-            // Trigger input events to update the UI
-            startColorInput.dispatchEvent(new Event('input', { bubbles: true }));
-            endColorInput.dispatchEvent(new Event('input', { bubbles: true }));
-            if (opacityInput) {
-                opacityInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-
-            // Clear any background image if exists
-            if (typeof CardManager !== 'undefined') {
-                if (side === 'front') {
-                    CardManager.frontBgImageUrl = '';
-                    const removeFrontBtn = document.querySelector('[id*="remove-front-bg"]');
-                    if (removeFrontBtn) removeFrontBtn.style.display = 'none';
-                } else {
-                    CardManager.backBgImageUrl = '';
-                    const removeBackBtn = document.querySelector('[id*="remove-back-bg"]');
-                    if (removeBackBtn) removeBackBtn.style.display = 'none';
-                }
-
-                // Update the card backgrounds
-                if (CardManager.updateCardBackgrounds) {
-                    CardManager.updateCardBackgrounds();
-                }
-
-                // Save state if available
-                if (typeof StateManager !== 'undefined' && StateManager.saveState) {
-                    StateManager.saveState();
-                }
-            }
-
-            console.log(`AI Backgrounds: Applied ${selectedPattern} pattern with colors ${color1} -> ${color2} to ${side}`);
-        } else {
-            console.error('AI Backgrounds: Color inputs not found');
-            // Fallback: Try to directly manipulate the card elements
-            applyBackgroundFallback(side, color1, color2);
         }
+
+        // Bind Apply Buttons
+        const applyFront = document.getElementById('ai-apply-front');
+        const applyBack = document.getElementById('ai-apply-back');
+        if (applyFront) applyFront.addEventListener('click', () => applyToCard('front'));
+        if (applyBack) applyBack.addEventListener('click', () => applyToCard('back'));
+
+        console.log('AI Premium Backgrounds: Initialized successfully');
     }
 
-    // Fallback function if inputs not found
-    function applyBackgroundFallback(side, color1, color2) {
-        // Try to find card elements directly
-        const cardSelector = side === 'front' ? '.nfc-card-front' : '.nfc-card-back';
-        const cardElement = document.querySelector(cardSelector);
-
-        if (cardElement) {
-            const bgLayer = cardElement.querySelector('.card-background-layer');
-            if (bgLayer) {
-                bgLayer.style.background = `linear-gradient(135deg, ${color1}, ${color2})`;
-                bgLayer.style.opacity = '1';
-            } else {
-                cardElement.style.background = `linear-gradient(135deg, ${color1}, ${color2})`;
-            }
+    function openModal(modal) {
+        state.isOpen = true;
+        modal.style.display = 'flex';
+        // Auto trigger first generation if blank
+        if (!state.generatedCss) {
+            generateVariant();
         }
+        
+        // Force a small reflow to ensure animations play
+        requestAnimationFrame(() => {
+            modal.classList.add('fade-in');
+        });
     }
 
-    // Show notification
-    function showNotification(message) {
-        // Check if there's an existing notification system
-        if (typeof showToast === 'function') {
-            showToast(message, 'success');
-        } else if (typeof UIManager !== 'undefined' && UIManager.announce) {
-            UIManager.announce(message);
-        } else {
-            // Create a simple notification
-            const notification = document.createElement('div');
-            notification.className = 'ai-notification';
-            notification.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-            notification.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 12px 24px;
-                border-radius: 10px;
-                font-size: 14px;
-                z-index: 10000;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-                animation: slideUp 0.3s ease;
-            `;
-            document.body.appendChild(notification);
+    function closeModal(modal) {
+        state.isOpen = false;
+        modal.style.display = 'none';
+        modal.classList.remove('fade-in');
+    }
 
+    function generateVariant() {
+        const styleDef = styles[state.currentStyle] || styles.fluid;
+        const result = styleDef.generate();
+        
+        state.generatedCss = result.css;
+        state.generatedColors = result.colors;
+        
+        // Update live preview in modal
+        const previewEl = document.getElementById('ai-bg-preview-canvas');
+        if (previewEl) {
+            previewEl.style.opacity = '0.5';
             setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateX(-50%) translateY(10px)';
-                notification.style.transition = 'all 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
+                previewEl.style.background = state.generatedCss;
+                previewEl.style.opacity = '1';
+            }, 150);
+        }
+    }
+
+    function hexToRgba(hex, alpha) {
+        if (!hex) return '';
+        let r = 0, g = 0, b = 0;
+        if (hex.length === 4) {
+          r = "0x" + hex[1] + hex[1]; g = "0x" + hex[2] + hex[2]; b = "0x" + hex[3] + hex[3];
+        } else if (hex.length === 7) {
+          r = "0x" + hex[1] + hex[2]; g = "0x" + hex[3] + hex[4]; b = "0x" + hex[5] + hex[6];
+        }
+        return `rgba(${+r},${+g},${+b},${alpha})`;
+    }
+
+    function hslToHex(hslString) {
+        // Fallback or rough conversion simply returning the hsl string 
+        // to be injected in CSS inputs where acceptable, or just return the computed style.
+        // For standard input[type=color], we usually need HEX.
+        return '#000000'; // Real implementation needs element computing or math fallback
+    }
+    
+    // We create a hidden div to compute HSL colors to HEX natively via browser
+    function resolveColorToHex(colorStr) {
+        if (colorStr.startsWith('#') && colorStr.length === 7) return colorStr;
+        const d = document.createElement("div");
+        d.style.color = colorStr;
+        document.body.appendChild(d);
+        const rgb = window.getComputedStyle(d).color;
+        document.body.removeChild(d);
+        const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+        if (!match) return '#000000';
+        function hex(x) { return ("0" + parseInt(x).toString(16)).slice(-2); }
+        return "#" + hex(match[1]) + hex(match[2]) + hex(match[3]);
+    }
+
+    function applyToCard(side) {
+        if (!state.generatedCss) return;
+
+        const isFront = side === 'front';
+
+        // 1. We must inject the complex CSS string directly via a DOM update 
+        // because the standard UI only accepts 2 colors.
+        // We will hijack the gradient layer.
+        
+        const layerId = isFront ? 'front-bg-gradient-layer' : 'back-bg-gradient-layer';
+        const layerEl = document.getElementById(layerId);
+        
+        if (layerEl) {
+            // Apply immediately to preview
+            layerEl.style.background = state.generatedCss;
+            layerEl.style.opacity = '1';
+        }
+
+        // 2. We also update the basic color pickers to sensible fallbacks so the UI matches closely
+        const hexStart = resolveColorToHex(state.generatedColors.start);
+        const hexEnd = resolveColorToHex(state.generatedColors.end);
+        
+        const in_start = document.getElementById(isFront ? 'front-bg-start' : 'back-bg-start');
+        const in_end = document.getElementById(isFront ? 'front-bg-end' : 'back-bg-end');
+        const in_opc = document.getElementById(isFront ? 'front-bg-opacity' : 'back-bg-opacity');
+
+        if (in_start && in_end) {
+            in_start.value = hexStart;
+            in_end.value = hexEnd;
+            if (in_opc) in_opc.value = 1;
+
+            // Notice we do NOT trigger 'input' event because that would overwrite 
+            // our brilliant custom CSS string via CardManager.updateCardBackgrounds().
+            // We only update the visual input values.
+        }
+
+        // 3. To make it persistent in StateManager, we need to inject the CSS into the state object somehow.
+        // For MC PRIME, we'll store the complex CSS string in a data attribute that the save function can read
+        // OR we just rely on the DOM saving the inline style in HTML canvas export.
+        if (layerEl) {
+            layerEl.setAttribute('data-ai-bg', state.generatedCss);
+        }
+
+        // 4. Hide old Image layers if any
+        const imgLayerId = isFront ? 'front-bg-image-layer' : 'back-bg-image-layer';
+        const imgLayerEl = document.getElementById(imgLayerId);
+        if (imgLayerEl) {
+            imgLayerEl.style.backgroundImage = 'none';
+        }
+        
+        if (typeof CardManager !== 'undefined') {
+            if (isFront) {
+                CardManager.frontBgImageUrl = '';
+                const removeFrontBtn = document.querySelector('[id*="remove-front-bg"]');
+                if (removeFrontBtn) removeFrontBtn.style.display = 'none';
+            } else {
+                CardManager.backBgImageUrl = '';
+                const removeBackBtn = document.querySelector('[id*="remove-back-bg"]');
+                if (removeBackBtn) removeBackBtn.style.display = 'none';
+            }
+        }
+
+        // Trigger debounce save
+        if (typeof StateManager !== 'undefined' && StateManager.saveDebounced) {
+            StateManager.saveDebounced();
+        }
+
+        // Notify
+        const modal = document.getElementById('ai-backgrounds-modal');
+        closeModal(modal);
+        
+        if (typeof UIManager !== 'undefined' && UIManager.announce) {
+            const isAr = document.documentElement.lang !== 'en';
+            UIManager.announce(isAr ? `تم تطبيق خلفية ${state.currentStyle} بنجاح` : `Applied ${state.currentStyle} background`);
         }
     }
 
@@ -241,7 +313,7 @@
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
-        // Wait a bit for other scripts to load
-        setTimeout(init, 500);
+        setTimeout(init, 300);
     }
+
 })();
