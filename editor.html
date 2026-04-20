@@ -39,6 +39,7 @@
     <link rel="stylesheet" href="editor-enhancements.css?v=3.5">
     <link rel="stylesheet" href="toolbar-enhancements.css?v=1.3">
     <link rel="stylesheet" href="logo-panel.css?v=1.3">
+    <link rel="stylesheet" href="ai-suggestion-panel.css?v=1.0">
 
     <!-- المكتبات الخارجية -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
@@ -62,6 +63,7 @@
     <script src="editor-user-status.js" defer></script>
     <script src="ai-backgrounds.js" defer></script>
     <script src="editor-tour.js" defer></script>
+    <script src="editor-panels.js" defer></script>
 
     <style>
         /* =============================================================== */
@@ -312,14 +314,114 @@
                 <div class="form-group">
                     <label>اختر تصميمًا جاهزًا</label>
                     <div id="theme-gallery" class="theme-gallery-grid"></div>
-                    <div class="form-group" id="ai-suggestion-group"
-                        style="margin-top: 15px; border-top: 1px solid var(--accent-secondary); padding-top: 15px;">
-                        <label>تحتاج إلهاماً؟</label>
-                        <button id="ai-suggest-btn" class="btn btn-secondary" style="width: 100%;">
-                            <i class="fas fa-magic"></i> <span>اقتراح تصميم ذكي</span>
-                        </button>
-                        <div class="spinner" id="ai-spinner" style="display: none; margin: 10px auto 0;"></div>
+                    <div class="form-group" id="ai-suggestion-group">
+                        <!-- Premium AI Inspiration Panel -->
+                        <div class="ai-inspiration-panel">
+                            <div class="ai-inspiration-header">
+                                <div class="ai-inspiration-icon">
+                                    <i class="fas fa-wand-magic-sparkles"></i>
+                                    <span class="ai-sparkle ai-sparkle-1">✦</span>
+                                    <span class="ai-sparkle ai-sparkle-2">✦</span>
+                                    <span class="ai-sparkle ai-sparkle-3">✧</span>
+                                </div>
+                                <div>
+                                    <h4 class="ai-inspiration-title">اقتراح تصميم ذكي</h4>
+                                    <p class="ai-inspiration-subtitle">اختر مجالك والأسلوب وسنقترح لك تصميمًا احترافيًا</p>
+                                </div>
+                            </div>
+
+                            <!-- Industry Selector -->
+                            <div class="ai-field-group">
+                                <label class="ai-field-label"><i class="fas fa-briefcase"></i> المجال</label>
+                                <select id="ai-industry-select" class="ai-select">
+                                    <option value="auto">🎯 تلقائي (من المسمى الوظيفي)</option>
+                                    <option value="technology">💻 تكنولوجيا وبرمجة</option>
+                                    <option value="medical">🏥 طب وصحة</option>
+                                    <option value="business">📊 أعمال وتمويل</option>
+                                    <option value="creative">🎨 تصميم وإبداع</option>
+                                    <option value="education">📚 تعليم وتدريب</option>
+                                    <option value="legal">⚖️ قانون ومحاماة</option>
+                                    <option value="realestate">🏗️ عقارات وهندسة</option>
+                                    <option value="food">🍳 مطاعم وضيافة</option>
+                                    <option value="fitness">💪 رياضة ولياقة</option>
+                                    <option value="fashion">👗 أزياء وجمال</option>
+                                </select>
+                            </div>
+
+                            <!-- Style Mood Pills -->
+                            <div class="ai-field-group">
+                                <label class="ai-field-label"><i class="fas fa-palette"></i> الأسلوب</label>
+                                <div class="ai-mood-grid">
+                                    <label class="ai-mood-pill ai-mood-active" data-mood="modern">
+                                        <input type="radio" name="ai-mood" value="modern" checked>
+                                        <i class="fas fa-gem"></i>
+                                        <span>عصري</span>
+                                    </label>
+                                    <label class="ai-mood-pill" data-mood="elegant">
+                                        <input type="radio" name="ai-mood" value="elegant">
+                                        <i class="fas fa-crown"></i>
+                                        <span>فاخر</span>
+                                    </label>
+                                    <label class="ai-mood-pill" data-mood="bold">
+                                        <input type="radio" name="ai-mood" value="bold">
+                                        <i class="fas fa-bolt"></i>
+                                        <span>جريء</span>
+                                    </label>
+                                    <label class="ai-mood-pill" data-mood="minimal">
+                                        <input type="radio" name="ai-mood" value="minimal">
+                                        <i class="fas fa-minus"></i>
+                                        <span>بسيط</span>
+                                    </label>
+                                    <label class="ai-mood-pill" data-mood="warm">
+                                        <input type="radio" name="ai-mood" value="warm">
+                                        <i class="fas fa-sun"></i>
+                                        <span>دافئ</span>
+                                    </label>
+                                    <label class="ai-mood-pill" data-mood="dark">
+                                        <input type="radio" name="ai-mood" value="dark">
+                                        <i class="fas fa-moon"></i>
+                                        <span>داكن</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Preview Card -->
+                            <div id="ai-preview-card" class="ai-preview-card" style="display:none;">
+                                <div class="ai-preview-header">
+                                    <span class="ai-preview-badge"><i class="fas fa-eye"></i> معاينة</span>
+                                    <span class="ai-preview-name" id="ai-preview-name"></span>
+                                </div>
+                                <div class="ai-preview-body" id="ai-preview-body">
+                                    <div class="ai-preview-swatch" id="ai-preview-swatch-1"></div>
+                                    <div class="ai-preview-swatch" id="ai-preview-swatch-2"></div>
+                                    <div class="ai-preview-swatch" id="ai-preview-swatch-3"></div>
+                                    <div class="ai-preview-swatch" id="ai-preview-swatch-4"></div>
+                                    <div class="ai-preview-swatch" id="ai-preview-swatch-5"></div>
+                                </div>
+                                <div class="ai-preview-actions">
+                                    <button id="ai-shuffle-btn" class="ai-btn-shuffle" type="button" title="اقتراح آخر">
+                                        <i class="fas fa-shuffle"></i>
+                                    </button>
+                                    <button id="ai-apply-btn" class="ai-btn-apply" type="button">
+                                        <i class="fas fa-check"></i> تطبيق التصميم
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Main CTA -->
+                            <button id="ai-suggest-btn" class="ai-btn-generate" type="button">
+                                <span class="ai-btn-content">
+                                    <i class="fas fa-wand-magic-sparkles"></i>
+                                    <span>اقتراح تصميم</span>
+                                </span>
+                                <span class="ai-btn-loading" style="display:none;">
+                                    <span class="ai-dots"><span>.</span><span>.</span><span>.</span></span>
+                                    جاري الإبداع
+                                </span>
+                            </button>
+                        </div>
                     </div>
+
                     <input type="hidden" id="theme-select-input">
                 </div>
             </fieldset>
@@ -625,53 +727,7 @@
                 </div>
             </details>
 
-            <!-- Logo Panel Inline JS -->
-            <script>
-            // Swatch background setter
-            function lpSetBg(btn, val) {
-                document.querySelectorAll('.lp-swatch').forEach(function(s){ s.classList.remove('lp-swatch-active'); });
-                btn.classList.add('lp-swatch-active');
-                var sel = document.getElementById('logo-bg-color');
-                if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', {bubbles:true})); }
-            }
-            // Sync align radio → active class
-            document.querySelectorAll('#logo-align-group input[type=radio]').forEach(function(r){
-                r.addEventListener('change', function(){
-                    document.querySelectorAll('.lp-align-btn').forEach(function(b){ b.classList.remove('lp-align-active'); });
-                    r.closest('.lp-align-btn').classList.add('lp-align-active');
-                });
-            });
-            // Sync placement radio → active class
-            document.querySelectorAll('[name="placement-logo"]').forEach(function(r){
-                r.addEventListener('change', function(){
-                    document.querySelectorAll('.lp-place-btn').forEach(function(b){ b.classList.remove('lp-place-active'); });
-                    r.closest('.lp-place-btn').classList.add('lp-place-active');
-                });
-            });
-            // D-pad: wire up move buttons directly to EventManager
-            (function() {
-                function wireDpad() {
-                    var dpad = document.querySelector('.lp-dpad[data-target-id="card-logo"]');
-                    if (!dpad) { setTimeout(wireDpad, 400); return; }
-                    if (dpad.dataset.wired) return;
-                    dpad.querySelectorAll('.move-btn').forEach(function(btn) {
-                        btn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            var dir = btn.dataset.direction;
-                            if (typeof EventManager !== 'undefined' && EventManager.moveElement) {
-                                EventManager.moveElement('card-logo', dir);
-                            }
-                        });
-                    });
-                    dpad.dataset.wired = "true";
-                }
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', function(){ setTimeout(wireDpad, 600); });
-                } else {
-                    setTimeout(wireDpad, 600);
-                }
-            })();
-            </script>
+            <!-- Panel JS moved to editor-panels.js -->
 
 
 
@@ -886,80 +942,7 @@
             </details>
 
             <!-- Photo Panel Inline JS -->
-            <script>
-            // Photo Border Color Swatch sync
-            function lpSetBorderColor(btn, val) {
-                var container = btn.closest('.lp-swatches');
-                container.querySelectorAll('.lp-swatch').forEach(function(s){ s.classList.remove('lp-swatch-active'); });
-                btn.classList.add('lp-swatch-active');
-                var inp = document.getElementById('photo-border-color');
-                if (inp) { 
-                    inp.value = val === 'transparent' ? '#000000' : val; // input color cant be transparent, but we can set dataset or handle in js if needed
-                    // Add property so JS knows it is transparent.
-                    inp.dataset.transparent = (val === 'transparent');
-                    inp.dispatchEvent(new Event('input', {bubbles:true})); 
-                    inp.dispatchEvent(new Event('change', {bubbles:true})); 
-                }
-            }
 
-            // Sync shape radio → active class
-            document.querySelectorAll('#photo-shape-group input[type=radio]').forEach(function(r){
-                r.addEventListener('change', function(){
-                    document.querySelectorAll('#photo-shape-group .lp-align-btn').forEach(function(b){ b.classList.remove('lp-align-active'); });
-                    r.closest('.lp-align-btn').classList.add('lp-align-active');
-                });
-            });
-
-            // Sync align radio → active class
-            document.querySelectorAll('#photo-align-group input[type=radio]').forEach(function(r){
-                r.addEventListener('change', function(){
-                    document.querySelectorAll('#photo-align-group .lp-align-btn').forEach(function(b){ b.classList.remove('lp-align-active'); });
-                    r.closest('.lp-align-btn').classList.add('lp-align-active');
-                });
-            });
-
-            // Sync placement radio → active class
-            document.querySelectorAll('[name="placement-photo"]').forEach(function(r){
-                r.addEventListener('change', function(){
-                    document.querySelectorAll('input[name="placement-photo"]').forEach(function(ir){
-                        ir.closest('.lp-place-btn').classList.remove('lp-place-active');
-                    });
-                    r.closest('.lp-place-btn').classList.add('lp-place-active');
-                });
-            });
-
-            // Handle preview image toggle
-            document.getElementById('input-photo-upload').addEventListener('change', function(){
-                var img = document.getElementById('photo-preview');
-                var placeholder = document.getElementById('photo-placeholder');
-                if(this.files && this.files.length > 0) {
-                    // Actual preview logic is handled by Cropper JS, but we can visually toggle placeholder
-                    img.style.display = 'block';
-                    placeholder.style.display = 'none';
-                }
-            });
-
-            // D-pad: wire up move buttons directly to EventManager
-            (function() {
-                function wirePhotoDpad() {
-                    var dpad = document.querySelector('.lp-dpad[data-target-id="card-personal-photo-wrapper"]');
-                    if (!dpad) { setTimeout(wirePhotoDpad, 400); return; }
-                    var wired = dpad.dataset.wired;
-                    if(wired) return;
-                    dpad.querySelectorAll('.move-btn').forEach(function(btn) {
-                        btn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            var dir = btn.dataset.direction;
-                            if (typeof EventManager !== 'undefined' && EventManager.moveElement) {
-                                EventManager.moveElement('card-personal-photo-wrapper', dir);
-                            }
-                        });
-                    });
-                    dpad.dataset.wired = "true";
-                }
-                setTimeout(wirePhotoDpad, 800);
-            })();
-            </script>
             <!-- ═══ NAME PANEL — Premium v2 ═══ -->
             <details class="fieldset-accordion lp-accordion" open id="name-accordion">
                 <summary class="lp-summary">
@@ -1141,73 +1124,7 @@
                 </div>
             </details>
 
-            <!-- Name/Tagline Inline JS & Photo Shape Fix -->
-            <script>
-            // Force Photo Shape immediately logic
-            document.querySelectorAll('input[name="photo-shape"]').forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    var shape = this.value;
-                    var wrapper = document.getElementById('card-personal-photo-wrapper');
-                    var preview = document.getElementById('card-personal-photo');
-                    var img = document.getElementById('card-personal-photo-img');
-                    
-                    if(!wrapper && typeof DOMElements !== 'undefined' && DOMElements.draggable) {
-                        wrapper = DOMElements.draggable.photo;
-                    }
 
-                    if (wrapper) {
-                        wrapper.style.borderRadius = shape === 'circle' ? '50%' : (shape === 'rounded' ? '15%' : '0');
-                        wrapper.style.clipPath = shape === 'hexagon' ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' : 'none';
-                        if (preview) {
-                            preview.style.borderRadius = wrapper.style.borderRadius;
-                            preview.style.clipPath = wrapper.style.clipPath;
-                        }
-                        if (img) {
-                             img.style.borderRadius = wrapper.style.borderRadius;
-                             img.style.clipPath = wrapper.style.clipPath;
-                        }
-                    }
-                });
-            });
-
-            setTimeout(function() {
-                var checkedShape = document.querySelector('input[name="photo-shape"]:checked');
-                if(checkedShape) checkedShape.dispatchEvent(new Event('change'));
-            }, 500);
-
-            // Sync placement pills for Name and Tagline
-            document.querySelectorAll('input[name="placement-name"], input[name="placement-tagline"]').forEach(function(r){
-                r.addEventListener('change', function(){
-                    var name = this.name;
-                    document.querySelectorAll('input[name="'+name+'"]').forEach(function(ir){
-                        ir.closest('.lp-place-btn').classList.remove('lp-place-active');
-                    });
-                    this.closest('.lp-place-btn').classList.add('lp-place-active');
-                });
-            });
-
-            // Wire D-pads for name and tagline
-            (function() {
-                function wireTextDpads() {
-                    var dpads = document.querySelectorAll('#name-accordion .lp-dpad:not([data-wired="true"]), #tagline-accordion .lp-dpad:not([data-wired="true"])');
-                    if (dpads.length === 0) { setTimeout(wireTextDpads, 500); return; }
-                    dpads.forEach(function(dpad) {
-                        var target = dpad.dataset.targetId;
-                        dpad.querySelectorAll('.move-btn').forEach(function(btn) {
-                            btn.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                var dir = btn.dataset.direction;
-                                if (typeof EventManager !== 'undefined' && EventManager.moveElement) {
-                                    EventManager.moveElement(target, dir);
-                                }
-                            });
-                        });
-                        dpad.dataset.wired = "true";
-                    });
-                }
-                setTimeout(wireTextDpads, 800);
-            })();
-            </script>
 
             <!-- ═══ PHONES PANEL — Premium v2 ═══ -->
             <details class="fieldset-accordion lp-accordion" id="phones-accordion">
@@ -1338,53 +1255,7 @@
                 </div>
             </details>
 
-            <script>
-            // Inline logic for phone UI segment control to match pre-existing JS hooks
-            document.querySelectorAll('input[name="phone-mode-fake"]').forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    var isButtonMode = (this.value === 'buttons');
-                    
-                    // Update visual segmented control styling
-                    document.querySelector('.toggle-phone-text').style.background = isButtonMode ? 'transparent' : 'var(--accent-primary)';
-                    document.querySelector('.toggle-phone-text').style.color = isButtonMode ? 'var(--text-secondary)' : '#fff';
-                    document.querySelector('.toggle-phone-text ').style.boxShadow = isButtonMode ? 'none' : '0 2px 4px rgba(0,0,0,0.2)';
-                    
-                    document.querySelector('.toggle-phone-btn').style.background = isButtonMode ? 'var(--accent-primary)' : 'transparent';
-                    document.querySelector('.toggle-phone-btn').style.color = isButtonMode ? '#fff' : 'var(--text-secondary)';
-                    document.querySelector('.toggle-phone-btn ').style.boxShadow = isButtonMode ? '0 2px 4px rgba(0,0,0,0.2)' : 'none';
 
-                    // Toggle visibility of setting panels
-                    document.getElementById('phone-text-controls').style.display = isButtonMode ? 'none' : 'block';
-                    document.getElementById('phone-btn-controls').style.display = isButtonMode ? 'block' : 'none';
-
-                    // Sync hidden checkbox and fire event to trigger original script-main.js logic
-                    var checkbox = document.getElementById('toggle-phone-buttons');
-                    if (checkbox.checked !== isButtonMode) {
-                        checkbox.checked = isButtonMode;
-                        checkbox.dispatchEvent(new Event('input', { bubbles: true }));
-                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-                        if (typeof CardManager !== 'undefined' && CardManager.updatePhoneButtonsVisibility) {
-                            CardManager.updatePhoneButtonsVisibility();
-                        }
-                    }
-                });
-            });
-
-            // Trigger once visually
-            var ev = new Event('change');
-            var fakeRadio = document.querySelector('input[name="phone-mode-fake"]:checked');
-            if(fakeRadio) fakeRadio.dispatchEvent(ev);
-
-            // Sync layout align buttons for phone-text
-            document.querySelectorAll('input[name="phone-text-layout"]').forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    document.querySelectorAll('input[name="phone-text-layout"]').forEach(function(r){
-                        r.closest('.lp-align-btn').classList.remove('lp-align-active');
-                    });
-                    this.closest('.lp-align-btn').classList.add('lp-align-active');
-                });
-            });
-            </script>
 
             <!-- ═══ QR CODE PANEL — Premium v2 ═══ -->
             <details class="fieldset-accordion lp-accordion" id="qr-code-accordion">
@@ -1554,67 +1425,7 @@
                 </div>
             </details>
 
-            <script>
-            // QR Source Segment Control
-            (function() {
-                var srcBtns = document.querySelectorAll('.lp-qr-src-btn');
-                srcBtns.forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        // Update styles
-                        srcBtns.forEach(function(b) {
-                            b.style.background = 'rgba(255,255,255,0.03)';
-                            b.style.borderColor = 'rgba(255,255,255,0.08)';
-                            b.style.color = 'var(--text-secondary)';
-                        });
-                        btn.style.background = 'rgba(77,166,255,0.15)';
-                        btn.style.borderColor = 'rgba(77,166,255,0.45)';
-                        btn.style.color = 'var(--accent-primary)';
 
-                        // Select radio
-                        var radio = btn.querySelector('input[type="radio"]');
-                        if (radio) {
-                            radio.checked = true;
-                            radio.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-
-                        // Show/hide conditional groups
-                        var val = btn.dataset.val;
-                        document.getElementById('qr-auto-card-group').style.display = (val === 'auto-card' || val === 'auto-vcard') ? 'block' : 'none';
-                        document.getElementById('qr-url-group').style.display = val === 'custom' ? 'block' : 'none';
-                        document.getElementById('qr-upload-group').style.display = val === 'upload' ? 'block' : 'none';
-                        // qr-customization-group stays visible for all except upload
-                        document.getElementById('qr-customization-group').style.display = val === 'upload' ? 'none' : 'block';
-                    });
-                });
-
-                // QR Placement pills sync
-                document.querySelectorAll('#qr-placement-btns input[type="radio"]').forEach(function(r) {
-                    r.addEventListener('change', function() {
-                        document.querySelectorAll('#qr-placement-btns .lp-place-btn').forEach(function(p) {
-                            p.classList.remove('lp-place-active');
-                        });
-                        r.closest('.lp-place-btn').classList.add('lp-place-active');
-                    });
-                });
-
-                // Wire QR D-pad
-                function wireQrDpad() {
-                    var dpad = document.querySelector('.lp-dpad[data-target-id="qr-code-wrapper"]');
-                    if (!dpad) { setTimeout(wireQrDpad, 600); return; }
-                    if(dpad.dataset.wired) return;
-                    dpad.querySelectorAll('.move-btn').forEach(function(btn) {
-                        btn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            if (typeof EventManager !== 'undefined' && EventManager.moveElement) {
-                                EventManager.moveElement('qr-code-wrapper', btn.dataset.direction);
-                            }
-                        });
-                    });
-                    dpad.dataset.wired = 'true';
-                }
-                setTimeout(wireQrDpad, 800);
-            })();
-            </script>
 
             <!-- ═══ SOCIAL / CONTACT PANEL — Premium v2 ═══ -->
             <details class="fieldset-accordion lp-accordion" id="contact-info-accordion">
@@ -1936,48 +1747,7 @@
                 </div>
             </details>
 
-            <script>
-            // Social mode segment control
-            (function() {
-                document.querySelectorAll('input[name="social-mode-fake"]').forEach(function(radio) {
-                    radio.addEventListener('change', function() {
-                        var isBtnMode = (this.value === 'buttons');
-                        // Style pills
-                        document.querySelectorAll('.social-mode-btn').forEach(function(b) {
-                            var isActive = b.dataset.mode === (isBtnMode ? 'buttons' : 'text');
-                            b.style.background = isActive ? 'var(--accent-primary)' : 'transparent';
-                            b.style.color = isActive ? '#fff' : 'var(--text-secondary)';
-                            b.style.boxShadow = isActive ? '0 2px 5px rgba(0,0,0,0.2)' : 'none';
-                        });
-                        // Show/hide panels
-                        document.getElementById('social-btn-style').style.display = isBtnMode ? 'block' : 'none';
-                        document.getElementById('social-text-controls').style.display = isBtnMode ? 'none' : 'block';
-                        // Sync hidden checkbox
-                        var cb = document.getElementById('toggle-social-buttons');
-                        if (cb.checked !== isBtnMode) {
-                            cb.checked = isBtnMode;
-                            cb.dispatchEvent(new Event('input', {bubbles:true}));
-                            cb.dispatchEvent(new Event('change', {bubbles:true}));
-                        }
-                    });
-                });
 
-                // Static field placement pill sync
-                document.querySelectorAll('.static-place-label').forEach(function(lbl) {
-                    lbl.addEventListener('click', function() {
-                        var grp = this.closest('div');
-                        grp.querySelectorAll('.static-place-label').forEach(function(l) {
-                            l.style.background = 'transparent';
-                            l.style.color = 'var(--text-secondary)';
-                        });
-                        this.style.background = 'var(--accent-primary)';
-                        this.style.color = '#fff';
-                        var r = this.querySelector('input[type="radio"]');
-                        if(r) { r.checked = true; r.dispatchEvent(new Event('change',{bubbles:true})); }
-                    });
-                });
-            })();
-            </script>
 
 
 

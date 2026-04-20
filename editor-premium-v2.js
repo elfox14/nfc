@@ -163,81 +163,7 @@
         observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // 2. vCARD IMPORT (fill fields from .vcf file)
-    // ════════════════════════════════════════════════════════════════════════
-    function initVCardImport() {
-        const sidebar = document.getElementById('panel-design');
-        if (!sidebar || document.getElementById('ep2-vcf-import')) return;
 
-        const btn = document.createElement('button');
-        btn.id = 'ep2-vcf-import';
-        btn.className = 'btn btn-secondary';
-        btn.style.cssText = 'width:100%;font-size:0.8rem;margin-bottom:8px;';
-        btn.innerHTML = `<i class="fas fa-file-import"></i> ${isAr ? 'استيراد من ملف VCF/vCard' : 'Import from VCF/vCard'}`;
-
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = '.vcf,.vcard';
-        fileInput.style.display = 'none';
-        document.body.appendChild(fileInput);
-
-        btn.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', () => {
-            const file = fileInput.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = e => parseVCard(e.target.result);
-            reader.readAsText(file);
-            fileInput.value = '';
-        });
-
-        const parseVCard = (text) => {
-            const get = (key) => {
-                const regex = new RegExp(`^${key}[^:]*:(.+)$`, 'mi');
-                const m = text.match(regex);
-                return m ? m[1].replace(/\\n/g, ' ').trim() : '';
-            };
-
-            const fullName = get('FN') || get('N').replace(';', ' ').trim();
-            const org = get('ORG');
-            const title = get('TITLE');
-            const phone = get('TEL');
-            const email = get('EMAIL');
-            const url = get('URL');
-
-            let filled = 0;
-
-            const setField = (id, value) => {
-                if (!value) return;
-                const el = document.getElementById(id);
-                if (el) { el.value = value; el.dispatchEvent(new Event('input', { bubbles: true })); filled++; }
-            };
-
-            setField('input-name_ar', fullName);
-            setField('input-name_en', fullName);
-            setField('input-tagline_ar', title || org);
-            setField('input-tagline_en', title || org);
-
-            // Try to find phone input
-            const phoneInput = document.querySelector('.phone-input, input[data-type="phone"], #phone-0-value');
-            if (phoneInput && phone) { phoneInput.value = phone.replace(/[^\d+]/g, ''); phoneInput.dispatchEvent(new Event('input', { bubbles: true })); filled++; }
-
-            // Email, website
-            const emailInput = document.getElementById('static-email-value') || document.querySelector('input[data-static="email"]');
-            if (emailInput && email) { emailInput.value = email; emailInput.dispatchEvent(new Event('input', { bubbles: true })); filled++; }
-
-            const webInput = document.getElementById('static-website-value') || document.querySelector('input[data-static="website"]');
-            if (webInput && url) { webInput.value = url; webInput.dispatchEvent(new Event('input', { bubbles: true })); filled++; }
-
-            toast(`✓ ${isAr ? `تم استيراد ${filled} حقل` : `${filled} fields imported`}`, '#2ecc71', 4000);
-        };
-
-        // Insert at top of sidebar
-        const firstField = sidebar.querySelector('fieldset, details');
-        if (firstField) firstField.before(btn);
-        else sidebar.prepend(btn);
-    }
 
     // ════════════════════════════════════════════════════════════════════════
     // 3. BULK LINK IMPORT
@@ -640,7 +566,6 @@
         if (!sidebar) { setTimeout(run, 600); return; }
 
         initColorExtractor();
-        initVCardImport();
         initBulkLinkImport();
         initQRCustomization();
         initKeyboardShortcuts();

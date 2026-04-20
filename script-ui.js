@@ -643,121 +643,291 @@ const UIManager = {
 };
 
 const SuggestionEngine = {
-    // هام: يجب استبدال هذا المفتاح بمفتاحك الخاص من Unsplash
-    UNSPLASH_API_KEY: 'YOUR_UNSPLASH_ACCESS_KEY',
+    currentSuggestion: null,
 
-    palettes: [
-        { name: 'Professional Dark', bgStart: '#1D2B3C', bgEnd: '#111827', textPrimary: '#F9FAFB', textSecondary: '#9CA3AF', accent: '#3B82F6' },
-        { name: 'Modern Light', bgStart: '#FFFFFF', bgEnd: '#F3F4F6', textPrimary: '#1F2937', textSecondary: '#4B5563', accent: '#10B981' },
-        { name: 'Vibrant Creative', bgStart: '#4F46E5', bgEnd: '#7C3AED', textPrimary: '#FFFFFF', textSecondary: '#E5E7EB', accent: '#F59E0B' },
-        { name: 'Elegant Gold', bgStart: '#000000', bgEnd: '#212121', textPrimary: '#D4AF37', textSecondary: '#F5F5F5', accent: '#B8860B' },
-        { name: 'Natural Earth', bgStart: '#3A5A40', bgEnd: '#1E2F23', textPrimary: '#DAD7CD', textSecondary: '#A3B18A', accent: '#DAD7CD' }
-    ],
+    // ── Industry → Palette Map ──────────────────────────────
+    industryPalettes: {
+        technology: [
+            { name: 'Cyber Blue', bgStart: '#0a192f', bgEnd: '#020c1b', text: '#64ffda', tagline: '#4da6ff', accent: '#64ffda', btnBg: '#172a45', btnText: '#8892b0' },
+            { name: 'Night Terminal', bgStart: '#1a1a2e', bgEnd: '#16213e', text: '#e94560', tagline: '#0f3460', accent: '#e94560', btnBg: '#0f3460', btnText: '#e94560' },
+            { name: 'Matrix Green', bgStart: '#0D0D0D', bgEnd: '#1A1A1A', text: '#00ff41', tagline: '#008f11', accent: '#00ff41', btnBg: '#003B00', btnText: '#00ff41' },
+        ],
+        medical: [
+            { name: 'Clinical Pure', bgStart: '#f0f5f9', bgEnd: '#e8eef3', text: '#1b4965', tagline: '#5fa8d3', accent: '#2a9d8f', btnBg: '#1b4965', btnText: '#ffffff' },
+            { name: 'Health Blue', bgStart: '#0077b6', bgEnd: '#023e8a', text: '#ffffff', tagline: '#90e0ef', accent: '#ade8f4', btnBg: '#0096c7', btnText: '#ffffff' },
+            { name: 'Soft Care', bgStart: '#e0f2f1', bgEnd: '#b2dfdb', text: '#004d40', tagline: '#00897b', accent: '#26a69a', btnBg: '#00695c', btnText: '#ffffff' },
+        ],
+        business: [
+            { name: 'Navy Executive', bgStart: '#141d2b', bgEnd: '#0d1321', text: '#f0f0f0', tagline: '#4da6ff', accent: '#4da6ff', btnBg: '#1e2d40', btnText: '#aab8c2' },
+            { name: 'Charcoal Pro', bgStart: '#2d3436', bgEnd: '#1e272e', text: '#dfe6e9', tagline: '#74b9ff', accent: '#0984e3', btnBg: '#353b48', btnText: '#dfe6e9' },
+            { name: 'Slate Authority', bgStart: '#1e3a5f', bgEnd: '#0b1d33', text: '#f8f9fa', tagline: '#a8d8ea', accent: '#3d5a80', btnBg: '#293241', btnText: '#e0fbfc' },
+        ],
+        creative: [
+            { name: 'Neon Burst', bgStart: '#ff006e', bgEnd: '#8338ec', text: '#ffffff', tagline: '#fb5607', accent: '#ffbe0b', btnBg: 'rgba(255,255,255,0.15)', btnText: '#ffffff' },
+            { name: 'Pastel Dream', bgStart: '#ffeaa7', bgEnd: '#dfe6e9', text: '#2d3436', tagline: '#6c5ce7', accent: '#fd79a8', btnBg: '#6c5ce7', btnText: '#ffffff' },
+            { name: 'Gradient Pop', bgStart: '#a29bfe', bgEnd: '#6c5ce7', text: '#ffffff', tagline: '#ffeaa7', accent: '#fd79a8', btnBg: 'rgba(255,255,255,0.2)', btnText: '#ffffff' },
+        ],
+        education: [
+            { name: 'University Navy', bgStart: '#1a237e', bgEnd: '#311b92', text: '#fff9c4', tagline: '#90caf9', accent: '#f48fb1', btnBg: '#283593', btnText: '#bbdefb' },
+            { name: 'Scholar Green', bgStart: '#1b5e20', bgEnd: '#2e7d32', text: '#e8f5e9', tagline: '#a5d6a7', accent: '#fff9c4', btnBg: '#388e3c', btnText: '#e8f5e9' },
+            { name: 'Bright Academy', bgStart: '#f5f5f5', bgEnd: '#e0e0e0', text: '#212121', tagline: '#1565c0', accent: '#ef6c00', btnBg: '#1565c0', btnText: '#ffffff' },
+        ],
+        legal: [
+            { name: 'Justice Dark', bgStart: '#0a0a0a', bgEnd: '#1c1c1c', text: '#d4af37', tagline: '#c5a83e', accent: '#d4af37', btnBg: '#1c1c1c', btnText: '#d4af37' },
+            { name: 'Law Marble', bgStart: '#f8f8f8', bgEnd: '#e8e8e8', text: '#1a1a1a', tagline: '#8b6914', accent: '#b8860b', btnBg: '#2c2c2c', btnText: '#d4af37' },
+            { name: 'Counsel Blue', bgStart: '#0d1b2a', bgEnd: '#1b263b', text: '#e0e1dd', tagline: '#778da9', accent: '#415a77', btnBg: '#1b263b', btnText: '#e0e1dd' },
+        ],
+        realestate: [
+            { name: 'Luxury Concrete', bgStart: '#434343', bgEnd: '#000000', text: '#ffffff', tagline: '#d4af37', accent: '#b8860b', btnBg: '#2c2c2c', btnText: '#d4af37' },
+            { name: 'Blueprint', bgStart: '#1a3a5c', bgEnd: '#0f2439', text: '#f8f9fa', tagline: '#74bde0', accent: '#4da6ff', btnBg: '#0f2439', btnText: '#74bde0' },
+            { name: 'Warm Stone', bgStart: '#d4a373', bgEnd: '#a47148', text: '#ffffff', tagline: '#faedcd', accent: '#fefae0', btnBg: '#bc6c25', btnText: '#fefae0' },
+        ],
+        food: [
+            { name: 'Spice Kitchen', bgStart: '#b91c1c', bgEnd: '#7f1d1d', text: '#fef3c7', tagline: '#fbbf24', accent: '#fef3c7', btnBg: '#991b1b', btnText: '#fef3c7' },
+            { name: 'Fresh Green', bgStart: '#065f46', bgEnd: '#064e3b', text: '#ecfdf5', tagline: '#6ee7b7', accent: '#a7f3d0', btnBg: '#047857', btnText: '#ecfdf5' },
+            { name: 'Café Latte', bgStart: '#78350f', bgEnd: '#451a03', text: '#fef3c7', tagline: '#fbbf24', accent: '#f59e0b', btnBg: '#92400e', btnText: '#fef3c7' },
+        ],
+        fitness: [
+            { name: 'Energy Red', bgStart: '#dc2626', bgEnd: '#991b1b', text: '#ffffff', tagline: '#fecaca', accent: '#fbbf24', btnBg: 'rgba(0,0,0,0.3)', btnText: '#ffffff' },
+            { name: 'Power Dark', bgStart: '#111827', bgEnd: '#000000', text: '#34d399', tagline: '#10b981', accent: '#34d399', btnBg: '#1f2937', btnText: '#34d399' },
+            { name: 'Active Blue', bgStart: '#1e40af', bgEnd: '#1e3a8a', text: '#ffffff', tagline: '#93c5fd', accent: '#60a5fa', btnBg: '#1d4ed8', btnText: '#dbeafe' },
+        ],
+        fashion: [
+            { name: 'Haute Couture', bgStart: '#0f0f0f', bgEnd: '#1a1a1a', text: '#fdf2f8', tagline: '#f9a8d4', accent: '#ec4899', btnBg: '#1f1f1f', btnText: '#f9a8d4' },
+            { name: 'Blush Rose', bgStart: '#fce7f3', bgEnd: '#fbcfe8', text: '#831843', tagline: '#ec4899', accent: '#be185d', btnBg: '#be185d', btnText: '#fce7f3' },
+            { name: 'Velvet Night', bgStart: '#2d1b69', bgEnd: '#1a0b2e', text: '#f5f3ff', tagline: '#c4b5fd', accent: '#a78bfa', btnBg: '#3b2480', btnText: '#ddd6fe' },
+        ]
+    },
 
-    async suggestDesign() {
-        const button = document.getElementById('ai-suggest-btn');
-        const spinner = document.getElementById('ai-spinner');
+    // ── Mood Modifiers ──────────────────────────────────────
+    moodModifiers: {
+        modern: {},  // base — no modifications
+        elegant: { saturate: 0.85, brightnessShift: -10 },
+        bold: { saturate: 1.3, brightnessShift: 15 },
+        minimal: { saturate: 0.5, brightnessShift: 30 },
+        warm: { hueShift: 15, saturate: 1.1 },
+        dark: { brightnessShift: -30, saturate: 0.9 }
+    },
 
-        UIManager.setButtonLoadingState(button, true, 'جاري البحث...');
-        spinner.style.display = 'block';
+    // ── Initialize ──────────────────────────────────────────
+    init() {
+        // Mood pill interaction
+        document.querySelectorAll('.ai-mood-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                document.querySelectorAll('.ai-mood-pill').forEach(p => p.classList.remove('ai-mood-active'));
+                pill.classList.add('ai-mood-active');
+            });
+        });
 
-        try {
-            const taglineAR = document.getElementById('input-tagline_ar')?.value || '';
-            const taglineEN = document.getElementById('input-tagline_en')?.value || '';
+        // Generate button
+        const genBtn = document.getElementById('ai-suggest-btn');
+        if (genBtn) {
+            genBtn.addEventListener('click', () => this.generate());
+        }
 
-            // استخدم المسمى الوظيفي العربي أو الإنجليزي، أيهما موجود
-            const searchTerm = this.getSearchTerm(taglineAR || taglineEN);
+        // Shuffle button
+        const shuffleBtn = document.getElementById('ai-shuffle-btn');
+        if (shuffleBtn) {
+            shuffleBtn.addEventListener('click', () => this.generate());
+        }
 
-            const imageUrl = await this.fetchImage(searchTerm);
-
-            if (imageUrl) {
-                this.applySuggestion(imageUrl);
-                UIManager.announce("تم اقتراح تصميم جديد بنجاح.");
-            } else {
-                throw new Error("لم يتم العثور على صورة مناسبة.");
-            }
-
-        } catch (error) {
-            console.error('AI Suggestion Error:', error);
-            UIManager.announce(`فشل اقتراح التصميم: ${error.message}`);
-        } finally {
-            UIManager.setButtonLoadingState(button, false);
-            spinner.style.display = 'none';
+        // Apply button
+        const applyBtn = document.getElementById('ai-apply-btn');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', () => this.applyCurrentSuggestion());
         }
     },
 
-    getSearchTerm(tagline) {
-        if (!tagline || tagline.trim() === '') return 'business professional';
+    // ── Generate Suggestion ─────────────────────────────────
+    generate() {
+        const btn = document.getElementById('ai-suggest-btn');
+        const contentEl = btn?.querySelector('.ai-btn-content');
+        const loadingEl = btn?.querySelector('.ai-btn-loading');
 
-        // كلمات مفتاحية بسيطة لاستخراجها
-        const keywords = ['developer', 'designer', 'marketing', 'doctor', 'engineer', 'consultant', 'real estate', 'finance', 'technology', 'art', 'health', 'lawyer'];
-        const foundKeyword = keywords.find(kw => tagline.toLowerCase().includes(kw));
+        // Loading state
+        if (contentEl) contentEl.style.display = 'none';
+        if (loadingEl) loadingEl.style.display = 'flex';
+        btn?.classList.add('is-loading');
 
-        return foundKeyword || tagline.split(' ')[0] || 'professional';
+        // Simulate brief compute time for premium feel
+        setTimeout(() => {
+            const industry = this.getIndustry();
+            const mood = document.querySelector('input[name="ai-mood"]:checked')?.value || 'modern';
+
+            // Get palettes for industry
+            let palettes = this.industryPalettes[industry] || this.industryPalettes.business;
+
+            // Pick a random palette
+            const palette = palettes[Math.floor(Math.random() * palettes.length)];
+
+            // Apply mood modifier (subtle color shift)
+            this.currentSuggestion = this.applyMood(palette, mood);
+
+            // Show preview
+            this.showPreview(this.currentSuggestion);
+
+            // Reset button
+            if (contentEl) contentEl.style.display = 'flex';
+            if (loadingEl) loadingEl.style.display = 'none';
+            btn?.classList.remove('is-loading');
+        }, 600);
     },
 
-    async fetchImage(query) {
-        if (this.UNSPLASH_API_KEY === 'YOUR_UNSPLASH_ACCESS_KEY') {
-            console.error("Please replace 'YOUR_UNSPLASH_ACCESS_KEY' with your actual Unsplash API key in script-ui.js");
-            // استخدام صورة احتياطية في حالة عدم وجود مفتاح
-            return 'https://images.unsplash.com/photo-1554147090-e1221a04a025?q=80&w=2070&auto=format&fit=crop';
+    // ── Get Industry ────────────────────────────────────────
+    getIndustry() {
+        const select = document.getElementById('ai-industry-select');
+        const selected = select?.value || 'auto';
+
+        if (selected !== 'auto') return selected;
+
+        // Auto-detect from tagline
+        const tagline = (
+            document.getElementById('input-tagline_ar')?.value ||
+            document.getElementById('input-tagline_en')?.value || ''
+        ).toLowerCase();
+
+        const keywordMap = {
+            technology: ['developer', 'engineer', 'software', 'tech', 'مبرمج', 'مهندس', 'تكنولوجيا', 'برمجة'],
+            medical: ['doctor', 'dentist', 'health', 'nurse', 'طبيب', 'دكتور', 'صحة', 'طب'],
+            business: ['manager', 'director', 'ceo', 'finance', 'مدير', 'أعمال', 'تمويل', 'محاسب'],
+            creative: ['designer', 'artist', 'creative', 'photographer', 'مصمم', 'فنان', 'مصور', 'إبداع'],
+            education: ['teacher', 'professor', 'trainer', 'أستاذ', 'معلم', 'مدرب', 'تعليم'],
+            legal: ['lawyer', 'attorney', 'legal', 'محامي', 'قانون', 'مستشار قانوني'],
+            realestate: ['real estate', 'architect', 'construction', 'عقارات', 'مهندس معماري', 'بناء'],
+            food: ['chef', 'restaurant', 'cook', 'طاهي', 'مطعم', 'ضيافة'],
+            fitness: ['fitness', 'gym', 'coach', 'trainer', 'رياضة', 'لياقة', 'مدرب'],
+            fashion: ['fashion', 'style', 'beauty', 'أزياء', 'جمال', 'موضة']
+        };
+
+        for (const [industry, keywords] of Object.entries(keywordMap)) {
+            if (keywords.some(kw => tagline.includes(kw))) return industry;
         }
 
-        const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&orientation=landscape&client_id=${this.UNSPLASH_API_KEY}`;
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Unsplash API error: ${response.statusText}`);
-        }
-        const data = await response.json();
-        return data.urls.regular;
+        // Default to random industry
+        const industries = Object.keys(this.industryPalettes);
+        return industries[Math.floor(Math.random() * industries.length)];
     },
 
-    applySuggestion(imageUrl) {
-        // 1. اختر لوحة ألوان عشوائية
-        const palette = this.palettes[Math.floor(Math.random() * this.palettes.length)];
+    // ── Apply Mood Modifier ─────────────────────────────────
+    applyMood(palette, mood) {
+        // Clone palette
+        const result = { ...palette };
+        const mod = this.moodModifiers[mood];
+        if (!mod || Object.keys(mod).length === 0) return result;
 
-        // 2. طبق الخلفية الجديدة (للواجهتين)
-        CardManager.frontBgImageUrl = imageUrl;
-        CardManager.backBgImageUrl = imageUrl;
-        document.getElementById('front-bg-upload').value = '';
-        document.getElementById('back-bg-upload').value = '';
-        DOMElements.buttons.removeFrontBg.style.display = 'block';
-        DOMElements.buttons.removeBackBg.style.display = 'block';
+        // Apply brightness shift to bgStart/bgEnd
+        if (mod.brightnessShift) {
+            result.bgStart = this.shiftBrightness(result.bgStart, mod.brightnessShift);
+            result.bgEnd = this.shiftBrightness(result.bgEnd, mod.brightnessShift);
+        }
 
-        // 3. طبق شفافية لضمان وضوح النص فوق الصورة
-        const opacityControl = document.getElementById('front-bg-opacity');
-        opacityControl.value = 0.5;
-        opacityControl.dispatchEvent(new Event('input', { bubbles: true }));
-        const backOpacityControl = document.getElementById('back-bg-opacity');
-        backOpacityControl.value = 0.5;
-        backOpacityControl.dispatchEvent(new Event('input', { bubbles: true }));
+        return result;
+    },
 
+    shiftBrightness(hex, amount) {
+        if (!hex || hex.charAt(0) !== '#') return hex;
+        let r = parseInt(hex.slice(1, 3), 16);
+        let g = parseInt(hex.slice(3, 5), 16);
+        let b = parseInt(hex.slice(5, 7), 16);
+        r = Math.min(255, Math.max(0, r + amount));
+        g = Math.min(255, Math.max(0, g + amount));
+        b = Math.min(255, Math.max(0, b + amount));
+        return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+    },
 
-        // 4. طبق الألوان الجديدة عن طريق تحديث حقول الإدخال
+    // ── Show Preview ────────────────────────────────────────
+    showPreview(palette) {
+        const card = document.getElementById('ai-preview-card');
+        if (!card) return;
+
+        card.style.display = 'block';
+        card.classList.remove('applied');
+
+        // Name
+        const nameEl = document.getElementById('ai-preview-name');
+        if (nameEl) nameEl.textContent = palette.name;
+
+        // Swatches
+        const colors = [palette.bgStart, palette.bgEnd, palette.text, palette.tagline, palette.accent];
+        colors.forEach((color, i) => {
+            const swatch = document.getElementById(`ai-preview-swatch-${i + 1}`);
+            if (swatch) swatch.style.background = color;
+        });
+
+        // Scroll preview into view
+        setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    },
+
+    // ── Apply Current Suggestion ────────────────────────────
+    applyCurrentSuggestion() {
+        if (!this.currentSuggestion) return;
+        const p = this.currentSuggestion;
+
         const controlsToUpdate = {
-            'front-bg-start': palette.bgStart,
-            'front-bg-end': palette.bgEnd,
-            'back-bg-start': palette.bgStart,
-            'back-bg-end': palette.bgEnd,
-            'name-color': palette.textPrimary,
-            'tagline-color': palette.accent,
-            'phone-btn-bg-color': palette.accent,
-            'phone-btn-text-color': palette.bgStart,
-            'back-buttons-bg-color': palette.bgStart,
-            'back-buttons-text-color': palette.textSecondary,
+            'front-bg-start': p.bgStart,
+            'front-bg-end': p.bgEnd,
+            'back-bg-start': p.bgStart,
+            'back-bg-end': p.bgEnd,
+            'name-color': p.text,
+            'tagline-color': p.tagline,
+            'phone-btn-bg-color': p.accent,
+            'phone-btn-text-color': p.bgStart,
+            'back-buttons-bg-color': p.btnBg,
+            'back-buttons-text-color': p.btnText,
         };
 
         for (const [id, value] of Object.entries(controlsToUpdate)) {
             const control = document.getElementById(id);
             if (control) {
                 control.value = value;
-                // إطلاق حدث "input" يحاكي إدخال المستخدم ويضمن تحديث كل شيء
                 control.dispatchEvent(new Event('input', { bubbles: true }));
             }
         }
 
-        // 5. تحديث فوري
-        CardManager.updateCardBackgrounds();
-        StateManager.saveDebounced();
+        // Update card
+        if (typeof CardManager !== 'undefined') {
+            CardManager.updateCardBackgrounds();
+        }
+        if (typeof StateManager !== 'undefined') {
+            StateManager.saveDebounced();
+        }
+
+        // Visual feedback
+        const card = document.getElementById('ai-preview-card');
+        if (card) {
+            card.classList.add('applied');
+        }
+
+        UIManager.announce("تم اقتراح تصميم جديد بنجاح.");
+
+        // Toast
+        const isAr = document.documentElement.lang !== 'en';
+        const toast = document.createElement('div');
+        toast.innerHTML = `<i class="fas fa-check-circle"></i> ${isAr ? `تم تطبيق "${p.name}"` : `"${p.name}" applied`}`;
+        Object.assign(toast.style, {
+            position: 'fixed', top: '70px', left: '50%',
+            transform: 'translateX(-50%) translateY(-16px)',
+            background: 'rgba(10,18,30,0.97)', backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(46,204,113,0.4)', borderRadius: '50px',
+            padding: '10px 24px', color: '#2ecc71', fontWeight: '700', fontSize: '0.85rem',
+            zIndex: '99999', transition: 'opacity 0.4s, transform 0.4s',
+            opacity: '0', fontFamily: 'Tajawal,sans-serif',
+            whiteSpace: 'nowrap', boxShadow: '0 8px 30px rgba(0,0,0,0.4)'
+        });
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+        }));
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(-10px)';
+            setTimeout(() => toast.remove(), 450);
+        }, 3500);
+    },
+
+    // ── Legacy compat: suggestDesign (called from old code) ──
+    async suggestDesign() {
+        this.generate();
     }
 };

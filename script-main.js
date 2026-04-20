@@ -1276,15 +1276,9 @@ const EventManager = {
         DOMElements.shareModal.closeBtn.addEventListener('click', () => UIManager.hideModal(DOMElements.shareModal.overlay));
         DOMElements.shareModal.overlay.addEventListener('click', e => { if (e.target === DOMElements.shareModal.overlay) UIManager.hideModal(DOMElements.shareModal.overlay); });
 
-        const suggestBtn = document.getElementById('ai-suggest-btn');
-        if (suggestBtn) {
-            suggestBtn.addEventListener('click', () => {
-                if (typeof SuggestionEngine !== 'undefined') {
-                    SuggestionEngine.suggestDesign();
-                } else {
-                    console.error('SuggestionEngine is not defined.');
-                }
-            });
+        // Initialize new AI Suggestion Panel (handles its own events)
+        if (typeof SuggestionEngine !== 'undefined' && SuggestionEngine.init) {
+            SuggestionEngine.init();
         }
 
         DOMElements.buttons.undoBtn.addEventListener('click', () => HistoryManager.undo());
