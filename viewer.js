@@ -1153,6 +1153,50 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        const addToStoryBtn = document.getElementById('add-to-story-btn');
+        if (addToStoryBtn) {
+            addToStoryBtn.addEventListener('click', async () => {
+                const frontImg = document.querySelector('#card-front-display img');
+                if (!frontImg || !frontImg.src) {
+                    showToast('جاري تجهيز الصورة، يرجى الانتظار...', 'info');
+                    return;
+                }
+                
+                try {
+                    const originalHtml = addToStoryBtn.innerHTML;
+                    addToStoryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التجهيز...';
+                    
+                    const res = await fetch(frontImg.src);
+                    const blob = await res.blob();
+                    const file = new File([blob], 'card_story.png', { type: 'image/png' });
+                    
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: (cardData && cardData.inputs && cardData.inputs['input-name']) ? cardData.inputs['input-name'] : 'بطاقة أعمال رقمية',
+                            text: 'اسحب للأعلى لزيارة بطاقتي!'
+                        });
+                        trackClick('story_share_native');
+                        showToast('تم فتح قائمة المشاركة لقصتك!', 'success');
+                    } else {
+                        const a = document.createElement('a');
+                        a.href = frontImg.src;
+                        a.download = 'card_for_story.png';
+                        a.click();
+                        showToast('تم تنزيل الصورة! يمكنك الآن رفعها لقصتك.', 'success');
+                        trackClick('story_share_download');
+                    }
+                    addToStoryBtn.innerHTML = originalHtml;
+                } catch (err) {
+                    console.log('Story share failed:', err);
+                    if (err.name !== 'AbortError') {
+                        showToast('فشلت مشاركة الستوري', 'error');
+                    }
+                    addToStoryBtn.innerHTML = '<i class="fab fa-instagram"></i> أضف للستوري';
+                }
+            });
+        }
+
         // *** [NEW] Copy Link Button ***
         const copyLinkBtn = document.getElementById('copy-link-btn');
         if (copyLinkBtn) {

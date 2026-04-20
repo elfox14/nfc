@@ -29,16 +29,6 @@
 
     <!-- Favicon & PWA -->
     <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
-    <!-- Google Tag Manager -->
-    <script>(function (w, d, s, l, i) {
-            w[l] = w[l] || []; w[l].push({
-                'gtm.start':
-                    new Date().getTime(), event: 'gtm.js'
-            }); var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
-    <!-- End Google Tag Manager -->
     <link rel="apple-touch-icon" href="mc-prime-nfc.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2a3d54">
@@ -132,8 +122,105 @@
     </nav>
 
     <div id="loader" class="viewer-loader">
-        <div class="spinner"></div>
-        <p>جاري تحميل البطاقة...</p>
+        <div class="skeleton-loader-wrapper">
+            <!-- Skeleton card shape -->
+            <div class="skeleton-card-shape">
+                <div class="skeleton-shimmer"></div>
+                <div class="skeleton-card-inner">
+                    <div class="skeleton-circle"></div>
+                    <div class="skeleton-line skeleton-line-lg"></div>
+                    <div class="skeleton-line skeleton-line-sm"></div>
+                </div>
+            </div>
+            <p class="skeleton-text">جاري تحميل البطاقة...</p>
+            <div class="skeleton-dots">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+
+        <style>
+            .skeleton-loader-wrapper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+            .skeleton-card-shape {
+                width: 90%;
+                max-width: 380px;
+                aspect-ratio: 51 / 33;
+                border-radius: 16px;
+                background: var(--glass-bg, rgba(255,255,255,0.1));
+                border: 1px solid var(--glass-border, rgba(255,255,255,0.15));
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            }
+            .skeleton-shimmer {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    110deg,
+                    transparent 25%,
+                    rgba(255,255,255,0.08) 37%,
+                    transparent 63%
+                );
+                background-size: 200% 100%;
+                animation: skeletonShimmerAnim 1.8s infinite;
+            }
+            @keyframes skeletonShimmerAnim {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+            }
+            .skeleton-card-inner {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                gap: 12px;
+                padding: 20px;
+            }
+            .skeleton-circle {
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: var(--border-color, rgba(200,200,200,0.3));
+            }
+            .skeleton-line {
+                height: 12px;
+                border-radius: 6px;
+                background: var(--border-color, rgba(200,200,200,0.3));
+            }
+            .skeleton-line-lg { width: 60%; }
+            .skeleton-line-sm { width: 40%; height: 10px; }
+            .skeleton-text {
+                color: var(--text-secondary, #888);
+                font-size: 0.95rem;
+                font-weight: 600;
+                margin: 0;
+            }
+            .skeleton-dots {
+                display: flex;
+                gap: 6px;
+            }
+            .skeleton-dots span {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--accent-primary, #4da6ff);
+                opacity: 0.3;
+                animation: dotPulse 1.2s infinite;
+            }
+            .skeleton-dots span:nth-child(2) { animation-delay: 0.2s; }
+            .skeleton-dots span:nth-child(3) { animation-delay: 0.4s; }
+            @keyframes dotPulse {
+                0%, 100% { opacity: 0.2; transform: scale(0.8); }
+                50% { opacity: 1; transform: scale(1.1); }
+            }
+        </style>
     </div>
 
     <div class="viewer-container" style="display: none;">
@@ -190,6 +277,10 @@
                         <i class="fas fa-link"></i> نسخ الرابط
                     </button>
                 </div>
+
+                <button id="add-to-story-btn" class="btn" style="margin-bottom: 12px; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); width: 100%; border: none;">
+                    <i class="fab fa-instagram"></i> مشاركة في الستوري
+                </button>
 
                 <!-- [NEW] QR Code Share Button -->
                 <button id="show-qr-btn" class="btn">
@@ -418,6 +509,98 @@
     <div id="shortcuts-hint" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'?',bubbles:true}))">
         <i class="fas fa-keyboard"></i> اختصارات <kbd>?</kbd>
     </div>
+
+    <!-- [NEW v2.0] 3D Tilt + Haptic Feedback -->
+    <script>
+    (function() {
+        'use strict';
+
+        // --- Haptic Feedback on Card Flip ---
+        function initHapticFlip() {
+            const wrapper = document.getElementById('cards-wrapper-viewer');
+            if (!wrapper) return;
+            const origHandler = wrapper.onclick;
+            wrapper.addEventListener('click', () => {
+                if ('vibrate' in navigator) navigator.vibrate(25);
+            });
+        }
+
+        // --- 3D Tilt Effect on Desktop ---
+        function init3DTilt() {
+            if (window.innerWidth < 1024) return; // Skip on mobile/tablet
+            const wrapper = document.getElementById('cards-wrapper-viewer');
+            if (!wrapper) return;
+
+            let tiltActive = true;
+            const maxTilt = 8;
+
+            wrapper.addEventListener('mouseenter', () => { tiltActive = true; });
+
+            wrapper.addEventListener('mousemove', (e) => {
+                if (!tiltActive || wrapper.classList.contains('is-flipped')) return;
+                const rect = wrapper.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+                wrapper.style.transition = 'transform 0.1s ease-out';
+                wrapper.style.transform = `perspective(800px) rotateX(${-y * maxTilt}deg) rotateY(${x * maxTilt}deg)`;
+            });
+
+            wrapper.addEventListener('mouseleave', () => {
+                tiltActive = false;
+                wrapper.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                wrapper.style.transform = '';
+            });
+
+            // Disable tilt when flipped
+            const flipBtn = document.getElementById('viewer-flip-btn');
+            if (flipBtn) {
+                flipBtn.addEventListener('click', () => {
+                    wrapper.style.transition = 'transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+                });
+            }
+        }
+
+        // --- Smooth Theme Transition ---
+        function initSmoothTheme() {
+            const style = document.createElement('style');
+            style.textContent = `
+                body, .viewer-nav, .side-column, .viewer-container,
+                .contact-link, .btn, .info-box, .mobile-tab-btn,
+                .cards-wrapper-viewer, .business-card-viewer {
+                    transition: background-color 0.4s ease,
+                                color 0.3s ease,
+                                border-color 0.3s ease,
+                                box-shadow 0.3s ease;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Init all after DOM is ready
+        function initWhenReady() {
+            initSmoothTheme();
+            // Wait for viewer to display before attaching tilt/haptic
+            const observer = new MutationObserver(() => {
+                const container = document.querySelector('.viewer-container');
+                if (container && container.style.display !== 'none') {
+                    initHapticFlip();
+                    init3DTilt();
+                    observer.disconnect();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+            // Fallback: init after 5s regardless
+            setTimeout(() => { initHapticFlip(); init3DTilt(); }, 5000);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initWhenReady);
+        } else {
+            initWhenReady();
+        }
+    })();
+    </script>
 
     <!-- [NEW v2.0] Viewer Premium Features: VCF Preview, Map, Scroll Animations, Print -->
     <script src="viewer-premium-v2.js" defer></script>

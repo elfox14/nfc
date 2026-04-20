@@ -1111,6 +1111,35 @@
                 </div>
             </details>
 
+            <!-- ═══ BIO / ABOUT PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" open id="bio-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-align-right"></i></span>
+                    <span>نبذة عني (Bio)</span>
+                    <label class="lp-toggle" title="إظهار / إخفاء" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-bio" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body" id="bio-controls-fieldset">
+                    <div class="lp-section" style="padding-top:0;">
+                        <textarea id="input-bio_ar" class="lp-input" rows="3" data-lang="ar" placeholder="اكتب نبذة تعريفية قصيرة تظهر تحت المسمى الوظيفي"></textarea>
+                        <textarea id="input-bio_en" class="lp-input" rows="3" data-lang="en" style="display:none;" placeholder="Write a short about me snippet"></textarea>
+                    </div>
+
+                    <div class="lp-section" style="border:none; padding-bottom:0;">
+                        <label class="lp-label"><i class="fas fa-toggle-on"></i> الحالة (Availability)</label>
+                        <select id="input-availability" class="lp-input lp-select" style="margin-top: 5px;">
+                            <option value="">لا تعرض الحالة</option>
+                            <option value="available">متاح للعمل (تظهر شارة خضراء)</option>
+                            <option value="freelance">متاح لمشاريع مستقلة (Freelance)</option>
+                            <option value="busy">مشغول حالياً</option>
+                        </select>
+                    </div>
+                </div>
+            </details>
+
             <!-- Name/Tagline Inline JS & Photo Shape Fix -->
             <script>
             // Force Photo Shape immediately logic

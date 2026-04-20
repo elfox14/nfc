@@ -1164,6 +1164,35 @@
                 </div>
             </details>
 
+            <!-- ═══ BIO / ABOUT PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" open id="bio-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-align-right"></i></span>
+                    <span class="lp-summary-label">About Me (Bio)</span>
+                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-bio" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body" id="bio-controls-fieldset">
+                    <div class="lp-section" style="padding-top:0;">
+                        <textarea id="input-bio_ar" class="lp-input" rows="3" data-lang="ar" style="display:none;" placeholder="اكتب نبذة تعريفية قصيرة تظهر تحت المسمى الوظيفي"></textarea>
+                        <textarea id="input-bio_en" class="lp-input" rows="3" data-lang="en" placeholder="Write a short about me snippet"></textarea>
+                    </div>
+
+                    <div class="lp-section" style="border:none; padding-bottom:0;">
+                        <label class="lp-label"><i class="fas fa-toggle-on"></i> Availability Status</label>
+                        <select id="input-availability" class="lp-input lp-select" style="margin-top: 5px;">
+                            <option value="">Don't show status</option>
+                            <option value="available">Available for work (green badge)</option>
+                            <option value="freelance">Available for freelance</option>
+                            <option value="busy">Currently busy</option>
+                        </select>
+                    </div>
+                </div>
+            </details>
+
             <!-- ═══ PHONE NUMBERS PANEL — Premium v2 ═══ -->
             <details class="lp-details-final lp-accordion" id="phones-accordion">
                 <summary class="lp-summary">

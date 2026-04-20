@@ -339,10 +339,10 @@ const CardManager = {
         });
     },
 
-    renderPhoneButtons() {
+    renderPhoneButtons(passedState = null) {
+        const state = passedState || StateManager.getStateObject();
         document.querySelectorAll('.phone-button-draggable-wrapper').forEach(el => el.remove());
 
-        const state = StateManager.getStateObject();
         const phoneState = state.dynamic.phones || [];
         const isVisible = state.visibilities ? state.visibilities.phones : true;
 
@@ -504,8 +504,8 @@ const CardManager = {
         );
     },
 
-    renderCardContent() {
-        const state = StateManager.getStateObject();
+    renderCardContent(passedState = null) {
+        const state = passedState || StateManager.getStateObject();
         if (!state || !state.placements) return;
 
         const containers = { front: DOMElements.cardFrontContent, back: DOMElements.cardBackContent };
@@ -530,8 +530,8 @@ const CardManager = {
 
         this.updateLogoStyles();
         this.updatePersonalPhotoStyles();
-        this.renderPhoneButtons();
-        this.updateSocialLinks();
+        this.renderPhoneButtons(state);
+        this.updateSocialLinks(state);
     },
 
     updateQrCodeDisplay() {
@@ -648,10 +648,10 @@ const CardManager = {
         });
     },
 
-    updateSocialLinks() {
+    updateSocialLinks(passedState = null) {
+        const state = passedState || StateManager.getStateObject();
         document.querySelectorAll('.draggable-social-link').forEach(el => el.remove());
 
-        const state = StateManager.getStateObject();
         if (!state) return;
 
         const isVisible = state.visibilities ? state.visibilities.social : true;
@@ -1144,11 +1144,19 @@ const StateManager = {
             const cardElement = document.getElementById(phoneId);
 
             if (phoneId && phoneInput) {
+                let pos = { x: 0, y: 0 };
+                if (cardElement) {
+                    pos = { x: parseFloat(cardElement.getAttribute('data-x')) || 0, y: parseFloat(cardElement.getAttribute('data-y')) || 0 };
+                } else if (window.editorState && window.editorState.dynamic && window.editorState.dynamic.phones) {
+                    const existing = window.editorState.dynamic.phones.find(p => p.id === phoneId);
+                    if (existing && existing.position) pos = existing.position;
+                }
+                
                 state.dynamic.phones.push({
                     id: phoneId,
                     value: phoneInput.value,
                     placement: placementInput ? placementInput.value : 'front',
-                    position: cardElement ? { x: parseFloat(cardElement.getAttribute('data-x')) || 0, y: parseFloat(cardElement.getAttribute('data-y')) || 0 } : { x: 0, y: 0 }
+                    position: pos
                 });
             }
         });
@@ -1163,12 +1171,20 @@ const StateManager = {
             const sizeInput = group.querySelector(`#input-${socialId}-size`);
 
             if (socialId && valueInput) {
+                let pos = { x: 0, y: 0 };
+                if (cardElement) {
+                    pos = { x: parseFloat(cardElement.getAttribute('data-x')) || 0, y: parseFloat(cardElement.getAttribute('data-y')) || 0 };
+                } else if (window.editorState && window.editorState.dynamic && window.editorState.dynamic.social) {
+                    const existing = window.editorState.dynamic.social.find(s => s.id === socialId);
+                    if (existing && existing.position) pos = existing.position;
+                }
+                
                 state.dynamic.social.push({
                     id: socialId,
                     platform: group.dataset.platform,
                     value: valueInput.value,
                     placement: placementInput ? placementInput.value : 'back',
-                    position: cardElement ? { x: parseFloat(cardElement.getAttribute('data-x')) || 0, y: parseFloat(cardElement.getAttribute('data-y')) || 0 } : { x: 0, y: 0 },
+                    position: pos,
                     color: colorInput ? colorInput.value : '#e6f0f7',
                     size: sizeInput ? sizeInput.value : 12
                 });
@@ -1182,10 +1198,18 @@ const StateManager = {
             const cardElement = document.getElementById(`social-link-static-${method.id}`);
 
             if (input) {
+                let pos = { x: 0, y: 0 };
+                if (cardElement) {
+                    pos = { x: parseFloat(cardElement.getAttribute('data-x')) || 0, y: parseFloat(cardElement.getAttribute('data-y')) || 0 };
+                } else if (window.editorState && window.editorState.dynamic && window.editorState.dynamic.staticSocial && window.editorState.dynamic.staticSocial[method.id]) {
+                    const existing = window.editorState.dynamic.staticSocial[method.id];
+                    if (existing && existing.position) pos = existing.position;
+                }
+                
                 state.dynamic.staticSocial[method.id] = {
                     value: input.value,
                     placement: placementInput ? placementInput.value : 'back',
-                    position: cardElement ? { x: parseFloat(cardElement.getAttribute('data-x')) || 0, y: parseFloat(cardElement.getAttribute('data-y')) || 0 } : { x: 0, y: 0 }
+                    position: pos
                 };
             }
         });
@@ -1353,7 +1377,7 @@ const StateManager = {
             UIManager.setActiveThumbnail(state.inputs['theme-select-input']);
         }
 
-        CardManager.renderCardContent();
+        CardManager.renderCardContent(state);
 
         const qrSource = document.querySelector('input[name="qr-source"]:checked')?.value;
         if (qrSource === 'auto-vcard') {

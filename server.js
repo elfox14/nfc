@@ -180,6 +180,8 @@ function absoluteBaseUrl(req) {
 const FIELDS_TO_SANITIZE = [
   'input-name', 'input-name_ar', 'input-name_en',
   'input-tagline', 'input-tagline_ar', 'input-tagline_en',
+  'input-bio', 'input-bio_ar', 'input-bio_en',
+  'input-availability',
   'input-email', 'input-website',
   'input-whatsapp', 'input-facebook', 'input-linkedin'
 ];
