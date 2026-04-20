@@ -314,36 +314,48 @@
         modal.id = 'story-generator-modal';
         modal.className = 'qr-modal-overlay';
         modal.innerHTML = `
-            <div class="qr-modal" style="max-width:400px;padding:24px;">
-                <div class="qr-modal-title">
-                    <i class="fab fa-instagram" style="color:#E4405F;"></i>
-                    <span>${isAr ? 'مولّد صورة الستوري' : 'Story Image Generator'}</span>
+            <div class="qr-modal" style="max-width:420px;padding:0;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;">
+                <!-- Header -->
+                <div style="padding:18px 20px 12px;border-bottom:1px solid var(--glass-border, rgba(255,255,255,0.08));flex-shrink:0;">
+                    <div class="qr-modal-title" style="margin-bottom:6px;">
+                        <i class="fab fa-instagram" style="color:#E4405F;"></i>
+                        <span>${isAr ? 'مولّد صورة الستوري' : 'Story Image Generator'}</span>
+                    </div>
+                    <p class="qr-modal-subtitle" style="margin:0;">
+                        ${isAr ? 'اختر الثيم وحمّل صورة جاهزة للستوري' : 'Choose a theme and download a story-ready image'}
+                    </p>
                 </div>
-                <p class="qr-modal-subtitle" style="margin-bottom:16px;">
-                    ${isAr ? 'اختر الثيم وحمّل صورة جاهزة للستوري' : 'Choose a theme and download a story-ready image'}
-                </p>
-                <div id="story-theme-selector" style="display:flex;gap:8px;margin-bottom:16px;justify-content:center;flex-wrap:wrap;">
-                    <button class="story-theme-btn active" data-theme="midnight" style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);"></button>
-                    <button class="story-theme-btn" data-theme="ocean" style="background:linear-gradient(135deg,#0077b6,#00b4d8,#90e0ef);"></button>
-                    <button class="story-theme-btn" data-theme="sunset" style="background:linear-gradient(135deg,#f72585,#b5179e,#7209b7);"></button>
-                    <button class="story-theme-btn" data-theme="forest" style="background:linear-gradient(135deg,#132a13,#31572c,#4f772d);"></button>
-                    <button class="story-theme-btn" data-theme="gold" style="background:linear-gradient(135deg,#1a1a2e,#c9a227,#f4d03f);"></button>
-                    <button class="story-theme-btn" data-theme="minimal" style="background:linear-gradient(135deg,#fafafa,#e0e0e0,#ffffff);border:1px solid #ccc;"></button>
+
+                <!-- Scrollable Content -->
+                <div style="flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;">
+                    <div id="story-theme-selector" style="display:flex;gap:8px;margin-bottom:14px;justify-content:center;flex-wrap:wrap;">
+                        <button class="story-theme-btn active" data-theme="midnight" style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);"></button>
+                        <button class="story-theme-btn" data-theme="ocean" style="background:linear-gradient(135deg,#0077b6,#00b4d8,#90e0ef);"></button>
+                        <button class="story-theme-btn" data-theme="sunset" style="background:linear-gradient(135deg,#f72585,#b5179e,#7209b7);"></button>
+                        <button class="story-theme-btn" data-theme="forest" style="background:linear-gradient(135deg,#132a13,#31572c,#4f772d);"></button>
+                        <button class="story-theme-btn" data-theme="gold" style="background:linear-gradient(135deg,#1a1a2e,#c9a227,#f4d03f);"></button>
+                        <button class="story-theme-btn" data-theme="minimal" style="background:linear-gradient(135deg,#fafafa,#e0e0e0,#ffffff);border:1px solid #ccc;"></button>
+                    </div>
+                    <div id="story-preview-wrapper" style="width:100%;aspect-ratio:9/16;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.3);">
+                        <canvas id="story-canvas" style="width:100%;height:100%;display:block;"></canvas>
+                    </div>
                 </div>
-                <div id="story-preview-wrapper" style="width:100%;aspect-ratio:9/16;border-radius:16px;overflow:hidden;position:relative;margin-bottom:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);">
-                    <canvas id="story-canvas" style="width:100%;height:100%;display:block;"></canvas>
-                </div>
-                <div style="display:flex;gap:8px;">
-                    <button id="story-download-btn" class="btn btn-primary" style="flex:1;">
-                        <i class="fas fa-download"></i> ${isAr ? 'تحميل' : 'Download'}
+
+                <!-- Sticky Action Buttons (ALWAYS VISIBLE) -->
+                <div style="padding:14px 20px 18px;border-top:1px solid var(--glass-border, rgba(255,255,255,0.08));flex-shrink:0;background:var(--glass-bg, rgba(30,30,50,0.95));">
+                    <button id="story-share-btn" class="btn" style="width:100%;padding:16px;font-size:1.15rem;font-weight:800;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;margin-bottom:10px;border-radius:50px;box-shadow:0 4px 20px rgba(220,39,67,0.35);display:flex;align-items:center;justify-content:center;gap:10px;">
+                        <i class="fas fa-paper-plane" style="font-size:1.1rem;"></i>
+                        <span>${isAr ? '📤 شارك الآن' : '📤 Share Now'}</span>
                     </button>
-                    <button id="story-share-btn" class="btn" style="flex:1;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);">
-                        <i class="fas fa-share-alt"></i> ${isAr ? 'مشاركة' : 'Share'}
-                    </button>
+                    <div style="display:flex;gap:8px;">
+                        <button id="story-download-btn" class="btn btn-secondary" style="flex:1;font-size:0.9rem;">
+                            <i class="fas fa-download"></i> ${isAr ? 'تحميل الصورة' : 'Download Image'}
+                        </button>
+                        <button id="story-close-btn" class="qr-modal-close" style="flex:1;">
+                            <i class="fas fa-times"></i> ${isAr ? 'إغلاق' : 'Close'}
+                        </button>
+                    </div>
                 </div>
-                <button id="story-close-btn" class="qr-modal-close" style="margin-top:12px;width:100%;">
-                    <i class="fas fa-times"></i> ${isAr ? 'إغلاق' : 'Close'}
-                </button>
             </div>`;
         document.body.appendChild(modal);
 
@@ -379,6 +391,36 @@
         canvas.width = 1080;
         canvas.height = 1920;
 
+        function drawCard(ctx, img, x, y, w, h, rotation, theme) {
+            ctx.save();
+            ctx.translate(x + w / 2, y + h / 2);
+            ctx.rotate(rotation * Math.PI / 180);
+
+            // Shadow
+            ctx.shadowColor = 'rgba(0,0,0,0.45)';
+            ctx.shadowBlur = 40;
+            ctx.shadowOffsetY = 15;
+            roundRect(ctx, -w / 2, -h / 2, w, h, 18);
+            ctx.fillStyle = '#000';
+            ctx.fill();
+            ctx.shadowColor = 'transparent';
+
+            // Image with clipping
+            roundRect(ctx, -w / 2, -h / 2, w, h, 18);
+            ctx.clip();
+            ctx.drawImage(img, -w / 2, -h / 2, w, h);
+
+            // Border glow
+            ctx.strokeStyle = theme.accent;
+            ctx.globalAlpha = 0.35;
+            ctx.lineWidth = 2;
+            roundRect(ctx, -w / 2, -h / 2, w, h, 18);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            ctx.restore();
+        }
+
         async function renderStory() {
             const theme = themes[currentTheme];
 
@@ -390,77 +432,113 @@
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Subtle pattern overlay
-            ctx.globalAlpha = 0.04;
-            for (let i = 0; i < canvas.width; i += 60) {
-                for (let j = 0; j < canvas.height; j += 60) {
+            // Subtle dot pattern
+            ctx.globalAlpha = 0.03;
+            for (let i = 0; i < canvas.width; i += 50) {
+                for (let j = 0; j < canvas.height; j += 50) {
                     ctx.fillStyle = theme.text;
-                    ctx.fillRect(i, j, 1, 1);
+                    ctx.beginPath();
+                    ctx.arc(i, j, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
                 }
             }
             ctx.globalAlpha = 1;
 
-            // Top decoration dots
+            // Decorative blurred circles
             ctx.fillStyle = theme.accent;
-            ctx.globalAlpha = 0.15;
-            ctx.beginPath();
-            ctx.arc(150, 200, 180, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(930, 1700, 220, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.globalAlpha = 0.1;
+            ctx.beginPath(); ctx.arc(120, 180, 160, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(960, 1750, 200, 0, Math.PI * 2); ctx.fill();
             ctx.globalAlpha = 1;
 
-            // Card image
-            const frontImg = document.querySelector('#card-front-display img');
-            if (frontImg && frontImg.complete && frontImg.naturalWidth > 0) {
-                const cardW = 860;
-                const cardH = cardW / (51 / 33);
-                const cardX = (canvas.width - cardW) / 2;
-                const cardY = 460;
-
-                // Card shadow
-                ctx.save();
-                ctx.shadowColor = 'rgba(0,0,0,0.4)';
-                ctx.shadowBlur = 60;
-                ctx.shadowOffsetY = 20;
-                roundRect(ctx, cardX, cardY, cardW, cardH, 24);
-                ctx.fillStyle = '#000';
-                ctx.fill();
-                ctx.restore();
-
-                // Card image with rounded corners
-                ctx.save();
-                roundRect(ctx, cardX, cardY, cardW, cardH, 24);
-                ctx.clip();
-                ctx.drawImage(frontImg, cardX, cardY, cardW, cardH);
-                ctx.restore();
-
-                // Card border glow
-                ctx.save();
-                ctx.strokeStyle = theme.accent;
-                ctx.globalAlpha = 0.3;
-                ctx.lineWidth = 2;
-                roundRect(ctx, cardX, cardY, cardW, cardH, 24);
-                ctx.stroke();
-                ctx.globalAlpha = 1;
-                ctx.restore();
-            }
-
-            // Text: "Digital Business Card" tag
+            // "DIGITAL BUSINESS CARD" tag
             ctx.textAlign = 'center';
             ctx.fillStyle = theme.accent;
-            ctx.font = '600 28px "Poppins", sans-serif';
-            ctx.letterSpacing = '4px';
-            ctx.fillText('✦  DIGITAL BUSINESS CARD  ✦', canvas.width / 2, 350);
+            ctx.font = '600 26px "Poppins", sans-serif';
+            ctx.fillText('✦  DIGITAL BUSINESS CARD  ✦', canvas.width / 2, 300);
+
+            // Dynamically load html2canvas
+            if (!window.html2canvas) {
+                await new Promise(r => {
+                    const s = document.createElement('script');
+                    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    s.onload = r;
+                    document.head.appendChild(s);
+                });
+            }
+
+            // Both card faces
+            const frontEl = document.querySelector('.card-front') || document.querySelector('#card-front-display');
+            const backEl = document.querySelector('.card-back') || document.querySelector('#card-back-display');
+            const wrapper = document.querySelector('.cards-wrapper');
+
+            let frontCanvasRaw = null;
+            let backCanvasRaw = null;
+
+            if (frontEl || backEl) {
+                const oldWrapperTransform = wrapper ? wrapper.style.transform : '';
+                if (wrapper) wrapper.style.transform = 'none';
+                
+                const oldBackTransform = backEl ? backEl.style.transform : '';
+                if (backEl) backEl.style.transform = 'none';
+
+                if (backEl) backCanvasRaw = await html2canvas(backEl, { useCORS: true, backgroundColor: null, scale: 2 });
+                if (frontEl) frontCanvasRaw = await html2canvas(frontEl, { useCORS: true, backgroundColor: null, scale: 2 });
+
+                if (wrapper) wrapper.style.transform = oldWrapperTransform;
+                if (backEl) backEl.style.transform = oldBackTransform;
+            }
+
+            const cardW = 680;
+            const cardH = cardW / (51 / 33);
+
+            // Draw back card first (behind, rotated right)
+            if (backCanvasRaw) {
+                drawCard(ctx, backCanvasRaw, 240, 380, cardW, cardH, 4, theme);
+                // Label
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.fillStyle = theme.sub;
+                ctx.globalAlpha = 0.6;
+                ctx.font = '500 22px "Tajawal", "Poppins", sans-serif';
+                ctx.fillText(isAr ? 'الوجه الخلفي' : 'Back', 580, 380 + cardH + 55);
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            } else {
+                const backImg = document.querySelector('#card-back-display img');
+                if (backImg && backImg.complete && backImg.naturalWidth > 0) {
+                     drawCard(ctx, backImg, 240, 380, cardW, cardH, 4, theme);
+                }
+            }
+
+            // Draw front card on top (rotated left)
+            if (frontCanvasRaw) {
+                drawCard(ctx, frontCanvasRaw, 100, 430, cardW, cardH, -3, theme);
+                // Label
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.fillStyle = theme.sub;
+                ctx.globalAlpha = 0.6;
+                ctx.font = '500 22px "Tajawal", "Poppins", sans-serif';
+                ctx.fillText(isAr ? 'الوجه الأمامي' : 'Front', 440, 430 + cardH + 55);
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            } else {
+                const frontImg = document.querySelector('#card-front-display img');
+                if (frontImg && frontImg.complete && frontImg.naturalWidth > 0) {
+                    drawCard(ctx, frontImg, 100, 430, cardW, cardH, -3, theme);
+                }
+            }
 
             // Name
+            const nameY = 1100;
             const name = document.getElementById('profile-name')?.textContent?.trim() ||
                          document.querySelector('#card-name')?.textContent?.trim() || '';
             if (name) {
                 ctx.fillStyle = theme.text;
-                ctx.font = '800 64px "Cairo", "Tajawal", sans-serif';
-                ctx.fillText(name, canvas.width / 2, 1160);
+                ctx.font = '800 60px "Cairo", "Tajawal", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(name, canvas.width / 2, nameY);
             }
 
             // Tagline
@@ -468,49 +546,63 @@
                             document.querySelector('#card-tagline')?.textContent?.trim() || '';
             if (tagline) {
                 ctx.fillStyle = theme.sub;
-                ctx.font = '500 36px "Tajawal", "Poppins", sans-serif';
-                ctx.fillText(tagline, canvas.width / 2, 1220);
+                ctx.font = '500 34px "Tajawal", "Poppins", sans-serif';
+                ctx.fillText(tagline, canvas.width / 2, nameY + 55);
             }
 
+            // Divider
+            ctx.strokeStyle = theme.accent;
+            ctx.globalAlpha = 0.25;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(360, nameY + 95);
+            ctx.lineTo(720, nameY + 95);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
             // QR Code
-            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}&format=png&qzone=1&color=${theme.text === '#ffffff' ? '1e2d40' : 'ffffff'}&bgcolor=${theme.text === '#ffffff' ? 'ffffff' : '1e2d40'}`;
+            const qrBg = theme.text === '#ffffff' ? '1e2d40' : 'ffffff';
+            const qrFg = theme.text === '#ffffff' ? 'ffffff' : '1e2d40';
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}&format=png&qzone=1&color=${qrBg}&bgcolor=${qrFg}`;
             try {
                 const qrImg = await loadImage(qrApiUrl);
-                const qrSize = 200;
+                const qrSize = 180;
                 const qrX = (canvas.width - qrSize) / 2;
-                const qrY = 1320;
+                const qrY = nameY + 130;
 
-                // QR background
                 ctx.save();
                 ctx.fillStyle = '#ffffff';
-                roundRect(ctx, qrX - 16, qrY - 16, qrSize + 32, qrSize + 32, 16);
+                roundRect(ctx, qrX - 14, qrY - 14, qrSize + 28, qrSize + 28, 14);
                 ctx.fill();
                 ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
                 ctx.restore();
 
-                // "Scan to connect" text
                 ctx.fillStyle = theme.sub;
-                ctx.font = '500 26px "Tajawal", "Poppins", sans-serif';
-                ctx.fillText(isAr ? '📱 امسح للتواصل' : '📱 Scan to connect', canvas.width / 2, qrY + qrSize + 60);
-            } catch (e) {
-                // QR failed to load — skip
-            }
+                ctx.font = '500 24px "Tajawal", "Poppins", sans-serif';
+                ctx.fillText(isAr ? '📱 امسح الكود للتواصل' : '📱 Scan to connect', canvas.width / 2, qrY + qrSize + 50);
+            } catch (e) { }
 
-            // Branding footer
-            ctx.fillStyle = theme.sub;
-            ctx.globalAlpha = 0.5;
-            ctx.font = '500 24px "Poppins", sans-serif';
-            ctx.fillText('Powered by MC PRIME', canvas.width / 2, 1800);
+            // CTA Button look
+            const ctaY = 1640;
+            ctx.save();
+            const ctaGrad = ctx.createLinearGradient(240, ctaY, 840, ctaY + 60);
+            ctaGrad.addColorStop(0, theme.accent);
+            ctaGrad.addColorStop(1, theme.bg[1] === theme.accent ? '#ffffff' : theme.accent);
+            ctx.fillStyle = ctaGrad;
+            ctx.globalAlpha = 0.15;
+            roundRect(ctx, 280, ctaY, 520, 60, 30);
+            ctx.fill();
             ctx.globalAlpha = 1;
+            ctx.fillStyle = theme.accent;
+            ctx.font = '700 26px "Tajawal", "Poppins", sans-serif';
+            ctx.fillText(isAr ? '⬆ اسحب للأعلى لزيارة بطاقتي' : '⬆ Swipe up to visit my card', canvas.width / 2, ctaY + 40);
+            ctx.restore();
 
-            // Divider line
-            ctx.strokeStyle = theme.accent;
-            ctx.globalAlpha = 0.2;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(340, 1760);
-            ctx.lineTo(740, 1760);
-            ctx.stroke();
+            // Branding
+            ctx.fillStyle = theme.sub;
+            ctx.globalAlpha = 0.4;
+            ctx.font = '500 22px "Poppins", sans-serif';
+            ctx.fillText('Powered by MC PRIME', canvas.width / 2, 1810);
             ctx.globalAlpha = 1;
         }
 
@@ -550,10 +642,16 @@
 
         // Download
         modal.querySelector('#story-download-btn').addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = 'story_card.png';
-            link.href = canvas.toDataURL('image/png', 1.0);
-            link.click();
+            try {
+                const link = document.createElement('a');
+                link.download = 'story_card.png';
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+                if (window.showToast) window.showToast(isAr ? 'تم تحميل الصورة بنجاح!' : 'Image downloaded!', 'success');
+            } catch (e) {
+                console.error('Download error:', e);
+                if (window.showToast) window.showToast(isAr ? 'حدث خطأ أثناء التحميل.' : 'Error downloading.', 'error');
+            }
         });
 
         // Share

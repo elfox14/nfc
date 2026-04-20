@@ -1269,30 +1269,45 @@ END:VCARD`;
                     modal.id = 'ejs-story-modal';
                     modal.className = 'qr-modal-overlay';
                     modal.innerHTML = `
-                        <div class="qr-modal-box" style="max-width:400px;padding:24px;">
-                            <div class="qr-modal-header" style="margin-bottom:16px;">
-                                <h4><i class="fab fa-instagram" style="color:#E4405F;margin-left:8px;"></i> مولّد صورة الستوري</h4>
-                                <button class="close-btn" onclick="closeStoryModal()">&times;</button>
+                        <div class="qr-modal-box" style="max-width:420px;padding:0;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;">
+                            <!-- Header -->
+                            <div style="padding:18px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
+                                <div class="qr-modal-header" style="margin-bottom:8px;">
+                                    <h4><i class="fab fa-instagram" style="color:#E4405F;margin-left:8px;"></i> مولّد صورة الستوري</h4>
+                                    <button class="close-btn" onclick="closeStoryModal()">&times;</button>
+                                </div>
+                                <p style="color:#9ca3af;font-size:0.85rem;margin:0;text-align:center;">اختر الثيم وحمّل صورة جاهزة للستوري</p>
                             </div>
-                            <p style="color:#9ca3af;font-size:0.9rem;margin-bottom:16px;text-align:center;">اختر الثيم وحمّل صورة جاهزة للستوري</p>
-                            <div id="ejs-story-themes" style="display:flex;gap:8px;margin-bottom:16px;justify-content:center;flex-wrap:wrap;">
-                                <button class="story-theme-opt active" data-theme="midnight" style="width:40px;height:40px;border-radius:50%;border:3px solid #4da6ff;cursor:pointer;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);box-shadow:0 0 0 3px rgba(77,166,255,0.3);transition:all 0.2s;"></button>
-                                <button class="story-theme-opt" data-theme="ocean" style="width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#0077b6,#00b4d8,#90e0ef);transition:all 0.2s;"></button>
-                                <button class="story-theme-opt" data-theme="sunset" style="width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#f72585,#b5179e,#7209b7);transition:all 0.2s;"></button>
-                                <button class="story-theme-opt" data-theme="forest" style="width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#132a13,#31572c,#4f772d);transition:all 0.2s;"></button>
-                                <button class="story-theme-opt" data-theme="gold" style="width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#1a1a2e,#c9a227,#f4d03f);transition:all 0.2s;"></button>
-                                <button class="story-theme-opt" data-theme="minimal" style="width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#fafafa,#e0e0e0);transition:all 0.2s;"></button>
+
+                            <!-- Scrollable Content -->
+                            <div style="flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;">
+                                <div id="ejs-story-themes" style="display:flex;gap:8px;margin-bottom:14px;justify-content:center;flex-wrap:wrap;">
+                                    <button class="story-theme-opt active" data-theme="midnight" style="width:38px;height:38px;border-radius:50%;border:3px solid #4da6ff;cursor:pointer;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);box-shadow:0 0 0 3px rgba(77,166,255,0.3);transition:all 0.2s;"></button>
+                                    <button class="story-theme-opt" data-theme="ocean" style="width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#0077b6,#00b4d8,#90e0ef);transition:all 0.2s;"></button>
+                                    <button class="story-theme-opt" data-theme="sunset" style="width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#f72585,#b5179e,#7209b7);transition:all 0.2s;"></button>
+                                    <button class="story-theme-opt" data-theme="forest" style="width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#132a13,#31572c,#4f772d);transition:all 0.2s;"></button>
+                                    <button class="story-theme-opt" data-theme="gold" style="width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#1a1a2e,#c9a227,#f4d03f);transition:all 0.2s;"></button>
+                                    <button class="story-theme-opt" data-theme="minimal" style="width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer;background:linear-gradient(135deg,#fafafa,#e0e0e0);transition:all 0.2s;"></button>
+                                </div>
+                                <div style="width:100%;aspect-ratio:9/16;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.3);">
+                                    <canvas id="ejs-story-canvas" style="width:100%;height:100%;display:block;"></canvas>
+                                </div>
                             </div>
-                            <div style="width:100%;aspect-ratio:9/16;border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);">
-                                <canvas id="ejs-story-canvas" style="width:100%;height:100%;display:block;"></canvas>
-                            </div>
-                            <div style="display:flex;gap:8px;">
-                                <button onclick="downloadStory()" style="flex:1;background:linear-gradient(135deg,#4da6ff,#0077ff);color:#fff;border:none;padding:14px;border-radius:50px;font-size:1rem;cursor:pointer;font-weight:700;font-family:inherit;">
-                                    <i class="fas fa-download"></i> تحميل
+
+                            <!-- Sticky Action Buttons (ALWAYS VISIBLE) -->
+                            <div style="padding:14px 20px 18px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;background:#1f2937;">
+                                <button onclick="shareStory()" style="width:100%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border:none;padding:16px;border-radius:50px;font-size:1.15rem;cursor:pointer;font-weight:800;font-family:inherit;margin-bottom:10px;box-shadow:0 4px 20px rgba(220,39,67,0.35);display:flex;align-items:center;justify-content:center;gap:10px;">
+                                    <i class="fas fa-paper-plane" style="font-size:1.1rem;"></i>
+                                    <span>📤 شارك الآن</span>
                                 </button>
-                                <button onclick="shareStory()" style="flex:1;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border:none;padding:14px;border-radius:50px;font-size:1rem;cursor:pointer;font-weight:700;font-family:inherit;">
-                                    <i class="fas fa-share-alt"></i> مشاركة
-                                </button>
+                                <div style="display:flex;gap:8px;">
+                                    <button onclick="downloadStory()" style="flex:1;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);padding:12px;border-radius:50px;font-size:0.9rem;cursor:pointer;font-weight:600;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+                                        <i class="fas fa-download"></i> تحميل الصورة
+                                    </button>
+                                    <button onclick="closeStoryModal()" style="flex:1;background:rgba(255,255,255,0.05);color:#9ca3af;border:1px solid rgba(255,255,255,0.1);padding:12px;border-radius:50px;font-size:0.9rem;cursor:pointer;font-weight:600;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+                                        <i class="fas fa-times"></i> إغلاق
+                                    </button>
+                                </div>
                             </div>
                         </div>`;
                     document.body.appendChild(modal);
@@ -1355,68 +1370,143 @@ END:VCARD`;
 
                 // Decorative circles
                 ctx.fillStyle = theme.accent;
-                ctx.globalAlpha = 0.12;
-                ctx.beginPath(); ctx.arc(150, 200, 180, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(930, 1700, 220, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 0.1;
+                ctx.beginPath(); ctx.arc(120, 180, 160, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(960, 1750, 200, 0, Math.PI * 2); ctx.fill();
                 ctx.globalAlpha = 1;
 
-                // "DIGITAL BUSINESS CARD" tag
+                // Dot pattern
+                ctx.globalAlpha = 0.03;
+                for (let i = 0; i < canvas.width; i += 50) {
+                    for (let j = 0; j < canvas.height; j += 50) {
+                        ctx.fillStyle = theme.text;
+                        ctx.beginPath(); ctx.arc(i, j, 1.5, 0, Math.PI * 2); ctx.fill();
+                    }
+                }
+                ctx.globalAlpha = 1;
+
+                // Tag
                 ctx.textAlign = 'center';
                 ctx.fillStyle = theme.accent;
-                ctx.font = '600 28px "Poppins", sans-serif';
-                ctx.fillText('✦  DIGITAL BUSINESS CARD  ✦', canvas.width / 2, 350);
+                ctx.font = '600 26px "Poppins", sans-serif';
+                ctx.fillText('✦  DIGITAL BUSINESS CARD  ✦', canvas.width / 2, 300);
 
-                // Card image
-                const frontImg = document.querySelector('#card-front-display img, .card-face.front img');
-                if (frontImg && frontImg.complete && frontImg.naturalWidth > 0) {
-                    const cardW = 860;
-                    const cardH = cardW / (51 / 33);
-                    const cardX = (canvas.width - cardW) / 2;
-                    const cardY = 460;
-
+                // Helper: draw card with rotation
+                function drawCardEjs(img, x, y, w, h, rotation) {
                     ctx.save();
-                    ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 60; ctx.shadowOffsetY = 20;
-                    roundR(ctx, cardX, cardY, cardW, cardH, 24); ctx.fillStyle = '#000'; ctx.fill();
+                    ctx.translate(x + w / 2, y + h / 2);
+                    ctx.rotate(rotation * Math.PI / 180);
+                    ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 15;
+                    roundR(ctx, -w/2, -h/2, w, h, 18); ctx.fillStyle = '#000'; ctx.fill();
+                    ctx.shadowColor = 'transparent';
+                    roundR(ctx, -w/2, -h/2, w, h, 18); ctx.clip();
+                    ctx.drawImage(img, -w/2, -h/2, w, h);
+                    ctx.strokeStyle = theme.accent; ctx.globalAlpha = 0.35; ctx.lineWidth = 2;
+                    roundR(ctx, -w/2, -h/2, w, h, 18); ctx.stroke(); ctx.globalAlpha = 1;
                     ctx.restore();
+                }
 
-                    ctx.save();
-                    roundR(ctx, cardX, cardY, cardW, cardH, 24); ctx.clip();
-                    ctx.drawImage(frontImg, cardX, cardY, cardW, cardH);
-                    ctx.restore();
+                // Dynamically load html2canvas
+                if (!window.html2canvas) {
+                    await new Promise(r => {
+                        const s = document.createElement('script');
+                        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                        s.onload = r;
+                        document.head.appendChild(s);
+                    });
+                }
 
-                    ctx.save();
-                    ctx.strokeStyle = theme.accent; ctx.globalAlpha = 0.3; ctx.lineWidth = 2;
-                    roundR(ctx, cardX, cardY, cardW, cardH, 24); ctx.stroke();
+                // Both card faces
+                const frontEl = document.querySelector('.card-front');
+                const backEl = document.querySelector('.card-back');
+                const wrapper = document.querySelector('.cards-wrapper');
+
+                let frontCanvasRaw = null;
+                let backCanvasRaw = null;
+
+                if (frontEl || backEl) {
+                    // Temporarily flatten 3D transforms for clean capturing
+                    const oldWrapperTransform = wrapper ? wrapper.style.transform : '';
+                    if (wrapper) wrapper.style.transform = 'none';
+                    
+                    const oldBackTransform = backEl ? backEl.style.transform : '';
+                    if (backEl) backEl.style.transform = 'none';
+
+                    if (backEl) backCanvasRaw = await html2canvas(backEl, { useCORS: true, backgroundColor: null, scale: 2 });
+                    if (frontEl) frontCanvasRaw = await html2canvas(frontEl, { useCORS: true, backgroundColor: null, scale: 2 });
+
+                    // Restore transforms
+                    if (wrapper) wrapper.style.transform = oldWrapperTransform;
+                    if (backEl) backEl.style.transform = oldBackTransform;
+                }
+
+                const cardW = 680;
+                const cardH = cardW / (51 / 33);
+
+                // Back card (behind, rotated right)
+                if (backCanvasRaw) {
+                    drawCardEjs(backCanvasRaw, 240, 380, cardW, cardH, 4);
+                    ctx.save(); ctx.textAlign = 'center'; ctx.fillStyle = theme.sub; ctx.globalAlpha = 0.6;
+                    ctx.font = '500 22px "Tajawal", sans-serif';
+                    ctx.fillText('الوجه الخلفي', 580, 380 + cardH + 55);
+                    ctx.globalAlpha = 1; ctx.restore();
+                }
+
+                // Front card (on top, rotated left)
+                if (frontCanvasRaw) {
+                    drawCardEjs(frontCanvasRaw, 100, 430, cardW, cardH, -3);
+                    ctx.save(); ctx.textAlign = 'center'; ctx.fillStyle = theme.sub; ctx.globalAlpha = 0.6;
+                    ctx.font = '500 22px "Tajawal", sans-serif';
+                    ctx.fillText('الوجه الأمامي', 440, 430 + cardH + 55);
                     ctx.globalAlpha = 1; ctx.restore();
                 }
 
                 // Name
+                const nameY = 1100;
                 ctx.fillStyle = theme.text;
-                ctx.font = '800 64px "Cairo", "Tajawal", sans-serif';
-                ctx.fillText('<%= inputs["input-name"] || "" %>', canvas.width / 2, 1160);
+                ctx.font = '800 60px "Cairo", "Tajawal", sans-serif';
+                ctx.fillText('<%= inputs["input-name"] || "" %>', canvas.width / 2, nameY);
 
                 // Tagline
                 ctx.fillStyle = theme.sub;
-                ctx.font = '500 36px "Tajawal", "Poppins", sans-serif';
-                ctx.fillText('<%= inputs["input-tagline"] || "" %>', canvas.width / 2, 1220);
+                ctx.font = '500 34px "Tajawal", "Poppins", sans-serif';
+                ctx.fillText('<%= inputs["input-tagline"] || "" %>', canvas.width / 2, nameY + 55);
+
+                // Divider
+                ctx.strokeStyle = theme.accent; ctx.globalAlpha = 0.25; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(360, nameY + 95); ctx.lineTo(720, nameY + 95); ctx.stroke();
+                ctx.globalAlpha = 1;
 
                 // QR Code
                 try {
                     const qrImg = await loadImg(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}&format=png&qzone=1`);
-                    const qrX = (canvas.width - 200) / 2, qrY = 1320;
+                    const qrX = (canvas.width - 180) / 2, qrY = nameY + 130;
                     ctx.save(); ctx.fillStyle = '#ffffff';
-                    roundR(ctx, qrX - 16, qrY - 16, 232, 232, 16); ctx.fill();
-                    ctx.drawImage(qrImg, qrX, qrY, 200, 200); ctx.restore();
+                    roundR(ctx, qrX - 14, qrY - 14, 208, 208, 14); ctx.fill();
+                    ctx.drawImage(qrImg, qrX, qrY, 180, 180); ctx.restore();
 
                     ctx.fillStyle = theme.sub;
-                    ctx.font = '500 26px "Tajawal", sans-serif';
-                    ctx.fillText('📱 امسح للتواصل', canvas.width / 2, qrY + 260);
+                    ctx.font = '500 24px "Tajawal", sans-serif';
+                    ctx.fillText('📱 امسح الكود للتواصل', canvas.width / 2, qrY + 230);
                 } catch(e) {}
 
+                // CTA
+                const ctaY = 1640;
+                ctx.save();
+                const ctaGrad = ctx.createLinearGradient(240, ctaY, 840, ctaY + 60);
+                ctaGrad.addColorStop(0, theme.accent);
+                ctaGrad.addColorStop(1, theme.accent);
+                ctx.fillStyle = ctaGrad; ctx.globalAlpha = 0.15;
+                roundR(ctx, 280, ctaY, 520, 60, 30); ctx.fill(); ctx.globalAlpha = 1;
+                ctx.fillStyle = theme.accent;
+                ctx.font = '700 26px "Tajawal", sans-serif';
+                ctx.fillText('⬆ اسحب للأعلى لزيارة بطاقتي', canvas.width / 2, ctaY + 40);
+                ctx.restore();
+
                 // Branding
-                ctx.fillStyle = theme.sub; ctx.globalAlpha = 0.5;
-                ctx.font = '500 24px "Poppins", sans-serif';
-                ctx.fillText('Powered by MC PRIME', canvas.width / 2, 1800);
+                ctx.fillStyle = theme.sub; ctx.globalAlpha = 0.4;
+                ctx.font = '500 22px "Poppins", sans-serif';
+                ctx.fillText('Powered by MC PRIME', canvas.width / 2, 1810);
                 ctx.globalAlpha = 1;
             }
 
@@ -1446,11 +1536,16 @@ END:VCARD`;
             function downloadStory() {
                 const canvas = document.getElementById('ejs-story-canvas');
                 if (!canvas) return;
-                const link = document.createElement('a');
-                link.download = 'story_card.png';
-                link.href = canvas.toDataURL('image/png', 1.0);
-                link.click();
-                showToast('تم تحميل صورة الستوري 📸', 'success');
+                try {
+                    const link = document.createElement('a');
+                    link.download = 'story_card.png';
+                    link.href = canvas.toDataURL('image/png', 1.0);
+                    link.click();
+                    showToast('تم تحميل صورة الستوري 📸', 'success');
+                } catch (e) {
+                    console.error('Download error:', e);
+                    showToast('فشل التحميل. تأكد من اتصالك بالإنترنت.', 'error');
+                }
             }
 
             async function shareStory() {
