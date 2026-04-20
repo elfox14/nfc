@@ -91,7 +91,13 @@ const Config = {
                 website: { value: '', placement: 'back' },
                 whatsapp: { value: '', placement: 'back' },
                 facebook: { value: '', placement: 'back' },
-                linkedin: { value: '', placement: 'back' }
+                linkedin: { value: '', placement: 'back' },
+                instagram: { value: '', placement: 'back' },
+                tiktok: { value: '', placement: 'back' },
+                twitter: { value: '', placement: 'back' },
+                telegram: { value: '', placement: 'back' },
+                youtube: { value: '', placement: 'back' },
+                snapchat: { value: '', placement: 'back' }
             },
             qr: { enabled: true }
         },
@@ -166,7 +172,13 @@ const Config = {
         { id: 'email', icon: 'fas fa-envelope', prefix: 'mailto:' },
         { id: 'website', icon: 'fas fa-globe' },
         { id: 'facebook', icon: 'fab fa-facebook-f' },
-        { id: 'linkedin', icon: 'fab fa-linkedin-in' }
+        { id: 'linkedin', icon: 'fab fa-linkedin-in' },
+        { id: 'instagram', icon: 'fab fa-instagram', prefix: 'https://instagram.com/' },
+        { id: 'tiktok', icon: 'fab fa-tiktok', prefix: 'https://tiktok.com/@' },
+        { id: 'twitter', icon: 'fab fa-x-twitter', prefix: 'https://x.com/' },
+        { id: 'telegram', icon: 'fab fa-telegram', prefix: 'https://t.me/' },
+        { id: 'youtube', icon: 'fab fa-youtube', prefix: 'https://youtube.com/' },
+        { id: 'snapchat', icon: 'fab fa-snapchat-ghost', prefix: 'https://snapchat.com/add/' }
     ]
 };
 

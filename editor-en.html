@@ -60,6 +60,7 @@
     <script src="editor-enhancements.js" defer></script>
     <script src="editor-user-status.js" defer></script>
     <script src="ai-backgrounds.js" defer></script>
+    <script src="editor-tour.js" defer></script>
 
     <!-- English placeholder initialization -->
     <script>
@@ -453,7 +454,7 @@
         </aside>
 
         <main class="pro-canvas">
-            <main class="cards-wrapper" id="cards-wrapper" tabindex="0">
+            <section class="cards-wrapper" id="cards-wrapper" tabindex="0">
                 <!-- Smart Snapping Guides -->
                 <div id="snap-guide-v" class="snap-guide-vertical"></div>
                 <div id="snap-guide-h" class="snap-guide-horizontal"></div>
@@ -498,7 +499,7 @@
                     <span>Flip Card</span>
                 </button>
 
-            </main>
+            </section>
         </main>
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
@@ -1884,7 +1885,7 @@
                         </div>
 
                         <!-- LinkedIn -->
-                        <div class="lp-section" id="form-group-static-linkedin" style="border:none;padding-bottom:0;">
+                        <div class="lp-section" id="form-group-static-linkedin">
                             <label class="lp-label"><i class="fab fa-linkedin-in" style="color:#0a66c2;"></i> LinkedIn</label>
                             <input type="url" id="input-linkedin" value="" class="lp-input" placeholder="linkedin.com/in/..." style="margin-bottom:8px;">
                             <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
@@ -1906,6 +1907,90 @@
                                     <div><label class="lp-label" style="margin-bottom:4px;">Size</label><div class="lp-slider-wrap"><input type="range" id="input-static-linkedin-size" min="10" max="24" value="12" class="lp-slider" data-input-type="static-social-style" oninput="this.nextElementSibling.textContent=this.value+'px'"><span class="lp-slider-val">12px</span></div></div>
                                 </div>
                             </details>
+                        </div>
+
+                        <!-- Instagram -->
+                        <div class="lp-section" id="form-group-static-instagram">
+                            <label class="lp-label"><i class="fab fa-instagram" style="color:#E4405F;"></i> Instagram</label>
+                            <input type="text" id="input-instagram" value="" class="lp-input" placeholder="instagram.com/username" style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-instagram" value="front" style="display:none;"> Front
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-instagram" value="back" checked style="display:none;"> Back
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- TikTok -->
+                        <div class="lp-section" id="form-group-static-tiktok">
+                            <label class="lp-label"><i class="fab fa-tiktok" style="color:#010101;"></i> TikTok</label>
+                            <input type="text" id="input-tiktok" value="" class="lp-input" placeholder="tiktok.com/@username" style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-tiktok" value="front" style="display:none;"> Front
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-tiktok" value="back" checked style="display:none;"> Back
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- X / Twitter -->
+                        <div class="lp-section" id="form-group-static-twitter">
+                            <label class="lp-label"><i class="fab fa-x-twitter" style="color:#000000;"></i> X (Twitter)</label>
+                            <input type="text" id="input-twitter" value="" class="lp-input" placeholder="x.com/username" style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-twitter" value="front" style="display:none;"> Front
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-twitter" value="back" checked style="display:none;"> Back
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Telegram -->
+                        <div class="lp-section" id="form-group-static-telegram">
+                            <label class="lp-label"><i class="fab fa-telegram" style="color:#0088cc;"></i> Telegram</label>
+                            <input type="text" id="input-telegram" value="" class="lp-input" placeholder="t.me/username" style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-telegram" value="front" style="display:none;"> Front
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-telegram" value="back" checked style="display:none;"> Back
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- YouTube -->
+                        <div class="lp-section" id="form-group-static-youtube">
+                            <label class="lp-label"><i class="fab fa-youtube" style="color:#FF0000;"></i> YouTube</label>
+                            <input type="url" id="input-youtube" value="" class="lp-input" placeholder="youtube.com/@channel" style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-youtube" value="front" style="display:none;"> Front
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-youtube" value="back" checked style="display:none;"> Back
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Snapchat -->
+                        <div class="lp-section" id="form-group-static-snapchat" style="border:none;padding-bottom:0;">
+                            <label class="lp-label"><i class="fab fa-snapchat-ghost" style="color:#FFFC00;"></i> Snapchat</label>
+                            <input type="text" id="input-snapchat" value="" class="lp-input" placeholder="snapchat.com/add/username" style="margin-bottom:8px;">
+                            <div style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;" class="static-place-label">
+                                    <input type="radio" name="placement-static-snapchat" value="front" style="display:none;"> Front
+                                </label>
+                                <label style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;" class="static-place-label active">
+                                    <input type="radio" name="placement-static-snapchat" value="back" checked style="display:none;"> Back
+                                </label>
+                            </div>
                         </div>
                     </div>
 
