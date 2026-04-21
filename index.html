@@ -418,12 +418,6 @@
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" aria-live="polite" aria-busy="true" role="status">
-        <div class="loading-spinner" aria-hidden="true"></div>
-        <p class="loading-text">جارٍ التحميل...</p>
-    </div>
-
     <!-- Reading Progress Bar -->
     <div class="reading-progress" id="reading-progress"></div>
 
@@ -758,7 +752,55 @@
             </div>
         </section>
 
-        <!-- FAQ Section -->
+                <!-- Recent Blog Posts Section -->
+                <section id="recent-blog" class="recent-blog-section" aria-labelledby="recent-blog-title" style="margin-top: 4rem;">
+                    <div class="container">
+                        <h2 id="recent-blog-title">أحدث المقالات المضافة</h2>
+                        <div class="blog-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                            <!-- Blog Card 1 -->
+                            <a href="/nfc/blog-nfc-at-events.html" style="text-decoration: none; color: inherit;">
+                                <article class="blog-card reveal" style="background: var(--surface-color); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s; height: 100%;">
+                                    <div style="height: 180px; background: #1a2a3a; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-calendar-alt" style="font-size: 3rem; color: var(--primary-color);"></i>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #fff;">5 طرق لاستخدام NFC في الفعاليات</h3>
+                                        <p style="font-size: 0.9rem; color: var(--text-secondary-color);">اكتشف كيف تحول بطاقتك الذكية إلى أداة تسويق فعالة في المؤتمرات...</p>
+                                    </div>
+                                </article>
+                            </a>
+                            <!-- Blog Card 2 -->
+                            <a href="/nfc/blog-digital-menus-for-restaurants.html" style="text-decoration: none; color: inherit;">
+                                <article class="blog-card reveal" style="background: var(--surface-color); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s; height: 100%;">
+                                    <div style="height: 180px; background: #1a2a3a; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-utensils" style="font-size: 3rem; color: var(--primary-color);"></i>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #fff;">المنيو الرقمي للمطاعم 2025</h3>
+                                        <p style="font-size: 0.9rem; color: var(--text-secondary-color);">فوائد القائمة الرقمية في تقديم تجربة طعام فريدة للعملاء وزيادة الأرباح...</p>
+                                    </div>
+                                </article>
+                            </a>
+                            <!-- Blog Card 3 -->
+                            <a href="/nfc/blog-business-card-mistakes.html" style="text-decoration: none; color: inherit;">
+                                <article class="blog-card reveal" style="background: var(--surface-color); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s; height: 100%;">
+                                    <div style="height: 180px; background: #1a2a3a; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--primary-color);"></i>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #fff;">5 أخطاء شائعة في تصميم البطاقات</h3>
+                                        <p style="font-size: 0.9rem; color: var(--text-secondary-color);">تجنب الانطباعات السلبية وتعرف على أبرز أخطاء تصميم بطاقات الأعمال...</p>
+                                    </div>
+                                </article>
+                            </a>
+                        </div>
+                        <div style="text-align: center; margin-top: 2rem;">
+                            <a href="/nfc/blog.html" class="btn btn-secondary">تصفح جميع المقالات</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- FAQ Section -->
         <section id="faq" class="faq-section" aria-labelledby="faq-title">
             <div class="container">
                 <h2 id="faq-title">أسئلة شائعة</h2>
@@ -880,6 +922,7 @@
                         <li><a href="#faq">الأسئلة الشائعة</a></li>
                         <li><a href="/nfc/contact.html">اتصل بنا</a></li>
                         <li><a href="/nfc/privacy.html">سياسة الخصوصية</a></li>
+                        <li><a href="/nfc/terms.html">شروط الاستخدام</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -989,7 +1032,13 @@
         }
 
         window.addEventListener('scroll', revealOnScroll);
-        window.addEventListener('load', revealOnScroll);
+        window.addEventListener('load', () => {
+            revealOnScroll();
+            setTimeout(() => {
+                const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+                reveals.forEach(el => el.classList.add('active'));
+            }, 1000);
+        });
 
         // Counter animation for statistics
         function animateCounters() {

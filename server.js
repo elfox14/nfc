@@ -1987,7 +1987,7 @@ app.get('/robots.txt', (req, res) => {
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
-    const staticPages = ['/nfc/', '/nfc/gallery', '/nfc/blog', '/nfc/privacy'];
+    const staticPages = ['/nfc/', '/nfc/gallery', '/nfc/blog', '/nfc/privacy', '/nfc/terms', '/nfc/contact'];
     const blogPosts = [];
     let designUrls = [];
     if (db) {
