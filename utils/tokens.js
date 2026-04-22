@@ -1,7 +1,7 @@
 // utils/tokens.js
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const config = require('../config');
+
 
 /**
  * Creates a short-lived Access Token
@@ -9,7 +9,7 @@ const config = require('../config');
  * @returns {string} JWT Token
  */
 function createAccessToken(payload) {
-    const secret = config.JWT_SECRET;
+    const secret = process.env.JWT_SECRET;
     if (!secret) throw new Error('JWT_SECRET is not configured in environment variables.');
     return jwt.sign({ ...payload, type: 'access' }, secret, { expiresIn: '15m' });
 }
