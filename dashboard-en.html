@@ -489,21 +489,26 @@
             });
         });
 
-        // Handle Google OAuth redirect — session is in HttpOnly cookies, not in URL hash
-        // SECURITY: No longer reads token from URL hash (#gauth=...) — uses cookies instead
-        (function () {
+        // URL cleanup is moved inside DOMContentLoaded so we can process initToken first
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('oauthSuccess')) {
-                console.log('[Auth] OAuth redirect detected, session will be established via cookies');
-                // Clean up the URL parameter
+            const initToken = urlParams.get('initToken');
+            const hasOauthSuccess = urlParams.has('oauthSuccess');
+            
+            if (initToken || hasOauthSuccess) {
+                console.log('[Auth] OAuth redirect detected. Processing token...');
+                if (initToken) {
+                    await Auth.sessionInit(initToken);
+                }
+                
                 urlParams.delete('oauthSuccess');
+                urlParams.delete('initToken');
                 const newSearch = urlParams.toString();
                 const cleanUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
                 history.replaceState(null, '', cleanUrl);
             }
-        })();
 
-        document.addEventListener('DOMContentLoaded', async () => {
             Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null');
             Auth.token = localStorage.getItem('authToken') || null;
             
