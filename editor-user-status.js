@@ -174,6 +174,32 @@ const EditorUserStatus = {
             // Manual save: Capture images
             saveBtn.addEventListener('click', () => this.saveToCloud(true));
         }
+
+        // Mobile quick-action buttons (visible only on mobile toolbar)
+        const mobileSaveBtn = document.getElementById('mobile-save-btn');
+        if (mobileSaveBtn) {
+            mobileSaveBtn.addEventListener('click', () => this.saveToCloud(true));
+        }
+
+        const mobileShareBtn = document.getElementById('mobile-share-btn');
+        if (mobileShareBtn) {
+            mobileShareBtn.addEventListener('click', () => {
+                const designId = (typeof Config !== 'undefined' && Config.currentDesignId) ? Config.currentDesignId : null;
+                if (designId && typeof ShareManager !== 'undefined' && ShareManager.performShare) {
+                    const viewerUrl = new URL('viewer.html', window.location.href);
+                    viewerUrl.searchParams.set('id', designId);
+                    const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
+                    ShareManager.performShare(
+                        viewerUrl.href,
+                        isEnglish ? 'Check out my digital business card!' : 'شاهد بطاقة عملي الرقمية!',
+                        isEnglish ? 'Made with MC PRIME' : 'مصنوعة بواسطة MC PRIME'
+                    );
+                } else {
+                    // Design not saved yet — save first
+                    this.saveToCloud(true);
+                }
+            });
+        }
     },
 
     async saveToCloud(captureImages = false) {
@@ -184,6 +210,8 @@ const EditorUserStatus = {
         // Mobile proxy button in panel-share
         const mobileSaveProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="save-share-btn"]');
         const mobileSaveProxyOrigHTML = mobileSaveProxyBtn ? mobileSaveProxyBtn.innerHTML : '';
+        // Mobile quick-action save button (in toolbar)
+        const mqaSaveBtn = document.getElementById('mobile-save-btn');
 
         // If not logged in, redirect to login
         if (!isLoggedIn) {
@@ -218,6 +246,7 @@ const EditorUserStatus = {
         if (captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Processing...' : 'جاري المعالجة...';
         if (captureImages && saveBtn) saveBtn.disabled = true;
         if (captureImages && mobileSaveProxyBtn) { mobileSaveProxyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isEnglish ? 'Processing...' : 'جاري المعالجة...'); mobileSaveProxyBtn.disabled = true; }
+        if (captureImages && mqaSaveBtn) { mqaSaveBtn.classList.add('saving'); mqaSaveBtn.querySelector('span').textContent = isEnglish ? 'Saving...' : 'جاري...'; }
         if (!captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Auto-saving...' : 'حفظ تلقائي...';
 
         try {
@@ -268,6 +297,7 @@ const EditorUserStatus = {
                         if (saveBtn) saveBtn.disabled = false;
                         if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save & Share' : 'حفظ و مشاركة';
                         if (mobileSaveProxyBtn) { mobileSaveProxyBtn.innerHTML = mobileSaveProxyOrigHTML; mobileSaveProxyBtn.disabled = false; }
+                        if (mqaSaveBtn) { mqaSaveBtn.classList.remove('saving'); mqaSaveBtn.querySelector('span').textContent = isEnglish ? 'Save' : 'حفظ'; }
                         return;
                     }
                 } else {
@@ -309,6 +339,7 @@ const EditorUserStatus = {
                         ShareManager.performShare(viewerUrl.href, i18nMain.shareTitle, i18nMain.shareText);
                     }
                     if (mobileSaveProxyBtn) { mobileSaveProxyBtn.innerHTML = '<i class="fas fa-check"></i> ' + (isEnglish ? 'Saved ✓' : 'تم الحفظ ✓'); mobileSaveProxyBtn.disabled = false; }
+                    if (mqaSaveBtn) { mqaSaveBtn.classList.remove('saving'); mqaSaveBtn.classList.add('saved'); mqaSaveBtn.querySelector('span').textContent = isEnglish ? 'Saved ✓' : 'تم ✓'; }
                     if (typeof UIManager !== 'undefined') {
                         UIManager.announce(savedMsg);
                     }
@@ -320,6 +351,7 @@ const EditorUserStatus = {
                     setTimeout(() => {
                         if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save & Share' : 'حفظ و مشاركة';
                         if (mobileSaveProxyBtn) mobileSaveProxyBtn.innerHTML = mobileSaveProxyOrigHTML;
+                        if (mqaSaveBtn) { mqaSaveBtn.classList.remove('saved'); mqaSaveBtn.querySelector('span').textContent = isEnglish ? 'Save' : 'حفظ'; }
                     }, 2500);
                 } else {
                     // Auto-save silent update or minimal UI
@@ -346,6 +378,7 @@ const EditorUserStatus = {
             this.isSaving = false;
             if (saveBtn) saveBtn.disabled = false;
             if (mobileSaveProxyBtn) { mobileSaveProxyBtn.disabled = false; }
+            if (mqaSaveBtn) { mqaSaveBtn.classList.remove('saving'); }
         }
     },
 

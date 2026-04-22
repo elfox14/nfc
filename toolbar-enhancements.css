@@ -1046,6 +1046,9 @@
 }
 .tb-pill-btn:hover { background: rgba(77,166,255,.22); border-color: rgba(77,166,255,.4); }
 
+/* ── Mobile Quick Actions (Save & Share next to logo) ─────── */
+.tb-mobile-quick-actions { display: none; } /* Hidden on desktop */
+
 /* ── Mobile More Button ───────────────────────────────────── */
 .tb-mobile-more { display: none; }
 
@@ -1056,14 +1059,88 @@
     .tb-center,
     .user-status-bar,
     .tb-autosave,
+    .tb-nav-icons,
+    .tb-history,
+    .tb-divider,
     .download-container { display: none !important; }
 
     .tb-mobile-more { display: flex !important; }
 
     .tb-right { gap: 4px; }
-    .tb-cta-btn { padding: 0 12px; font-size: 0.78rem; }
-    .tb-cta-btn span { display: none; } /* Icon only on mobile */
-    .tb-cta-btn { width: 36px; padding: 0; justify-content: center; border-radius: 50%; }
+
+    /* Hide the desktop CTA button on mobile — replaced by mobile quick actions */
+    .tb-cta-btn { display: none !important; }
+
+    /* Show mobile quick action buttons */
+    .tb-mobile-quick-actions {
+        display: flex !important;
+        align-items: center;
+        gap: 6px;
+        margin-inline-start: 4px;
+    }
+
+    .tb-mqa-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        height: 34px;
+        padding: 0 12px;
+        border-radius: 10px;
+        border: none;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.25s cubic-bezier(.34,1.2,.64,1);
+        color: #fff;
+    }
+
+    .tb-mqa-btn i {
+        font-size: 13px;
+    }
+
+    .tb-mqa-btn span {
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    /* Save button: blue gradient */
+    .tb-mqa-save {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        box-shadow: 0 3px 12px rgba(102,126,234,0.35);
+    }
+    .tb-mqa-save:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(102,126,234,0.5);
+        filter: brightness(1.08);
+    }
+    .tb-mqa-save:active { transform: translateY(0) scale(0.96); }
+
+    /* Share button: green gradient */
+    .tb-mqa-share {
+        background: linear-gradient(135deg, #16a34a, #2ecc71);
+        box-shadow: 0 3px 12px rgba(46,204,113,0.35);
+    }
+    .tb-mqa-share:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(46,204,113,0.5);
+        filter: brightness(1.08);
+    }
+    .tb-mqa-share:active { transform: translateY(0) scale(0.96); }
+
+    /* Save success animation */
+    .tb-mqa-btn.saving {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+    .tb-mqa-btn.saving i {
+        animation: spin-save 1s linear infinite;
+    }
+    .tb-mqa-btn.saved {
+        animation: pulse-saved 0.5s ease-out;
+    }
 }
 
 /* ── Preview Mode: hide toolbar ───────────────────────────── */
