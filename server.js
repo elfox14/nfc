@@ -1167,13 +1167,13 @@ app.get('/api/auth/google/callback', async (req, res) => {
           // Close the popup
           window.close();
 
-          // If popup didn't close, fallback to redirect (no token in URL)
+          // If popup didn't close, fallback to redirect (pass initToken to bypass cookie blocking)
           setTimeout(function() {
-            window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1');
+            window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1&initToken=' + ${JSON.stringify(sessionInitToken)});
           }, 1000);
         } else {
-          // Path 2: No opener — redirect to dashboard (cookies carry the session)
-          window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1');
+          // Path 2: No opener — redirect to dashboard (pass initToken to bypass cookie blocking)
+          window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1&initToken=' + ${JSON.stringify(sessionInitToken)});
         }
       })();
     `;

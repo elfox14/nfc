@@ -249,13 +249,22 @@ const Auth = {
 
     async googleSignIn() {
         return new Promise((resolve) => {
+            const authUrl = `${this.getBaseUrl()}/api/auth/google?lang=${document.documentElement.lang.includes('en') ? 'en' : 'ar'}`;
+            
+            // On mobile or in-app browsers, popups are often blocked or fail. Use direct redirect.
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            if (isMobile) {
+                window.location.href = authUrl;
+                return; // Page will unload, promise won't resolve here
+            }
+
             const width = 500;
             const height = 600;
             const left = (window.innerWidth - width) / 2;
             const top = (window.innerHeight - height) / 2;
 
             const popup = window.open(
-                `${this.getBaseUrl()}/api/auth/google?lang=${document.documentElement.lang.includes('en') ? 'en' : 'ar'}`,
+                authUrl,
                 'Google Sign In',
                 `width=${width},height=${height},left=${left},top=${top}`
             );
