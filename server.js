@@ -528,9 +528,9 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
         if (process.env.UPLOAD_SECRET) {
           formData.append('secret', process.env.UPLOAD_SECRET);
         }
-        // Pass overwrite info to external server if available
+        // Pass deterministic ID for overwrite support
         if (deterministicId) {
-          formData.append('overwrite_id', deterministicId);
+          formData.append('overwrite_id', `user_${userId}_${purpose}`);
         }
 
         const externalResponse = await fetch(process.env.EXTERNAL_UPLOAD_URL, {
@@ -541,8 +541,14 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
         if (externalResponse.ok) {
           const result = await externalResponse.json();
           if (result.success && result.url) {
-            console.log('[Upload] Image uploaded to external server:', result.url);
-            return res.json({ success: true, url: result.url, external: true });
+            // Append cache-bust for overwritten images
+            let finalUrl = result.url;
+            if (deterministicId) {
+              const separator = finalUrl.includes('?') ? '&' : '?';
+              finalUrl = `${finalUrl}${separator}v=${Date.now()}`;
+            }
+            console.log('[Upload] Image uploaded to external server:', finalUrl);
+            return res.json({ success: true, url: finalUrl, external: true });
           }
         }
         console.warn('[Upload] External upload returned error status:', externalResponse.status);

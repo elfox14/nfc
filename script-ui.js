@@ -406,14 +406,26 @@ const UIManager = {
         formData.append("image", file);
         // التغيير هنا: إرسال الطلب مباشرة إلى سيرفر الصور لتجاوز حظر "البوتات" على سيرفر Render
         formData.append("secret", "mcprime_upload_secret_2024_xK9mP2vL");
-        // إرسال الغرض من الصورة لاستبدال الصورة القديمة
-        if (purpose) {
-            formData.append("purpose", purpose);
+
+        // Build deterministic overwrite ID from user info + purpose
+        const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
+        let overwriteId = null;
+        if (isLoggedIn && purpose) {
+            try {
+                const user = JSON.parse(localStorage.getItem('authUser') || 'null');
+                if (user && user.userId) {
+                    overwriteId = `user_${user.userId}_${purpose}`;
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        // إرسال معرف الاستبدال للسيرفر الخارجي
+        if (overwriteId) {
+            formData.append("overwrite_id", overwriteId);
         }
 
         try {
-            // Try authenticated upload to local server first (supports overwrite)
-            const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
+            // Try authenticated upload to local server first (supports Cloudinary overwrite)
             if (isLoggedIn && purpose) {
                 try {
                     console.log(`[Upload] Uploading with purpose: ${purpose} (overwrite mode)`);
@@ -435,7 +447,7 @@ const UIManager = {
                 }
             }
 
-            // Fallback: Direct upload to external server (no overwrite support)
+            // Fallback: Direct upload to external server (with overwrite_id if available)
             const uploadUrl = "https://uploads.mcprim.com/upload.php";
             const response = await fetch(uploadUrl, {
                 method: "POST",
@@ -448,7 +460,14 @@ const UIManager = {
                 throw new Error(result.error || "Server error");
             }
 
-            return result.url;
+            // Cache-bust for overwritten images
+            let finalUrl = result.url;
+            if (overwriteId && finalUrl) {
+                const separator = finalUrl.includes('?') ? '&' : '?';
+                finalUrl = `${finalUrl}${separator}v=${Date.now()}`;
+            }
+
+            return finalUrl;
         } catch (error) {
             console.error("Direct image upload failed:", error);
             // محاولة أخيرة عبر السيرفر المحلي في حال فشل الاتصال المباشر (رغم أنه قد يفشل بسبب الحظر)
