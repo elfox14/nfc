@@ -335,7 +335,7 @@ input:checked+.slider .moon-icon {
     position: relative;
     width: 100%;
     max-width: 510px;
-    aspect-ratio: 1.58;
+    aspect-ratio: 51/33;
     /* نسبة البطاقة الأفقية 51/33 */
     transform-style: preserve-3d;
     transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
@@ -367,6 +367,10 @@ input:checked+.slider .moon-icon {
     height: 100%;
     display: block;
     object-fit: cover;
+}
+
+.is-vertical .business-card-viewer img {
+    object-fit: contain;
 }
 
 .cards-wrapper-viewer.is-flipped #card-front-display {
@@ -660,6 +664,11 @@ summary.secondary-actions-summary {
         max-width: 510px;
     }
 
+    .cards-wrapper-viewer.is-vertical {
+        max-width: 330px;
+        aspect-ratio: 33/51;
+    }
+
     /* التبويبات */
     .mobile-viewer-tabs {
         display: flex;
@@ -743,8 +752,19 @@ summary.secondary-actions-summary {
 
     .cards-wrapper-viewer {
         width: 100%;
-        aspect-ratio: 1.58;
+        aspect-ratio: 51/33;
     }
+
+    .cards-wrapper-viewer.is-vertical {
+        aspect-ratio: 33/51;
+        max-width: 330px;
+    }
+}
+
+/* ── Vertical Layout Support ─────────────────────────────── */
+.cards-wrapper-viewer.is-vertical {
+    aspect-ratio: 33/51; /* نسبة بطاقة طولية 33/51 */
+    max-width: 330px;
 }
 
 /* منطقة الرندر المخفية (للتحميل) */
@@ -755,6 +775,11 @@ summary.secondary-actions-summary {
     left: -9999px;
     top: 0;
     overflow: hidden;
+}
+
+.business-card-render-wrapper.is-vertical {
+    width: 330px;
+    height: 510px;
 }
 
 .card-content-layer {

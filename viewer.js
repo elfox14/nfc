@@ -866,9 +866,7 @@ document.addEventListener('DOMContentLoaded', () => {
             logging: false, 
             imageTimeout: 15000,
             scrollX: 0,
-            scrollY: 0,
-            windowWidth: 510,
-            windowHeight: 330
+            scrollY: 0
         };
 
         try {
