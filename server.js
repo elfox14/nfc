@@ -524,7 +524,7 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
       try {
         const formData = new FormData();
         const blob = new Blob([processedBuffer], { type: 'image/webp' });
-        formData.append('file', blob, 'image.webp');
+        formData.append('image', blob, 'image.webp');
         if (process.env.UPLOAD_SECRET) {
           formData.append('secret', process.env.UPLOAD_SECRET);
         }
