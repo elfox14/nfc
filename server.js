@@ -507,6 +507,18 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
       .webp({ quality: 85 })
       .toBuffer();
 
+    // Determine if we should overwrite an existing image
+    // Valid purposes: logo, photo, front_bg, back_bg, qr, capturedFront, capturedBack
+    const purpose = req.body.purpose;
+    const userId = req.user.userId;
+    const validPurposes = ['logo', 'photo', 'front_bg', 'back_bg', 'qr', 'capturedFront', 'capturedBack'];
+    const shouldOverwrite = purpose && validPurposes.includes(purpose) && userId;
+    const deterministicId = shouldOverwrite ? `mcprim/user_${userId}_${purpose}` : null;
+
+    if (shouldOverwrite) {
+      console.log(`[Upload] Overwrite mode: public_id=${deterministicId}`);
+    }
+
     // Phase 1: Try External Upload (Priority 1)
     if (process.env.EXTERNAL_UPLOAD_URL) {
       try {
@@ -515,6 +527,10 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
         formData.append('file', blob, 'image.webp');
         if (process.env.UPLOAD_SECRET) {
           formData.append('secret', process.env.UPLOAD_SECRET);
+        }
+        // Pass overwrite info to external server if available
+        if (deterministicId) {
+          formData.append('overwrite_id', deterministicId);
         }
 
         const externalResponse = await fetch(process.env.EXTERNAL_UPLOAD_URL, {
@@ -538,9 +554,23 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
     // Phase 2: Try Cloudinary (Priority 2)
     if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
       try {
+        const cloudinaryOptions = {
+          resource_type: 'image',
+          format: 'webp'
+        };
+
+        if (deterministicId) {
+          // Use deterministic public_id to overwrite existing image
+          cloudinaryOptions.public_id = deterministicId;
+          cloudinaryOptions.overwrite = true;
+          cloudinaryOptions.invalidate = true; // Invalidate CDN cache
+        } else {
+          cloudinaryOptions.folder = 'mcprim';
+        }
+
         const result = await new Promise((resolve, reject) => {
           const uploadStream = cloudinary.uploader.upload_stream(
-            { folder: 'mcprim', resource_type: 'image', format: 'webp' },
+            cloudinaryOptions,
             (error, result) => {
               if (error) reject(error);
               else resolve(result);
@@ -549,10 +579,17 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
           uploadStream.end(processedBuffer);
         });
 
-        console.log('[Upload] Image uploaded to Cloudinary:', result.secure_url);
+        // Append version/timestamp to URL to bust CDN cache
+        let imageUrl = result.secure_url;
+        if (deterministicId) {
+          const separator = imageUrl.includes('?') ? '&' : '?';
+          imageUrl = `${imageUrl}${separator}v=${result.version || Date.now()}`;
+        }
+
+        console.log('[Upload] Image uploaded to Cloudinary:', imageUrl);
         return res.json({
           success: true,
-          url: result.secure_url,
+          url: imageUrl,
           cloud: true
         });
       } catch (cloudErr) {
@@ -561,7 +598,10 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
     }
 
     // fallback: Local storage (Ephemeral/Development)
-    const filename = nanoid(10) + '.webp';
+    // For local storage with overwrite: use deterministic filename
+    const filename = deterministicId
+      ? `user_${userId}_${purpose}.webp`
+      : nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
     await fs.promises.writeFile(out, processedBuffer);
 
@@ -570,7 +610,7 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
 
     return res.json({
       success: true,
-      url: `${base}/uploads/${filename}`,
+      url: `${base}/uploads/${filename}?v=${Date.now()}`,
       local: true
     });
 

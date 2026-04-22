@@ -577,7 +577,7 @@ const GalleryManager = {
 
 const ShareManager = {
 
-    async captureAndUploadCard(element) {
+    async captureAndUploadCard(element, purpose = null) {
         await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
         const canvas = await ExportManager.captureElement(element, 2);
 
@@ -588,7 +588,7 @@ const ShareManager = {
                 }
                 try {
                     const file = new File([blob], "card-capture.png", { type: "image/png" });
-                    const imageUrl = await UIManager.uploadImageToServer(file);
+                    const imageUrl = await UIManager.uploadImageToServer(file, purpose);
                     resolve(imageUrl);
                 } catch (e) {
                     reject(e);
@@ -668,11 +668,11 @@ const ShareManager = {
         try {
             // Deep clone state so modifications don't leak to auto-save
             shareState = JSON.parse(JSON.stringify(StateManager.getStateObject()));
-            frontImageUrl = await this.captureAndUploadCard(DOMElements.cardFront);
+            frontImageUrl = await this.captureAndUploadCard(DOMElements.cardFront, 'capturedFront');
 
             UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.uploading);
             if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, true, i18nMain.uploading || 'جاري الرفع...');
-            backImageUrl = await this.captureAndUploadCard(DOMElements.cardBack);
+            backImageUrl = await this.captureAndUploadCard(DOMElements.cardBack, 'capturedBack');
 
         } catch (error) {
             console.error("Card capture/upload failed:", error);
@@ -1051,7 +1051,8 @@ const EventManager = {
                 DOMElements.previews.logo.src = imageUrl;
                 UIManager.updateFavicon(imageUrl);
             },
-            cropOptions: { aspectRatio: NaN } // Free crop for logos
+            cropOptions: { aspectRatio: NaN }, // Free crop for logos
+            purpose: 'logo'
         }));
 
         DOMElements.fileInputs.photo.addEventListener('change', e => UIManager.handleImageUpload(e, {
@@ -1063,7 +1064,8 @@ const EventManager = {
                 DOMElements.photoControls.url.value = imageUrl;
                 DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
             },
-            cropOptions: { aspectRatio: 1 / 1 } // Square crop for personal photos
+            cropOptions: { aspectRatio: 1 / 1 }, // Square crop for personal photos
+            purpose: 'photo'
         }));
 
         DOMElements.fileInputs.frontBg.addEventListener('change', e => UIManager.handleImageUpload(e, {
@@ -1072,7 +1074,8 @@ const EventManager = {
                 CardManager.frontBgImageUrl = url; DOMElements.buttons.removeFrontBg.style.display = 'block';
                 CardManager.updateCardBackgrounds();
             },
-            cropOptions: { skipCrop: true }
+            cropOptions: { skipCrop: true },
+            purpose: 'front_bg'
         }));
 
         DOMElements.fileInputs.backBg.addEventListener('change', e => UIManager.handleImageUpload(e, {
@@ -1081,7 +1084,8 @@ const EventManager = {
                 CardManager.backBgImageUrl = url; DOMElements.buttons.removeBackBg.style.display = 'block';
                 CardManager.updateCardBackgrounds();
             },
-            cropOptions: { skipCrop: true }
+            cropOptions: { skipCrop: true },
+            purpose: 'back_bg'
         }));
 
         DOMElements.fileInputs.qrCode.addEventListener('change', e => UIManager.handleImageUpload(e, {
@@ -1090,7 +1094,8 @@ const EventManager = {
                 CardManager.qrCodeImageUrl = imageUrl; DOMElements.qrImageUrlInput.value = imageUrl;
                 CardManager.updateQrCodeDisplay();
             },
-            cropOptions: { skipCrop: true }
+            cropOptions: { skipCrop: true },
+            purpose: 'qr'
         }));
 
         DOMElements.themeGallery.addEventListener('click', (e) => {

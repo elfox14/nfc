@@ -401,13 +401,41 @@ const UIManager = {
         }
     },
 
-    async uploadImageToServer(file) {
+    async uploadImageToServer(file, purpose = null) {
         const formData = new FormData();
         formData.append("image", file);
         // التغيير هنا: إرسال الطلب مباشرة إلى سيرفر الصور لتجاوز حظر "البوتات" على سيرفر Render
         formData.append("secret", "mcprime_upload_secret_2024_xK9mP2vL");
+        // إرسال الغرض من الصورة لاستبدال الصورة القديمة
+        if (purpose) {
+            formData.append("purpose", purpose);
+        }
 
         try {
+            // Try authenticated upload to local server first (supports overwrite)
+            const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
+            if (isLoggedIn && purpose) {
+                try {
+                    console.log(`[Upload] Uploading with purpose: ${purpose} (overwrite mode)`);
+                    const localFormData = new FormData();
+                    localFormData.append("image", file);
+                    localFormData.append("purpose", purpose);
+
+                    const localResponse = await Auth.apiFetchWithRefresh(`${Config.API_BASE_URL}/api/upload-image`, {
+                        method: "POST",
+                        body: localFormData
+                    });
+                    const localResult = await localResponse.json();
+                    if (localResponse.ok && localResult.url) {
+                        console.log(`[Upload] Overwrite upload succeeded:`, localResult.url);
+                        return localResult.url;
+                    }
+                } catch (authUploadErr) {
+                    console.warn("[Upload] Authenticated overwrite upload failed, falling back:", authUploadErr.message);
+                }
+            }
+
+            // Fallback: Direct upload to external server (no overwrite support)
             const uploadUrl = "https://uploads.mcprim.com/upload.php";
             const response = await fetch(uploadUrl, {
                 method: "POST",
@@ -438,7 +466,7 @@ const UIManager = {
         }
     },
 
-    async handleImageUpload(event, { maxSizeMB, errorEl, spinnerEl, onSuccess, cropOptions = { aspectRatio: NaN } }) {
+    async handleImageUpload(event, { maxSizeMB, errorEl, spinnerEl, onSuccess, cropOptions = { aspectRatio: NaN }, purpose = null }) {
         const fileInput = event.target;
         const file = fileInput.files[0];
 
@@ -497,7 +525,7 @@ const UIManager = {
             const fileNameClean = file.name.replace(/(\.[\w\d_-]+)$/i, cropOptions.skipCrop ? '$1' : '_cropped.png');
             const fileToUpload = dataURLtoFile(finalDataUrl, fileNameClean);
 
-            const imageUrl = await this.uploadImageToServer(fileToUpload);
+            const imageUrl = await this.uploadImageToServer(fileToUpload, purpose);
 
             if (spinnerEl) spinnerEl.style.display = "none";
 

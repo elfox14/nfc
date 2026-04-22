@@ -240,12 +240,12 @@ const EditorUserStatus = {
 
                         // Capture Front
                         console.log('[EditorUserStatus] Capturing front...');
-                        const frontImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardFront);
+                        const frontImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardFront, 'capturedFront');
                         console.log('[EditorUserStatus] Front captured:', frontImageUrl);
 
                         // Capture Back
                         console.log('[EditorUserStatus] Capturing back...');
-                        const backImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardBack);
+                        const backImageUrl = await ShareManager.captureAndUploadCard(DOMElements.cardBack, 'capturedBack');
                         console.log('[EditorUserStatus] Back captured:', backImageUrl);
 
                         if (!state.imageUrls) state.imageUrls = {};
