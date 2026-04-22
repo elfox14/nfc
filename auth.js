@@ -31,13 +31,16 @@ const Auth = {
         return !!(userStr && userStr !== 'null' && userStr !== 'undefined');
     },
 
-    // SECURITY: Token is in HttpOnly cookies only — we only store user info in localStorage
     setSession(token, user) {
-        // 'token' parameter kept for backward compatibility but no longer stored
         console.log('[Auth] Setting session:', { user: user?.email });
         this.user = user;
         localStorage.setItem('authUser', JSON.stringify(user));
-        // Do NOT store token in localStorage — HttpOnly cookies handle auth
+        
+        // Save token to localStorage as fallback for third-party cookie blocking on mobile
+        if (token) {
+            this.token = token;
+            localStorage.setItem('authToken', token);
+        }
     },
 
     clearSession() {
@@ -47,9 +50,12 @@ const Auth = {
     },
 
     getHeader() {
-        // SECURITY: Auth is handled by HttpOnly cookies (credentials: 'include')
-        // No longer sending Authorization header with token from localStorage
-        return {};
+        const headers = {};
+        const token = localStorage.getItem('authToken') || this.token;
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        return headers;
     },
 
     isEnglish() {
@@ -73,7 +79,7 @@ const Auth = {
             const data = await res.json();
 
             if (data.success) {
-                this.setSession(null, data.user);
+                this.setSession(data.token, data.user);
                 return { success: true };
             }
 
@@ -102,7 +108,7 @@ const Auth = {
             const data = await res.json();
 
             if (data.success) {
-                this.setSession(null, data.user);
+                this.setSession(data.token, data.user);
                 return { success: true };
             }
 
@@ -143,7 +149,7 @@ const Auth = {
 
             if (data.success && data.user) {
                 console.log('[Auth] Session refreshed successfully');
-                this.setSession(null, data.user);
+                this.setSession(data.token, data.user);
                 return true;
             } else {
                 console.warn('[Auth] Refresh failed:', data.error || 'Unknown error');
@@ -173,7 +179,7 @@ const Auth = {
             const data = await res.json();
             if (data.success) {
                 console.log('[Auth] Session initialized successfully via token');
-                if (data.user) this.setSession(null, data.user);
+                if (data.user) this.setSession(data.token, data.user);
                 return true;
             }
         } catch (err) {
@@ -190,9 +196,9 @@ const Auth = {
     _refreshPromise: null,
 
     async apiFetchWithRefresh(url, options = {}) {
-        // Ensure headers exist
-        options.headers = options.headers || {};
-        // SECURITY: Auth is handled by HttpOnly cookies
+        // Ensure headers exist and inject auth token
+        options.headers = { ...(options.headers || {}), ...this.getHeader() };
+        // SECURITY: Auth is handled by HttpOnly cookies (where supported)
         options.credentials = 'include';
 
         try {
@@ -213,7 +219,8 @@ const Auth = {
 
                 if (refreshed) {
                     console.log('[Auth] Refresh successful, retrying original request...');
-                    // Cookies updated by refresh — just retry
+                    // Update headers with the NEW token
+                    options.headers = { ...options.headers, ...this.getHeader() };
                     res = await fetch(url, options);
                 } else {
                     console.error('[Auth] Refresh failed, logging out.');

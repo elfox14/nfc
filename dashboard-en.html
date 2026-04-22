@@ -525,8 +525,8 @@
             document.getElementById('user-display-name').textContent = Auth.user?.name || 'User';
 
             // Check URL params for tab
-            const urlParams = new URLSearchParams(window.location.search);
-            const tab = urlParams.get('tab');
+            const tabParams = new URLSearchParams(window.location.search);
+            const tab = tabParams.get('tab');
             if (tab) {
                 const sidebarItem = document.querySelector(`.sidebar-item[data-section="${tab}"]`);
                 if (sidebarItem) {

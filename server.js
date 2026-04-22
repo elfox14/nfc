@@ -889,8 +889,8 @@ app.post('/api/auth/register', [
       path: '/'
     });
 
-    // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
-    res.status(201).json({ success: true, user: { name, email, userId, isVerified: false } });
+    // Return token in body as fallback for third-party cookie blocking
+    res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
 
   } catch (err) {
     if (err.code === 11000) {
@@ -962,8 +962,8 @@ app.post('/api/auth/login', [
     });
 
     console.log(`[Login] Successful login for: ${email}. Token issued.`);
-    // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
-    res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
+    // Return token in body as fallback for third-party cookie blocking
+    res.json({ success: true, token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Login error:', err);
@@ -1438,8 +1438,8 @@ app.post('/api/auth/refresh', async (req, res) => {
       path: '/'
     });
 
-    // SECURITY: Token is in HttpOnly cookie only — do NOT send in response body
-    res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
+    // Return token in body as fallback for third-party cookie blocking
+    res.json({ success: true, token: newAccessToken, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Token refresh error:', err);
@@ -1526,9 +1526,12 @@ app.post('/api/auth/session-init', async (req, res) => {
       return res.status(401).json({ error: 'User not found during initialization' });
     }
 
-    // Cookies were already set by /google/callback — just return user info
+    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+
+    // Cookies were already set by /google/callback — just return user info and token for fallback
     res.json({
       success: true,
+      token: accessToken,
       user: { userId: user.userId, email: user.email, name: user.name }
     });
 
