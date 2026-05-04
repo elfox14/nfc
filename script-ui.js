@@ -404,8 +404,8 @@ const UIManager = {
     async uploadImageToServer(file, purpose = null) {
         const formData = new FormData();
         formData.append("image", file);
-        // التغيير هنا: إرسال الطلب مباشرة إلى سيرفر الصور لتجاوز حظر "البوتات" على سيرفر Render
-        formData.append("secret", "mcprime_upload_secret_2024_xK9mP2vL");
+        // NOTE: Secret is sent server-side via server.js proxy (UPLOAD_SECRET env var).
+        // The direct PHP fallback relies on the server's UPLOAD_SECRET environment variable.
 
         // Build deterministic overwrite ID from user info + purpose
         const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
