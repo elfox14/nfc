@@ -2340,6 +2340,75 @@ app.get('/api/admin/errors', (req, res) => {
   });
 });
 
+// Admin endpoint for system statistics
+app.get('/api/admin/stats', async (req, res) => {
+  try {
+    if (!assertAdmin(req, res)) return;
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const totalUsers = await db.collection(usersCollectionName).countDocuments();
+    const verifiedUsers = await db.collection(usersCollectionName).countDocuments({ isVerified: true });
+    const totalDesigns = await db.collection(designsCollectionName).countDocuments();
+    
+    // Most recent 5 designs
+    const recentDesigns = await db.collection(designsCollectionName)
+      .find({}, { projection: { shortId: 1, 'data.inputs.name': 1, views: 1, createdAt: 1 } })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .toArray();
+
+    res.json({
+      totalUsers,
+      verifiedUsers,
+      totalDesigns,
+      recentDesigns
+    });
+  } catch (err) {
+    console.error('Admin stats error:', err);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+// Admin endpoint to list users
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    if (!assertAdmin(req, res)) return;
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const limit = parseInt(req.query.limit) || 20;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+    
+    let query = {};
+    if (req.query.search) {
+      query = {
+        $or: [
+          { name: { $regex: req.query.search, $options: 'i' } },
+          { email: { $regex: req.query.search, $options: 'i' } }
+        ]
+      };
+    }
+
+    const total = await db.collection(usersCollectionName).countDocuments(query);
+    const users = await db.collection(usersCollectionName)
+      .find(query, { projection: { password: 0, refreshTokenHash: 0, verificationTokenHash: 0 } })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    res.json({
+      users,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    });
+  } catch (err) {
+    console.error('Admin users error:', err);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
 // Process-level error handlers (prevent silent crashes)
 process.on('unhandledRejection', (reason) => {
   trackError(reason instanceof Error ? reason : new Error(String(reason)), { route: 'unhandledRejection' });
