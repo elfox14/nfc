@@ -129,6 +129,11 @@ app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
+// --- HEALTH CHECK (for uptime monitors & container orchestration) ---
+app.get('/healthz', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), dbConnected: !!db });
+});
+
 // --- DATABASE CONNECTION ---
 const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'mcnfc';
@@ -2186,17 +2191,94 @@ app.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
   res.sendFile(path.join(rootDir, 'editor.html'));
 });
 
-// --- STATIC FILE HANDLER ---
-app.use('/nfc', express.static(rootDir, { extensions: ['html'] }));
+// --- CLIENT ERROR REPORTING ENDPOINT ---
+const clientErrorLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: '',
+});
+app.post('/api/client-error', clientErrorLimiter, express.json({ limit: '4kb' }), (req, res) => {
+  const { message, source, line, col, stack, url: pageUrl } = req.body || {};
+  if (!message) return res.status(400).end();
+  console.error(`[ClientError] ${message} | ${source || ''}:${line || 0} | ${pageUrl || ''}`);
+  // Store in errorBuffer (defined below) if available
+  if (typeof trackError === 'function') {
+    trackError(new Error(message), { route: 'CLIENT', source, line, col, pageUrl });
+  }
+  res.status(204).end();
+});
 
-// --- GENERAL ERROR HANDLER ---
+// --- STATIC FILE HANDLER with Smart Caching ---
+app.use('/nfc', express.static(rootDir, {
+  extensions: ['html'],
+  setHeaders: (res, filePath) => {
+    const ext = path.extname(filePath).toLowerCase();
+    if (['.css', '.js'].includes(ext)) {
+      // CSS/JS: Cache for 7 days, revalidate
+      res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
+    } else if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.woff2', '.woff', '.ttf'].includes(ext)) {
+      // Images & fonts: Cache for 30 days
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+    } else if (ext === '.html') {
+      // HTML: Always revalidate (fresh content)
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    } else if (ext === '.json') {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    }
+  }
+}));
+
+// --- GENERAL ERROR HANDLER with Error Tracking ---
+const errorBuffer = []; // In-memory circular buffer for recent errors
+const MAX_ERROR_BUFFER = 100;
+
+function trackError(error, context = {}) {
+  const entry = {
+    timestamp: new Date().toISOString(),
+    message: error.message || String(error),
+    stack: error.stack?.split('\n').slice(0, 5).join('\n'),
+    ...context,
+  };
+  errorBuffer.push(entry);
+  if (errorBuffer.length > MAX_ERROR_BUFFER) errorBuffer.shift();
+  console.error(`[ErrorTracker] ${entry.timestamp} | ${context.route || 'unknown'} | ${entry.message}`);
+}
+
 app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err.stack || err);
+  trackError(err, {
+    route: `${req.method} ${req.originalUrl}`,
+    ip: req.ip,
+    userAgent: req.get('User-Agent')?.substring(0, 80),
+  });
   const statusCode = err.status || 500;
   const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message;
   if (!res.headersSent) {
     res.status(statusCode).json({ error: message });
   }
+});
+
+// Admin endpoint to view recent errors (secured by admin token)
+app.get('/api/admin/errors', (req, res) => {
+  if (!assertAdmin(req, res)) return;
+  const limit = Math.min(parseInt(req.query.limit) || 50, MAX_ERROR_BUFFER);
+  res.json({
+    total: errorBuffer.length,
+    errors: errorBuffer.slice(-limit).reverse(),
+  });
+});
+
+// Process-level error handlers (prevent silent crashes)
+process.on('unhandledRejection', (reason) => {
+  trackError(reason instanceof Error ? reason : new Error(String(reason)), { route: 'unhandledRejection' });
+});
+
+process.on('uncaughtException', (error) => {
+  trackError(error, { route: 'uncaughtException' });
+  // Give time to flush logs, then exit
+  console.error('[FATAL] Uncaught exception — server will restart');
+  setTimeout(() => process.exit(1), 1000);
 });
 
 // =================================================================
@@ -2213,7 +2295,41 @@ const wss = new WebSocketServer({ server });
 // Map<collabId, Set<WebSocket>>
 const rooms = new Map();
 
+// === WebSocket Security: Rate limiting & connection limits ===
+const WS_LIMITS = {
+  MAX_MESSAGE_SIZE: 64 * 1024,       // 64KB max per message
+  MAX_MESSAGES_PER_SEC: 30,           // 30 messages per second
+  MAX_CONNECTIONS_PER_IP: 5,          // 5 simultaneous connections per IP
+  MAX_ROOM_SIZE: 10,                  // 10 participants per room
+  RATE_WINDOW_MS: 1000,              // 1 second window
+};
+
+// Track connections per IP
+const wsConnectionsPerIP = new Map();
+
+function getClientIP(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+}
+
 wss.on('connection', (ws, req) => {
+  // --- Connection limit per IP ---
+  const clientIP = getClientIP(req);
+  const currentCount = wsConnectionsPerIP.get(clientIP) || 0;
+
+  if (currentCount >= WS_LIMITS.MAX_CONNECTIONS_PER_IP) {
+    console.log(`WebSocket rejected: IP ${clientIP} exceeded max connections (${WS_LIMITS.MAX_CONNECTIONS_PER_IP})`);
+    ws.close(1008, 'Too many connections from your IP');
+    return;
+  }
+  wsConnectionsPerIP.set(clientIP, currentCount + 1);
+
+  // Decrement on disconnect
+  ws.on('close', () => {
+    const count = wsConnectionsPerIP.get(clientIP) || 1;
+    if (count <= 1) wsConnectionsPerIP.delete(clientIP);
+    else wsConnectionsPerIP.set(clientIP, count - 1);
+  });
+
   // SECURITY: Extract only collabId from URL — token comes via first message
   const parameters = new url.URL(req.url, `ws://${req.headers.host}`).searchParams;
   const collabId = parameters.get('collabId');
@@ -2246,25 +2362,57 @@ wss.on('connection', (ws, req) => {
   // Listen for the first message as an auth message
   ws.once('message', (message) => {
     try {
+      // --- Max message size check ---
+      if (message.length > WS_LIMITS.MAX_MESSAGE_SIZE) {
+        clearTimeout(authTimeout);
+        ws.close(1009, 'Message too large');
+        return;
+      }
+
       const data = JSON.parse(message.toString());
       if (data.type === 'auth' && data.token) {
         jwt.verify(data.token, secret);
         authenticated = true;
         clearTimeout(authTimeout);
 
-        // Join the room after successful authentication
+        // --- Room size limit ---
         if (!rooms.has(collabId)) {
           rooms.set(collabId, new Set());
         }
         const room = rooms.get(collabId);
+
+        if (room.size >= WS_LIMITS.MAX_ROOM_SIZE) {
+          ws.close(1008, 'Room is full');
+          return;
+        }
+
         room.add(ws);
 
         console.log(`Client authenticated and joined room: ${collabId}. Room size: ${room.size}`);
         ws.send(JSON.stringify({ type: 'auth', success: true }));
 
+        // --- Rate limiter for this client ---
+        let messageTimestamps = [];
+
         // Now register the normal message handler for collaboration
         ws.on('message', (msg) => {
           try {
+            // Max message size check
+            if (msg.length > WS_LIMITS.MAX_MESSAGE_SIZE) {
+              ws.send(JSON.stringify({ type: 'error', message: 'Message too large' }));
+              return;
+            }
+
+            // Rate limiting: sliding window
+            const now = Date.now();
+            messageTimestamps = messageTimestamps.filter(t => now - t < WS_LIMITS.RATE_WINDOW_MS);
+            messageTimestamps.push(now);
+
+            if (messageTimestamps.length > WS_LIMITS.MAX_MESSAGES_PER_SEC) {
+              ws.send(JSON.stringify({ type: 'error', message: 'Rate limit exceeded. Slow down.' }));
+              return; // Drop message, don't broadcast
+            }
+
             room.forEach(client => {
               if (client !== ws && client.readyState === ws.OPEN) {
                 client.send(msg.toString());
