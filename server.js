@@ -488,7 +488,7 @@ function handleMulterErrors(err, req, res, next) {
 }
 
 function assertAdmin(req, res) {
-  const expected = process.env.ADMIN_TOKEN || '';
+  const expected = process.env.ADMIN_TOKENH || '';
   const provided = req.headers['x-admin-token'] || '';
   if (!expected || expected.length !== provided.length || !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided))) {
     res.status(401).json({ error: 'Unauthorized' });
