@@ -897,11 +897,8 @@ document.addEventListener('DOMContentLoaded', () => {
             backCardRenderArea.style.left = '-9999px';
             backCardRenderArea.style.visibility = 'hidden';
 
-            const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
-            const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
-
             frontDisplay.innerHTML = `<img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardFront}">`;
-            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardBack}" ${backImageStyle}>`;
+            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardBack}">`;
 
             const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
             flipWrapper.addEventListener('click', flipFn);
@@ -1009,11 +1006,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const capturedBack = imageUrls.capturedBack;
 
             if (capturedFront && capturedBack) {
-                const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
-                const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
-
                 frontDisplay.innerHTML = `<img src="${capturedFront}" alt="${i18n.cardFront}" loading="lazy">`;
-                backDisplay.innerHTML = `<img src="${capturedBack}" alt="${i18n.cardBack}" loading="lazy" ${backImageStyle}>`;
+                backDisplay.innerHTML = `<img src="${capturedBack}" alt="${i18n.cardBack}" loading="lazy">`;
 
                 const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
                 flipWrapper.addEventListener('click', flipFn);

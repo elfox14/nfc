@@ -36,10 +36,12 @@ window.MobileUtils = {
             // Reset scale on desktop
             const cardsWrapper = document.getElementById('cards-wrapper');
             if (cardsWrapper) cardsWrapper.style.transform = '';
+            const flipperContainer = document.querySelector('.card-flipper-container');
+            if (flipperContainer) flipperContainer.style.transform = '';
         }
     },
 
-    // --- NEW FUNCTION TO DYNAMICALLY SCALE THE CARD ---
+    // --- Dynamically scale the card to fit the preview area ---
     updateMobileCardScale: () => {
         if (!MobileUtils.isMobile()) return;
 
@@ -50,7 +52,7 @@ window.MobileUtils = {
 
         const layout = cardsWrapper.dataset.layout || 'classic';
 
-        // Get the base dimensions of the card
+        // Base card dimensions (CSS reference size)
         let cardWidth, cardHeight;
         if (layout === 'vertical') {
             cardWidth = 330;
@@ -60,20 +62,22 @@ window.MobileUtils = {
             cardHeight = 330;
         }
 
-        // Get the available dimensions of the canvas area, with some padding
-        const canvasPadding = 20; // 10px on each side
-        const availableWidth = canvas.clientWidth - canvasPadding;
-        const availableHeight = canvas.clientHeight - canvasPadding;
+        // Available space: canvas minus padding and flip button area
+        const canvasRect = canvas.getBoundingClientRect();
+        const availableWidth = canvasRect.width - 24; // 12px horizontal padding
+        const availableHeight = canvasRect.height - 64; // flip button + more vertical breathing room
 
-        // Calculate the scale ratio needed for width and height
+        // Calculate scale to fit, capped at 1.0 to prevent pixelation
         const scaleX = availableWidth / cardWidth;
         const scaleY = availableHeight / cardHeight;
+        const scale = Math.min(scaleX, scaleY, 1.0);
 
-        // Use the smaller of the two ratios to ensure the card fits completely
-        const scale = Math.min(scaleX, scaleY);
-
-        // Apply the calculated scale
-        cardsWrapper.style.transform = `scale(${scale})`;
+        // Apply scale to the flipper container (not wrapper, so flip button stays normal)
+        flipperContainer.style.transform = `scale(${scale})`;
+        flipperContainer.style.transformOrigin = 'center center';
+        
+        // Reset any old wrapper transform
+        cardsWrapper.style.transform = '';
     },
 
     setupNavigation: () => {

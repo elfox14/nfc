@@ -1670,8 +1670,9 @@ app.post('/api/save-card/:designId', verifyToken, async (req, res) => {
 
     // Get owner's privacy setting
     let ownerPrivacy = 'require_approval';
+    let owner = null;
     if (design.ownerId) {
-      const owner = await db.collection(usersCollectionName).findOne(
+      owner = await db.collection(usersCollectionName).findOne(
         { userId: design.ownerId },
         { projection: { cardPrivacy: 1, email: 1, name: 1 } }
       );
@@ -2087,10 +2088,15 @@ app.get('/healthz', (req, res) => {
 
 app.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
   if (req.useragent.isMobile) {
-    res.sendFile(path.join(rootDir, 'editor-mobile.html'));
-  } else {
-    res.sendFile(path.join(rootDir, 'editor.html'));
+    const mobilePath = path.join(rootDir, 'editor-mobile.html');
+    // Serve mobile-optimized editor if it exists, otherwise fall back to desktop editor
+    if (fs.existsSync(mobilePath)) {
+      return res.sendFile(mobilePath);
+    }
+    // Fallback: desktop editor (already has responsive mobile CSS via mobile.css)
+    console.log('[Editor] Mobile user detected, but editor-mobile.html not found. Serving editor.html.');
   }
+  res.sendFile(path.join(rootDir, 'editor.html'));
 });
 
 // --- STATIC FILE HANDLER ---

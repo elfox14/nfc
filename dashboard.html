@@ -307,19 +307,85 @@
         /* Responsive */
         @media (max-width: 1100px) {
             .dashboard-layout {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
             }
             .dashboard-sidebar {
                 position: relative;
                 top: 0;
+                min-width: 0;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 16px;
             }
             .sidebar-menu {
                 flex-direction: row;
                 overflow-x: auto;
                 padding-bottom: 8px;
+                -webkit-overflow-scrolling: touch;
             }
             .sidebar-item {
                 white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .sidebar-item.logout-btn {
+                width: auto;
+                margin-top: 0;
+            }
+        }
+
+        /* Dashboard Top Nav Responsive Fixes */
+        .dashboard-nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .user-display-name {
+            color: white;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+        
+        .logout-top-btn {
+            padding: 8px 15px;
+        }
+        
+        @media (max-width: 600px) {
+            .dashboard-container {
+                padding: 100px 10px 30px;
+                width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+            .dashboard-layout {
+                width: 100%;
+                max-width: 100%;
+            }
+            .designs-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+            .dashboard-nav-actions {
+                gap: 8px;
+            }
+            .user-display-name {
+                display: none; /* Hide username on very small screens to save space */
+            }
+            .logout-top-btn {
+                padding: 6px 10px;
+                font-size: 0.85rem;
+            }
+            .lang-btn {
+                padding: 4px 8px !important;
+                font-size: 0.85rem !important;
+            }
+            .navbar .nav-logo img {
+                height: 35px;
+            }
+            .navbar {
+                padding: 10px 0;
             }
         }
     </style>
@@ -335,10 +401,10 @@
             <a href="/nfc/" class="nav-logo">
                 <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME">
             </a>
-            <div style="display: flex; gap: 15px; align-items: center;">
+            <div class="dashboard-nav-actions">
                 <button onclick="switchLanguage('en')" class="lang-btn" style="padding: 5px 10px;">English</button>
-                <span id="user-display-name" style="color: white; font-weight: bold;"></span>
-                <button onclick="Auth.logout()" class="btn btn-secondary" style="padding: 8px 15px;">تسجيل خروج</button>
+                <span id="user-display-name" class="user-display-name"></span>
+                <button onclick="Auth.logout()" class="btn btn-secondary logout-top-btn">تسجيل خروج</button>
             </div>
         </div>
     </nav>

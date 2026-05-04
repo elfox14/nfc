@@ -49,7 +49,7 @@ body {
     min-height: 100vh;
 }
 
-html.ltr body {
+html[dir="ltr"] body {
     font-family: 'Poppins', sans-serif;
 }
 
@@ -153,10 +153,22 @@ html.ltr body {
     border-left: 1px solid var(--accent-secondary);
 }
 
+html[dir="ltr"] .pro-sidebar-left {
+    grid-column: 1 / 2;
+    border-left: none;
+    border-right: 1px solid var(--accent-secondary);
+}
+
 .pro-sidebar-right {
     grid-column: 1 / 2;
     grid-row: 1;
     border-right: 1px solid var(--accent-secondary);
+}
+
+html[dir="ltr"] .pro-sidebar-right {
+    grid-column: 3 / 4;
+    border-right: none;
+    border-left: 1px solid var(--accent-secondary);
 }
 
 .pro-toolbar .btn-success {
@@ -695,7 +707,7 @@ html:not([dir="rtl"]) .dropdown-menu {
     margin: 0;
 }
 
-html.ltr .dropdown-menu li button {
+html[dir="ltr"] .dropdown-menu li button {
     text-align: left;
 }
 
@@ -796,7 +808,7 @@ html.ltr .dropdown-menu li button {
     text-align: left;
 }
 
-html.ltr .dynamic-social-link span {
+html[dir="ltr"] .dynamic-social-link span {
     text-align: right;
 }
 
@@ -1076,7 +1088,7 @@ html.ltr .dynamic-social-link span {
     margin-inline-end: 8px;
 }
 
-html.ltr .phone-button i {
+html[dir="ltr"] .phone-button i {
     margin-inline-start: 8px;
     margin-inline-end: 0;
 }
@@ -1127,8 +1139,8 @@ html.ltr .phone-button i {
     text-align: right;
 }
 
-html.ltr .cards-wrapper[data-layout="modern"] #card-name,
-html.ltr .cards-wrapper[data-layout="modern"] #card-tagline {
+html[dir="ltr"] .cards-wrapper[data-layout="modern"] #card-name,
+html[dir="ltr"] .cards-wrapper[data-layout="modern"] #card-tagline {
     text-align: left;
 }
 
@@ -1444,7 +1456,7 @@ html.ltr .cards-wrapper[data-layout="modern"] #card-tagline {
     flex-wrap: wrap;
 }
 
-html.ltr .modal-footer {
+html[dir="ltr"] .modal-footer {
     text-align: right;
 }
 
@@ -1819,7 +1831,7 @@ footer a:hover {
     border-left: 5px solid var(--accent-primary);
 }
 
-html.ltr .testimonial-card {
+html[dir="ltr"] .testimonial-card {
     border-left: none;
     border-right: 5px solid var(--accent-primary);
 }
