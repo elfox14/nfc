@@ -628,6 +628,93 @@ app.post('/api/upload-image', verifyToken, upload.single('image'), handleMulterE
   }
 });
 
+// === PUBLIC UPLOAD PROXY (for unauthenticated users editing cards) ===
+// Rate-limited strictly to prevent abuse — no auth required
+const publicUploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 uploads per 15 minutes per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'محاولات رفع كثيرة. حاول مرة أخرى لاحقاً. / Too many uploads. Try again later.' }
+});
+
+app.post('/api/upload-image-public', publicUploadLimiter, upload.single('image'), handleMulterErrors, async (req, res) => {
+  try {
+    if (!req.file) {
+      if (!res.headersSent) {
+        return res.status(400).json({ error: 'لم يتم تقديم أي ملف صورة.' });
+      }
+      return;
+    }
+
+    // Process image with sharp (same as authenticated route)
+    const processedBuffer = await sharp(req.file.buffer)
+      .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 85 })
+      .toBuffer();
+
+    // No deterministic IDs for public uploads (no overwrite support)
+    // Phase 1: Try External Upload
+    if (process.env.EXTERNAL_UPLOAD_URL) {
+      try {
+        const formData = new FormData();
+        const blob = new Blob([processedBuffer], { type: 'image/webp' });
+        formData.append('image', blob, 'image.webp');
+        if (process.env.UPLOAD_SECRET) {
+          formData.append('secret', process.env.UPLOAD_SECRET);
+        }
+
+        const externalResponse = await fetch(process.env.EXTERNAL_UPLOAD_URL, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (externalResponse.ok) {
+          const result = await externalResponse.json();
+          if (result.success && result.url) {
+            console.log('[PublicUpload] Image uploaded to external server:', result.url);
+            return res.json({ success: true, url: result.url, external: true });
+          }
+        }
+        console.warn('[PublicUpload] External upload returned error status:', externalResponse.status);
+      } catch (externalErr) {
+        console.warn('[PublicUpload] External upload failed, falling back:', externalErr.message);
+      }
+    }
+
+    // Phase 2: Try Cloudinary
+    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+      try {
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { resource_type: 'image', format: 'webp', folder: 'mcprim' },
+            (error, result) => { if (error) reject(error); else resolve(result); }
+          );
+          uploadStream.end(processedBuffer);
+        });
+        console.log('[PublicUpload] Image uploaded to Cloudinary:', result.secure_url);
+        return res.json({ success: true, url: result.secure_url, cloud: true });
+      } catch (cloudErr) {
+        console.warn('[PublicUpload] Cloudinary upload failed, falling back to local:', cloudErr.message);
+      }
+    }
+
+    // Phase 3: Local fallback
+    const filename = nanoid(10) + '.webp';
+    const out = path.join(uploadDir, filename);
+    await fs.promises.writeFile(out, processedBuffer);
+    const base = absoluteBaseUrl(req);
+    console.log('[PublicUpload] Image saved locally:', filename);
+    return res.json({ success: true, url: `${base}/uploads/${filename}?v=${Date.now()}`, local: true });
+
+  } catch (e) {
+    console.error('Public image upload error:', e);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'فشل معالجة الصورة.' });
+    }
+  }
+});
+
 app.post('/api/save-design', verifyToken, async (req, res) => {
   try {
     if (!db) return res.status(500).json({ error: 'DB not connected' });

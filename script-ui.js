@@ -447,11 +447,17 @@ const UIManager = {
                 }
             }
 
-            // Fallback: Direct upload to external server (with overwrite_id if available)
-            const uploadUrl = "https://uploads.mcprim.com/upload.php";
-            const response = await fetch(uploadUrl, {
+            // Fallback: Public upload proxy (server handles secret and external upload)
+            console.log("[Upload] Using public upload proxy...");
+            const publicFormData = new FormData();
+            publicFormData.append("image", file);
+            if (overwriteId) {
+                publicFormData.append("overwrite_id", overwriteId);
+            }
+
+            const response = await fetch(`${Config.API_BASE_URL}/api/upload-image-public`, {
                 method: "POST",
-                body: formData
+                body: publicFormData
             });
 
             const result = await response.json();
@@ -462,26 +468,15 @@ const UIManager = {
 
             // Cache-bust for overwritten images
             let finalUrl = result.url;
-            if (overwriteId && finalUrl) {
+            if (overwriteId && finalUrl && !finalUrl.includes('v=')) {
                 const separator = finalUrl.includes('?') ? '&' : '?';
                 finalUrl = `${finalUrl}${separator}v=${Date.now()}`;
             }
 
             return finalUrl;
         } catch (error) {
-            console.error("Direct image upload failed:", error);
-            // محاولة أخيرة عبر السيرفر المحلي في حال فشل الاتصال المباشر (رغم أنه قد يفشل بسبب الحظر)
-            try {
-                console.log("Attempting fallback to local server upload...");
-                const localResponse = await fetch(`${Config.API_BASE_URL}/api/upload-image`, {
-                    method: "POST",
-                    body: formData
-                });
-                const localResult = await localResponse.json();
-                return localResult.url;
-            } catch (fallbackError) {
-                throw new Error("فشل الرفع المباشر والمحلي. تأكد من اتصالك بالإنترنت.");
-            }
+            console.error("Image upload failed:", error);
+            throw new Error("فشل رفع الصورة. تأكد من اتصالك بالإنترنت. / Upload failed. Check your internet connection.");
         }
     },
 
