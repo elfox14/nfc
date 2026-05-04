@@ -488,9 +488,11 @@ function handleMulterErrors(err, req, res, next) {
 }
 
 function assertAdmin(req, res) {
-  const expected = process.env.ADMIN_TOKENH || '';
-  const provided = req.headers['x-admin-token'] || '';
-  if (!expected || expected.length !== provided.length || !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided))) {
+  const expected = (process.env.ADMIN_TOKENH || '').trim();
+  const provided = (req.headers['x-admin-token'] || '').trim();
+  
+  if (!expected || expected === '' || expected !== provided) {
+    console.warn('[Admin Auth Failed]', { providedLength: provided.length, expectedLength: expected.length });
     res.status(401).json({ error: 'Unauthorized' });
     return false;
   }
