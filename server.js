@@ -747,6 +747,21 @@ app.post('/api/save-design', verifyToken, async (req, res) => {
     // Retrieve ownerId from authenticated session via verifyToken
     let ownerId = req.user.userId;
 
+    // Soft limit: unverified users can only save up to 3 designs
+    const UNVERIFIED_DESIGN_LIMIT = 3;
+    const user = await db.collection(usersCollectionName).findOne({ userId: ownerId });
+    if (user && !user.isVerified && !existingId) {
+      const designCount = await db.collection(designsCollectionName).countDocuments({ ownerId });
+      if (designCount >= UNVERIFIED_DESIGN_LIMIT) {
+        return res.status(403).json({ 
+          error: user.email ? 
+            'يرجى تأكيد بريدك الإلكتروني لحفظ المزيد من التصاميم' : 
+            'Please verify your email to save more designs',
+          code: 'EMAIL_NOT_VERIFIED'
+        });
+      }
+    }
+
     if (existingId) {
       const existingDesign = await db.collection(designsCollectionName).findOne({ shortId: existingId });
       if (existingDesign) {
@@ -1055,7 +1070,16 @@ app.post('/api/auth/login', [
 
     console.log(`[Login] Successful login for: ${email}. Token issued.`);
     // Return token in body as fallback for third-party cookie blocking
-    res.json({ success: true, token: accessToken, user: { name: user.name, email: user.email, userId: user.userId } });
+    // Include isVerified so frontend can show verification reminder
+    const loginResponse = { 
+      success: true, 
+      token: accessToken, 
+      user: { name: user.name, email: user.email, userId: user.userId, isVerified: !!user.isVerified } 
+    };
+    if (!user.isVerified) {
+      loginResponse.warning = 'email_not_verified';
+    }
+    res.json(loginResponse);
 
   } catch (err) {
     console.error('Login error:', err);
@@ -1477,6 +1501,53 @@ app.post('/api/auth/verify-email', authLimiter, async (req, res) => {
   } catch (err) {
     console.error('Verify email error:', err);
     res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
+// --- RESEND VERIFICATION EMAIL ---
+app.post('/api/auth/resend-verification', verifyToken, authLimiter, async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'DB not connected' });
+
+    const user = await db.collection(usersCollectionName).findOne({ userId: req.user.userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (user.isVerified) {
+      return res.json({ success: true, message: 'البريد مُتحقق مسبقاً' });
+    }
+
+    // Generate new verification token
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
+    const verificationToken = jwt.sign(
+      { userId: user.userId, email: user.email, type: 'email-verify' },
+      secret,
+      { expiresIn: '24h' }
+    );
+
+    // Store new verification token hash
+    await db.collection(usersCollectionName).updateOne(
+      { userId: user.userId },
+      { $set: { verificationTokenHash: hashToken(verificationToken) } }
+    );
+
+    // Send verification email
+    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
+    const verifyUrl = `${baseUrl}/verify-email.html?token=${verificationToken}`;
+    try {
+      const emailTemplate = EmailService.verificationEmail(user.name, verifyUrl);
+      await EmailService.send({ to: user.email, ...emailTemplate });
+    } catch (emailErr) {
+      console.warn('[ResendVerification] Email sending failed:', emailErr.message);
+      return res.status(500).json({ error: 'فشل إرسال البريد. حاول لاحقاً.' });
+    }
+
+    console.log(`[ResendVerification] Verification email resent to: ${user.email}`);
+    res.json({ success: true, message: 'تم إرسال رسالة التحقق' });
+
+  } catch (err) {
+    console.error('Resend verification error:', err);
+    res.status(500).json({ error: 'Failed to resend verification email' });
   }
 });
 

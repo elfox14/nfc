@@ -35,6 +35,7 @@
   </footer>
     <script src="/nfc/cookie-consent.js" defer></script>
     <script src="/nfc/error-reporter.js" defer></script>
+    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/nfc/sw.js',{scope:'/nfc/'}).catch(e=>console.warn('SW reg failed:',e))}</script>
 </body>
 
 </html>

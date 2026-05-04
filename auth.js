@@ -80,6 +80,9 @@ const Auth = {
 
             if (data.success) {
                 this.setSession(data.token, data.user);
+                if (data.warning === 'email_not_verified') {
+                    setTimeout(() => this._showVerificationBanner(), 1000);
+                }
                 return { success: true };
             }
 
@@ -505,6 +508,31 @@ const Auth = {
             }
             toolbar.appendChild(a);
         }
+    },
+
+    _showVerificationBanner() {
+        if (document.getElementById('email-verify-banner')) return;
+        const en = this.isEnglish();
+        const banner = document.createElement('div');
+        banner.id = 'email-verify-banner';
+        banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99998;background:linear-gradient(135deg,#f59e0b,#d97706);color:#1a1a1a;padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;font-family:Inter,sans-serif;font-size:14px;font-weight:500;box-shadow:0 -2px 12px rgba(0,0,0,.15)';
+        banner.innerHTML = `
+            <span>${en ? '⚠️ Your email is not verified. Some features may be limited.' : '⚠️ بريدك الإلكتروني غير مُتحقق. بعض الميزات قد تكون محدودة.'}</span>
+            <button id="verify-resend-btn" style="padding:6px 16px;background:#1a1a1a;color:#f59e0b;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap">${en ? 'Resend Email' : 'إعادة الإرسال'}</button>
+            <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#1a1a1a;cursor:pointer;font-size:18px;padding:0 4px;opacity:.6">✕</button>
+        `;
+        document.body.appendChild(banner);
+        document.getElementById('verify-resend-btn').addEventListener('click', async (e) => {
+            e.target.disabled = true;
+            e.target.textContent = en ? 'Sending...' : 'جارٍ الإرسال...';
+            try {
+                const res = await this.apiFetchWithRefresh(`${this.getBaseUrl()}/api/auth/resend-verification`, { method: 'POST' });
+                const data = await res.json();
+                e.target.textContent = data.success ? (en ? '✓ Sent!' : '✓ تم الإرسال!') : (en ? 'Failed' : 'فشل');
+            } catch (err) {
+                e.target.textContent = en ? 'Error' : 'خطأ';
+            }
+        });
     },
 };
 

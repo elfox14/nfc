@@ -2,6 +2,7 @@
   "name": "محرر بطاقة الأعمال الرقمية - MC PRIME",
   "short_name": "MC PRIME NFC",
   "description": "صمم واحفظ وشارك بطاقات عمل رقمية احترافية مع دعم NFC و QR Code.",
+  "id": "/nfc/",
   "start_url": "/nfc/",
   "scope": "/nfc/",
   "display": "standalone",

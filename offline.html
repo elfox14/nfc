@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>غير متصل — MC PRIME NFC</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #0f1724, #1a2744);
+      color: #e0e0e0;
+      text-align: center;
+      padding: 24px;
+    }
+    .container {
+      max-width: 420px;
+    }
+    .icon {
+      font-size: 72px;
+      margin-bottom: 20px;
+      opacity: 0.6;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    p {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #9ca3af;
+      margin-bottom: 28px;
+    }
+    .retry-btn {
+      display: inline-block;
+      padding: 12px 32px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>أنت غير متصل بالإنترنت</h1>
+    <p>تحقق من اتصالك بالإنترنت وحاول مرة أخرى. <br>ستعود الصفحة للعمل تلقائياً عند استعادة الاتصال.</p>
+    <button class="retry-btn" onclick="window.location.reload()">إعادة المحاولة</button>
+  </div>
+  <script>
+    // Auto-reload when connection is restored
+    window.addEventListener('online', () => window.location.reload());
+  </script>
+</body>
+</html>
