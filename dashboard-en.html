@@ -390,6 +390,7 @@
         }
     </style>
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
+    <link rel="stylesheet" href="/nfc/premium-ui.css">
 </head>
 
 <body>
@@ -462,10 +463,28 @@
                         </div>
                     </div>
                     <div id="designs-grid" class="designs-grid">
-                        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                            <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
-                            <p style="margin-top: 10px;">Loading designs...</p>
-                        </div>
+                        
+    <div class="design-card skeleton animate-on-scroll">
+        <div class="card-thumb skeleton"></div>
+        <div class="card-details">
+            <div class="skeleton-title skeleton"></div>
+            <div class="skeleton-text skeleton"></div>
+        </div>
+    </div>
+    <div class="design-card skeleton animate-on-scroll">
+        <div class="card-thumb skeleton"></div>
+        <div class="card-details">
+            <div class="skeleton-title skeleton"></div>
+            <div class="skeleton-text skeleton"></div>
+        </div>
+    </div>
+    <div class="design-card skeleton animate-on-scroll">
+        <div class="card-thumb skeleton"></div>
+        <div class="card-details">
+            <div class="skeleton-title skeleton"></div>
+            <div class="skeleton-text skeleton"></div>
+        </div>
+    </div>
                     </div>
                 </div>
 
@@ -477,9 +496,28 @@
                         </div>
                     </div>
                     <div id="saved-cards-grid" class="designs-grid">
-                        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                            <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
-                        </div>
+                        
+    <div class="design-card skeleton animate-on-scroll">
+        <div class="card-thumb skeleton"></div>
+        <div class="card-details">
+            <div class="skeleton-title skeleton"></div>
+            <div class="skeleton-text skeleton"></div>
+        </div>
+    </div>
+    <div class="design-card skeleton animate-on-scroll">
+        <div class="card-thumb skeleton"></div>
+        <div class="card-details">
+            <div class="skeleton-title skeleton"></div>
+            <div class="skeleton-text skeleton"></div>
+        </div>
+    </div>
+    <div class="design-card skeleton animate-on-scroll">
+        <div class="card-thumb skeleton"></div>
+        <div class="card-details">
+            <div class="skeleton-title skeleton"></div>
+            <div class="skeleton-text skeleton"></div>
+        </div>
+    </div>
                     </div>
                 </div>
 
@@ -641,7 +679,7 @@
                         let imgTag = '<i class="fas fa-id-card"></i>';
                         if (thumb) imgTag = `<img src="${thumb}" alt="${name}" loading="lazy">`;
                         const card = document.createElement('div');
-                        card.className = 'design-card';
+                        card.className = 'design-card hover-lift animate-on-scroll';
                         card.innerHTML = `
                             <div class="card-thumb">${imgTag}</div>
                             <div class="card-details">
@@ -664,14 +702,28 @@
             } catch (err) {
                 console.error('[Dashboard] loadMyDesigns failed:', err);
                 grid.innerHTML = `
-                    <div style="grid-column:1/-1;text-align:center;padding:40px;">
-                        <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#ff5252;margin-bottom:15px;"></i>
-                        <p style="color:#ff5252;font-size:1.1rem;">Error loading designs</p>
-                        <p style="color:#aaa;font-size:0.85rem;margin-bottom:20px;">${err.message}</p>
-                        <button onclick="loadMyDesigns()" style="padding:10px 25px;background:#4da6ff;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">
-                            <i class="fas fa-redo"></i> Retry
-                        </button>
-                    </div>`;
+                    
+    <div class="design-card skeleton animate-on-scroll">
+        <div class="card-thumb skeleton"></div>
+        <div class="card-details">
+            <div class="skeleton-title skeleton"></div>
+            <div class="skeleton-text skeleton"></div>
+        </div>
+    </div>
+    <div class="design-card skeleton animate-on-scroll">
+        <div class="card-thumb skeleton"></div>
+        <div class="card-details">
+            <div class="skeleton-title skeleton"></div>
+            <div class="skeleton-text skeleton"></div>
+        </div>
+    </div>
+    <div class="design-card skeleton animate-on-scroll">
+        <div class="card-thumb skeleton"></div>
+        <div class="card-details">
+            <div class="skeleton-title skeleton"></div>
+            <div class="skeleton-text skeleton"></div>
+        </div>
+    </div>`;
             }
         }
 
@@ -724,7 +776,7 @@
                         if (thumb) imgTag = `<img src="${thumb}" alt="${card.ownerName || 'Card'}" loading="lazy">`;
                         const date = card.savedAt ? new Date(card.savedAt).toLocaleDateString('en-US') : 'Unknown Date';
                         const el = document.createElement('div');
-                        el.className = 'design-card';
+                        el.className = 'design-card hover-lift animate-on-scroll';
                         el.innerHTML = `
                             <div class="card-thumb">${imgTag}</div>
                             <div class="card-details">
@@ -763,7 +815,7 @@
                         const isPending = req.status === 'pending';
                         const statusText = req.status === 'pending' ? 'Pending' : req.status === 'approved' ? 'Approved' : 'Rejected';
                         const el = document.createElement('div');
-                        el.className = 'request-card';
+                        el.className = 'request-card glass-panel hover-lift animate-on-scroll';
                         el.innerHTML = `
                             <div class="request-info">
                                 <h3>${req.requesterName}</h3>
@@ -837,6 +889,7 @@
     <script src="/nfc/cookie-consent.js" defer></script>
     <script src="/nfc/error-reporter.js" defer></script>
     <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/nfc/sw.js',{scope:'/nfc/'}).catch(e=>console.warn('SW reg failed:',e))}</script>
+    <script src="/nfc/premium-ui.js" defer></script>
 </body>
 
 </html>
