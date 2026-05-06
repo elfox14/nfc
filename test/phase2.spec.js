@@ -144,7 +144,7 @@ describe('Admin Error Endpoint', () => {
 
   it('GET /api/admin/errors should return errors with valid admin token', async () => {
     // Set admin token
-    process.env.ADMIN_TOKEN = 'test-admin-token-123';
+    process.env.ADMIN_TOKENH = 'test-admin-token-123';
     
     const res = await request(app)
       .get('/api/admin/errors')
