@@ -720,28 +720,11 @@
             } catch (err) {
                 console.error('[Dashboard] loadMyDesigns failed:', err);
                 grid.innerHTML = `
-                    
-    <div class="design-card skeleton animate-on-scroll">
-        <div class="card-thumb skeleton"></div>
-        <div class="card-details">
-            <div class="skeleton-title skeleton"></div>
-            <div class="skeleton-text skeleton"></div>
-        </div>
-    </div>
-    <div class="design-card skeleton animate-on-scroll">
-        <div class="card-thumb skeleton"></div>
-        <div class="card-details">
-            <div class="skeleton-title skeleton"></div>
-            <div class="skeleton-text skeleton"></div>
-        </div>
-    </div>
-    <div class="design-card skeleton animate-on-scroll">
-        <div class="card-thumb skeleton"></div>
-        <div class="card-details">
-            <div class="skeleton-title skeleton"></div>
-            <div class="skeleton-text skeleton"></div>
-        </div>
-    </div>`;
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="color: #ff5252;"></i>
+                        <h3>خطأ في الاتصال</h3>
+                        <p>تعذر جلب التصاميم، يرجى التحقق من اتصالك والمحاولة لاحقاً.</p>
+                    </div>`;
             }
         }
 
