@@ -525,8 +525,25 @@ app.get('/robots.txt', (req, res) => {
 app.get('/sitemap.xml', async (req, res) => {
   try {
     const base = absoluteBaseUrl(req);
-    const staticPages = ['/nfc/', '/nfc/gallery', '/nfc/blog', '/nfc/privacy', '/nfc/terms', '/nfc/contact'];
-    const blogPosts = [];
+    const staticPages = ['/nfc/', '/nfc/gallery-en.html', '/nfc/gallery.html', '/nfc/blog-en.html', '/nfc/blog.html', '/nfc/privacy-en.html', '/nfc/privacy.html', '/nfc/terms-en.html', '/nfc/terms.html', '/nfc/contact-en.html', '/nfc/contact.html'];
+    const blogPosts = [
+      '/nfc/blog-nfc-at-events-en.html',
+      '/nfc/blog-nfc-at-events.html',
+      '/nfc/blog-digital-menus-for-restaurants-en.html',
+      '/nfc/blog-digital-menus-for-restaurants.html',
+      '/nfc/blog-business-card-mistakes-en.html',
+      '/nfc/blog-business-card-mistakes.html',
+      '/nfc/nfc-for-freelancers-en.html',
+      '/nfc/nfc-for-freelancers.html',
+      '/nfc/nfc-for-companies-en.html',
+      '/nfc/nfc-for-companies.html',
+      '/nfc/nfc-for-companies-egypt-en.html',
+      '/nfc/nfc-for-companies-egypt.html',
+      '/nfc/nfc-for-companies-saudi-en.html',
+      '/nfc/nfc-for-companies-saudi.html',
+      '/nfc/nfc-for-companies-uae-en.html',
+      '/nfc/nfc-for-companies-uae.html'
+    ];
     let designUrls = [];
     if (db) {
       // SECURITY: Only include designs shared to gallery in the sitemap
