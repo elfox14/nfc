@@ -9,9 +9,9 @@
  * - Auto-update with skipWaiting
  */
 
-const CACHE_NAME = 'mcprime-v1';
-const STATIC_CACHE = 'mcprime-static-v1';
-const API_CACHE = 'mcprime-api-v1';
+const CACHE_NAME = 'mcprime-v2';
+const STATIC_CACHE = 'mcprime-static-v2';
+const API_CACHE = 'mcprime-api-v2';
 
 // Assets to pre-cache on install
 const PRECACHE_ASSETS = [

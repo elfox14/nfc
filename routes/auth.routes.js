@@ -8,7 +8,7 @@ const EmailService = require('../email-service');
 const { createAccessToken, createRefreshToken, hashToken } = require('../utils/tokens');
 const verifyToken = require('../auth-middleware');
 
-module.exports = function createAuthRouter({ getDb, usersCollectionName, authLimiter }) {
+module.exports = function createAuthRouter({ getDb, usersCollectionName, authLimiter, allowedOrigins }) {
   const router = express.Router();
 
   // Rate Limiting is already applied in server.js globally for some paths, but we can re-apply if needed
@@ -371,7 +371,7 @@ router.get('/google/callback', async (req, res) => {
               type: 'google-auth',
               success: true,
               initToken: ${JSON.stringify(sessionInitToken)},
-              user: { userId: user.userId, email: user.email, name: user.name }
+              user: ${JSON.stringify({ userId: user.userId, email: user.email, name: user.name })}
             };
             var origins = ${JSON.stringify(allowedOrigins)};
             origins.forEach(function(base) {

@@ -301,14 +301,19 @@
     <script src="/nfc/lang-switcher.js" defer></script>
     <!-- Authentication -->
     <script src="/nfc/auth.js" defer></script>
-
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
-        crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
     <link rel="stylesheet" href="/nfc/premium-ui.css">
-</head>
-        <style>
+    <style>
+        /* ===== Blog Card Consolidated ===== */
+        .blog-card-styled {
+            background: var(--surface-color);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s;
+            height: 100%;
+        }
+
         /* ===== Flip Card - Hero Preview ===== */
         .flip-card-wrapper {
             perspective: 1000px;
@@ -416,6 +421,8 @@
             20% { transform: translateX(200%); }
         }
     </style>
+</head>
+<body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
@@ -762,7 +769,7 @@
                         <div class="blog-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
                             <!-- Blog Card 1 -->
                             <a href="/nfc/blog-nfc-at-events.html" style="text-decoration: none; color: inherit;">
-                                <article class="blog-card reveal" style="background: var(--surface-color); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s; height: 100%;">
+                                <article class="blog-card blog-card-styled reveal">
                                     <div style="height: 180px; background: #1a2a3a; display: flex; align-items: center; justify-content: center;">
                                         <i class="fas fa-calendar-alt" style="font-size: 3rem; color: var(--primary-color);"></i>
                                     </div>
@@ -774,7 +781,7 @@
                             </a>
                             <!-- Blog Card 2 -->
                             <a href="/nfc/blog-digital-menus-for-restaurants.html" style="text-decoration: none; color: inherit;">
-                                <article class="blog-card reveal" style="background: var(--surface-color); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s; height: 100%;">
+                                <article class="blog-card blog-card-styled reveal">
                                     <div style="height: 180px; background: #1a2a3a; display: flex; align-items: center; justify-content: center;">
                                         <i class="fas fa-utensils" style="font-size: 3rem; color: var(--primary-color);"></i>
                                     </div>
@@ -786,7 +793,7 @@
                             </a>
                             <!-- Blog Card 3 -->
                             <a href="/nfc/blog-business-card-mistakes.html" style="text-decoration: none; color: inherit;">
-                                <article class="blog-card reveal" style="background: var(--surface-color); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s; height: 100%;">
+                                <article class="blog-card blog-card-styled reveal">
                                     <div style="height: 180px; background: #1a2a3a; display: flex; align-items: center; justify-content: center;">
                                         <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--primary-color);"></i>
                                     </div>
@@ -1226,6 +1233,8 @@
     <script src="/nfc/error-reporter.js" defer></script>
     <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/nfc/sw.js',{scope:'/nfc/'}).catch(e=>console.warn('SW reg failed:',e))}</script>
     <script src="/nfc/premium-ui.js" defer></script>
+    <!-- Google AdSense -->
+    <script defer src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790" crossorigin="anonymous"></script>
 </body>
 
 </html>

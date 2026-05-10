@@ -6,6 +6,13 @@ if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required. Please set it in your environment variables.');
 }
 
+const REQUIRED_ENV = ['MONGO_URI', 'JWT_SECRET'];
+const missingEnv = REQUIRED_ENV.filter(k => !process.env[k]);
+if (missingEnv.length > 0) {
+  console.error(`❌ Missing required env vars: ${missingEnv.join(', ')}`);
+  process.exit(1);
+}
+
 const express = require('express');
 const compression = require('compression');
 const { MongoClient } = require('mongodb');
@@ -22,8 +29,7 @@ const cookieParser = require('cookie-parser');
 const verifyToken = require('./auth-middleware');
 const { createAccessToken, createRefreshToken, hashToken } = require('./utils/tokens');
 const EmailService = require('./email-service');
-const { JSDOM } = require('jsdom');
-const DOMPurifyFactory = require('dompurify');
+const { DOMPurify, sanitizeInputs } = require('./utils/sanitize');
 const multer = require('multer');
 const sharp = require('sharp');
 const ejs = require('ejs');
@@ -33,9 +39,6 @@ const http = require('http');
 const { WebSocketServer } = require('ws');
 const url = require('url');
 const cloudinary = require('cloudinary').v2;
-
-const window = (new JSDOM('')).window;
-const DOMPurify = DOMPurifyFactory(window);
 
 const app = express();
 
@@ -221,37 +224,7 @@ function absoluteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
-const FIELDS_TO_SANITIZE = [
-  'input-name', 'input-name_ar', 'input-name_en',
-  'input-tagline', 'input-tagline_ar', 'input-tagline_en',
-  'input-bio', 'input-bio_ar', 'input-bio_en',
-  'input-availability',
-  'input-email', 'input-website',
-  'input-whatsapp', 'input-facebook', 'input-linkedin'
-];
-
-function sanitizeInputs(inputs) {
-  if (!inputs) return {};
-  const sanitized = { ...inputs };
-  FIELDS_TO_SANITIZE.forEach(k => {
-    if (sanitized[k]) {
-      sanitized[k] = DOMPurify.sanitize(String(sanitized[k]));
-    }
-  });
-  if (sanitized.dynamic && sanitized.dynamic.social) {
-    sanitized.dynamic.social = sanitized.dynamic.social.map(link => ({
-      ...link,
-      value: link && link.value ? DOMPurify.sanitize(String(link.value)) : ''
-    }));
-  }
-  if (sanitized.dynamic && sanitized.dynamic.phones) {
-    sanitized.dynamic.phones = sanitized.dynamic.phones.map(phone => ({
-      ...phone,
-      value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : ''
-    }));
-  }
-  return sanitized;
-}
+// sanitizeInputs and DOMPurify are now imported from utils/sanitize.js
 
 // --- VIEWER & SEO ROUTES ---
 app.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
@@ -504,7 +477,10 @@ app.use('/api', createDesignsRouter({
   usersCollectionName, 
   cardRequestsCollectionName,
   savedCardsCollectionName,
-  absoluteBaseUrl
+  absoluteBaseUrl,
+  sanitizeInputs,
+  DOMPurify,
+  cloudinary
 }));
 
 // --- AUTHENTICATION ROUTES (MODULAR) ---
@@ -512,7 +488,8 @@ const createAuthRouter = require('./routes/auth.routes');
 app.use('/api/auth', createAuthRouter({ 
   getDb: () => db, 
   usersCollectionName, 
-  authLimiter
+  authLimiter,
+  allowedOrigins
 }));
 
 app.get('/robots.txt', (req, res) => {
@@ -591,13 +568,7 @@ ${designUrls.map(u => urlTag(u.loc, { lastmod: u.lastmod, changefreq: u.changefr
   }
 });
 
-app.get('/healthz', (req, res) => {
-  if (db && db.client.topology && db.client.topology.isConnected()) {
-    res.json({ ok: true, db_status: 'connected' });
-  } else {
-    res.status(500).json({ ok: false, db_status: 'disconnected' });
-  }
-});
+// NOTE: Duplicate /healthz endpoint was removed — primary one is at line 172
 
 app.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
   if (req.useragent.isMobile) {
@@ -651,7 +622,7 @@ app.use('/nfc', express.static(rootDir, {
   }
 }));
 
-// --- GENERAL ERROR HANDLER with Error Tracking ---
+// --- ERROR TRACKING ---
 const errorBuffer = []; // In-memory circular buffer for recent errors
 const MAX_ERROR_BUFFER = 100;
 
@@ -667,19 +638,7 @@ function trackError(error, context = {}) {
   console.error(`[ErrorTracker] ${entry.timestamp} | ${context.route || 'unknown'} | ${entry.message}`);
 }
 
-app.use((err, req, res, next) => {
-  trackError(err, {
-    route: `${req.method} ${req.originalUrl}`,
-    ip: req.ip,
-    userAgent: req.get('User-Agent')?.substring(0, 80),
-  });
-  const statusCode = err.status || 500;
-  const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message;
-  if (!res.headersSent) {
-    res.status(statusCode).json({ error: message });
-  }
-});
-// Admin modular routes & Brute Force Protection
+// --- ADMIN ROUTES (must be BEFORE general error handler) ---
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // Limit each IP to 10 admin attempts per window
@@ -694,6 +653,25 @@ app.use('/api/admin', adminLimiter, createAdminRouter({
   errorBuffer, 
   MAX_ERROR_BUFFER 
 }));
+
+// --- 404 NOT FOUND HANDLER ---
+app.use((req, res, next) => {
+  res.status(404).sendFile(path.join(rootDir, '404.html'));
+});
+
+// --- GENERAL ERROR HANDLER (must be AFTER all routes) ---
+app.use((err, req, res, next) => {
+  trackError(err, {
+    route: `${req.method} ${req.originalUrl}`,
+    ip: req.ip,
+    userAgent: req.get('User-Agent')?.substring(0, 80),
+  });
+  const statusCode = err.status || 500;
+  const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message;
+  if (!res.headersSent) {
+    res.status(statusCode).json({ error: message });
+  }
+});
 
 // Process-level error handlers (prevent silent crashes)
 process.on('unhandledRejection', (reason) => {

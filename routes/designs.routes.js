@@ -16,7 +16,10 @@ module.exports = function createDesignsRouter({
   designsCollectionName, 
   usersCollectionName, 
   cardRequestsCollectionName, savedCardsCollectionName,
-  absoluteBaseUrl
+  absoluteBaseUrl,
+  sanitizeInputs,
+  DOMPurify,
+  cloudinary
 }) {
   const router = express.Router();
 

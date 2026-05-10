@@ -28,7 +28,7 @@
 
       // Use sendBeacon for reliability (works even during page unload)
       if (navigator.sendBeacon) {
-        navigator.sendBeacon(REPORT_URL, JSON.stringify(payload));
+        navigator.sendBeacon(REPORT_URL, new Blob([JSON.stringify(payload)], { type: 'application/json' }));
       } else {
         fetch(REPORT_URL, {
           method: 'POST',

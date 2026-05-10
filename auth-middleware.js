@@ -27,7 +27,7 @@ const verifyToken = (req, res, next) => {
             return res.status(403).json({ error: 'Invalid token type.' });
         }
         req.user = decoded; // { userId: "...", email: "..." }
-        console.log(`[AuthMiddleware] Token verified for user: ${decoded.email} (${decoded.userId})`);
+        // console.debug(`[AuthMiddleware] Token verified for user: ${decoded.email} (${decoded.userId})`);
         next();
     } catch (err) {
         console.warn(`[AuthMiddleware] Token verification failed: ${err.message}`);
