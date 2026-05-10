@@ -67,13 +67,44 @@ app.use((req, res, next) => {
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com"],
-    styleSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`, "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-    fontSrc: ["'self'", "https://fonts.gstatic.com"],
-    imgSrc: ["'self'", "data:", "https:", "https://res.cloudinary.com", "https://*.mcprim.com", "https://i.imgur.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com"],
+    scriptSrc: [
+      "'self'", 
+      "'unsafe-inline'", 
+      "'unsafe-eval'", 
+      "https://cdnjs.cloudflare.com", 
+      "https://cdn.jsdelivr.net", 
+      "https://www.youtube.com",
+      "https://www.googletagmanager.com"
+    ],
+    styleSrc: [
+      "'self'", 
+      "'unsafe-inline'", 
+      "https://cdnjs.cloudflare.com", 
+      "https://fonts.googleapis.com"
+    ],
+    fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+    imgSrc: [
+      "'self'", 
+      "data:", 
+      "https:", 
+      "https://res.cloudinary.com", 
+      "https://*.mcprim.com", 
+      "https://mcprim.com", 
+      "https://i.imgur.com", 
+      "https://media.giphy.com"
+    ],
     mediaSrc: ["'self'", "data:"],
-    frameSrc: ["'self'", "https://www.youtube.com"],
-    connectSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.youtube.com", "https://*.mcprim.com", "https://mcprim.com", "https://www.mcprim.com", "https://media.giphy.com", `wss://${process.env.RENDER_EXTERNAL_HOSTNAME || 'nfc-vjy6.onrender.com'}`],
+    frameSrc: ["'self'", "https://www.youtube.com", "https://www.googletagmanager.com"],
+    connectSrc: [
+      "'self'", 
+      "https://cdnjs.cloudflare.com", 
+      "https://cdn.jsdelivr.net", 
+      "https://*.mcprim.com", 
+      "https://mcprim.com", 
+      "https://res.cloudinary.com", 
+      "https://www.google-analytics.com",
+      `wss://${process.env.RENDER_EXTERNAL_HOSTNAME || 'nfc-vjy6.onrender.com'}`
+    ],
     objectSrc: ["'none'"],
     upgradeInsecureRequests: [],
   },
@@ -623,9 +654,17 @@ app.use((err, req, res, next) => {
     res.status(statusCode).json({ error: message });
   }
 });
-// Admin modular routes
+// Admin modular routes & Brute Force Protection
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 admin attempts per window
+  message: { error: 'تم تجاوز الحد المسموح لمحاولات تسجيل الدخول للإدارة، يرجى المحاولة لاحقاً.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 const createAdminRouter = require('./routes/admin.routes');
-app.use('/api/admin', createAdminRouter({ 
+app.use('/api/admin', adminLimiter, createAdminRouter({ 
   getDb: () => db, 
   errorBuffer, 
   MAX_ERROR_BUFFER 
