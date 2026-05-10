@@ -43,6 +43,14 @@ const app = express();
 app.use(compression());
 app.use(useragent.express());
 
+// Force HTTPS in production
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(301, 'https://' + req.hostname + req.originalUrl);
+  }
+  next();
+});
+
 const port = process.env.PORT || 3000;
 app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : 0);
 app.disable('x-powered-by');
