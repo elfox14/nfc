@@ -20,7 +20,7 @@ module.exports = function createAuthRouter({ getDb, usersCollectionName, authLim
 router.post('/register', [
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6, max: 128 }),
-  body('name').trim().notEmpty()
+  body('name').trim().escape().notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

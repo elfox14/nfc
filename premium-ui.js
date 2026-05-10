@@ -50,6 +50,24 @@ function setupScrollAnimations() {
     document.querySelectorAll('.animate-on-scroll').forEach(el => {
         observer.observe(el);
     });
+
+    // Handle dynamically added elements
+    const mutationObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) { // ELEMENT_NODE
+                    if (node.classList.contains('animate-on-scroll')) {
+                        observer.observe(node);
+                    }
+                    // Also check children of added nodes
+                    const children = node.querySelectorAll('.animate-on-scroll');
+                    children.forEach(child => observer.observe(child));
+                }
+            });
+        });
+    });
+
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 function setupGlassNavbar() {

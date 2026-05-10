@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 
 /**
  * Admin Router
@@ -16,7 +17,7 @@ module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFF
     const expected = (process.env.ADMIN_TOKENH || '').trim();
     const provided = (req.headers['x-admin-token'] || '').trim();
     
-    if (!expected || expected === '' || expected !== provided) {
+    if (!expected || expected === '' || expected.length !== provided.length || !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided))) {
       console.warn('[Admin Auth Failed]', { providedLength: provided?.length, expectedLength: expected?.length });
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -79,10 +80,11 @@ module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFF
       
       let query = {};
       if (req.query.search) {
+        const escapedSearch = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         query = {
           $or: [
-            { name: { $regex: req.query.search, $options: 'i' } },
-            { email: { $regex: req.query.search, $options: 'i' } }
+            { name: { $regex: escapedSearch, $options: 'i' } },
+            { email: { $regex: escapedSearch, $options: 'i' } }
           ]
         };
       }

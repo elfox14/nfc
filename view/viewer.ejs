@@ -169,7 +169,7 @@
 
     <script nonce="<%= nonce %>">
         // تمرير البيانات مباشرة من الخادم إلى السكربت (لا تغيير هنا)
-        window.cardData = typeof design !== 'undefined' ? <%- JSON.stringify(design) %> : {};
+        window.cardData = typeof design !== 'undefined' ? <%- JSON.stringify(design).replace(/</g, '\\u003c') %> : {};
     </script> [cite: 1]
 
     <script src="/nfc/viewer.js" nonce="<%= nonce %>"></script> [cite: 1]

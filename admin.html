@@ -438,6 +438,17 @@
         }
 
         // --- Loaders ---
+        function escapeHTML(str) {
+            return String(str || '').replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
 
         function loadDashboard(data) {
             updateTime();
@@ -471,8 +482,8 @@
             if (data.recentDesigns && data.recentDesigns.length > 0) {
                 tbody.innerHTML = data.recentDesigns.map(d => `
                     <tr>
-                        <td style="font-family: monospace;">${d.shortId}</td>
-                        <td>${d.data?.inputs?.name || 'بدون اسم'}</td>
+                        <td style="font-family: monospace;">${escapeHTML(d.shortId)}</td>
+                        <td>${escapeHTML(d.data?.inputs?.name || 'بدون اسم')}</td>
                         <td>${d.views || 0}</td>
                         <td>${new Date(d.createdAt).toLocaleDateString('ar-EG')}</td>
                     </tr>
@@ -501,8 +512,8 @@
                 if (data.users && data.users.length > 0) {
                     tbody.innerHTML = data.users.map(u => `
                         <tr>
-                            <td><strong>${u.name || 'بدون اسم'}</strong></td>
-                            <td style="direction: ltr; text-align: right;">${u.email}</td>
+                            <td><strong>${escapeHTML(u.name || 'بدون اسم')}</strong></td>
+                            <td style="direction: ltr; text-align: right;">${escapeHTML(u.email)}</td>
                             <td>
                                 ${u.isVerified 
                                     ? '<span class="badge success">مُؤكد</span>' 
@@ -555,10 +566,10 @@
                         <div class="error-item">
                             <div class="error-meta">
                                 <span><i class="fas fa-clock"></i> ${date}</span>
-                                <span><i class="fas fa-route"></i> ${err.context?.route || 'N/A'}</span>
-                                ${err.context?.ip ? `<span><i class="fas fa-network-wired"></i> ${err.context.ip}</span>` : ''}
+                                <span><i class="fas fa-route"></i> ${escapeHTML(err.context?.route || 'N/A')}</span>
+                                ${err.context?.ip ? `<span><i class="fas fa-network-wired"></i> ${escapeHTML(err.context.ip)}</span>` : ''}
                             </div>
-                            <div class="error-msg">${err.message}</div>
+                            <div class="error-msg">${escapeHTML(err.message)}</div>
                         </div>
                     `}).join('');
                 } else {

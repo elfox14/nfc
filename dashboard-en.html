@@ -657,6 +657,18 @@
             }
         });
 
+        function escapeHTML(str) {
+            return String(str || '').replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
         async function loadMyDesigns() {
             const grid = document.getElementById('designs-grid');
             try {
@@ -683,7 +695,7 @@
                         card.innerHTML = `
                             <div class="card-thumb">${imgTag}</div>
                             <div class="card-details">
-                                <h3 class="card-title">${name}</h3>
+                                <h3 class="card-title">${escapeHTML(name)}</h3>
                                 <div class="card-meta">
                                     <span><i class="far fa-eye"></i> ${views} Views</span>
                                     <span><i class="far fa-calendar"></i> ${date}</span>
@@ -763,7 +775,7 @@
                         el.innerHTML = `
                             <div class="card-thumb">${imgTag}</div>
                             <div class="card-details">
-                                <h3 class="card-title">${card.ownerName || 'Unknown'}</h3>
+                                <h3 class="card-title">${escapeHTML(card.ownerName || 'Unknown')}</h3>
                                 <div class="card-meta"><span><i class="far fa-calendar"></i> ${date}</span></div>
                                 <div class="card-actions">
                                     <a href="/nfc/viewer-en.html?id=${card.designShortId}" class="action-btn btn-view" target="_blank">View</a>
@@ -801,9 +813,9 @@
                         el.className = 'request-card glass-panel hover-lift animate-on-scroll';
                         el.innerHTML = `
                             <div class="request-info">
-                                <h3>${req.requesterName}</h3>
-                                <p><i class="fas fa-envelope"></i> ${req.requesterEmail}</p>
-                                <p><i class="fas fa-id-card"></i> Wants to save: ${req.cardName}</p>
+                                <h3>${escapeHTML(req.requesterName)}</h3>
+                                <p><i class="fas fa-envelope"></i> ${escapeHTML(req.requesterEmail)}</p>
+                                <p><i class="fas fa-id-card"></i> Wants to save: ${escapeHTML(req.cardName)}</p>
                                 <p><i class="far fa-calendar"></i> ${date}</p>
                                 ${!isPending ? `<span class="request-status-badge status-${req.status}">${statusText}</span>` : ''}
                             </div>
