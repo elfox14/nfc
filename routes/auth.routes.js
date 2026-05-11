@@ -364,6 +364,18 @@ router.get('/google/callback', async (req, res) => {
           hasOpener = !!(window.opener && !window.opener.closed);
         } catch (e) {}
 
+        // BroadcastChannel fallback — works even when COOP blocks window.opener
+        try {
+          var bc = new BroadcastChannel('mcprime-auth');
+          bc.postMessage({
+            type: 'google-auth',
+            success: true,
+            initToken: ${JSON.stringify(sessionInitToken)},
+            user: ${JSON.stringify({ userId: user.userId, email: user.email, name: user.name })}
+          });
+          bc.close();
+        } catch (e) { /* BroadcastChannel not supported */ }
+
         if (hasOpener) {
           // Path 1: Popup flow — send success signal to opener, then close
           try {
@@ -395,8 +407,13 @@ router.get('/google/callback', async (req, res) => {
             window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1&initToken=' + ${JSON.stringify(sessionInitToken)});
           }, 1000);
         } else {
-          // Path 2: No opener — redirect to dashboard (pass initToken to bypass cookie blocking)
-          window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1&initToken=' + ${JSON.stringify(sessionInitToken)});
+          // Path 2: No opener (COOP blocked it) — close popup; parent will recover via BroadcastChannel or cookie refresh
+          window.close();
+
+          // If popup didn't close (some browsers), fallback to redirect
+          setTimeout(function() {
+            window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1&initToken=' + ${JSON.stringify(sessionInitToken)});
+          }, 1000);
         }
       })();
     `;

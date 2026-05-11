@@ -437,11 +437,14 @@ app.use((req, res, next) => {
   next();
 });
 app.use((req, res, next) => {
-  if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) {
+  // Only redirect .html URLs for SEO-friendly clean URLs
+  // SKIP redirect for: viewer.html (has its own route), and any page with query params
+  // (editor.html?id=xxx, dashboard.html?initToken=xxx, login.html?error=xxx)
+  // because the clean URL redirect can break app functionality behind CDN/proxy
+  const hasQueryParams = req.url.includes('?');
+  if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html') && !hasQueryParams) {
     const newPath = req.path.slice(0, -5);
-    const queryString = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
-    // .html redirect (verbose log removed for production performance)
-    return res.redirect(301, newPath + queryString);
+    return res.redirect(301, newPath);
   }
   next();
 });

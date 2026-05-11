@@ -298,8 +298,24 @@ const Auth = {
                 window.removeEventListener('message', messageHandler);
                 if (popupCheckInterval) clearInterval(popupCheckInterval);
                 if (popup && !popup.closed) popup.close();
+                if (bc) bc.close();
                 resolve(result);
             };
+
+            // BroadcastChannel fallback for when COOP blocks window.opener
+            let bc = null;
+            try {
+                bc = new BroadcastChannel('mcprime-auth');
+                bc.onmessage = async (event) => {
+                    if (finished || !event.data || event.data.type !== 'google-auth') return;
+                    if (event.data.success && event.data.initToken) {
+                        const initialized = await this.sessionInit(event.data.initToken);
+                        if (initialized) {
+                            finish({ success: true });
+                        }
+                    }
+                };
+            } catch (e) { /* BroadcastChannel not supported, fallback to polling */ }
 
             const messageHandler = async (event) => {
                 // SECURITY: Verify the origin is either the API URL or your frontends
@@ -371,6 +387,7 @@ const Auth = {
 
             // Poll for popup closure OR localStorage changes
             // COOP headers from Google may block popup.closed, so we also check localStorage
+            let popupClosedRetries = 0;
             popupCheckInterval = setInterval(async () => {
                 if (finished) return;
 
@@ -389,7 +406,14 @@ const Auth = {
                 try { popupClosed = popup.closed; } catch (e) { /* COOP blocks this */ }
 
                 if (popupClosed) {
-                    console.log('[Auth] Popup closed detected. Trying cookie refresh...');
+                    popupClosedRetries++;
+                    console.log(`[Auth] Popup closed detected (attempt ${popupClosedRetries}). Trying session recovery...`);
+
+                    // Wait a bit on first detection — cookies may still be in-flight
+                    if (popupClosedRetries === 1) {
+                        return; // Skip this cycle, try on next poll
+                    }
+
                     // Try refreshSession (uses HttpOnly cookies set during OAuth callback)
                     const refreshed = await this.refreshSession();
                     if (refreshed) {
@@ -403,8 +427,9 @@ const Auth = {
                             this.user = JSON.parse(userNow);
                             window.removeEventListener('storage', storageHandler);
                             finish({ success: true });
-                        } else {
-                            console.warn('[Auth] Popup closed but no session found');
+                        } else if (popupClosedRetries >= 3) {
+                            // Give up after 3 retries
+                            console.warn('[Auth] Popup closed but no session found after retries');
                             window.removeEventListener('storage', storageHandler);
                             finish({
                                 success: false,
@@ -413,9 +438,10 @@ const Auth = {
                                     : 'تم إغلاق نافذة تسجيل الدخول. حاول مرة أخرى.'
                             });
                         }
+                        // else: wait for next poll cycle
                     }
                 }
-            }, 1500);
+            }, 2000);
 
             // Safety timeout — 2 minutes max
             setTimeout(() => {
