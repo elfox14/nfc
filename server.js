@@ -69,7 +69,7 @@ cloudinary.config({
 app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.noSniff());
 app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));
-// CSP nonce middleware — generates a unique nonce per request
+// CSP nonce middleware — generates a unique nonce for OAuth callback pages
 app.use((req, res, next) => {
   res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
   next();
@@ -85,7 +85,10 @@ app.use(helmet.contentSecurityPolicy({
       "https://cdnjs.cloudflare.com", 
       "https://cdn.jsdelivr.net", 
       "https://www.youtube.com",
-      "https://www.googletagmanager.com"
+      "https://www.googletagmanager.com",
+      "https://pagead2.googlesyndication.com",
+      "https://www.googleadservices.com",
+      "https://tpc.googlesyndication.com"
     ],
     styleSrc: [
       "'self'", 
@@ -102,10 +105,18 @@ app.use(helmet.contentSecurityPolicy({
       "https://*.mcprim.com", 
       "https://mcprim.com", 
       "https://i.imgur.com", 
-      "https://media.giphy.com"
+      "https://media.giphy.com",
+      "https://pagead2.googlesyndication.com"
     ],
     mediaSrc: ["'self'", "data:"],
-    frameSrc: ["'self'", "https://www.youtube.com", "https://www.googletagmanager.com"],
+    frameSrc: [
+      "'self'", 
+      "https://www.youtube.com", 
+      "https://www.googletagmanager.com",
+      "https://googleads.g.doubleclick.net",
+      "https://tpc.googlesyndication.com",
+      "https://www.google.com"
+    ],
     connectSrc: [
       "'self'", 
       "https://cdnjs.cloudflare.com", 
@@ -114,6 +125,7 @@ app.use(helmet.contentSecurityPolicy({
       "https://mcprim.com", 
       "https://res.cloudinary.com", 
       "https://www.google-analytics.com",
+      "https://pagead2.googlesyndication.com",
       `wss://${process.env.RENDER_EXTERNAL_HOSTNAME || 'nfc-vjy6.onrender.com'}`
     ],
     objectSrc: ["'none'"],
@@ -157,7 +169,7 @@ app.use(cors({
     }
 
     if (isAllowed) {
-      console.log(`[CORS] Request from allowed origin: ${origin}`);
+      // CORS origin accepted (verbose log removed for production performance)
       return cb(null, true);
     }
     console.warn(`[CORS] Request from BLOCKED origin: ${origin}. Allowed origins: ${allowedOrigins.join(', ')}`);
@@ -428,7 +440,7 @@ app.use((req, res, next) => {
   if (req.path.endsWith('.html') && !req.path.startsWith('/nfc/viewer.html')) {
     const newPath = req.path.slice(0, -5);
     const queryString = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
-    console.log(`[Redirect] Stripping .html from ${req.url} -> ${newPath + queryString}`);
+    // .html redirect (verbose log removed for production performance)
     return res.redirect(301, newPath + queryString);
   }
   next();
@@ -583,6 +595,22 @@ app.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
   res.sendFile(path.join(rootDir, 'editor.html'));
 });
 
+// --- ERROR TRACKING (defined here so all routes below can use trackError) ---
+const errorBuffer = []; // In-memory circular buffer for recent errors
+const MAX_ERROR_BUFFER = 100;
+
+function trackError(error, context = {}) {
+  const entry = {
+    timestamp: new Date().toISOString(),
+    message: error.message || String(error),
+    stack: error.stack?.split('\n').slice(0, 5).join('\n'),
+    ...context,
+  };
+  errorBuffer.push(entry);
+  if (errorBuffer.length > MAX_ERROR_BUFFER) errorBuffer.shift();
+  console.error(`[ErrorTracker] ${entry.timestamp} | ${context.route || 'unknown'} | ${entry.message}`);
+}
+
 // --- CLIENT ERROR REPORTING ENDPOINT ---
 const clientErrorLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -595,10 +623,8 @@ app.post('/api/client-error', clientErrorLimiter, express.json({ limit: '4kb' })
   const { message, source, line, col, stack, url: pageUrl } = req.body || {};
   if (!message) return res.status(400).end();
   console.error(`[ClientError] ${message} | ${source || ''}:${line || 0} | ${pageUrl || ''}`);
-  // Store in errorBuffer (defined below) if available
-  if (typeof trackError === 'function') {
-    trackError(new Error(message), { route: 'CLIENT', source, line, col, pageUrl });
-  }
+  // Store in errorBuffer
+  trackError(new Error(message), { route: 'CLIENT', source, line, col, pageUrl });
   res.status(204).end();
 });
 
@@ -621,22 +647,6 @@ app.use('/nfc', express.static(rootDir, {
     }
   }
 }));
-
-// --- ERROR TRACKING ---
-const errorBuffer = []; // In-memory circular buffer for recent errors
-const MAX_ERROR_BUFFER = 100;
-
-function trackError(error, context = {}) {
-  const entry = {
-    timestamp: new Date().toISOString(),
-    message: error.message || String(error),
-    stack: error.stack?.split('\n').slice(0, 5).join('\n'),
-    ...context,
-  };
-  errorBuffer.push(entry);
-  if (errorBuffer.length > MAX_ERROR_BUFFER) errorBuffer.shift();
-  console.error(`[ErrorTracker] ${entry.timestamp} | ${context.route || 'unknown'} | ${entry.message}`);
-}
 
 // --- ADMIN ROUTES (must be BEFORE general error handler) ---
 const adminLimiter = rateLimit({

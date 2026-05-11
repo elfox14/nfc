@@ -134,7 +134,7 @@ router.post('/login', [
     }
 
     const { email, password } = req.body;
-    console.log(`[Login] Login attempt for: ${email}`);
+    // Login attempt logged without PII
 
     const user = await getDb().collection(usersCollectionName).findOne({ email });
     if (!user) {
@@ -175,7 +175,7 @@ router.post('/login', [
       path: '/'
     });
 
-    console.log(`[Login] Successful login for: ${email}. Token issued.`);
+    console.log(`[Login] Successful login for userId: ${user.userId}`);
     // Return token in body as fallback for third-party cookie blocking
     // Include isVerified so frontend can show verification reminder
     const loginResponse = { 
@@ -466,7 +466,7 @@ router.post('/forgot-password', [
 
     // Always return success to prevent email enumeration
     if (!user) {
-      console.log(`[ForgotPassword] Email not found: ${email}`);
+      // ForgotPassword: email not found (logged without PII)
       return res.json({ success: true });
     }
 
@@ -488,7 +488,7 @@ router.post('/forgot-password', [
     try {
       const emailContent = EmailService.passwordResetEmail(user.name || 'مستخدم', resetLink);
       await EmailService.send({ to: email, subject: emailContent.subject, html: emailContent.html });
-      console.log(`[ForgotPassword] Reset link sent to ${email}`);
+      console.log(`[ForgotPassword] Reset link sent for userId: ${user.userId}`);
     } catch (emailErr) {
       console.warn('[ForgotPassword] Email sending failed:', emailErr.message);
     }
@@ -554,7 +554,7 @@ router.post('/reset-password', authLimiter, [
       }
     );
 
-    console.log(`[ResetPassword] Password updated for user: ${user.email}`);
+    console.log(`[ResetPassword] Password updated for userId: ${user.userId}`);
     res.json({ success: true });
 
   } catch (err) {
@@ -602,7 +602,7 @@ router.post('/verify-email', authLimiter, async (req, res) => {
       { $set: { isVerified: true }, $unset: { verificationTokenHash: '' } }
     );
 
-    console.log(`[VerifyEmail] Email verified for user: ${user.email}`);
+    console.log(`[VerifyEmail] Email verified for userId: ${user.userId}`);
     res.json({ success: true });
 
   } catch (err) {
@@ -649,7 +649,7 @@ router.post('/resend-verification', verifyToken, authLimiter, async (req, res) =
       return res.status(500).json({ error: 'فشل إرسال البريد. حاول لاحقاً.' });
     }
 
-    console.log(`[ResendVerification] Verification email resent to: ${user.email}`);
+    console.log(`[ResendVerification] Verification email resent for userId: ${user.userId}`);
     res.json({ success: true, message: 'تم إرسال رسالة التحقق' });
 
   } catch (err) {
@@ -677,7 +677,7 @@ router.post('/refresh', async (req, res) => {
       console.warn('[Refresh] Invalid refresh token: No user found for this hash');
       return res.status(403).json({ error: 'Invalid refresh token' });
     }
-    console.log(`[Refresh] Refreshing session for user: ${user.email}`);
+    console.log(`[Refresh] Refreshing session for userId: ${user.userId}`);
 
     // Rotate: generate new tokens
     const newAccessToken = createAccessToken({ userId: user.userId, email: user.email });
@@ -784,7 +784,7 @@ router.post('/session-init', async (req, res) => {
       return res.status(401).json({ error: 'Invalid token type' });
     }
 
-    console.log(`[SessionInit] Confirmed for: ${decoded.email}`);
+    console.log(`[SessionInit] Confirmed for userId: ${decoded.userId}`);
 
     // Fetch the full user from DB to ensure we have the name
     const user = await getDb().collection(usersCollectionName).findOne(

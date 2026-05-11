@@ -8,6 +8,7 @@ const { nanoid } = require('nanoid');
 const EmailService = require('../email-service');
 const verifyToken = require('../auth-middleware');
 const rateLimit = require('express-rate-limit');
+const { ObjectId } = require('mongodb');
 
 const uploadDir = path.join(__dirname, '..', 'uploads');
 
@@ -716,7 +717,6 @@ router.get('/card-requests', verifyToken, async (req, res) => {
 router.put('/card-requests/:requestId', verifyToken, async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
-    const { ObjectId } = require('mongodb');
     const requestId = req.params.requestId;
     const { action } = req.body; // 'approve' or 'reject'
 
@@ -796,7 +796,6 @@ router.get('/get-design/:id', async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
-    const { ObjectId } = require('mongodb');
     
     // 1. Try to find by shortId first
     let doc = await getDb().collection(designsCollectionName).findOne({ shortId: id });
