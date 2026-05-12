@@ -798,6 +798,18 @@ router.get('/get-design/:id', async (req, res) => {
       return res.status(404).json({ error: 'Design not found or data missing' });
     }
 
+    // Track view if requested (only from viewer.html to count real views)
+    if (req.query.trackView === 'true') {
+      try {
+        await getDb().collection(designsCollectionName).updateOne(
+          { _id: doc._id },
+          { $inc: { views: 1 } }
+        );
+      } catch (err) {
+        console.error(`[API] Failed to increment views for design ${id}:`, err);
+      }
+    }
+
     console.log(`[API] Design found for ID: ${id}. Returning data.`);
     res.json(doc.data);
   } catch (e) {

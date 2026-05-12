@@ -1158,7 +1158,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('لم يتم العثور على معرف البطاقة في الرابط. يرجى فتح رابط مشاركة صالح.');
                 }
 
-                const apiUrl = `${API_BASE_URL}/api/get-design/${cardId}`;
+                const apiUrl = `${API_BASE_URL}/api/get-design/${cardId}?trackView=true`;
                 console.log(`Fetching data from: ${apiUrl}`);
                 const response = await fetch(apiUrl);
 
