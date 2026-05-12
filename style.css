@@ -1156,6 +1156,27 @@ html[dir="ltr"] .cards-wrapper[data-layout="modern"] #card-tagline {
     gap: 10px;
 }
 
+.mc-prime-branding {
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    font-family: 'Poppins', Tajawal, sans-serif;
+    letter-spacing: 1px;
+    z-index: 99;
+    pointer-events: none;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.cards-wrapper[data-layout="vertical"] .mc-prime-branding {
+    bottom: 12px;
+}
+
 .card-back-qr-image-wrapper {
     background-color: white;
     padding: 5px;
