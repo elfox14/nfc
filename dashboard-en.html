@@ -219,17 +219,21 @@
 
         .card-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
         }
 
         .action-btn {
-            padding: 12px;
+            padding: 10px 8px;
             border-radius: 12px;
             font-weight: 600;
             text-align: center;
             transition: all 0.3s ease;
             font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
 
         .btn-view { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); }
@@ -238,14 +242,43 @@
         .btn-edit { background: var(--primary-color); color: white; }
         .btn-edit:hover { background: #60b5ff; box-shadow: 0 0 20px rgba(77, 166, 255, 0.4); }
 
+        .btn-signature { background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2); }
+        .btn-signature:hover { background: #a855f7; color: white; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
+
         .btn-remove { 
-            grid-column: span 2;
+            grid-column: span 3;
             margin-top: 4px;
             background: rgba(239, 68, 68, 0.1);
             color: #f87171;
             border: 1px solid rgba(239, 68, 68, 0.1);
         }
         .btn-remove:hover { background: #ef4444; color: white; }
+
+        /* Request Cards */
+        .request-card {
+            padding: 24px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .request-info h3 { margin-bottom: 10px; color: var(--text-primary); font-size: 1.2rem; }
+        .request-info p { margin-bottom: 5px; color: var(--text-secondary); font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+        .request-actions { display: flex; gap: 10px; }
+        .btn-approve, .btn-reject { padding: 10px 20px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
+        .btn-approve { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2); }
+        .btn-approve:hover { background: #2ecc71; color: white; box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); }
+        .btn-reject { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.2); }
+        .btn-reject:hover { background: #e74c3c; color: white; box-shadow: 0 0 15px rgba(231, 76, 60, 0.4); }
+        .request-status-badge { display: inline-block; padding: 5px 12px; border-radius: 50px; font-size: 0.8rem; margin-top: 10px; font-weight: 600; }
+        .status-approved { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2); }
+        .status-rejected { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.2); }
+
 
         /* Privacy Options Refined */
         .privacy-options {
@@ -683,6 +716,7 @@
                 const data = await response.json();
                 grid.innerHTML = '';
                 if (data.success && data.designs && data.designs.length > 0) {
+                    window.myLoadedDesigns = data.designs;
                     data.designs.forEach(design => {
                         const name = design.data?.inputs ? (design.data.inputs['input-name_en'] || design.data.inputs['input-name_ar'] || 'Untitled') : 'Card';
                         const views = design.views || 0;
@@ -703,6 +737,7 @@
                                 <div class="card-actions">
                                     <a href="/nfc/viewer-en.html?id=${design.shortId}" class="action-btn btn-view" target="_blank">View</a>
                                     <a href="/nfc/editor-en.html?id=${design.shortId}" class="action-btn btn-edit">Edit</a>
+                                    <button class="action-btn btn-signature" onclick="generateSignatureFromDashboard('${design.shortId}')" title="Copy Email Signature"><i class="fas fa-signature"></i></button>
                                     <button class="action-btn btn-remove" onclick="deleteDesign('${design.shortId}')">Delete</button>
                                 </div>
                             </div>`;
@@ -880,6 +915,76 @@
                 setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i> Save Settings'; btn.style.background = ''; btn.disabled = false; }, 2000);
             } catch (err) { console.error(err); btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error'; btn.disabled = false; }
         });
+
+        async function generateSignatureFromDashboard(shortId) {
+            const design = (window.myLoadedDesigns || []).find(d => d.shortId === shortId);
+            if (!design || !design.data) {
+                alert('Sorry, cannot generate signature. Data is unavailable.');
+                return;
+            }
+
+            const data = design.data;
+            const inputs = data.inputs || {};
+            const dynamicData = data.dynamic || {};
+            const staticSocial = dynamicData.staticSocial || {};
+
+            let name = inputs['input-name_en'] || inputs['input-name_ar'] || inputs['input-name'] || 'Name';
+            let tagline = inputs['input-tagline_en'] || inputs['input-tagline_ar'] || inputs['input-tagline'] || '';
+            const photoUrl = (data.imageUrls && data.imageUrls.photo) || '';
+            const logoUrl = inputs['input-logo'] || '';
+            const cardUrl = `${window.location.origin}/nfc/viewer-en.html?id=${shortId}`;
+
+            const phone = dynamicData.phones && dynamicData.phones[0] ? dynamicData.phones[0].value : '';
+            const email = staticSocial.email ? staticSocial.email.value : '';
+            const whatsapp = staticSocial.whatsapp ? staticSocial.whatsapp.value.replace(/\D/g, '') : '';
+            const website = staticSocial.website ? staticSocial.website.value : '';
+            const linkedin = staticSocial.linkedin ? staticSocial.linkedin.value : '';
+
+            const avatarUrl = photoUrl || logoUrl;
+            const avatarShape = photoUrl ? '50%' : '8px';
+            const avatarSize = '72';
+
+            const avatarHtml = avatarUrl
+                ? `<img src="${avatarUrl}" width="${avatarSize}" height="${avatarSize}" style="width:${avatarSize}px;height:${avatarSize}px;border-radius:${avatarShape};object-fit:cover;display:block;" alt="${name}">`
+                : `<div style="width:${avatarSize}px;height:${avatarSize}px;border-radius:${avatarShape};background:linear-gradient(135deg,#4da6ff,#6f42c1);display:flex;align-items:center;justify-content:center;color:white;font-size:28px;font-weight:700;">${name.charAt(0).toUpperCase()}</div>`;
+
+            const socialLinkStyle = (color) => `display:inline-block;font-size:11px;color:${color};text-decoration:none;border:1px solid ${color}33;padding:3px 8px;border-radius:50px;`;
+
+            const socialLinks = [
+                phone    ? `<a href="tel:${phone}"    style="${socialLinkStyle('#2ecc71')}"><i>&#9990;</i> ${phone}</a>`    : '',
+                email    ? `<a href="mailto:${email}" style="${socialLinkStyle('#e74c3c')}"><i>&#9993;</i> ${email}</a>`    : '',
+                whatsapp ? `<a href="https://wa.me/${whatsapp}" style="${socialLinkStyle('#25d366')}">WhatsApp</a>`         : '',
+                website  ? `<a href="${website.startsWith('http') ? website : 'https://' + website}" style="${socialLinkStyle('#4da6ff')}"><i>&#127760;</i> ${website.replace(/^https?:\/\//, '')}</a>` : '',
+                linkedin ? `<a href="https://linkedin.com/in/${linkedin}" style="${socialLinkStyle('#0077b5')}">LinkedIn</a>` : '',
+            ].filter(Boolean).join('\n                    ');
+
+            const signatureHTML = `
+<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1e2d40;max-width:500px;">
+  <tr>
+    <td style="padding:0 18px 0 0;vertical-align:middle;">
+      ${avatarHtml}
+    </td>
+    <td style="border-left:3px solid #4da6ff;padding-left:18px;vertical-align:middle;">
+      <div style="font-size:18px;font-weight:700;color:#1e2d40;margin:0 0 2px;">${name}</div>
+      ${tagline ? `<div style="font-size:12px;color:#5a6a7a;margin:0 0 10px;">${tagline}</div>` : ''}
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+                    ${socialLinks}
+      </div>
+      <a href="${cardUrl}" style="display:inline-block;background:linear-gradient(135deg,#4da6ff,#6f42c1);color:#fff;text-decoration:none;padding:7px 16px;border-radius:50px;font-size:11px;font-weight:700;letter-spacing:0.04em;">&#127149; View Card</a>
+    </td>
+  </tr>
+</table>`;
+
+            try {
+                const blob = new Blob([signatureHTML], { type: 'text/html' });
+                const clipboardItem = new ClipboardItem({ 'text/html': blob });
+                await navigator.clipboard.write([clipboardItem]);
+                alert('✅ Signature copied!\n\nYou can now go to your email settings (Outlook, Gmail) and paste the signature there.');
+            } catch (err) {
+                console.error('Copy failed:', err);
+                alert('Automatic copy failed. Please try from another browser.');
+            }
+        }
     </script>
     <script src="/nfc/cookie-consent.js" defer></script>
     <script src="/nfc/error-reporter.js" defer></script>
