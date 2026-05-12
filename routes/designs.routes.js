@@ -320,28 +320,35 @@ router.post('/save-design', verifyToken, async (req, res) => {
       }
     }
 
+    // Determine if this is an update or a new design
     if (existingId) {
       const existingDesign = await getDb().collection(designsCollectionName).findOne({ shortId: existingId });
       if (existingDesign) {
         if (existingDesign.ownerId && existingDesign.ownerId !== ownerId) {
+          // Design belongs to another user — fork it as a new design
           shortId = nanoid(8);
           isUpdate = false;
+          console.log(`[SaveDesign] Forking design ${existingId} as new ${shortId} (different owner)`);
         } else {
+          // Same owner — update in place
           isUpdate = true;
+          console.log(`[SaveDesign] Updating existing design: ${existingId}`);
         }
       } else {
-        shortId = nanoid(8);
+        // existingId was provided but design not found in DB.
+        // This can happen if the design was deleted or DB was reset.
+        // Use the existingId as the shortId for the new insert so the URL stays consistent.
+        shortId = existingId;
         isUpdate = false;
+        console.log(`[SaveDesign] Design ${existingId} not found in DB, creating with same shortId`);
       }
     }
 
-    if (isUpdate) {
-      // Preserve captured card images during auto-save (which doesn't capture images)
-      const existingDoc = await getDb().collection(designsCollectionName).findOne({ shortId: shortId });
+    // Helper: preserve captured card images from existing design during auto-save
+    const preserveCapturedImages = (existingDoc) => {
       if (existingDoc?.data?.imageUrls) {
         if (!data.imageUrls) data.imageUrls = {};
         const existing = existingDoc.data.imageUrls;
-        // If update has no captured images, keep existing ones
         if (!data.imageUrls.capturedFront && existing.capturedFront) {
           data.imageUrls.capturedFront = existing.capturedFront;
         }
@@ -349,48 +356,24 @@ router.post('/save-design', verifyToken, async (req, res) => {
           data.imageUrls.capturedBack = existing.capturedBack;
         }
       }
-    }
+    };
 
     const updateDoc = {
       data,
+      ownerId,
       lastModified: new Date()
     };
-    if (ownerId && !isUpdate) updateDoc.ownerId = ownerId;
-    if (ownerId && isUpdate) updateDoc.ownerId = ownerId;
 
     if (isUpdate) {
+      // Preserve captured images during auto-save (which doesn't re-capture)
+      const existingDoc = await getDb().collection(designsCollectionName).findOne({ shortId: shortId });
+      preserveCapturedImages(existingDoc);
+
       await getDb().collection(designsCollectionName).updateOne(
         { shortId: shortId },
         { $set: updateDoc }
       );
     } else {
-      // If user already has a design, update it instead of failing
-      if (ownerId) {
-        const searchQuery = existingId ? { shortId: existingId, ownerId } : { ownerId };
-        const existingDesign = await getDb().collection(designsCollectionName).findOne(searchQuery);
-        if (existingDesign) {
-          shortId = existingDesign.shortId;
-          isUpdate = true;
-          // Preserve existing captured images if not re-capturing now
-          if (existingDesign.data?.imageUrls) {
-            if (!data.imageUrls) data.imageUrls = {};
-            const existing = existingDesign.data.imageUrls;
-            if (!data.imageUrls.capturedFront && existing.capturedFront) {
-              data.imageUrls.capturedFront = existing.capturedFront;
-            }
-            if (!data.imageUrls.capturedBack && existing.capturedBack) {
-              data.imageUrls.capturedBack = existing.capturedBack;
-            }
-          }
-          const updateExisting = { data, ownerId, lastModified: new Date() };
-          await getDb().collection(designsCollectionName).updateOne(
-            { shortId: shortId },
-            { $set: updateExisting }
-          );
-          return res.json({ success: true, id: shortId });
-        }
-      }
-
       await getDb().collection(designsCollectionName).insertOne({
         shortId,
         ...updateDoc,

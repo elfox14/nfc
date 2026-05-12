@@ -622,6 +622,7 @@ const ShareManager = {
             const result = await response.json();
             if (result.success && result.id) {
                 Config.currentDesignId = result.id;
+                localStorage.setItem('nfc:editingDesignId', result.id);
                 return result.id;
             } else {
                 throw new Error('Invalid response from server');

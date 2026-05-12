@@ -27,7 +27,7 @@ const EditorUserStatus = {
         const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
         if (!isLoggedIn) return; // لا يوجد توكن = غير مسجل
 
-        // إذا كان URL يحتوي على ?id= فلا داعي للجلب
+        // إذا كان URL يحتوي على ?id= فاستخدم ذلك مباشرة
         const urlParams = new URLSearchParams(window.location.search);
         const urlId = urlParams.get('id');
         if (urlId) {
@@ -38,28 +38,18 @@ const EditorUserStatus = {
         // إذا كان Config.currentDesignId موجوداً بالفعل فلا داعي للجلب
         if (typeof Config !== 'undefined' && Config.currentDesignId) return;
 
-        try {
-            const baseUrl = (typeof Config !== 'undefined' && Config.API_BASE_URL)
-                ? Config.API_BASE_URL
-                : 'https://nfc-vjy6.onrender.com';
-
-            const response = await Auth.apiFetchWithRefresh(`${baseUrl}/api/user/designs`, {
-                headers: Auth.getHeader()
-            });
-
-            if (!response.ok) return;
-
-            const data = await response.json();
-            if (data.success && data.designs && data.designs.length > 0) {
-                const existingId = data.designs[0].shortId;
-                if (typeof Config !== 'undefined') {
-                    Config.currentDesignId = existingId;
-                    console.log('[EditorUserStatus] Restored existing design ID:', existingId);
-                }
-            }
-        } catch (err) {
-            console.warn('[EditorUserStatus] Could not restore design ID:', err.message);
+        // Try to recover from localStorage (set during previous editing session)
+        const savedId = localStorage.getItem('nfc:editingDesignId');
+        if (savedId && typeof Config !== 'undefined') {
+            Config.currentDesignId = savedId;
+            console.log('[EditorUserStatus] Recovered design ID from localStorage:', savedId);
+            return;
         }
+
+        // NOTE: We intentionally do NOT fetch the user's design list and pick designs[0].
+        // That approach is dangerous when users have multiple designs — editing card A
+        // could accidentally overwrite card B if card B happened to be first in the list.
+        // The user must explicitly open a design via ?id= or save a new one first.
     },
 
     updateUserStatus() {
