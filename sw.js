@@ -26,7 +26,7 @@ const PRECACHE_ASSETS = [
   '/nfc/error-reporter.js',
   '/nfc/manifest.json',
   '/nfc/logo.svg',
-  '/nfc/mcprime-logo-optimized.png',
+  '/nfc/mcprime-logo-optimized.webp',
 ];
 
 // Offline fallback page (minimal)
