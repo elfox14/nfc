@@ -636,17 +636,19 @@ app.use('/nfc', express.static(rootDir, {
   extensions: ['html'],
   setHeaders: (res, filePath) => {
     const ext = path.extname(filePath).toLowerCase();
+    // Add Vary header for proper CDN/proxy caching
+    res.setHeader('Vary', 'Accept-Encoding');
     if (['.css', '.js'].includes(ext)) {
-      // CSS/JS: Cache for 7 days, revalidate
-      res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
+      // CSS/JS: Cache for 30 days with stale-while-revalidate fallback
+      res.setHeader('Cache-Control', 'public, max-age=2592000, stale-while-revalidate=86400');
     } else if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.woff2', '.woff', '.ttf'].includes(ext)) {
-      // Images & fonts: Cache for 30 days
-      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+      // Images & fonts: Cache for 1 year (immutable)
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     } else if (ext === '.html') {
       // HTML: Always revalidate (fresh content)
       res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     } else if (ext === '.json') {
-      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
     }
   }
 }));
