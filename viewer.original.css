@@ -360,7 +360,8 @@ input:checked+.slider .moon-icon {
     box-shadow: var(--card-shadow);
     overflow: hidden;
     background-color: #ffffff; /* Fallback background to prevent see-through */
-    transform-style: preserve-3d;
+    /* IMPORTANT: Must be flat, NOT preserve-3d, otherwise backface-visibility breaks on mobile */
+    transform-style: flat;
 }
 
 .business-card-viewer img {
@@ -374,9 +375,9 @@ input:checked+.slider .moon-icon {
     object-fit: contain;
 }
 
-/* Front face stays normal, hidden by backface-visibility when parent flips */
-.cards-wrapper-viewer.is-flipped #card-front-display {
-    transform: none;
+/* iOS Safari requires explicit transform on BOTH faces for backface-visibility to work */
+#card-front-display {
+    transform: rotateY(0deg);
 }
 
 #viewer-flip-btn {

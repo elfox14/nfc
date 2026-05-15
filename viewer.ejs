@@ -98,6 +98,11 @@
             /* Fallback */
         }
 
+        /* iOS Safari requires explicit transform on BOTH faces for backface-visibility to work */
+        .card-front {
+            transform: rotateY(0deg);
+        }
+
         .card-back {
             transform: rotateY(180deg);
         }
