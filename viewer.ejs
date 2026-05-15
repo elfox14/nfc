@@ -1401,8 +1401,8 @@ END:VCARD`;
                     const oldBackTransform = backEl ? backEl.style.transform : '';
                     if (backEl) backEl.style.transform = 'none';
 
-                    if (backEl) backCanvasRaw = await html2canvas(backEl, { useCORS: true, backgroundColor: null, scale: 2 });
-                    if (frontEl) frontCanvasRaw = await html2canvas(frontEl, { useCORS: true, backgroundColor: null, scale: 2 });
+                    if (backEl) backCanvasRaw = await html2canvas(backEl, { useCORS: true, backgroundColor: '#000000', scale: 2 });
+                    if (frontEl) frontCanvasRaw = await html2canvas(frontEl, { useCORS: true, backgroundColor: '#000000', scale: 2 });
 
                     // Restore transforms
                     if (wrapper) wrapper.style.transform = oldWrapperTransform;

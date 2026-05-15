@@ -245,7 +245,7 @@ const ExportManager = {
 
         try {
             return await html2canvas(element, {
-                backgroundColor: null,
+                backgroundColor: '#000000', // Must be opaque to prevent front/back bleed-through on mobile viewer
                 scale: scale,
                 useCORS: true,
                 allowTaint: true,

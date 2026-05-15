@@ -862,7 +862,7 @@ document.addEventListener('DOMContentLoaded', () => {
             scale: 2, 
             useCORS: true, 
             allowTaint: true, 
-            backgroundColor: null, 
+            backgroundColor: '#000000', // Must be opaque! null creates transparent PNGs causing front face to bleed through back face
             logging: false, 
             imageTimeout: 15000,
             scrollX: 0,
