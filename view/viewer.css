@@ -295,7 +295,13 @@ input:checked + .slider .moon-icon {
 
 /* iOS Safari requires explicit transform on BOTH faces for backface-visibility to work */
 #card-front-display {
-    transform: rotateY(0deg);
+    transform: rotateY(0deg) translateZ(1px);
+    -webkit-transform: rotateY(0deg) translateZ(1px);
+}
+
+#card-back-display {
+    transform: rotateY(180deg) translateZ(1px);
+    -webkit-transform: rotateY(180deg) translateZ(1px);
 }
 
 #viewer-flip-btn {
