@@ -249,7 +249,11 @@ const ExportManager = {
                 scale: scale,
                 useCORS: true,
                 allowTaint: true,
-                logging: false
+                logging: false,
+                scrollX: 0,
+                scrollY: 0,
+                windowWidth: 1400,
+                windowHeight: 900
             });
         }
         finally {
