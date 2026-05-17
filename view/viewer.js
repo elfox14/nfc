@@ -151,11 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cleanNumber = value.replace(/\D/g, '');
                 fullUrl = `${prefix}${cleanNumber}`;
             } else if (key === 'website') {
-                 fullUrl = !/^(https?:\/\/)/i.test(value) ? `${prefix}${value}` : value;
-                 displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
+                fullUrl = !/^(https?:\/\/)/i.test(value) ? `${prefix}${value}` : value;
+                displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
             } else { // For dynamic social links and others
-                 fullUrl = !/^(https?:\/\/)/i.test(value) ? `${prefix}${value}` : value;
-                 displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
+                fullUrl = !/^(https?:\/\/)/i.test(value) ? `${prefix}${value}` : value;
+                displayValue = value.replace(/^(https?:\/\/)?(www\.)?/, '');
             }
 
             displayValue = displayValue.replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -177,15 +177,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render Phone Numbers (Excluding WhatsApp)
         if (dynamicData.phones) {
-             const whatsappNumberClean = (staticSocial.whatsapp && staticSocial.whatsapp.value)
+            const whatsappNumberClean = (staticSocial.whatsapp && staticSocial.whatsapp.value)
                 ? staticSocial.whatsapp.value.replace(/\D/g, '')
                 : '';
             dynamicData.phones.forEach(phone => {
                 if (phone && phone.value) {
                     const phoneValueClean = phone.value.replace(/\D/g, '');
                     if (phoneValueClean !== whatsappNumberClean) {
-                         const sanitizedValue = phone.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                         linksHTML.push(`
+                        const sanitizedValue = phone.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        linksHTML.push(`
                             <a href="tel:${phoneValueClean}" class="contact-link">
                                 <i class="fas fa-phone"></i>
                                 <span>${sanitizedValue}</span>
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const renderElement = (elementHTML, placement, containerCollection) => {
-             if (containerCollection[placement]) {
+            if (containerCollection[placement]) {
                 containerCollection[placement].insertAdjacentHTML('beforeend', elementHTML);
             } else {
                 console.warn(`Container "${placement}" not found, defaulting to front`);
@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                 } else {
-                     phoneHTML = `
+                    phoneHTML = `
                         <div class="phone-button-draggable-wrapper text-only-mode" data-layout="${phoneTextLayout}" style="position: absolute !important; ${wrapperPos}">
                             <a href="${telLink}" class="phone-button" style="
                                 background-color: transparent !important; /* Ensure transparent */
@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add static (using platform definitions from renderContactLinks scope)
         const platforms = { /* Copy the platforms object from renderContactLinks here */
-             whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+            whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
             email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
             website: { icon: 'fas fa-globe', prefix: 'https://' },
             facebook: { icon: 'fab fa-facebook-f', prefix: 'https://facebook.com/' },
@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: `static-${key}`,
                     value: linkData.value,
                     placement: linkData.placement || 'back',
-                    position: linkData.position || {x:0, y:0},
+                    position: linkData.position || { x: 0, y: 0 },
                     platformKey: key
                 });
             }
@@ -498,11 +498,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add dynamic
         dynamicSocial.forEach(linkData => {
             if (linkData && linkData.value && linkData.platform && platforms[linkData.platform]) { // Check if platform exists
-                 allSocialLinks.push({
+                allSocialLinks.push({
                     id: linkData.id || `dynamic-${linkData.platform}-${Date.now()}`, // Ensure ID exists
                     value: linkData.value,
                     placement: linkData.placement || 'back',
-                    position: linkData.position || {x:0, y:0},
+                    position: linkData.position || { x: 0, y: 0 },
                     platformKey: linkData.platform
                 });
             }
@@ -600,9 +600,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (qrSource === 'auto-vcard') {
             qrDataString = getVCardString();
         } else if (qrSource === 'auto-card') {
-             // Fallback to vCard for rendering if auto-card source is chosen
-             console.warn("auto-card QR source selected for rendering, using vCard data as fallback.");
-             qrDataString = getVCardString();
+            // Fallback to vCard for rendering if auto-card source is chosen
+            console.warn("auto-card QR source selected for rendering, using vCard data as fallback.");
+            qrDataString = getVCardString();
         }
 
         if (qrDataString) {
@@ -614,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (qrSource === 'custom' || qrSource === 'upload') {
                 // It's an image URL
-                 qrHTML = `
+                qrHTML = `
                     <div id="qr-code-wrapper" style="
                         width: ${qrSize}% !important;
                         padding-top: ${qrSize}%; /* Maintain aspect ratio */
@@ -625,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <img src="${qrDataString}" alt="QR Code" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 4px; object-fit: contain; background: white; padding: 4px;">
                     </div>
                  `;
-                 renderElement(qrHTML, qrPlacement, containers);
+                renderElement(qrHTML, qrPlacement, containers);
             } else if (qrDataString.length > 20) { // Check if vCard/auto-card data is substantial
                 // It's data for QR generation (vCard or auto-card fallback)
                 try {
@@ -641,8 +641,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         text: qrDataString,
                         width: 256, // Generate at a reasonable resolution
                         height: 256,
-                        colorDark : "#000000",
-                        colorLight : "#ffffff",
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
                         correctLevel: QRCode.CorrectLevel.H
                     });
 
@@ -680,21 +680,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 } catch (error) {
                     console.error('QR Code generation failed:', error);
-                     // Optionally render a placeholder or error message
-                     qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}%; aspect-ratio: 1; position: absolute; ${qrPos} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: red; text-align: center; border-radius: 4px; padding: 5px;">QR Error</div>`;
-                     renderElement(qrHTML, qrPlacement, containers);
+                    // Optionally render a placeholder or error message
+                    qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}%; aspect-ratio: 1; position: absolute; ${qrPos} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: red; text-align: center; border-radius: 4px; padding: 5px;">QR Error</div>`;
+                    renderElement(qrHTML, qrPlacement, containers);
                 }
             } else {
-                 console.warn("QR data string is too short, skipping QR generation.");
-                 // Optionally render a placeholder if needed
-                 qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}%; aspect-ratio: 1; position: absolute; ${qrPos} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #aaa; text-align: center; border-radius: 4px; padding: 5px;">QR Placeholder</div>`;
-                 renderElement(qrHTML, qrPlacement, containers);
+                console.warn("QR data string is too short, skipping QR generation.");
+                // Optionally render a placeholder if needed
+                qrHTML = `<div id="qr-code-wrapper" style="width: ${qrSize}%; aspect-ratio: 1; position: absolute; ${qrPos} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #aaa; text-align: center; border-radius: 4px; padding: 5px;">QR Placeholder</div>`;
+                renderElement(qrHTML, qrPlacement, containers);
             }
         } else {
-             console.log("No QR data available to render.");
-             // Optionally render a placeholder if no data
-             let qrHTML = `<div id="qr-code-wrapper" style="width: ${inputs['qr-size'] || 25}%; aspect-ratio: 1; position: absolute; ${getPositionStyle('qr-code-wrapper')} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #aaa; text-align: center; border-radius: 4px; padding: 5px;">QR Placeholder</div>`;
-             renderElement(qrHTML, getPlacement('qr', 'back'), containers);
+            console.log("No QR data available to render.");
+            // Optionally render a placeholder if no data
+            let qrHTML = `<div id="qr-code-wrapper" style="width: ${inputs['qr-size'] || 25}%; aspect-ratio: 1; position: absolute; ${getPositionStyle('qr-code-wrapper')} background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #aaa; text-align: center; border-radius: 4px; padding: 5px;">QR Placeholder</div>`;
+            renderElement(qrHTML, getPlacement('qr', 'back'), containers);
         }
 
 
@@ -714,10 +714,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 // Add a timeout fallback for image loading
                 setTimeout(() => {
-                     if (!img.complete) {
-                         console.warn(`Timeout loading image: ${img.src}`);
-                         resolve();
-                     }
+                    if (!img.complete) {
+                        console.warn(`Timeout loading image: ${img.src}`);
+                        resolve();
+                    }
                 }, 5000); // 5 second timeout per image
             });
         }));
@@ -754,16 +754,63 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error('لم يتم العثور على عناصر البطاقة أو حاوية العرض');
         }
 
+        const visuallyHidden = document.querySelector('.visually-hidden');
+        let originalStyles = null;
+
+        if (visuallyHidden) {
+            originalStyles = {
+                position: visuallyHidden.style.position,
+                width: visuallyHidden.style.width,
+                height: visuallyHidden.style.height,
+                margin: visuallyHidden.style.margin,
+                padding: visuallyHidden.style.padding,
+                overflow: visuallyHidden.style.overflow,
+                clip: visuallyHidden.style.clip,
+                clipPath: visuallyHidden.style.clipPath,
+                left: visuallyHidden.style.left,
+                top: visuallyHidden.style.top,
+                opacity: visuallyHidden.style.opacity,
+                zIndex: visuallyHidden.style.zIndex
+            };
+
+            visuallyHidden.style.position = 'fixed';
+            visuallyHidden.style.width = 'auto';
+            visuallyHidden.style.height = 'auto';
+            visuallyHidden.style.margin = '0';
+            visuallyHidden.style.padding = '0';
+            visuallyHidden.style.overflow = 'visible';
+            visuallyHidden.style.clip = 'auto';
+            visuallyHidden.style.clipPath = 'none';
+            visuallyHidden.style.left = '0';
+            visuallyHidden.style.top = '0';
+            visuallyHidden.style.opacity = '0.01';
+            visuallyHidden.style.zIndex = '-9999';
+        }
+
+        frontCardRenderArea.style.position = 'relative';
+        frontCardRenderArea.style.left = '0';
+        frontCardRenderArea.style.top = '0';
         frontCardRenderArea.style.visibility = 'visible';
+
+        backCardRenderArea.style.position = 'relative';
+        backCardRenderArea.style.left = '0';
+        backCardRenderArea.style.top = '0';
         backCardRenderArea.style.visibility = 'visible';
+
+        // Brief delay to allow layout recalculation
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         const captureOptions = {
             scale: 2, 
             useCORS: true, 
             allowTaint: true, 
-            backgroundColor: null, 
+            backgroundColor: "#000000", 
             logging: false, 
-            imageTimeout: 15000 
+            imageTimeout: 15000,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: 1400,
+            windowHeight: 900
         };
 
         try {
@@ -773,17 +820,20 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Capturing back card...');
             const backCanvas = await html2canvas(backCardRenderArea, captureOptions);
 
+            if (visuallyHidden && originalStyles) {
+                Object.assign(visuallyHidden.style, originalStyles);
+            }
+
+            frontCardRenderArea.style.position = 'absolute';
+            frontCardRenderArea.style.left = '-9999px';
             frontCardRenderArea.style.visibility = 'hidden';
+
+            backCardRenderArea.style.position = 'absolute';
+            backCardRenderArea.style.left = '-9999px';
             backCardRenderArea.style.visibility = 'hidden';
 
-            // --- !! هذا هو التعديل الأول - استخدام الخلفية !! ---
-            // نعود لاستخدام innerHTML لأنه أنظف للتحكم المشروط
-            const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
-            const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
-
             frontDisplay.innerHTML = `<img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="الوجه الأمامي للبطاقة">`;
-            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="الوجه الخلفي للبطاقة" ${backImageStyle}>`;
-            // --- نهاية التعديل ---
+            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="الوجه الخلفي للبطاقة">`;
 
             // دالة التقليب
             const flipFn = (e) => {
@@ -800,8 +850,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Card capture failed:', error);
+            if (visuallyHidden && originalStyles) {
+                Object.assign(visuallyHidden.style, originalStyles);
+            }
+            frontCardRenderArea.style.position = 'absolute';
+            frontCardRenderArea.style.left = '-9999px';
             frontCardRenderArea.style.visibility = 'hidden';
+            
+            backCardRenderArea.style.position = 'absolute';
+            backCardRenderArea.style.left = '-9999px';
             backCardRenderArea.style.visibility = 'hidden';
+            
             alert(`فشل التقاط صور البطاقة: ${error.message}`); // User feedback
             flipWrapper.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">خطأ في عرض البطاقة.</p>`;
             throw new Error('فشل التقاط صور البطاقة');
@@ -814,16 +873,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loader) {
             loader.innerHTML = `<p style="color: #dc3545; font-weight: bold;">خطأ في التحميل:</p><p>${message || 'حدث خطأ غير متوقع.'}</p>`;
             loader.style.display = 'flex';
-             loader.style.flexDirection = 'column';
-             loader.style.alignItems = 'center';
-             loader.style.justifyContent = 'center';
+            loader.style.flexDirection = 'column';
+            loader.style.alignItems = 'center';
+            loader.style.justifyContent = 'center';
         }
         if (viewerContainer) {
             viewerContainer.style.display = 'none';
         }
         console.error("Loading Error:", message);
     };
-    
+
     // --- منطق الوضع الليلي ---
     const setupThemeToggle = () => {
         const toggle = document.getElementById('theme-toggle');
@@ -862,8 +921,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            cardData = data; 
-            
+            cardData = data;
+
             console.log("Rendering contact links via JS...");
             renderContactLinks(data);
 
@@ -883,7 +942,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const flipBtn = document.getElementById('viewer-flip-btn');
 
             if (!frontDisplay || !backDisplay || !flipWrapper || !flipBtn) {
-                 throw new Error("حاوية عرض صور البطاقة غير موجودة!");
+                throw new Error("حاوية عرض صور البطاقة غير موجودة!");
             }
 
             const imageUrls = data.imageUrls || {};
@@ -892,7 +951,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (capturedFront && capturedBack) {
                 console.log("Displaying pre-captured snapshot images...");
-                
+
                 // --- !! هذا هو التعديل الثاني - إضافة الشرط !! ---
                 const isMobileView = window.matchMedia("(max-width: 1200px)").matches;
                 const backImageStyle = isMobileView ? 'style="transform: rotateY(180deg);"' : '';
@@ -900,28 +959,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 frontDisplay.innerHTML = `<img src="${capturedFront}" alt="الوجه الأمامي للبطاقة" loading="lazy">`;
                 backDisplay.innerHTML = `<img src="${capturedBack}" alt="الوجه الخلفي للبطاقة" loading="lazy" ${backImageStyle}>`;
                 // --- نهاية التعديل ---
-                
+
                 const flipFn = (e) => {
                     e.stopPropagation();
                     flipWrapper.classList.toggle('is-flipped');
                 };
-                
+
                 flipWrapper.addEventListener('click', flipFn);
                 flipBtn.addEventListener('click', flipFn);
                 flipBtn.style.display = 'inline-flex';
 
                 const renderWrapper = document.querySelector('.visually-hidden');
-                 if(renderWrapper) renderWrapper.remove();
+                if (renderWrapper) renderWrapper.remove();
 
 
             } else {
                 console.warn("Captured images not found in data, attempting to render and capture...");
 
-                 const frontCardRender = document.getElementById('front-card');
-                 const backCardRender = document.getElementById('back-card');
-                 if (!frontCardRender || !backCardRender) {
-                     throw new Error("حاويات الرندر المخفية غير موجودة!");
-                 }
+                const frontCardRender = document.getElementById('front-card');
+                const backCardRender = document.getElementById('back-card');
+                if (!frontCardRender || !backCardRender) {
+                    throw new Error("حاويات الرندر المخفية غير موجودة!");
+                }
 
                 console.log("Building card for capture...");
                 await buildCardForRender(data);
@@ -931,7 +990,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             console.log("Adding save button listeners...");
-            addSaveButtonListeners(); 
+            addSaveButtonListeners();
 
             if (loader) loader.style.display = 'none';
             if (viewerContainer) viewerContainer.style.display = 'block';
@@ -953,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', () => {
             saveVcfBtn.onclick = () => {
                 try {
                     const vcfData = getVCardString();
-                    if (!vcfData || vcfData.length < 20) { 
+                    if (!vcfData || vcfData.length < 20) {
                         alert("لا توجد بيانات كافية لحفظ جهة الاتصال.");
                         console.warn("Attempted to save VCF with insufficient data:", vcfData);
                         return;
@@ -981,59 +1040,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
         } else {
-             console.warn("Save VCF button not found.");
+            console.warn("Save VCF button not found.");
         }
 
         const downloadCapturedImage = (cardFace) => {
-             const imageContainer = cardFace === 'front' 
-                 ? document.getElementById('card-front-display') 
-                 : document.getElementById('card-back-display');
+            const imageContainer = cardFace === 'front'
+                ? document.getElementById('card-front-display')
+                : document.getElementById('card-back-display');
 
-             if (!imageContainer) {
-                 console.error("Image container not found for download.");
-                 alert("خطأ: لم يتم العثور على حاوية صور البطاقة.");
-                 return;
-             }
+            if (!imageContainer) {
+                console.error("Image container not found for download.");
+                alert("خطأ: لم يتم العثور على حاوية صور البطاقة.");
+                return;
+            }
 
             // --- !! هذا هو التعديل الثالث - البحث عن <img> !! ---
             const imgElement = imageContainer.querySelector('img');
 
-             if (imgElement && imgElement.src && (imgElement.src.startsWith('data:image/png') || imgElement.src.startsWith('http'))) {
-                 try {
-                     const link = document.createElement('a');
-                     link.href = imgElement.src;
-                     link.setAttribute('download', ''); 
+            if (imgElement && imgElement.src && (imgElement.src.startsWith('data:image/png') || imgElement.src.startsWith('http'))) {
+                try {
+                    const link = document.createElement('a');
+                    link.href = imgElement.src;
+                    link.setAttribute('download', '');
 
-                     const filenameBase = (cardData && cardData.inputs && cardData.inputs['input-name']
-                         ? cardData.inputs['input-name']
-                         : 'card'
-                     ).replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                     link.download = `${filenameBase}_${cardFace}.png`;
+                    const filenameBase = (cardData && cardData.inputs && cardData.inputs['input-name']
+                        ? cardData.inputs['input-name']
+                        : 'card'
+                    ).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    link.download = `${filenameBase}_${cardFace}.png`;
 
-                     document.body.appendChild(link);
-                     link.click();
-                     document.body.removeChild(link);
-                     console.log(`${cardFace} PNG download initiated.`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    console.log(`${cardFace} PNG download initiated.`);
 
-                 } catch (e) {
-                     console.error(`${cardFace} PNG download error:`, e);
-                     alert(`حدث خطأ أثناء تجهيز صورة الواجهة ${cardFace === 'front' ? 'الأمامية' : 'الخلفية'}.`);
-                 }
-             } else {
-                  console.warn(`Captured image element for '${cardFace}' not found or has invalid src.`);
-                 alert(`لم يتم العثور على صورة البطاقة ${cardFace === 'front' ? 'الأمامية' : 'الخلفية'} أو أنها غير صالحة.`);
-             }
+                } catch (e) {
+                    console.error(`${cardFace} PNG download error:`, e);
+                    alert(`حدث خطأ أثناء تجهيز صورة الواجهة ${cardFace === 'front' ? 'الأمامية' : 'الخلفية'}.`);
+                }
+            } else {
+                console.warn(`Captured image element for '${cardFace}' not found or has invalid src.`);
+                alert(`لم يتم العثور على صورة البطاقة ${cardFace === 'front' ? 'الأمامية' : 'الخلفية'} أو أنها غير صالحة.`);
+            }
         };
 
         if (saveFrontPngBtn) {
-             saveFrontPngBtn.onclick = () => downloadCapturedImage('front');
+            saveFrontPngBtn.onclick = () => downloadCapturedImage('front');
         } else {
             console.warn("Save Front PNG button not found.");
         }
         if (saveBackPngBtn) {
             saveBackPngBtn.onclick = () => downloadCapturedImage('back');
         } else {
-             console.warn("Save Back PNG button not found.");
+            console.warn("Save Back PNG button not found.");
         }
 
 
@@ -1042,8 +1101,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // --- !! هذا هو التعديل الرابع - البحث عن <img> للـ PDF !! ---
                 const frontImgElement = document.getElementById('card-front-display')?.querySelector('img');
                 const backImgElement = document.getElementById('card-back-display')?.querySelector('img');
-                
-                if (!frontImgElement || !frontImgElement.src || !backImgElement || !backImgElement.src ) {
+
+                if (!frontImgElement || !frontImgElement.src || !backImgElement || !backImgElement.src) {
                     alert("لم يتم العثور على صور البطاقة الأمامية والخلفية أو أنها غير صالحة لإنشاء PDF.");
                     console.warn("Missing front or back image for PDF generation.");
                     return;
@@ -1064,16 +1123,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!frontImg.complete) await new Promise(resolve => frontImg.onload = resolve);
                     if (!backImg.complete) await new Promise(resolve => backImg.onload = resolve);
 
-                    const imgWidth = frontImg.naturalWidth || 510*2; 
-                    const imgHeight = frontImg.naturalHeight || 330*2;
-                    const pdfWidth = imgWidth * 0.75; 
+                    const imgWidth = frontImg.naturalWidth || 510 * 2;
+                    const imgHeight = frontImg.naturalHeight || 330 * 2;
+                    const pdfWidth = imgWidth * 0.75;
                     const pdfHeight = imgHeight * 0.75;
 
                     const orientation = pdfWidth > pdfHeight ? 'l' : 'p';
 
                     const doc = new jsPDF({
                         orientation: orientation,
-                        unit: 'pt', 
+                        unit: 'pt',
                         format: [pdfWidth, pdfHeight]
                     });
 
@@ -1086,7 +1145,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         : 'card'
                     ).replace(/[^a-z0-9]/gi, '_').toLowerCase();
                     doc.save(`${filenameBase}.pdf`);
-                    
+
                     console.log("PDF download initiated.");
 
                 } catch (error) {
@@ -1094,18 +1153,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("حدث خطأ أثناء إنشاء ملف PDF.");
                 } finally {
                     savePdfBtn.disabled = false;
-                    savePdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> حفظ كـ PDF'; 
+                    savePdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> حفظ كـ PDF';
                 }
             };
         } else {
-             console.warn("Save PDF button not found.");
+            console.warn("Save PDF button not found.");
         }
     };
-    
+
     // --- دالة تفعيل التبويبات للموبايل ---
     const setupMobileTabs = () => {
         const tabContainer = document.querySelector('.mobile-viewer-tabs');
-        if (!tabContainer) return; 
+        if (!tabContainer) return;
 
         const tabButtons = tabContainer.querySelectorAll('.mobile-tab-btn');
         const tabPanes = document.querySelectorAll('.viewer-layout > .side-column');
@@ -1126,7 +1185,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- INITIALIZATION ---
     const initializeViewer = async () => {
-        
+
         setupThemeToggle();
         setupMobileTabs();
 
@@ -1142,15 +1201,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pathSegments = window.location.pathname.split('/');
 
                 let relevantSegments = pathSegments.filter(p => p.toLowerCase() !== 'viewer.html');
-                
+
                 if (relevantSegments.length >= 3 && relevantSegments[relevantSegments.length - 2].toLowerCase() === 'view' && relevantSegments[relevantSegments.length - 1]) {
                     cardId = relevantSegments[relevantSegments.length - 1];
                     console.log(`Card ID found in path: ${cardId}`);
                 } else {
                     cardId = new URLSearchParams(window.location.search).get('id');
-                     if (cardId) {
-                         console.log(`Card ID found in query parameter: ${cardId}`);
-                     }
+                    if (cardId) {
+                        console.log(`Card ID found in query parameter: ${cardId}`);
+                    }
                 }
 
 
@@ -1163,13 +1222,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(apiUrl);
 
                 if (!response.ok) {
-                     const errorText = await response.text(); 
-                     console.error(`Server response: ${response.status}`, errorText);
+                    const errorText = await response.text();
+                    console.error(`Server response: ${response.status}`, errorText);
                     throw new Error(`فشل تحميل بيانات البطاقة (الحالة: ${response.status})`);
                 }
 
                 data = await response.json();
-                 console.log("Data fetched successfully from API.");
+                console.log("Data fetched successfully from API.");
             }
 
             if (!data || typeof data !== 'object' || !data.inputs) {

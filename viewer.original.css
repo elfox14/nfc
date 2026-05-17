@@ -380,6 +380,10 @@ input:checked+.slider .moon-icon {
     transform: rotateY(0deg);
 }
 
+#card-back-display {
+    transform: rotateY(180deg);
+}
+
 #viewer-flip-btn {
     gap: 8px;
     background-color: var(--accent-secondary);

@@ -179,10 +179,10 @@ document.addEventListener('DOMContentLoaded', () => {
             : `<div style="width:${avatarSize}px;height:${avatarSize}px;border-radius:${avatarShape};background:linear-gradient(135deg,#4da6ff,#6f42c1);display:flex;align-items:center;justify-content:center;color:white;font-size:28px;font-weight:700;">${name.charAt(0).toUpperCase()}</div>`;
 
         const socialLinks = [
-            phone    ? `<a href="tel:${phone}"    style="${socialLinkStyle('#2ecc71')}"><i>&#9990;</i> ${phone}</a>`    : '',
-            email    ? `<a href="mailto:${email}" style="${socialLinkStyle('#e74c3c')}"><i>&#9993;</i> ${email}</a>`    : '',
-            whatsapp ? `<a href="https://wa.me/${whatsapp}" style="${socialLinkStyle('#25d366')}">WhatsApp</a>`         : '',
-            website  ? `<a href="${website.startsWith('http') ? website : 'https://' + website}" style="${socialLinkStyle('#4da6ff')}"><i>&#127760;</i> ${website.replace(/^https?:\/\//, '')}</a>` : '',
+            phone ? `<a href="tel:${phone}"    style="${socialLinkStyle('#2ecc71')}"><i>&#9990;</i> ${phone}</a>` : '',
+            email ? `<a href="mailto:${email}" style="${socialLinkStyle('#e74c3c')}"><i>&#9993;</i> ${email}</a>` : '',
+            whatsapp ? `<a href="https://wa.me/${whatsapp}" style="${socialLinkStyle('#25d366')}">WhatsApp</a>` : '',
+            website ? `<a href="${website.startsWith('http') ? website : 'https://' + website}" style="${socialLinkStyle('#4da6ff')}"><i>&#127760;</i> ${website.replace(/^https?:\/\//, '')}</a>` : '',
             linkedin ? `<a href="https://linkedin.com/in/${linkedin}" style="${socialLinkStyle('#0077b5')}">LinkedIn</a>` : '',
         ].filter(Boolean).join('\n                    ');
 
@@ -400,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     navigator.clipboard.writeText(linkData && linkData.value ? linkData.value : value)
                         .then(() => showToast('تم النسخ 📋', 'info', 2000))
-                        .catch(() => {});
+                        .catch(() => { });
                     setTimeout(() => window.open(a.href, '_blank'), 300);
                     trackClick(key);
                 });
@@ -858,15 +858,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // Wait for reflow
         await new Promise(resolve => setTimeout(resolve, 200));
 
-        const captureOptions = { 
-            scale: 2, 
-            useCORS: true, 
-            allowTaint: true, 
+        const captureOptions = {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
             backgroundColor: '#000000', // Must be opaque! null creates transparent PNGs causing front face to bleed through back face
-            logging: false, 
+            logging: false,
             imageTimeout: 15000,
             scrollX: 0,
-            scrollY: 0
+            scrollY: 0,
+            windowWidth: 1400,
+            windowHeight: 900
         };
 
         try {
@@ -1153,15 +1155,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('جاري تجهيز الصورة، يرجى الانتظار...', 'info');
                     return;
                 }
-                
+
                 try {
                     const originalHtml = addToStoryBtn.innerHTML;
                     addToStoryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التجهيز...';
-                    
+
                     const res = await fetch(frontImg.src);
                     const blob = await res.blob();
                     const file = new File([blob], 'card_story.png', { type: 'image/png' });
-                    
+
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             files: [file],
@@ -1298,7 +1300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const setupMobileMenu = () => {
         const toggle = document.getElementById('mobile-menu-toggle');
         const navLinks = document.querySelector('.viewer-nav .nav-links');
-        
+
         if (!toggle || !navLinks) return;
 
         // Create overlay if missing
@@ -1318,7 +1320,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         toggle.addEventListener('click', toggleMenu);
         overlay.addEventListener('click', toggleMenu);
-        
+
         // Close menu when a link is clicked
         navLinks.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
