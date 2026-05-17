@@ -248,7 +248,8 @@ const ExportManager = {
 
             setProps(flipperContainer, {
                 'perspective': 'none',
-                'transform-style': 'flat'
+                'transform-style': 'flat',
+                'transform': 'none'
             });
 
             setProps(flipper, {
@@ -263,7 +264,9 @@ const ExportManager = {
                     'backface-visibility': 'visible',
                     '-webkit-backface-visibility': 'visible',
                     'transform': 'none',
-                    'position': isTargetFace ? 'relative' : 'absolute',
+                    'position': 'absolute',
+                    'top': '0',
+                    'left': '0',
                     'visibility': isTargetFace ? 'visible' : 'hidden',
                     'z-index': isTargetFace ? '10' : '-1'
                 });
@@ -274,7 +277,7 @@ const ExportManager = {
 
         try {
             return await html2canvas(element, {
-                backgroundColor: '#000000', // Must be opaque to prevent front/back bleed-through on mobile viewer
+                backgroundColor: null, // Transparent background so border-radius corners don't have black edges
                 scale: scale,
                 useCORS: true,
                 allowTaint: true,
