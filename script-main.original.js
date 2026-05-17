@@ -228,51 +228,38 @@ const ExportManager = {
         if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = '';
 
         const isMobile = typeof MobileUtils !== 'undefined' && MobileUtils.isMobile();
-
-        // ===================================================================
-        // CRITICAL FIX: html2canvas CANNOT render CSS 3D transforms.
-        // On mobile, the card uses preserve-3d, backface-visibility: hidden,
-        // and rotateY(180deg) for the flip effect. We must temporarily
-        // flatten the entire 3D hierarchy into a 2D state before capture.
-        // ===================================================================
-        const savedStyles = []; // Array of { element, props: { prop: oldValue } }
+        const originalStates = [];
 
         if (isMobile) {
             const flipper = document.querySelector('.card-flipper');
             const flipperContainer = document.querySelector('.card-flipper-container');
-            const cardFaces = document.querySelectorAll('.card-face');
+            const faces = document.querySelectorAll('.card-face');
             const isCapturingBack = element.id === 'card-back-preview';
-
-            // Helper to save & override inline styles
-            const flatten = (el, overrides) => {
+            
+            const setProps = (el, props) => {
                 if (!el) return;
-                const saved = { element: el, props: {} };
-                for (const [prop, value] of Object.entries(overrides)) {
-                    saved.props[prop] = el.style.getPropertyValue(prop);
-                    el.style.setProperty(prop, value, 'important');
+                const state = { element: el, props: {} };
+                for (const [key, value] of Object.entries(props)) {
+                    state.props[key] = el.style.getPropertyValue(key);
+                    el.style.setProperty(key, value, 'important');
                 }
-                savedStyles.push(saved);
+                originalStates.push(state);
             };
 
-            // Flatten the 3D container
-            flatten(flipperContainer, {
+            setProps(flipperContainer, {
                 'perspective': 'none',
                 'transform-style': 'flat'
             });
 
-            // Flatten the flipper — remove rotation and 3D
-            flatten(flipper, {
+            setProps(flipper, {
                 'transform-style': 'flat',
                 'transform': 'none',
                 'transition': 'none'
             });
 
-            // Flatten ALL card faces — remove backface-visibility and rotation
-            cardFaces.forEach(face => {
-                const isFront = face.classList.contains('card-front');
-                const isTargetFace = isFront ? !isCapturingBack : isCapturingBack;
-
-                flatten(face, {
+            faces.forEach(face => {
+                const isTargetFace = face.classList.contains('card-front') ? !isCapturingBack : isCapturingBack;
+                setProps(face, {
                     'backface-visibility': 'visible',
                     '-webkit-backface-visibility': 'visible',
                     'transform': 'none',
@@ -281,14 +268,13 @@ const ExportManager = {
                     'z-index': isTargetFace ? '10' : '-1'
                 });
             });
-
-            // Wait for style reflow
+            
             await new Promise(resolve => setTimeout(resolve, 80));
         }
 
         try {
             return await html2canvas(element, {
-                backgroundColor: '#000000',
+                backgroundColor: '#000000', // Must be opaque to prevent front/back bleed-through on mobile viewer
                 scale: scale,
                 useCORS: true,
                 allowTaint: true,
@@ -301,21 +287,20 @@ const ExportManager = {
         }
         finally {
             document.head.removeChild(style);
-
-            // Restore all flattened 3D styles in reverse order
-            for (let i = savedStyles.length - 1; i >= 0; i--) {
-                const { element: el, props } = savedStyles[i];
-                for (const [prop, oldValue] of Object.entries(props)) {
-                    if (oldValue) {
-                        el.style.setProperty(prop, oldValue);
+            // Restore the mobile scale transform
+            if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = originalWrapperTransform;
+            
+            // Restore 3D states
+            for (let i = originalStates.length - 1; i >= 0; i--) {
+                const { element: el, props } = originalStates[i];
+                for (const [key, value] of Object.entries(props)) {
+                    if (value) {
+                        el.style.setProperty(key, value);
                     } else {
-                        el.style.removeProperty(prop);
+                        el.style.removeProperty(key);
                     }
                 }
             }
-
-            // Restore the mobile scale transform
-            if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = originalWrapperTransform;
         }
     },
 
