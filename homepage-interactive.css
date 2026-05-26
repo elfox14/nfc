@@ -1,0 +1,1554 @@
+/* =====================================================
+   MC PRIME — Interactive Homepage Components
+   =====================================================
+   NFC Tap Simulation | Parallax Journey | Interactive Demo
+   Persona Switcher | Animated Stats | Particle Effects
+   ===================================================== */
+
+/* ─── NFC Tap Simulation ─────────────────────────── */
+.nfc-simulation {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    height: 320px;
+    margin: 3rem auto 0;
+    perspective: 1200px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nfc-scene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* The NFC Card */
+.nfc-card-3d {
+    position: relative;
+    width: 280px;
+    height: 170px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #0f2744 0%, #1a3a60 40%, #1e4a7a 100%);
+    border: 1px solid rgba(77, 166, 255, 0.35);
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.5),
+        0 0 0 rgba(77, 166, 255, 0);
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.6s ease;
+    z-index: 2;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.2rem 1.4rem;
+}
+
+.nfc-card-3d::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 40%,
+        rgba(77, 166, 255, 0.08) 45%,
+        rgba(77, 166, 255, 0.12) 50%,
+        rgba(77, 166, 255, 0.08) 55%,
+        transparent 60%
+    );
+    transform: translateX(-200%);
+    transition: transform 0.8s ease;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.nfc-card-3d.tapped::before {
+    transform: translateX(200%);
+}
+
+.nfc-card-3d.tapped {
+    transform: scale(1.05) rotateY(-5deg);
+    box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(77, 166, 255, 0.4),
+        0 0 80px rgba(77, 166, 255, 0.15);
+}
+
+/* Card Content */
+.nfc-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.nfc-card-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4da6ff, #a78bfa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 14px rgba(77, 166, 255, 0.45);
+    flex-shrink: 0;
+}
+
+.nfc-card-info h3 {
+    color: #e8f4ff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.nfc-card-info span {
+    color: #7db8e8;
+    font-size: 0.72rem;
+}
+
+.nfc-card-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(77, 166, 255, 0.4), transparent);
+}
+
+.nfc-card-contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.nfc-card-contacts .contact-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #bdd8f0;
+    font-size: 0.72rem;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+[dir="ltr"] .nfc-card-contacts .contact-row {
+    transform: translateX(-20px);
+}
+
+.nfc-card-3d.tapped .nfc-card-contacts .contact-row {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.nfc-card-3d.tapped .contact-row:nth-child(1) { transition-delay: 0.15s; }
+.nfc-card-3d.tapped .contact-row:nth-child(2) { transition-delay: 0.25s; }
+.nfc-card-3d.tapped .contact-row:nth-child(3) { transition-delay: 0.35s; }
+
+.nfc-card-contacts .contact-row i {
+    color: #4da6ff;
+    width: 14px;
+    font-size: 0.68rem;
+    text-align: center;
+}
+
+.nfc-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nfc-card-brand {
+    color: #4da6ff;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.nfc-card-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(77, 166, 255, 0.15);
+    border: 1px solid rgba(77, 166, 255, 0.4);
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    color: #4da6ff;
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+
+/* Phone Approaching Animation */
+.nfc-phone {
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%) translateX(40px);
+    width: 70px;
+    height: 120px;
+    z-index: 3;
+    animation: phoneApproach 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+}
+
+[dir="ltr"] .nfc-phone {
+    right: auto;
+    left: -10px;
+    animation: phoneApproachLTR 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.nfc-phone-body {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+    border-radius: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.nfc-phone-body::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+.nfc-phone-screen {
+    width: 54px;
+    height: 80px;
+    background: linear-gradient(180deg, #0d1b2a, #1b2838);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.nfc-phone-screen i {
+    color: #4da6ff;
+    font-size: 1.6rem;
+    animation: nfcPulse 2s ease-in-out infinite;
+}
+
+@keyframes phoneApproach {
+    0%, 100% {
+        transform: translateY(-50%) translateX(40px);
+        opacity: 0.7;
+    }
+    30% {
+        transform: translateY(-50%) translateX(40px);
+        opacity: 1;
+    }
+    55% {
+        transform: translateY(-50%) translateX(-15px);
+        opacity: 1;
+    }
+    65% {
+        transform: translateY(-50%) translateX(-10px);
+        opacity: 1;
+    }
+    80%, 90% {
+        transform: translateY(-50%) translateX(40px);
+        opacity: 0.5;
+    }
+}
+
+@keyframes phoneApproachLTR {
+    0%, 100% {
+        transform: translateY(-50%) translateX(-40px);
+        opacity: 0.7;
+    }
+    30% {
+        transform: translateY(-50%) translateX(-40px);
+        opacity: 1;
+    }
+    55% {
+        transform: translateY(-50%) translateX(15px);
+        opacity: 1;
+    }
+    65% {
+        transform: translateY(-50%) translateX(10px);
+        opacity: 1;
+    }
+    80%, 90% {
+        transform: translateY(-50%) translateX(-40px);
+        opacity: 0.5;
+    }
+}
+
+@keyframes nfcPulse {
+    0%, 100% { opacity: 0.5; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* NFC Ripple Effect */
+.nfc-ripple-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.nfc-ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(77, 166, 255, 0.3);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+}
+
+.nfc-simulation.active .nfc-ripple {
+    animation: rippleExpand 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.nfc-ripple:nth-child(1) { animation-delay: 1.5s; }
+.nfc-ripple:nth-child(2) { animation-delay: 1.7s; }
+.nfc-ripple:nth-child(3) { animation-delay: 1.9s; }
+
+@keyframes rippleExpand {
+    0% {
+        width: 0; height: 0; opacity: 0;
+    }
+    10% {
+        opacity: 0.6;
+    }
+    50% {
+        width: 200px; height: 200px; opacity: 0.2;
+    }
+    100% {
+        width: 300px; height: 300px; opacity: 0;
+    }
+}
+
+/* Particle Burst */
+.particle-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    opacity: 0;
+}
+
+.nfc-simulation.burst .particle {
+    animation: particleBurst 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes particleBurst {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(0);
+    }
+}
+
+/* Tap Hint */
+.tap-hint {
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-secondary-color);
+    font-size: 0.8rem;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: tapHintPulse 2s ease-in-out infinite;
+    white-space: nowrap;
+}
+
+.tap-hint i {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+@keyframes tapHintPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ─── Mini Journey Strip ─────────────────────────── */
+.journey-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-top: 3.5rem;
+    padding: 1.5rem;
+    position: relative;
+}
+
+.journey-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 2;
+    opacity: 0.4;
+    transform: scale(0.9);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.journey-step.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.journey-step-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.5s ease;
+    position: relative;
+}
+
+.journey-step.active .journey-step-icon {
+    box-shadow: 0 0 30px rgba(77, 166, 255, 0.4);
+}
+
+.journey-step:nth-child(1) .journey-step-icon {
+    background: linear-gradient(135deg, #4da6ff, #2d86ff);
+    color: #fff;
+}
+
+.journey-step:nth-child(3) .journey-step-icon {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    color: #fff;
+}
+
+.journey-step:nth-child(5) .journey-step-icon {
+    background: linear-gradient(135deg, #34d399, #059669);
+    color: #fff;
+}
+
+.journey-step-label {
+    color: var(--text-secondary-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.journey-step.active .journey-step-label {
+    color: var(--text-primary-color);
+}
+
+.journey-connector {
+    width: 60px;
+    height: 2px;
+    background: rgba(77, 166, 255, 0.2);
+    position: relative;
+    margin: 0 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.journey-connector::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #a78bfa);
+    transition: width 0.6s ease;
+}
+
+[dir="ltr"] .journey-connector::after {
+    right: auto;
+    left: 0;
+}
+
+.journey-connector.filled::after {
+    width: 100%;
+}
+
+/* ─── Animated Stats Bar ─────────────────────────── */
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+    margin-top: 2.5rem;
+    padding: 1.5rem 2rem;
+    background: rgba(77, 166, 255, 0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(77, 166, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.hero-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.hero-stat-number {
+    font-family: 'Cairo', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.hero-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary-color);
+    font-weight: 600;
+}
+
+.hero-stat-item i {
+    color: #fbbf24;
+    font-size: 0.9rem;
+}
+
+/* ─── Interactive Demo Section ─────────────────── */
+.interactive-demo-section {
+    padding: 80px 0;
+    overflow: hidden;
+}
+
+.demo-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.demo-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1.8rem;
+    border-radius: 50px;
+    background: var(--surface-color);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary-color);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-family: inherit;
+}
+
+.demo-tab i {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.demo-tab:hover {
+    border-color: rgba(77, 166, 255, 0.3);
+    color: var(--text-primary-color);
+    transform: translateY(-2px);
+}
+
+.demo-tab.active {
+    background: linear-gradient(135deg, var(--primary-color), #2d86ff);
+    color: #0b131e;
+    border-color: transparent;
+    box-shadow: 0 8px 25px rgba(77, 166, 255, 0.35);
+}
+
+.demo-tab.active i {
+    transform: scale(1.2);
+}
+
+/* Demo Content Panels */
+.demo-panels {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    min-height: 420px;
+}
+
+.demo-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+.demo-panel.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+    position: relative;
+}
+
+/* Panel 1: Design Preview */
+.design-preview-container {
+    background: linear-gradient(145deg, #243447, #1c2a3b);
+    border: 2px solid rgba(77, 166, 255, 0.2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.design-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.design-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.design-dot:nth-child(1) { background: #ff5f56; }
+.design-dot:nth-child(2) { background: #ffbd2e; }
+.design-dot:nth-child(3) { background: #27ca3f; }
+
+.design-toolbar-title {
+    color: var(--text-secondary-color);
+    font-size: 0.8rem;
+    margin-right: auto;
+    margin-left: 12px;
+}
+
+[dir="ltr"] .design-toolbar-title {
+    margin-left: auto;
+    margin-right: 12px;
+}
+
+.design-workspace {
+    display: flex;
+    min-height: 350px;
+}
+
+.design-sidebar {
+    width: 200px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+[dir="ltr"] .design-sidebar {
+    border-left: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.design-sidebar-label {
+    color: var(--text-secondary-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.color-picker-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.color-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.color-dot:hover {
+    transform: scale(1.2);
+}
+
+.color-dot.selected {
+    border-color: #fff;
+    box-shadow: 0 0 12px rgba(77, 166, 255, 0.4);
+}
+
+.color-dot.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.design-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* Mini Card Preview Inside Demo */
+.mini-card-preview {
+    width: 260px;
+    height: 160px;
+    border-radius: 16px;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.mini-card-preview::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1), transparent 70%);
+    pointer-events: none;
+}
+
+.mini-card-name {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.mini-card-title {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.75rem;
+}
+
+.mini-card-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mini-card-brand {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.mini-card-nfc {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Template Selector */
+.template-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.template-option {
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.template-option:hover {
+    transform: scale(1.05);
+}
+
+.template-option.selected {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 10px rgba(77, 166, 255, 0.3);
+}
+
+/* Panel 2: Share Animation */
+.share-animation-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    padding: 3rem 2rem;
+    position: relative;
+}
+
+.share-device {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.share-phone {
+    width: 120px;
+    height: 200px;
+    background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.share-phone::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.share-phone-screen {
+    width: 100px;
+    height: 160px;
+    background: #0d1b2a;
+    border-radius: 12px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.share-qr-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    animation: qrPulse 2s ease-in-out infinite;
+}
+
+.share-device-label {
+    color: var(--text-secondary-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Transfer Arrow */
+.share-transfer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.transfer-arrow {
+    font-size: 2rem;
+    color: var(--primary-color);
+    animation: transferPulse 1.5s ease-in-out infinite;
+}
+
+.transfer-label {
+    color: var(--text-secondary-color);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+@keyframes transferPulse {
+    0%, 100% { transform: translateX(0); opacity: 0.5; }
+    50% { transform: translateX(-10px); opacity: 1; }
+}
+
+[dir="ltr"] @keyframes transferPulse {
+    0%, 100% { transform: translateX(0); opacity: 0.5; }
+    50% { transform: translateX(10px); opacity: 1; }
+}
+
+@keyframes qrPulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Receiver Phone */
+.share-phone.receiver .share-phone-screen {
+    padding: 10px;
+}
+
+.receiver-card-mini {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1a3a60, #1e4a7a);
+    border: 1px solid rgba(77, 166, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    opacity: 0;
+    transform: scale(0.8);
+    animation: cardAppear 3s ease-in-out infinite;
+}
+
+.receiver-card-mini i {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+
+.receiver-card-mini span {
+    color: #bdd8f0;
+    font-size: 0.6rem;
+    font-weight: 600;
+}
+
+@keyframes cardAppear {
+    0%, 40% { opacity: 0; transform: scale(0.8); }
+    60% { opacity: 1; transform: scale(1.05); }
+    70%, 100% { opacity: 1; transform: scale(1); }
+}
+
+/* Panel 3: Physical Card 3D */
+.physical-card-showcase {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.physical-card-3d {
+    width: 300px;
+    height: 190px;
+    perspective: 800px;
+}
+
+.physical-card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: cardSpin 6s ease-in-out infinite;
+}
+
+@keyframes cardSpin {
+    0%, 100% { transform: rotateY(0deg) rotateX(5deg); }
+    25% { transform: rotateY(15deg) rotateX(0deg); }
+    50% { transform: rotateY(0deg) rotateX(-5deg); }
+    75% { transform: rotateY(-15deg) rotateX(0deg); }
+}
+
+.physical-card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 18px;
+    border: 1px solid rgba(77, 166, 255, 0.25);
+    backface-visibility: hidden;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(77, 166, 255, 0.1);
+}
+
+.physical-card-front {
+    background: linear-gradient(135deg, #0f2744 0%, #1a3a60 50%, #1e4a7a 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem;
+}
+
+.physical-card-front h4 {
+    color: #e8f4ff;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.physical-card-front span {
+    color: #7db8e8;
+    font-size: 0.8rem;
+}
+
+.physical-card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.physical-nfc-icon {
+    color: #4da6ff;
+    font-size: 1.5rem;
+    opacity: 0.7;
+}
+
+.physical-brand {
+    color: #4da6ff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.physical-features {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.physical-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary-color);
+    font-size: 0.85rem;
+}
+
+.physical-feature i {
+    color: #34d399;
+    font-size: 1rem;
+}
+
+/* ─── Persona Switcher ─────────────────────────── */
+.persona-switcher-section {
+    padding: 80px 0;
+}
+
+.persona-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.persona-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.2rem 1.5rem;
+    border-radius: 16px;
+    background: var(--surface-color);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-width: 110px;
+    font-family: inherit;
+}
+
+.persona-tab:hover {
+    transform: translateY(-5px);
+    border-color: rgba(77, 166, 255, 0.3);
+}
+
+.persona-tab.active {
+    background: linear-gradient(135deg, rgba(77, 166, 255, 0.15), rgba(77, 166, 255, 0.05));
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 25px rgba(77, 166, 255, 0.2);
+}
+
+.persona-tab-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.persona-tab-label {
+    color: var(--text-secondary-color);
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.3s;
+}
+
+.persona-tab.active .persona-tab-label {
+    color: var(--primary-color);
+}
+
+/* Persona Card Display */
+.persona-display {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+    min-height: 350px;
+}
+
+.persona-card-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transform: scale(0.9) rotateY(10deg);
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    perspective: 1000px;
+}
+
+.persona-card-wrapper.active {
+    opacity: 1;
+    transform: scale(1) rotateY(0deg);
+    pointer-events: all;
+    position: relative;
+}
+
+.persona-card {
+    background: var(--surface-color);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.persona-card-header {
+    padding: 2rem 2rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.persona-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.persona-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary-color);
+    margin: 0;
+}
+
+.persona-title {
+    color: var(--text-secondary-color);
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+}
+
+.persona-card-body {
+    padding: 0 2rem 1.5rem;
+}
+
+.persona-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
+}
+
+.persona-link-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.7rem 1rem;
+    background: rgba(77, 166, 255, 0.06);
+    border-radius: 12px;
+    border: 1px solid rgba(77, 166, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.persona-link-item:hover {
+    background: rgba(77, 166, 255, 0.12);
+    border-color: rgba(77, 166, 255, 0.25);
+    transform: translateX(-5px);
+}
+
+[dir="ltr"] .persona-link-item:hover {
+    transform: translateX(5px);
+}
+
+.persona-link-item i {
+    color: var(--primary-color);
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.persona-link-item span {
+    color: var(--text-secondary-color);
+    font-size: 0.9rem;
+}
+
+.persona-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.persona-socials {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.persona-social-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(77, 166, 255, 0.1);
+    border: 1px solid rgba(77, 166, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.persona-social-icon:hover {
+    background: var(--primary-color);
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+.persona-cta-btn {
+    padding: 0.6rem 1.2rem;
+    background: linear-gradient(135deg, var(--primary-color), #2d86ff);
+    color: #0b131e;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.persona-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(77, 166, 255, 0.4);
+}
+
+/* ─── Parallax Scroll Progress ─────────────────── */
+.scroll-progress-indicator {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+[dir="rtl"] .scroll-progress-indicator {
+    left: auto;
+    right: 20px;
+}
+
+.scroll-progress-indicator.visible {
+    opacity: 1;
+}
+
+.scroll-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(77, 166, 255, 0.2);
+    border: 1px solid rgba(77, 166, 255, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.scroll-dot.active {
+    background: var(--primary-color);
+    box-shadow: 0 0 10px rgba(77, 166, 255, 0.5);
+    transform: scale(1.3);
+}
+
+/* ─── Light Mode Overrides ─────────────────────── */
+body.light-mode .nfc-card-3d {
+    background: linear-gradient(135deg, #e8f4ff 0%, #dbeafe 40%, #bfdbfe 100%);
+    border-color: rgba(77, 166, 255, 0.25);
+}
+
+body.light-mode .nfc-card-info h3 { color: #1e3a5f; }
+body.light-mode .nfc-card-info span { color: #4a7eb5; }
+body.light-mode .nfc-card-contacts .contact-row { color: #3b6a94; }
+body.light-mode .nfc-card-brand { color: #2d86ff; }
+
+body.light-mode .nfc-phone-body {
+    background: linear-gradient(145deg, #f3f4f6, #e5e7eb);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .nfc-phone-screen {
+    background: linear-gradient(180deg, #f8fafc, #e2e8f0);
+}
+
+body.light-mode .hero-stats {
+    background: rgba(77, 166, 255, 0.06);
+    border-color: rgba(77, 166, 255, 0.15);
+}
+
+body.light-mode .design-preview-container {
+    background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+    border-color: rgba(77, 166, 255, 0.2);
+}
+
+body.light-mode .design-toolbar {
+    background: rgba(0, 0, 0, 0.04);
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .design-sidebar {
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .demo-tab {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .persona-tab {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .persona-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .persona-link-item {
+    background: rgba(77, 166, 255, 0.04);
+    border-color: rgba(77, 166, 255, 0.12);
+}
+
+body.light-mode .persona-card-footer {
+    background: rgba(0, 0, 0, 0.03);
+    border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .share-phone {
+    background: linear-gradient(145deg, #f3f4f6, #e5e7eb);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .share-phone-screen {
+    background: #f8fafc;
+}
+
+body.light-mode .physical-card-front {
+    background: linear-gradient(135deg, #e8f4ff 0%, #dbeafe 50%, #bfdbfe 100%);
+    border-color: rgba(77, 166, 255, 0.2);
+}
+
+/* ─── Responsive ─────────────────────────────── */
+@media (max-width: 768px) {
+    .nfc-simulation {
+        height: 280px;
+        max-width: 340px;
+    }
+
+    .nfc-card-3d {
+        width: 220px;
+        height: 140px;
+        padding: 0.9rem 1rem;
+    }
+
+    .nfc-card-avatar { width: 36px; height: 36px; font-size: 0.8rem; }
+    .nfc-card-info h3 { font-size: 0.82rem; }
+    .nfc-card-info span { font-size: 0.65rem; }
+    .nfc-card-contacts .contact-row { font-size: 0.65rem; }
+
+    .nfc-phone {
+        width: 55px;
+        height: 95px;
+        right: -5px;
+    }
+
+    [dir="ltr"] .nfc-phone { left: -5px; }
+
+    .journey-strip {
+        gap: 0;
+        margin-top: 2.5rem;
+        padding: 1rem 0.5rem;
+    }
+
+    .journey-step-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+    }
+
+    .journey-step-label { font-size: 0.72rem; }
+    .journey-connector { width: 30px; }
+
+    .hero-stats {
+        gap: 1.2rem;
+        padding: 1rem;
+    }
+
+    .hero-stat-number { font-size: 1.4rem; }
+    .hero-stat-label { font-size: 0.7rem; }
+
+    .demo-tabs {
+        gap: 0.4rem;
+    }
+
+    .demo-tab {
+        padding: 0.7rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .demo-panels { min-height: 350px; }
+
+    .design-workspace {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .design-sidebar {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 0.8rem;
+        gap: 0.5rem;
+    }
+
+    [dir="ltr"] .design-sidebar {
+        border-right: none;
+    }
+
+    .design-main { padding: 1.5rem 1rem; }
+
+    .mini-card-preview {
+        width: 200px;
+        height: 125px;
+        padding: 0.9rem;
+    }
+
+    .mini-card-name { font-size: 0.85rem; }
+
+    .share-animation-container {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 2rem 1rem;
+    }
+
+    .share-transfer {
+        transform: rotate(90deg);
+    }
+
+    .share-phone {
+        width: 100px;
+        height: 170px;
+    }
+
+    .share-phone-screen {
+        width: 85px;
+        height: 135px;
+    }
+
+    .physical-card-3d {
+        width: 240px;
+        height: 155px;
+    }
+
+    .persona-tabs { gap: 0.5rem; }
+
+    .persona-tab {
+        padding: 0.8rem 1rem;
+        min-width: 85px;
+    }
+
+    .persona-tab-icon { font-size: 1.5rem; }
+    .persona-tab-label { font-size: 0.75rem; }
+
+    .persona-display { min-height: 320px; }
+
+    .persona-card-header {
+        padding: 1.5rem 1.2rem 0.8rem;
+    }
+
+    .persona-avatar {
+        width: 52px;
+        height: 52px;
+        font-size: 1.2rem;
+    }
+
+    .persona-name { font-size: 1.1rem; }
+    .persona-card-body { padding: 0 1.2rem 1rem; }
+
+    .scroll-progress-indicator { display: none; }
+}
+
+@media (max-width: 480px) {
+    .nfc-simulation { height: 250px; }
+
+    .nfc-card-3d {
+        width: 190px;
+        height: 120px;
+        padding: 0.7rem 0.8rem;
+    }
+
+    .nfc-phone { width: 45px; height: 80px; }
+
+    .journey-connector { width: 20px; }
+
+    .hero-stats { gap: 0.8rem; }
+    .hero-stat-number { font-size: 1.2rem; }
+}

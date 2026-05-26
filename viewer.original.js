@@ -1351,7 +1351,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!cardId) throw new Error(i18n.cardIdNotFound);
 
                 const apiUrl = `${API_BASE_URL}/api/get-design/${cardId}?trackView=true`;
-                const response = await fetch(apiUrl);
+                const response = await fetch(apiUrl, { cache: 'no-store' });
 
                 if (!response.ok) throw new Error(i18n.failedLoadCardData);
                 data = await response.json();

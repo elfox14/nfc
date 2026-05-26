@@ -916,12 +916,7 @@
     // KEYBOARD SHORTCUTS
     // ===========================================
     const SHORTCUTS = [
-        { keys: ['Ctrl', 'S'], action: T.saveDesign, handler: () => document.getElementById('save-to-gallery-btn')?.click() },
-        { keys: ['Ctrl', 'Z'], action: T.undo, handler: () => document.getElementById('undo-btn')?.click() },
-        { keys: ['Ctrl', 'Y'], action: T.redo, handler: () => document.getElementById('redo-btn')?.click() },
-        { keys: ['Ctrl', 'P'], action: T.fullPreview, handler: toggleFullPreview },
         { keys: ['Escape'], action: T.closeWindows, handler: closeModals },
-        { keys: ['?'], action: T.showShortcuts, handler: toggleShortcutsModal },
         { keys: ['Arrows'], action: T.moveElement, handler: () => { } }, // Handled specially in listener
         { keys: ['Delete'], action: T.deleteElement, handler: deleteSelectedElement }
     ];

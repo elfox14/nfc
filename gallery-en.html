@@ -412,9 +412,9 @@
                 const cardElement = document.createElement('div');
                 cardElement.className = 'gallery-card';
 
-                const viewUrl = isDemo ? '#' : `/nfc/viewer.html?id=${design.shortId}`;
+                const viewUrl = isDemo ? '#' : `/nfc/viewer-en.html?id=${design.shortId}`;
                 const editUrl = isDemo ? '/nfc/editor-en.html' : `/nfc/editor-en.html?id=${design.shortId}`;
-                const shareUrl = isDemo ? '' : `${window.location.origin}/nfc/viewer.html?id=${design.shortId}`;
+                const shareUrl = isDemo ? '' : `${window.location.origin}/nfc/viewer-en.html?id=${design.shortId}`;
 
                 const name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || 'Unnamed';
                 const tagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || 'No description';
@@ -687,7 +687,7 @@
                                     "@type": "CreativeWork",
                                     "name": design.data.inputs['input-name'] || 'Business Card Design',
                                     "description": design.data.inputs['input-tagline'] || '',
-                                    "url": `/nfc/viewer.html?id=${design.shortId}`
+                                    "url": `/nfc/viewer-en.html?id=${design.shortId}`
                                 }
                             });
                         });

@@ -811,6 +811,8 @@ router.get('/get-design/:id', async (req, res) => {
     }
 
     console.log(`[API] Design found for ID: ${id}. Returning data.`);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
     res.json(doc.data);
   } catch (e) {
     console.error('Get design error:', e);

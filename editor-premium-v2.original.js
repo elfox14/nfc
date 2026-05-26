@@ -330,22 +330,28 @@
     // ════════════════════════════════════════════════════════════════════════
     function initKeyboardShortcuts() {
         const shortcuts = [
-            { key: 's', ctrl: true, action: () => document.getElementById('save-share-btn')?.click(), desc: isAr ? 'حفظ ومشاركة' : 'Save & Share' },
-            { key: 'z', ctrl: true, action: () => document.getElementById('undo-btn')?.click(), desc: isAr ? 'تراجع' : 'Undo' },
-            { key: 'y', ctrl: true, action: () => document.getElementById('redo-btn')?.click(), desc: isAr ? 'إعادة' : 'Redo' },
-            { key: 'p', ctrl: true, action: () => document.getElementById('preview-mode-btn')?.click(), desc: isAr ? 'معاينة' : 'Preview' },
-            { key: 'g', ctrl: true, action: () => document.getElementById('show-gallery-btn')?.click(), desc: isAr ? 'المعرض' : 'Gallery' },
-            { key: 'd', ctrl: true, action: () => document.getElementById('download-options-btn')?.click(), desc: isAr ? 'تنزيل' : 'Download' },
+            { key: 's', ctrl: true, shift: false, action: () => document.getElementById('save-to-gallery-btn')?.click(), desc: isAr ? 'حفظ بالمعرض' : 'Save to Gallery' },
+            { key: 'z', ctrl: true, shift: false, action: () => document.getElementById('undo-btn')?.click(), desc: isAr ? 'تراجع' : 'Undo' },
+            { key: 'y', ctrl: true, shift: false, action: () => document.getElementById('redo-btn')?.click(), desc: isAr ? 'إعادة' : 'Redo' },
+            { key: 'p', ctrl: true, shift: false, action: () => document.getElementById('preview-mode-btn')?.click(), desc: isAr ? 'معاينة' : 'Preview' },
+            { key: 'g', ctrl: true, shift: false, action: () => document.getElementById('show-gallery-btn')?.click(), desc: isAr ? 'المعرض' : 'Gallery' },
+            { key: 'd', ctrl: true, shift: false, action: () => document.getElementById('download-options-btn')?.click(), desc: isAr ? 'تنزيل' : 'Download' },
+            { key: 'c', ctrl: true, shift: true, action: () => document.getElementById('start-collab-btn')?.click(), desc: isAr ? 'تحرير جماعي' : 'Collaborative Edit' },
+            { key: 'r', ctrl: true, shift: true, action: () => document.getElementById('reset-design-btn')?.click(), desc: isAr ? 'إعادة تعيين' : 'Reset Design' },
+            { key: 'l', ctrl: true, shift: true, action: () => document.getElementById('share-editor-btn')?.click(), desc: isAr ? 'مشاركة رابط الموقع' : 'Share Site Link' },
             { key: '?', ctrl: false, action: () => showShortcutsHelp(), desc: isAr ? 'عرض الاختصارات' : 'Show shortcuts' },
         ];
 
         document.addEventListener('keydown', (e) => {
             if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
             for (const s of shortcuts) {
-                if (
-                    e.key.toLowerCase() === s.key &&
-                    (!s.ctrl || (e.ctrlKey || e.metaKey))
-                ) {
+                if (e.key.toLowerCase() === s.key) {
+                    const ctrlPressed = e.ctrlKey || e.metaKey;
+                    if (s.ctrl && !ctrlPressed) continue;
+                    if (!s.ctrl && ctrlPressed) continue;
+                    
+                    if (s.shift !== undefined && e.shiftKey !== s.shift) continue;
+                    
                     if (s.ctrl) e.preventDefault();
                     s.action();
                     return;
@@ -364,7 +370,7 @@
                         <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:rgba(255,255,255,0.04);border-radius:8px;">
                             <span style="font-size:0.84rem;color:var(--text-primary);">${s.desc}</span>
                             <kbd style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);padding:3px 10px;border-radius:5px;font-family:monospace;font-size:0.75rem;color:#4da6ff;">
-                                ${s.ctrl ? (isAr ? 'Ctrl+' : 'Ctrl+') : ''}${s.key.toUpperCase()}
+                                ${s.ctrl ? 'Ctrl+' : ''}${s.shift ? 'Shift+' : ''}${s.key.toUpperCase()}
                             </kbd>
                         </div>`).join('')}
                 </div>`);

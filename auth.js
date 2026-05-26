@@ -203,6 +203,8 @@ const Auth = {
         options.headers = { ...(options.headers || {}), ...this.getHeader() };
         // SECURITY: Auth is handled by HttpOnly cookies (where supported)
         options.credentials = 'include';
+        // Prevent API caching in browser
+        options.cache = 'no-store';
 
         try {
             let res = await fetch(url, options);

@@ -9,9 +9,9 @@
  * - Auto-update with skipWaiting
  */
 
-const CACHE_NAME = 'mcprime-v2';
-const STATIC_CACHE = 'mcprime-static-v2';
-const API_CACHE = 'mcprime-api-v2';
+const CACHE_NAME = 'mcprime-v4';
+const STATIC_CACHE = 'mcprime-static-v4';
+const API_CACHE = 'mcprime-api-v4';
 
 // Assets to pre-cache on install
 const PRECACHE_ASSETS = [
@@ -86,9 +86,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets (CSS, JS, images, fonts): Cache-First
+  // Static assets (CSS, JS, images, fonts): Stale-While-Revalidate
+  // Returns cached version immediately but updates cache in background
   if (isStaticAsset(url.pathname)) {
-    event.respondWith(cacheFirst(request));
+    event.respondWith(staleWhileRevalidate(request));
     return;
   }
 });
@@ -117,20 +118,26 @@ async function networkFirstWithFallback(request) {
   }
 }
 
-async function cacheFirst(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(STATIC_CACHE);
+  const cached = await cache.match(request);
 
-  try {
-    const networkResponse = await fetch(request);
+  // Always fetch from network in background to update cache
+  const networkPromise = fetch(request).then((networkResponse) => {
     if (networkResponse.ok) {
-      const cache = await caches.open(STATIC_CACHE);
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
-    return new Response('', { status: 408, statusText: 'Offline' });
+  }).catch(() => null);
+
+  // Return cached version immediately if available, otherwise wait for network
+  if (cached) {
+    return cached;
   }
+
+  const networkResponse = await networkPromise;
+  if (networkResponse) return networkResponse;
+  return new Response('', { status: 408, statusText: 'Offline' });
 }
 
 function isStaticAsset(pathname) {

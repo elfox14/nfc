@@ -176,9 +176,9 @@ const EditorUserStatus = {
             mobileShareBtn.addEventListener('click', () => {
                 const designId = (typeof Config !== 'undefined' && Config.currentDesignId) ? Config.currentDesignId : null;
                 if (designId && typeof ShareManager !== 'undefined' && ShareManager.performShare) {
-                    const viewerUrl = new URL('viewer.html', window.location.href);
+                    const viewerPage = isEnglish ? 'viewer-en.html' : 'viewer.html';
+                    const viewerUrl = new URL(viewerPage, window.location.href);
                     viewerUrl.searchParams.set('id', designId);
-                    const isEnglish = document.documentElement.lang.includes('en') || window.location.pathname.includes('-en');
                     ShareManager.performShare(
                         viewerUrl.href,
                         isEnglish ? 'Check out my digital business card!' : 'شاهد بطاقة عملي الرقمية!',
@@ -322,8 +322,8 @@ const EditorUserStatus = {
                         : (isEnglish ? 'Design and images saved successfully' : 'تم حفظ التصميم والصور بنجاح');
                     if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Saved ✓' : 'تم الحفظ ✓';
 
-                    // AFTER SUCCESSFUL MANUAL SAVE: Trigger Sharing
-                    const viewerUrl = new URL('viewer.html', window.location.href);
+                    const viewerPage = isEnglish ? 'viewer-en.html' : 'viewer.html';
+                    const viewerUrl = new URL(viewerPage, window.location.href);
                     viewerUrl.searchParams.set('id', designId);
                     if (typeof ShareManager !== 'undefined' && ShareManager.performShare) {
                         ShareManager.performShare(viewerUrl.href, i18nMain.shareTitle, i18nMain.shareText);

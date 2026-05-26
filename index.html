@@ -300,9 +300,10 @@
     <!-- Language Switcher -->
     <script src="/nfc/lang-switcher.js" defer></script>
     <!-- Authentication -->
-    <script src="/nfc/auth.js" defer></script>
+    <script src="/nfc/auth.js?v=3.0" defer></script>
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
     <link rel="stylesheet" href="/nfc/premium-ui.css">
+    <link rel="stylesheet" href="/nfc/homepage-interactive.css">
     <style>
         /* ===== Blog Card Consolidated ===== */
         .blog-card-styled {
@@ -487,43 +488,87 @@
                         <a href="#how-it-works" class="btn btn-secondary">كيف يعمل؟</a>
                     </div>
 
-                    <!-- Floating Card Preview -->
-                    <div class="hero-card-preview">
-                        <div class="flip-card-wrapper" role="img" aria-label="بطاقة عمل ذكية تجريبية">
-                    <div class="flip-card-inner">
-                        <!-- FRONT -->
-                        <div class="flip-card-front">
-                            <div class="fc-top">
-                                <div class="fc-avatar">م.أ</div>
-                                <div>
-                                    <div class="fc-name">محمد أحمد</div>
-                                    <div class="fc-title">مطور ويب &amp; مستقل</div>
+                    <!-- NFC Tap Simulation -->
+                    <div class="nfc-simulation active" id="nfc-simulation" role="img" aria-label="محاكاة تفاعلية لبطاقة NFC الذكية">
+                        <div class="nfc-scene">
+                            <!-- Ripple Effects -->
+                            <div class="nfc-ripple-container">
+                                <div class="nfc-ripple"></div>
+                                <div class="nfc-ripple"></div>
+                                <div class="nfc-ripple"></div>
+                            </div>
+
+                            <!-- The NFC Card -->
+                            <div class="nfc-card-3d" id="nfc-card">
+                                <div class="nfc-card-header">
+                                    <div class="nfc-card-avatar">م.أ</div>
+                                    <div class="nfc-card-info">
+                                        <h3>محمد أحمد</h3>
+                                        <span>مطور ويب &amp; مستقل</span>
+                                    </div>
+                                </div>
+                                <div class="nfc-card-divider"></div>
+                                <div class="nfc-card-contacts">
+                                    <div class="contact-row"><i class="fas fa-phone"></i> +966 5x xxx xxxx</div>
+                                    <div class="contact-row"><i class="fas fa-envelope"></i> hello@mcprim.com</div>
+                                    <div class="contact-row"><i class="fas fa-globe"></i> mcprim.com</div>
+                                </div>
+                                <div class="nfc-card-footer">
+                                    <span class="nfc-card-brand">MC PRIME</span>
+                                    <span class="nfc-card-chip"><i class="fas fa-wifi"></i> NFC</span>
                                 </div>
                             </div>
-                            <div class="fc-divider"></div>
-                            <div class="fc-links">
-                                <div class="fc-link"><i class="fas fa-phone"></i> +966 5x xxx xxxx</div>
-                                <div class="fc-link"><i class="fas fa-envelope"></i> hello@mcprim.com</div>
-                                <div class="fc-link"><i class="fas fa-globe"></i> mcprim.com</div>
+
+                            <!-- Phone Approaching -->
+                            <div class="nfc-phone" id="nfc-phone">
+                                <div class="nfc-phone-body">
+                                    <div class="nfc-phone-screen">
+                                        <i class="fas fa-wifi"></i>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="fc-bottom">
-                                <span class="fc-brand">MC PRIME</span>
-                                <span class="fc-nfc-pill"><i class="fas fa-wifi"></i> NFC</span>
-                            </div>
+
+                            <!-- Particle Burst Container -->
+                            <div class="particle-container" id="particle-container"></div>
                         </div>
-                        <!-- BACK -->
-                        <div class="flip-card-back">
-                            <div class="fc-qr-box"><i class="fas fa-qrcode"></i></div>
-                            <div class="fc-scan-label">امسح لمشاركة بياناتك</div>
-                            <div class="fc-back-links">
-                                <div class="fc-social-icon"><i class="fab fa-linkedin-in"></i></div>
-                                <div class="fc-social-icon"><i class="fab fa-instagram"></i></div>
-                                <div class="fc-social-icon"><i class="fab fa-facebook-f"></i></div>
-                            </div>
+                        <div class="tap-hint"><i class="fas fa-hand-pointer"></i> اضغط على البطاقة لمشاهدة التأثير</div>
+                    </div>
+
+                    <!-- Mini Journey Strip -->
+                    <div class="journey-strip reveal" id="journey-strip">
+                        <div class="journey-step active" data-step="1">
+                            <div class="journey-step-icon"><i class="fas fa-paint-brush"></i></div>
+                            <span class="journey-step-label">صمم</span>
+                        </div>
+                        <div class="journey-connector filled" id="jc1"></div>
+                        <div class="journey-step" data-step="2">
+                            <div class="journey-step-icon"><i class="fas fa-share-alt"></i></div>
+                            <span class="journey-step-label">شارك</span>
+                        </div>
+                        <div class="journey-connector" id="jc2"></div>
+                        <div class="journey-step" data-step="3">
+                            <div class="journey-step-icon"><i class="fas fa-id-card"></i></div>
+                            <span class="journey-step-label">احصل على بطاقتك</span>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Animated Stats -->
+                    <div class="hero-stats reveal" id="hero-stats">
+
+                        <div class="hero-stat-item">
+                            <span class="hero-stat-number">4.9 <i class="fas fa-star"></i></span>
+                            <span class="hero-stat-label">تقييم المستخدمين</span>
+                        </div>
+                        <div class="hero-stat-item">
+                            <span class="hero-stat-number">100%</span>
+                            <span class="hero-stat-label">مجاني</span>
+                        </div>
+                        <div class="hero-stat-item">
+                            <span class="hero-stat-number">&lt; 2 دقيقة</span>
+                            <span class="hero-stat-label">لإنشاء بطاقتك</span>
+                        </div>
                     </div>
+
                     <!-- Trust Badges -->
                     <div class="trust-badges reveal">
                         <div class="trust-badge">
@@ -587,26 +632,129 @@
             </div>
         </section>
 
-        <!-- How It Works Section -->
-        <section id="how-it-works" class="how-it-works-section" aria-labelledby="how-it-works-title">
+        <!-- How It Works — Interactive Demo -->
+        <section id="how-it-works" class="interactive-demo-section" aria-labelledby="how-it-works-title">
             <div class="container">
-                <h2 id="how-it-works-title">ثلاث خطوات بسيطة</h2>
-                <div class="steps-container">
-                    <article class="step reveal-left">
-                        <div class="step-number" aria-hidden="true">1</div>
-                        <h3>صمم بطاقتك</h3>
-                        <p>استخدم محررنا السهل لإضافة شعارك، معلوماتك، وألوانك الخاصة.</p>
-                    </article>
-                    <article class="step reveal">
-                        <div class="step-number" aria-hidden="true">2</div>
-                        <h3>احفظ وشارك</h3>
-                        <p>احفظ تصميمك وشاركه فوراً عبر رابط أو QR Code فريد لبطاقتك.</p>
-                    </article>
-                    <article class="step reveal-right">
-                        <div class="step-number" aria-hidden="true">3</div>
-                        <h3>اطلب بطاقة NFC</h3>
-                        <p>اطلب بطاقة NFC فعلية من MC PRIME لتصلك وتستخدمها للمشاركة بلمسة.</p>
-                    </article>
+                <h2 id="how-it-works-title">شاهد كيف يعمل</h2>
+
+                <!-- Demo Tabs -->
+                <div class="demo-tabs" id="demo-tabs" role="tablist">
+                    <button class="demo-tab active" data-panel="design-panel" role="tab" aria-selected="true">
+                        <i class="fas fa-paint-brush"></i> صمم بطاقتك
+                    </button>
+                    <button class="demo-tab" data-panel="share-panel" role="tab" aria-selected="false">
+                        <i class="fas fa-share-alt"></i> شارك فوراً
+                    </button>
+                    <button class="demo-tab" data-panel="print-panel" role="tab" aria-selected="false">
+                        <i class="fas fa-id-card"></i> بطاقة NFC فعلية
+                    </button>
+                </div>
+
+                <!-- Demo Panels -->
+                <div class="demo-panels" id="demo-panels">
+
+                    <!-- Panel 1: Design -->
+                    <div class="demo-panel active" id="design-panel" role="tabpanel">
+                        <div class="design-preview-container">
+                            <div class="design-toolbar">
+                                <span class="design-dot"></span>
+                                <span class="design-dot"></span>
+                                <span class="design-dot"></span>
+                                <span class="design-toolbar-title">محرر البطاقات — MC PRIME</span>
+                            </div>
+                            <div class="design-workspace">
+                                <div class="design-sidebar">
+                                    <div>
+                                        <div class="design-sidebar-label">اختر اللون</div>
+                                        <div class="color-picker-row" id="color-picker">
+                                            <div class="color-dot selected" style="background: linear-gradient(135deg, #0f2744, #1e4a7a)" data-bg="linear-gradient(135deg, #0f2744 0%, #1a3a60 50%, #1e4a7a 100%)" data-border="rgba(77,166,255,0.3)"></div>
+                                            <div class="color-dot" style="background: linear-gradient(135deg, #7c3aed, #a78bfa)" data-bg="linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%)" data-border="rgba(167,139,250,0.3)"></div>
+                                            <div class="color-dot" style="background: linear-gradient(135deg, #059669, #34d399)" data-bg="linear-gradient(135deg, #064e3b 0%, #059669 50%, #34d399 100%)" data-border="rgba(52,211,153,0.3)"></div>
+                                            <div class="color-dot" style="background: linear-gradient(135deg, #dc2626, #f87171)" data-bg="linear-gradient(135deg, #7f1d1d 0%, #dc2626 50%, #f87171 100%)" data-border="rgba(248,113,113,0.3)"></div>
+                                            <div class="color-dot" style="background: linear-gradient(135deg, #d97706, #fbbf24)" data-bg="linear-gradient(135deg, #78350f 0%, #d97706 50%, #fbbf24 100%)" data-border="rgba(251,191,36,0.3)"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="design-sidebar-label">اختر القالب</div>
+                                        <div class="template-selector" id="template-selector">
+                                            <div class="template-option selected" style="background: linear-gradient(135deg, #667eea, #764ba2)" data-template="classic"></div>
+                                            <div class="template-option" style="background: linear-gradient(135deg, #f093fb, #f5576c)" data-template="creative"></div>
+                                            <div class="template-option" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" data-template="modern"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="design-main">
+                                    <div class="mini-card-preview" id="mini-card-preview" style="background: linear-gradient(135deg, #0f2744 0%, #1a3a60 50%, #1e4a7a 100%); border: 1px solid rgba(77,166,255,0.3);">
+                                        <div>
+                                            <div class="mini-card-name">محمد أحمد</div>
+                                            <div class="mini-card-title">مطور ويب &amp; مستقل</div>
+                                        </div>
+                                        <div class="mini-card-footer-row">
+                                            <span class="mini-card-brand">MC PRIME</span>
+                                            <span class="mini-card-nfc"><i class="fas fa-wifi"></i> NFC</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 2: Share -->
+                    <div class="demo-panel" id="share-panel" role="tabpanel">
+                        <div class="share-animation-container">
+                            <div class="share-device">
+                                <div class="share-phone">
+                                    <div class="share-phone-screen">
+                                        <i class="fas fa-qrcode share-qr-icon"></i>
+                                    </div>
+                                </div>
+                                <span class="share-device-label">هاتفك</span>
+                            </div>
+                            <div class="share-transfer">
+                                <i class="fas fa-arrow-left transfer-arrow"></i>
+                                <span class="transfer-label">مشاركة فورية</span>
+                            </div>
+                            <div class="share-device">
+                                <div class="share-phone receiver">
+                                    <div class="share-phone-screen">
+                                        <div class="receiver-card-mini">
+                                            <i class="fas fa-user-circle"></i>
+                                            <span>محمد أحمد</span>
+                                            <span>مطور ويب</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="share-device-label">هاتف العميل</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 3: Physical Card -->
+                    <div class="demo-panel" id="print-panel" role="tabpanel">
+                        <div class="physical-card-showcase">
+                            <div class="physical-card-3d">
+                                <div class="physical-card-inner">
+                                    <div class="physical-card-face physical-card-front">
+                                        <div>
+                                            <h4>محمد أحمد</h4>
+                                            <span>مطور ويب &amp; مستقل</span>
+                                        </div>
+                                        <div class="physical-card-bottom">
+                                            <i class="fas fa-wifi physical-nfc-icon"></i>
+                                            <span class="physical-brand">MC PRIME</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="physical-features">
+                                <div class="physical-feature"><i class="fas fa-check-circle"></i> مقاومة للماء</div>
+                                <div class="physical-feature"><i class="fas fa-check-circle"></i> تعمل بلا بطارية</div>
+                                <div class="physical-feature"><i class="fas fa-check-circle"></i> عمر غير محدود</div>
+                                <div class="physical-feature"><i class="fas fa-check-circle"></i> متوافقة مع كل الهواتف</div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -726,38 +874,146 @@
             </div>
         </section>
 
-        <!-- Use Cases Section -->
-        <section id="use-cases" class="use-cases-section" aria-labelledby="use-cases-title">
+        <!-- Use Cases — Persona Switcher -->
+        <section id="use-cases" class="persona-switcher-section" aria-labelledby="use-cases-title">
             <div class="container">
-                <h2 id="use-cases-title">حلول مخصصة لكل مجال</h2>
-                <div class="use-cases-grid">
-                    <a href="/nfc/nfc-for-freelancers.html">
-                        <article class="use-case-card reveal">
-                            <div class="feature-icon" aria-hidden="true"><i class="fas fa-laptop-code"
-                                    style="color: #fbc2eb;"></i></div>
-                            <h3>للمستقلين</h3>
-                            <p>اعرض أعمالك ومهاراتك بطريقة مبتكرة.</p>
-                        </article>
-                    </a>
-                    <article class="use-case-card reveal">
-                        <div class="feature-icon" aria-hidden="true"><i class="fas fa-building"
-                                style="color: #4facfe;"></i></div>
-                        <h3>للشركات</h3>
-                        <p>حلول موحدة ومخصصة حسب الدولة.</p>
-                        <div class="country-links">
-                            <a href="/nfc/nfc-for-companies-egypt.html">مصر</a>
-                            <a href="/nfc/nfc-for-companies-saudi.html">السعودية</a>
-                            <a href="/nfc/nfc-for-companies-uae.html">الإمارات</a>
+                <h2 id="use-cases-title">لمن هذه البطاقة؟</h2>
+
+                <!-- Persona Tabs -->
+                <div class="persona-tabs" id="persona-tabs">
+                    <button class="persona-tab active" data-persona="freelancer">
+                        <span class="persona-tab-icon">💻</span>
+                        <span class="persona-tab-label">مستقل</span>
+                    </button>
+                    <button class="persona-tab" data-persona="company">
+                        <span class="persona-tab-icon">🏢</span>
+                        <span class="persona-tab-label">شركة</span>
+                    </button>
+                    <button class="persona-tab" data-persona="restaurant">
+                        <span class="persona-tab-icon">🍽️</span>
+                        <span class="persona-tab-label">مطعم</span>
+                    </button>
+                    <button class="persona-tab" data-persona="photographer">
+                        <span class="persona-tab-icon">📸</span>
+                        <span class="persona-tab-label">مصور</span>
+                    </button>
+                </div>
+
+                <!-- Persona Cards -->
+                <div class="persona-display" id="persona-display">
+
+                    <!-- Freelancer -->
+                    <div class="persona-card-wrapper active" data-persona="freelancer">
+                        <div class="persona-card">
+                            <div class="persona-card-header">
+                                <div class="persona-avatar" style="background: linear-gradient(135deg, #a78bfa, #7c3aed);">أ.م</div>
+                                <div>
+                                    <h3 class="persona-name">أحمد محمود</h3>
+                                    <p class="persona-title">مطور ويب مستقل</p>
+                                </div>
+                            </div>
+                            <div class="persona-card-body">
+                                <div class="persona-links">
+                                    <div class="persona-link-item"><i class="fas fa-briefcase"></i> <span>بورتفوليو أعمالي</span></div>
+                                    <div class="persona-link-item"><i class="fab fa-github"></i> <span>GitHub</span></div>
+                                    <div class="persona-link-item"><i class="fas fa-envelope"></i> <span>ahmed@dev.com</span></div>
+                                </div>
+                            </div>
+                            <div class="persona-card-footer">
+                                <div class="persona-socials">
+                                    <span class="persona-social-icon"><i class="fab fa-linkedin-in"></i></span>
+                                    <span class="persona-social-icon"><i class="fab fa-twitter"></i></span>
+                                    <span class="persona-social-icon"><i class="fab fa-github"></i></span>
+                                </div>
+                                <a href="/nfc/nfc-for-freelancers.html" class="persona-cta-btn">اعرف المزيد</a>
+                            </div>
                         </div>
-                    </article>
-                    <a href="/nfc/nfc-for-restaurants.html">
-                        <article class="use-case-card reveal">
-                            <div class="feature-icon" aria-hidden="true"><i class="fas fa-utensils"
-                                    style="color: #fa709a;"></i></div>
-                            <h3>للمطاعم</h3>
-                            <p>حوّل بطاقتك إلى منيو رقمي فعال.</p>
-                        </article>
-                    </a>
+                    </div>
+
+                    <!-- Company -->
+                    <div class="persona-card-wrapper" data-persona="company">
+                        <div class="persona-card">
+                            <div class="persona-card-header">
+                                <div class="persona-avatar" style="background: linear-gradient(135deg, #4da6ff, #2d86ff);">ش</div>
+                                <div>
+                                    <h3 class="persona-name">شركة التقنية المتقدمة</h3>
+                                    <p class="persona-title">حلول برمجية متكاملة</p>
+                                </div>
+                            </div>
+                            <div class="persona-card-body">
+                                <div class="persona-links">
+                                    <div class="persona-link-item"><i class="fas fa-globe"></i> <span>الموقع الرسمي</span></div>
+                                    <div class="persona-link-item"><i class="fas fa-phone"></i> <span>+966 11 xxx xxxx</span></div>
+                                    <div class="persona-link-item"><i class="fas fa-map-marker-alt"></i> <span>الرياض، المملكة العربية السعودية</span></div>
+                                </div>
+                            </div>
+                            <div class="persona-card-footer">
+                                <div class="persona-socials">
+                                    <span class="persona-social-icon"><i class="fab fa-linkedin-in"></i></span>
+                                    <span class="persona-social-icon"><i class="fab fa-twitter"></i></span>
+                                    <span class="persona-social-icon"><i class="fas fa-globe"></i></span>
+                                </div>
+                                <a href="/nfc/nfc-for-companies.html" class="persona-cta-btn">اعرف المزيد</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Restaurant -->
+                    <div class="persona-card-wrapper" data-persona="restaurant">
+                        <div class="persona-card">
+                            <div class="persona-card-header">
+                                <div class="persona-avatar" style="background: linear-gradient(135deg, #f87171, #dc2626);">م.ع</div>
+                                <div>
+                                    <h3 class="persona-name">مطعم الشرق</h3>
+                                    <p class="persona-title">مأكولات شرقية أصيلة</p>
+                                </div>
+                            </div>
+                            <div class="persona-card-body">
+                                <div class="persona-links">
+                                    <div class="persona-link-item"><i class="fas fa-utensils"></i> <span>المنيو الرقمي</span></div>
+                                    <div class="persona-link-item"><i class="fas fa-phone"></i> <span>+20 1xx xxxx xxx</span></div>
+                                    <div class="persona-link-item"><i class="fas fa-star"></i> <span>التقييمات والمراجعات</span></div>
+                                </div>
+                            </div>
+                            <div class="persona-card-footer">
+                                <div class="persona-socials">
+                                    <span class="persona-social-icon"><i class="fab fa-instagram"></i></span>
+                                    <span class="persona-social-icon"><i class="fab fa-facebook-f"></i></span>
+                                    <span class="persona-social-icon"><i class="fab fa-whatsapp"></i></span>
+                                </div>
+                                <a href="/nfc/nfc-for-restaurants.html" class="persona-cta-btn">اعرف المزيد</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Photographer -->
+                    <div class="persona-card-wrapper" data-persona="photographer">
+                        <div class="persona-card">
+                            <div class="persona-card-header">
+                                <div class="persona-avatar" style="background: linear-gradient(135deg, #fbbf24, #d97706);">ن.س</div>
+                                <div>
+                                    <h3 class="persona-name">نور سالم</h3>
+                                    <p class="persona-title">مصور فوتوغرافي</p>
+                                </div>
+                            </div>
+                            <div class="persona-card-body">
+                                <div class="persona-links">
+                                    <div class="persona-link-item"><i class="fas fa-camera"></i> <span>معرض الأعمال</span></div>
+                                    <div class="persona-link-item"><i class="fas fa-calendar-check"></i> <span>حجز جلسة تصوير</span></div>
+                                    <div class="persona-link-item"><i class="fas fa-envelope"></i> <span>nour@photo.com</span></div>
+                                </div>
+                            </div>
+                            <div class="persona-card-footer">
+                                <div class="persona-socials">
+                                    <span class="persona-social-icon"><i class="fab fa-instagram"></i></span>
+                                    <span class="persona-social-icon"><i class="fab fa-behance"></i></span>
+                                    <span class="persona-social-icon"><i class="fab fa-pinterest-p"></i></span>
+                                </div>
+                                <a href="/nfc/editor.html" class="persona-cta-btn">ابدأ الآن</a>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -1050,27 +1306,27 @@
             }, 1000);
         });
 
-        // Counter animation for statistics
-        function animateCounters() {
-            const counters = document.querySelectorAll('.stat-number');
+        // Counter animation for hero statistics
+        function animateHeroCounters() {
+            const counters = document.querySelectorAll('.hero-stat-number[data-target]');
 
             counters.forEach(counter => {
                 const target = parseInt(counter.getAttribute('data-target'));
-                const duration = 2000; // 2 seconds
-                const step = target / (duration / 16); // 60fps
+                if (!target) return;
+                const duration = 2000;
+                const step = target / (duration / 16);
                 let current = 0;
 
                 const updateCounter = () => {
                     current += step;
                     if (current < target) {
-                        counter.textContent = Math.floor(current).toLocaleString('ar-EG');
+                        counter.textContent = '+' + Math.floor(current).toLocaleString('ar-EG');
                         requestAnimationFrame(updateCounter);
                     } else {
-                        counter.textContent = target.toLocaleString('ar-EG');
+                        counter.textContent = '+' + target.toLocaleString('ar-EG');
                     }
                 };
 
-                // Start animation when element is visible
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
@@ -1084,7 +1340,7 @@
             });
         }
 
-        animateCounters();
+        animateHeroCounters();
 
         // Accessibility for FAQ
         document.querySelectorAll('.faq-item details').forEach((detail) => {
@@ -1110,13 +1366,11 @@
         window.addEventListener('scroll', () => {
             if (!isScrolling) {
                 window.requestAnimationFrame(() => {
-                    // Update Progress Bar
                     const scrollTop = window.scrollY;
                     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
                     const scrollPercent = (scrollTop / docHeight) * 100;
                     if (progressBar) progressBar.style.width = scrollPercent + '%';
 
-                    // Update Visibility
                     if (scrollTop > 500) {
                         if (floatingCTA) floatingCTA.classList.add('visible');
                         if (backToTop) backToTop.classList.add('visible');
@@ -1130,7 +1384,6 @@
             }
         });
 
-        // Back to Top click
         backToTop.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
@@ -1143,11 +1396,10 @@
 
         if (slider && prevBtn && nextBtn) {
             const cards = slider.querySelectorAll('.gallery-preview-card');
-            const cardWidth = 280 + 24; // card width + gap
+            const cardWidth = 280 + 24;
             let currentIndex = 0;
             const maxIndex = Math.max(0, cards.length - Math.floor(slider.parentElement.offsetWidth / cardWidth));
 
-            // Create dots
             cards.forEach((_, i) => {
                 if (i <= maxIndex) {
                     const dot = document.createElement('span');
@@ -1172,7 +1424,6 @@
             prevBtn.addEventListener('click', () => slideTo(currentIndex - 1));
             nextBtn.addEventListener('click', () => slideTo(currentIndex + 1));
 
-            // Touch/drag support
             let startX, isDragging = false;
             slider.addEventListener('mousedown', (e) => { startX = e.pageX; isDragging = true; });
             slider.addEventListener('mousemove', (e) => {
@@ -1186,7 +1437,6 @@
             slider.addEventListener('mouseup', () => isDragging = false);
             slider.addEventListener('mouseleave', () => isDragging = false);
 
-            // Touch events
             slider.addEventListener('touchstart', (e) => { startX = e.touches[0].pageX; });
             slider.addEventListener('touchmove', (e) => {
                 const diff = startX - e.touches[0].pageX;
@@ -1196,7 +1446,6 @@
                 }
             });
 
-            // Auto-slide
             setInterval(() => {
                 if (currentIndex >= maxIndex) currentIndex = -1;
                 slideTo(currentIndex + 1);
@@ -1209,14 +1458,12 @@
         const themeToggle = document.getElementById('theme-toggle');
         const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
 
-        // Check for saved theme preference or use system preference
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme === 'light') {
             document.body.classList.add('light-mode');
         } else if (currentTheme === 'dark') {
             document.body.classList.remove('light-mode');
         } else if (!prefersDarkScheme.matches) {
-            // If no saved preference and system prefers light, use light mode
             document.body.classList.add('light-mode');
         }
 
@@ -1225,6 +1472,244 @@
             const theme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
             localStorage.setItem('theme', theme);
         });
+
+        // ========================================
+        // NFC TAP SIMULATION
+        // ========================================
+        (function initNFCSimulation() {
+            const sim = document.getElementById('nfc-simulation');
+            const card = document.getElementById('nfc-card');
+            const particleContainer = document.getElementById('particle-container');
+            if (!sim || !card) return;
+
+            let isTapped = false;
+
+            function createParticles() {
+                if (!particleContainer) return;
+                particleContainer.innerHTML = '';
+                const colors = ['#4da6ff', '#a78bfa', '#34d399', '#fbbf24', '#f87171'];
+                for (let i = 0; i < 20; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'particle';
+                    const angle = (Math.PI * 2 / 20) * i;
+                    const dist = 60 + Math.random() * 80;
+                    p.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
+                    p.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
+                    p.style.background = colors[i % colors.length];
+                    p.style.width = (4 + Math.random() * 4) + 'px';
+                    p.style.height = p.style.width;
+                    particleContainer.appendChild(p);
+                }
+            }
+
+            function triggerTap() {
+                if (isTapped) return;
+                isTapped = true;
+                card.classList.add('tapped');
+                createParticles();
+                sim.classList.add('burst');
+
+                setTimeout(() => {
+                    sim.classList.remove('burst');
+                }, 1000);
+
+                setTimeout(() => {
+                    card.classList.remove('tapped');
+                    isTapped = false;
+                }, 3000);
+            }
+
+            // Click to trigger
+            sim.addEventListener('click', triggerTap);
+
+            // Auto-trigger synced with phone animation (3.5s cycle, tap at ~55%)
+            function autoTapLoop() {
+                setTimeout(() => {
+                    triggerTap();
+                    setTimeout(autoTapLoop, 3500);
+                }, 1925); // 55% of 3500ms
+            }
+            autoTapLoop();
+        })();
+
+        // ========================================
+        // JOURNEY STRIP — PARALLAX AUTO-CYCLE
+        // ========================================
+        (function initJourneyStrip() {
+            const steps = document.querySelectorAll('.journey-step');
+            const connectors = [document.getElementById('jc1'), document.getElementById('jc2')];
+            if (steps.length < 3) return;
+
+            let currentStep = 0;
+
+            function setStep(index) {
+                steps.forEach((s, i) => {
+                    s.classList.toggle('active', i <= index);
+                });
+                connectors.forEach((c, i) => {
+                    if (c) c.classList.toggle('filled', i < index);
+                });
+                currentStep = index;
+            }
+
+            // Auto-cycle every 2 seconds
+            setInterval(() => {
+                const next = (currentStep + 1) % 3;
+                setStep(next);
+            }, 2000);
+
+            // Also trigger on scroll (parallax)
+            const strip = document.getElementById('journey-strip');
+            if (strip) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            setStep(0);
+                            setTimeout(() => setStep(1), 600);
+                            setTimeout(() => setStep(2), 1200);
+                        }
+                    });
+                }, { threshold: 0.5 });
+                observer.observe(strip);
+            }
+        })();
+
+        // ========================================
+        // INTERACTIVE DEMO TABS
+        // ========================================
+        (function initDemoTabs() {
+            const tabs = document.querySelectorAll('.demo-tab');
+            const panels = document.querySelectorAll('.demo-panel');
+            if (!tabs.length || !panels.length) return;
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const panelId = tab.getAttribute('data-panel');
+
+                    // Update tabs
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+                    tab.classList.add('active');
+                    tab.setAttribute('aria-selected', 'true');
+
+                    // Update panels
+                    panels.forEach(p => p.classList.remove('active'));
+                    const target = document.getElementById(panelId);
+                    if (target) target.classList.add('active');
+                });
+            });
+
+            // Parallax: auto-advance tabs when section scrolls into view
+            const section = document.querySelector('.interactive-demo-section');
+            if (section) {
+                let hasTriggered = false;
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && !hasTriggered) {
+                            hasTriggered = true;
+                            // Auto-advance through tabs
+                            setTimeout(() => {
+                                tabs[1]?.click();
+                                setTimeout(() => {
+                                    tabs[2]?.click();
+                                    setTimeout(() => {
+                                        tabs[0]?.click();
+                                        hasTriggered = false;
+                                    }, 3000);
+                                }, 3000);
+                            }, 3000);
+                        }
+                    });
+                }, { threshold: 0.4 });
+                observer.observe(section);
+            }
+        })();
+
+        // ========================================
+        // COLOR PICKER — DESIGN DEMO
+        // ========================================
+        (function initColorPicker() {
+            const colorDots = document.querySelectorAll('#color-picker .color-dot');
+            const miniCard = document.getElementById('mini-card-preview');
+            if (!colorDots.length || !miniCard) return;
+
+            colorDots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    colorDots.forEach(d => d.classList.remove('selected'));
+                    dot.classList.add('selected');
+
+                    const bg = dot.getAttribute('data-bg');
+                    const border = dot.getAttribute('data-border');
+                    miniCard.style.background = bg;
+                    miniCard.style.borderColor = border;
+
+                    // Bounce animation
+                    miniCard.style.transform = 'scale(0.95)';
+                    setTimeout(() => { miniCard.style.transform = 'scale(1)'; }, 200);
+                });
+            });
+
+            // Template selector
+            const templateOptions = document.querySelectorAll('#template-selector .template-option');
+            templateOptions.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    templateOptions.forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+
+                    miniCard.style.transform = 'rotateY(10deg) scale(0.9)';
+                    setTimeout(() => { miniCard.style.transform = 'rotateY(0deg) scale(1)'; }, 400);
+                });
+            });
+        })();
+
+        // ========================================
+        // PERSONA SWITCHER
+        // ========================================
+        (function initPersonaSwitcher() {
+            const tabs = document.querySelectorAll('.persona-tab');
+            const cards = document.querySelectorAll('.persona-card-wrapper');
+            if (!tabs.length || !cards.length) return;
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const persona = tab.getAttribute('data-persona');
+
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    cards.forEach(c => c.classList.remove('active'));
+                    const target = document.querySelector(`.persona-card-wrapper[data-persona="${persona}"]`);
+                    if (target) {
+                        setTimeout(() => target.classList.add('active'), 50);
+                    }
+                });
+            });
+
+            // Parallax: auto-cycle personas when section enters viewport
+            const section = document.querySelector('.persona-switcher-section');
+            if (section) {
+                let cycleStarted = false;
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && !cycleStarted) {
+                            cycleStarted = true;
+                            let idx = 0;
+                            const interval = setInterval(() => {
+                                idx = (idx + 1) % tabs.length;
+                                tabs[idx]?.click();
+                                if (idx === 0) {
+                                    clearInterval(interval);
+                                    cycleStarted = false;
+                                }
+                            }, 2500);
+                        }
+                    });
+                }, { threshold: 0.3 });
+                observer.observe(section);
+            }
+        })();
     </script>
 
     <!-- Chatbot -->

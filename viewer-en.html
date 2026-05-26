@@ -24,7 +24,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-    <link rel="stylesheet" href="viewer.css?v=3.2">
+    <link rel="stylesheet" href="viewer.css?v=3.3">
     <link rel="manifest" href="manifest.json">
     <script src="lang-switcher.js" defer></script>
 
@@ -320,9 +320,14 @@
 
         <!-- STICKY FOOTER -->
         <div class="sticky-footer">
-            <button class="save-contact-btn" id="en-save-btn" onclick="document.getElementById('save-vcf-btn').click()">
-                <i class="fas fa-user-plus"></i> <span style="font-weight:700">Save to Contacts</span>
-            </button>
+            <div class="sticky-footer-buttons">
+                <button class="save-contact-btn" id="en-save-btn" onclick="document.getElementById('save-vcf-btn').click()">
+                    <i class="fas fa-user-plus"></i> <span style="font-weight:700">Save to Contacts</span>
+                </button>
+                <a href="editor-en.html" class="editor-redirect-btn" id="en-edit-btn">
+                    <i class="fas fa-magic"></i> <span style="font-weight:700">Create Card</span>
+                </a>
+            </div>
             <div class="footer-powered">
                 Powered by MC PRIME
             </div>
@@ -362,7 +367,7 @@
         window.cardData = {};
     </script>
 
-    <script src="/nfc/auth.js?v=2"></script>
+    <script src="/nfc/auth.js?v=3.0"></script>
     <!-- viewer.js with English locale override -->
     <script src="viewer.js"></script>
     <!-- [NEW v2.0] Premium Enhancements -->
@@ -387,7 +392,15 @@
                 const isLoggedIn = Auth.isLoggedIn();
                 const currentUserId = Auth.user?.userId;
 
-                if (isLoggedIn && ownerData.ownerId === currentUserId) return;
+                if (isLoggedIn && ownerData.ownerId === currentUserId) {
+                    const editBtn = document.getElementById('en-edit-btn');
+                    if (editBtn) {
+                        editBtn.href = `editor-en.html?id=${designId}`;
+                        editBtn.querySelector('span').textContent = 'Edit Card';
+                        editBtn.querySelector('i').className = 'fas fa-edit';
+                    }
+                    return;
+                }
                 if (ownerData.cardPrivacy === 'deny_all') return;
 
                 section.style.display = 'block';

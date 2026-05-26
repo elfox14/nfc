@@ -421,7 +421,8 @@ const ExportManager = {
                 throw new Error('فشل حفظ التصميم اللازم لإنشاء الرابط.');
             }
 
-            const viewerUrl = new URL('viewer.html', window.location.href);
+            const viewerPage = _isEnglishPage ? 'viewer-en.html' : 'viewer.html';
+            const viewerUrl = new URL(viewerPage, window.location.href);
             viewerUrl.searchParams.set('id', designId);
             const finalUrl = viewerUrl.href;
 
@@ -741,7 +742,8 @@ const ShareManager = {
         if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, false);
         if (!designId) return;
 
-        const viewerUrl = new URL('viewer.html', window.location.href);
+        const viewerPage = _isEnglishPage ? 'viewer-en.html' : 'viewer.html';
+        const viewerUrl = new URL(viewerPage, window.location.href);
         viewerUrl.searchParams.set('id', designId);
 
         this.performShare(viewerUrl.href, i18nMain.shareTitle, i18nMain.shareText);
@@ -793,7 +795,8 @@ const ShareManager = {
             try {
                 const fetchUrl = `${Config.API_BASE_URL}/api/get-design/${designId}`;
                 const response = await fetch(fetchUrl, {
-                    credentials: 'include'
+                    credentials: 'include',
+                    cache: 'no-store'
                 });
                 
                 if (Config.DEBUG_MODE) console.log('[DEBUG] API response status:', response.status);

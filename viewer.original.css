@@ -1568,6 +1568,64 @@ html.dark-mode .sticky-footer {
 
 .save-contact-btn.pulse { animation: savePulse 2s ease-in-out infinite; }
 
+.sticky-footer-buttons {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 460px;
+    justify-content: center;
+}
+
+.sticky-footer-buttons .save-contact-btn,
+.sticky-footer-buttons .editor-redirect-btn {
+    flex: 1;
+    min-width: 0;
+}
+
+.sticky-footer-buttons .editor-redirect-btn {
+    background: linear-gradient(135deg, #6f42c1, #8e44ad);
+    color: #fff;
+    border: none;
+    padding: 14px 16px;
+    border-radius: 50px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(111, 66, 193, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sticky-footer-buttons .editor-redirect-btn:active {
+    transform: scale(0.98);
+}
+
+.sticky-footer-buttons .save-contact-btn {
+    padding: 14px 16px;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    gap: 8px;
+}
+
+@media (max-width: 400px) {
+    .sticky-footer-buttons .save-contact-btn,
+    .sticky-footer-buttons .editor-redirect-btn {
+        font-size: 0.82rem;
+        padding: 12px 6px;
+        gap: 4px;
+    }
+}
+
 @media (min-width: 1025px) {
     .sticky-footer {
         padding: 16px 20px;
