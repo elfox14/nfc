@@ -657,7 +657,8 @@
             }
 
             Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null');
-            Auth.token = localStorage.getItem('authToken') || null;
+            localStorage.removeItem('authToken');
+            Auth.token = null;
             
             if (!Auth.isLoggedIn()) {
                 await Auth.refreshSession();
@@ -1050,4 +1051,3 @@
 </body>
 
 </html>
-

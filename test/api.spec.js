@@ -62,12 +62,13 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             expect(res.status).toBe(201);
             expect(res.body.success).toBe(true);
-            expect(res.body.token).toBeDefined();
+            expect(res.body.token).toBeUndefined();
             expect(res.body.user.email).toBe('test@example.com');
 
-            // Check if Refresh Token HttpOnly Cookie is Set
+            // Check if HttpOnly auth cookies are set
             const cookies = res.headers['set-cookie'];
             expect(cookies).toBeDefined();
+            expect(cookies.some(c => c.includes('accessToken='))).toBeTruthy();
             expect(cookies.some(c => c.includes('refreshToken='))).toBeTruthy();
         });
 
@@ -105,10 +106,11 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             expect(res.status).toBe(200);
             expect(res.body.success).toBe(true);
-            expect(res.body.token).toBeDefined();
+            expect(res.body.token).toBeUndefined();
 
             const cookies = res.headers['set-cookie'];
             expect(cookies).toBeDefined();
+            expect(cookies.some(c => c.includes('accessToken='))).toBeTruthy();
             expect(cookies.some(c => c.includes('refreshToken='))).toBeTruthy();
         });
 
@@ -138,7 +140,50 @@ describe('Auth Integration Tests (Ticket 9)', () => {
             expect(res.body.error).toBe('No refresh token provided');
         });
 
+        it('Should reject malformed refresh tokens before database lookup', async () => {
+            const res = await request(app)
+                .post('/api/auth/refresh')
+                .set('Cookie', ['refreshToken=not-a-valid-token']);
+
+            expect(res.status).toBe(403);
+            expect(mockCollection.findOne).not.toHaveBeenCalled();
+        });
+
         // In a full environment, we would inject a mapped cookie matching mockCollection.findOne.
+    });
+
+    describe('POST /api/auth/reset-password', () => {
+        it('Should reject malformed reset tokens before database lookup', async () => {
+            const res = await request(app)
+                .post('/api/auth/reset-password')
+                .send({ token: 'bad-token', password: 'password123' });
+
+            expect(res.status).toBe(400);
+            expect(mockCollection.findOne).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('POST /api/auth/verify-email', () => {
+        it('Should reject malformed verification tokens before database lookup', async () => {
+            const res = await request(app)
+                .post('/api/auth/verify-email')
+                .send({ token: 'bad-token' });
+
+            expect(res.status).toBe(400);
+            expect(mockCollection.findOne).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('Origin protection', () => {
+        it('Should reject unsafe API requests from disallowed origins', async () => {
+            const res = await request(app)
+                .post('/api/auth/login')
+                .set('Origin', 'https://evil.example')
+                .send({ email: 'test@example.com', password: 'password123' });
+
+            expect(res.status).toBe(403);
+            expect(mockCollection.findOne).not.toHaveBeenCalled();
+        });
     });
 
     describe('POST /api/auth/logout', () => {

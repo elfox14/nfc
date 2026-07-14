@@ -1,13 +1,12 @@
-const verifyToken = require('../auth-middleware');
 const jwt = require('jsonwebtoken');
 
 jest.mock('jsonwebtoken');
 
-// Mock the config module so auth-middleware can load without a real .env
-jest.mock('../config', () => ({ JWT_SECRET: 'test_secret_value_for_jest' }), { virtual: false });
+const verifyToken = require('../auth-middleware');
 
 describe('Auth Middleware', () => {
     let req, res, next;
+    const originalJwtSecret = process.env.JWT_SECRET;
 
     beforeEach(() => {
         req = { headers: {} };
@@ -16,6 +15,8 @@ describe('Auth Middleware', () => {
             json: jest.fn()
         };
         next = jest.fn();
+        process.env.JWT_SECRET = originalJwtSecret;
+        jwt.verify.mockReset();
     });
 
     test('should return 401 if no token provided', () => {
@@ -35,7 +36,7 @@ describe('Auth Middleware', () => {
 
     test('should call next() and attach user if token is valid', () => {
         req.headers['authorization'] = 'Bearer validtoken';
-        const mockUser = { userId: '123', email: 'test@example.com' };
+        const mockUser = { userId: '123', email: 'test@example.com', type: 'access' };
         jwt.verify.mockReturnValue(mockUser);
 
         verifyToken(req, res, next);
@@ -44,15 +45,10 @@ describe('Auth Middleware', () => {
     });
 
     test('should return 500 if JWT_SECRET is not configured', () => {
-        // Override the config mock to simulate missing JWT_SECRET
-        jest.resetModules();
-        jest.doMock('../config', () => ({ JWT_SECRET: '' }), { virtual: false });
-        jest.doMock('jsonwebtoken', () => jwt);
-
-        const verifyTokenNoSecret = require('../auth-middleware');
+        process.env.JWT_SECRET = '';
         req.headers['authorization'] = 'Bearer sometoken';
 
-        verifyTokenNoSecret(req, res, next);
+        verifyToken(req, res, next);
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringContaining('misconfiguration') }));
     });

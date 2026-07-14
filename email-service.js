@@ -1,6 +1,7 @@
 'use strict';
 
 const { Resend } = require('resend');
+const { redactSensitiveData, redactSensitiveValue } = require('./utils/error-tracking');
 
 /**
  * Email Service Module
@@ -47,7 +48,7 @@ const EmailService = {
     async send({ to, subject, html, text }) {
         const { provider, apiKey, fromEmail, fromName } = this.config;
 
-        console.log(`[EmailService] Sending email to: ${to}, Subject: ${subject}`);
+        console.log(`[EmailService] Sending email to: ${redactSensitiveValue(to)}, Subject: ${redactSensitiveValue(subject)}`);
 
         switch (provider) {
             case 'sendgrid':
@@ -67,9 +68,9 @@ const EmailService = {
      */
     async _logToConsole({ to, subject, html }) {
         console.log('========== EMAIL (DEV MODE) ==========');
-        console.log(`To: ${to}`);
-        console.log(`Subject: ${subject}`);
-        console.log(`Body: ${html}`);
+        console.log(`To: ${redactSensitiveValue(to)}`);
+        console.log(`Subject: ${redactSensitiveValue(subject)}`);
+        console.log(`Body: ${redactSensitiveValue(html)}`);
         console.log('=======================================');
         return { success: true, provider: 'console' };
     },
@@ -98,14 +99,14 @@ const EmailService = {
 
             if (!response.ok) {
                 const error = await response.text();
-                console.error('[EmailService] SendGrid error:', error);
-                return { success: false, error };
+                console.error('[EmailService] SendGrid error:', redactSensitiveValue(error));
+                return { success: false, error: redactSensitiveValue(error) };
             }
 
             return { success: true, provider: 'sendgrid' };
         } catch (err) {
-            console.error('[EmailService] SendGrid exception:', err);
-            return { success: false, error: err.message };
+            console.error('[EmailService] SendGrid exception:', redactSensitiveData(err));
+            return { success: false, error: redactSensitiveValue(err.message) };
         }
     },
 
@@ -125,14 +126,14 @@ const EmailService = {
             });
 
             if (error) {
-                console.error('[EmailService] Resend error:', error);
-                return { success: false, error: error.message };
+                console.error('[EmailService] Resend error:', redactSensitiveData(error));
+                return { success: false, error: redactSensitiveValue(error.message) };
             }
 
             return { success: true, provider: 'resend', id: data.id };
         } catch (err) {
-            console.error('[EmailService] Resend exception:', err);
-            return { success: false, error: err.message };
+            console.error('[EmailService] Resend exception:', redactSensitiveData(err));
+            return { success: false, error: redactSensitiveValue(err.message) };
         }
     },
 

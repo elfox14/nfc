@@ -12,6 +12,10 @@ const { ObjectId } = require('mongodb');
 
 const uploadDir = path.join(__dirname, '..', 'uploads');
 
+function isSafePublicId(id) {
+  return typeof id === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(id);
+}
+
 module.exports = function createDesignsRouter({ 
   getDb, 
   designsCollectionName, 
@@ -65,7 +69,7 @@ router.post('/upload-image', verifyToken, upload.single('image'), handleMulterEr
     }
 
     // Process image with sharp
-    const processedBuffer = await sharp(req.file.buffer)
+    const processedBuffer = await sharp(req.file.buffer, { limitInputPixels: 4096 * 4096 })
       .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 85 })
       .toBuffer();
@@ -211,7 +215,7 @@ router.post('/upload-image-public', publicUploadLimiter, upload.single('image'),
     }
 
     // Process image with sharp (same as authenticated route)
-    const processedBuffer = await sharp(req.file.buffer)
+    const processedBuffer = await sharp(req.file.buffer, { limitInputPixels: 4096 * 4096 })
       .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 85 })
       .toBuffer();
@@ -707,6 +711,10 @@ router.put('/card-requests/:requestId', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'Invalid action' });
     }
 
+    if (!ObjectId.isValid(requestId)) {
+      return res.status(400).json({ error: 'Invalid request id' });
+    }
+
     const request = await getDb().collection(cardRequestsCollectionName).findOne({
       _id: new ObjectId(requestId),
       ownerUserId: req.user.userId
@@ -749,6 +757,9 @@ router.get('/design-owner/:designId', async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
     const designId = String(req.params.designId);
+    if (!isSafePublicId(designId)) {
+      return res.status(404).json({ error: 'Design not found' });
+    }
     const design = await getDb().collection(designsCollectionName).findOne(
       { shortId: designId },
       { projection: { ownerId: 1 } }
@@ -766,7 +777,7 @@ router.get('/design-owner/:designId', async (req, res) => {
 
     res.json({
       success: true,
-      ownerId: design.ownerId || null,
+      hasOwner: Boolean(design.ownerId),
       cardPrivacy
     });
   } catch (err) {
@@ -779,19 +790,11 @@ router.get('/get-design/:id', async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
     const id = String(req.params.id);
-    
-    // 1. Try to find by shortId first
-    let doc = await getDb().collection(designsCollectionName).findOne({ shortId: id });
-    
-    // 2. Fallback: Try to find by ObjectId if 1 fails and it's a valid hex string
-    if (!doc && id.length === 24 && /^[0-9a-fA-F]+$/.test(id)) {
-      try {
-        doc = await getDb().collection(designsCollectionName).findOne({ _id: new ObjectId(id) });
-        if (doc) console.log(`[API] Design found using fallback ObjectId: ${id}`);
-      } catch (err) {
-        // Not a valid ObjectId even if it's 24 chars
-      }
+    if (!isSafePublicId(id)) {
+      return res.status(404).json({ error: 'Design not found or data missing' });
     }
+    
+    const doc = await getDb().collection(designsCollectionName).findOne({ shortId: id });
 
     if (!doc || !doc.data) {
       console.warn(`[API] Design not found for ID: ${id}`);
@@ -860,11 +863,12 @@ router.get('/gallery', async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'Database not connected' });
 
-    const page = parseInt(req.query.page, 10) || 1;
+    const parsedPage = Number.parseInt(req.query.page, 10);
+    const page = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.min(parsedPage, 1000) : 1;
     const limit = 20; // 5 columns * 4 rows
     const skip = (page - 1) * limit;
-    const sortBy = req.query.sortBy || 'createdAt';
-    const searchTerm = req.query.search ? String(req.query.search).trim() : '';
+    const sortBy = ['createdAt', 'views'].includes(req.query.sortBy) ? req.query.sortBy : 'createdAt';
+    const searchTerm = req.query.search ? String(req.query.search).trim().slice(0, 80) : '';
 
     // Build search query - only show designs shared to gallery
     const query = { 'data.sharedToGallery': true };

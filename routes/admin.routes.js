@@ -12,13 +12,32 @@ const crypto = require('crypto');
 module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFFER }) {
   const router = express.Router();
 
+  function sha256Hex(value) {
+    return crypto.createHash('sha256').update(value).digest('hex');
+  }
+
+  function safeCompare(a, b) {
+    return a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  }
+
+  function clampPositiveInt(value, fallback, max) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+    return Math.min(parsed, max);
+  }
+
   // Admin authentication middleware
   const adminAuthMiddleware = (req, res, next) => {
-    const expected = (process.env.ADMIN_TOKENH || '').trim();
+    const expectedHash = (process.env.ADMIN_TOKEN_SHA256 || '').trim().toLowerCase();
+    const legacyExpected = (process.env.ADMIN_TOKENH || '').trim();
     const provided = (req.headers['x-admin-token'] || '').trim();
-    
-    if (!expected || expected === '' || expected.length !== provided.length || !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided))) {
-      console.warn('[Admin Auth Failed]', { providedLength: provided?.length, expectedLength: expected?.length });
+
+    const isValid = expectedHash
+      ? /^[a-f0-9]{64}$/.test(expectedHash) && safeCompare(sha256Hex(provided), expectedHash)
+      : legacyExpected && safeCompare(provided, legacyExpected);
+
+    if (!isValid) {
+      console.warn('[Admin Auth Failed]', { providedLength: provided?.length, configured: Boolean(expectedHash || legacyExpected) });
       return res.status(401).json({ error: 'Unauthorized' });
     }
     next();
@@ -26,13 +45,17 @@ module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFF
 
   // Apply auth middleware to all admin routes
   router.use(adminAuthMiddleware);
+  router.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
 
   const usersCollectionName = process.env.MONGO_USERS_COLL || 'users';
   const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 
   // 1. Get recent errors
   router.get('/errors', (req, res) => {
-    const limit = Math.min(parseInt(req.query.limit) || 50, MAX_ERROR_BUFFER || 100);
+    const limit = clampPositiveInt(req.query.limit, 50, Math.min(MAX_ERROR_BUFFER || 100, 100));
     res.json({
       total: errorBuffer ? errorBuffer.length : 0,
       errors: errorBuffer ? errorBuffer.slice(-limit).reverse() : [],
@@ -74,8 +97,8 @@ module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFF
       const db = getDb();
       if (!db) return res.status(500).json({ error: 'DB not connected' });
 
-      const limit = parseInt(req.query.limit) || 20;
-      const page = parseInt(req.query.page) || 1;
+      const limit = clampPositiveInt(req.query.limit, 20, 100);
+      const page = clampPositiveInt(req.query.page, 1, 100000);
       const skip = (page - 1) * limit;
       
       let query = {};
@@ -91,7 +114,7 @@ module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFF
 
       const total = await db.collection(usersCollectionName).countDocuments(query);
       const users = await db.collection(usersCollectionName)
-        .find(query, { projection: { password: 0, refreshTokenHash: 0, verificationTokenHash: 0 } })
+        .find(query, { projection: { password: 0, refreshTokenHash: 0, verificationTokenHash: 0, resetTokenHash: 0, resetTokenExpiry: 0 } })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)

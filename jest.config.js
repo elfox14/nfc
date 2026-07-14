@@ -14,6 +14,9 @@ module.exports = {
     // The test environment that will be used for testing
     testEnvironment: "jest-environment-jsdom",
 
+    // Load safe defaults before test files import the app.
+    setupFiles: ["<rootDir>/test/setup-env.js"],
+
     // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
     testPathIgnorePatterns: [
         "\\\\node_modules\\\\",

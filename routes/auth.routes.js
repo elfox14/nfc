@@ -3,13 +3,21 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { nanoid } = require('nanoid');
-const crypto = require('crypto');
 const EmailService = require('../email-service');
-const { createAccessToken, createRefreshToken, hashToken } = require('../utils/tokens');
+const { createAccessToken, createRefreshToken, hashToken, isOpaqueToken } = require('../utils/tokens');
 const verifyToken = require('../auth-middleware');
+const { passwordValidator } = require('../utils/password-policy');
+const { redactSensitiveData } = require('../utils/error-tracking');
+const { setAuthCookies, clearAuthCookies } = require('../utils/auth-cookies');
 
 module.exports = function createAuthRouter({ getDb, usersCollectionName, authLimiter, allowedOrigins }) {
   const router = express.Router();
+
+  router.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Pragma', 'no-cache');
+    next();
+  });
 
   // Rate Limiting is already applied in server.js globally for some paths, but we can re-apply if needed
   // For now, we just map the routes over.
@@ -19,7 +27,7 @@ module.exports = function createAuthRouter({ getDb, usersCollectionName, authLim
 // Register
 router.post('/register', [
   body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6, max: 128 }),
+  body('password').custom(passwordValidator),
   body('name').trim().escape().notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -53,15 +61,14 @@ router.post('/register', [
       createdAt: new Date()
     });
 
-    // Generate verification token
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
-    const verificationToken = jwt.sign({ userId, email, type: 'email-verify' }, secret, { expiresIn: '24h' });
+    // Generate opaque verification token. The URL token carries no readable user data.
+    const verificationToken = createRefreshToken();
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     // Store verification token hash
     await getDb().collection(usersCollectionName).updateOne(
       { userId },
-      { $set: { verificationTokenHash: hashToken(verificationToken) } }
+      { $set: { verificationTokenHash: hashToken(verificationToken), verificationTokenExpiry } }
     );
 
     // Send verification email (non-blocking)
@@ -85,26 +92,9 @@ router.post('/register', [
       { $set: { refreshTokenHash: hashedRefresh } }
     );
 
-    // Set refresh token as HttpOnly Secure cookie
-    res.cookie('refreshToken', refreshTokenValue, {
-      httpOnly: true,
-      secure: true, // required for sameSite: 'None'
-      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/api/auth'
-    });
+    setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
 
-    // Set access token as HttpOnly Secure cookie
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      maxAge: 15 * 60 * 1000, // 15 minutes
-      path: '/'
-    });
-
-    // Return token in body as fallback for third-party cookie blocking
-    res.status(201).json({ success: true, token: accessToken, user: { name, email, userId, isVerified: false } });
+    res.status(201).json({ success: true, user: { name, email, userId, isVerified: false } });
 
   } catch (err) {
     if (err.code === 11000) {
@@ -157,30 +147,13 @@ router.post('/login', [
       { $set: { refreshTokenHash: hashedRefresh } }
     );
 
-    // Set refresh token as HttpOnly Secure cookie
-    res.cookie('refreshToken', refreshTokenValue, {
-      httpOnly: true,
-      secure: true, // required for sameSite: 'None'
-      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/api/auth'
-    });
-
-    // Set access token as HttpOnly Secure cookie
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      maxAge: 15 * 60 * 1000, // 15 minutes
-      path: '/'
-    });
+    setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
 
     console.log(`[Login] Successful login for userId: ${user.userId}`);
-    // Return token in body as fallback for third-party cookie blocking
-    // Include isVerified so frontend can show verification reminder
+    // Include isVerified so frontend can show verification reminder.
+    // The access token stays in the HttpOnly cookie and is never exposed to JS.
     const loginResponse = { 
       success: true, 
-      token: accessToken, 
       user: { name: user.name, email: user.email, userId: user.userId, isVerified: !!user.isVerified } 
     };
     if (!user.isVerified) {
@@ -271,7 +244,7 @@ router.get('/google/callback', async (req, res) => {
 
     const tokens = await tokenResponse.json();
     if (!tokens.access_token) {
-      console.error('Google Token API Error:', tokens);
+      console.error('Google Token API Error:', redactSensitiveData(tokens));
       throw new Error(tokens.error_description || tokens.error || 'No access token');
     }
 
@@ -282,7 +255,7 @@ router.get('/google/callback', async (req, res) => {
     const googleUser = await userInfoResponse.json();
 
     if (!googleUser.email) {
-      console.error('Google UserInfo Error:', googleUser);
+      console.error('Google UserInfo Error:', redactSensitiveData(googleUser));
       throw new Error('No email returned from Google');
     }
 
@@ -322,23 +295,7 @@ router.get('/google/callback', async (req, res) => {
       { $set: { refreshTokenHash: hashedRefresh } }
     );
 
-    // Set refresh token as HttpOnly Secure cookie
-    res.cookie('refreshToken', refreshTokenValue, {
-      httpOnly: true,
-      secure: true, // required for sameSite: 'None'
-      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/api/auth'
-    });
-
-    // Set access token as HttpOnly Secure cookie
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      maxAge: 15 * 60 * 1000, // 15 minutes
-      path: '/'
-    });
+    setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
 
     // Build the dashboard URL for fallback redirect
     // SECURITY: Token is already in HttpOnly cookies — do NOT put it in URL hash
@@ -487,10 +444,8 @@ router.post('/forgot-password', [
       return res.json({ success: true });
     }
 
-    // Generate reset token
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
-    const resetToken = jwt.sign({ userId: user.userId, email: user.email, type: 'password-reset' }, secret, { expiresIn: '1h' });
+    // Generate opaque reset token. The URL token carries no readable user data.
+    const resetToken = createRefreshToken();
 
     // Store reset token hash in DB
     await getDb().collection(usersCollectionName).updateOne(
@@ -521,7 +476,7 @@ router.post('/forgot-password', [
 // Reset Password - Set New Password
 router.post('/reset-password', authLimiter, [
   body('token').notEmpty().withMessage('Token is required'),
-  body('password').isLength({ min: 6, max: 128 })
+  body('password').custom(passwordValidator)
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -532,21 +487,12 @@ router.post('/reset-password', authLimiter, [
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
 
     const { token, password } = req.body; // Token now comes from body
-
-    // Verify token
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
-    let decoded;
-    try {
-      decoded = jwt.verify(token, secret);
-      if (decoded.type !== 'password-reset') throw new Error('Invalid token type');
-    } catch (tokenErr) {
+    if (!isOpaqueToken(token)) {
       return res.status(400).json({ error: 'رابط غير صالح أو منتهي الصلاحية' });
     }
 
     // Find user and verify token hash matches
     const user = await getDb().collection(usersCollectionName).findOne({ 
-      userId: decoded.userId, 
       resetTokenHash: hashToken(token) 
     });
     if (!user) {
@@ -567,7 +513,7 @@ router.post('/reset-password', authLimiter, [
       { userId: user.userId },
       { 
         $set: { password: hashedPassword }, 
-        $unset: { resetTokenHash: '', resetTokenExpiry: '' } 
+        $unset: { resetTokenHash: '', resetTokenExpiry: '', refreshTokenHash: '' } 
       }
     );
 
@@ -587,25 +533,20 @@ router.post('/verify-email', authLimiter, async (req, res) => {
 
     const { token } = req.body;
     if (!token) return res.status(400).json({ error: 'Token missing' });
-
-    // Verify token
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
-    let decoded;
-    try {
-      decoded = jwt.verify(token, secret);
-      if (decoded.type !== 'email-verify') throw new Error('Invalid token type');
-    } catch (tokenErr) {
+    if (!isOpaqueToken(token)) {
       return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
     }
 
     // Find user and verify hashed token matches
     const user = await getDb().collection(usersCollectionName).findOne({ 
-      userId: decoded.userId, 
       verificationTokenHash: hashToken(token) 
     });
     if (!user) {
       return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
+    }
+
+    if (user.verificationTokenExpiry && new Date() > new Date(user.verificationTokenExpiry)) {
+      return res.status(400).json({ error: 'انتهت صلاحية رابط التحقق، اطلب رابطاً جديداً' });
     }
 
     // Check if already verified
@@ -616,7 +557,7 @@ router.post('/verify-email', authLimiter, async (req, res) => {
     // Update user as verified
     await getDb().collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { isVerified: true }, $unset: { verificationTokenHash: '' } }
+      { $set: { isVerified: true }, $unset: { verificationTokenHash: '', verificationTokenExpiry: '' } }
     );
 
     console.log(`[VerifyEmail] Email verified for userId: ${user.userId}`);
@@ -640,19 +581,14 @@ router.post('/resend-verification', verifyToken, authLimiter, async (req, res) =
       return res.json({ success: true, message: 'البريد مُتحقق مسبقاً' });
     }
 
-    // Generate new verification token
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
-    const verificationToken = jwt.sign(
-      { userId: user.userId, email: user.email, type: 'email-verify' },
-      secret,
-      { expiresIn: '24h' }
-    );
+    // Generate new opaque verification token
+    const verificationToken = createRefreshToken();
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     // Store new verification token hash
     await getDb().collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { verificationTokenHash: hashToken(verificationToken) } }
+      { $set: { verificationTokenHash: hashToken(verificationToken), verificationTokenExpiry } }
     );
 
     // Send verification email
@@ -685,6 +621,9 @@ router.post('/refresh', async (req, res) => {
       console.warn('[Refresh] No refresh token found in cookies');
       return res.status(401).json({ error: 'No refresh token provided' });
     }
+    if (!isOpaqueToken(tokenFromCookie)) {
+      return res.status(403).json({ error: 'Invalid refresh token' });
+    }
 
     // Find user by hashed refresh token
     const hashedToken = hashToken(tokenFromCookie);
@@ -707,26 +646,9 @@ router.post('/refresh', async (req, res) => {
       { $set: { refreshTokenHash: newHashedRefresh } }
     );
 
-    // Set new refresh token cookie
-    res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
-      secure: true, // required for sameSite: 'None'
-      sameSite: 'None', // allow cross-site (mcprim.com → onrender.com)
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/api/auth'
-    });
+    setAuthCookies(res, { accessToken: newAccessToken, refreshToken: newRefreshToken });
 
-    // Set new access token cookie
-    res.cookie('accessToken', newAccessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      maxAge: 15 * 60 * 1000, // 15 minutes
-      path: '/'
-    });
-
-    // Return token in body as fallback for third-party cookie blocking
-    res.json({ success: true, token: newAccessToken, user: { name: user.name, email: user.email, userId: user.userId } });
+    res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
 
   } catch (err) {
     console.error('Token refresh error:', err);
@@ -748,19 +670,7 @@ router.post('/logout', async (req, res) => {
       );
     }
 
-    // Clear the cookies
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      path: '/api/auth'
-    });
-    res.clearCookie('accessToken', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-      path: '/'
-    });
+    clearAuthCookies(res);
 
     res.json({ success: true });
 
@@ -813,12 +723,9 @@ router.post('/session-init', async (req, res) => {
       return res.status(401).json({ error: 'User not found during initialization' });
     }
 
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
-
-    // Cookies were already set by /google/callback — just return user info and token for fallback
+    // Cookies were already set by /google/callback — just return user info.
     res.json({
       success: true,
-      token: accessToken,
       user: { userId: user.userId, email: user.email, name: user.name }
     });
 

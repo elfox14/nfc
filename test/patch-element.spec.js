@@ -4,19 +4,12 @@
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 
-// Mock Redis
-jest.mock('redis', () => ({
-    createClient: jest.fn(() => ({
-        on: jest.fn(), get: jest.fn(), setEx: jest.fn(), connect: jest.fn().mockResolvedValue(true),
-        isReady: true, sendCommand: jest.fn()
-    }))
-}));
-
 // Mock MongoDB
 const mockCollection = {
     findOne: jest.fn(),
     updateOne: jest.fn(),
-    insertOne: jest.fn()
+    insertOne: jest.fn(),
+    createIndex: jest.fn()
 };
 
 const mockDb = {
@@ -44,7 +37,7 @@ describe('PATCH /api/design/:id/element/:elementId', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        token = jwt.sign({ userId: 'user123' }, process.env.JWT_SECRET);
+        token = jwt.sign({ userId: 'user123', type: 'access' }, process.env.JWT_SECRET);
     });
 
     it('Should update element property using data.elements array fallback', async () => {

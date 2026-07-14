@@ -9,6 +9,7 @@
  */
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // Mock MongoDB
 const mockCollection = {
@@ -132,6 +133,18 @@ describe('Design API', () => {
 
     expect(res.status).toBe(404);
   });
+
+  it('GET /api/get-design/:id should not query by internal Mongo ObjectId', async () => {
+    mockCollection.findOne.mockClear();
+    mockCollection.findOne.mockResolvedValueOnce(null);
+
+    const res = await request(app)
+      .get('/api/get-design/507f1f77bcf86cd799439011');
+
+    expect(res.status).toBe(404);
+    expect(mockCollection.findOne).toHaveBeenCalledTimes(1);
+    expect(mockCollection.findOne).toHaveBeenCalledWith({ shortId: '507f1f77bcf86cd799439011' });
+  });
 });
 
 describe('Admin Error Endpoint', () => {
@@ -145,6 +158,7 @@ describe('Admin Error Endpoint', () => {
   it('GET /api/admin/errors should return errors with valid admin token', async () => {
     // Set admin token
     process.env.ADMIN_TOKENH = 'test-admin-token-123';
+    delete process.env.ADMIN_TOKEN_SHA256;
     
     const res = await request(app)
       .get('/api/admin/errors')
@@ -154,6 +168,21 @@ describe('Admin Error Endpoint', () => {
     expect(res.body).toHaveProperty('total');
     expect(res.body).toHaveProperty('errors');
     expect(Array.isArray(res.body.errors)).toBe(true);
+  });
+
+  it('GET /api/admin/errors should accept hashed admin token configuration', async () => {
+    delete process.env.ADMIN_TOKENH;
+    process.env.ADMIN_TOKEN_SHA256 = crypto
+      .createHash('sha256')
+      .update('hashed-admin-token-123')
+      .digest('hex');
+
+    const res = await request(app)
+      .get('/api/admin/errors')
+      .set('x-admin-token', 'hashed-admin-token-123');
+
+    expect(res.status).toBe(200);
+    expect(res.headers['cache-control']).toBe('no-store');
   });
 });
 
@@ -169,5 +198,12 @@ describe('Static File Serving', () => {
     if (res.status === 200) {
       expect(res.headers['cache-control']).toContain('max-age');
     }
+  });
+
+  it('GET /nfc/sw.js should not be cached long-term', async () => {
+    const res = await request(app).get('/nfc/sw.js');
+    expect(res.status).toBe(200);
+    expect(res.headers['cache-control']).toContain('no-store');
+    expect(res.headers['service-worker-allowed']).toBe('/nfc/');
   });
 });

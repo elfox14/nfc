@@ -22,6 +22,10 @@ function createRefreshToken() {
     return crypto.randomBytes(64).toString('hex');
 }
 
+function isOpaqueToken(token) {
+    return typeof token === 'string' && /^[a-f0-9]{128}$/i.test(token);
+}
+
 /**
  * Hashes a token for secure storage in the database.
  * Uses HMAC-SHA-256 with a server secret to prevent rainbow-table attacks.
@@ -37,5 +41,6 @@ function hashToken(token) {
 module.exports = {
     createAccessToken,
     createRefreshToken,
+    isOpaqueToken,
     hashToken
 };

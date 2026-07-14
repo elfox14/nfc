@@ -23,7 +23,7 @@ const Auth = {
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
     get API_SESSION_INIT() { return `${this.getBaseUrl()}/api/auth/session-init`; },
 
-    token: null, // Legacy — auth now uses HttpOnly cookies
+    token: null, // Legacy placeholder; browser auth uses HttpOnly cookies only.
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
 
     isLoggedIn() {
@@ -35,12 +35,8 @@ const Auth = {
         console.log('[Auth] Setting session:', { user: user?.email });
         this.user = user;
         localStorage.setItem('authUser', JSON.stringify(user));
-        
-        // Save token to localStorage as fallback for third-party cookie blocking on mobile
-        if (token) {
-            this.token = token;
-            localStorage.setItem('authToken', token);
-        }
+        this.token = null;
+        localStorage.removeItem('authToken');
     },
 
     clearSession() {
@@ -50,12 +46,8 @@ const Auth = {
     },
 
     getHeader() {
-        const headers = {};
-        const token = localStorage.getItem('authToken') || this.token;
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-        return headers;
+        localStorage.removeItem('authToken');
+        return {};
     },
 
     isEnglish() {
