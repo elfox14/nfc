@@ -8,9 +8,11 @@ describe('Editor simple mode', () => {
         jest.useFakeTimers();
         jest.resetModules();
         delete window.EditorSimpleMode;
+        delete window.EditorV2Health;
         localStorage.clear();
         document.documentElement.lang = 'ar';
         document.body.innerHTML = `
+            <header class="pro-toolbar"><div class="tb-zone tb-center"></div></header>
             <div class="pro-layout">
                 <aside id="panel-design"><details id="colors-fieldset"></details></aside>
                 <aside id="panel-elements"><details id="personal-info-fieldset"></details></aside>
@@ -23,6 +25,7 @@ describe('Editor simple mode', () => {
         `;
         Element.prototype.scrollIntoView = jest.fn();
         window.EditorTabs = { activate: jest.fn() };
+        window.EditorV2Health = { check: jest.fn(() => ({ ready: true, missing: [] })) };
         require('../editor-simple-mode');
         document.dispatchEvent(new Event('DOMContentLoaded'));
         jest.runOnlyPendingTimers();
@@ -32,12 +35,29 @@ describe('Editor simple mode', () => {
         jest.useRealTimers();
         delete window.EditorSimpleMode;
         delete window.EditorTabs;
+        delete window.EditorV2Health;
     });
 
     test('starts in simple mode and creates task toolbar', () => {
         expect(window.EditorSimpleMode.getMode()).toBe('simple');
         expect(document.documentElement.dataset.editorMode).toBe('simple');
         expect(document.querySelectorAll('[data-simple-task]').length).toBe(5);
+    });
+
+    test('shows a permanent Editor 2 badge and mode control in the top toolbar', () => {
+        const control = document.getElementById('editor-v2-header-control');
+        expect(control).not.toBeNull();
+        expect(control.textContent).toContain('Editor 2');
+        expect(control.querySelector('#ev2-mode-toggle')).not.toBeNull();
+        expect(control.querySelector('#ev2-health').classList.contains('is-ready')).toBe(true);
+    });
+
+    test('top toolbar control toggles and persists editor mode', () => {
+        document.getElementById('ev2-mode-toggle').click();
+        expect(window.EditorSimpleMode.getMode()).toBe('advanced');
+        expect(document.documentElement.dataset.editorMode).toBe('advanced');
+        expect(localStorage.getItem('mcprime-editor-mode-v1')).toBe('advanced');
+        expect(document.getElementById('ev2-mode-toggle').textContent).toContain('متقدم');
     });
 
     test('opens the matching legacy controls for a task', () => {
