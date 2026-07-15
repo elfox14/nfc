@@ -10,7 +10,9 @@
     "format": "prettier --write \"**/*.js\"",
     "test": "jest",
     "test:e2e": "npx playwright test",
-    "test:e2e:ui": "npx playwright test --ui"
+    "test:e2e:ui": "npx playwright test --ui",
+    "audit:editor": "node scripts/audit-editor-markup.js",
+    "audit:editor:strict": "node scripts/audit-editor-markup.js --strict"
   },
   "keywords": [
     "nfc",
