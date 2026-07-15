@@ -64,7 +64,7 @@ cloudinary.config({
 
 applySecurityHeaders(app);
 const allowedOrigins = applyCors(app);
-applyFetchMetadataProtection(app);
+applyFetchMetadataProtection(app, allowedOrigins);
 
 app.use(express.json({ limit: '512kb' }));
 app.use(cookieParser());
