@@ -7,6 +7,8 @@
 describe('Editor smart alignment', () => {
     beforeEach(() => {
         jest.resetModules();
+        delete window.EditorSmartAlignment;
+        delete window.EditorSmartSnap;
         document.body.innerHTML = `
             <div id="editor-context-inspector"><button id="eci-advanced"></button></div>
             <div id="card-front" class="card-face"><div id="card-logo" class="draggable"></div></div>
