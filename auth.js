@@ -7,12 +7,14 @@
 const Auth = {
 
     getBaseUrl() {
-        // Use obfuscated Render URL to prevent exposing it in static scans,
-        // and ensure the API is hit directly instead of being intercepted by the front-end SPA router.
-        // and ensure the API is hit directly instead of being intercepted by the front-end SPA router.
-        const encoded = 'aHR0cHM6Ly9uZmMtdmp5Ni5vbnJlbmRlci5jb20=';
-        const decoded = typeof safeAtob === 'function' ? safeAtob(encoded) : atob(encoded);
-        return decoded || '';
+        const configuredBase = typeof window.__API_BASE_URL === 'string'
+            ? window.__API_BASE_URL.trim()
+            : '';
+
+        // The frontend and API are served by the same Render service by default.
+        // Keeping requests same-origin lets Fetch Metadata and HttpOnly cookies work
+        // without coupling the deployment to a retired Render hostname.
+        return (configuredBase || window.location.origin).replace(/\/+$/, '');
     },
 
     get API_LOGIN() { return `${this.getBaseUrl()}/api/auth/login`; },

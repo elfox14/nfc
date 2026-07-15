@@ -75,7 +75,9 @@ function applySecurityHeaders(app) {
         "https://res.cloudinary.com",
         "https://www.google-analytics.com",
         "https://pagead2.googlesyndication.com",
-        `wss://${process.env.RENDER_EXTERNAL_HOSTNAME || 'nfc-vjy6.onrender.com'}`
+        ...(process.env.RENDER_EXTERNAL_HOSTNAME
+          ? [`wss://${process.env.RENDER_EXTERNAL_HOSTNAME}`]
+          : [])
       ],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: [],
