@@ -1,5 +1,5 @@
 /**
- * MC PRIME NFC — Editor Design System Adapter v1.0
+ * MC PRIME NFC — Editor Design System Adapter v1.1
  * Applies shared design-system classes to legacy and dynamically-created UI.
  */
 (function (global) {
@@ -10,12 +10,12 @@
 
     var observer = null;
     var rules = [
-        { selector: '.editor-context-inspector, .editor-layers-panel, .tb-settings-panel, .eob-shell, .esm-bar, .epg-dialog', classes: ['ed-panel'] },
+        { selector: '.editor-context-inspector, .editor-layers-panel, .tb-settings-panel, .eob-shell, .esm-bar, .epg-dialog, .editor-brand-kit', classes: ['ed-panel'] },
         { selector: 'button:not(.card-face button):not(.business-card button):not(.card-front button):not(.card-back button)', classes: ['ed-btn'] },
-        { selector: '.eci-primary, .eob-primary, .epg-primary', classes: ['ed-btn--primary'] },
+        { selector: '.eci-primary, .eob-primary, .epg-primary, #ebk-save', classes: ['ed-btn--primary'] },
         { selector: '.tbs-danger-btn, .epg-item.is-error', classes: ['ed-btn--danger'] },
         { selector: 'input:not([type="checkbox"]):not([type="radio"]), select, textarea', classes: ['ed-control'] },
-        { selector: 'fieldset, .eci-section, .tbs-section', classes: ['ed-section'] }
+        { selector: 'fieldset, .eci-section, .tbs-section, .editor-brand-kit', classes: ['ed-section'] }
     ];
 
     function addClasses(element, classes) {
@@ -50,6 +50,15 @@
         document.head.appendChild(link);
     }
 
+    function loadScript(src, marker) {
+        if (document.querySelector('script[' + marker + ']')) return;
+        var script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+        script.setAttribute(marker, 'true');
+        document.head.appendChild(script);
+    }
+
     function observe() {
         if (observer || typeof global.MutationObserver !== 'function') return;
         observer = new global.MutationObserver(function (mutations) {
@@ -70,6 +79,7 @@
         ensureStylesheet();
         enhance(document);
         observe();
+        if (!global.EditorBrandKit) loadScript('editor-brand-kit.js?v=1.0', 'data-editor-brand-kit-loader');
     }
 
     global.EditorDesignSystem = {
