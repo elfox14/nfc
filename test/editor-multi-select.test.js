@@ -11,6 +11,7 @@ describe('Editor multi select', () => {
 
     beforeEach(() => {
         jest.resetModules();
+        delete window.EditorMultiSelect;
         document.documentElement.lang = 'ar';
         document.body.innerHTML = `
             <div class="pro-layout">
@@ -25,12 +26,10 @@ describe('Editor multi select', () => {
         first = document.getElementById('first');
         second = document.getElementById('second');
         third = document.getElementById('third');
-
         document.getElementById('card-front').getBoundingClientRect = () => ({ left: 0, top: 0, width: 300, height: 200, right: 300, bottom: 200 });
         first.getBoundingClientRect = () => ({ left: 10, top: 20, width: 30, height: 20, right: 40, bottom: 40 });
         second.getBoundingClientRect = () => ({ left: 100, top: 60, width: 30, height: 20, right: 130, bottom: 80 });
         third.getBoundingClientRect = () => ({ left: 220, top: 120, width: 30, height: 20, right: 250, bottom: 140 });
-
         require('../editor-multi-select');
     });
 
