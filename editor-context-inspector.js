@@ -1,5 +1,5 @@
 /**
- * MC PRIME NFC — Context Inspector v1.7
+ * MC PRIME NFC — Context Inspector v1.8
  * Adds a right-side contextual inspector without replacing existing controls.
  */
 (function (global) {
@@ -111,6 +111,7 @@
         if (!global.EditorPublishGate) loadScript('editor-publish-gate.js?v=1.0', 'data-editor-publish-gate-loader');
         if (!global.EditorOnboarding) loadScript('editor-onboarding.js?v=1.1', 'data-editor-onboarding-loader');
         if (!global.EditorSimpleMode) loadScript('editor-simple-mode.js?v=1.0', 'data-editor-simple-mode-loader');
+        if (!global.EditorDesignSystem) loadScript('editor-design-system.js?v=1.0', 'data-editor-design-system-loader');
     }
     global.EditorContextInspector = { select: setSelected, getSelected: function () { return selectedElement; } };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
