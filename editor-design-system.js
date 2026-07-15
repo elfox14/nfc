@@ -1,5 +1,5 @@
 /**
- * MC PRIME NFC — Editor Design System Adapter v1.2
+ * MC PRIME NFC — Editor Design System Adapter v1.3
  * Applies shared design-system classes to legacy and dynamically-created UI.
  */
 (function (global) {
@@ -10,9 +10,9 @@
 
     var observer = null;
     var rules = [
-        { selector: '.editor-context-inspector, .editor-layers-panel, .tb-settings-panel, .eob-shell, .esm-bar, .epg-dialog, .editor-brand-kit', classes: ['ed-panel'] },
+        { selector: '.editor-context-inspector, .editor-layers-panel, .tb-settings-panel, .eob-shell, .esm-bar, .epg-dialog, .editor-brand-kit, .eds-panel', classes: ['ed-panel'] },
         { selector: 'button:not(.card-face button):not(.business-card button):not(.card-front button):not(.card-back button)', classes: ['ed-btn'] },
-        { selector: '.eci-primary, .eob-primary, .epg-primary, #ebk-save', classes: ['ed-btn--primary'] },
+        { selector: '.eci-primary, .eob-primary, .epg-primary, #ebk-save, .eds-run', classes: ['ed-btn--primary'] },
         { selector: '.tbs-danger-btn, .epg-item.is-error', classes: ['ed-btn--danger'] },
         { selector: 'input:not([type="checkbox"]):not([type="radio"]), select, textarea', classes: ['ed-control'] },
         { selector: 'fieldset, .eci-section, .tbs-section, .editor-brand-kit', classes: ['ed-section'] }
@@ -81,6 +81,7 @@
         observe();
         if (!global.EditorBrandKit) loadScript('editor-brand-kit.js?v=1.0', 'data-editor-brand-kit-loader');
         if (!global.EditorV2Health) loadScript('editor-v2-health.js?v=20260715.3', 'data-editor-v2-health-loader');
+        if (!global.EditorDesignScore) loadScript('editor-design-score.js?v=1.0', 'data-editor-design-score-loader');
     }
 
     global.EditorDesignSystem = {
