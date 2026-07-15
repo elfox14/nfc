@@ -1,0 +1,73 @@
+:root{
+  --ed-color-bg:#07111f;
+  --ed-color-surface:#0d1b2e;
+  --ed-color-surface-2:#13243a;
+  --ed-color-surface-3:#19304c;
+  --ed-color-text:#f5f8fc;
+  --ed-color-text-muted:#9fb0c5;
+  --ed-color-border:rgba(255,255,255,.10);
+  --ed-color-border-strong:rgba(77,166,255,.30);
+  --ed-color-primary:#4da6ff;
+  --ed-color-primary-hover:#70b8ff;
+  --ed-color-success:#2ecc71;
+  --ed-color-warning:#f1c40f;
+  --ed-color-danger:#e74c3c;
+  --ed-space-1:4px;
+  --ed-space-2:8px;
+  --ed-space-3:12px;
+  --ed-space-4:16px;
+  --ed-space-5:24px;
+  --ed-space-6:32px;
+  --ed-radius-sm:8px;
+  --ed-radius-md:12px;
+  --ed-radius-lg:18px;
+  --ed-shadow-sm:0 8px 24px rgba(0,0,0,.18);
+  --ed-shadow-lg:0 28px 80px rgba(0,0,0,.46);
+  --ed-duration-fast:140ms;
+  --ed-duration-normal:220ms;
+  --ed-focus-ring:0 0 0 3px rgba(77,166,255,.30);
+  --ed-control-height:40px;
+  --ed-font-size-xs:.72rem;
+  --ed-font-size-sm:.82rem;
+  --ed-font-size-md:.94rem;
+}
+
+.editor-ui-v2{color:var(--ed-color-text)}
+.editor-ui-v2,.editor-ui-v2 *{box-sizing:border-box}
+
+.ed-surface{background:var(--ed-color-surface);border:1px solid var(--ed-color-border);border-radius:var(--ed-radius-md)}
+.ed-panel{background:var(--ed-color-surface);border-color:var(--ed-color-border)!important;color:var(--ed-color-text)}
+.ed-section{background:rgba(255,255,255,.035);border:1px solid var(--ed-color-border);border-radius:var(--ed-radius-md);padding:var(--ed-space-3)}
+
+.ed-btn{min-height:var(--ed-control-height);display:inline-flex;align-items:center;justify-content:center;gap:var(--ed-space-2);padding:0 var(--ed-space-4);border:1px solid var(--ed-color-border);border-radius:var(--ed-radius-sm);background:rgba(255,255,255,.045);color:var(--ed-color-text);font:inherit;font-size:var(--ed-font-size-sm);font-weight:700;cursor:pointer;transition:background var(--ed-duration-fast),border-color var(--ed-duration-fast),transform var(--ed-duration-fast),opacity var(--ed-duration-fast)}
+.ed-btn:hover:not(:disabled){background:rgba(255,255,255,.085);border-color:var(--ed-color-border-strong);transform:translateY(-1px)}
+.ed-btn:active:not(:disabled){transform:translateY(0) scale(.98)}
+.ed-btn:focus-visible{outline:0;box-shadow:var(--ed-focus-ring)}
+.ed-btn:disabled{opacity:.45;cursor:not-allowed}
+.ed-btn--primary{border-color:transparent;background:var(--ed-color-primary);color:#fff}
+.ed-btn--primary:hover:not(:disabled){background:var(--ed-color-primary-hover)}
+.ed-btn--danger{border-color:rgba(231,76,60,.34);background:rgba(231,76,60,.10);color:#ff8177}
+.ed-btn--icon{width:var(--ed-control-height);padding:0}
+.ed-btn--sm{min-height:34px;padding-inline:var(--ed-space-3);font-size:var(--ed-font-size-xs)}
+
+.ed-field{display:flex;flex-direction:column;gap:6px;color:var(--ed-color-text-muted);font-size:var(--ed-font-size-xs)}
+.ed-control{width:100%;min-height:var(--ed-control-height);border:1px solid var(--ed-color-border);border-radius:var(--ed-radius-sm);background:rgba(255,255,255,.04);color:var(--ed-color-text);padding:8px 11px;font:inherit;transition:border-color var(--ed-duration-fast),background var(--ed-duration-fast),box-shadow var(--ed-duration-fast)}
+.ed-control:hover{border-color:rgba(255,255,255,.18)}
+.ed-control:focus{outline:0;border-color:var(--ed-color-primary);background:rgba(77,166,255,.055);box-shadow:var(--ed-focus-ring)}
+.ed-control::placeholder{color:rgba(159,176,197,.65)}
+input[type="range"].ed-control{min-height:auto;padding:0;accent-color:var(--ed-color-primary);background:transparent;border:0;box-shadow:none}
+input[type="color"].ed-control{padding:4px}
+
+.ed-card{background:rgba(255,255,255,.035);border:1px solid var(--ed-color-border);border-radius:var(--ed-radius-md);box-shadow:var(--ed-shadow-sm)}
+.ed-muted{color:var(--ed-color-text-muted)}
+.ed-divider{border-color:var(--ed-color-border)!important}
+
+.editor-context-inspector.ed-panel,
+.editor-layers-panel.ed-panel,
+.tb-settings-panel.ed-panel{background:var(--ed-color-surface)!important}
+
+.editor-ui-v2 details{border-color:var(--ed-color-border)}
+.editor-ui-v2 details>summary{border-radius:var(--ed-radius-sm)}
+.editor-ui-v2 details>summary:focus-visible{outline:0;box-shadow:var(--ed-focus-ring)}
+
+@media(prefers-reduced-motion:reduce){.ed-btn,.ed-control{transition:none}}
