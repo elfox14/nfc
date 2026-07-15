@@ -1,6 +1,9 @@
 name: Editor Production Smoke
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       production_url:
@@ -14,13 +17,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: editor-production-smoke
+  group: editor-production-smoke-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     env:
       EDITOR_PRODUCTION_URL: ${{ inputs.production_url || 'https://www.mcprim.com/nfc' }}
     steps:
@@ -39,14 +42,32 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run production smoke tests
-        run: npx playwright test e2e/editor-production-smoke.spec.js --browser=chromium --reporter=line,html
+      - name: Wait for production deployment
+        if: github.event_name == 'push'
+        run: sleep 75
+
+      - name: Run production smoke tests with deploy retries
+        shell: bash
+        run: |
+          set -o pipefail
+          attempts=4
+          for attempt in $(seq 1 "$attempts"); do
+            echo "Production smoke attempt $attempt/$attempts"
+            if npx playwright test e2e/editor-production-smoke.spec.js --browser=chromium --reporter=line,html; then
+              exit 0
+            fi
+            if [ "$attempt" -lt "$attempts" ]; then
+              echo "Production may still be deploying; retrying in 45 seconds."
+              sleep 45
+            fi
+          done
+          exit 1
 
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: editor-production-smoke-report
+          name: editor-production-smoke-report-${{ github.run_id }}
           path: |
             playwright-report/
             test-results/
