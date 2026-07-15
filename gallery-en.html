@@ -314,7 +314,7 @@
             const gridViewBtn = document.getElementById('grid-view-btn');
             const listViewBtn = document.getElementById('list-view-btn');
 
-            const API_BASE_URL = 'https://nfc-vjy6.onrender.com';
+            const API_BASE_URL = (window.__API_BASE_URL || window.location.origin).replace(/\/+$/, '');
             const CACHE_KEY = 'mcprime_gallery_cache';
             const CACHE_DURATION = 5 * 60 * 1000;
 

@@ -355,10 +355,8 @@
 
         // Base URL for API
         const getApiUrl = (path) => {
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            if (isLocal) return `http://localhost:3000${path}`;
-            const encoded = 'aHR0cHM6Ly9uZmMtdmp5Ni5vbnJlbmRlci5jb20=';
-            return `${atob(encoded)}${path}`;
+            const baseUrl = (window.__API_BASE_URL || window.location.origin).replace(/\/+$/, '');
+            return `${baseUrl}${path}`;
         };
 
         // Initialize
