@@ -100,3 +100,4 @@ function applyCors(app) {
 }
 
 module.exports = applyCors;
+module.exports.isAllowedOrigin = isAllowedOrigin;
