@@ -155,12 +155,12 @@
         document.head.appendChild(style);
     }
 
-    function loadLayersPanel() {
-        if (global.EditorLayersPanel || document.querySelector('script[data-editor-layers-loader]')) return;
+    function loadScript(src, marker) {
+        if (document.querySelector('script[' + marker + ']')) return;
         var script = document.createElement('script');
-        script.src = 'editor-layers-panel.js?v=1.0';
+        script.src = src;
         script.defer = true;
-        script.dataset.editorLayersLoader = 'true';
+        script.setAttribute(marker, 'true');
         document.head.appendChild(script);
     }
 
@@ -175,7 +175,8 @@
             if (element && element.dataset.editorLayerLocked !== 'true') setSelected(element);
         }, true);
 
-        loadLayersPanel();
+        if (!global.EditorLayersPanel) loadScript('editor-layers-panel.js?v=1.0', 'data-editor-layers-loader');
+        if (!global.EditorSmartAlignment) loadScript('editor-smart-alignment.js?v=1.0', 'data-editor-alignment-loader');
     }
 
     global.EditorContextInspector = { select: setSelected, getSelected: function () { return selectedElement; } };
