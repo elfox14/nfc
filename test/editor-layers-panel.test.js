@@ -35,6 +35,10 @@ describe('Editor layers panel', () => {
         jest.useRealTimers();
     });
 
+    function rowFor(id) {
+        return Array.from(document.querySelectorAll('.elp-row')).find((item) => item.textContent.includes(id));
+    }
+
     test('discovers core card layers', () => {
         const rows = document.querySelectorAll('.elp-row');
         expect(rows.length).toBeGreaterThanOrEqual(3);
@@ -47,28 +51,23 @@ describe('Editor layers panel', () => {
     });
 
     test('toggles layer visibility', () => {
-        const row = Array.from(document.querySelectorAll('.elp-row')).find((item) => item.textContent.includes('card-logo'));
-        const button = row.querySelector('[data-layer-action="visibility"]');
-        button.click();
+        rowFor('card-logo').querySelector('[data-layer-action="visibility"]').click();
         expect(document.getElementById('card-logo').style.display).toBe('none');
-        button.click();
+        rowFor('card-logo').querySelector('[data-layer-action="visibility"]').click();
         expect(document.getElementById('card-logo').style.display).toBe('');
     });
 
     test('locks and unlocks a layer', () => {
-        const row = Array.from(document.querySelectorAll('.elp-row')).find((item) => item.textContent.includes('card-name'));
-        const button = row.querySelector('[data-layer-action="lock"]');
-        button.click();
+        rowFor('card-name').querySelector('[data-layer-action="lock"]').click();
         expect(document.getElementById('card-name').dataset.editorLayerLocked).toBe('true');
-        button.click();
+        rowFor('card-name').querySelector('[data-layer-action="lock"]').click();
         expect(document.getElementById('card-name').dataset.editorLayerLocked).toBeUndefined();
     });
 
     test('changes safe stacking order with z-index', () => {
-        const row = Array.from(document.querySelectorAll('.elp-row')).find((item) => item.textContent.includes('card-qr'));
-        row.querySelector('[data-layer-action="forward"]').click();
+        rowFor('card-qr').querySelector('[data-layer-action="forward"]').click();
         expect(document.getElementById('card-qr').style.zIndex).toBe('2');
-        row.querySelector('[data-layer-action="backward"]').click();
+        rowFor('card-qr').querySelector('[data-layer-action="backward"]').click();
         expect(document.getElementById('card-qr').style.zIndex).toBe('1');
     });
 });
