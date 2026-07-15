@@ -5,6 +5,8 @@
 
 describe('Editor smart validation', () => {
     beforeEach(() => {
+        jest.resetModules();
+        delete window.EditorSmartValidation;
         document.documentElement.lang = 'en';
         document.body.innerHTML = `
             <div id="editor-context-inspector"><button id="eci-advanced"></button></div>
@@ -22,7 +24,6 @@ describe('Editor smart validation', () => {
         document.getElementById('card-front').getBoundingClientRect = () => ({ left: 0, top: 0, right: 340, bottom: 200, width: 340, height: 200 });
         document.getElementById('qr-code-wrapper').getBoundingClientRect = () => ({ left: 10, top: 10, right: 60, bottom: 60, width: 50, height: 50 });
         document.getElementById('card-name').getBoundingClientRect = () => ({ left: 2, top: 2, right: 100, bottom: 30, width: 98, height: 28 });
-        jest.resetModules();
         require('../editor-smart-validation');
     });
 
