@@ -1,6 +1,6 @@
 /**
- * MC PRIME NFC — Smart Alignment v1.0
- * Safe alignment helpers, grid and safe-area overlays for the current editor.
+ * MC PRIME NFC — Smart Alignment v1.1
+ * Safe alignment helpers, grid, safe-area overlays and smart-snap loader.
  */
 (function (global) {
     'use strict';
@@ -28,7 +28,7 @@
     }
 
     function applyPosition(element, left, top) {
-        if (!element || element.dataset.editorLocked === 'true') return false;
+        if (!element || element.dataset.editorLayerLocked === 'true') return false;
         ensurePositioned(element);
         if (left !== null) element.style.left = Math.round(left) + 'px';
         if (top !== null) element.style.top = Math.round(top) + 'px';
@@ -164,9 +164,19 @@
         document.head.appendChild(style);
     }
 
+    function loadSmartSnap() {
+        if (global.EditorSmartSnap || document.querySelector('script[data-editor-smart-snap-loader]')) return;
+        var script = document.createElement('script');
+        script.src = 'editor-smart-snap.js?v=1.0';
+        script.defer = true;
+        script.dataset.editorSmartSnapLoader = 'true';
+        document.head.appendChild(script);
+    }
+
     function init() {
         injectStyles();
         if (!injectInspectorControls()) global.setTimeout(init, 250);
+        loadSmartSnap();
     }
 
     global.EditorSmartAlignment = {
