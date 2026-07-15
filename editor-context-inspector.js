@@ -62,7 +62,6 @@
         var computed = global.getComputedStyle(selectedElement);
         var hidden = computed.display === 'none' || computed.visibility === 'hidden' || computed.opacity === '0';
         var opacity = Math.round((parseFloat(computed.opacity || '1')) * 100);
-
         titleEl.textContent = isAr ? descriptor.labelAr : descriptor.labelEn;
         typeEl.textContent = selectedElement.id || selectedElement.getAttribute('data-element-type') || selectedElement.tagName.toLowerCase();
         statusEl.textContent = hidden ? (isAr ? 'مخفي' : 'Hidden') : (isAr ? 'ظاهر' : 'Visible');
@@ -166,6 +165,7 @@
         if (!global.EditorLayersPanel) loadScript('editor-layers-panel.js?v=1.0', 'data-editor-layers-loader');
         if (!global.EditorSmartAlignment) loadScript('editor-smart-alignment.js?v=1.0', 'data-editor-alignment-loader');
         if (!global.EditorMultiSelect) loadScript('editor-multi-select.js?v=1.0', 'data-editor-multi-loader');
+        if (!global.EditorCommandSurface) loadScript('editor-command-surface.js?v=1.0', 'data-editor-command-surface-loader');
     }
 
     global.EditorContextInspector = { select: setSelected, getSelected: function () { return selectedElement; } };
