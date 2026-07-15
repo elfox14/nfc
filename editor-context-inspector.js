@@ -1,5 +1,5 @@
 /**
- * MC PRIME NFC — Context Inspector v1.1
+ * MC PRIME NFC — Context Inspector v1.2
  * Adds a right-side contextual inspector without replacing existing controls.
  */
 (function (global) {
@@ -77,14 +77,12 @@
         if (!selectedElement) return;
         var targets = (advancedButton.dataset.targets || '').split(',').filter(Boolean);
         var target = targets.map(function (id) { return document.getElementById(id); }).find(Boolean);
-
         if (!target) {
             var descriptor = getDescriptor(selectedElement);
             var key = descriptor.labelEn.toLowerCase();
             target = Array.from(document.querySelectorAll('#panel-design details, #panel-elements details, #panel-design fieldset, #panel-elements fieldset'))
                 .find(function (panel) { return panel.textContent.toLowerCase().includes(key); });
         }
-
         if (target) {
             if (target.tagName === 'DETAILS') target.open = true;
             if (global.EditorTabs && typeof global.EditorTabs.activate === 'function') {
@@ -107,33 +105,25 @@
     function buildInspector() {
         var layout = document.querySelector('.pro-layout');
         if (!layout || document.getElementById('editor-context-inspector')) return false;
-
         inspector = document.createElement('aside');
         inspector.id = 'editor-context-inspector';
         inspector.className = 'editor-context-inspector';
         inspector.setAttribute('aria-label', isAr ? 'خصائص العنصر المحدد' : 'Selected element properties');
         inspector.innerHTML =
-            '<div class="eci-header">' +
-                '<div><span class="eci-eyebrow">' + (isAr ? 'العنصر المحدد' : 'Selected element') + '</span>' +
-                '<h2 id="eci-title">' + (isAr ? 'إعدادات البطاقة' : 'Card settings') + '</h2></div>' +
-                '<span id="eci-status" class="eci-status" data-state="visible">' + (isAr ? 'ظاهر' : 'Visible') + '</span>' +
-            '</div>' +
+            '<div class="eci-header"><div><span class="eci-eyebrow">' + (isAr ? 'العنصر المحدد' : 'Selected element') + '</span><h2 id="eci-title">' + (isAr ? 'إعدادات البطاقة' : 'Card settings') + '</h2></div><span id="eci-status" class="eci-status" data-state="visible">' + (isAr ? 'ظاهر' : 'Visible') + '</span></div>' +
             '<div class="eci-section"><span class="eci-label">' + (isAr ? 'المعرف' : 'Identifier') + '</span><code id="eci-type">card</code></div>' +
             '<div class="eci-section"><label class="eci-range-label" for="eci-opacity"><span>' + (isAr ? 'الشفافية' : 'Opacity') + '</span><output id="eci-opacity-output">100%</output></label><input id="eci-opacity" type="range" min="0" max="100" value="100"></div>' +
             '<button id="eci-advanced" type="button" class="eci-primary"><i class="fas fa-sliders-h"></i><span>' + (isAr ? 'فتح الإعدادات المتقدمة' : 'Open advanced settings') + '</span></button>' +
             '<p class="eci-help">' + (isAr ? 'اضغط على أي عنصر داخل البطاقة لعرض خصائصه هنا.' : 'Click any element on the card to inspect it here.') + '</p>';
-
         var sharePanel = document.getElementById('panel-share');
         if (sharePanel) layout.insertBefore(inspector, sharePanel);
         else layout.appendChild(inspector);
-
         titleEl = inspector.querySelector('#eci-title');
         typeEl = inspector.querySelector('#eci-type');
         statusEl = inspector.querySelector('#eci-status');
         opacityInput = inspector.querySelector('#eci-opacity');
         opacityOutput = inspector.querySelector('#eci-opacity-output');
         advancedButton = inspector.querySelector('#eci-advanced');
-
         opacityInput.addEventListener('input', function () { applyOpacity(opacityInput.value); });
         advancedButton.addEventListener('click', openAdvancedControls);
         injectStyles();
@@ -145,7 +135,7 @@
         var style = document.createElement('style');
         style.id = 'editor-context-inspector-css';
         style.textContent = [
-            '.editor-context-inspector{width:280px;min-width:260px;max-width:320px;padding:18px;background:var(--sidebar-bg,#0d1b2e);border-inline-start:1px solid rgba(77,166,255,.16);box-sizing:border-box;overflow:auto;color:var(--text-primary);}',
+            '.editor-context-inspector{width:280px;min-width:260px;max-width:320px;padding:18px;background:var(--sidebar-bg,#0d1b2e);border-inline-start:1px solid rgba(77,166,255,.16);box-sizing:border-box;overflow:auto;color:var(--text-primary)}',
             '.eci-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}.eci-eyebrow{display:block;font-size:.68rem;color:var(--text-secondary);margin-bottom:4px}.eci-header h2{font-size:1rem;margin:0}.eci-status{font-size:.68rem;padding:4px 8px;border-radius:999px;background:rgba(46,204,113,.12);color:#2ecc71}.eci-status[data-state="hidden"]{background:rgba(231,76,60,.12);color:#e74c3c}',
             '.eci-section{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:12px;margin-bottom:10px}.eci-label,.eci-range-label{font-size:.72rem;color:var(--text-secondary)}.eci-section code{display:block;margin-top:6px;color:var(--accent-primary,#4da6ff);overflow:hidden;text-overflow:ellipsis}.eci-range-label{display:flex;justify-content:space-between;margin-bottom:8px}.eci-section input[type="range"]{width:100%;accent-color:var(--accent-primary,#4da6ff)}',
             '.eci-primary{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border:0;border-radius:10px;background:var(--accent-primary,#4da6ff);color:#fff;font-family:inherit;font-weight:700;cursor:pointer}.eci-primary:hover{filter:brightness(1.08)}.eci-primary:focus-visible{outline:2px solid #fff;outline-offset:2px}.eci-help{font-size:.72rem;line-height:1.6;color:var(--text-secondary);margin:12px 2px 0}',
@@ -169,18 +159,16 @@
             global.setTimeout(init, 250);
             return;
         }
-
         document.addEventListener('click', function (event) {
             var element = getSelectable(event.target);
             if (element && element.dataset.editorLayerLocked !== 'true') setSelected(element);
         }, true);
-
         if (!global.EditorLayersPanel) loadScript('editor-layers-panel.js?v=1.0', 'data-editor-layers-loader');
         if (!global.EditorSmartAlignment) loadScript('editor-smart-alignment.js?v=1.0', 'data-editor-alignment-loader');
+        if (!global.EditorMultiSelect) loadScript('editor-multi-select.js?v=1.0', 'data-editor-multi-loader');
     }
 
     global.EditorContextInspector = { select: setSelected, getSelected: function () { return selectedElement; } };
-
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
     else init();
 }(typeof window !== 'undefined' ? window : globalThis));
