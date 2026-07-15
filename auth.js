@@ -257,9 +257,15 @@ const Auth = {
         return new Promise((resolve) => {
             const authUrl = `${this.getBaseUrl()}/api/auth/google?lang=${document.documentElement.lang.includes('en') ? 'en' : 'ar'}`;
             
-            // On mobile or in-app browsers, popups are often blocked or fail. Use direct redirect.
+            // A popup cannot reliably return the session-init token when the UI
+            // and API use different origins: Google may sever window.opener, and
+            // BroadcastChannel is scoped to one origin. Use a full-page redirect
+            // for cross-origin deployments so the callback can redirect back with
+            // the one-time token. Keep the popup only for same-origin desktop use.
+            const apiOrigin = new URL(this.getBaseUrl()).origin;
+            const isCrossOrigin = apiOrigin !== window.location.origin;
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-            if (isMobile) {
+            if (isMobile || isCrossOrigin) {
                 window.location.href = authUrl;
                 return; // Page will unload, promise won't resolve here
             }
