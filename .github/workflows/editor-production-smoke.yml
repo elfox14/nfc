@@ -40,7 +40,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run production smoke tests
-        run: npx playwright test e2e/editor-production-smoke.spec.js --project=chromium --reporter=line
+        run: npx playwright test e2e/editor-production-smoke.spec.js --browser=chromium --reporter=line,html
 
       - name: Upload Playwright report
         if: always()
