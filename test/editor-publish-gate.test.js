@@ -7,6 +7,7 @@
 describe('Editor publish gate', () => {
     beforeEach(() => {
         jest.resetModules();
+        delete window.EditorPublishGate;
         document.documentElement.lang = 'ar';
         document.body.innerHTML = '<button id="export-png-btn">تصدير PNG</button>';
         window.EditorSmartValidation = { run: jest.fn(() => []) };
@@ -22,6 +23,7 @@ describe('Editor publish gate', () => {
         window.EditorSmartValidation.run.mockReturnValue([{ severity: 'error', message: 'خطأ', target: null }]);
         document.getElementById('export-png-btn').click();
         const gate = document.getElementById('editor-publish-gate');
+        expect(gate).not.toBeNull();
         expect(gate.classList.contains('is-open')).toBe(true);
         expect(gate.querySelector('#epg-proceed').disabled).toBe(true);
     });
@@ -32,7 +34,9 @@ describe('Editor publish gate', () => {
         const gate = document.getElementById('editor-publish-gate');
         const proceed = gate.querySelector('#epg-proceed');
         expect(proceed.disabled).toBe(true);
-        gate.querySelector('#epg-consent').click();
+        const consent = gate.querySelector('#epg-consent');
+        consent.checked = true;
+        consent.dispatchEvent(new Event('change', { bubbles: true }));
         expect(proceed.disabled).toBe(false);
     });
 
@@ -42,6 +46,7 @@ describe('Editor publish gate', () => {
         trigger.addEventListener('click', handler);
         trigger.click();
         const gate = document.getElementById('editor-publish-gate');
+        expect(gate).not.toBeNull();
         gate.querySelector('#epg-proceed').click();
         expect(handler).toHaveBeenCalledTimes(1);
     });
