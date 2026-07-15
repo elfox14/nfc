@@ -56,9 +56,8 @@ describe('Editor shell foundation', () => {
     test('routes mobile actions to one canonical command target', () => {
         document.getElementById('mobile-save-btn').click();
         document.getElementById('mobile-share-btn').click();
-
-        expect(canonicalSave).toHaveBeenCalledTimes(1);
-        expect(canonicalShare).toHaveBeenCalledTimes(1);
+        expect(canonicalSave.click).toHaveBeenCalledTimes(1);
+        expect(canonicalShare.click).toHaveBeenCalledTimes(1);
     });
 
     test('builds settings controls without inline event handlers', () => {
@@ -73,10 +72,8 @@ describe('Editor shell foundation', () => {
         const qrSize = document.getElementById('qr-size');
         const onInput = jest.fn();
         qrSize.addEventListener('input', onInput);
-
         slider.value = '42';
         slider.dispatchEvent(new Event('input', { bubbles: true }));
-
         expect(qrSize.value).toBe('42');
         expect(onInput).toHaveBeenCalledTimes(1);
     });
