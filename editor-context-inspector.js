@@ -1,5 +1,5 @@
 /**
- * MC PRIME NFC — Context Inspector v1.0
+ * MC PRIME NFC — Context Inspector v1.1
  * Adds a right-side contextual inspector without replacing existing controls.
  */
 (function (global) {
@@ -155,6 +155,15 @@
         document.head.appendChild(style);
     }
 
+    function loadLayersPanel() {
+        if (global.EditorLayersPanel || document.querySelector('script[data-editor-layers-loader]')) return;
+        var script = document.createElement('script');
+        script.src = 'editor-layers-panel.js?v=1.0';
+        script.defer = true;
+        script.dataset.editorLayersLoader = 'true';
+        document.head.appendChild(script);
+    }
+
     function init() {
         if (!buildInspector()) {
             global.setTimeout(init, 250);
@@ -163,8 +172,10 @@
 
         document.addEventListener('click', function (event) {
             var element = getSelectable(event.target);
-            if (element) setSelected(element);
+            if (element && element.dataset.editorLayerLocked !== 'true') setSelected(element);
         }, true);
+
+        loadLayersPanel();
     }
 
     global.EditorContextInspector = { select: setSelected, getSelected: function () { return selectedElement; } };
