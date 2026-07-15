@@ -1,5 +1,5 @@
 /**
- * MC PRIME NFC — Smart Snap v1.0
+ * MC PRIME NFC — Smart Snap v1.1
  * Shows alignment guides and snaps dragged elements to card/peer anchors.
  */
 (function (global) {
@@ -73,75 +73,50 @@
         var best = null;
         candidates.forEach(function (candidate) {
             var distance = Math.abs(candidate - value);
-            if (distance <= threshold && (!best || distance < best.distance)) {
-                best = { value: candidate, distance: distance };
-            }
+            if (distance <= threshold && (!best || distance < best.distance)) best = { value: candidate, distance: distance };
         });
         return best;
     }
 
     function resolveSnap(element) {
         var targetCard = getCard(element);
-        if (!targetCard) return null;
+        if (!targetCard || element.dataset.editorLayerLocked === 'true') return null;
         var cardRect = targetCard.getBoundingClientRect();
         var elementRect = element.getBoundingClientRect();
         var current = anchors(elementRect, cardRect);
         var peers = peerAnchors(targetCard, element, cardRect);
-
         var xMatches = [
             { edge: 'left', match: nearest(current.left, peers.xs) },
             { edge: 'centerX', match: nearest(current.centerX, peers.xs) },
             { edge: 'right', match: nearest(current.right, peers.xs) }
         ].filter(function (entry) { return entry.match; }).sort(function (a, b) { return a.match.distance - b.match.distance; });
-
         var yMatches = [
             { edge: 'top', match: nearest(current.top, peers.ys) },
             { edge: 'centerY', match: nearest(current.centerY, peers.ys) },
             { edge: 'bottom', match: nearest(current.bottom, peers.ys) }
         ].filter(function (entry) { return entry.match; }).sort(function (a, b) { return a.match.distance - b.match.distance; });
-
         var x = xMatches[0] || null;
         var y = yMatches[0] || null;
         var nextLeft = current.left;
         var nextTop = current.top;
-
-        if (x) {
-            if (x.edge === 'centerX') nextLeft = x.match.value - elementRect.width / 2;
-            else if (x.edge === 'right') nextLeft = x.match.value - elementRect.width;
-            else nextLeft = x.match.value;
-        }
-        if (y) {
-            if (y.edge === 'centerY') nextTop = y.match.value - elementRect.height / 2;
-            else if (y.edge === 'bottom') nextTop = y.match.value - elementRect.height;
-            else nextTop = y.match.value;
-        }
-
-        return {
-            card: targetCard,
-            left: nextLeft,
-            top: nextTop,
-            guideX: x ? x.match.value : null,
-            guideY: y ? y.match.value : null,
-            snappedX: Boolean(x),
-            snappedY: Boolean(y)
-        };
+        if (x) nextLeft = x.edge === 'centerX' ? x.match.value - elementRect.width / 2 : x.edge === 'right' ? x.match.value - elementRect.width : x.match.value;
+        if (y) nextTop = y.edge === 'centerY' ? y.match.value - elementRect.height / 2 : y.edge === 'bottom' ? y.match.value - elementRect.height : y.match.value;
+        return { card: targetCard, left: nextLeft, top: nextTop, guideX: x ? x.match.value : null, guideY: y ? y.match.value : null, snappedX: Boolean(x), snappedY: Boolean(y) };
     }
 
     function applyResolved(element, result, commitPosition) {
-        if (!result) return;
+        if (!result) return false;
         ensureGuides(result.card);
         verticalGuide.classList.toggle('is-visible', result.snappedX);
         horizontalGuide.classList.toggle('is-visible', result.snappedY);
         if (result.snappedX) verticalGuide.style.left = result.guideX + 'px';
         if (result.snappedY) horizontalGuide.style.top = result.guideY + 'px';
-
         if (commitPosition) {
             element.style.left = Math.round(result.left) + 'px';
             element.style.top = Math.round(result.top) + 'px';
-            document.dispatchEvent(new global.CustomEvent('editor:snap', {
-                detail: { element: element, left: result.left, top: result.top, x: result.snappedX, y: result.snappedY }
-            }));
+            document.dispatchEvent(new global.CustomEvent('editor:snap', { detail: { element: element, left: result.left, top: result.top, x: result.snappedX, y: result.snappedY } }));
         }
+        return true;
     }
 
     function preview() {
@@ -157,9 +132,14 @@
     }
 
     function start(element) {
+        if (!element || element.dataset.editorLayerLocked === 'true') {
+            cancel();
+            return false;
+        }
         activeElement = element;
         card = getCard(element);
         if (card) ensureGuides(card);
+        return Boolean(card);
     }
 
     function finish() {
@@ -179,12 +159,7 @@
         if (document.getElementById('editor-smart-snap-css')) return;
         var style = document.createElement('style');
         style.id = 'editor-smart-snap-css';
-        style.textContent = [
-            '.card-face,.business-card,.card-front,.card-back,#card-front,#card-back{--editor-guide-color:#ff4db8}',
-            '.editor-snap-guide{position:absolute;z-index:9998;pointer-events:none;opacity:0;background:var(--editor-guide-color);box-shadow:0 0 0 1px rgba(255,255,255,.35);transition:opacity .08s ease}',
-            '.editor-snap-guide.is-visible{opacity:1}.editor-snap-guide-v{top:0;bottom:0;width:1px}.editor-snap-guide-h{left:0;right:0;height:1px}',
-            '@media(prefers-reduced-motion:reduce){.editor-snap-guide{transition:none}}'
-        ].join('');
+        style.textContent = '.card-face,.business-card,.card-front,.card-back,#card-front,#card-back{--editor-guide-color:#ff4db8}.editor-snap-guide{position:absolute;z-index:9998;pointer-events:none;opacity:0;background:var(--editor-guide-color);box-shadow:0 0 0 1px rgba(255,255,255,.35);transition:opacity .08s ease}.editor-snap-guide.is-visible{opacity:1}.editor-snap-guide-v{top:0;bottom:0;width:1px}.editor-snap-guide-h{left:0;right:0;height:1px}@media(prefers-reduced-motion:reduce){.editor-snap-guide{transition:none}}';
         document.head.appendChild(style);
     }
 
@@ -193,27 +168,27 @@
         document.addEventListener('pointerdown', function (event) {
             var element = getSelectable(event.target);
             if (element) start(element);
+            else cancel();
         }, true);
-        document.addEventListener('pointermove', function () {
-            if (activeElement) requestPreview();
-        }, true);
+        document.addEventListener('pointermove', function () { if (activeElement) requestPreview(); }, true);
         document.addEventListener('pointerup', finish, true);
         document.addEventListener('pointercancel', cancel, true);
-
-        // Compatibility hooks for interact.js/custom drag implementations.
-        document.addEventListener('editor:dragstart', function (event) {
-            if (event.detail && event.detail.element) start(event.detail.element);
-        });
+        document.addEventListener('editor:dragstart', function (event) { if (event.detail && event.detail.element) start(event.detail.element); });
         document.addEventListener('editor:dragmove', requestPreview);
         document.addEventListener('editor:dragend', finish);
     }
 
     global.EditorSmartSnap = {
         resolve: resolveSnap,
-        apply: function (element) { applyResolved(element, resolveSnap(element), true); },
+        apply: function (element) {
+            var applied = applyResolved(element, resolveSnap(element), true);
+            removeGuides();
+            return applied;
+        },
         start: start,
         preview: preview,
         finish: finish,
+        cancel: cancel,
         setThreshold: function (value) { threshold = Math.max(1, Number(value) || 6); }
     };
 
