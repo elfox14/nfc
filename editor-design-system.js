@@ -1,5 +1,5 @@
 /**
- * MC PRIME NFC — Editor Design System Adapter v1.3
+ * MC PRIME NFC — Editor Design System Adapter v1.4
  * Applies shared design-system classes to legacy and dynamically-created UI.
  */
 (function (global) {
@@ -81,7 +81,8 @@
         observe();
         if (!global.EditorBrandKit) loadScript('editor-brand-kit.js?v=1.0', 'data-editor-brand-kit-loader');
         if (!global.EditorV2Health) loadScript('editor-v2-health.js?v=20260715.3', 'data-editor-v2-health-loader');
-        if (!global.EditorDesignScore) loadScript('editor-design-score.js?v=1.0', 'data-editor-design-score-loader');
+        if (!global.EditorDesignScore) loadScript('editor-design-score.js?v=1.1', 'data-editor-design-score-loader');
+        if (!global.EditorPanelOrganizer) loadScript('editor-panel-organizer.js?v=1.0', 'data-editor-panel-organizer-loader');
     }
 
     global.EditorDesignSystem = {
