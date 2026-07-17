@@ -19,7 +19,15 @@ jobs:
         cache: npm
     - run: npm install
     - run: npm run lint
-    - run: npm test -- --runInBand
+    - name: Run Jest tests
+      shell: bash
+      run: |
+        if ! npm test -- --runInBand > jest-output.log 2>&1; then
+          echo "Jest failed. Last 180 lines:"
+          tail -n 180 jest-output.log
+          exit 1
+        fi
+        tail -n 40 jest-output.log
     - run: npm audit --omit=dev --audit-level=critical
 
   browser:
