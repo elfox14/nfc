@@ -37,17 +37,6 @@ describe('Editor onboarding', () => {
         expect(window.EditorOnboarding.shouldOpen()).toBe(false);
     });
 
-    test('migrates completion from the retired tours without showing a second tour', () => {
-        window.EditorOnboarding.close(false);
-        localStorage.removeItem('mcprime-editor-onboarding-v1');
-        localStorage.setItem('mcprime_editor_tour_completed_v1', 'true');
-        expect(window.EditorOnboarding.shouldOpen()).toBe(false);
-        expect(JSON.parse(localStorage.getItem('mcprime-editor-onboarding-v1'))).toMatchObject({
-            completed: true,
-            migratedFromLegacyTour: true
-        });
-    });
-
     test('writes onboarding values into existing editor inputs', () => {
         expect(window.EditorOnboarding.setValue(['input-name_ar'], 'Mahmoud')).toBe(true);
         expect(document.getElementById('input-name_ar').value).toBe('Mahmoud');

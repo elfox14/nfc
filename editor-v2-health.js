@@ -7,8 +7,6 @@
   var isAr = document.documentElement.lang !== 'en';
   var EXPECTED = [
     'EditorContextInspector',
-    'EditorLayersPanel',
-    'EditorSmartAlignment',
     'EditorDesignSystem',
     'EditorOnboarding',
     'EditorSimpleMode',

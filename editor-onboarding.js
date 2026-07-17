@@ -10,7 +10,6 @@
 
     var STORAGE_KEY = 'mcprime-editor-onboarding-v1';
     var DRAFT_KEY = 'mcprime-editor-onboarding-draft-v1';
-    var LEGACY_TOUR_KEYS = ['mcprime_editor_tour_completed_v1', 'digitalCardTourShown_v6_desktop'];
     var isAr = document.documentElement.lang !== 'en';
     var overlay = null;
     var currentStep = 0;
@@ -265,13 +264,7 @@
     function shouldOpen() {
         try {
             var saved = JSON.parse(global.localStorage.getItem(STORAGE_KEY) || 'null');
-            if (saved && saved.completed) return false;
-            var completedLegacyTour = LEGACY_TOUR_KEYS.some(function (key) { return Boolean(global.localStorage.getItem(key)); });
-            if (completedLegacyTour) {
-                global.localStorage.setItem(STORAGE_KEY, JSON.stringify({ completed: true, migratedFromLegacyTour: true }));
-                return false;
-            }
-            return true;
+            return !(saved && saved.completed);
         } catch (error) { return true; }
     }
 

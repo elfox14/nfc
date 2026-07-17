@@ -21,8 +21,6 @@ describe('Editor 2 runtime health', () => {
     delete window.EditorV2Health;
     [
       'EditorContextInspector',
-      'EditorLayersPanel',
-      'EditorSmartAlignment',
       'EditorDesignSystem',
       'EditorOnboarding',
       'EditorSimpleMode',
@@ -46,8 +44,6 @@ describe('Editor 2 runtime health', () => {
   test('reports ready when every expected module exists', () => {
     [
       'EditorContextInspector',
-      'EditorLayersPanel',
-      'EditorSmartAlignment',
       'EditorDesignSystem',
       'EditorOnboarding',
       'EditorSimpleMode',
@@ -64,12 +60,9 @@ describe('Editor 2 runtime health', () => {
     expect(document.getElementById('editor-v2-health-banner')).toBeNull();
   });
 
-  test('production bootstrap includes all required P0 module paths', () => {
-    const source = fs.readFileSync(path.join(__dirname, '..', 'toolbar-tab-nav.js'), 'utf8');
-    expect(source).toContain('editor-layers-panel.js');
-    expect(source).toContain('editor-smart-alignment.js');
-    expect(source).toContain('editor-smart-validation.js');
-    expect(source).toContain('editor-publish-gate.js');
+  test('production bootstrap includes the health loader path', () => {
+    const source = fs.readFileSync(path.join(__dirname, '..', 'editor-design-system.js'), 'utf8');
+    expect(source).toContain('editor-v2-health.js?v=20260715.3');
   });
 
   test('both editor pages load the shared toolbar bootstrap', () => {

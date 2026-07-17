@@ -35,6 +35,7 @@ const jsFiles = [
   'script-card.js',
   'editor-enhancements.js',
   'editor-panels.js',
+  'editor-tour.js',
   'editor-user-status.js',
   'ai-backgrounds.js',
   'mobile.js',
