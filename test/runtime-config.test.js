@@ -74,7 +74,7 @@ describe('Runtime API configuration', () => {
 
     expect(editor.release).toBe('2026.07.18-phase7.1');
     expect(editor.appendedScripts).toHaveLength(1);
-    expect(editor.appendedScripts[0].src).toBe('/nfc/editor-production-guard.js?v=1.0.2');
+    expect(editor.appendedScripts[0].src).toBe('/nfc/editor-production-guard.js?v=1.0.3');
     expect(editor.appendedScripts[0].dataset.editorProductionGuard).toBe('true');
     expect(dashboard.appendedScripts).toHaveLength(0);
   });
@@ -92,6 +92,7 @@ describe('Runtime API configuration', () => {
     editor.triggerScriptLoad();
 
     expect(editor.document.documentElement.dataset.editorSaveMonitor).toBe('ready');
+    expect(editor.document.documentElement.dataset.editorSaveMonitorCount).toBe('0');
     const replacementFetch = jest.fn(async () => ({ ok: true, status: 200 }));
     editor.window.fetch = replacementFetch;
 
@@ -99,6 +100,8 @@ describe('Runtime API configuration', () => {
 
     expect(replacementFetch).toHaveBeenCalledTimes(1);
     expect(editor.markSaved).toHaveBeenCalledTimes(1);
+    expect(editor.document.documentElement.dataset.editorSaveMonitorState).toBe('saved');
+    expect(editor.document.documentElement.dataset.editorSaveMonitorCount).toBe('2');
   });
 
   it('does not confirm a failed cloud save', async () => {
@@ -109,5 +112,6 @@ describe('Runtime API configuration', () => {
     await editor.window.fetch('/api/save-design', { method: 'POST' });
 
     expect(editor.markSaved).not.toHaveBeenCalled();
+    expect(editor.document.documentElement.dataset.editorSaveMonitorState).toBe('failed-503');
   });
 });
