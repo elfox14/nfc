@@ -68,6 +68,7 @@ test('layers manage order, locks, visibility, alignment and the missing bio prev
     expect(document.querySelectorAll('.editor-alignment-tools')).toHaveLength(1);
     expect(document.getElementById('editor-layer-order')).not.toBeNull();
     expect(document.getElementById('editor-layer-locks')).not.toBeNull();
+    expect(document.getElementById('editor-layer-appearance')).not.toBeNull();
 
     const bio = window.EditorLayers.getBioElement();
     expect(bio).not.toBeNull();
@@ -91,7 +92,13 @@ test('layers manage order, locks, visibility, alignment and the missing bio prev
     name.getBoundingClientRect = () => ({ left: 10, top: 20, right: 110, bottom: 60, width: 100, height: 40 });
     expect(window.EditorLayers.align('center')).toBe(true);
     expect(Number(name.dataset.x)).toBe(90);
-    expect(name.style.transform).toBe('translate(90px, 0px)');
+    expect(name.style.transform).toBe('translate(90px, 0px) rotate(0deg) scale(1)');
+
+    expect(window.EditorLayers.setAppearance('name', { scale: 1.25, rotation: 15, opacity: 0.5 }))
+        .toEqual({ scale: 1.25, rotation: 15, opacity: 0.5 });
+    expect(name.style.transform).toBe('translate(90px, 0px) rotate(15deg) scale(1.25)');
+    expect(name.style.opacity).toBe('0.5');
+    expect(JSON.parse(document.getElementById('editor-layer-appearance').value).name.scale).toBe(1.25);
 
     expect(window.EditorLayers.toggleVisibility('name')).toBe(false);
     expect(name.hidden).toBe(true);

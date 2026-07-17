@@ -58,7 +58,8 @@
     const inputIds = {
         order: 'editor-layer-order',
         locks: 'editor-layer-locks',
-        bioPosition: 'editor-layer-bio-position'
+        bioPosition: 'editor-layer-bio-position',
+        appearance: 'editor-layer-appearance'
     };
 
     const state = {
@@ -66,12 +67,14 @@
         order: [...defaultOrder],
         locks: new Set(),
         draggedRow: null,
-        patchedDragManager: false
+        patchedDragManager: false,
+        patchedStateManager: false
     };
 
     let orderInput;
     let locksInput;
     let bioPositionInput;
+    let appearanceInput;
     let cardsWrapper;
     let bioElement;
     let guideTimer;
@@ -123,6 +126,15 @@
             };
         } catch (error) {
             return { x: 0, y: 0 };
+        }
+    }
+
+    function readObject(input) {
+        try {
+            const parsed = JSON.parse(input.value);
+            return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        } catch (error) {
+            return {};
         }
     }
 
@@ -216,11 +228,46 @@
         bioElement.dataset.y = String(position.y);
     }
 
+    function getAppearance(id) {
+        const saved = readObject(appearanceInput)[id] || {};
+        const scale = Number(saved.scale);
+        const rotation = Number(saved.rotation);
+        const opacity = Number(saved.opacity);
+        return {
+            scale: Number.isFinite(scale) ? Math.min(2, Math.max(0.25, scale)) : 1,
+            rotation: Number.isFinite(rotation) ? Math.min(180, Math.max(-180, rotation)) : 0,
+            opacity: Number.isFinite(opacity) ? Math.min(1, Math.max(0.1, opacity)) : 1
+        };
+    }
+
+    function getLayerIdForElement(element) {
+        if (!element) return null;
+        const match = definitions.find(({ id }) => getTargets(id).includes(element));
+        return match ? match.id : element.dataset.editorSelectable || null;
+    }
+
+    function applyElementTransform(element, id) {
+        if (!element) return;
+        const appearance = getAppearance(id || getLayerIdForElement(element));
+        const x = Number.parseFloat(element.dataset.x) || 0;
+        const y = Number.parseFloat(element.dataset.y) || 0;
+        element.style.transform = `translate(${x}px, ${y}px) rotate(${appearance.rotation}deg) scale(${appearance.scale})`;
+        element.style.opacity = String(appearance.opacity);
+        element.dataset.editorScale = String(appearance.scale);
+        element.dataset.editorRotation = String(appearance.rotation);
+        element.dataset.editorOpacity = String(appearance.opacity);
+    }
+
+    function applyAppearances() {
+        definitions.forEach(({ id }) => getTargets(id).forEach((element) => applyElementTransform(element, id)));
+    }
+
     function applyMetadata() {
         applyOrder();
         applyLocks();
         applyAllVisibility();
         applyBioPosition();
+        applyAppearances();
     }
 
     function persistBioPosition() {
@@ -490,6 +537,7 @@
             if (isLockedElement(event.target)) return;
             originalMove.call(this, event);
             snapElement(event.target);
+            applyElementTransform(event.target);
         };
 
         DragManager.dragEndListener = function layerDragEnd(event) {
@@ -498,6 +546,18 @@
             if (event.target.id === 'card-bio') persistBioPosition();
             emit('editor:layermove', { id: event.target.id });
             return originalEnd.call(this, event);
+        };
+        return true;
+    }
+
+    function patchStateManager() {
+        if (state.patchedStateManager || typeof StateManager === 'undefined') return false;
+        state.patchedStateManager = true;
+        const originalApplyState = StateManager.applyState;
+        StateManager.applyState = function layerAwareApplyState(...args) {
+            const result = originalApplyState.apply(this, args);
+            applyMetadata();
+            return result;
         };
         return true;
     }
@@ -579,9 +639,9 @@
     }
 
     function setElementPosition(target, x, y, save) {
-        target.style.transform = `translate(${x}px, ${y}px)`;
         target.dataset.x = String(Math.round(x * 100) / 100);
         target.dataset.y = String(Math.round(y * 100) / 100);
+        applyElementTransform(target);
         if (target.id === 'card-bio') {
             bioPositionInput.value = JSON.stringify({ x, y });
         }
@@ -589,6 +649,38 @@
             if (target.id === 'card-bio') persistBioPosition();
             else scheduleSave();
         }
+    }
+
+    function setAppearance(id, changes) {
+        if (!getDefinition(id)) return false;
+        const appearances = readObject(appearanceInput);
+        const current = getAppearance(id);
+        const next = { ...current, ...(changes || {}) };
+        next.scale = Math.min(2, Math.max(0.25, Number(next.scale) || 1));
+        next.rotation = Math.min(180, Math.max(-180, Number(next.rotation) || 0));
+        next.opacity = Math.min(1, Math.max(0.1, Number(next.opacity) || 1));
+        appearances[id] = next;
+        writeMetadata(appearanceInput, appearances, 'appearance');
+        getTargets(id).forEach((element) => applyElementTransform(element, id));
+        emit('editor:layerappearancechange', { id, appearance: { ...next } });
+        return { ...next };
+    }
+
+    function setPosition(id, x, y) {
+        const target = getPrimaryTarget(id);
+        if (!target || isLockedElement(target)) return false;
+        setElementPosition(target, Number(x) || 0, Number(y) || 0, true);
+        emit('editor:layermove', { id, x: Number(x) || 0, y: Number(y) || 0, source: 'inspector' });
+        return true;
+    }
+
+    function resetTransform(id) {
+        const target = getPrimaryTarget(id);
+        if (!target || isLockedElement(target)) return false;
+        setAppearance(id, { scale: 1, rotation: 0, opacity: 1 });
+        setElementPosition(target, 0, 0, true);
+        emit('editor:layertransformreset', { id });
+        return true;
     }
 
     function ensureGuide(card, axis) {
@@ -704,7 +796,7 @@
             control.addEventListener('change', () => applyVisibility(id));
         });
 
-        [orderInput, locksInput, bioPositionInput].forEach((input) => {
+        [orderInput, locksInput, bioPositionInput, appearanceInput].forEach((input) => {
             input.addEventListener('input', applyMetadata);
             input.addEventListener('change', applyMetadata);
         });
@@ -717,12 +809,14 @@
         orderInput = ensureHiddenInput(inputIds.order, JSON.stringify(defaultOrder));
         locksInput = ensureHiddenInput(inputIds.locks, '[]');
         bioPositionInput = ensureHiddenInput(inputIds.bioPosition, '{"x":0,"y":0}');
+        appearanceInput = ensureHiddenInput(inputIds.appearance, '{}');
         state.order = readArray(orderInput, defaultOrder);
         state.locks = new Set(readArray(locksInput, []));
 
         createBioElement();
         setupGlobalEvents();
         patchDragManager();
+        patchStateManager();
         wireBioDrag();
         applyMetadata();
         setupLayerList();
@@ -736,6 +830,7 @@
 
         global.setTimeout(() => {
             patchDragManager();
+            patchStateManager();
             wireBioDrag();
             applyMetadata();
             updateBioElement();
@@ -749,11 +844,20 @@
         init: initialize,
         getOrder: () => [...state.order],
         getLocks: () => [...state.locks],
+        isVisible,
         getTargets,
+        getAppearance,
+        getPosition: (id) => {
+            const target = getPrimaryTarget(id);
+            return target ? { x: Number.parseFloat(target.dataset.x) || 0, y: Number.parseFloat(target.dataset.y) || 0 } : null;
+        },
         move: moveLayer,
         toggleLock,
         toggleVisibility,
         align: alignSelected,
+        setAppearance,
+        setPosition,
+        resetTransform,
         apply: applyMetadata,
         getBioElement: () => bioElement
     };
