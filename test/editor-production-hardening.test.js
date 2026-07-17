@@ -3,10 +3,8 @@
  */
 
 describe('editor production hardening', () => {
-    beforeEach(() => {
-        jest.resetModules();
+    beforeAll(() => {
         document.documentElement.lang = 'en';
-        document.documentElement.removeAttribute('data-editor-shell');
         document.body.innerHTML = `
             <div id="autosave-indicator"><i></i><span id="autosave-status"></span></div>
             <input id="design-name" />
@@ -27,6 +25,10 @@ describe('editor production hardening', () => {
         if (document.documentElement.dataset.editorShell !== 'ready') {
             document.dispatchEvent(new Event('DOMContentLoaded'));
         }
+    });
+
+    beforeEach(() => {
+        window.EditorProduction.markSaved('cloud');
     });
 
     test('marks form edits as unsaved and exposes the release version', () => {
