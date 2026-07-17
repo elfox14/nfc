@@ -6,10 +6,14 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: node-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js 22
@@ -19,12 +23,27 @@ jobs:
         cache: npm
     - run: npm install
     - run: npm run lint
-    - run: npm test -- --runInBand
+    - name: Run Jest tests
+      shell: bash
+      run: |
+        if ! npm test -- --runInBand > jest-output.log 2>&1; then
+          echo "Jest failed. Last 180 lines:"
+          tail -n 180 jest-output.log
+          exit 1
+        fi
+        tail -n 40 jest-output.log
+    - name: Upload Jest diagnostics
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: jest-output
+        path: jest-output.log
+        retention-days: 7
     - run: npm audit --omit=dev --audit-level=critical
 
   browser:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js 22
@@ -33,7 +52,7 @@ jobs:
         node-version: 22.x
         cache: npm
     - run: npm install
-    - run: npx playwright install --with-deps chromium
+    - run: npx playwright install --with-deps chromium webkit
     - run: npm run test:e2e
     - name: Upload Playwright report
       if: ${{ !cancelled() }}
@@ -41,4 +60,11 @@ jobs:
       with:
         name: playwright-report
         path: playwright-report/
+        retention-days: 14
+    - name: Upload browser failure evidence
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-test-results
+        path: test-results/
         retention-days: 14
