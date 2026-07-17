@@ -14,25 +14,29 @@ async function flushMicrotasks(rounds = 6) {
   for (let index = 0; index < rounds; index += 1) await Promise.resolve();
 }
 
-function boot(initialState = { inputs: { name: 'Initial' } }) {
-  let currentState = JSON.parse(JSON.stringify(initialState));
+function prepareDom() {
   document.documentElement.lang = 'en';
   document.body.innerHTML = '<div id="autosave-indicator"><i></i><span id="autosave-status"></span></div><main class="pro-layout"><input id="input-name_en" value="Initial"></main>';
-
   Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: true });
   window.navigator.sendBeacon = jest.fn(() => true);
   window.EditorUIState = { set: jest.fn((state, message) => {
     document.getElementById('autosave-status').textContent = message;
     document.getElementById('autosave-indicator').dataset.uiState = state;
   }) };
+  window.ShareManager = { saveDesign: jest.fn(async () => 'card-1') };
+  const networkFetch = jest.fn(async () => ({ ok: true, status: 200, json: async () => ({ success: true, id: 'card-1' }) }));
+  window.fetch = networkFetch;
+  return networkFetch;
+}
+
+function boot(initialState = { inputs: { name: 'Initial' } }) {
+  let currentState = JSON.parse(JSON.stringify(initialState));
+  const networkFetch = prepareDom();
   window.StateManager = {
     getStateObject: jest.fn(() => currentState),
     applyState: jest.fn((next) => { currentState = JSON.parse(JSON.stringify(next)); }),
     saveDebounced: jest.fn()
   };
-  window.ShareManager = { saveDesign: jest.fn(async () => 'card-1') };
-  const networkFetch = jest.fn(async () => ({ ok: true, status: 200, json: async () => ({ success: true, id: 'card-1' }) }));
-  window.fetch = networkFetch;
 
   window.eval(source);
   document.dispatchEvent(new Event('DOMContentLoaded'));
@@ -51,6 +55,11 @@ describe('EditorProductionGuard', () => {
     localStorage.clear();
     delete window.EditorProductionGuard;
     delete window.__MC_PRIME_RELEASE;
+    delete window.StateManager;
+    delete window.StateManagerProxy;
+    delete window.editorState;
+    delete document.documentElement.dataset.editorWorkspace;
+    delete document.documentElement.dataset.editorProduction;
   });
 
   afterEach(() => {
@@ -62,6 +71,24 @@ describe('EditorProductionGuard', () => {
     expect(document.documentElement.dataset.editorProduction).toBe('ready');
     expect(document.documentElement.dataset.editorDirty).toBe('false');
     expect(guard.getState()).toMatchObject({ initialized: true, armed: true, dirty: false });
+  });
+
+  it('arms from workspace readiness and stores form state without a global StateManager', () => {
+    prepareDom();
+    document.documentElement.dataset.editorWorkspace = 'ready';
+    window.eval(source);
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    jest.advanceTimersByTime(1);
+
+    expect(window.EditorProductionGuard.getState()).toMatchObject({ initialized: true, armed: true });
+    const input = document.getElementById('input-name_en');
+    input.value = 'Workspace fallback';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    jest.advanceTimersByTime(400);
+
+    const draft = JSON.parse(localStorage.getItem('mcprime:editor-draft:v1:new:en'));
+    expect(draft.state.__productionFallback).toBe(true);
+    expect(draft.state.fields['input-name_en'].value).toBe('Workspace fallback');
   });
 
   it('marks changes dirty and stores a recoverable local draft', () => {
