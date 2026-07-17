@@ -230,7 +230,12 @@
   }
 
   function beginSave(source) {
-    const token = { id: ++saveSequence, revision: state.revision, source };
+    const token = {
+      id: ++saveSequence,
+      revision: state.revision,
+      fingerprint: fingerprint(snapshot()),
+      source
+    };
     state.activeSaves += 1;
     state.saving = true;
     state.lastError = null;
@@ -245,10 +250,12 @@
     state.saving = state.activeSaves > 0;
     state.lastSavedAt = Date.now();
     state.lastError = null;
-    if (token.revision >= state.revision) {
+    const currentFingerprint = fingerprint(snapshot());
+    const contentMatches = Boolean(token.fingerprint && token.fingerprint === currentFingerprint);
+    if (token.revision >= state.revision || contentMatches) {
       state.savedRevision = state.revision;
       state.dirty = false;
-      savedFingerprint = fingerprint(snapshot());
+      savedFingerprint = currentFingerprint;
       removeDraft();
     } else {
       state.dirty = true;
@@ -462,7 +469,12 @@
 
   global.EditorProductionGuard = {
     init: initialize, markDirty, flush, persistDraft, discardDraft: removeDraft,
-    markSaved: () => finishSave({ id: ++saveSequence, revision: state.revision, source: 'manual' }),
+    markSaved: () => finishSave({
+      id: ++saveSequence,
+      revision: state.revision,
+      fingerprint: fingerprint(snapshot()),
+      source: 'manual'
+    }),
     getState: () => ({
       initialized: state.initialized, armed: state.armed, dirty: state.dirty, saving: state.saving,
       offline: state.offline, revision: state.revision, savedRevision: state.savedRevision,
