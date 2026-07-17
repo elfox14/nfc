@@ -28,15 +28,26 @@
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
-  if (!isEditor || document.querySelector('script[data-editor-production-guard]')) return;
+  if (!isEditor) return;
 
-  const guard = document.createElement('script');
-  guard.src = '/nfc/editor-production-guard.js?v=1.0.0';
-  guard.async = false;
-  guard.dataset.editorProductionGuard = 'true';
-  guard.addEventListener('error', () => {
-    document.documentElement.dataset.editorProduction = 'load-error';
-    console.error('[RuntimeConfig] Failed to load editor production guard.');
-  });
-  document.head.appendChild(guard);
+  function loadProductionGuard() {
+    if (document.querySelector('script[data-editor-production-guard]')) return;
+    const guard = document.createElement('script');
+    guard.src = '/nfc/editor-production-guard.js?v=1.0.1';
+    guard.async = false;
+    guard.dataset.editorProductionGuard = 'true';
+    guard.addEventListener('error', () => {
+      document.documentElement.dataset.editorProduction = 'load-error';
+      console.error('[RuntimeConfig] Failed to load editor production guard.');
+    });
+    document.head.appendChild(guard);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      window.setTimeout(loadProductionGuard, 0);
+    }, { once: true });
+  } else {
+    loadProductionGuard();
+  }
 }());
