@@ -1,0 +1,69 @@
+:root {
+  --editor-toolbar-offset: 88px;
+}
+
+.editor-body {
+  padding-top: var(--editor-toolbar-offset) !important;
+}
+
+.editor-body .pro-layout {
+  height: calc(100dvh - var(--editor-toolbar-offset)) !important;
+  min-height: calc(100vh - var(--editor-toolbar-offset)) !important;
+}
+
+@media (min-width: 1025px) and (max-width: 1920px) {
+  .editor-body .pro-toolbar {
+    padding-inline: 14px !important;
+    column-gap: 12px !important;
+  }
+
+  .editor-body .tb-zone {
+    gap: 8px !important;
+  }
+
+  .editor-body .tb-divider {
+    margin-inline: 0 !important;
+  }
+
+  .editor-body :where(.tb-action-btn, .tb-cta-btn) {
+    height: 38px !important;
+    padding-inline: 10px !important;
+  }
+
+  .editor-body .tb-icon-btn {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .editor-body .tb-logo-text {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1600px) {
+  .editor-body .tb-nav-icons,
+  .editor-body .tb-divider {
+    display: none !important;
+  }
+
+  .editor-body .tb-center .tb-label,
+  .editor-body .download-container .tb-label {
+    display: none !important;
+  }
+
+  .editor-body .tb-center .tb-action-btn,
+  .editor-body .download-container > .tb-action-btn {
+    width: 40px !important;
+    padding-inline: 0 !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --editor-toolbar-offset: 74px;
+  }
+
+  .editor-body .pro-layout {
+    min-height: calc(100dvh - var(--editor-toolbar-offset)) !important;
+  }
+}

@@ -1,5 +1,6 @@
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const STATIC_CACHE = `mcprime-static-${CACHE_VERSION}`;
+const EDITOR_STYLE_PATCH = '/nfc/editor-toolbar-release.css';
 
 const PRECACHE_ASSETS = [
   '/nfc/offline.html',
@@ -11,6 +12,7 @@ const PRECACHE_ASSETS = [
   '/nfc/error-reporter.js',
   '/nfc/runtime-config.js',
   '/nfc/editor-production-guard.js',
+  EDITOR_STYLE_PATCH,
   '/nfc/manifest.json',
   '/nfc/logo.svg',
   '/nfc/mcprime-logo-optimized.webp',
@@ -82,6 +84,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (isEditorStylesheet(url.pathname)) {
+    event.respondWith(editorStylesWithPatch(request));
+    return;
+  }
+
   if (isStaticAsset(url.pathname)) {
     event.respondWith(staleWhileRevalidate(request));
   }
@@ -101,6 +108,44 @@ async function networkFirstWithFallback(request) {
 
     const offlineCached = await caches.match(OFFLINE_PAGE);
     return offlineCached || new Response('Offline', { status: 503, statusText: 'Offline' });
+  }
+}
+
+async function editorStylesWithPatch(request) {
+  const cache = await caches.open(STATIC_CACHE);
+
+  try {
+    const patchPromise = fetch(`${EDITOR_STYLE_PATCH}?release=${CACHE_VERSION}`, { cache: 'no-store' })
+      .catch(() => null);
+    const baseResponse = await fetch(request);
+    const patchResponse = await patchPromise;
+
+    if (!baseResponse.ok) return baseResponse;
+
+    const baseCss = await baseResponse.text();
+    const patchCss = patchResponse && patchResponse.ok ? await patchResponse.text() : '';
+    const headers = new Headers(baseResponse.headers);
+    headers.set('content-type', 'text/css; charset=utf-8');
+    headers.delete('content-length');
+
+    const combinedResponse = new Response(
+      `${baseCss}\n\n/* MC PRIME toolbar release patch ${CACHE_VERSION} */\n${patchCss}`,
+      {
+        status: baseResponse.status,
+        statusText: baseResponse.statusText,
+        headers,
+      }
+    );
+
+    if (canCacheResponse(request, combinedResponse)) {
+      await cache.put(request, combinedResponse.clone());
+    }
+
+    return combinedResponse;
+  } catch (error) {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    return new Response('', { status: 408, statusText: 'Offline' });
   }
 }
 
@@ -127,6 +172,10 @@ function isHtmlRequest(request, url) {
   return request.headers.get('accept')?.includes('text/html') ||
     url.pathname.endsWith('.html') ||
     url.pathname.endsWith('/');
+}
+
+function isEditorStylesheet(pathname) {
+  return pathname.endsWith('/editor-design-system.css');
 }
 
 function isStaticAsset(pathname) {
