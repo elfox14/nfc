@@ -1,5 +1,5 @@
-Warning: truncated output (original token count: 41911)
-Total output lines: 2534
+Warning: truncated output (original token count: 41854)
+Total output lines: 2530
 
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -40,7 +40,6 @@ Total output lines: 2534
     <link rel="stylesheet" href="style.css?v=2.2">
     <link rel="stylesheet" href="mobile.css?v=2.2">
     <link rel="stylesheet" href="toast.css">
-    <link rel="stylesheet" href="editor-enhancements.css?v=3.5">
     <link rel="stylesheet" href="toolbar-enhancements.css?v=1.3">
     <link rel="stylesheet" href="logo-panel.css?v=1.3">
     <link rel="stylesheet" href="ai-suggestion-panel.css?v=1.0">
@@ -64,10 +63,8 @@ Total output lines: 2534
     <script src="script-card.js" defer></script>
     <script src="script-main.js" defer></script>
 
-    <script src="editor-enhancements.js" defer></script>
     <script src="editor-user-status.js" defer></script>
     <script src="ai-backgrounds.js" defer></script>
-    <script src="editor-tour.js" defer></script>
     <script src="editor-panels.js" defer></script>
     <script src="editor-shell.js?v=1.0" defer></script>
     <script src="editor-workspace.js?v=1.0" defer></script>
@@ -1280,7 +1277,10 @@ Total output lines: 2534
                                     <div class="lp-slider-wrap">
                                         <input type="range" id="phone-btn-font-size" min="10" max="24" value="12"
                                             class="lp-slider"
-                                            oninput="this.nextElementSibling.tex…1911 tokens truncated…ondary);">ارفع صورة QR (أقل من
+                                            oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">12px</span>
+                                    </div>
+                     …1854 tokens truncated…    <span style="font-size:0.78rem;color:var(--text-secondary);">ارفع صورة QR (أقل من
                                     2MB)</span>
                                 <input type="file" id="input-qr-upload" accept="image/*" style="display:none;">
                             </div>
@@ -2424,7 +2424,6 @@ Total output lines: 2534
     </div>
 
     <!-- Existing editor enhancements -->
-    <script src="editor-premium-v2.js" defer></script>
 
 
     <script src="/nfc/cookie-consent.js" defer></script>
