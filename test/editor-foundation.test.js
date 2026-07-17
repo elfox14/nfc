@@ -40,13 +40,21 @@ describe.each(editorFiles)('%s foundation', (file) => {
         expect(document.querySelectorAll('#autosave-indicator')).toHaveLength(1);
     });
 
-    test('loads the shared shell and Design System exactly once', () => {
+    test('loads the shared shell, workspace and Design System exactly once', () => {
         const { document } = loadEditor(file);
 
         expect(document.querySelectorAll('script[src^="editor-shell.js"]')).toHaveLength(1);
+        expect(document.querySelectorAll('script[src^="editor-workspace.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('link[href^="editor-design-system.css"]')).toHaveLength(1);
         expect(document.querySelector('script[src="toolbar-tab-nav.js"]')).toBeNull();
         expect(document.querySelectorAll('style')).toHaveLength(0);
+    });
+
+    test('provides stable inspector targets for the logo and photo', () => {
+        const { document } = loadEditor(file);
+
+        expect(document.getElementById('logo-accordion')).not.toBeNull();
+        expect(document.getElementById('photo-accordion')).not.toBeNull();
     });
 
     test('uses named commands instead of legacy trigger proxies', () => {
