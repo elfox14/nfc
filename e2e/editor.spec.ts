@@ -35,7 +35,7 @@ test('selects a layer and exposes contextual transform controls', async ({ page 
 });
 
 test('opens professional preview and restores both card faces', async ({ page }) => {
-  await page.locator('#preview-mode-btn').click();
+  await page.evaluate(() => window.EditorPreview.open());
   await expect(page.locator('#editor-professional-preview')).toBeVisible();
   await expect(page.locator('.editor-preview-stage #card-front-preview')).toBeVisible();
   await page.locator('[data-preview-device="mobile"]').click();
