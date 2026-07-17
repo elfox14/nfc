@@ -46,8 +46,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
 
     <!-- ملفات الجافاسكريبت الخاصة بالمشروع (الترتيب مهم) -->
     <script src="lang-switcher.js" defer></script>
@@ -64,7 +62,6 @@
     <script src="editor-enhancements.js" defer></script>
     <script src="editor-user-status.js" defer></script>
     <script src="ai-backgrounds.js" defer></script>
-    <script src="editor-tour.js" defer></script>
     <script src="editor-panels.js" defer></script>
 
     <style>
@@ -283,14 +280,6 @@
                     aria-label="More Options">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
-                <ul id="toolbar-more-menu" class="tb-mobile-more-menu">
-                    <li><a href="index.html" class="tb-dropdown-item"><i class="fas fa-home"></i> الرئيسية</a></li>
-                    <li><a href="gallery.html" class="tb-dropdown-item"><i class="fas fa-images"></i> المعرض</a></li>
-                    <li><a href="blog.html" class="tb-dropdown-item"><i class="fas fa-newspaper"></i> المدونة</a></li>
-                    <div class="tb-dropdown-divider"></div>
-                    <li><button id="reset-design-btn-more" class="tb-dropdown-item tb-danger"><i
-                                class="fas fa-trash-alt"></i> مسح التصميم</button></li>
-                </ul>
             </div>
 
         </div>
@@ -2146,12 +2135,6 @@
                     </button>
                 </div>
                 <div class="form-group" style="margin-top: 10px;">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-html"
-                        style="width: 100%;">
-                        <i class="fas fa-globe"></i> ملف ويب (HTML)
-                    </button>
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-qrcode"
                         style="width: 100%;">
                         <i class="fas fa-qrcode"></i> رمز QR Code
@@ -2567,30 +2550,7 @@
     <script src="toolbar-tab-nav.js"></script>
     <script src="editor-premium-v2.js" defer></script>
 
-    <!-- Toolbar Dropdowns & Mobile Fallbacks -->
-    <script>
-        // ── Mobile Proxy Bindings ──────────────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', function () {
-            // Buttons with data-trigger-id automatically click their desktop counterparts
-            document.querySelectorAll('[data-trigger-id]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const targetId = btn.getAttribute('data-trigger-id');
-                    const targetBtn = document.getElementById(targetId);
-                    if (targetBtn) targetBtn.click();
-                });
-            });
-
-            // Buttons with specific IDs ending in -menu also proxy (fallback)
-            document.querySelectorAll('[id$="-menu"]').forEach(btn => {
-                const baseId = btn.id.replace('-menu', '');
-                const targetBtn = document.getElementById(baseId);
-                if (targetBtn) {
-                    btn.addEventListener('click', () => targetBtn.click());
-                }
-            });
-        });
-    </script>
-
+    <!-- Toolbar Dropdowns -->
     <script>
         // ── Toolbar Dropdowns: Tools & Download ────────────────────────────────────
         (function () {
@@ -2657,20 +2617,6 @@
                     });
                 });
 
-                // 2. Mobile 'More' Menu Toggle
-                const moreBtn = document.getElementById('toolbar-more-btn');
-                const moreMenu = document.getElementById('toolbar-more-menu-floating');
-                if (moreBtn && moreMenu) {
-                    moreBtn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        moreMenu.classList.toggle('show');
-                    });
-                    document.addEventListener('click', function (e) {
-                        if (!moreMenu.contains(e.target) && e.target !== moreBtn) {
-                            moreMenu.classList.remove('show');
-                        }
-                    });
-                }
             });
         })();
     </script>

@@ -9,14 +9,14 @@
     var isAr = document.documentElement.lang !== 'en';
     var selectedElement = null, inspector = null, titleEl = null, typeEl = null, statusEl = null, opacityInput = null, opacityOutput = null, advancedButton = null;
     var elementMap = [
-        { match: /logo/i, labelAr: 'الشعار', labelEn: 'Logo', controls: ['logo-fieldset', 'logo-controls-fieldset'] },
+        { match: /logo/i, labelAr: 'الشعار', labelEn: 'Logo', controls: ['logo-drop-zone'] },
         { match: /photo|avatar|profile/i, labelAr: 'الصورة الشخصية', labelEn: 'Profile photo', controls: ['photo-controls-fieldset'] },
-        { match: /name/i, labelAr: 'الاسم', labelEn: 'Name', controls: ['name-controls-fieldset', 'text-controls-fieldset'] },
-        { match: /tagline|job|title/i, labelAr: 'المسمى الوظيفي', labelEn: 'Job title', controls: ['tagline-controls-fieldset', 'text-controls-fieldset'] },
-        { match: /qr/i, labelAr: 'رمز QR', labelEn: 'QR code', controls: ['qr-controls-fieldset'] },
-        { match: /phone/i, labelAr: 'الهاتف', labelEn: 'Phone', controls: ['phone-controls-fieldset'] },
-        { match: /email/i, labelAr: 'البريد الإلكتروني', labelEn: 'Email', controls: ['email-controls-fieldset'] },
-        { match: /social|facebook|instagram|linkedin|twitter|tiktok|youtube|telegram|snapchat/i, labelAr: 'رابط اجتماعي', labelEn: 'Social link', controls: ['social-controls-wrapper'] }
+        { match: /name/i, labelAr: 'الاسم', labelEn: 'Name', controls: ['name-accordion'] },
+        { match: /tagline|job|title/i, labelAr: 'المسمى الوظيفي', labelEn: 'Job title', controls: ['tagline-accordion'] },
+        { match: /qr/i, labelAr: 'رمز QR', labelEn: 'QR code', controls: ['qr-code-accordion'] },
+        { match: /phone/i, labelAr: 'الهاتف', labelEn: 'Phone', controls: ['phones-accordion'] },
+        { match: /email/i, labelAr: 'البريد الإلكتروني', labelEn: 'Email', controls: ['contact-info-accordion'] },
+        { match: /social|facebook|instagram|linkedin|twitter|tiktok|youtube|telegram|snapchat/i, labelAr: 'رابط اجتماعي', labelEn: 'Social link', controls: ['contact-info-accordion'] }
     ];
     function getDescriptor(element) {
         var key = [element.id, element.className, element.getAttribute('data-element-type'), element.getAttribute('aria-label')].filter(Boolean).join(' ');
@@ -69,6 +69,8 @@
         selectedElement.style.opacity = String(Number(value) / 100);
         opacityOutput.value = value + '%'; opacityOutput.textContent = value + '%';
         selectedElement.dispatchEvent(new global.Event('input', { bubbles: true }));
+        document.dispatchEvent(new global.CustomEvent('editor:mutation', { detail: { type: 'opacity', element: selectedElement, value: Number(value) } }));
+        if (global.StateManager && typeof global.StateManager.saveDebounced === 'function') global.StateManager.saveDebounced();
     }
     function buildInspector() {
         var layout = document.querySelector('.pro-layout');
@@ -94,24 +96,10 @@
         style.textContent = '.editor-context-inspector{width:280px;min-width:260px;max-width:320px;padding:18px;background:var(--sidebar-bg,#0d1b2e);border-inline-start:1px solid rgba(77,166,255,.16);box-sizing:border-box;overflow:auto;color:var(--text-primary)}.eci-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}.eci-eyebrow{display:block;font-size:.68rem;color:var(--text-secondary);margin-bottom:4px}.eci-header h2{font-size:1rem;margin:0}.eci-status{font-size:.68rem;padding:4px 8px;border-radius:999px;background:rgba(46,204,113,.12);color:#2ecc71}.eci-status[data-state="hidden"]{background:rgba(231,76,60,.12);color:#e74c3c}.eci-section{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:12px;margin-bottom:10px}.eci-label,.eci-range-label{font-size:.72rem;color:var(--text-secondary)}.eci-section code{display:block;margin-top:6px;color:var(--accent-primary,#4da6ff);overflow:hidden;text-overflow:ellipsis}.eci-range-label{display:flex;justify-content:space-between;margin-bottom:8px}.eci-section input[type="range"]{width:100%;accent-color:var(--accent-primary,#4da6ff)}.eci-primary{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border:0;border-radius:10px;background:var(--accent-primary,#4da6ff);color:#fff;font-family:inherit;font-weight:700;cursor:pointer}.eci-primary:hover{filter:brightness(1.08)}.eci-primary:focus-visible{outline:2px solid #fff;outline-offset:2px}.eci-help{font-size:.72rem;line-height:1.6;color:var(--text-secondary);margin:12px 2px 0}.editor-selected-element{outline:2px solid var(--accent-primary,#4da6ff)!important;outline-offset:3px!important}.editor-inspector-highlight{animation:eciPulse .8s ease 2}@keyframes eciPulse{50%{box-shadow:0 0 0 4px rgba(77,166,255,.25)}}@media(max-width:1024px){.editor-context-inspector{display:none}}';
         document.head.appendChild(style);
     }
-    function loadScript(src, marker) {
-        if (document.querySelector('script[' + marker + ']')) return;
-        var script = document.createElement('script'); script.src = src; script.defer = true; script.setAttribute(marker, 'true'); document.head.appendChild(script);
-    }
     function init() {
         if (!buildInspector()) { global.setTimeout(init, 250); return; }
         document.addEventListener('click', function (event) { var element = getSelectable(event.target); if (element && element.dataset.editorLayerLocked !== 'true') setSelected(element); }, true);
-        if (!global.EditorLayersPanel) loadScript('editor-layers-panel.js?v=1.0', 'data-editor-layers-loader');
-        if (!global.EditorSmartAlignment) loadScript('editor-smart-alignment.js?v=1.0', 'data-editor-alignment-loader');
-        if (!global.EditorMultiSelect) loadScript('editor-multi-select.js?v=1.0', 'data-editor-multi-loader');
-        if (!global.EditorCommandSurface) loadScript('editor-command-surface.js?v=1.1', 'data-editor-command-surface-loader');
-        if (!global.EditorHistoryBridge) loadScript('editor-history-bridge.js?v=1.0', 'data-editor-history-loader');
-        if (!global.EditorExtensionPersistence) loadScript('editor-extension-persistence.js?v=1.0', 'data-editor-extension-persistence-loader');
-        if (!global.EditorSmartValidation) loadScript('editor-smart-validation.js?v=1.0', 'data-editor-smart-validation-loader');
-        if (!global.EditorPublishGate) loadScript('editor-publish-gate.js?v=1.0', 'data-editor-publish-gate-loader');
-        if (!global.EditorOnboarding) loadScript('editor-onboarding.js?v=1.1', 'data-editor-onboarding-loader');
-        if (!global.EditorSimpleMode) loadScript('editor-simple-mode.js?v=1.0', 'data-editor-simple-mode-loader');
-        if (!global.EditorDesignSystem) loadScript('editor-design-system.js?v=1.0', 'data-editor-design-system-loader');
+        document.dispatchEvent(new global.CustomEvent('editor:contextready', { detail: { inspector: inspector } }));
     }
     global.EditorContextInspector = { select: setSelected, getSelected: function () { return selectedElement; } };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
