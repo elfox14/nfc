@@ -40,15 +40,11 @@
 
     function initEditorEnhancements() {
         // createProgressBar(); // Disabled - user requested removal
-        initAutoSave();
-        initKeyboardShortcuts();
+        // Saving, shortcuts and proxy actions are owned by editor-shell.js.
         initFullPreviewMode();
         initZoomControls();
-        createMobileBottomToolbar();
         enhanceAccordions();
         initTrialBanner();
-        initMoreMenu();
-        initAutoSaveIndicator();
         initBeforeAfter();
 
         init3DPreview();
