@@ -43,14 +43,77 @@
     document.dispatchEvent(new global.CustomEvent(name, { detail }));
   }
 
+  function clone(value) {
+    return value == null ? null : JSON.parse(JSON.stringify(value));
+  }
+
+  function captureFormFallback() {
+    const fields = {};
+    document.querySelectorAll('.pro-layout input[id],.pro-layout textarea[id],.pro-layout select[id]').forEach((input) => {
+      if (['button', 'submit', 'reset', 'file'].includes(String(input.type || '').toLowerCase())) return;
+      fields[input.id] = {
+        value: input.value,
+        checked: Boolean(input.checked),
+        type: String(input.type || input.tagName || '').toLowerCase()
+      };
+    });
+    return Object.keys(fields).length ? { __productionFallback: true, fields } : null;
+  }
+
   function snapshot() {
     try {
-      if (!global.StateManager || typeof global.StateManager.getStateObject !== 'function') return null;
-      const value = global.StateManager.getStateObject();
-      return value ? JSON.parse(JSON.stringify(value)) : null;
+      if (typeof global.StateManager?.getStateObject === 'function') {
+        const value = global.StateManager.getStateObject();
+        return value ? clone(value) : null;
+      }
+      if (global.editorState && typeof global.editorState === 'object' && Object.keys(global.editorState).length) {
+        return clone(global.editorState);
+      }
+      return captureFormFallback();
     } catch (error) {
       report(error, 'capture-state');
-      return null;
+      return captureFormFallback();
+    }
+  }
+
+  function restoreSnapshot(savedState) {
+    const value = clone(savedState);
+    if (!value) return false;
+    try {
+      if (typeof global.StateManager?.applyState === 'function') {
+        global.StateManager.applyState(value, true);
+        return true;
+      }
+      if (!value.__productionFallback && typeof global.StateManagerProxy?.batch === 'function') {
+        global.StateManagerProxy.batch((current) => {
+          Object.keys(current).forEach((key) => { delete current[key]; });
+          Object.assign(current, value);
+        });
+        return true;
+      }
+      if (!value.__productionFallback && global.editorState && typeof global.editorState === 'object') {
+        Object.keys(global.editorState).forEach((key) => { delete global.editorState[key]; });
+        Object.assign(global.editorState, value);
+        document.dispatchEvent(new global.CustomEvent('editor:state-restored'));
+        return true;
+      }
+      const fields = value.fields || value.inputs;
+      if (!fields || typeof fields !== 'object') return false;
+      Object.entries(fields).forEach(([id, entry]) => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        const normalized = entry && typeof entry === 'object' && Object.hasOwn(entry, 'value')
+          ? entry
+          : { value: entry };
+        if ('checked' in normalized && ('checked' in input)) input.checked = Boolean(normalized.checked);
+        if ('value' in normalized) input.value = normalized.value == null ? '' : String(normalized.value);
+        input.dispatchEvent(new global.Event('input', { bubbles: true }));
+        input.dispatchEvent(new global.Event('change', { bubbles: true }));
+      });
+      return true;
+    } catch (error) {
+      report(error, 'restore-state');
+      return false;
     }
   }
 
@@ -284,8 +347,7 @@
     recoveryBanner.innerHTML = `<div class="editor-recovery-copy"><strong>${text.found}</strong><span>${text.hint}</span></div><div class="editor-recovery-actions"><button type="button" class="editor-recovery-restore">${text.restore}</button><button type="button" class="editor-recovery-discard">${text.discard}</button></div>`;
     document.body.append(recoveryBanner);
     recoveryBanner.querySelector('.editor-recovery-restore').addEventListener('click', () => {
-      if (!global.StateManager?.applyState) return;
-      global.StateManager.applyState(JSON.parse(JSON.stringify(draft.state)), true);
+      if (!restoreSnapshot(draft.state)) return;
       state.revision = Math.max(state.revision + 1, Number(draft.revision) || 1);
       state.dirty = true;
       state.lastError = null;
@@ -360,20 +422,29 @@
         userAgent: String(global.navigator?.userAgent || '').slice(0, 120), timestamp: new Date().toISOString(),
         release, context
       });
-      if (global.navigator?.sendBeacon) global.navigator.sendBeacon('/api/client-error', new Blob([body], { type: 'application/json' }));
-      else global.fetch?.('/api/client-error', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => undefined);
+      const apiBase = String(global.__API_BASE_URL || '').replace(/\/+$/, '');
+      const endpoint = `${apiBase}/api/client-error`;
+      if (global.navigator?.sendBeacon) global.navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }));
+      else global.fetch?.(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => undefined);
     } catch (_error) { /* telemetry must never break editing */ }
   }
 
+  function hasSerializableState() {
+    return typeof global.StateManager?.getStateObject === 'function' ||
+      Boolean(global.editorState && typeof global.editorState === 'object' && Object.keys(global.editorState).length);
+  }
+
   function arm(attempt) {
-    if (global.StateManager?.getStateObject || attempt >= 80) {
+    const workspaceReady = document.documentElement.dataset.editorWorkspace === 'ready';
+    const stateReady = hasSerializableState();
+    if (stateReady || workspaceReady || attempt >= 30) {
       savedFingerprint = fingerprint(snapshot());
       state.armed = true;
       state.initialized = true;
       syncRoot();
       renderStatus();
-      global.setTimeout(inspectRecovery, 120);
-      emit('editor:productionready', { release, degraded: !global.StateManager?.getStateObject });
+      global.setTimeout(inspectRecovery, stateReady ? 120 : 500);
+      emit('editor:productionready', { release, degraded: !stateReady });
       return;
     }
     global.setTimeout(() => arm(attempt + 1), 100);
