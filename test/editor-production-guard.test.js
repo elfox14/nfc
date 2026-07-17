@@ -142,6 +142,26 @@ describe('EditorProductionGuard', () => {
     expect(document.getElementById('autosave-status').textContent).toBe('Saved to cloud');
   });
 
+  it('clears dirty state when a delayed duplicate event does not change content', async () => {
+    const context = boot();
+    const pending = deferred();
+    context.networkFetch.mockReset().mockImplementationOnce(() => pending.promise);
+
+    context.setState({ inputs: { name: 'Changed' } });
+    context.guard.markDirty('first');
+    jest.advanceTimersByTime(1);
+    const save = window.fetch('/api/save-design', { method: 'POST', body: '{}' });
+    await flushMicrotasks();
+
+    context.guard.markDirty('duplicate-event');
+    jest.advanceTimersByTime(1);
+    expect(context.guard.getState().revision).toBe(2);
+
+    pending.resolve({ ok: true, status: 200 });
+    await save;
+    expect(context.guard.getState().dirty).toBe(false);
+  });
+
   it('keeps newer changes dirty when an older save finishes', async () => {
     const context = boot();
     const pending = deferred();
