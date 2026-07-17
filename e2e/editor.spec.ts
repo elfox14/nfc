@@ -35,6 +35,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/nfc/editor.html', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('html')).toHaveAttribute('data-editor-workspace', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-production', 'ready');
+  await expect(page.locator('html')).toHaveAttribute('data-editor-save-monitor', 'ready');
 });
 
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {
@@ -71,15 +72,31 @@ test('protects unsaved work and confirms a cloud save', async ({ page }) => {
   });
   expect(unloadPrevented).toBe(true);
 
-  await page.evaluate(async () => {
-    await fetch('/api/save-design', {
+  const saveResult = await page.evaluate(async () => {
+    const response = await fetch('/api/save-design', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ inputs: { 'input-name_ar': 'اختبار الحفظ الإنتاجي' } })
     });
+    await new Promise(resolve => setTimeout(resolve, 75));
+    const root = document.documentElement;
+    return {
+      ok: response.ok,
+      status: response.status,
+      monitor: root.dataset.editorSaveMonitorState,
+      monitorCount: root.dataset.editorSaveMonitorCount,
+      dirtyAttribute: root.dataset.editorDirty,
+      guard: (window as any).EditorProductionGuard.getState()
+    };
   });
 
-  await expect(page.locator('html')).toHaveAttribute('data-editor-dirty', 'false');
+  expect(saveResult).toMatchObject({
+    ok: true,
+    status: 200,
+    monitor: 'saved',
+    dirtyAttribute: 'false',
+    guard: { dirty: false, saving: false }
+  });
   await expect(page.locator('#autosave-indicator')).toHaveAttribute('data-production-state', 'saved-cloud');
 });
 
