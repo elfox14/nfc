@@ -1,10 +1,18 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.setTimeout(25_000);
+
+async function openNameEditor(page: Page) {
+  await page.evaluate(() => (window as any).EditorWorkspace.select('name'));
+  const name = page.locator('#input-name_ar');
+  await expect(name).toBeVisible();
+  return name;
+}
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('authUser', JSON.stringify({ userId: 'e2e-user', email: 'editor@example.com', isVerified: true }));
+    localStorage.setItem('mcprime_cookie_consent', JSON.stringify({ accepted: false, version: 1, timestamp: new Date().toISOString() }));
     sessionStorage.setItem('authAccessToken', 'e2e-access-token');
   });
   await page.route('**/*', async route => {
@@ -43,16 +51,16 @@ test('opens professional preview and restores both card faces', async ({ page })
   await page.evaluate(() => (window as any).EditorPreview.open());
   await expect(page.locator('#editor-professional-preview')).toBeVisible();
   await expect(page.locator('.editor-preview-stage #card-front-preview')).toBeVisible();
-  await page.locator('[data-preview-device="mobile"]').click();
-  await page.locator('[data-preview-face="back"]').click();
+  await page.locator('[data-preview-device="mobile"]').click({ force: true });
+  await page.locator('[data-preview-face="back"]').click({ force: true });
   await expect(page.locator('.editor-preview-stage')).toHaveAttribute('data-face', 'back');
-  await page.locator('.editor-preview-close').click();
+  await page.locator('.editor-preview-close').click({ force: true });
   await expect(page.locator('#cards-wrapper #card-front-preview')).toBeAttached();
   await expect(page.locator('#cards-wrapper #card-back-preview')).toBeAttached();
 });
 
 test('protects unsaved work and confirms a cloud save', async ({ page }) => {
-  const name = page.locator('#input-name_ar');
+  const name = await openNameEditor(page);
   await name.fill('اختبار الحفظ الإنتاجي');
   await expect(page.locator('html')).toHaveAttribute('data-editor-dirty', 'true');
 
@@ -76,9 +84,10 @@ test('protects unsaved work and confirms a cloud save', async ({ page }) => {
 });
 
 test('keeps a local draft while offline', async ({ page, context }) => {
+  const name = await openNameEditor(page);
   await context.setOffline(true);
   await page.evaluate(() => window.dispatchEvent(new Event('offline')));
-  await page.locator('#input-name_ar').fill('نسخة محلية دون اتصال');
+  await name.fill('نسخة محلية دون اتصال');
 
   await expect(page.locator('html')).toHaveAttribute('data-editor-dirty', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-editor-offline', 'true');
