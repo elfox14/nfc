@@ -343,6 +343,31 @@
         }, 100);
     }
 
+    function initializeThemeToggle() {
+        const button = document.getElementById('theme-toggle-btn');
+        if (!button || button.dataset.editorThemeReady === 'true') return;
+        const icon = button.querySelector('i');
+        const root = document.documentElement;
+
+        function render(theme) {
+            const light = theme === 'light';
+            root.toggleAttribute('data-theme', light);
+            if (light) root.setAttribute('data-theme', 'light');
+            if (icon) icon.className = light ? 'fas fa-moon' : 'fas fa-sun';
+            button.setAttribute('aria-pressed', light ? 'true' : 'false');
+        }
+
+        let savedTheme = 'dark';
+        try { savedTheme = global.localStorage?.getItem('theme') || 'dark'; } catch (_error) { /* optional storage */ }
+        render(savedTheme);
+        button.dataset.editorThemeReady = 'true';
+        button.addEventListener('click', () => {
+            const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            try { global.localStorage?.setItem('theme', next); } catch (_error) { /* optional storage */ }
+            render(next);
+        });
+    }
+
     function initialize() {
         if (initialized) return;
         initialized = true;
@@ -352,6 +377,7 @@
         registerMenu('toolbar-more-btn', 'toolbar-more-menu-floating', '.toolbar-more-container');
         syncMobileNavigation();
         initializeLocalizedFields();
+        initializeThemeToggle();
         const year = document.getElementById('editor-footer-year');
         if (year) year.textContent = String(new Date().getFullYear());
         document.querySelectorAll('details.fieldset-accordion').forEach((details) => {
