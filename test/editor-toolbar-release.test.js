@@ -24,13 +24,15 @@ describe('editor toolbar production release patch', () => {
     expect(css).not.toContain('#preview-mode-btn');
   });
 
-  test('ships the patch through a fresh service-worker cache', () => {
+  test('ships the patch as a standalone asset through a fresh service-worker cache', () => {
     const sw = read('sw.js');
+    const runtime = read('runtime-config.js');
 
-    expect(sw).toContain("const CACHE_VERSION = 'v7'");
-    expect(sw).toContain("const EDITOR_STYLE_PATCH = '/nfc/editor-toolbar-release.css'");
-    expect(sw).toContain('event.respondWith(editorStylesWithPatch(request))');
-    expect(sw).toContain('function isEditorStylesheet(pathname)');
-    expect(sw).toContain('MC PRIME toolbar release patch');
+    expect(sw).toContain("const CACHE_VERSION = 'v8'");
+    expect(sw).toContain("'/nfc/editor-toolbar-release.css'");
+    expect(sw).not.toContain('editorStylesWithPatch');
+    expect(sw).not.toContain('isEditorStylesheet');
+    expect(runtime).toContain("stylesheet.href = '/nfc/editor-toolbar-release.css?v=7.2'");
+    expect(runtime).toContain("stylesheet.dataset.editorToolbarRelease = 'true'");
   });
 });
