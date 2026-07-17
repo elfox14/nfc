@@ -100,7 +100,7 @@
             panelId: 'phones-accordion',
             icon: 'fa-phone-alt',
             label: isEnglish ? 'Phone numbers' : 'أرقام الهواتف',
-            selectors: ['#phone-buttons-wrapper'],
+            selectors: ['.phone-button-draggable-wrapper', '#phone-buttons-wrapper'],
             interactiveContainer: true
         },
         {
@@ -115,7 +115,7 @@
             panelId: 'contact-info-accordion',
             icon: 'fa-address-book',
             label: isEnglish ? 'Contact details' : 'بيانات التواصل',
-            selectors: ['#card-back-content'],
+            selectors: ['.draggable-social-link', '#card-back-content'],
             interactiveContainer: true
         }
     ];
@@ -278,8 +278,56 @@
         ids.forEach((id, index) => {
             const item = inspectorItems.find((candidate) => candidate.id === id);
             if (!item) return;
+
+            if (view === 'layers') {
+                const row = document.createElement('div');
+                row.className = 'editor-layer-row';
+                row.dataset.layerId = item.id;
+                row.draggable = true;
+
+                const dragHandle = createButton(
+                    'editor-layer-drag-handle',
+                    isEnglish ? `Reorder ${item.label}` : `إعادة ترتيب ${item.label}`,
+                    'fa-grip-vertical'
+                );
+                dragHandle.dataset.layerHandle = item.id;
+
+                const button = createButton('editor-layer-item', item.label, item.icon);
+                const order = document.createElement('small');
+                const label = document.createElement('span');
+                order.textContent = String(index + 1).padStart(2, '0');
+                label.textContent = item.label;
+                button.append(order, label);
+                button.dataset.inspectorItem = item.id;
+
+                const actions = document.createElement('div');
+                actions.className = 'editor-layer-actions';
+                const visibility = createButton(
+                    'editor-layer-action',
+                    isEnglish ? `Hide ${item.label}` : `إخفاء ${item.label}`,
+                    'fa-eye'
+                );
+                visibility.dataset.layerAction = 'visibility';
+                visibility.dataset.layerId = item.id;
+                visibility.setAttribute('aria-pressed', 'false');
+
+                const lock = createButton(
+                    'editor-layer-action',
+                    isEnglish ? `Lock ${item.label}` : `قفل ${item.label}`,
+                    'fa-lock-open'
+                );
+                lock.dataset.layerAction = 'lock';
+                lock.dataset.layerId = item.id;
+                lock.setAttribute('aria-pressed', 'false');
+
+                actions.append(visibility, lock);
+                row.append(dragHandle, button, actions);
+                list.append(row);
+                return;
+            }
+
             const button = createButton(
-                view === 'layers' ? 'editor-layer-item' : 'editor-library-shortcut',
+                'editor-library-shortcut',
                 item.label,
                 item.icon
             );
@@ -287,11 +335,6 @@
             label.textContent = item.label;
             button.append(label);
             button.dataset.inspectorItem = item.id;
-            if (view === 'layers') {
-                const order = document.createElement('small');
-                order.textContent = String(index + 1).padStart(2, '0');
-                button.prepend(order);
-            }
             list.append(button);
         });
 
@@ -462,17 +505,22 @@
         return true;
     }
 
-    function makeCanvasElementsSelectable() {
+    function annotateCanvasElements() {
         inspectorItems.forEach((item) => {
-            const element = item.selectors.map((selector) => document.querySelector(selector)).find(Boolean);
-            if (!element) return;
-            if (!item.interactiveContainer) {
-                if (!element.hasAttribute('tabindex')) element.tabIndex = 0;
-                if (!element.hasAttribute('role')) element.setAttribute('role', 'button');
-            }
-            element.setAttribute('aria-label', `${isEnglish ? 'Edit' : 'تعديل'} ${item.label}`);
-            element.dataset.editorSelectable = item.id;
+            const elements = item.selectors.flatMap((selector) => Array.from(document.querySelectorAll(selector)));
+            elements.forEach((element, index) => {
+                if (!item.interactiveContainer && index === 0) {
+                    if (!element.hasAttribute('tabindex')) element.tabIndex = 0;
+                    if (!element.hasAttribute('role')) element.setAttribute('role', 'button');
+                }
+                element.setAttribute('aria-label', `${isEnglish ? 'Edit' : 'تعديل'} ${item.label}`);
+                element.dataset.editorSelectable = item.id;
+            });
         });
+    }
+
+    function makeCanvasElementsSelectable() {
+        annotateCanvasElements();
 
         if (!cardsWrapper) return;
         cardsWrapper.addEventListener('click', (event) => {
@@ -490,6 +538,9 @@
             event.preventDefault();
             selectInspector(selectable.dataset.editorSelectable, { focusPanel: true });
         });
+
+        const observer = new global.MutationObserver(() => annotateCanvasElements());
+        observer.observe(cardsWrapper, { childList: true, subtree: true });
     }
 
     function createCanvasToolbar() {
@@ -684,6 +735,8 @@
         setFace,
         setZoom,
         toggleGrid,
+        refreshCanvasElements: annotateCanvasElements,
+        getItems: () => inspectorItems.map((item) => ({ ...item, selectors: [...item.selectors] })),
         getState: () => ({ ...state })
     };
 

@@ -40,11 +40,13 @@ describe.each(editorFiles)('%s foundation', (file) => {
         expect(document.querySelectorAll('#autosave-indicator')).toHaveLength(1);
     });
 
-    test('loads the shared shell, workspace and Design System exactly once', () => {
+    test('loads the shared shell, workspace, layers, validation and Design System exactly once', () => {
         const { document } = loadEditor(file);
 
         expect(document.querySelectorAll('script[src^="editor-shell.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src^="editor-workspace.js"]')).toHaveLength(1);
+        expect(document.querySelectorAll('script[src^="editor-layers.js"]')).toHaveLength(1);
+        expect(document.querySelectorAll('script[src^="editor-validation.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('link[href^="editor-design-system.css"]')).toHaveLength(1);
         expect(document.querySelector('script[src="toolbar-tab-nav.js"]')).toBeNull();
         expect(document.querySelectorAll('style')).toHaveLength(0);
