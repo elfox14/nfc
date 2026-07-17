@@ -28,6 +28,13 @@ jobs:
           exit 1
         fi
         tail -n 40 jest-output.log
+    - name: Upload Jest diagnostics
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: jest-output
+        path: jest-output.log
+        retention-days: 7
     - run: npm audit --omit=dev --audit-level=critical
 
   browser:
