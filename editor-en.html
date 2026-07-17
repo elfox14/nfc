@@ -66,10 +66,11 @@
     <script src="editor-tour.js" defer></script>
     <script src="editor-panels.js" defer></script>
     <script src="editor-shell.js?v=1.0" defer></script>
+    <script src="editor-workspace.js?v=1.0" defer></script>
 
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
     <link rel="stylesheet" href="/nfc/premium-ui.css">
-    <link rel="stylesheet" href="editor-design-system.css?v=1.0">
+    <link rel="stylesheet" href="editor-design-system.css?v=2.0">
 </head>
 
 <body class="editor-body">
@@ -530,7 +531,7 @@
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
 
             <!-- ═══ LOGO PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open>
+            <details class="fieldset-accordion lp-accordion" id="logo-accordion" open>
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-image"></i></span>
                     <span class="lp-summary-label">Logo</span>
@@ -709,7 +710,7 @@
             <!-- Panel JS moved to editor-panels.js -->
 
             <!-- ═══ PHOTO PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open>
+            <details class="fieldset-accordion lp-accordion" id="photo-accordion" open>
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-user-circle"></i></span>
                     <span class="lp-summary-label">Personal Photo</span>
