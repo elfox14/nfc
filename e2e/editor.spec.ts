@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
   });
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
-    if (url.hostname === '127.0.0.1') await route.continue();
+    if (url.hostname === '127.0.0.1') await route.fallback();
     else await route.abort();
   });
   await page.route('**/api/**', async route => {
