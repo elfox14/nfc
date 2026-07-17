@@ -65,81 +65,11 @@
     <script src="ai-backgrounds.js" defer></script>
     <script src="editor-tour.js" defer></script>
     <script src="editor-panels.js" defer></script>
-
-    <!-- English placeholder initialization -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Set English placeholders for input fields
-            setTimeout(function () {
-                const nameInput = document.getElementById('input-name_ar');
-                const taglineInput = document.getElementById('input-tagline_ar');
-
-                if (nameInput) {
-                    nameInput.placeholder = 'Your Full Name Here';
-                    if (!nameInput.value || nameInput.value === 'اسمك الكامل هنا') {
-                        nameInput.value = 'Your Full Name Here';
-                    }
-                }
-                if (taglineInput) {
-                    taglineInput.placeholder = 'Job Title / Company';
-                    if (!taglineInput.value || taglineInput.value === 'المسمى الوظيفي / الشركة') {
-                        taglineInput.value = 'Job Title / Company';
-                    }
-                }
-            }, 100);
-        });
-    </script>
-
-    <style>
-        /* =============================================================== */
-        /* == START: DESKTOP FIX FOR FLIP CARD STRUCTURE                == */
-        /* =============================================================== */
-
-        /* This code block undoes the flip effect on screens wider than 1024px */
-        @media (min-width: 1025px) {
-
-            /* 1. Make the flipper a flex container to arrange cards side-by-side */
-            .card-flipper {
-                display: flex;
-                flex-direction: column;
-                gap: 30px;
-                /* <<< THIS IS THE SPACE BETWEEN CARDS ON DESKTOP */
-
-                /* 2. Reset 3D properties so it behaves like a normal container */
-                transform-style: flat;
-                position: relative;
-                transform: none;
-            }
-
-            /* 3. Make each card face a normal, non-overlapping block */
-            .card-face {
-                position: relative !important;
-                /* Override absolute positioning */
-                transform: none !important;
-                /* Remove any rotation */
-                backface-visibility: visible !important;
-                /* Reset visibility */
-                pointer-events: auto !important;
-                /* Ensure both are clickable */
-            }
-
-            /* 4. The main card wrapper now just centers the flipper container */
-            .cards-wrapper {
-                transform: none;
-                /* Ensure no scaling is applied from old styles */
-                gap: 0;
-                /* The gap is now handled by .card-flipper */
-            }
-
-            /* 5. Hide the mobile-only flip button on desktop */
-            #flip-card-btn-mobile {
-                display: none !important;
-            }
-        }
-    </style>
+    <script src="editor-shell.js?v=1.0" defer></script>
 
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
     <link rel="stylesheet" href="/nfc/premium-ui.css">
+    <link rel="stylesheet" href="editor-design-system.css?v=1.0">
 </head>
 
 <body class="editor-body">
@@ -148,36 +78,7 @@
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
-    <header class="pro-toolbar" id="pro-toolbar" style="direction: ltr; flex-direction: row;">
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const langBtn = document.getElementById('lang-toggle-btn');
-                if (langBtn) {
-                    const setLangText = () => {
-                        const label = langBtn.querySelector('.tb-label');
-                        if (label && label.textContent.trim() !== 'ع') {
-                            label.textContent = 'ع';
-                            langBtn.style.fontFamily = "'Tajawal', sans-serif";
-                            langBtn.style.fontWeight = "bold";
-                        } else if (!label && langBtn.textContent.trim() !== 'ع') {
-                            langBtn.innerHTML = 'ع'; // Fallback if no tb-label span is present
-                        }
-                    };
-
-                    // Initial set
-                    setTimeout(setLangText, 100);
-
-                    // Observer to prevent unwarranted changes
-                    const observer = new MutationObserver((mutations) => {
-                        observer.disconnect();
-                        setLangText();
-                        observer.observe(langBtn, { childList: true, characterData: true, subtree: true });
-                    });
-
-                    observer.observe(langBtn, { childList: true, characterData: true, subtree: true });
-                }
-            });
-        </script>
+    <header class="pro-toolbar" id="pro-toolbar" role="banner">
 
         <!-- ═══ ZONE 1: LEFT — Brand + History ═══ -->
         <div class="tb-zone tb-left">
@@ -185,7 +86,7 @@
             <!-- Logo -->
             <a href="index-en.html" class="tb-logo" title="Back to Home">
                 <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME Logo"
-                    style="height:30px;width:auto;">
+                    class="tb-brand-image">
                 <span class="tb-logo-text">MC PRIME</span>
             </a>
 
@@ -194,14 +95,14 @@
 
             <!-- Nav Icons -->
             <nav class="tb-nav-icons" aria-label="Navigation">
-                <a href="index-en.html" class="tb-icon-btn" title="Home">
-                    <i class="fas fa-home"></i>
+                <a href="index-en.html" class="tb-icon-btn" title="Home" aria-label="Home">
+                    <i class="fas fa-home" aria-hidden="true"></i>
                 </a>
-                <a href="gallery-en.html" class="tb-icon-btn" title="Gallery">
-                    <i class="fas fa-images"></i>
+                <a href="gallery-en.html" class="tb-icon-btn" title="Gallery" aria-label="Gallery">
+                    <i class="fas fa-images" aria-hidden="true"></i>
                 </a>
-                <a href="blog-en.html" class="tb-icon-btn" title="Blog">
-                    <i class="fas fa-newspaper"></i>
+                <a href="blog-en.html" class="tb-icon-btn" title="Blog" aria-label="Blog">
+                    <i class="fas fa-newspaper" aria-hidden="true"></i>
                 </a>
             </nav>
 
@@ -219,12 +120,14 @@
 
             <!-- Mobile Quick Actions: Save & Share (visible only on mobile) -->
             <div class="tb-mobile-quick-actions" id="mobile-quick-actions">
-                <button id="mobile-save-btn" class="tb-mqa-btn tb-mqa-save" title="Save" aria-label="Save">
-                    <i class="fas fa-cloud-upload-alt"></i>
+                <button id="mobile-save-btn" class="tb-mqa-btn tb-mqa-save" title="Save" aria-label="Save"
+                    data-editor-command="design.save-share">
+                    <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
                     <span>Save</span>
                 </button>
-                <button id="mobile-share-btn" class="tb-mqa-btn tb-mqa-share" title="Share" aria-label="Share">
-                    <i class="fas fa-share-alt"></i>
+                <button id="mobile-share-btn" class="tb-mqa-btn tb-mqa-share" title="Share" aria-label="Share"
+                    data-editor-command="card.share">
+                    <i class="fas fa-share-alt" aria-hidden="true"></i>
                     <span>Share</span>
                 </button>
             </div>
@@ -251,8 +154,8 @@
 
             <!-- 🔧 Tools Dropdown -->
             <div class="tb-dropdown-wrap" id="tools-dropdown-wrap">
-                <button class="tb-action-btn tb-tools-trigger" id="tools-menu-btn" aria-haspopup="true"
-                    aria-expanded="false">
+                <button class="tb-action-btn tb-tools-trigger" id="tools-menu-btn" aria-haspopup="menu"
+                    aria-controls="tools-dropdown-menu" aria-expanded="false">
                     <i class="fas fa-tools"></i>
                     <span class="tb-label">Tools</span>
                     <i class="fas fa-chevron-down tb-caret"></i>
@@ -292,7 +195,7 @@
             <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="Toggle Language"
                 onclick="window.location.href='editor.html' + window.location.search">
                 <i class="fas fa-language"></i>
-                <span class="tb-label">AR</span>
+                <span class="tb-label tb-lang-ar">ع</span>
             </button>
 
             <div class="tb-divider"></div>
@@ -303,14 +206,16 @@
             <div class="tb-divider"></div>
 
             <!-- Auto-save Indicator -->
-            <div id="autosave-indicator" class="tb-autosave autosave-indicator" title="Auto-save status">
-                <i class="fas fa-cloud-check"></i>
+            <div id="autosave-indicator" class="tb-autosave autosave-indicator" title="Auto-save status"
+                role="status" aria-live="polite" aria-atomic="true" data-ui-state="saved">
+                <i class="fas fa-cloud-check" aria-hidden="true"></i>
                 <span id="autosave-status">Saved</span>
             </div>
 
             <!-- Download dropdown -->
             <div class="download-container tb-dropdown-wrap">
-                <button id="download-options-btn" class="tb-action-btn">
+                <button id="download-options-btn" class="tb-action-btn" aria-haspopup="menu"
+                    aria-controls="download-menu" aria-expanded="false">
                     <i class="fas fa-download"></i>
                     <span class="tb-label">Download</span>
                     <i class="fas fa-chevron-down tb-caret"></i>
@@ -332,18 +237,10 @@
 
             <!-- Mobile More -->
             <div class="toolbar-more-container">
-                <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="More" aria-label="More Options">
-                    <i class="fas fa-ellipsis-v"></i>
+                <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="More" aria-label="More Options"
+                    aria-haspopup="menu" aria-controls="toolbar-more-menu-floating" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
                 </button>
-                <ul id="toolbar-more-menu" class="tb-mobile-more-menu">
-                    <li><a href="index-en.html" class="tb-dropdown-item"><i class="fas fa-home"></i> Home</a></li>
-                    <li><a href="gallery-en.html" class="tb-dropdown-item"><i class="fas fa-images"></i> Gallery</a>
-                    </li>
-                    <li><a href="blog-en.html" class="tb-dropdown-item"><i class="fas fa-newspaper"></i> Blog</a></li>
-                    <div class="tb-dropdown-divider"></div>
-                    <li><button id="reset-design-btn-more" class="tb-dropdown-item tb-danger"><i
-                                class="fas fa-trash-alt"></i> Reset Design</button></li>
-                </ul>
             </div>
 
         </div>
@@ -2190,25 +2087,26 @@
         <fieldset class="fieldset">
             <legend>Save & Share</legend>
             <div class="form-group">
-                <button class="btn btn-primary mobile-action-btn" data-trigger-id="save-to-cloud-btn"
-                    style="width: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; font-weight: 600;">
+                <button class="btn btn-primary mobile-action-btn mobile-action-primary"
+                    data-editor-command="cloud.save">
                     <i class="fas fa-cloud-upload-alt"></i> Save Design
                 </button>
             </div>
             <div class="form-group">
-                <button class="btn btn-success mobile-action-btn" data-trigger-id="share-card-btn" style="width: 100%;">
+                <button class="btn btn-success mobile-action-btn mobile-action-wide"
+                    data-editor-command="card.share">
                     <i class="fas fa-share-alt"></i> Share Card
                 </button>
             </div>
             <div class="form-group">
-                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="save-to-gallery-btn"
-                    style="width: 100%;">
+                <button class="btn btn-secondary mobile-action-btn mobile-action-wide"
+                    data-editor-command="gallery.save">
                     <i class="fas fa-save"></i> Save to Gallery
                 </button>
             </div>
             <div class="form-group">
-                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn"
-                    style="width: 100%;">
+                <button class="btn btn-secondary mobile-action-btn mobile-action-wide"
+                    data-editor-command="gallery.open">
                     <i class="fas fa-images"></i> View Gallery
                 </button>
             </div>
@@ -2217,30 +2115,30 @@
         <fieldset class="fieldset">
             <legend>Download</legend>
             <div class="control-grid">
-                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-front">
+                <button class="btn btn-secondary mobile-action-btn" data-editor-command="export.png.front">
                     <i class="fas fa-image"></i> Front (PNG)
                 </button>
-                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-back">
+                <button class="btn btn-secondary mobile-action-btn" data-editor-command="export.png.back">
                     <i class="fas fa-image"></i> Back (PNG)
                 </button>
             </div>
-            <div class="control-grid" style="margin-top: 10px;">
-                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-pdf">
+            <div class="control-grid mobile-action-group-gap">
+                <button class="btn btn-secondary mobile-action-btn" data-editor-command="export.pdf">
                     <i class="fas fa-file-pdf"></i> PDF
                 </button>
-                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-vcf">
+                <button class="btn btn-secondary mobile-action-btn" data-editor-command="export.vcf">
                     <i class="fas fa-address-card"></i> Contact (VCF)
                 </button>
             </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-qrcode"
-                    style="width: 100%;">
+            <div class="form-group mobile-action-group-gap">
+                <button class="btn btn-secondary mobile-action-btn mobile-action-wide"
+                    data-editor-command="export.qr">
                     <i class="fas fa-qrcode"></i> QR Code
                 </button>
             </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-html"
-                    style="width: 100%;">
+            <div class="form-group mobile-action-group-gap">
+                <button class="btn btn-secondary mobile-action-btn mobile-action-wide"
+                    data-editor-command="export.html">
                     <i class="fas fa-globe"></i> Web Package (HTML)
                 </button>
             </div>
@@ -2249,14 +2147,14 @@
         <fieldset class="fieldset">
             <legend>Other</legend>
             <div class="form-group">
-                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="share-editor-btn"
-                    style="width: 100%;">
+                <button class="btn btn-secondary mobile-action-btn mobile-action-wide"
+                    data-editor-command="editor.share">
                     <i class="fas fa-edit"></i> Share Editor Link
                 </button>
             </div>
             <div class="form-group">
-                <button class="btn btn-danger mobile-action-btn" data-trigger-id="reset-design-btn"
-                    style="width: 100%;">
+                <button class="btn btn-danger mobile-action-btn mobile-action-wide"
+                    data-editor-command="design.reset">
                     <i class="fas fa-undo"></i> Reset Design
                 </button>
             </div>
@@ -2599,7 +2497,7 @@
         </div>
     </div>
 
-    <nav class="mobile-bottom-nav">
+    <nav class="mobile-bottom-nav" role="tablist" aria-label="Editor sections">
         <button class="mobile-nav-item active" data-target="panel-elements">
             <i class="fas fa-pen"></i>
             <span>Content</span>
@@ -2613,12 +2511,6 @@
             <span>Save & Share</span>
         </button>
     </nav>
-    <script>
-        // Set dynamic year for editor footer
-        const editorYearSpan = document.getElementById('editor-footer-year');
-        if (editorYearSpan) editorYearSpan.textContent = new Date().getFullYear();
-    </script>
-
     <!-- Mobile More Menu (Floating) -->
     <div id="toolbar-more-menu-floating" class="toolbar-more-menu">
         <!-- User Status Bar (Mobile) -->
@@ -2639,11 +2531,11 @@
         <a href="blog-en.html" class="menu-item-link"><i class="fas fa-blog"></i> Blog</a>
         <hr class="mobile-only-hr">
 
-        <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> Theme</button>
-        <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> Gallery</button>
-        <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> Save to Gallery</button>
-        <button id="start-collab-btn-menu"><i class="fas fa-users"></i> Collaborate</button>
-        <button id="share-editor-btn-menu"><i class="fas fa-link"></i> Share Link</button>
+        <button id="theme-toggle-btn-menu" data-editor-command="theme.toggle"><i class="fas fa-adjust"></i> Theme</button>
+        <button id="show-gallery-btn-menu" data-editor-command="gallery.open"><i class="fas fa-images"></i> Gallery</button>
+        <button id="save-to-gallery-btn-menu" data-editor-command="gallery.save"><i class="fas fa-bookmark"></i> Save to Gallery</button>
+        <button id="start-collab-btn-menu" data-editor-command="collaboration.start"><i class="fas fa-users"></i> Collaborate</button>
+        <button id="share-editor-btn-menu" data-editor-command="editor.share"><i class="fas fa-link"></i> Share Link</button>
         <hr>
         <a href="login-en.html" id="mobile-menu-login-link" class="menu-item-link"><i class="fas fa-sign-in-alt"></i>
             Login</a>
@@ -2652,155 +2544,13 @@
         <button id="mobile-menu-logout-btn" style="color: #dc3545; display: none;"><i class="fas fa-sign-out-alt"></i>
             Logout</button>
         <hr>
-        <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> Reset</button>
+        <button id="reset-design-btn-menu" data-editor-command="design.reset" style="color: #dc3545;"><i class="fas fa-undo"></i> Reset</button>
     </div>
 
-    <!-- [NEW] Editor Premium Enhancements -->
-    <script src="toolbar-tab-nav.js"></script>
+    <!-- Existing editor enhancements -->
     <script src="editor-premium-v2.js" defer></script>
 
-    <!-- Toolbar Dropdowns & Mobile Fallbacks -->
-    <script>
-        // ── Mobile Proxy Bindings ──────────────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', function () {
-            // Buttons with data-trigger-id automatically click their desktop counterparts
-            document.querySelectorAll('[data-trigger-id]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const targetId = btn.getAttribute('data-trigger-id');
-                    const targetBtn = document.getElementById(targetId);
-                    if (targetBtn) targetBtn.click();
-                });
-            });
 
-            // Buttons with specific IDs ending in -menu also proxy (fallback)
-            document.querySelectorAll('[id$="-menu"]').forEach(btn => {
-                const baseId = btn.id.replace('-menu', '');
-                const targetBtn = document.getElementById(baseId);
-                if (targetBtn) {
-                    btn.addEventListener('click', () => targetBtn.click());
-                }
-            });
-        });
-    </script>
-
-    <script>
-        // ── Toolbar Dropdowns: Tools & Download ────────────────────────────────────
-        (function () {
-            document.addEventListener('DOMContentLoaded', function () {
-                const toolsWrap = document.getElementById('tools-dropdown-wrap');
-                const toolsBtn = document.getElementById('tools-menu-btn');
-                const dlWrap = document.querySelector('.download-container.tb-dropdown-wrap');
-                const dlBtn = document.getElementById('download-options-btn');
-
-                if (dlWrap) dlWrap.id = 'download-options-wrap';
-
-                function toggleMenu(wrap, btn, forceState) {
-                    if (!wrap || !btn) return;
-                    const isOpen = wrap.classList.contains('open');
-                    const nextState = (forceState !== undefined) ? forceState : !isOpen;
-
-                    wrap.classList.toggle('open', nextState);
-                    btn.setAttribute('aria-expanded', nextState);
-
-                    // If opening this one, close the other
-                    if (nextState) {
-                        if (wrap === toolsWrap && dlWrap) toggleMenu(dlWrap, dlBtn, false);
-                        if (wrap === dlWrap && toolsWrap) toggleMenu(toolsWrap, toolsBtn, false);
-                    }
-                }
-
-                if (toolsBtn) {
-                    toolsBtn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        toggleMenu(toolsWrap, toolsBtn);
-                    });
-                }
-
-                if (dlBtn) {
-                    dlBtn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        toggleMenu(dlWrap, dlBtn);
-                    });
-                }
-
-                document.addEventListener('click', function (e) {
-                    if (toolsWrap && toolsWrap.classList.contains('open') && !toolsWrap.contains(e.target)) {
-                        toggleMenu(toolsWrap, toolsBtn, false);
-                    }
-                    if (dlWrap && dlWrap.classList.contains('open') && !dlWrap.contains(e.target)) {
-                        toggleMenu(dlWrap, dlBtn, false);
-                    }
-                });
-
-                document.addEventListener('keydown', function (e) {
-                    if (e.key === 'Escape') {
-                        toggleMenu(toolsWrap, toolsBtn, false);
-                        toggleMenu(dlWrap, dlBtn, false);
-                    }
-                });
-
-                // Close menu when a tool or download item is clicked
-                document.querySelectorAll('.tb-dropdown-menu .tb-dropdown-item, .tb-dropdown-menu li button').forEach(item => {
-                    item.addEventListener('click', () => {
-                        setTimeout(() => {
-                            toggleMenu(toolsWrap, toolsBtn, false);
-                            toggleMenu(dlWrap, dlBtn, false);
-                        }, 100);
-                    });
-                });
-
-                // 2. Mobile 'More' Menu Toggle
-                const moreBtn = document.getElementById('toolbar-more-btn');
-                const moreMenu = document.getElementById('toolbar-more-menu-floating');
-                if (moreBtn && moreMenu) {
-                    moreBtn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        moreMenu.classList.toggle('show');
-                    });
-                    document.addEventListener('click', function (e) {
-                        if (!moreMenu.contains(e.target) && e.target !== moreBtn) {
-                            moreMenu.classList.remove('show');
-                        }
-                    });
-                }
-            });
-        })();
-    </script>
-
-    <script>
-        // ── Accordion Init & Global Fixes ──────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', function () {
-
-            // 1. Close all top-level fieldset-accordion panels
-            document.querySelectorAll('details.fieldset-accordion').forEach(function (d) {
-                d.removeAttribute('open');
-            });
-
-            // 2. Fix social-controls-wrapper: JS sets display:block but parent is flex,
-            //    so we upgrade it to display:flex + column
-            var scw = document.getElementById('social-controls-wrapper');
-            if (scw) {
-                var observer = new MutationObserver(function (mutations) {
-                    mutations.forEach(function (m) {
-                        if (m.attributeName === 'style') {
-                            if (scw.style.display === 'block') {
-                                scw.style.display = 'flex';
-                                scw.style.flexDirection = 'column';
-                                scw.style.gap = '12px';
-                            }
-                        }
-                    });
-                });
-                observer.observe(scw, { attributes: true, attributeFilter: ['style'] });
-
-                if (scw.style.display !== 'none') {
-                    scw.style.display = 'flex';
-                    scw.style.flexDirection = 'column';
-                    scw.style.gap = '12px';
-                }
-            }
-        });
-    </script>
 
     <script src="/nfc/cookie-consent.js" defer></script>
     <script src="/nfc/error-reporter.js" defer></script>

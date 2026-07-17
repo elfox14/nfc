@@ -198,7 +198,7 @@ const EditorUserStatus = {
         const saveBtn = document.getElementById('save-share-btn');
         const saveBtnText = document.getElementById('save-btn-text');
         // Mobile proxy button in panel-share
-        const mobileSaveProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="save-share-btn"]');
+        const mobileSaveProxyBtn = document.querySelector('.mobile-action-btn[data-editor-command="design.save-share"]');
         const mobileSaveProxyOrigHTML = mobileSaveProxyBtn ? mobileSaveProxyBtn.innerHTML : '';
         // Mobile quick-action save button (in toolbar)
         const mqaSaveBtn = document.getElementById('mobile-save-btn');
@@ -231,6 +231,7 @@ const EditorUserStatus = {
 
         if (this.isSaving) return;
         this.isSaving = true;
+        if (window.EditorUIState) window.EditorUIState.set('saving');
 
         // Update button state (visual feedback only for manual save usually)
         if (captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Processing...' : 'جاري المعالجة...';
@@ -288,6 +289,7 @@ const EditorUserStatus = {
                         if (saveBtnText) saveBtnText.textContent = isEnglish ? 'Save & Share' : 'حفظ و مشاركة';
                         if (mobileSaveProxyBtn) { mobileSaveProxyBtn.innerHTML = mobileSaveProxyOrigHTML; mobileSaveProxyBtn.disabled = false; }
                         if (mqaSaveBtn) { mqaSaveBtn.classList.remove('saving'); mqaSaveBtn.querySelector('span').textContent = isEnglish ? 'Save' : 'حفظ'; }
+                        if (window.EditorUIState) window.EditorUIState.set('error', captureFailMsg);
                         return;
                     }
                 } else {
@@ -315,6 +317,7 @@ const EditorUserStatus = {
             const designId = await ShareManager.saveDesign(state);
             if (designId) {
                 this.lastSaveTime = new Date();
+                if (window.EditorUIState) window.EditorUIState.set('saved');
 
                 if (captureImages) {
                     const savedMsg = state.sharedToGallery
@@ -354,6 +357,7 @@ const EditorUserStatus = {
             console.error('[EditorUserStatus] Save failed:', err);
             if (captureImages && saveBtnText) saveBtnText.textContent = isEnglish ? 'Save Failed' : 'فشل الحفظ';
             const failMsg = isEnglish ? 'Failed to save design. Please try again.' : 'فشل حفظ التصميم. حاول مرة أخرى.';
+            if (window.EditorUIState) window.EditorUIState.set('error', failMsg);
             if (captureImages && typeof UIManager !== 'undefined') {
                 UIManager.announce(failMsg);
             }

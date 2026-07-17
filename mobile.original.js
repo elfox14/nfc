@@ -7,7 +7,6 @@ window.MobileUtils = {
         MobileUtils.handleResize();
         window.addEventListener('resize', MobileUtils.handleResize);
         MobileUtils.setupNavigation();
-        MobileUtils.setupActionButtons();
         MobileUtils.setupClickToEdit();
         MobileUtils.setupCardFlipper();
         MobileUtils.updateMobileCardScale(); // Add this line
@@ -24,9 +23,14 @@ window.MobileUtils = {
             MobileUtils.updateMobileCardScale(); // Add this line
         } else {
             document.querySelectorAll('.active-view').forEach(el => el.classList.remove('active-view'));
-            document.querySelectorAll('.pro-sidebar').forEach(el => el.style.display = '');
+            document.querySelectorAll('.pro-sidebar').forEach(el => {
+                el.style.display = '';
+                el.removeAttribute('aria-hidden');
+            });
             document.querySelector('.pro-canvas').style.display = '';
-            document.getElementById('panel-share').style.display = 'none';
+            const sharePanel = document.getElementById('panel-share');
+            sharePanel.style.display = 'none';
+            sharePanel.setAttribute('aria-hidden', 'true');
             const cardFlipper = document.querySelector('.card-flipper');
             if (cardFlipper) {
                 cardFlipper.classList.remove('is-flipped');
@@ -87,8 +91,12 @@ window.MobileUtils = {
                 e.preventDefault();
                 const targetId = item.getAttribute('data-target');
                 MobileUtils.switchView(targetId);
-                navItems.forEach(nav => nav.classList.remove('active'));
+                navItems.forEach(nav => {
+                    nav.classList.remove('active');
+                    nav.setAttribute('aria-selected', 'false');
+                });
                 item.classList.add('active');
+                item.setAttribute('aria-selected', 'true');
             });
         });
     },
@@ -121,6 +129,7 @@ window.MobileUtils = {
             view.classList.remove('active-view');
             if (window.MobileUtils.isMobile()) {
                 view.style.display = 'none';
+                view.setAttribute('aria-hidden', 'true');
             }
         });
 
@@ -128,12 +137,17 @@ window.MobileUtils = {
         if (targetView) {
             targetView.classList.add('active-view');
             targetView.style.display = 'block';
+            targetView.setAttribute('aria-hidden', 'false');
         }
 
         const navItem = document.querySelector(`.mobile-nav-item[data-target="${targetId}"]`);
         if (navItem) {
-            document.querySelectorAll('.mobile-nav-item').forEach(nav => nav.classList.remove('active'));
+            document.querySelectorAll('.mobile-nav-item').forEach(nav => {
+                nav.classList.remove('active');
+                nav.setAttribute('aria-selected', 'false');
+            });
             navItem.classList.add('active');
+            navItem.setAttribute('aria-selected', 'true');
         }
     },
 
@@ -204,50 +218,6 @@ window.MobileUtils = {
         });
         // Reset nav active state
         document.querySelectorAll('.mobile-nav-item').forEach(nav => nav.classList.remove('active'));
-    },
-
-    setupActionButtons: () => {
-        const actionButtons = document.querySelectorAll('.mobile-action-btn');
-
-        // Retry if buttons not found yet (may be injected dynamically)
-        if (!actionButtons || actionButtons.length === 0) {
-            console.warn('[MobileUtils] No .mobile-action-btn found — retrying in 200ms');
-            setTimeout(MobileUtils.setupActionButtons, 200);
-            return;
-        }
-
-        actionButtons.forEach(btn => {
-            // Avoid double-binding
-            if (btn.dataset.mobileInitialized) return;
-            btn.dataset.mobileInitialized = 'true';
-
-            btn.addEventListener('click', (e) => {
-                const triggerId = btn.getAttribute('data-trigger-id');
-                if (!triggerId) {
-                    console.warn('[MobileUtils] mobile-action-btn missing data-trigger-id', btn);
-                    return;
-                }
-
-                // --- معالجة خاصة لزر الحفظ على الموبايل ---
-                if (triggerId === 'save-to-cloud-btn') {
-                    MobileUtils.handleMobileSave(btn);
-                    return;
-                }
-
-                // --- معالجة خاصة لزر المشاركة على الموبايل ---
-                if (triggerId === 'share-card-btn') {
-                    MobileUtils.handleMobileShare(btn);
-                    return;
-                }
-
-                // الأزرار الأخرى: تشغيل بشكل عادي
-                const originalBtn = document.getElementById(triggerId);
-                if (originalBtn) originalBtn.click();
-                else console.warn('[MobileUtils] originalBtn not found for triggerId:', triggerId);
-            });
-        });
-
-        console.log(`[MobileUtils] setupActionButtons: ${actionButtons.length} buttons bound`);
     },
 
     // --- معالج الحفظ على الموبايل ---

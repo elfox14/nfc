@@ -701,7 +701,7 @@ const ShareManager = {
         }
 
         // Also target the mobile proxy button for visual feedback
-        const mobileShareProxyBtn = document.querySelector('.mobile-action-btn[data-trigger-id="share-card-btn"]');
+        const mobileShareProxyBtn = document.querySelector('.mobile-action-btn[data-editor-command="card.share"]');
 
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.capturing);
         if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, true, i18nMain.capturing || 'جاري التقاط الصورة...');
@@ -989,10 +989,9 @@ const EventManager = {
             });
         }
 
-        // NEW: Download HTML
-        const downloadHtmlBtn = document.querySelector('[data-trigger-id="download-html"]');
-        if (downloadHtmlBtn) {
-            downloadHtmlBtn.addEventListener('click', () => ExportManager.downloadHtmlPackage());
+        // Register HTML export with the shared editor command surface.
+        if (window.EditorCommands && typeof window.EditorCommands.register === 'function') {
+            window.EditorCommands.register('export.html', () => ExportManager.downloadHtmlPackage());
         }
 
         document.querySelectorAll('input[name="layout-select-visual"]').forEach(radio => {
@@ -1562,11 +1561,6 @@ const App = {
             setTimeout(() => { if (window.updateAutoSaveIndicator) window.updateAutoSaveIndicator('saved'); }, 1000);
         };
 
-        setInterval(() => {
-            if (HistoryManager.currentIndex >= 0) {
-                StateManager.saveDebounced();
-            }
-        }, 30000);
     }
 };
 document.addEventListener('DOMContentLoaded', () => App.init());
