@@ -85,16 +85,11 @@ describe.each(editorFiles)('%s foundation', (file) => {
     });
 });
 
-test('legacy enhancement boot no longer starts duplicate save, shortcut or mobile command systems', () => {
-    const source = fs.readFileSync(path.join(__dirname, '..', 'editor-enhancements.original.js'), 'utf8');
-    const initializer = source.slice(
-        source.indexOf('function initEditorEnhancements()'),
-        source.indexOf('// ===========================================\n    // BEFORE / AFTER')
-    );
+test('legacy duplicate editor systems and source backups are removed', () => {
+    const root = path.join(__dirname, '..');
+    const legacyFiles = ['editor-enhancements.js', 'editor-tour.js', 'editor-premium-v2.js'];
+    legacyFiles.forEach((file) => expect(fs.existsSync(path.join(root, file))).toBe(false));
 
-    expect(initializer).not.toMatch(/initAutoSave\s*\(/);
-    expect(initializer).not.toMatch(/initAutoSaveIndicator\s*\(/);
-    expect(initializer).not.toMatch(/initKeyboardShortcuts\s*\(/);
-    expect(initializer).not.toMatch(/createMobileBottomToolbar\s*\(/);
-    expect(initializer).not.toMatch(/initMoreMenu\s*\(/);
+    const sourceBackups = fs.readdirSync(root).filter((file) => file.includes('.original.'));
+    expect(sourceBackups).toEqual([]);
 });
