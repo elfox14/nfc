@@ -10,6 +10,10 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
+async function flushMicrotasks(rounds = 6) {
+  for (let index = 0; index < rounds; index += 1) await Promise.resolve();
+}
+
 function boot(initialState = { inputs: { name: 'Initial' } }) {
   let currentState = JSON.parse(JSON.stringify(initialState));
   document.documentElement.lang = 'en';
@@ -97,12 +101,12 @@ describe('EditorProductionGuard', () => {
 
     const saveOne = window.fetch('/api/save-design', { method: 'POST', body: '{}' });
     const saveTwo = window.fetch('/api/save-design?id=card-1', { method: 'POST', body: '{}' });
-    await Promise.resolve();
+    await flushMicrotasks();
     expect(context.networkFetch).toHaveBeenCalledTimes(1);
 
     first.resolve({ ok: true, status: 200 });
     await saveOne;
-    await Promise.resolve();
+    await flushMicrotasks();
     expect(context.networkFetch).toHaveBeenCalledTimes(2);
 
     second.resolve({ ok: true, status: 200 });
@@ -120,7 +124,8 @@ describe('EditorProductionGuard', () => {
     context.guard.markDirty('first');
     jest.advanceTimersByTime(1);
     const save = window.fetch('/api/save-design', { method: 'POST', body: '{}' });
-    await Promise.resolve();
+    await flushMicrotasks();
+    expect(context.networkFetch).toHaveBeenCalledTimes(1);
 
     context.setState({ inputs: { name: 'Newer change' } });
     context.guard.markDirty('newer');
