@@ -24,12 +24,14 @@ describe('editor toolbar production release patch', () => {
     expect(css).not.toContain('#preview-mode-btn');
   });
 
-  test('ships the patch as a standalone asset through a fresh service-worker cache', () => {
+  test('ships the patch and asset manager through a fresh service-worker cache', () => {
     const sw = read('sw.js');
     const runtime = read('runtime-config.js');
 
-    expect(sw).toContain("const CACHE_VERSION = 'v8'");
+    expect(sw).toContain("const CACHE_VERSION = 'v9'");
     expect(sw).toContain("'/nfc/editor-toolbar-release.css'");
+    expect(sw).toContain("'/nfc/editor-asset-manager.js'");
+    expect(sw).toContain("'/nfc/editor-asset-manager.css'");
     expect(sw).not.toContain('editorStylesWithPatch');
     expect(sw).not.toContain('isEditorStylesheet');
     expect(runtime).toContain("stylesheet.href = '/nfc/editor-toolbar-release.css?v=7.2'");
