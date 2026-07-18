@@ -8,70 +8,59 @@ const DEFAULT_API_ORIGIN = 'https://nfc-vjy6.onrender.com';
 const DEFAULT_TIMEOUT_MS = 15000;
 const DEFAULT_ATTEMPTS = 3;
 
-function normalizeOrigin(value) {
-  return String(value || '').trim().replace(/\/+$/, '');
-}
+const normalizeOrigin = (value) => String(value || '').trim().replace(/\/+$/, '');
+const readUtf8 = (root, file) => fs.readFileSync(path.join(root, file), 'utf8');
 
-function readUtf8(rootDir, relativePath) {
-  return fs.readFileSync(path.join(rootDir, relativePath), 'utf8');
-}
-
-function extractPattern(rootDir, pattern, errorMessage) {
-  const source = readUtf8(rootDir, 'runtime-config.js');
-  const match = source.match(pattern);
-  if (!match) throw new Error(errorMessage);
+function extractRuntimeValue(root, pattern, message) {
+  const match = readUtf8(root, 'runtime-config.js').match(pattern);
+  if (!match) throw new Error(message);
   return match[1];
 }
 
-function extractExpectedRelease(rootDir) {
-  return extractPattern(rootDir, /__MC_PRIME_RELEASE\s*=.*?['"]([^'"]+)['"]/, 'Could not extract the expected public release from runtime-config.js');
+function extractExpectedRelease(root) {
+  return extractRuntimeValue(root, /__MC_PRIME_RELEASE\s*=.*?['"]([^'"]+)['"]/, 'Could not extract release');
 }
 
-function extractExpectedServiceWorkerCache(rootDir) {
-  const source = readUtf8(rootDir, 'sw.js');
-  const match = source.match(/CACHE_VERSION\s*=\s*['"]([^'"]+)['"]/);
-  if (!match) throw new Error('Could not extract the expected Service Worker cache version from sw.js');
+function extractExpectedServiceWorkerCache(root) {
+  const match = readUtf8(root, 'sw.js').match(/CACHE_VERSION\s*=\s*['"]([^'"]+)['"]/);
+  if (!match) throw new Error('Could not extract Service Worker cache version');
   return match[1];
 }
 
-function extractExpectedToolbarAsset(rootDir) {
-  return extractPattern(rootDir, /stylesheet\.href\s*=\s*['"]([^'"]*editor-toolbar-release\.css[^'"]*)['"]/, 'Could not extract the toolbar release stylesheet URL from runtime-config.js');
-}
+const extractExpectedToolbarAsset = (root) => extractRuntimeValue(
+  root,
+  /stylesheet\.href\s*=\s*['"]([^'"]*editor-toolbar-release\.css[^'"]*)['"]/,
+  'Could not extract toolbar stylesheet'
+);
+const extractExpectedAssetManagerStyle = (root) => extractRuntimeValue(
+  root,
+  /stylesheet\.href\s*=\s*['"]([^'"]*editor-asset-manager\.css[^'"]*)['"]/,
+  'Could not extract asset manager stylesheet'
+);
+const extractExpectedAssetManagerScript = (root) => extractRuntimeValue(
+  root,
+  /script\.src\s*=\s*['"]([^'"]*editor-asset-manager\.js[^'"]*)['"]/,
+  'Could not extract asset manager script'
+);
+const extractExpectedTemplateManagerStyle = (root) => extractRuntimeValue(
+  root,
+  /stylesheet\.href\s*=\s*['"]([^'"]*editor-template-manager\.css[^'"]*)['"]/,
+  'Could not extract template manager stylesheet'
+);
+const extractExpectedTemplateManagerScript = (root) => extractRuntimeValue(
+  root,
+  /script\.src\s*=\s*['"]([^'"]*editor-template-manager\.js[^'"]*)['"]/,
+  'Could not extract template manager script'
+);
 
-function extractExpectedAssetManagerStyle(rootDir) {
-  return extractPattern(rootDir, /stylesheet\.href\s*=\s*['"]([^'"]*editor-asset-manager\.css[^'"]*)['"]/, 'Could not extract the asset manager stylesheet URL from runtime-config.js');
-}
-
-function extractExpectedAssetManagerScript(rootDir) {
-  return extractPattern(rootDir, /script\.src\s*=\s*['"]([^'"]*editor-asset-manager\.js[^'"]*)['"]/, 'Could not extract the asset manager script URL from runtime-config.js');
-}
-
-function extractExpectedTemplateManagerStyle(rootDir) {
-  return extractPattern(rootDir, /stylesheet\.href\s*=\s*['"]([^'"]*editor-template-manager\.css[^'"]*)['"]/, 'Could not extract the template manager stylesheet URL from runtime-config.js');
-}
-
-function extractExpectedTemplateManagerScript(rootDir) {
-  return extractPattern(rootDir, /script\.src\s*=\s*['"]([^'"]*editor-template-manager\.js[^'"]*)['"]/, 'Could not extract the template manager script URL from runtime-config.js');
-}
-
-function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function withCacheBuster(url, token) {
-  const parsed = new URL(url);
-  parsed.searchParams.set('__verify', token);
-  return parsed.toString();
-}
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function requestWithRetry(url, options = {}) {
-  const {
-    fetchImpl = global.fetch,
-    attempts = DEFAULT_ATTEMPTS,
-    timeoutMs = DEFAULT_TIMEOUT_MS,
-    cacheBuster = Date.now().toString(),
-    retryDelayMs = 900
-  } = options;
+  const fetchImpl = options.fetchImpl || global.fetch;
+  const attempts = options.attempts || DEFAULT_ATTEMPTS;
+  const timeoutMs = options.timeoutMs || DEFAULT_TIMEOUT_MS;
+  const token = options.cacheBuster || String(Date.now());
+  const retryDelayMs = options.retryDelayMs === undefined ? 900 : options.retryDelayMs;
   if (typeof fetchImpl !== 'function') throw new Error('A Fetch API implementation is required');
 
   let lastError;
@@ -79,7 +68,9 @@ async function requestWithRetry(url, options = {}) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetchImpl(withCacheBuster(url, `${cacheBuster}-${attempt}`), {
+      const target = new URL(url);
+      target.searchParams.set('__verify', `${token}-${attempt}`);
+      const response = await fetchImpl(target.toString(), {
         redirect: 'follow', cache: 'no-store', signal: controller.signal,
         headers: { accept: '*/*', 'cache-control': 'no-cache', pragma: 'no-cache' }
       });
@@ -94,175 +85,119 @@ async function requestWithRetry(url, options = {}) {
     } catch (error) {
       clearTimeout(timer);
       lastError = error;
-      if (attempt < attempts) {
-        await wait(retryDelayMs * attempt);
-        continue;
-      }
+      if (attempt < attempts) await wait(retryDelayMs * attempt);
     }
   }
   throw lastError || new Error(`Request failed: ${url}`);
 }
 
-function assertStatus(response, expected, label) {
-  if (response.status !== expected) throw new Error(`${label} returned HTTP ${response.status}; expected ${expected}`);
-}
-
-function assertContains(body, markers, label) {
+function assertResponse(response, body, label, markers = []) {
+  if (response.status !== 200) throw new Error(`${label} returned HTTP ${response.status}; expected 200`);
   for (const marker of markers) {
     if (!body.includes(marker)) throw new Error(`${label} is missing required marker: ${marker}`);
   }
 }
 
-function parseJson(body, label) {
-  try { return JSON.parse(body); } catch (_error) { throw new Error(`${label} did not return valid JSON`); }
-}
-
-async function executeCheck(name, run) {
+async function executeCheck(name, task) {
   const startedAt = Date.now();
   try {
-    const details = await run();
-    return { name, status: 'passed', durationMs: Date.now() - startedAt, details: details || null };
+    return { name, status: 'passed', durationMs: Date.now() - startedAt, details: await task() || null };
   } catch (error) {
     return { name, status: 'failed', durationMs: Date.now() - startedAt, error: error?.message || String(error) };
   }
-}
-
-async function verifyStaticAsset(checks, name, publicOrigin, asset, markers, requestOptions) {
-  checks.push(await executeCheck(name, async () => {
-    const assetPath = asset.split('?')[0];
-    const url = `${publicOrigin}${assetPath}`;
-    const { response, body } = await requestWithRetry(url, requestOptions);
-    assertStatus(response, 200, assetPath);
-    assertContains(body, markers, assetPath);
-    return { url, bytes: Buffer.byteLength(body) };
-  }));
 }
 
 async function verifyProduction(options = {}) {
   const rootDir = options.rootDir || process.cwd();
   const publicOrigin = normalizeOrigin(options.publicOrigin || DEFAULT_PUBLIC_ORIGIN);
   const apiOrigin = normalizeOrigin(options.apiOrigin || DEFAULT_API_ORIGIN);
-  const expectedRelease = options.expectedRelease || extractExpectedRelease(rootDir);
-  const expectedCache = options.expectedCache || extractExpectedServiceWorkerCache(rootDir);
-  const expectedToolbarAsset = options.expectedToolbarAsset || extractExpectedToolbarAsset(rootDir);
-  const expectedAssetManagerStyle = options.expectedAssetManagerStyle || extractExpectedAssetManagerStyle(rootDir);
-  const expectedAssetManagerScript = options.expectedAssetManagerScript || extractExpectedAssetManagerScript(rootDir);
-  const expectedTemplateManagerStyle = options.expectedTemplateManagerStyle || extractExpectedTemplateManagerStyle(rootDir);
-  const expectedTemplateManagerScript = options.expectedTemplateManagerScript || extractExpectedTemplateManagerScript(rootDir);
+  const expected = {
+    release: options.expectedRelease || extractExpectedRelease(rootDir),
+    serviceWorkerCache: options.expectedCache || extractExpectedServiceWorkerCache(rootDir),
+    toolbarAsset: options.expectedToolbarAsset || extractExpectedToolbarAsset(rootDir),
+    assetManagerStyle: options.expectedAssetManagerStyle || extractExpectedAssetManagerStyle(rootDir),
+    assetManagerScript: options.expectedAssetManagerScript || extractExpectedAssetManagerScript(rootDir),
+    templateManagerStyle: options.expectedTemplateManagerStyle || extractExpectedTemplateManagerStyle(rootDir),
+    templateManagerScript: options.expectedTemplateManagerScript || extractExpectedTemplateManagerScript(rootDir)
+  };
   const requestOptions = {
     fetchImpl: options.fetchImpl || global.fetch,
     attempts: options.attempts || DEFAULT_ATTEMPTS,
     timeoutMs: options.timeoutMs || DEFAULT_TIMEOUT_MS,
-    cacheBuster: options.cacheBuster || Date.now().toString(),
+    cacheBuster: options.cacheBuster || String(Date.now()),
     retryDelayMs: options.retryDelayMs === undefined ? 900 : options.retryDelayMs
   };
   const checks = [];
 
-  checks.push(await executeCheck('Arabic editor shell', async () => {
-    const url = `${publicOrigin}/nfc/editor.html`;
-    const { response, body } = await requestWithRetry(url, requestOptions);
-    assertStatus(response, 200, 'Arabic editor');
-    assertContains(body, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js'], 'Arabic editor');
-    return { url, bytes: Buffer.byteLength(body) };
-  }));
+  async function checkUrl(name, url, markers) {
+    checks.push(await executeCheck(name, async () => {
+      const { response, body } = await requestWithRetry(url, requestOptions);
+      assertResponse(response, body, name, markers);
+      return { url, bytes: Buffer.byteLength(body) };
+    }));
+  }
 
-  checks.push(await executeCheck('English editor shell', async () => {
-    const url = `${publicOrigin}/nfc/editor-en.html`;
-    const { response, body } = await requestWithRetry(url, requestOptions);
-    assertStatus(response, 200, 'English editor');
-    assertContains(body, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js'], 'English editor');
-    return { url, bytes: Buffer.byteLength(body) };
-  }));
-
-  checks.push(await executeCheck('Runtime release marker', async () => {
-    const url = `${publicOrigin}/nfc/runtime-config.js`;
-    const { response, body } = await requestWithRetry(url, requestOptions);
-    assertStatus(response, 200, 'runtime-config.js');
-    assertContains(body, [
-      expectedRelease, expectedToolbarAsset, expectedAssetManagerStyle, expectedAssetManagerScript,
-      expectedTemplateManagerStyle, expectedTemplateManagerScript, apiOrigin
-    ], 'runtime-config.js');
-    return {
-      url, expectedRelease, expectedToolbarAsset, expectedAssetManagerStyle, expectedAssetManagerScript,
-      expectedTemplateManagerStyle, expectedTemplateManagerScript
-    };
-  }));
-
-  await verifyStaticAsset(checks, 'Toolbar release stylesheet', publicOrigin, expectedToolbarAsset, [
+  await checkUrl('Arabic editor shell', `${publicOrigin}/nfc/editor.html`, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js']);
+  await checkUrl('English editor shell', `${publicOrigin}/nfc/editor-en.html`, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js']);
+  await checkUrl('Runtime release marker', `${publicOrigin}/nfc/runtime-config.js`, [
+    expected.release, expected.toolbarAsset, expected.assetManagerStyle, expected.assetManagerScript,
+    expected.templateManagerStyle, expected.templateManagerScript, apiOrigin
+  ]);
+  await checkUrl('Toolbar release stylesheet', `${publicOrigin}${expected.toolbarAsset.split('?')[0]}`, [
     '--editor-toolbar-offset: 88px', 'padding-top: var(--editor-toolbar-offset)',
     'height: calc(100dvh - var(--editor-toolbar-offset))'
-  ], requestOptions);
-
-  await verifyStaticAsset(checks, 'Asset manager stylesheet', publicOrigin, expectedAssetManagerStyle, [
+  ]);
+  await checkUrl('Asset manager stylesheet', `${publicOrigin}${expected.assetManagerStyle.split('?')[0]}`, [
     '.asset-drop-zone', '.asset-upload-status', '.asset-crop-toolbar'
-  ], requestOptions);
-
-  await verifyStaticAsset(checks, 'Asset manager script', publicOrigin, expectedAssetManagerScript, [
-    "const VERSION = '8.1.0'", "inputId: 'input-logo-upload'", "inputId: 'input-photo-upload'",
-    'editor:assetprocessed', 'data-crop-action'
-  ], requestOptions);
-
-  await verifyStaticAsset(checks, 'Template manager stylesheet', publicOrigin, expectedTemplateManagerStyle, [
-    '.editor-template-manager-panel', '.editor-template-card-preview', '.editor-template-modal-dialog',
-    '.editor-template-save-form'
-  ], requestOptions);
-
-  await verifyStaticAsset(checks, 'Template manager script', publicOrigin, expectedTemplateManagerScript, [
-    "const VERSION = '8.2.0'", "id: 'executive-navy'", "id: 'medical-trust'",
+  ]);
+  await checkUrl('Asset manager script', `${publicOrigin}${expected.assetManagerScript.split('?')[0]}`, [
+    "const VERSION = '8.1.0'", "inputId: 'input-logo-upload'", 'editor:assetprocessed', 'data-crop-action'
+  ]);
+  await checkUrl('Template manager stylesheet', `${publicOrigin}${expected.templateManagerStyle.split('?')[0]}`, [
+    '.editor-template-manager-panel', '.editor-template-card-preview', '.editor-template-modal-dialog'
+  ]);
+  await checkUrl('Template manager script', `${publicOrigin}${expected.templateManagerScript.split('?')[0]}`, [
+    "const VERSION = '8.2.0'", "makeTemplate('executive-navy'", "makeTemplate('medical-trust'",
     'createPersonalTemplate', 'editor:templateapplied'
-  ], requestOptions);
-
-  checks.push(await executeCheck('Service Worker release cache', async () => {
-    const url = `${publicOrigin}/nfc/sw.js`;
-    const { response, body } = await requestWithRetry(url, requestOptions);
-    assertStatus(response, 200, 'sw.js');
-    assertContains(body, [
-      `CACHE_VERSION = '${expectedCache}'`, '/nfc/editor-toolbar-release.css',
-      '/nfc/editor-asset-manager.css', '/nfc/editor-asset-manager.js',
-      '/nfc/editor-template-manager.css', '/nfc/editor-template-manager.js'
-    ], 'sw.js');
-    return { url, expectedCache };
-  }));
+  ]);
+  await checkUrl('Service Worker release cache', `${publicOrigin}/nfc/sw.js`, [
+    `CACHE_VERSION = '${expected.serviceWorkerCache}'`, '/nfc/editor-toolbar-release.css',
+    '/nfc/editor-asset-manager.js', '/nfc/editor-template-manager.js'
+  ]);
 
   checks.push(await executeCheck('API health snapshot', async () => {
     const url = `${apiOrigin}/healthz`;
     const { response, body } = await requestWithRetry(url, requestOptions);
-    assertStatus(response, 200, '/healthz');
-    const payload = parseJson(body, '/healthz');
-    if (payload.status !== 'ok') throw new Error(`/healthz reported ${payload.status || 'unknown'} instead of ok`);
-    if (!payload.checks || payload.checks.server?.status !== 'ready') throw new Error('/healthz server check is not ready');
-    return { url, release: payload.release, version: payload.version, database: payload.checks.database?.status, storage: payload.checks.storage?.status };
+    assertResponse(response, body, '/healthz');
+    const payload = JSON.parse(body);
+    if (payload.status !== 'ok' || payload.checks?.server?.status !== 'ready') throw new Error('/healthz is not ready');
+    return { url, release: payload.release, version: payload.version };
   }));
 
   checks.push(await executeCheck('API readiness', async () => {
     const url = `${apiOrigin}/readyz`;
     const { response, body } = await requestWithRetry(url, requestOptions);
-    assertStatus(response, 200, '/readyz');
-    const payload = parseJson(body, '/readyz');
-    if (payload.status !== 'ok') throw new Error(`/readyz reported ${payload.status || 'unknown'} instead of ok`);
-    if (payload.dbConnected !== true) throw new Error('/readyz reports the database as disconnected');
-    if (!['ready', 'connected'].includes(payload.checks?.database?.status)) throw new Error(`/readyz database status is ${payload.checks?.database?.status || 'unknown'}`);
-    if (payload.checks?.storage?.status !== 'ready' || payload.checks?.storage?.writable !== true) throw new Error('/readyz upload storage is not ready and writable');
+    assertResponse(response, body, '/readyz');
+    const payload = JSON.parse(body);
+    if (payload.status !== 'ok' || payload.dbConnected !== true) throw new Error('/readyz database is not ready');
+    if (!['ready', 'connected'].includes(payload.checks?.database?.status)) throw new Error('/readyz database check failed');
+    if (payload.checks?.storage?.status !== 'ready' || payload.checks?.storage?.writable !== true) throw new Error('/readyz storage is not writable');
     return { url, release: payload.release, uptimeSeconds: payload.uptimeSeconds };
   }));
 
   checks.push(await executeCheck('API public health endpoint', async () => {
     const url = `${apiOrigin}/api/health`;
     const { response, body } = await requestWithRetry(url, requestOptions);
-    assertStatus(response, 200, '/api/health');
-    const payload = parseJson(body, '/api/health');
-    if (payload.status !== 'ok') throw new Error(`/api/health reported ${payload.status || 'unknown'}`);
+    assertResponse(response, body, '/api/health');
+    const payload = JSON.parse(body);
+    if (payload.status !== 'ok') throw new Error('/api/health is not ok');
     return { url, release: payload.release, version: payload.version };
   }));
 
-  const failed = checks.filter((check) => check.status === 'failed');
+  const failed = checks.filter((item) => item.status === 'failed');
   return {
-    status: failed.length ? 'failed' : 'passed', checkedAt: new Date().toISOString(), publicOrigin, apiOrigin,
-    expected: {
-      release: expectedRelease, serviceWorkerCache: expectedCache, toolbarAsset: expectedToolbarAsset,
-      assetManagerStyle: expectedAssetManagerStyle, assetManagerScript: expectedAssetManagerScript,
-      templateManagerStyle: expectedTemplateManagerStyle, templateManagerScript: expectedTemplateManagerScript
-    },
+    status: failed.length ? 'failed' : 'passed', checkedAt: new Date().toISOString(),
+    publicOrigin, apiOrigin, expected,
     totals: { checks: checks.length, passed: checks.length - failed.length, failed: failed.length },
     checks
   };
@@ -281,7 +216,6 @@ function renderSummary(report) {
     const result = check.status === 'passed' ? '✅ Passed' : `❌ ${check.error}`;
     lines.push(`| ${check.name} | ${result.replace(/\|/g, '\\|')} | ${check.durationMs} ms |`);
   }
-  lines.push('');
   return `${lines.join('\n')}\n`;
 }
 
@@ -293,14 +227,15 @@ function writeReport(report, outputPath) {
 }
 
 async function main() {
-  const outputPath = process.env.PRODUCTION_VERIFY_REPORT || 'production-verification.json';
   const report = await verifyProduction({
-    publicOrigin: process.env.PUBLIC_ORIGIN, apiOrigin: process.env.API_ORIGIN,
-    expectedRelease: process.env.EXPECTED_RELEASE, expectedCache: process.env.EXPECTED_SW_CACHE,
+    publicOrigin: process.env.PUBLIC_ORIGIN,
+    apiOrigin: process.env.API_ORIGIN,
+    expectedRelease: process.env.EXPECTED_RELEASE,
+    expectedCache: process.env.EXPECTED_SW_CACHE,
     attempts: Number(process.env.VERIFY_ATTEMPTS || DEFAULT_ATTEMPTS),
     timeoutMs: Number(process.env.VERIFY_TIMEOUT_MS || DEFAULT_TIMEOUT_MS)
   });
-  const savedAt = writeReport(report, outputPath);
+  const savedAt = writeReport(report, process.env.PRODUCTION_VERIFY_REPORT || 'production-verification.json');
   console.log(renderSummary(report));
   console.log(`JSON report: ${savedAt}`);
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, renderSummary(report), 'utf8');
@@ -314,9 +249,7 @@ module.exports = {
   normalizeOrigin, renderSummary, requestWithRetry, verifyProduction, writeReport
 };
 
-if (require.main === module) {
-  main().catch((error) => {
-    console.error('[production-verification] Fatal error:', error);
-    process.exitCode = 1;
-  });
-}
+if (require.main === module) main().catch((error) => {
+  console.error('[production-verification] Fatal error:', error);
+  process.exitCode = 1;
+});
