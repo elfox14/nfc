@@ -77,11 +77,15 @@
     gap: 6px;
   }
 
-  .editor-body :where(#editor-brand-kit-btn, #editor-review-workflow-btn) {
+  .editor-body #editor-versions-btn,
+  .editor-body #editor-brand-kit-btn,
+  .editor-body #editor-review-workflow-btn {
     display: none !important;
   }
 
-  :where(#editor-brand-kit-menu-btn, #editor-review-workflow-menu-btn) {
+  #editor-versions-menu-btn,
+  #editor-brand-kit-menu-btn,
+  #editor-review-workflow-menu-btn {
     display: flex;
     align-items: center;
     gap: 10px;
