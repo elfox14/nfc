@@ -26,6 +26,8 @@ function createFetch(overrides = {}) {
     '/nfc/editor-template-manager.js': response(200, read('editor-template-manager.js')),
     '/nfc/editor-version-manager.css': response(200, read('editor-version-manager.css')),
     '/nfc/editor-version-manager.js': response(200, read('editor-version-manager.js')),
+    '/nfc/editor-productivity-tools.css': response(200, read('editor-productivity-tools.css')),
+    '/nfc/editor-productivity-tools.js': response(200, read('editor-productivity-tools.js')),
     '/nfc/sw.js': response(200, read('sw.js')),
     '/healthz': response(200, JSON.stringify(health())),
     '/readyz': response(200, JSON.stringify(health())),
@@ -41,8 +43,8 @@ function createFetch(overrides = {}) {
 
 describe('production release verifier', () => {
   test('derives current release assets', () => {
-    expect(verifier.extractExpectedRelease(rootDir)).toBe('2026.07.18-phase8.3');
-    expect(verifier.extractExpectedServiceWorkerCache(rootDir)).toBe('v11');
+    expect(verifier.extractExpectedRelease(rootDir)).toBe('2026.07.18-phase9.0');
+    expect(verifier.extractExpectedServiceWorkerCache(rootDir)).toBe('v12');
     expect(verifier.extractExpectedToolbarAsset(rootDir)).toBe('/nfc/editor-toolbar-release.css?v=7.2');
     expect(verifier.extractExpectedAssetManagerStyle(rootDir)).toBe('/nfc/editor-asset-manager.css?v=8.1');
     expect(verifier.extractExpectedAssetManagerScript(rootDir)).toBe('/nfc/editor-asset-manager.js?v=8.1');
@@ -50,25 +52,29 @@ describe('production release verifier', () => {
     expect(verifier.extractExpectedTemplateManagerScript(rootDir)).toBe('/nfc/editor-template-manager.js?v=8.2');
     expect(verifier.extractExpectedVersionManagerStyle(rootDir)).toBe('/nfc/editor-version-manager.css?v=8.3');
     expect(verifier.extractExpectedVersionManagerScript(rootDir)).toBe('/nfc/editor-version-manager.js?v=8.3');
+    expect(verifier.extractExpectedProductivityStyle(rootDir)).toBe('/nfc/editor-productivity-tools.css?v=9.0');
+    expect(verifier.extractExpectedProductivityScript(rootDir)).toBe('/nfc/editor-productivity-tools.js?v=9.0');
   });
 
   test('passes when production matches the repository', async () => {
     const fetchImpl = createFetch();
     const report = await verifier.verifyProduction({ rootDir, fetchImpl, attempts: 1, retryDelayMs: 0, cacheBuster: 'test' });
     expect(report.status).toBe('passed');
-    expect(report.totals).toEqual({ checks: 14, passed: 14, failed: 0 });
-    expect(fetchImpl).toHaveBeenCalledTimes(14);
+    expect(report.totals).toEqual({ checks: 16, passed: 16, failed: 0 });
+    expect(fetchImpl).toHaveBeenCalledTimes(16);
     expect(report.expected).toMatchObject({
-      release: '2026.07.18-phase8.3', serviceWorkerCache: 'v11',
+      release: '2026.07.18-phase9.0', serviceWorkerCache: 'v12',
       templateManagerStyle: '/nfc/editor-template-manager.css?v=8.2',
       templateManagerScript: '/nfc/editor-template-manager.js?v=8.2',
       versionManagerStyle: '/nfc/editor-version-manager.css?v=8.3',
-      versionManagerScript: '/nfc/editor-version-manager.js?v=8.3'
+      versionManagerScript: '/nfc/editor-version-manager.js?v=8.3',
+      productivityStyle: '/nfc/editor-productivity-tools.css?v=9.0',
+      productivityScript: '/nfc/editor-productivity-tools.js?v=9.0'
     });
   });
 
   test('detects stale runtime files', async () => {
-    const stale = read('runtime-config.js').replace('2026.07.18-phase8.3', '2026.07.18-phase8.2');
+    const stale = read('runtime-config.js').replace('2026.07.18-phase9.0', '2026.07.18-phase8.3');
     const report = await verifier.verifyProduction({
       rootDir, fetchImpl: createFetch({ '/nfc/runtime-config.js': response(200, stale) }),
       attempts: 1, retryDelayMs: 0, cacheBuster: 'test'
@@ -77,13 +83,13 @@ describe('production release verifier', () => {
     expect(report.checks.find((item) => item.name === 'Runtime release marker').status).toBe('failed');
   });
 
-  test('detects missing version manager assets', async () => {
+  test('detects missing productivity tool assets', async () => {
     const report = await verifier.verifyProduction({
-      rootDir, fetchImpl: createFetch({ '/nfc/editor-version-manager.js': response(404, 'Not Found') }),
+      rootDir, fetchImpl: createFetch({ '/nfc/editor-productivity-tools.js': response(404, 'Not Found') }),
       attempts: 1, retryDelayMs: 0, cacheBuster: 'test'
     });
     expect(report.status).toBe('failed');
-    expect(report.checks.find((item) => item.name === 'Version manager script')).toMatchObject({
+    expect(report.checks.find((item) => item.name === 'Productivity tools script')).toMatchObject({
       status: 'failed', error: expect.stringContaining('HTTP 404')
     });
   });

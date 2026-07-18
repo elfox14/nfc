@@ -24,7 +24,7 @@
     }
   }
 
-  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase8.3';
+  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase9.0';
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
@@ -124,10 +124,36 @@
     document.head.appendChild(script);
   }
 
+  function loadProductivityTools() {
+    if (!document.querySelector('link[data-editor-productivity-tools-style]')) {
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet';
+      stylesheet.href = '/nfc/editor-productivity-tools.css?v=9.0';
+      stylesheet.dataset.editorProductivityToolsStyle = 'true';
+      document.head.appendChild(stylesheet);
+    }
+
+    if (document.querySelector('script[data-editor-productivity-tools]')) return;
+    const script = document.createElement('script');
+    script.src = '/nfc/editor-productivity-tools.js?v=9.0';
+    script.async = false;
+    script.dataset.editorProductivityTools = 'true';
+    script.addEventListener('load', () => {
+      document.documentElement.dataset.editorProductivityToolsLoader = 'ready';
+    }, { once: true });
+    script.addEventListener('error', () => {
+      document.documentElement.dataset.editorProductivityToolsLoader = 'load-error';
+      console.error('[RuntimeConfig] Failed to load editor productivity tools.');
+    }, { once: true });
+    document.documentElement.dataset.editorProductivityToolsLoader = 'loading';
+    document.head.appendChild(script);
+  }
+
   loadToolbarReleaseStyles();
   loadAssetManager();
   loadTemplateManager();
   loadVersionManager();
+  loadProductivityTools();
 
   function ensureLegacyStyleControls() {
     if (!document.body) return;
@@ -197,6 +223,7 @@
       if (!window.StateManager && typeof StateManager !== 'undefined') window.StateManager = StateManager;
       if (!window.HistoryManager && typeof HistoryManager !== 'undefined') window.HistoryManager = HistoryManager;
       if (!window.UIManager && typeof UIManager !== 'undefined') window.UIManager = UIManager;
+      if (!window.DragManager && typeof DragManager !== 'undefined') window.DragManager = DragManager;
       document.documentElement.dataset.editorLegacyBridge = 'ready';
     } catch (error) {
       document.documentElement.dataset.editorLegacyBridge = 'unavailable';

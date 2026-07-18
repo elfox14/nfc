@@ -90,6 +90,7 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-editor-asset-manager', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-template-manager', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-version-manager', 'ready');
+  await expect(page.locator('html')).toHaveAttribute('data-editor-productivity-tools', 'ready');
 });
 
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {
@@ -268,6 +269,57 @@ test('creates, compares, and restores a cloud design version', async ({ page }) 
 
   const localBackup = await page.evaluate(() => localStorage.getItem('mcprime-editor-versions-v2:e2e-card:ar'));
   expect(localBackup).toContain('cloud-1');
+});
+
+test('groups, distributes, copies, and moves multiple layers across card faces', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const manager = (window as any).EditorProductivityTools;
+    manager.select(['logo', 'name', 'tagline'], { expandGroups: false, primary: 'logo' });
+    const before = manager.getState();
+    const group = manager.group();
+    const distributed = manager.distribute('horizontal');
+    manager.select(['logo'], { expandGroups: false, primary: 'logo' });
+    const copied = Boolean(manager.copy());
+    manager.select(['name'], { expandGroups: false, primary: 'name' });
+    const pasted = manager.paste();
+    manager.select(['logo'], { expandGroups: false, primary: 'logo' });
+    const moved = manager.moveToOtherFace();
+    await new Promise(resolve => setTimeout(resolve, 120));
+    return {
+      beforeCount: before.selected.length,
+      groupMembers: group?.members || [],
+      distributed,
+      copied,
+      pasted,
+      moved,
+      face: manager.getState().face,
+      savedGroups: JSON.parse((document.getElementById('editor-layer-groups') as HTMLInputElement).value || '[]'),
+      backPlacement: (document.querySelector('input[name="placement-logo"][value="back"]') as HTMLInputElement)?.checked
+    };
+  });
+
+  expect(result).toMatchObject({
+    beforeCount: 3,
+    groupMembers: expect.arrayContaining(['logo', 'name', 'tagline']),
+    distributed: true,
+    copied: true,
+    pasted: true,
+    moved: true,
+    face: 'back',
+    backPlacement: true
+  });
+  expect(result.savedGroups[0].members).toEqual(expect.arrayContaining(['logo', 'name', 'tagline']));
+
+  await page.evaluate(() => {
+    (window as any).EditorWorkspace.setFace('front');
+    (window as any).EditorProductivityTools.select(['name'], { expandGroups: false, primary: 'name' });
+    const element = document.querySelector('[data-editor-selectable="name"]');
+    element?.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 160, clientY: 140 }));
+  });
+  const contextMenu = page.locator('#editor-productivity-context-menu');
+  await expect(contextMenu).toBeVisible();
+  await expect(contextMenu.locator('[data-productivity-action="copy"]')).toBeVisible();
+  await page.keyboard.press('Escape');
 });
 
 test('keeps the mobile bottom sheet usable', async ({ page, isMobile }) => {

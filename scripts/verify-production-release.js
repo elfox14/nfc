@@ -62,6 +62,16 @@ const extractExpectedVersionManagerScript = (root) => extractRuntimeValue(
   /script\.src\s*=\s*['"]([^'"]*editor-version-manager\.js[^'"]*)['"]/,
   'Could not extract version manager script'
 );
+const extractExpectedProductivityStyle = (root) => extractRuntimeValue(
+  root,
+  /stylesheet\.href\s*=\s*['"]([^'"]*editor-productivity-tools\.css[^'"]*)['"]/,
+  'Could not extract productivity tools stylesheet'
+);
+const extractExpectedProductivityScript = (root) => extractRuntimeValue(
+  root,
+  /script\.src\s*=\s*['"]([^'"]*editor-productivity-tools\.js[^'"]*)['"]/,
+  'Could not extract productivity tools script'
+);
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -130,7 +140,9 @@ async function verifyProduction(options = {}) {
     templateManagerStyle: options.expectedTemplateManagerStyle || extractExpectedTemplateManagerStyle(rootDir),
     templateManagerScript: options.expectedTemplateManagerScript || extractExpectedTemplateManagerScript(rootDir),
     versionManagerStyle: options.expectedVersionManagerStyle || extractExpectedVersionManagerStyle(rootDir),
-    versionManagerScript: options.expectedVersionManagerScript || extractExpectedVersionManagerScript(rootDir)
+    versionManagerScript: options.expectedVersionManagerScript || extractExpectedVersionManagerScript(rootDir),
+    productivityStyle: options.expectedProductivityStyle || extractExpectedProductivityStyle(rootDir),
+    productivityScript: options.expectedProductivityScript || extractExpectedProductivityScript(rootDir)
   };
   const requestOptions = {
     fetchImpl: options.fetchImpl || global.fetch,
@@ -154,7 +166,8 @@ async function verifyProduction(options = {}) {
   await checkUrl('Runtime release marker', `${publicOrigin}/nfc/runtime-config.js`, [
     expected.release, expected.toolbarAsset, expected.assetManagerStyle, expected.assetManagerScript,
     expected.templateManagerStyle, expected.templateManagerScript,
-    expected.versionManagerStyle, expected.versionManagerScript, apiOrigin
+    expected.versionManagerStyle, expected.versionManagerScript,
+    expected.productivityStyle, expected.productivityScript, apiOrigin
   ]);
   await checkUrl('Toolbar release stylesheet', `${publicOrigin}${expected.toolbarAsset.split('?')[0]}`, [
     '--editor-toolbar-offset: 88px', 'padding-top: var(--editor-toolbar-offset)',
@@ -179,9 +192,17 @@ async function verifyProduction(options = {}) {
   await checkUrl('Version manager script', `${publicOrigin}${expected.versionManagerScript.split('?')[0]}`, [
     "const VERSION = '8.3.0'", 'syncPendingVersions', 'compareStates', 'editor:versionrestored'
   ]);
+  await checkUrl('Productivity tools stylesheet', `${publicOrigin}${expected.productivityStyle.split('?')[0]}`, [
+    '.editor-productivity-toolbar', '.editor-productivity-selected', '.editor-productivity-context-menu'
+  ]);
+  await checkUrl('Productivity tools script', `${publicOrigin}${expected.productivityScript.split('?')[0]}`, [
+    "const VERSION = '9.0.0'", 'groupSelection', 'distributeSelection', 'moveToOtherFace',
+    'editor:productivityselectionchange'
+  ]);
   await checkUrl('Service Worker release cache', `${publicOrigin}/nfc/sw.js`, [
     `CACHE_VERSION = '${expected.serviceWorkerCache}'`, '/nfc/editor-toolbar-release.css',
-    '/nfc/editor-asset-manager.js', '/nfc/editor-template-manager.js', '/nfc/editor-version-manager.js'
+    '/nfc/editor-asset-manager.js', '/nfc/editor-template-manager.js', '/nfc/editor-version-manager.js',
+    '/nfc/editor-productivity-tools.js'
   ]);
 
   checks.push(await executeCheck('API health snapshot', async () => {
@@ -266,6 +287,7 @@ module.exports = {
   extractExpectedAssetManagerStyle, extractExpectedAssetManagerScript,
   extractExpectedTemplateManagerStyle, extractExpectedTemplateManagerScript,
   extractExpectedVersionManagerStyle, extractExpectedVersionManagerScript,
+  extractExpectedProductivityStyle, extractExpectedProductivityScript,
   normalizeOrigin, renderSummary, requestWithRetry, verifyProduction, writeReport
 };
 
