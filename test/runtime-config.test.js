@@ -14,16 +14,21 @@ function runConfig(origin, configuredBase, pathname = '/', readyState = 'complet
   const document = {
     readyState,
     querySelector: () => null,
+    querySelectorAll: () => [],
+    getElementById: () => null,
     createElement: (tagName) => ({
       tagName: String(tagName).toUpperCase(),
       dataset: {},
       listeners: {},
-      addEventListener(name, handler) { this.listeners[name] = handler; }
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      setAttribute() {},
+      appendChild() {}
     }),
     addEventListener: (name, handler) => {
       if (name === 'DOMContentLoaded') domReadyHandler = handler;
     },
     head: { appendChild: (node) => appendedNodes.push(node) },
+    body: { appendChild() {} },
     documentElement: { dataset: {} }
   };
   const initialFetch = jest.fn(async () => ({ ok: true, status: 200 }));
@@ -33,6 +38,7 @@ function runConfig(origin, configuredBase, pathname = '/', readyState = 'complet
     __API_BASE_URL: configuredBase,
     EditorProductionGuard: { markSaved },
     fetch: initialFetch,
+    innerWidth: 1440,
     setTimeout: (handler) => handler()
   };
 
@@ -79,10 +85,12 @@ describe('Runtime API configuration', () => {
     const assetScript = editor.appendedNodes.find((node) => node.dataset.editorAssetManager === 'true');
     const templateStyles = editor.appendedNodes.find((node) => node.dataset.editorTemplateManagerStyle === 'true');
     const templateScript = editor.appendedNodes.find((node) => node.dataset.editorTemplateManager === 'true');
+    const versionStyles = editor.appendedNodes.find((node) => node.dataset.editorVersionManagerStyle === 'true');
+    const versionScript = editor.appendedNodes.find((node) => node.dataset.editorVersionManager === 'true');
     const guard = editor.appendedNodes.find((node) => node.dataset.editorProductionGuard === 'true');
 
-    expect(editor.release).toBe('2026.07.18-phase8.2');
-    expect(editor.appendedNodes).toHaveLength(6);
+    expect(editor.release).toBe('2026.07.18-phase8.3');
+    expect(editor.appendedNodes).toHaveLength(8);
     expect(toolbarStyles.href).toBe('/nfc/editor-toolbar-release.css?v=7.2');
     expect(toolbarStyles.rel).toBe('stylesheet');
     expect(assetStyles.href).toBe('/nfc/editor-asset-manager.css?v=8.1');
@@ -91,6 +99,9 @@ describe('Runtime API configuration', () => {
     expect(templateStyles.href).toBe('/nfc/editor-template-manager.css?v=8.2');
     expect(templateScript.src).toBe('/nfc/editor-template-manager.js?v=8.2');
     expect(templateScript.async).toBe(false);
+    expect(versionStyles.href).toBe('/nfc/editor-version-manager.css?v=8.3');
+    expect(versionScript.src).toBe('/nfc/editor-version-manager.js?v=8.3');
+    expect(versionScript.async).toBe(false);
     expect(guard.src).toBe('/nfc/editor-production-guard.js?v=1.0.3');
     expect(dashboard.appendedNodes).toHaveLength(0);
   });
@@ -98,20 +109,23 @@ describe('Runtime API configuration', () => {
   it('loads editor assets immediately and waits before bootstrapping the save guard', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html', 'loading');
 
-    expect(editor.appendedNodes).toHaveLength(5);
+    expect(editor.appendedNodes).toHaveLength(7);
     expect(editor.appendedNodes.some((node) => node.dataset.editorAssetManager === 'true')).toBe(true);
     expect(editor.appendedNodes.some((node) => node.dataset.editorTemplateManager === 'true')).toBe(true);
+    expect(editor.appendedNodes.some((node) => node.dataset.editorVersionManager === 'true')).toBe(true);
     editor.triggerDomReady();
-    expect(editor.appendedNodes).toHaveLength(6);
-    expect(editor.appendedNodes[5].dataset.editorProductionGuard).toBe('true');
+    expect(editor.appendedNodes).toHaveLength(8);
+    expect(editor.appendedNodes[7].dataset.editorProductionGuard).toBe('true');
   });
 
   it('reports when editor manager loaders become ready', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html');
     editor.triggerNodeLoad('editorAssetManager');
     editor.triggerNodeLoad('editorTemplateManager');
+    editor.triggerNodeLoad('editorVersionManager');
     expect(editor.document.documentElement.dataset.editorAssetManagerLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorTemplateManagerLoader).toBe('ready');
+    expect(editor.document.documentElement.dataset.editorVersionManagerLoader).toBe('ready');
   });
 
   it('keeps save monitoring active after another script replaces fetch', async () => {
