@@ -96,7 +96,13 @@ describe('cloud brand kit route helpers', () => {
       fonts: [{ role: 'heading', family: 'Cairo, sans-serif' }]
     };
     const patch = identityPatch(identity, { colors: false, fonts: true, logo: false });
-    expect(patch).toEqual({ 'data.inputs.name-font': 'Cairo, sans-serif' });
+    expect(patch).toEqual({
+      'data.inputs.name-font': 'Cairo, sans-serif',
+      'data.inputs.phone-btn-font': 'Cairo, sans-serif',
+      'data.inputs.phone-text-font': 'Cairo, sans-serif',
+      'data.inputs.social-text-font': 'Cairo, sans-serif',
+      'data.inputs.tagline-font': 'Cairo, sans-serif'
+    });
     expect(cleanHex('#AABBCC')).toBe('#aabbcc');
     expect(cleanHex('red')).toBe('');
     expect(cleanUrl('not-a-url')).toBe('');
