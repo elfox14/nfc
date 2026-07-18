@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v10';
+const CACHE_VERSION = 'v11';
 const STATIC_CACHE = `mcprime-static-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
@@ -16,6 +16,8 @@ const PRECACHE_ASSETS = [
   '/nfc/editor-asset-manager.js',
   '/nfc/editor-template-manager.css',
   '/nfc/editor-template-manager.js',
+  '/nfc/editor-version-manager.css',
+  '/nfc/editor-version-manager.js',
   '/nfc/manifest.json',
   '/nfc/logo.svg',
   '/nfc/mcprime-logo-optimized.webp',
