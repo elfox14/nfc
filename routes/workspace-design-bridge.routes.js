@@ -45,6 +45,10 @@ function resetWorkflowAfterEdit(workflow, userId, now) {
   };
 }
 
+function mayEdit(access, userId) {
+  return Boolean(access?.owner || (access?.workspace && canEdit(access.workspace, userId)));
+}
+
 module.exports = function createWorkspaceDesignBridgeRouter({
   getDb,
   designsCollectionName = 'designs',
@@ -61,13 +65,13 @@ module.exports = function createWorkspaceDesignBridgeRouter({
       const existingId = String(req.query.id || '');
       if (!isSafeDesignId(existingId)) return next();
       const design = await db.collection(designsCollectionName).findOne({ shortId: existingId });
-      if (!design || design.ownerId === req.user.userId || !design.workspaceId) return next();
+      if (!design || !design.workspaceId) return next();
 
       const access = await getDesignWorkspaceAccess({
         db, workspacesCollectionName, design, userId: req.user.userId
       });
-      if (!access.allowed) return next();
-      if (!canEdit(access.workspace, req.user.userId)) {
+      if (!access.allowed) return res.status(403).json({ error: 'Workspace access denied' });
+      if (!mayEdit(access, req.user.userId)) {
         return res.status(403).json({ error: 'Workspace edit permission required' });
       }
 
@@ -102,10 +106,10 @@ module.exports = function createWorkspaceDesignBridgeRouter({
       const db = getDb();
       if (!db) return res.status(500).json({ error: 'DB not connected' });
       const design = await db.collection(designsCollectionName).findOne({ shortId: String(req.params.id) });
-      if (!design || design.ownerId === req.user.userId || !design.workspaceId) return next();
+      if (!design || !design.workspaceId) return next();
       const access = await getDesignWorkspaceAccess({ db, workspacesCollectionName, design, userId: req.user.userId });
-      if (!access.allowed) return next();
-      if (!canEdit(access.workspace, req.user.userId)) return res.status(403).json({ error: 'Workspace edit permission required' });
+      if (!access.allowed) return res.status(403).json({ error: 'Workspace access denied' });
+      if (!mayEdit(access, req.user.userId)) return res.status(403).json({ error: 'Workspace edit permission required' });
 
       const allowedKeys = new Set(['position', 'fontSize', 'color', 'content', 'width', 'height', 'rotation', 'opacity', 'zIndex', 'display', 'text', 'src', 'url']);
       const updates = Object.fromEntries(Object.entries(req.body || {}).filter(([key]) => allowedKeys.has(key)));
@@ -166,4 +170,4 @@ module.exports = function createWorkspaceDesignBridgeRouter({
   return router;
 };
 
-module.exports._test = { resetWorkflowAfterEdit, sanitizeDesignData };
+module.exports._test = { mayEdit, resetWorkflowAfterEdit, sanitizeDesignData };
