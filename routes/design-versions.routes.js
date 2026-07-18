@@ -3,6 +3,7 @@
 const express = require('express');
 const { nanoid } = require('nanoid');
 const verifyToken = require('../auth-middleware');
+const { canEdit, getDesignWorkspaceAccess } = require('../utils/workspace-access');
 
 const DEFAULT_COLLECTION_NAME = 'designVersions';
 const DEFAULT_MAX_VERSIONS = 30;
@@ -79,6 +80,7 @@ function metadata(version) {
 module.exports = function createDesignVersionsRouter({
   getDb,
   designsCollectionName,
+  workspacesCollectionName = 'workspaces',
   sanitizeInputs,
   DOMPurify,
   versionsCollectionName = DEFAULT_COLLECTION_NAME,
@@ -104,18 +106,27 @@ module.exports = function createDesignVersionsRouter({
     return indexPromise;
   }
 
-  async function ownedDesign(req, res) {
+  async function authorizedDesign(req, res, requireEdit = false) {
     const { id } = req.params;
     if (!isSafeDesignId(id)) {
       res.status(400).json({ error: 'Invalid design id' });
       return null;
     }
-    const design = await getDb().collection(designsCollectionName).findOne({
-      shortId: id,
-      ownerId: req.user.userId
-    });
+    const design = await getDb().collection(designsCollectionName).findOne({ shortId: id });
     if (!design) {
       res.status(404).json({ error: 'Design not found or unauthorized' });
+      return null;
+    }
+    if (design.ownerId === req.user.userId) return design;
+    if (!design.workspaceId) {
+      res.status(404).json({ error: 'Design not found or unauthorized' });
+      return null;
+    }
+    const access = await getDesignWorkspaceAccess({
+      db: getDb(), workspacesCollectionName, design, userId: req.user.userId
+    });
+    if (!access.allowed || (requireEdit && !canEdit(access.workspace, req.user.userId))) {
+      res.status(403).json({ error: requireEdit ? 'Workspace edit permission required' : 'Workspace access denied' });
       return null;
     }
     return design;
@@ -135,7 +146,7 @@ module.exports = function createDesignVersionsRouter({
     }
   }
 
-  async function insertVersion({ design, ownerId, name, source, state }) {
+  async function insertVersion({ design, ownerId, createdBy, name, source, state }) {
     await ensureIndexes();
     const document = {
       versionId: nanoid(12),
@@ -145,7 +156,7 @@ module.exports = function createDesignVersionsRouter({
       source: VERSION_SOURCE.has(source) ? source : 'manual',
       state: sanitizeSnapshot(state || design.data || {}, sanitizeInputs, DOMPurify),
       schemaVersion: 1,
-      createdBy: ownerId,
+      createdBy: createdBy || ownerId,
       createdAt: new Date()
     };
     await collection().insertOne(document);
@@ -156,13 +167,13 @@ module.exports = function createDesignVersionsRouter({
   router.get('/design/:id/versions', verifyToken, async (req, res) => {
     try {
       if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
-      const design = await ownedDesign(req, res);
+      const design = await authorizedDesign(req, res, false);
       if (!design) return undefined;
       await ensureIndexes();
       const requestedLimit = Number.parseInt(req.query.limit, 10);
       const limit = Number.isFinite(requestedLimit) ? Math.min(50, Math.max(1, requestedLimit)) : 30;
       const versions = await collection()
-        .find({ designShortId: design.shortId, ownerId: req.user.userId })
+        .find({ designShortId: design.shortId, ownerId: design.ownerId })
         .project({ state: 0 })
         .sort({ createdAt: -1 })
         .limit(limit)
@@ -177,11 +188,12 @@ module.exports = function createDesignVersionsRouter({
   router.post('/design/:id/versions', verifyToken, async (req, res) => {
     try {
       if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
-      const design = await ownedDesign(req, res);
+      const design = await authorizedDesign(req, res, true);
       if (!design) return undefined;
       const version = await insertVersion({
         design,
-        ownerId: req.user.userId,
+        ownerId: design.ownerId,
+        createdBy: req.user.userId,
         name: req.body?.name,
         source: req.body?.source,
         state: req.body?.state
@@ -196,12 +208,12 @@ module.exports = function createDesignVersionsRouter({
   router.get('/design/:id/versions/:versionId', verifyToken, async (req, res) => {
     try {
       if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
-      const design = await ownedDesign(req, res);
+      const design = await authorizedDesign(req, res, false);
       if (!design) return undefined;
       await ensureIndexes();
       const version = await collection().findOne({
         designShortId: design.shortId,
-        ownerId: req.user.userId,
+        ownerId: design.ownerId,
         versionId: req.params.versionId
       });
       if (!version) return res.status(404).json({ error: 'Version not found' });
@@ -215,19 +227,20 @@ module.exports = function createDesignVersionsRouter({
   router.post('/design/:id/versions/:versionId/restore', verifyToken, async (req, res) => {
     try {
       if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
-      const design = await ownedDesign(req, res);
+      const design = await authorizedDesign(req, res, true);
       if (!design) return undefined;
       await ensureIndexes();
       const version = await collection().findOne({
         designShortId: design.shortId,
-        ownerId: req.user.userId,
+        ownerId: design.ownerId,
         versionId: req.params.versionId
       });
       if (!version) return res.status(404).json({ error: 'Version not found' });
 
       const safetyVersion = await insertVersion({
         design,
-        ownerId: req.user.userId,
+        ownerId: design.ownerId,
+        createdBy: req.user.userId,
         name: cleanVersionName(req.body?.safetyName, 'Before restore'),
         source: 'pre-restore',
         state: design.data || {}
@@ -244,9 +257,28 @@ module.exports = function createDesignVersionsRouter({
         });
       }
 
+      const now = new Date();
+      const workflow = design.workspaceId ? {
+        ...(design.workflow || {}),
+        enabled: true,
+        status: 'draft',
+        revision: Number(design.workflow?.revision || 0) + 1,
+        submittedAt: null,
+        submittedBy: null,
+        reviewedAt: null,
+        reviewedBy: null,
+        reviewNote: '',
+        publishedAt: null,
+        publishedBy: null,
+        lastEditedBy: req.user.userId,
+        updatedAt: now
+      } : design.workflow;
+
+      const patch = { data: restoredState, lastModified: now, lastEditedBy: req.user.userId };
+      if (workflow) patch.workflow = workflow;
       await getDb().collection(designsCollectionName).updateOne(
-        { shortId: design.shortId, ownerId: req.user.userId },
-        { $set: { data: restoredState, lastModified: new Date() } }
+        { shortId: design.shortId },
+        { $set: patch }
       );
 
       return res.json({
@@ -254,7 +286,8 @@ module.exports = function createDesignVersionsRouter({
         cloud: true,
         restoredVersion: metadata(version),
         safetyVersion: metadata(safetyVersion),
-        state: restoredState
+        state: restoredState,
+        workflowStatus: workflow?.status || null
       });
     } catch (error) {
       console.error('[DesignVersions] Restore failed:', error);
@@ -265,12 +298,12 @@ module.exports = function createDesignVersionsRouter({
   router.delete('/design/:id/versions/:versionId', verifyToken, async (req, res) => {
     try {
       if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
-      const design = await ownedDesign(req, res);
+      const design = await authorizedDesign(req, res, true);
       if (!design) return undefined;
       await ensureIndexes();
       const result = await collection().deleteOne({
         designShortId: design.shortId,
-        ownerId: req.user.userId,
+        ownerId: design.ownerId,
         versionId: req.params.versionId
       });
       if (!result.deletedCount) return res.status(404).json({ error: 'Version not found' });

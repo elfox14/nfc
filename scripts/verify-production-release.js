@@ -46,6 +46,10 @@ const extractExpectedBrandKitStyle = root => extractRuntimeAsset(root, 'brand-ki
 const extractExpectedBrandKitClient = root => extractRuntimeAsset(root, 'brand-kit-client.js');
 const extractExpectedDashboardBrandKitScript = root => extractRuntimeAsset(root, 'dashboard-brand-kit.js');
 const extractExpectedEditorBrandKitScript = root => extractRuntimeAsset(root, 'editor-brand-kit.js');
+const extractExpectedWorkspaceStyle = root => extractRuntimeAsset(root, 'workspace.css');
+const extractExpectedWorkspaceClient = root => extractRuntimeAsset(root, 'workspace-client.js');
+const extractExpectedDashboardWorkspacesScript = root => extractRuntimeAsset(root, 'dashboard-workspaces.js');
+const extractExpectedEditorReviewWorkflowScript = root => extractRuntimeAsset(root, 'editor-review-workflow.js');
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -122,7 +126,11 @@ async function verifyProduction(options = {}) {
     brandKitStyle: options.expectedBrandKitStyle || extractExpectedBrandKitStyle(rootDir),
     brandKitClient: options.expectedBrandKitClient || extractExpectedBrandKitClient(rootDir),
     dashboardBrandKitScript: options.expectedDashboardBrandKitScript || extractExpectedDashboardBrandKitScript(rootDir),
-    editorBrandKitScript: options.expectedEditorBrandKitScript || extractExpectedEditorBrandKitScript(rootDir)
+    editorBrandKitScript: options.expectedEditorBrandKitScript || extractExpectedEditorBrandKitScript(rootDir),
+    workspaceStyle: options.expectedWorkspaceStyle || extractExpectedWorkspaceStyle(rootDir),
+    workspaceClient: options.expectedWorkspaceClient || extractExpectedWorkspaceClient(rootDir),
+    dashboardWorkspacesScript: options.expectedDashboardWorkspacesScript || extractExpectedDashboardWorkspacesScript(rootDir),
+    editorReviewWorkflowScript: options.expectedEditorReviewWorkflowScript || extractExpectedEditorReviewWorkflowScript(rootDir)
   };
   const requestOptions = {
     fetchImpl: options.fetchImpl || global.fetch,
@@ -151,11 +159,12 @@ async function verifyProduction(options = {}) {
     expected.versionManagerStyle, expected.versionManagerScript,
     expected.productivityStyle, expected.productivityScript,
     expected.brandKitStyle, expected.brandKitClient, expected.dashboardBrandKitScript,
-    expected.editorBrandKitScript, apiOrigin
+    expected.editorBrandKitScript, expected.workspaceStyle, expected.workspaceClient,
+    expected.dashboardWorkspacesScript, expected.editorReviewWorkflowScript, apiOrigin
   ]);
   await checkUrl('Toolbar release stylesheet', `${publicOrigin}${expected.toolbarAsset.split('?')[0]}`, [
     '--editor-toolbar-offset: 88px', 'padding-top: var(--editor-toolbar-offset)',
-    'height: calc(100dvh - var(--editor-toolbar-offset))'
+    'height: calc(100dvh - var(--editor-toolbar-offset))', '#editor-review-workflow-btn'
   ]);
   await checkUrl('Asset manager stylesheet', `${publicOrigin}${expected.assetManagerStyle.split('?')[0]}`, [
     '.asset-drop-zone', '.asset-upload-status', '.asset-crop-toolbar'
@@ -193,11 +202,24 @@ async function verifyProduction(options = {}) {
   await checkUrl('Editor Brand Kit integration', `${publicOrigin}${expected.editorBrandKitScript.split('?')[0]}`, [
     "const VERSION = '10.0.0'", 'applyIdentity', 'saveTemplate', 'editor:brandkitapplied'
   ]);
+  await checkUrl('Team workspace stylesheet', `${publicOrigin}${expected.workspaceStyle.split('?')[0]}`, [
+    '.workspace-dashboard-section', '.workspace-editor-modal', '.workspace-status'
+  ]);
+  await checkUrl('Team workspace API client', `${publicOrigin}${expected.workspaceClient.split('?')[0]}`, [
+    "const VERSION = '11.0.0'", 'submitReview', 'resolveComment', 'linkDesign'
+  ]);
+  await checkUrl('Dashboard team workspace', `${publicOrigin}${expected.dashboardWorkspacesScript.split('?')[0]}`, [
+    "const VERSION = '11.0.0'", 'section-team-workspace', 'request_changes', 'linkDesign'
+  ]);
+  await checkUrl('Editor review workflow', `${publicOrigin}${expected.editorReviewWorkflowScript.split('?')[0]}`, [
+    "const VERSION = '11.0.0'", 'workspace-review-modal', 'submitComment', 'resolveComment'
+  ]);
   await checkUrl('Service Worker release cache', `${publicOrigin}/nfc/sw.js`, [
     `CACHE_VERSION = '${expected.serviceWorkerCache}'`, '/nfc/editor-toolbar-release.css',
     '/nfc/editor-asset-manager.js', '/nfc/editor-template-manager.js', '/nfc/editor-version-manager.js',
     '/nfc/editor-productivity-tools.js', '/nfc/brand-kit.css', '/nfc/brand-kit-client.js',
-    '/nfc/dashboard-brand-kit.js', '/nfc/editor-brand-kit.js'
+    '/nfc/dashboard-brand-kit.js', '/nfc/editor-brand-kit.js', '/nfc/workspace.css',
+    '/nfc/workspace-client.js', '/nfc/dashboard-workspaces.js', '/nfc/editor-review-workflow.js'
   ]);
 
   checks.push(await executeCheck('API health snapshot', async () => {
@@ -297,6 +319,10 @@ module.exports = {
   extractExpectedBrandKitClient,
   extractExpectedDashboardBrandKitScript,
   extractExpectedEditorBrandKitScript,
+  extractExpectedWorkspaceStyle,
+  extractExpectedWorkspaceClient,
+  extractExpectedDashboardWorkspacesScript,
+  extractExpectedEditorReviewWorkflowScript,
   normalizeOrigin,
   renderSummary,
   requestWithRetry,

@@ -4,12 +4,16 @@ async function createIndexes(db, collectionNames) {
     usersCollectionName,
     savedCardsCollectionName,
     cardRequestsCollectionName,
-    brandKitsCollectionName = 'brandKits'
+    brandKitsCollectionName = 'brandKits',
+    workspacesCollectionName = 'workspaces',
+    designReviewsCollectionName = 'designReviews',
+    designVersionsCollectionName = 'designVersions'
   } = collectionNames;
 
   await db.collection(designsCollectionName).createIndex({ shortId: 1 }, { unique: true });
   await db.collection(designsCollectionName).createIndex({ ownerId: 1 });
   await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
+  await db.collection(designsCollectionName).createIndex({ workspaceId: 1, 'workflow.status': 1, lastModified: -1 });
 
   await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
   await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
@@ -29,6 +33,17 @@ async function createIndexes(db, collectionNames) {
   await db.collection(brandKitsCollectionName).createIndex({ kitId: 1 }, { unique: true });
   await db.collection(brandKitsCollectionName).createIndex({ ownerId: 1, updatedAt: -1 });
   await db.collection(brandKitsCollectionName).createIndex({ 'members.userId': 1, updatedAt: -1 });
+
+  await db.collection(workspacesCollectionName).createIndex({ workspaceId: 1 }, { unique: true });
+  await db.collection(workspacesCollectionName).createIndex({ ownerId: 1, updatedAt: -1 });
+  await db.collection(workspacesCollectionName).createIndex({ 'members.userId': 1, updatedAt: -1 });
+
+  await db.collection(designReviewsCollectionName).createIndex({ entryId: 1 }, { unique: true });
+  await db.collection(designReviewsCollectionName).createIndex({ designId: 1, createdAt: 1 });
+  await db.collection(designReviewsCollectionName).createIndex({ workspaceId: 1, createdAt: -1 });
+
+  await db.collection(designVersionsCollectionName).createIndex({ designShortId: 1, ownerId: 1, createdAt: -1 });
+  await db.collection(designVersionsCollectionName).createIndex({ designShortId: 1, versionId: 1 }, { unique: true });
 }
 
 async function connectDatabase({

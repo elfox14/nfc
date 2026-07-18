@@ -2,6 +2,10 @@
   --editor-toolbar-offset: 88px;
 }
 
+.workspace-editor-modal[hidden] {
+  display: none !important;
+}
+
 .editor-body {
   padding-top: var(--editor-toolbar-offset) !important;
 }
@@ -67,6 +71,12 @@
     min-height: calc(100dvh - var(--editor-toolbar-offset)) !important;
   }
 
+  .editor-body .tb-history {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+  }
+
   .editor-body #editor-brand-kit-btn {
     display: inline-flex !important;
     align-items: center;
@@ -85,5 +95,16 @@
   .editor-body #editor-brand-kit-btn i {
     margin: 0;
     font-size: 1rem;
+  }
+
+  .editor-body #editor-review-workflow-btn {
+    display: none !important;
+  }
+
+  #editor-review-workflow-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
   }
 }

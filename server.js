@@ -79,6 +79,9 @@ const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgro
 const savedCardsCollectionName = 'savedCards';
 const cardRequestsCollectionName = 'cardRequests';
 const brandKitsCollectionName = process.env.MONGO_BRAND_KITS_COLL || 'brandKits';
+const workspacesCollectionName = process.env.MONGO_WORKSPACES_COLL || 'workspaces';
+const designReviewsCollectionName = process.env.MONGO_DESIGN_REVIEWS_COLL || 'designReviews';
+const designVersionsCollectionName = process.env.MONGO_DESIGN_VERSIONS_COLL || 'designVersions';
 let db;
 
 connectDatabase({
@@ -89,7 +92,10 @@ connectDatabase({
     usersCollectionName,
     savedCardsCollectionName,
     cardRequestsCollectionName,
-    brandKitsCollectionName
+    brandKitsCollectionName,
+    workspacesCollectionName,
+    designReviewsCollectionName,
+    designVersionsCollectionName
   }
 })
   .then(database => {
@@ -112,6 +118,14 @@ function absoluteBaseUrl(req) {
   const host = req.get('host');
   return `${proto}://${host}`;
 }
+
+// Workspace designs remain private until an authorized reviewer publishes them.
+const createWorkspacePublicationGuard = require('./routes/workspace-publication-guard.routes');
+app.use(createWorkspacePublicationGuard({
+  getDb: () => db,
+  designsCollectionName,
+  workspacesCollectionName
+}));
 
 const createViewerRouter = require('./routes/viewer.routes');
 app.use(createViewerRouter({ getDb: () => db, designsCollectionName, rootDir, absoluteBaseUrl, DOMPurify }));
@@ -149,6 +163,16 @@ app.use('/api/auth/forgot-password', authLimiter);
 app.use('/api/auth/reset-password', authLimiter);
 app.use('/api/auth/verify-email', authLimiter);
 
+// Collaborative saves intercept existing workspace designs before the legacy owner/fork route.
+const createWorkspaceDesignBridgeRouter = require('./routes/workspace-design-bridge.routes');
+app.use('/api', createWorkspaceDesignBridgeRouter({
+  getDb: () => db,
+  designsCollectionName,
+  workspacesCollectionName,
+  sanitizeInputs,
+  DOMPurify
+}));
+
 // --- DESIGNS & UPLOADS ROUTES (MODULAR) ---
 const createDesignsRouter = require('./routes/designs.routes');
 app.use('/api', createDesignsRouter({
@@ -167,14 +191,25 @@ const createDesignVersionsRouter = require('./routes/design-versions.routes');
 app.use('/api', createDesignVersionsRouter({
   getDb: () => db,
   designsCollectionName,
+  workspacesCollectionName,
   sanitizeInputs,
-  DOMPurify
+  DOMPurify,
+  versionsCollectionName: designVersionsCollectionName
 }));
 
 const createBrandKitsRouter = require('./routes/brand-kits.routes');
 app.use('/api', createBrandKitsRouter({
   getDb: () => db,
   brandKitsCollectionName,
+  usersCollectionName,
+  designsCollectionName
+}));
+
+const createWorkspacesRouter = require('./routes/workspaces.routes');
+app.use('/api', createWorkspacesRouter({
+  getDb: () => db,
+  workspacesCollectionName,
+  designReviewsCollectionName,
   usersCollectionName,
   designsCollectionName
 }));
