@@ -46,6 +46,7 @@ function createFetch(overrides = {}) {
     '/nfc/workspace-client.js': response(200, read('workspace-client.js')),
     '/nfc/dashboard-workspaces.js': response(200, read('dashboard-workspaces.js')),
     '/nfc/editor-review-workflow.js': response(200, read('editor-review-workflow.js')),
+    '/nfc/view/viewer.js': response(200, read('view/viewer.js')),
     '/nfc/sw.js': response(200, read('sw.js')),
     '/healthz': response(200, JSON.stringify(health())),
     '/readyz': response(200, JSON.stringify(health())),
@@ -92,8 +93,8 @@ describe('production release verifier', () => {
       cacheBuster: 'test'
     });
     expect(report.status).toBe('passed');
-    expect(report.totals).toEqual({ checks: 26, passed: 26, failed: 0 });
-    expect(fetchImpl).toHaveBeenCalledTimes(26);
+    expect(report.totals).toEqual({ checks: 27, passed: 27, failed: 0 });
+    expect(fetchImpl).toHaveBeenCalledTimes(27);
     expect(report.expected).toMatchObject({
       release: '2026.07.19-phase11.0',
       serviceWorkerCache: 'v14',
