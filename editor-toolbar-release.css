@@ -67,7 +67,13 @@
     min-height: calc(100dvh - var(--editor-toolbar-offset)) !important;
   }
 
-  .editor-body #editor-brand-kit-btn {
+  .editor-body .tb-history {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .editor-body :where(#editor-brand-kit-btn, #editor-review-workflow-btn) {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
@@ -82,8 +88,24 @@
     font-size: 0;
   }
 
-  .editor-body #editor-brand-kit-btn i {
+  .editor-body :where(#editor-brand-kit-btn, #editor-review-workflow-btn) i {
     margin: 0;
     font-size: 1rem;
+  }
+
+  .editor-body #editor-review-workflow-btn[data-workflow-status='in_review'] {
+    border-color: color-mix(in srgb, #2563eb 48%, transparent);
+    color: #60a5fa;
+  }
+
+  .editor-body #editor-review-workflow-btn[data-workflow-status='changes_requested'] {
+    border-color: color-mix(in srgb, #d97706 52%, transparent);
+    color: #fb923c;
+  }
+
+  .editor-body #editor-review-workflow-btn[data-workflow-status='approved'],
+  .editor-body #editor-review-workflow-btn[data-workflow-status='published'] {
+    border-color: color-mix(in srgb, #16a34a 52%, transparent);
+    color: #4ade80;
   }
 }
