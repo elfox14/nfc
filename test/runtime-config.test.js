@@ -87,10 +87,12 @@ describe('Runtime API configuration', () => {
     const templateScript = editor.appendedNodes.find((node) => node.dataset.editorTemplateManager === 'true');
     const versionStyles = editor.appendedNodes.find((node) => node.dataset.editorVersionManagerStyle === 'true');
     const versionScript = editor.appendedNodes.find((node) => node.dataset.editorVersionManager === 'true');
+    const productivityStyles = editor.appendedNodes.find((node) => node.dataset.editorProductivityToolsStyle === 'true');
+    const productivityScript = editor.appendedNodes.find((node) => node.dataset.editorProductivityTools === 'true');
     const guard = editor.appendedNodes.find((node) => node.dataset.editorProductionGuard === 'true');
 
-    expect(editor.release).toBe('2026.07.18-phase8.3');
-    expect(editor.appendedNodes).toHaveLength(8);
+    expect(editor.release).toBe('2026.07.18-phase9.0');
+    expect(editor.appendedNodes).toHaveLength(10);
     expect(toolbarStyles.href).toBe('/nfc/editor-toolbar-release.css?v=7.2');
     expect(toolbarStyles.rel).toBe('stylesheet');
     expect(assetStyles.href).toBe('/nfc/editor-asset-manager.css?v=8.1');
@@ -102,6 +104,9 @@ describe('Runtime API configuration', () => {
     expect(versionStyles.href).toBe('/nfc/editor-version-manager.css?v=8.3');
     expect(versionScript.src).toBe('/nfc/editor-version-manager.js?v=8.3');
     expect(versionScript.async).toBe(false);
+    expect(productivityStyles.href).toBe('/nfc/editor-productivity-tools.css?v=9.0');
+    expect(productivityScript.src).toBe('/nfc/editor-productivity-tools.js?v=9.0');
+    expect(productivityScript.async).toBe(false);
     expect(guard.src).toBe('/nfc/editor-production-guard.js?v=1.0.3');
     expect(dashboard.appendedNodes).toHaveLength(0);
   });
@@ -109,13 +114,14 @@ describe('Runtime API configuration', () => {
   it('loads editor assets immediately and waits before bootstrapping the save guard', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html', 'loading');
 
-    expect(editor.appendedNodes).toHaveLength(7);
+    expect(editor.appendedNodes).toHaveLength(9);
     expect(editor.appendedNodes.some((node) => node.dataset.editorAssetManager === 'true')).toBe(true);
     expect(editor.appendedNodes.some((node) => node.dataset.editorTemplateManager === 'true')).toBe(true);
     expect(editor.appendedNodes.some((node) => node.dataset.editorVersionManager === 'true')).toBe(true);
+    expect(editor.appendedNodes.some((node) => node.dataset.editorProductivityTools === 'true')).toBe(true);
     editor.triggerDomReady();
-    expect(editor.appendedNodes).toHaveLength(8);
-    expect(editor.appendedNodes[7].dataset.editorProductionGuard).toBe('true');
+    expect(editor.appendedNodes).toHaveLength(10);
+    expect(editor.appendedNodes[9].dataset.editorProductionGuard).toBe('true');
   });
 
   it('reports when editor manager loaders become ready', () => {
@@ -123,9 +129,11 @@ describe('Runtime API configuration', () => {
     editor.triggerNodeLoad('editorAssetManager');
     editor.triggerNodeLoad('editorTemplateManager');
     editor.triggerNodeLoad('editorVersionManager');
+    editor.triggerNodeLoad('editorProductivityTools');
     expect(editor.document.documentElement.dataset.editorAssetManagerLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorTemplateManagerLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorVersionManagerLoader).toBe('ready');
+    expect(editor.document.documentElement.dataset.editorProductivityToolsLoader).toBe('ready');
   });
 
   it('keeps save monitoring active after another script replaces fetch', async () => {
