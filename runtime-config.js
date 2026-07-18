@@ -103,6 +103,32 @@
   loadAssetManager();
   loadTemplateManager();
 
+  function ensureLegacyStyleControls() {
+    if (!document.body) return;
+    const defaults = [
+      ['phone-btn-font', 'Tajawal, sans-serif'],
+      ['phone-btn-padding', '6']
+    ];
+    let host = document.getElementById('editor-legacy-style-controls');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'editor-legacy-style-controls';
+      host.hidden = true;
+      host.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(host);
+    }
+    defaults.forEach(([id, value]) => {
+      if (document.getElementById(id)) return;
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.id = id;
+      input.value = value;
+      input.dataset.editorCompatibilityControl = 'true';
+      host.appendChild(input);
+    });
+    document.documentElement.dataset.editorLegacyControls = 'ready';
+  }
+
   function exposeLegacyEditorGlobals() {
     try {
       if (!window.StateManager && typeof StateManager !== 'undefined') window.StateManager = StateManager;
@@ -193,6 +219,7 @@
   }
 
   function finishEditorBootstrap() {
+    ensureLegacyStyleControls();
     exposeLegacyEditorGlobals();
     window.setTimeout(loadProductionGuard, 0);
   }
