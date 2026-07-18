@@ -24,11 +24,32 @@
     }
   }
 
-  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase7.1';
+  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase7.2';
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
   if (!isEditor) return;
+
+  function loadToolbarReleaseStyles() {
+    if (document.querySelector('link[data-editor-toolbar-release]')) return;
+
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = '/nfc/editor-toolbar-release.css?v=7.2';
+    stylesheet.dataset.editorToolbarRelease = 'true';
+    stylesheet.addEventListener('load', () => {
+      document.documentElement.dataset.editorToolbarRelease = 'ready';
+    }, { once: true });
+    stylesheet.addEventListener('error', () => {
+      document.documentElement.dataset.editorToolbarRelease = 'load-error';
+      console.error('[RuntimeConfig] Failed to load editor toolbar release styles.');
+    }, { once: true });
+
+    document.documentElement.dataset.editorToolbarRelease = 'loading';
+    document.head.appendChild(stylesheet);
+  }
+
+  loadToolbarReleaseStyles();
 
   function isSaveRequest(input, init) {
     const method = String(init?.method || input?.method || 'GET').toUpperCase();
