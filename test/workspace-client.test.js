@@ -5,14 +5,15 @@ function response(status, payload) {
   return { ok: status >= 200 && status < 300, status, json: async () => payload };
 }
 
-function loadClient(fetchImpl) {
+function loadClient(fetchImpl, pathname = '/nfc/dashboard.html', body = '') {
   jest.resetModules();
-  document.documentElement.innerHTML = '<head></head><body></body>';
-  window.history.replaceState({}, '', '/nfc/dashboard.html');
+  document.documentElement.innerHTML = `<head></head><body>${body}</body>`;
+  window.history.replaceState({}, '', pathname);
   sessionStorage.setItem('authAccessToken', 'workspace-access-token');
   window.fetch = fetchImpl;
   delete window.Auth;
   delete window.WorkspaceClient;
+  delete window.EditorReviewWorkflow;
   jest.isolateModules(() => require('../workspace-client'));
   return window.WorkspaceClient;
 }
@@ -51,6 +52,32 @@ describe('Workspace browser client', () => {
     expect(fetchImpl.mock.calls[0][0]).toContain('/api/workspaces/workspace-1/members');
     expect(fetchImpl.mock.calls[1][0]).toContain('/api/workspaces/workspace-1/designs/card-123');
     expect(fetchImpl.mock.calls[1][1].method).toBe('POST');
+  });
+
+  test('removes the injected truncation warning text from editor pages', () => {
+    const client = loadClient(jest.fn(), '/nfc/editor.html');
+    document.body.prepend(document.createTextNode('Warning: truncated output (original token count: 41854) Total output lines: 2530'));
+
+    expect(client.removeInjectedOutputWarning()).toBe(true);
+    expect(document.body.textContent).not.toContain('Warning: truncated output');
+    expect(document.documentElement.dataset.editorOutputWarning).toBe('removed');
+  });
+
+  test('adds review to the mobile more menu instead of crowding the toolbar', () => {
+    const client = loadClient(
+      jest.fn(),
+      '/nfc/editor.html?id=card-123',
+      '<div id="toolbar-more-menu-floating"><hr></div>'
+    );
+    window.EditorReviewWorkflow = { open: jest.fn() };
+
+    expect(client.mountMobileReviewMenu()).toBe(false);
+    const button = document.getElementById('editor-review-workflow-menu-btn');
+    expect(button).not.toBeNull();
+    expect(button.textContent).toContain('مراجعة التصميم');
+    button.click();
+    expect(window.EditorReviewWorkflow.open).toHaveBeenCalledTimes(1);
+    expect(document.documentElement.dataset.editorMobileReviewMenu).toBe('ready');
   });
 
   test('surfaces authorization errors with status and payload', async () => {
