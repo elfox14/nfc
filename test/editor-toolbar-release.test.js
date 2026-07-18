@@ -14,14 +14,18 @@ describe('editor toolbar production release patch', () => {
     expect(css).toContain('.workspace-editor-modal[hidden]');
   });
 
-  test('keeps Brand Kit in the mobile toolbar and moves review into the more menu', () => {
+  test('keeps version history accessible and moves secondary mobile actions into more', () => {
     const css = read('editor-toolbar-release.css');
     expect(css).toContain('@media (min-width: 1025px) and (max-width: 1920px)');
     expect(css).toContain('.editor-body .tb-logo-text');
     expect(css).toContain('@media (min-width: 1025px) and (max-width: 1600px)');
+    expect(css).toContain('.editor-body #editor-versions-btn');
+    expect(css).toContain('z-index: 4');
     expect(css).toContain('.editor-body #editor-brand-kit-btn');
     expect(css).toContain('.editor-body #editor-review-workflow-btn');
     expect(css).toContain('display: none !important');
+    expect(css).toContain('#editor-versions-menu-btn');
+    expect(css).toContain('#editor-brand-kit-menu-btn');
     expect(css).toContain('#editor-review-workflow-menu-btn');
     expect(css).not.toContain('#save-share-btn');
     expect(css).not.toContain('#preview-mode-btn');

@@ -58,47 +58,111 @@
       node.remove();
       removed = true;
     });
-    if (removed) document.documentElement.dataset.editorOutputWarning = 'removed';
+    document.documentElement.dataset.editorOutputWarning = 'removed';
     return removed;
   }
 
-  function openReviewWorkflow() {
-    if (global.EditorReviewWorkflow?.open) {
-      global.EditorReviewWorkflow.open();
+  function runWhenReady(getApi, callback) {
+    const api = getApi();
+    if (api) {
+      callback(api);
       return;
     }
     let attempts = 0;
     const timer = global.setInterval(() => {
       attempts += 1;
-      if (global.EditorReviewWorkflow?.open) {
+      const readyApi = getApi();
+      if (readyApi) {
         global.clearInterval(timer);
-        global.EditorReviewWorkflow.open();
+        callback(readyApi);
       } else if (attempts >= 20) {
         global.clearInterval(timer);
       }
     }, 50);
   }
 
-  function mountMobileReviewMenu() {
-    if (!isEditorRoute() || document.getElementById('editor-review-workflow-menu-btn')) return false;
+  function openVersionHistory() {
+    runWhenReady(
+      () => global.EditorVersionManager && typeof global.EditorVersionManager.open === 'function'
+        ? global.EditorVersionManager
+        : null,
+      api => api.open()
+    );
+  }
+
+  function openBrandKit() {
+    runWhenReady(
+      () => global.EditorBrandKit && typeof global.EditorBrandKit.open === 'function'
+        ? global.EditorBrandKit
+        : null,
+      api => api.open()
+    );
+  }
+
+  function openReviewWorkflow() {
+    runWhenReady(
+      () => global.EditorReviewWorkflow && typeof global.EditorReviewWorkflow.open === 'function'
+        ? global.EditorReviewWorkflow
+        : null,
+      api => api.open()
+    );
+  }
+
+  function mountMobileMenuButton({ id, icon, arabic, english, handler, datasetKey }) {
+    if (!isEditorRoute() || document.getElementById(id)) return false;
     const menu = document.getElementById('toolbar-more-menu-floating');
     if (!menu) return false;
     const button = document.createElement('button');
     button.type = 'button';
-    button.id = 'editor-review-workflow-menu-btn';
-    button.innerHTML = `<i class="fas fa-clipboard-check"></i> ${document.documentElement.lang.startsWith('en') ? 'Review workflow' : 'مراجعة التصميم'}`;
-    button.addEventListener('click', openReviewWorkflow);
+    button.id = id;
+    button.innerHTML = `<i class="${icon}"></i> ${document.documentElement.lang.startsWith('en') ? english : arabic}`;
+    button.addEventListener('click', handler);
     const divider = menu.querySelector('hr');
     if (divider) divider.insertAdjacentElement('beforebegin', button);
     else menu.appendChild(button);
-    document.documentElement.dataset.editorMobileReviewMenu = 'ready';
+    document.documentElement.dataset[datasetKey] = 'ready';
     return true;
+  }
+
+  function mountMobileVersionMenu() {
+    return mountMobileMenuButton({
+      id: 'editor-versions-menu-btn',
+      icon: 'fas fa-history',
+      arabic: 'سجل الإصدارات',
+      english: 'Version history',
+      handler: openVersionHistory,
+      datasetKey: 'editorMobileVersionMenu'
+    });
+  }
+
+  function mountMobileBrandKitMenu() {
+    return mountMobileMenuButton({
+      id: 'editor-brand-kit-menu-btn',
+      icon: 'fas fa-swatchbook',
+      arabic: 'هوية الشركة',
+      english: 'Brand Kit',
+      handler: openBrandKit,
+      datasetKey: 'editorMobileBrandKitMenu'
+    });
+  }
+
+  function mountMobileReviewMenu() {
+    return mountMobileMenuButton({
+      id: 'editor-review-workflow-menu-btn',
+      icon: 'fas fa-clipboard-check',
+      arabic: 'مراجعة التصميم',
+      english: 'Review workflow',
+      handler: openReviewWorkflow,
+      datasetKey: 'editorMobileReviewMenu'
+    });
   }
 
   function installEditorReleaseFixes() {
     if (!isEditorRoute()) return;
     const apply = () => {
       removeInjectedOutputWarning();
+      mountMobileVersionMenu();
+      mountMobileBrandKitMenu();
       mountMobileReviewMenu();
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply, { once: true });
@@ -166,6 +230,8 @@
       return data;
     },
     removeInjectedOutputWarning,
+    mountMobileVersionMenu,
+    mountMobileBrandKitMenu,
     mountMobileReviewMenu
   };
 

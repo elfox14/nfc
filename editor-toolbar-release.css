@@ -71,36 +71,41 @@
     min-height: calc(100dvh - var(--editor-toolbar-offset)) !important;
   }
 
+  .editor-body .tb-left {
+    position: relative;
+    z-index: 3;
+  }
+
+  .editor-body .tb-right {
+    position: relative;
+    z-index: 2;
+  }
+
   .editor-body .tb-history {
     display: flex !important;
     align-items: center;
     gap: 6px;
   }
 
-  .editor-body #editor-brand-kit-btn {
+  .editor-body #editor-versions-btn {
+    position: relative;
+    z-index: 4;
     display: inline-flex !important;
+    flex: 0 0 38px;
     align-items: center;
     justify-content: center;
-    width: 38px;
+    width: 38px !important;
     min-width: 38px;
-    height: 38px;
-    padding: 0;
-    border: 1px solid color-mix(in srgb, var(--primary-color, #2563eb) 28%, transparent);
-    border-radius: 11px;
-    background: color-mix(in srgb, var(--primary-color, #2563eb) 10%, transparent);
-    color: var(--primary-color, #2563eb);
-    font-size: 0;
+    height: 38px !important;
   }
 
-  .editor-body #editor-brand-kit-btn i {
-    margin: 0;
-    font-size: 1rem;
-  }
-
+  .editor-body #editor-brand-kit-btn,
   .editor-body #editor-review-workflow-btn {
     display: none !important;
   }
 
+  #editor-versions-menu-btn,
+  #editor-brand-kit-menu-btn,
   #editor-review-workflow-menu-btn {
     display: flex;
     align-items: center;

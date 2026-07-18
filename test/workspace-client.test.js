@@ -14,6 +14,7 @@ function loadClient(fetchImpl, pathname = '/nfc/dashboard.html', body = '') {
   delete window.Auth;
   delete window.WorkspaceClient;
   delete window.EditorReviewWorkflow;
+  delete window.EditorBrandKit;
   jest.isolateModules(() => require('../workspace-client'));
   return window.WorkspaceClient;
 }
@@ -54,7 +55,14 @@ describe('Workspace browser client', () => {
     expect(fetchImpl.mock.calls[1][1].method).toBe('POST');
   });
 
-  test('removes the injected truncation warning text from editor pages', () => {
+  test('marks a clean editor source as free from injected output metadata', () => {
+    const client = loadClient(jest.fn(), '/nfc/editor.html');
+
+    expect(client.removeInjectedOutputWarning()).toBe(false);
+    expect(document.documentElement.dataset.editorOutputWarning).toBe('removed');
+  });
+
+  test('removes injected truncation warning text from editor pages', () => {
     const client = loadClient(jest.fn(), '/nfc/editor.html');
     document.body.prepend(document.createTextNode('Warning: truncated output (original token count: 41854) Total output lines: 2530'));
 
@@ -63,20 +71,30 @@ describe('Workspace browser client', () => {
     expect(document.documentElement.dataset.editorOutputWarning).toBe('removed');
   });
 
-  test('adds review to the mobile more menu instead of crowding the toolbar', () => {
+  test('adds Brand Kit and review to the mobile more menu', () => {
     const client = loadClient(
       jest.fn(),
       '/nfc/editor.html?id=card-123',
       '<div id="toolbar-more-menu-floating"><hr></div>'
     );
+    window.EditorBrandKit = { open: jest.fn() };
     window.EditorReviewWorkflow = { open: jest.fn() };
 
+    expect(client.mountMobileBrandKitMenu()).toBe(false);
     expect(client.mountMobileReviewMenu()).toBe(false);
-    const button = document.getElementById('editor-review-workflow-menu-btn');
-    expect(button).not.toBeNull();
-    expect(button.textContent).toContain('مراجعة التصميم');
-    button.click();
+
+    const brandButton = document.getElementById('editor-brand-kit-menu-btn');
+    const reviewButton = document.getElementById('editor-review-workflow-menu-btn');
+    expect(brandButton).not.toBeNull();
+    expect(reviewButton).not.toBeNull();
+    expect(brandButton.textContent).toContain('هوية الشركة');
+    expect(reviewButton.textContent).toContain('مراجعة التصميم');
+
+    brandButton.click();
+    reviewButton.click();
+    expect(window.EditorBrandKit.open).toHaveBeenCalledTimes(1);
     expect(window.EditorReviewWorkflow.open).toHaveBeenCalledTimes(1);
+    expect(document.documentElement.dataset.editorMobileBrandKitMenu).toBe('ready');
     expect(document.documentElement.dataset.editorMobileReviewMenu).toBe('ready');
   });
 

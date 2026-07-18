@@ -1,6 +1,19 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.setTimeout(25_000);
+
+async function openBrandKit(page: Page, isMobile: boolean) {
+  if (!isMobile) {
+    await page.locator('#editor-brand-kit-btn').click();
+    return;
+  }
+
+  await expect(page.locator('#editor-brand-kit-btn')).toBeHidden();
+  await page.locator('#toolbar-more-btn').click();
+  const menuButton = page.locator('#editor-brand-kit-menu-btn');
+  await expect(menuButton).toBeVisible();
+  await menuButton.click();
+}
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -108,14 +121,16 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-editor-workspace', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-brand-kit-client', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-brand-kit', 'ready');
+  await expect(page.locator('html')).toHaveAttribute('data-editor-output-warning', 'removed');
+  await expect(page.locator('#editor-brand-kit-menu-btn')).toBeAttached();
 });
 
-test('applies shared identity while preserving personal content', async ({ page }) => {
+test('applies shared identity while preserving personal content', async ({ page, isMobile }) => {
   await page.evaluate(() => (window as any).EditorWorkspace.select('name'));
   const name = page.locator('#input-name_ar');
   await name.fill('الاسم الشخصي محفوظ');
 
-  await page.locator('#editor-brand-kit-btn').click();
+  await openBrandKit(page, isMobile);
   await expect(page.locator('#editor-brand-kit-modal')).toBeVisible();
   await expect(page.locator('#editor-brand-kit-modal')).toContainText('MC PRIME Identity');
   await page.locator('[data-brand-editor-action="apply-all"]').click();
@@ -130,10 +145,10 @@ test('applies shared identity while preserving personal content', async ({ page 
   expect(state.inputs['input-logo']).toContain('/nfc/logo.svg');
 });
 
-test('saves the current visual direction as a shared company template', async ({ page }) => {
+test('saves the current visual direction as a shared company template', async ({ page, isMobile }) => {
   await page.evaluate(() => (window as any).EditorWorkspace.select('name'));
   await page.locator('#input-name_ar').fill('بيانات لا تدخل القالب');
-  await page.locator('#editor-brand-kit-btn').click();
+  await openBrandKit(page, isMobile);
   await expect(page.locator('#editor-brand-kit-modal')).toBeVisible();
 
   const form = page.locator('[data-brand-editor-form="save-template"]');

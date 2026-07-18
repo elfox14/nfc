@@ -149,8 +149,19 @@ async function verifyProduction(options = {}) {
     }));
   }
 
-  await checkUrl('Arabic editor shell', `${publicOrigin}/nfc/editor.html`, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js']);
-  await checkUrl('English editor shell', `${publicOrigin}/nfc/editor-en.html`, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js']);
+  async function checkEditorDocument(name, url) {
+    checks.push(await executeCheck(name, async () => {
+      const { response, body } = await requestWithRetry(url, requestOptions);
+      assertResponse(response, body, name, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js']);
+      const normalized = body.replace(/^\uFEFF/, '');
+      if (!normalized.startsWith('<!DOCTYPE html>')) throw new Error(`${name} does not start with <!DOCTYPE html>`);
+      if (/Warning:\s*truncated output|Total output lines:/i.test(normalized.slice(0, 400))) throw new Error(`${name} contains injected output metadata`);
+      return { url, bytes: Buffer.byteLength(body) };
+    }));
+  }
+
+  await checkEditorDocument('Arabic editor shell', `${publicOrigin}/nfc/editor.html`);
+  await checkEditorDocument('English editor shell', `${publicOrigin}/nfc/editor-en.html`);
   await checkUrl('Arabic dashboard shell', `${publicOrigin}/nfc/dashboard.html`, ['dashboard-main', 'runtime-config.js', 'auth.js']);
   await checkUrl('English dashboard shell', `${publicOrigin}/nfc/dashboard-en.html`, ['dashboard-main', 'runtime-config.js', 'auth.js']);
   await checkUrl('Runtime release marker', `${publicOrigin}/nfc/runtime-config.js`, [
@@ -213,6 +224,9 @@ async function verifyProduction(options = {}) {
   ]);
   await checkUrl('Editor review workflow', `${publicOrigin}${expected.editorReviewWorkflowScript.split('?')[0]}`, [
     "const VERSION = '11.0.0'", 'workspace-review-modal', 'submitComment', 'resolveComment'
+  ]);
+  await checkUrl('Authenticated private viewer support', `${publicOrigin}/nfc/view/viewer.js`, [
+    'window.Auth?.apiFetchWithRefresh', "credentials: 'include'", "cache: 'no-store'"
   ]);
   await checkUrl('Service Worker release cache', `${publicOrigin}/nfc/sw.js`, [
     `CACHE_VERSION = '${expected.serviceWorkerCache}'`, '/nfc/editor-toolbar-release.css',
