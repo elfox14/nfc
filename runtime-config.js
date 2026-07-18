@@ -129,6 +129,23 @@
     document.documentElement.dataset.editorLegacyControls = 'ready';
   }
 
+  function installTemplateMobileBridge() {
+    if (window.__EDITOR_TEMPLATE_MOBILE_BRIDGE__) return;
+    window.__EDITOR_TEMPLATE_MOBILE_BRIDGE__ = true;
+    document.addEventListener('editor:librarychange', (event) => {
+      if (event.detail?.view !== 'templates' || window.innerWidth > 1024) return;
+      document.querySelectorAll('.pro-sidebar').forEach((panel) => {
+        panel.classList.toggle('active-view', panel.id === 'panel-design');
+      });
+      document.querySelectorAll('.mobile-nav-item[data-target]').forEach((button) => {
+        const selected = button.dataset.target === 'panel-design';
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-selected', selected ? 'true' : 'false');
+      });
+      document.documentElement.dataset.editorTemplateMobilePanel = 'active';
+    });
+  }
+
   function exposeLegacyEditorGlobals() {
     try {
       if (!window.StateManager && typeof StateManager !== 'undefined') window.StateManager = StateManager;
@@ -220,6 +237,7 @@
 
   function finishEditorBootstrap() {
     ensureLegacyStyleControls();
+    installTemplateMobileBridge();
     exposeLegacyEditorGlobals();
     window.setTimeout(loadProductionGuard, 0);
   }
