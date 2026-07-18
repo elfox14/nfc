@@ -19,6 +19,22 @@
     return headers;
   }
 
+  function normalizeEditorFontFamily(value) {
+    const family = String(value || '').trim();
+    const normalized = family.replace(/['"]/g, '').toLowerCase();
+    const known = new Map([
+      ['cairo, sans-serif', "'Cairo', sans-serif"],
+      ['tajawal, sans-serif', "'Tajawal', sans-serif"],
+      ['poppins, sans-serif', "'Poppins', sans-serif"],
+      ['amiri, serif', "'Amiri', serif"],
+      ['changa, sans-serif', "'Changa', sans-serif"],
+      ['lalezar, cursive', "'Lalezar', cursive"],
+      ['almarai, sans-serif', "'Almarai', sans-serif"],
+      ['readex pro, sans-serif', "'Readex Pro', sans-serif"]
+    ]);
+    return known.get(normalized) || family;
+  }
+
   async function request(path, options = {}) {
     const url = `${baseUrl()}${path}`;
     const init = { ...options, credentials: 'include', cache: 'no-store' };
@@ -72,6 +88,7 @@
   const client = {
     version: VERSION,
     request,
+    normalizeEditorFontFamily,
     list: () => request('/api/brand-kits'),
     get: kitId => request(`/api/brand-kits/${encodeURIComponent(kitId)}`),
     create: payload => request('/api/brand-kits', json('POST', payload)),
@@ -79,7 +96,10 @@
     remove: kitId => request(`/api/brand-kits/${encodeURIComponent(kitId)}`, { method: 'DELETE' }),
     addLogo: (kitId, payload) => request(`/api/brand-kits/${encodeURIComponent(kitId)}/logos`, json('POST', payload)),
     addColor: (kitId, payload) => request(`/api/brand-kits/${encodeURIComponent(kitId)}/colors`, json('POST', payload)),
-    addFont: (kitId, payload) => request(`/api/brand-kits/${encodeURIComponent(kitId)}/fonts`, json('POST', payload)),
+    addFont: (kitId, payload) => request(
+      `/api/brand-kits/${encodeURIComponent(kitId)}/fonts`,
+      json('POST', { ...payload, family: normalizeEditorFontFamily(payload?.family) })
+    ),
     removeAsset: (kitId, type, assetId) => request(
       `/api/brand-kits/${encodeURIComponent(kitId)}/${encodeURIComponent(type)}/${encodeURIComponent(assetId)}`,
       { method: 'DELETE' }
