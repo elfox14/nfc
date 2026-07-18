@@ -236,7 +236,8 @@
       context.drawImage(decoded.source, 0, 0, canvas.width, canvas.height);
 
       const blob = await canvasToBlob(canvas, outputType, outputType === 'image/png' ? undefined : 0.88);
-      const processedFile = blob.size < file.size
+      const shouldUseProcessedFile = scale < 1 || blob.size < file.size;
+      const processedFile = shouldUseProcessedFile
         ? new global.File([blob], optimizedName(file.name, outputType), {
           type: outputType,
           lastModified: Date.now()
