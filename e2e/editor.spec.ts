@@ -15,6 +15,7 @@ test.beforeEach(async ({ page }) => {
     localStorage.setItem('mcprime_cookie_consent', JSON.stringify({ accepted: false, version: 1, timestamp: new Date().toISOString() }));
     sessionStorage.setItem('authAccessToken', 'e2e-access-token');
   });
+  const versions: Array<{ id: string; name: string; source: string; createdAt: string; state: any }> = [];
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
     if (url.hostname === '127.0.0.1') await route.fallback();
@@ -22,12 +23,62 @@ test.beforeEach(async ({ page }) => {
   });
   await page.route('**/api/**', async route => {
     const url = route.request().url();
+    const method = route.request().method();
     if (url.includes('/api/auth/refresh')) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, accessToken: 'e2e-access-token', user: { userId: 'e2e-user', email: 'editor@example.com', isVerified: true } }) });
       return;
     }
     if (url.includes('/api/save-design')) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, id: 'e2e-card' }) });
+      return;
+    }
+    if (url.includes('/api/design/e2e-card/versions/') && url.endsWith('/restore') && method === 'POST') {
+      const versionId = url.split('/versions/')[1].split('/')[0];
+      const version = versions.find(item => item.id === versionId);
+      await route.fulfill({
+        status: version ? 200 : 404,
+        contentType: 'application/json',
+        body: JSON.stringify(version ? {
+          success: true,
+          state: version.state,
+          restoredVersion: version,
+          safetyVersion: { id: 'safety-e2e', name: 'قبل الاستعادة', source: 'pre-restore', createdAt: new Date().toISOString() }
+        } : { error: 'Version not found' })
+      });
+      return;
+    }
+    if (url.includes('/api/design/e2e-card/versions/') && method === 'DELETE') {
+      const versionId = url.split('/versions/')[1].split('?')[0];
+      const index = versions.findIndex(item => item.id === versionId);
+      if (index >= 0) versions.splice(index, 1);
+      await route.fulfill({ status: index >= 0 ? 200 : 404, contentType: 'application/json', body: JSON.stringify(index >= 0 ? { success: true } : { error: 'Version not found' }) });
+      return;
+    }
+    if (url.includes('/api/design/e2e-card/versions/') && method === 'GET') {
+      const versionId = url.split('/versions/')[1].split('?')[0];
+      const version = versions.find(item => item.id === versionId);
+      await route.fulfill({ status: version ? 200 : 404, contentType: 'application/json', body: JSON.stringify(version ? { success: true, version } : { error: 'Version not found' }) });
+      return;
+    }
+    if (url.includes('/api/design/e2e-card/versions') && method === 'POST') {
+      const payload = route.request().postDataJSON();
+      const version = {
+        id: `cloud-${versions.length + 1}`,
+        name: payload.name,
+        source: payload.source || 'manual',
+        createdAt: new Date().toISOString(),
+        state: payload.state
+      };
+      versions.unshift(version);
+      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ success: true, cloud: true, version }) });
+      return;
+    }
+    if (url.includes('/api/design/e2e-card/versions') && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, cloud: true, versions: versions.map(({ state, ...version }) => version) })
+      });
       return;
     }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, designs: [] }) });
@@ -38,6 +89,7 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-editor-save-monitor', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-asset-manager', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-template-manager', 'ready');
+  await expect(page.locator('html')).toHaveAttribute('data-editor-version-manager', 'ready');
 });
 
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {
@@ -190,6 +242,32 @@ test('saves the current visual design as a personal template', async ({ page }) 
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mcprime-editor-personal-templates-v1') || '[]'));
   expect(saved).toHaveLength(1);
   expect(saved[0].design.inputs['input-name_ar']).toBeUndefined();
+});
+
+test('creates, compares, and restores a cloud design version', async ({ page }) => {
+  await page.evaluate(() => window.history.replaceState({}, '', '/nfc/editor.html?id=e2e-card'));
+  const name = await openNameEditor(page);
+  await name.fill('النسخة السحابية الأولى');
+
+  await page.locator('#editor-versions-btn').click();
+  await expect(page.locator('#editor-version-popover')).toBeVisible();
+  await page.locator('.editor-cloud-version-form input').fill('قبل تحديث الاسم');
+  await page.locator('.editor-cloud-version-form button[type="submit"]').click();
+  await expect(page.locator('.editor-cloud-version-row')).toHaveCount(1);
+  await expect(page.locator('.editor-version-sync-badge')).toContainText('سحابي');
+
+  await name.fill('الاسم بعد التعديل');
+  await page.locator('[data-version-action="compare"]').click();
+  await expect(page.locator('.editor-version-comparison')).toBeVisible();
+  await expect(page.locator('.editor-version-change-count')).toBeVisible();
+
+  page.once('dialog', dialog => dialog.accept());
+  await page.locator('[data-version-action="restore"]').click();
+  await expect(name).toHaveValue('النسخة السحابية الأولى');
+  await expect(page.locator('html')).toHaveAttribute('data-editor-dirty', 'false');
+
+  const localBackup = await page.evaluate(() => localStorage.getItem('mcprime-editor-versions-v2:e2e-card:ar'));
+  expect(localBackup).toContain('cloud-1');
 });
 
 test('keeps the mobile bottom sheet usable', async ({ page, isMobile }) => {

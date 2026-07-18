@@ -52,6 +52,16 @@ const extractExpectedTemplateManagerScript = (root) => extractRuntimeValue(
   /script\.src\s*=\s*['"]([^'"]*editor-template-manager\.js[^'"]*)['"]/,
   'Could not extract template manager script'
 );
+const extractExpectedVersionManagerStyle = (root) => extractRuntimeValue(
+  root,
+  /stylesheet\.href\s*=\s*['"]([^'"]*editor-version-manager\.css[^'"]*)['"]/,
+  'Could not extract version manager stylesheet'
+);
+const extractExpectedVersionManagerScript = (root) => extractRuntimeValue(
+  root,
+  /script\.src\s*=\s*['"]([^'"]*editor-version-manager\.js[^'"]*)['"]/,
+  'Could not extract version manager script'
+);
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -118,7 +128,9 @@ async function verifyProduction(options = {}) {
     assetManagerStyle: options.expectedAssetManagerStyle || extractExpectedAssetManagerStyle(rootDir),
     assetManagerScript: options.expectedAssetManagerScript || extractExpectedAssetManagerScript(rootDir),
     templateManagerStyle: options.expectedTemplateManagerStyle || extractExpectedTemplateManagerStyle(rootDir),
-    templateManagerScript: options.expectedTemplateManagerScript || extractExpectedTemplateManagerScript(rootDir)
+    templateManagerScript: options.expectedTemplateManagerScript || extractExpectedTemplateManagerScript(rootDir),
+    versionManagerStyle: options.expectedVersionManagerStyle || extractExpectedVersionManagerStyle(rootDir),
+    versionManagerScript: options.expectedVersionManagerScript || extractExpectedVersionManagerScript(rootDir)
   };
   const requestOptions = {
     fetchImpl: options.fetchImpl || global.fetch,
@@ -141,7 +153,8 @@ async function verifyProduction(options = {}) {
   await checkUrl('English editor shell', `${publicOrigin}/nfc/editor-en.html`, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js']);
   await checkUrl('Runtime release marker', `${publicOrigin}/nfc/runtime-config.js`, [
     expected.release, expected.toolbarAsset, expected.assetManagerStyle, expected.assetManagerScript,
-    expected.templateManagerStyle, expected.templateManagerScript, apiOrigin
+    expected.templateManagerStyle, expected.templateManagerScript,
+    expected.versionManagerStyle, expected.versionManagerScript, apiOrigin
   ]);
   await checkUrl('Toolbar release stylesheet', `${publicOrigin}${expected.toolbarAsset.split('?')[0]}`, [
     '--editor-toolbar-offset: 88px', 'padding-top: var(--editor-toolbar-offset)',
@@ -160,9 +173,15 @@ async function verifyProduction(options = {}) {
     "const VERSION = '8.2.0'", "makeTemplate('executive-navy'", "makeTemplate('medical-trust'",
     'createPersonalTemplate', 'editor:templateapplied'
   ]);
+  await checkUrl('Version manager stylesheet', `${publicOrigin}${expected.versionManagerStyle.split('?')[0]}`, [
+    '.editor-cloud-version-popover', '.editor-version-sync-badge', '.editor-version-comparison'
+  ]);
+  await checkUrl('Version manager script', `${publicOrigin}${expected.versionManagerScript.split('?')[0]}`, [
+    "const VERSION = '8.3.0'", 'syncPendingVersions', 'compareStates', 'editor:versionrestored'
+  ]);
   await checkUrl('Service Worker release cache', `${publicOrigin}/nfc/sw.js`, [
     `CACHE_VERSION = '${expected.serviceWorkerCache}'`, '/nfc/editor-toolbar-release.css',
-    '/nfc/editor-asset-manager.js', '/nfc/editor-template-manager.js'
+    '/nfc/editor-asset-manager.js', '/nfc/editor-template-manager.js', '/nfc/editor-version-manager.js'
   ]);
 
   checks.push(await executeCheck('API health snapshot', async () => {
@@ -246,6 +265,7 @@ module.exports = {
   extractExpectedRelease, extractExpectedServiceWorkerCache, extractExpectedToolbarAsset,
   extractExpectedAssetManagerStyle, extractExpectedAssetManagerScript,
   extractExpectedTemplateManagerStyle, extractExpectedTemplateManagerScript,
+  extractExpectedVersionManagerStyle, extractExpectedVersionManagerScript,
   normalizeOrigin, renderSummary, requestWithRetry, verifyProduction, writeReport
 };
 

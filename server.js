@@ -164,6 +164,14 @@ app.use('/api', createDesignsRouter({
   cloudinary
 }));
 
+const createDesignVersionsRouter = require('./routes/design-versions.routes');
+app.use('/api', createDesignVersionsRouter({
+  getDb: () => db,
+  designsCollectionName,
+  sanitizeInputs,
+  DOMPurify
+}));
+
 // --- AUTHENTICATION ROUTES (MODULAR) ---
 const createAuthRouter = require('./routes/auth.routes');
 app.use('/api/auth', createAuthRouter({ 

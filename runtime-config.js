@@ -24,7 +24,7 @@
     }
   }
 
-  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase8.2';
+  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase8.3';
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
@@ -99,9 +99,35 @@
     document.head.appendChild(script);
   }
 
+  function loadVersionManager() {
+    if (!document.querySelector('link[data-editor-version-manager-style]')) {
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet';
+      stylesheet.href = '/nfc/editor-version-manager.css?v=8.3';
+      stylesheet.dataset.editorVersionManagerStyle = 'true';
+      document.head.appendChild(stylesheet);
+    }
+
+    if (document.querySelector('script[data-editor-version-manager]')) return;
+    const script = document.createElement('script');
+    script.src = '/nfc/editor-version-manager.js?v=8.3';
+    script.async = false;
+    script.dataset.editorVersionManager = 'true';
+    script.addEventListener('load', () => {
+      document.documentElement.dataset.editorVersionManagerLoader = 'ready';
+    }, { once: true });
+    script.addEventListener('error', () => {
+      document.documentElement.dataset.editorVersionManagerLoader = 'load-error';
+      console.error('[RuntimeConfig] Failed to load editor version manager.');
+    }, { once: true });
+    document.documentElement.dataset.editorVersionManagerLoader = 'loading';
+    document.head.appendChild(script);
+  }
+
   loadToolbarReleaseStyles();
   loadAssetManager();
   loadTemplateManager();
+  loadVersionManager();
 
   function ensureLegacyStyleControls() {
     if (!document.body) return;
@@ -143,6 +169,26 @@
         button.setAttribute('aria-selected', selected ? 'true' : 'false');
       });
       document.documentElement.dataset.editorTemplateMobilePanel = 'active';
+    });
+  }
+
+  function installVersionRestoreSettlement() {
+    if (window.__EDITOR_VERSION_RESTORE_SETTLEMENT__) return;
+    window.__EDITOR_VERSION_RESTORE_SETTLEMENT__ = true;
+
+    document.addEventListener('editor:versionrestored', (event) => {
+      if (event.detail?.cloud !== true) return;
+      const confirmCloudState = () => {
+        window.EditorProductionGuard?.markSaved?.();
+        window.EditorProduction?.markSaved?.('cloud');
+        document.documentElement.dataset.editorVersionRestoreSettled = 'true';
+      };
+
+      Promise.resolve().then(confirmCloudState);
+      if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(() => window.requestAnimationFrame(confirmCloudState));
+      }
+      window.setTimeout(confirmCloudState, 180);
     });
   }
 
@@ -238,6 +284,7 @@
   function finishEditorBootstrap() {
     ensureLegacyStyleControls();
     installTemplateMobileBridge();
+    installVersionRestoreSettlement();
     exposeLegacyEditorGlobals();
     window.setTimeout(loadProductionGuard, 0);
   }

@@ -13,6 +13,7 @@ describe('editor runtime release delivery', () => {
     document.documentElement.removeAttribute('data-editor-toolbar-release');
     document.documentElement.removeAttribute('data-editor-asset-manager-loader');
     document.documentElement.removeAttribute('data-editor-template-manager-loader');
+    document.documentElement.removeAttribute('data-editor-version-manager-loader');
     window.history.replaceState({}, '', '/nfc/editor.html');
     delete window.__API_BASE_URL;
     delete window.__MC_PRIME_RELEASE;
@@ -27,23 +28,30 @@ describe('editor runtime release delivery', () => {
     const assetScript = document.querySelector('script[data-editor-asset-manager]');
     const templateStyles = document.querySelector('link[data-editor-template-manager-style]');
     const templateScript = document.querySelector('script[data-editor-template-manager]');
+    const versionStyles = document.querySelector('link[data-editor-version-manager-style]');
+    const versionScript = document.querySelector('script[data-editor-version-manager]');
     expect(toolbarStyles).not.toBeNull();
     expect(toolbarStyles.getAttribute('href')).toBe('/nfc/editor-toolbar-release.css?v=7.2');
     expect(assetStyles.getAttribute('href')).toBe('/nfc/editor-asset-manager.css?v=8.1');
     expect(assetScript.getAttribute('src')).toBe('/nfc/editor-asset-manager.js?v=8.1');
     expect(templateStyles.getAttribute('href')).toBe('/nfc/editor-template-manager.css?v=8.2');
     expect(templateScript.getAttribute('src')).toBe('/nfc/editor-template-manager.js?v=8.2');
+    expect(versionStyles.getAttribute('href')).toBe('/nfc/editor-version-manager.css?v=8.3');
+    expect(versionScript.getAttribute('src')).toBe('/nfc/editor-version-manager.js?v=8.3');
     expect(document.documentElement.dataset.editorToolbarRelease).toBe('loading');
     expect(document.documentElement.dataset.editorAssetManagerLoader).toBe('loading');
     expect(document.documentElement.dataset.editorTemplateManagerLoader).toBe('loading');
+    expect(document.documentElement.dataset.editorVersionManagerLoader).toBe('loading');
 
     toolbarStyles.dispatchEvent(new Event('load'));
     assetScript.dispatchEvent(new Event('load'));
     templateScript.dispatchEvent(new Event('load'));
+    versionScript.dispatchEvent(new Event('load'));
     expect(document.documentElement.dataset.editorToolbarRelease).toBe('ready');
     expect(document.documentElement.dataset.editorAssetManagerLoader).toBe('ready');
     expect(document.documentElement.dataset.editorTemplateManagerLoader).toBe('ready');
-    expect(window.__MC_PRIME_RELEASE).toBe('2026.07.18-phase8.2');
+    expect(document.documentElement.dataset.editorVersionManagerLoader).toBe('ready');
+    expect(window.__MC_PRIME_RELEASE).toBe('2026.07.18-phase8.3');
   });
 
   test('does not inject editor-only assets on public non-editor pages', () => {
@@ -53,17 +61,20 @@ describe('editor runtime release delivery', () => {
     expect(document.querySelector('link[data-editor-toolbar-release]')).toBeNull();
     expect(document.querySelector('script[data-editor-asset-manager]')).toBeNull();
     expect(document.querySelector('script[data-editor-template-manager]')).toBeNull();
+    expect(document.querySelector('script[data-editor-version-manager]')).toBeNull();
   });
 
-  test('service worker v10 precaches the editor release assets', () => {
+  test('service worker v11 precaches the editor release assets', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
 
-    expect(source).toContain("const CACHE_VERSION = 'v10'");
+    expect(source).toContain("const CACHE_VERSION = 'v11'");
     expect(source).toContain("'/nfc/editor-toolbar-release.css'");
     expect(source).toContain("'/nfc/editor-asset-manager.css'");
     expect(source).toContain("'/nfc/editor-asset-manager.js'");
     expect(source).toContain("'/nfc/editor-template-manager.css'");
     expect(source).toContain("'/nfc/editor-template-manager.js'");
+    expect(source).toContain("'/nfc/editor-version-manager.css'");
+    expect(source).toContain("'/nfc/editor-version-manager.js'");
     expect(source).not.toContain('editorStylesWithPatch');
     expect(source).not.toContain('isEditorStylesheet');
   });
