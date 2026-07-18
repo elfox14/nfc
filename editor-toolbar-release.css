@@ -71,13 +71,34 @@
     min-height: calc(100dvh - var(--editor-toolbar-offset)) !important;
   }
 
+  .editor-body .tb-left {
+    position: relative;
+    z-index: 3;
+  }
+
+  .editor-body .tb-right {
+    position: relative;
+    z-index: 2;
+  }
+
   .editor-body .tb-history {
     display: flex !important;
     align-items: center;
     gap: 6px;
   }
 
-  .editor-body #editor-versions-btn,
+  .editor-body #editor-versions-btn {
+    position: relative;
+    z-index: 4;
+    display: inline-flex !important;
+    flex: 0 0 38px;
+    align-items: center;
+    justify-content: center;
+    width: 38px !important;
+    min-width: 38px;
+    height: 38px !important;
+  }
+
   .editor-body #editor-brand-kit-btn,
   .editor-body #editor-review-workflow-btn {
     display: none !important;
