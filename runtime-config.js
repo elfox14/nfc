@@ -24,7 +24,7 @@
     }
   }
 
-  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase8.2';
+  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase8.3';
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
@@ -99,9 +99,35 @@
     document.head.appendChild(script);
   }
 
+  function loadVersionManager() {
+    if (!document.querySelector('link[data-editor-version-manager-style]')) {
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet';
+      stylesheet.href = '/nfc/editor-version-manager.css?v=8.3';
+      stylesheet.dataset.editorVersionManagerStyle = 'true';
+      document.head.appendChild(stylesheet);
+    }
+
+    if (document.querySelector('script[data-editor-version-manager]')) return;
+    const script = document.createElement('script');
+    script.src = '/nfc/editor-version-manager.js?v=8.3';
+    script.async = false;
+    script.dataset.editorVersionManager = 'true';
+    script.addEventListener('load', () => {
+      document.documentElement.dataset.editorVersionManagerLoader = 'ready';
+    }, { once: true });
+    script.addEventListener('error', () => {
+      document.documentElement.dataset.editorVersionManagerLoader = 'load-error';
+      console.error('[RuntimeConfig] Failed to load editor version manager.');
+    }, { once: true });
+    document.documentElement.dataset.editorVersionManagerLoader = 'loading';
+    document.head.appendChild(script);
+  }
+
   loadToolbarReleaseStyles();
   loadAssetManager();
   loadTemplateManager();
+  loadVersionManager();
 
   function ensureLegacyStyleControls() {
     if (!document.body) return;
