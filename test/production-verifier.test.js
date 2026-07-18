@@ -1,42 +1,15 @@
-/**
- * @jest-environment node
- */
-
+/** @jest-environment node */
 const fs = require('fs');
 const path = require('path');
-const {
-  extractExpectedRelease,
-  extractExpectedServiceWorkerCache,
-  extractExpectedToolbarAsset,
-  extractExpectedAssetManagerStyle,
-  extractExpectedAssetManagerScript,
-  verifyProduction
-} = require('../scripts/verify-production-release');
-
+const verifier = require('../scripts/verify-production-release');
 const rootDir = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(rootDir, file), 'utf8');
+const response = (status, body) => ({ status, ok: status >= 200 && status < 300, text: async () => body });
 
-function response(status, body) {
+function health(overrides = {}) {
   return {
-    status,
-    ok: status >= 200 && status < 300,
-    text: async () => body
-  };
-}
-
-function healthySnapshot(overrides = {}) {
-  return {
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    version: '2.0.0',
-    release: 'abcdef123456',
-    uptimeSeconds: 120,
-    dbConnected: true,
-    checks: {
-      server: { status: 'ready' },
-      database: { status: 'ready', latencyMs: 5 },
-      storage: { status: 'ready', writable: true }
-    },
+    status: 'ok', version: '2.0.0', release: 'abcdef', uptimeSeconds: 120, dbConnected: true,
+    checks: { server: { status: 'ready' }, database: { status: 'ready' }, storage: { status: 'ready', writable: true } },
     ...overrides
   };
 }
@@ -49,122 +22,73 @@ function createFetch(overrides = {}) {
     '/nfc/editor-toolbar-release.css': response(200, read('editor-toolbar-release.css')),
     '/nfc/editor-asset-manager.css': response(200, read('editor-asset-manager.css')),
     '/nfc/editor-asset-manager.js': response(200, read('editor-asset-manager.js')),
+    '/nfc/editor-template-manager.css': response(200, read('editor-template-manager.css')),
+    '/nfc/editor-template-manager.js': response(200, read('editor-template-manager.js')),
     '/nfc/sw.js': response(200, read('sw.js')),
-    '/healthz': response(200, JSON.stringify(healthySnapshot())),
-    '/readyz': response(200, JSON.stringify(healthySnapshot())),
-    '/api/health': response(200, JSON.stringify({
-      status: 'ok',
-      version: '2.0.0',
-      release: 'abcdef123456',
-      uptimeSeconds: 120
-    })),
+    '/healthz': response(200, JSON.stringify(health())),
+    '/readyz': response(200, JSON.stringify(health())),
+    '/api/health': response(200, JSON.stringify(health())),
     ...overrides
   };
-
   return jest.fn(async (url) => {
-    const parsed = new URL(url);
-    const result = assets[parsed.pathname];
-    if (!result) throw new Error(`Unexpected verification URL: ${parsed.pathname}`);
-    return result;
+    const item = assets[new URL(url).pathname];
+    if (!item) throw new Error(`Unexpected verification URL: ${url}`);
+    return item;
   });
 }
 
 describe('production release verifier', () => {
-  test('derives expected release values from the checked-out repository', () => {
-    expect(extractExpectedRelease(rootDir)).toBe('2026.07.18-phase8.1');
-    expect(extractExpectedServiceWorkerCache(rootDir)).toBe('v9');
-    expect(extractExpectedToolbarAsset(rootDir)).toBe('/nfc/editor-toolbar-release.css?v=7.2');
-    expect(extractExpectedAssetManagerStyle(rootDir)).toBe('/nfc/editor-asset-manager.css?v=8.1');
-    expect(extractExpectedAssetManagerScript(rootDir)).toBe('/nfc/editor-asset-manager.js?v=8.1');
+  test('derives current release assets', () => {
+    expect(verifier.extractExpectedRelease(rootDir)).toBe('2026.07.18-phase8.2');
+    expect(verifier.extractExpectedServiceWorkerCache(rootDir)).toBe('v10');
+    expect(verifier.extractExpectedToolbarAsset(rootDir)).toBe('/nfc/editor-toolbar-release.css?v=7.2');
+    expect(verifier.extractExpectedAssetManagerStyle(rootDir)).toBe('/nfc/editor-asset-manager.css?v=8.1');
+    expect(verifier.extractExpectedAssetManagerScript(rootDir)).toBe('/nfc/editor-asset-manager.js?v=8.1');
+    expect(verifier.extractExpectedTemplateManagerStyle(rootDir)).toBe('/nfc/editor-template-manager.css?v=8.2');
+    expect(verifier.extractExpectedTemplateManagerScript(rootDir)).toBe('/nfc/editor-template-manager.js?v=8.2');
   });
 
-  test('passes when the live frontend and API match the repository release', async () => {
+  test('passes when production matches the repository', async () => {
     const fetchImpl = createFetch();
-    const report = await verifyProduction({
-      rootDir,
-      fetchImpl,
-      attempts: 1,
-      retryDelayMs: 0,
-      cacheBuster: 'test'
-    });
-
+    const report = await verifier.verifyProduction({ rootDir, fetchImpl, attempts: 1, retryDelayMs: 0, cacheBuster: 'test' });
     expect(report.status).toBe('passed');
-    expect(report.totals).toEqual({ checks: 10, passed: 10, failed: 0 });
-    expect(fetchImpl).toHaveBeenCalledTimes(10);
+    expect(report.totals).toEqual({ checks: 12, passed: 12, failed: 0 });
+    expect(fetchImpl).toHaveBeenCalledTimes(12);
     expect(report.expected).toMatchObject({
-      release: '2026.07.18-phase8.1',
-      serviceWorkerCache: 'v9',
-      assetManagerStyle: '/nfc/editor-asset-manager.css?v=8.1',
-      assetManagerScript: '/nfc/editor-asset-manager.js?v=8.1'
+      release: '2026.07.18-phase8.2', serviceWorkerCache: 'v10',
+      templateManagerStyle: '/nfc/editor-template-manager.css?v=8.2',
+      templateManagerScript: '/nfc/editor-template-manager.js?v=8.2'
     });
   });
 
-  test('fails clearly when cPanel still serves an older runtime release', async () => {
-    const current = read('runtime-config.js');
-    const fetchImpl = createFetch({
-      '/nfc/runtime-config.js': response(200, current.replace('2026.07.18-phase8.1', '2026.07.18-phase7.2'))
+  test('detects stale runtime files', async () => {
+    const stale = read('runtime-config.js').replace('2026.07.18-phase8.2', '2026.07.18-phase8.1');
+    const report = await verifier.verifyProduction({
+      rootDir, fetchImpl: createFetch({ '/nfc/runtime-config.js': response(200, stale) }),
+      attempts: 1, retryDelayMs: 0, cacheBuster: 'test'
     });
-
-    const report = await verifyProduction({
-      rootDir,
-      fetchImpl,
-      attempts: 1,
-      retryDelayMs: 0,
-      cacheBuster: 'test'
-    });
-
     expect(report.status).toBe('failed');
-    expect(report.checks.find((check) => check.name === 'Runtime release marker')).toMatchObject({
-      status: 'failed'
+    expect(report.checks.find((item) => item.name === 'Runtime release marker').status).toBe('failed');
+  });
+
+  test('detects missing template assets', async () => {
+    const report = await verifier.verifyProduction({
+      rootDir, fetchImpl: createFetch({ '/nfc/editor-template-manager.js': response(404, 'Not Found') }),
+      attempts: 1, retryDelayMs: 0, cacheBuster: 'test'
+    });
+    expect(report.status).toBe('failed');
+    expect(report.checks.find((item) => item.name === 'Template manager script')).toMatchObject({
+      status: 'failed', error: expect.stringContaining('HTTP 404')
     });
   });
 
-  test('fails when the asset manager files were not synchronized', async () => {
-    const fetchImpl = createFetch({
-      '/nfc/editor-asset-manager.js': response(404, 'Not Found')
+  test('detects degraded Render readiness', async () => {
+    const degraded = health({ status: 'degraded', dbConnected: false });
+    const report = await verifier.verifyProduction({
+      rootDir, fetchImpl: createFetch({ '/readyz': response(503, JSON.stringify(degraded)) }),
+      attempts: 1, retryDelayMs: 0, cacheBuster: 'test'
     });
-
-    const report = await verifyProduction({
-      rootDir,
-      fetchImpl,
-      attempts: 1,
-      retryDelayMs: 0,
-      cacheBuster: 'test'
-    });
-
     expect(report.status).toBe('failed');
-    expect(report.checks.find((check) => check.name === 'Asset manager script')).toMatchObject({
-      status: 'failed',
-      error: expect.stringContaining('HTTP 404')
-    });
-  });
-
-  test('fails when Render readiness reports degraded infrastructure', async () => {
-    const degraded = healthySnapshot({
-      status: 'degraded',
-      dbConnected: false,
-      checks: {
-        server: { status: 'ready' },
-        database: { status: 'error', latencyMs: 1500 },
-        storage: { status: 'ready', writable: true }
-      }
-    });
-    const fetchImpl = createFetch({
-      '/readyz': response(503, JSON.stringify(degraded))
-    });
-
-    const report = await verifyProduction({
-      rootDir,
-      fetchImpl,
-      attempts: 1,
-      retryDelayMs: 0,
-      cacheBuster: 'test'
-    });
-
-    expect(report.status).toBe('failed');
-    expect(report.checks.find((check) => check.name === 'API readiness')).toMatchObject({
-      status: 'failed',
-      error: expect.stringContaining('HTTP 503')
-    });
+    expect(report.checks.find((item) => item.name === 'API readiness').error).toContain('HTTP 503');
   });
 });
