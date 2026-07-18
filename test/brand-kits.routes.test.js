@@ -1,3 +1,4 @@
+/** @jest-environment node */
 'use strict';
 
 const brandKitRoutes = require('../routes/brand-kits.routes');
