@@ -2,6 +2,10 @@
   --editor-toolbar-offset: 88px;
 }
 
+.workspace-editor-modal[hidden] {
+  display: none !important;
+}
+
 .editor-body {
   padding-top: var(--editor-toolbar-offset) !important;
 }
