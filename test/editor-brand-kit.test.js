@@ -42,9 +42,9 @@ const kit = {
       { role: 'text', value: '#ffffff' }
     ],
     fonts: [
-      { role: 'heading', family: 'Cairo, sans-serif' },
-      { role: 'body', family: 'Tajawal, sans-serif' },
-      { role: 'accent', family: 'Poppins, sans-serif' }
+      { role: 'heading', family: "'Cairo', sans-serif" },
+      { role: 'body', family: "'Tajawal', sans-serif" },
+      { role: 'accent', family: "'Poppins', sans-serif" }
     ]
   }
 };
@@ -69,9 +69,9 @@ describe('editor cloud Brand Kit manager', () => {
       'back-bg-start': '#f4f7fa',
       'name-color': '#ffffff',
       'tagline-color': '#45aacc',
-      'name-font': 'Cairo, sans-serif',
-      'phone-btn-font': 'Tajawal, sans-serif',
-      'tagline-font': 'Poppins, sans-serif',
+      'name-font': "'Cairo', sans-serif",
+      'phone-btn-font': "'Tajawal', sans-serif",
+      'tagline-font': "'Poppins', sans-serif",
       'input-logo': 'https://cdn.example.com/logo.webp'
     });
   });
@@ -100,7 +100,7 @@ describe('editor cloud Brand Kit manager', () => {
 
     const next = window.StateManager.applyState.mock.calls[0][0];
     expect(next.inputs['front-bg-start']).toBe('#000000');
-    expect(next.inputs['name-font']).toBe('Cairo, sans-serif');
+    expect(next.inputs['name-font']).toBe("'Cairo', sans-serif");
     expect(next.inputs['input-logo']).toBeUndefined();
   });
 });
