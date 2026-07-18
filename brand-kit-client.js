@@ -4,6 +4,7 @@
   if (!global.document || global.BrandKitClient) return;
 
   const VERSION = '10.0.0';
+  const document = global.document;
 
   function baseUrl() {
     if (global.Auth?.getBaseUrl) return global.Auth.getBaseUrl();
@@ -41,6 +42,27 @@
       headers: { 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body)
     };
+  }
+
+  function submitForm(form) {
+    if (typeof form.requestSubmit === 'function') form.requestSubmit();
+    else form.dispatchEvent(new global.Event('submit', { bubbles: true, cancelable: true }));
+  }
+
+  function installFormSubmitBridge() {
+    if (global.__BRAND_KIT_FORM_SUBMIT_BRIDGE__) return;
+    global.__BRAND_KIT_FORM_SUBMIT_BRIDGE__ = true;
+    document.addEventListener('click', event => {
+      const trigger = event.target.closest(
+        '.brand-kit-workspace form .brand-kit-primary, .brand-kit-modal form .brand-kit-primary'
+      );
+      if (!trigger || trigger.type !== 'button') return;
+      if (trigger.dataset.brandAction || trigger.dataset.brandEditorAction) return;
+      const form = trigger.closest('form');
+      if (!form) return;
+      event.preventDefault();
+      submitForm(form);
+    });
   }
 
   const client = {
@@ -85,7 +107,8 @@
     }
   };
 
+  installFormSubmitBridge();
   global.BrandKitClient = client;
-  global.document.documentElement.dataset.brandKitClient = 'ready';
-  global.document.dispatchEvent(new global.CustomEvent('brandkit:clientready', { detail: { version: VERSION } }));
+  document.documentElement.dataset.brandKitClient = 'ready';
+  document.dispatchEvent(new global.CustomEvent('brandkit:clientready', { detail: { version: VERSION } }));
 }(typeof window !== 'undefined' ? window : globalThis));
