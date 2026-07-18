@@ -223,6 +223,7 @@
       if (!window.StateManager && typeof StateManager !== 'undefined') window.StateManager = StateManager;
       if (!window.HistoryManager && typeof HistoryManager !== 'undefined') window.HistoryManager = HistoryManager;
       if (!window.UIManager && typeof UIManager !== 'undefined') window.UIManager = UIManager;
+      if (!window.DragManager && typeof DragManager !== 'undefined') window.DragManager = DragManager;
       document.documentElement.dataset.editorLegacyBridge = 'ready';
     } catch (error) {
       document.documentElement.dataset.editorLegacyBridge = 'unavailable';
