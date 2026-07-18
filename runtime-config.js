@@ -103,6 +103,18 @@
   loadAssetManager();
   loadTemplateManager();
 
+  function exposeLegacyEditorGlobals() {
+    try {
+      if (!window.StateManager && typeof StateManager !== 'undefined') window.StateManager = StateManager;
+      if (!window.HistoryManager && typeof HistoryManager !== 'undefined') window.HistoryManager = HistoryManager;
+      if (!window.UIManager && typeof UIManager !== 'undefined') window.UIManager = UIManager;
+      document.documentElement.dataset.editorLegacyBridge = 'ready';
+    } catch (error) {
+      document.documentElement.dataset.editorLegacyBridge = 'unavailable';
+      console.warn('[RuntimeConfig] Legacy editor globals could not be exposed:', error);
+    }
+  }
+
   function isSaveRequest(input, init) {
     const method = String(init?.method || input?.method || 'GET').toUpperCase();
     if (!['POST', 'PUT', 'PATCH'].includes(method)) return false;
@@ -180,11 +192,14 @@
     document.head.appendChild(guard);
   }
 
+  function finishEditorBootstrap() {
+    exposeLegacyEditorGlobals();
+    window.setTimeout(loadProductionGuard, 0);
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      window.setTimeout(loadProductionGuard, 0);
-    }, { once: true });
+    document.addEventListener('DOMContentLoaded', finishEditorBootstrap, { once: true });
   } else {
-    loadProductionGuard();
+    finishEditorBootstrap();
   }
 }());
