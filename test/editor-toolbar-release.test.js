@@ -11,15 +11,18 @@ describe('editor toolbar production release patch', () => {
     expect(css).toContain('padding-top: var(--editor-toolbar-offset) !important');
     expect(css).toContain('height: calc(100dvh - var(--editor-toolbar-offset)) !important');
     expect(css).toContain('--editor-toolbar-offset: 74px');
+    expect(css).toContain('.workspace-editor-modal[hidden]');
   });
 
-  test('compacts desktop actions and exposes Brand Kit plus review on mobile', () => {
+  test('keeps Brand Kit in the mobile toolbar and moves review into the more menu', () => {
     const css = read('editor-toolbar-release.css');
     expect(css).toContain('@media (min-width: 1025px) and (max-width: 1920px)');
     expect(css).toContain('.editor-body .tb-logo-text');
     expect(css).toContain('@media (min-width: 1025px) and (max-width: 1600px)');
-    expect(css).toContain('#editor-brand-kit-btn, #editor-review-workflow-btn');
-    expect(css).toContain("#editor-review-workflow-btn[data-workflow-status='changes_requested']");
+    expect(css).toContain('.editor-body #editor-brand-kit-btn');
+    expect(css).toContain('.editor-body #editor-review-workflow-btn');
+    expect(css).toContain('display: none !important');
+    expect(css).toContain('#editor-review-workflow-menu-btn');
     expect(css).not.toContain('#save-share-btn');
     expect(css).not.toContain('#preview-mode-btn');
   });
