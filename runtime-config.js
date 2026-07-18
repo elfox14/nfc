@@ -24,129 +24,132 @@
     }
   }
 
-  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase9.0';
+  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase10.0';
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
-  if (!isEditor) return;
+  const isDashboard = /(?:^|\/)dashboard(?:-en)?(?:\.html)?\/?$/i.test(pathname);
+  if (!isEditor && !isDashboard) return;
 
-  function loadToolbarReleaseStyles() {
-    if (document.querySelector('link[data-editor-toolbar-release]')) return;
-
+  function loadStyle({ selector, href, datasetKey, readyDataset }) {
+    if (document.querySelector(selector)) return;
     const stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
-    stylesheet.href = '/nfc/editor-toolbar-release.css?v=7.2';
-    stylesheet.dataset.editorToolbarRelease = 'true';
-    stylesheet.addEventListener('load', () => {
-      document.documentElement.dataset.editorToolbarRelease = 'ready';
-    }, { once: true });
-    stylesheet.addEventListener('error', () => {
-      document.documentElement.dataset.editorToolbarRelease = 'load-error';
-      console.error('[RuntimeConfig] Failed to load editor toolbar release styles.');
-    }, { once: true });
-
-    document.documentElement.dataset.editorToolbarRelease = 'loading';
+    stylesheet.href = href;
+    stylesheet.dataset[datasetKey] = 'true';
+    if (readyDataset) {
+      stylesheet.addEventListener('load', () => {
+        document.documentElement.dataset[readyDataset] = 'ready';
+      }, { once: true });
+      stylesheet.addEventListener('error', () => {
+        document.documentElement.dataset[readyDataset] = 'load-error';
+      }, { once: true });
+      document.documentElement.dataset[readyDataset] = 'loading';
+    }
     document.head.appendChild(stylesheet);
   }
 
-  function loadAssetManager() {
-    if (!document.querySelector('link[data-editor-asset-manager-style]')) {
-      const stylesheet = document.createElement('link');
-      stylesheet.rel = 'stylesheet';
-      stylesheet.href = '/nfc/editor-asset-manager.css?v=8.1';
-      stylesheet.dataset.editorAssetManagerStyle = 'true';
-      document.head.appendChild(stylesheet);
-    }
-
-    if (document.querySelector('script[data-editor-asset-manager]')) return;
+  function loadScript({ selector, src, datasetKey, readyDataset, onLoad }) {
+    if (document.querySelector(selector)) return;
     const script = document.createElement('script');
-    script.src = '/nfc/editor-asset-manager.js?v=8.1';
+    script.src = src;
     script.async = false;
-    script.dataset.editorAssetManager = 'true';
+    script.dataset[datasetKey] = 'true';
     script.addEventListener('load', () => {
-      document.documentElement.dataset.editorAssetManagerLoader = 'ready';
+      if (readyDataset) document.documentElement.dataset[readyDataset] = 'ready';
+      onLoad?.();
     }, { once: true });
     script.addEventListener('error', () => {
-      document.documentElement.dataset.editorAssetManagerLoader = 'load-error';
-      console.error('[RuntimeConfig] Failed to load editor asset manager.');
+      if (readyDataset) document.documentElement.dataset[readyDataset] = 'load-error';
+      console.error(`[RuntimeConfig] Failed to load ${src}.`);
     }, { once: true });
-    document.documentElement.dataset.editorAssetManagerLoader = 'loading';
+    if (readyDataset) document.documentElement.dataset[readyDataset] = 'loading';
     document.head.appendChild(script);
+  }
+
+  function loadSharedBrandKitAssets() {
+    loadStyle({
+      selector: 'link[data-brand-kit-style]',
+      href: '/nfc/brand-kit.css?v=10.0',
+      datasetKey: 'brandKitStyle',
+      readyDataset: 'brandKitStyleLoader'
+    });
+    loadScript({
+      selector: 'script[data-brand-kit-client]',
+      src: '/nfc/brand-kit-client.js?v=10.0',
+      datasetKey: 'brandKitClient',
+      readyDataset: 'brandKitClientLoader'
+    });
+  }
+
+  loadSharedBrandKitAssets();
+
+  if (isDashboard) {
+    loadScript({
+      selector: 'script[data-dashboard-brand-kit]',
+      src: '/nfc/dashboard-brand-kit.js?v=10.0',
+      datasetKey: 'dashboardBrandKit',
+      readyDataset: 'dashboardBrandKitLoader'
+    });
+    return;
+  }
+
+  function loadToolbarReleaseStyles() {
+    loadStyle({
+      selector: 'link[data-editor-toolbar-release]',
+      href: '/nfc/editor-toolbar-release.css?v=7.2',
+      datasetKey: 'editorToolbarRelease',
+      readyDataset: 'editorToolbarRelease'
+    });
+  }
+
+  function loadAssetManager() {
+    loadStyle({ selector: 'link[data-editor-asset-manager-style]', href: '/nfc/editor-asset-manager.css?v=8.1', datasetKey: 'editorAssetManagerStyle' });
+    loadScript({
+      selector: 'script[data-editor-asset-manager]',
+      src: '/nfc/editor-asset-manager.js?v=8.1',
+      datasetKey: 'editorAssetManager',
+      readyDataset: 'editorAssetManagerLoader'
+    });
   }
 
   function loadTemplateManager() {
-    if (!document.querySelector('link[data-editor-template-manager-style]')) {
-      const stylesheet = document.createElement('link');
-      stylesheet.rel = 'stylesheet';
-      stylesheet.href = '/nfc/editor-template-manager.css?v=8.2';
-      stylesheet.dataset.editorTemplateManagerStyle = 'true';
-      document.head.appendChild(stylesheet);
-    }
-
-    if (document.querySelector('script[data-editor-template-manager]')) return;
-    const script = document.createElement('script');
-    script.src = '/nfc/editor-template-manager.js?v=8.2';
-    script.async = false;
-    script.dataset.editorTemplateManager = 'true';
-    script.addEventListener('load', () => {
-      document.documentElement.dataset.editorTemplateManagerLoader = 'ready';
-    }, { once: true });
-    script.addEventListener('error', () => {
-      document.documentElement.dataset.editorTemplateManagerLoader = 'load-error';
-      console.error('[RuntimeConfig] Failed to load editor template manager.');
-    }, { once: true });
-    document.documentElement.dataset.editorTemplateManagerLoader = 'loading';
-    document.head.appendChild(script);
+    loadStyle({ selector: 'link[data-editor-template-manager-style]', href: '/nfc/editor-template-manager.css?v=8.2', datasetKey: 'editorTemplateManagerStyle' });
+    loadScript({
+      selector: 'script[data-editor-template-manager]',
+      src: '/nfc/editor-template-manager.js?v=8.2',
+      datasetKey: 'editorTemplateManager',
+      readyDataset: 'editorTemplateManagerLoader'
+    });
   }
 
   function loadVersionManager() {
-    if (!document.querySelector('link[data-editor-version-manager-style]')) {
-      const stylesheet = document.createElement('link');
-      stylesheet.rel = 'stylesheet';
-      stylesheet.href = '/nfc/editor-version-manager.css?v=8.3';
-      stylesheet.dataset.editorVersionManagerStyle = 'true';
-      document.head.appendChild(stylesheet);
-    }
-
-    if (document.querySelector('script[data-editor-version-manager]')) return;
-    const script = document.createElement('script');
-    script.src = '/nfc/editor-version-manager.js?v=8.3';
-    script.async = false;
-    script.dataset.editorVersionManager = 'true';
-    script.addEventListener('load', () => {
-      document.documentElement.dataset.editorVersionManagerLoader = 'ready';
-    }, { once: true });
-    script.addEventListener('error', () => {
-      document.documentElement.dataset.editorVersionManagerLoader = 'load-error';
-      console.error('[RuntimeConfig] Failed to load editor version manager.');
-    }, { once: true });
-    document.documentElement.dataset.editorVersionManagerLoader = 'loading';
-    document.head.appendChild(script);
+    loadStyle({ selector: 'link[data-editor-version-manager-style]', href: '/nfc/editor-version-manager.css?v=8.3', datasetKey: 'editorVersionManagerStyle' });
+    loadScript({
+      selector: 'script[data-editor-version-manager]',
+      src: '/nfc/editor-version-manager.js?v=8.3',
+      datasetKey: 'editorVersionManager',
+      readyDataset: 'editorVersionManagerLoader'
+    });
   }
 
   function loadProductivityTools() {
-    if (!document.querySelector('link[data-editor-productivity-tools-style]')) {
-      const stylesheet = document.createElement('link');
-      stylesheet.rel = 'stylesheet';
-      stylesheet.href = '/nfc/editor-productivity-tools.css?v=9.0';
-      stylesheet.dataset.editorProductivityToolsStyle = 'true';
-      document.head.appendChild(stylesheet);
-    }
+    loadStyle({ selector: 'link[data-editor-productivity-tools-style]', href: '/nfc/editor-productivity-tools.css?v=9.0', datasetKey: 'editorProductivityToolsStyle' });
+    loadScript({
+      selector: 'script[data-editor-productivity-tools]',
+      src: '/nfc/editor-productivity-tools.js?v=9.0',
+      datasetKey: 'editorProductivityTools',
+      readyDataset: 'editorProductivityToolsLoader'
+    });
+  }
 
-    if (document.querySelector('script[data-editor-productivity-tools]')) return;
-    const script = document.createElement('script');
-    script.src = '/nfc/editor-productivity-tools.js?v=9.0';
-    script.async = false;
-    script.dataset.editorProductivityTools = 'true';
-    script.addEventListener('load', () => {
-      document.documentElement.dataset.editorProductivityToolsLoader = 'ready';
-    }, { once: true });
-    script.addEventListener('error', () => {
-      document.documentElement.dataset.editorProductivityToolsLoader = 'load-error';
-      console.error('[RuntimeConfig] Failed to load editor productivity tools.');
-    }, { once: true });
-    document.documentElement.dataset.editorProductivityToolsLoader = 'loading';
-    document.head.appendChild(script);
+  function loadEditorBrandKit() {
+    loadScript({
+      selector: 'script[data-editor-brand-kit]',
+      src: '/nfc/editor-brand-kit.js?v=10.0',
+      datasetKey: 'editorBrandKit',
+      readyDataset: 'editorBrandKitLoader'
+    });
   }
 
   loadToolbarReleaseStyles();
@@ -154,6 +157,7 @@
   loadTemplateManager();
   loadVersionManager();
   loadProductivityTools();
+  loadEditorBrandKit();
 
   function ensureLegacyStyleControls() {
     if (!document.body) return;
@@ -295,17 +299,12 @@
   }
 
   function loadProductionGuard() {
-    if (document.querySelector('script[data-editor-production-guard]')) return;
-    const guard = document.createElement('script');
-    guard.src = '/nfc/editor-production-guard.js?v=1.0.3';
-    guard.async = false;
-    guard.dataset.editorProductionGuard = 'true';
-    guard.addEventListener('load', installStableSaveMonitor, { once: true });
-    guard.addEventListener('error', () => {
-      document.documentElement.dataset.editorProduction = 'load-error';
-      console.error('[RuntimeConfig] Failed to load editor production guard.');
+    loadScript({
+      selector: 'script[data-editor-production-guard]',
+      src: '/nfc/editor-production-guard.js?v=1.0.3',
+      datasetKey: 'editorProductionGuard',
+      onLoad: installStableSaveMonitor
     });
-    document.head.appendChild(guard);
   }
 
   function finishEditorBootstrap() {

@@ -3,7 +3,8 @@ async function createIndexes(db, collectionNames) {
     designsCollectionName,
     usersCollectionName,
     savedCardsCollectionName,
-    cardRequestsCollectionName
+    cardRequestsCollectionName,
+    brandKitsCollectionName = 'brandKits'
   } = collectionNames;
 
   await db.collection(designsCollectionName).createIndex({ shortId: 1 }, { unique: true });
@@ -24,6 +25,10 @@ async function createIndexes(db, collectionNames) {
 
   await db.collection(cardRequestsCollectionName).createIndex({ ownerUserId: 1, status: 1 });
   await db.collection(cardRequestsCollectionName).createIndex({ requesterId: 1, designShortId: 1 });
+
+  await db.collection(brandKitsCollectionName).createIndex({ kitId: 1 }, { unique: true });
+  await db.collection(brandKitsCollectionName).createIndex({ ownerId: 1, updatedAt: -1 });
+  await db.collection(brandKitsCollectionName).createIndex({ 'members.userId': 1, updatedAt: -1 });
 }
 
 async function connectDatabase({

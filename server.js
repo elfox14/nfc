@@ -74,10 +74,11 @@ app.set('view engine', 'ejs');
 const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'mcnfc';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
-const usersCollectionName = 'users'; // New Users Collection
+const usersCollectionName = 'users';
 const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
 const savedCardsCollectionName = 'savedCards';
 const cardRequestsCollectionName = 'cardRequests';
+const brandKitsCollectionName = process.env.MONGO_BRAND_KITS_COLL || 'brandKits';
 let db;
 
 connectDatabase({
@@ -87,7 +88,8 @@ connectDatabase({
     designsCollectionName,
     usersCollectionName,
     savedCardsCollectionName,
-    cardRequestsCollectionName
+    cardRequestsCollectionName,
+    brandKitsCollectionName
   }
 })
   .then(database => {
@@ -95,9 +97,9 @@ connectDatabase({
     console.log('MongoDB connected');
     console.log('MongoDB indexes created');
   })
-  .catch(err => { 
-    console.error('Mongo connect error', err); 
-    process.exit(1); 
+  .catch(err => {
+    console.error('Mongo connect error', err);
+    process.exit(1);
   });
 
 const rootDir = __dirname;
@@ -110,8 +112,6 @@ function absoluteBaseUrl(req) {
   const host = req.get('host');
   return `${proto}://${host}`;
 }
-
-// sanitizeInputs and DOMPurify are now imported from utils/sanitize.js
 
 const createViewerRouter = require('./routes/viewer.routes');
 app.use(createViewerRouter({ getDb: () => db, designsCollectionName, rootDir, absoluteBaseUrl, DOMPurify }));
@@ -135,14 +135,13 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// Stricter rate limiting for auth endpoints (5 attempts per 15 minutes)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'test' ? 100 : 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'محاولات كثيرة جداً. حاول مرة أخرى بعد 15 دقيقة.' },
-  skipSuccessfulRequests: true // Don't count successful logins
+  skipSuccessfulRequests: true
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
@@ -152,10 +151,10 @@ app.use('/api/auth/verify-email', authLimiter);
 
 // --- DESIGNS & UPLOADS ROUTES (MODULAR) ---
 const createDesignsRouter = require('./routes/designs.routes');
-app.use('/api', createDesignsRouter({ 
-  getDb: () => db, 
-  designsCollectionName, 
-  usersCollectionName, 
+app.use('/api', createDesignsRouter({
+  getDb: () => db,
+  designsCollectionName,
+  usersCollectionName,
   cardRequestsCollectionName,
   savedCardsCollectionName,
   absoluteBaseUrl,
@@ -172,11 +171,19 @@ app.use('/api', createDesignVersionsRouter({
   DOMPurify
 }));
 
+const createBrandKitsRouter = require('./routes/brand-kits.routes');
+app.use('/api', createBrandKitsRouter({
+  getDb: () => db,
+  brandKitsCollectionName,
+  usersCollectionName,
+  designsCollectionName
+}));
+
 // --- AUTHENTICATION ROUTES (MODULAR) ---
 const createAuthRouter = require('./routes/auth.routes');
-app.use('/api/auth', createAuthRouter({ 
-  getDb: () => db, 
-  usersCollectionName, 
+app.use('/api/auth', createAuthRouter({
+  getDb: () => db,
+  usersCollectionName,
   authLimiter,
   allowedOrigins
 }));
@@ -193,26 +200,24 @@ registerNfcStaticFiles(app, rootDir);
 
 // --- ADMIN ROUTES (must be BEFORE general error handler) ---
 const adminLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 admin attempts per window
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   message: { error: 'تم تجاوز الحد المسموح لمحاولات تسجيل الدخول للإدارة، يرجى المحاولة لاحقاً.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const createAdminRouter = require('./routes/admin.routes');
-app.use('/api/admin', adminLimiter, createAdminRouter({ 
-  getDb: () => db, 
-  errorBuffer, 
-  MAX_ERROR_BUFFER 
+app.use('/api/admin', adminLimiter, createAdminRouter({
+  getDb: () => db,
+  errorBuffer,
+  MAX_ERROR_BUFFER
 }));
 
-// --- 404 NOT FOUND HANDLER ---
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).sendFile(path.join(rootDir, '404.html'));
 });
 
-// --- GENERAL ERROR HANDLER (must be AFTER all routes) ---
 app.use((err, req, res, next) => {
   trackError(err, {
     route: `${req.method} ${req.originalUrl}`,
@@ -224,19 +229,15 @@ app.use((err, req, res, next) => {
   });
   const statusCode = err.status || 500;
   const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message;
-  if (!res.headersSent) {
-    res.status(statusCode).json({ error: message });
-  }
+  if (!res.headersSent) res.status(statusCode).json({ error: message });
 });
 
-// Process-level error handlers (prevent silent crashes)
 process.on('unhandledRejection', (reason) => {
   trackError(reason instanceof Error ? reason : new Error(String(reason)), { route: 'unhandledRejection' });
 });
 
 process.on('uncaughtException', (error) => {
   trackError(error, { route: 'uncaughtException' });
-  // Give time to flush logs, then exit
   console.error('[FATAL] Uncaught exception — server will restart');
   setTimeout(() => process.exit(1), 1000);
 });
@@ -244,8 +245,6 @@ process.on('uncaughtException', (error) => {
 const server = http.createServer(app);
 registerRealtimeCollaboration(server);
 
-
-// --- START SERVER (تغيير app.listen إلى server.listen) ---
 if (require.main === module) {
   server.listen(port, () => {
     console.log(`Server running on port: ${port}`);

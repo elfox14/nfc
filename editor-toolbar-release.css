@@ -66,4 +66,24 @@
   .editor-body .pro-layout {
     min-height: calc(100dvh - var(--editor-toolbar-offset)) !important;
   }
+
+  .editor-body #editor-brand-kit-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--primary-color, #2563eb) 28%, transparent);
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--primary-color, #2563eb) 10%, transparent);
+    color: var(--primary-color, #2563eb);
+    font-size: 0;
+  }
+
+  .editor-body #editor-brand-kit-btn i {
+    margin: 0;
+    font-size: 1rem;
+  }
 }

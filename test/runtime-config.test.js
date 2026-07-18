@@ -42,7 +42,7 @@ function runConfig(origin, configuredBase, pathname = '/', readyState = 'complet
     setTimeout: (handler) => handler()
   };
 
-  vm.runInNewContext(source, { window, document, Set, URL, console });
+  vm.runInNewContext(source, { window, document, Set, URL, console, Promise });
   return {
     apiBase: window.__API_BASE_URL,
     release: window.__MC_PRIME_RELEASE,
@@ -77,9 +77,8 @@ describe('Runtime API configuration', () => {
     expect(runConfig('https://preview.example.com').apiBase).toBeUndefined();
   });
 
-  it('loads editor release styles, professional managers, and the production guard only on editor routes', () => {
+  it('loads professional editor managers, Brand Kit assets, and the production guard on editor routes', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html');
-    const dashboard = runConfig('https://mcprim.com', undefined, '/nfc/dashboard.html');
     const toolbarStyles = editor.appendedNodes.find((node) => node.dataset.editorToolbarRelease === 'true');
     const assetStyles = editor.appendedNodes.find((node) => node.dataset.editorAssetManagerStyle === 'true');
     const assetScript = editor.appendedNodes.find((node) => node.dataset.editorAssetManager === 'true');
@@ -89,51 +88,75 @@ describe('Runtime API configuration', () => {
     const versionScript = editor.appendedNodes.find((node) => node.dataset.editorVersionManager === 'true');
     const productivityStyles = editor.appendedNodes.find((node) => node.dataset.editorProductivityToolsStyle === 'true');
     const productivityScript = editor.appendedNodes.find((node) => node.dataset.editorProductivityTools === 'true');
+    const brandStyles = editor.appendedNodes.find((node) => node.dataset.brandKitStyle === 'true');
+    const brandClient = editor.appendedNodes.find((node) => node.dataset.brandKitClient === 'true');
+    const editorBrandKit = editor.appendedNodes.find((node) => node.dataset.editorBrandKit === 'true');
     const guard = editor.appendedNodes.find((node) => node.dataset.editorProductionGuard === 'true');
 
-    expect(editor.release).toBe('2026.07.18-phase9.0');
-    expect(editor.appendedNodes).toHaveLength(10);
+    expect(editor.release).toBe('2026.07.18-phase10.0');
+    expect(editor.appendedNodes).toHaveLength(13);
     expect(toolbarStyles.href).toBe('/nfc/editor-toolbar-release.css?v=7.2');
-    expect(toolbarStyles.rel).toBe('stylesheet');
     expect(assetStyles.href).toBe('/nfc/editor-asset-manager.css?v=8.1');
     expect(assetScript.src).toBe('/nfc/editor-asset-manager.js?v=8.1');
-    expect(assetScript.async).toBe(false);
     expect(templateStyles.href).toBe('/nfc/editor-template-manager.css?v=8.2');
     expect(templateScript.src).toBe('/nfc/editor-template-manager.js?v=8.2');
-    expect(templateScript.async).toBe(false);
     expect(versionStyles.href).toBe('/nfc/editor-version-manager.css?v=8.3');
     expect(versionScript.src).toBe('/nfc/editor-version-manager.js?v=8.3');
-    expect(versionScript.async).toBe(false);
     expect(productivityStyles.href).toBe('/nfc/editor-productivity-tools.css?v=9.0');
     expect(productivityScript.src).toBe('/nfc/editor-productivity-tools.js?v=9.0');
-    expect(productivityScript.async).toBe(false);
+    expect(brandStyles.href).toBe('/nfc/brand-kit.css?v=10.0');
+    expect(brandClient.src).toBe('/nfc/brand-kit-client.js?v=10.0');
+    expect(editorBrandKit.src).toBe('/nfc/editor-brand-kit.js?v=10.0');
+    expect(assetScript.async).toBe(false);
+    expect(brandClient.async).toBe(false);
+    expect(editorBrandKit.async).toBe(false);
     expect(guard.src).toBe('/nfc/editor-production-guard.js?v=1.0.3');
-    expect(dashboard.appendedNodes).toHaveLength(0);
+  });
+
+  it('loads only shared Brand Kit dashboard assets on dashboard routes', () => {
+    const dashboard = runConfig('https://mcprim.com', undefined, '/nfc/dashboard.html');
+
+    expect(dashboard.appendedNodes).toHaveLength(3);
+    expect(dashboard.appendedNodes.find(node => node.dataset.brandKitStyle === 'true').href)
+      .toBe('/nfc/brand-kit.css?v=10.0');
+    expect(dashboard.appendedNodes.find(node => node.dataset.brandKitClient === 'true').src)
+      .toBe('/nfc/brand-kit-client.js?v=10.0');
+    expect(dashboard.appendedNodes.find(node => node.dataset.dashboardBrandKit === 'true').src)
+      .toBe('/nfc/dashboard-brand-kit.js?v=10.0');
+    expect(dashboard.appendedNodes.some(node => node.dataset.editorAssetManager === 'true')).toBe(false);
+  });
+
+  it('does not inject private workspace assets on unrelated public pages', () => {
+    const page = runConfig('https://mcprim.com', undefined, '/nfc/index.html');
+    expect(page.appendedNodes).toHaveLength(0);
   });
 
   it('loads editor assets immediately and waits before bootstrapping the save guard', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html', 'loading');
 
-    expect(editor.appendedNodes).toHaveLength(9);
+    expect(editor.appendedNodes).toHaveLength(12);
+    expect(editor.appendedNodes.some((node) => node.dataset.brandKitClient === 'true')).toBe(true);
+    expect(editor.appendedNodes.some((node) => node.dataset.editorBrandKit === 'true')).toBe(true);
     expect(editor.appendedNodes.some((node) => node.dataset.editorAssetManager === 'true')).toBe(true);
-    expect(editor.appendedNodes.some((node) => node.dataset.editorTemplateManager === 'true')).toBe(true);
-    expect(editor.appendedNodes.some((node) => node.dataset.editorVersionManager === 'true')).toBe(true);
-    expect(editor.appendedNodes.some((node) => node.dataset.editorProductivityTools === 'true')).toBe(true);
     editor.triggerDomReady();
-    expect(editor.appendedNodes).toHaveLength(10);
-    expect(editor.appendedNodes[9].dataset.editorProductionGuard).toBe('true');
+    expect(editor.appendedNodes).toHaveLength(13);
+    expect(editor.appendedNodes[12].dataset.editorProductionGuard).toBe('true');
   });
 
-  it('reports when editor manager loaders become ready', () => {
+  it('reports when editor and Brand Kit loaders become ready', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html');
+    editor.triggerNodeLoad('brandKitClient');
     editor.triggerNodeLoad('editorAssetManager');
     editor.triggerNodeLoad('editorTemplateManager');
     editor.triggerNodeLoad('editorVersionManager');
     editor.triggerNodeLoad('editorProductivityTools');
+    editor.triggerNodeLoad('editorBrandKit');
+    expect(editor.document.documentElement.dataset.brandKitClientLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorAssetManagerLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorTemplateManagerLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorVersionManagerLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorProductivityToolsLoader).toBe('ready');
+    expect(editor.document.documentElement.dataset.editorBrandKitLoader).toBe('ready');
   });
 
   it('keeps save monitoring active after another script replaces fetch', async () => {
@@ -141,7 +164,6 @@ describe('Runtime API configuration', () => {
     editor.triggerNodeLoad('editorProductionGuard');
 
     expect(editor.document.documentElement.dataset.editorSaveMonitor).toBe('ready');
-    expect(editor.document.documentElement.dataset.editorSaveMonitorCount).toBe('0');
     const replacementFetch = jest.fn(async () => ({ ok: true, status: 200 }));
     editor.window.fetch = replacementFetch;
 

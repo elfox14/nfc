@@ -8,13 +8,19 @@ const DEFAULT_API_ORIGIN = 'https://nfc-vjy6.onrender.com';
 const DEFAULT_TIMEOUT_MS = 15000;
 const DEFAULT_ATTEMPTS = 3;
 
-const normalizeOrigin = (value) => String(value || '').trim().replace(/\/+$/, '');
+const normalizeOrigin = value => String(value || '').trim().replace(/\/+$/, '');
 const readUtf8 = (root, file) => fs.readFileSync(path.join(root, file), 'utf8');
+const escapeRegex = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 function extractRuntimeValue(root, pattern, message) {
   const match = readUtf8(root, 'runtime-config.js').match(pattern);
   if (!match) throw new Error(message);
   return match[1];
+}
+
+function extractRuntimeAsset(root, filename, message) {
+  const pattern = new RegExp(`['\"]([^'\"]*${escapeRegex(filename)}[^'\"]*)['\"]`);
+  return extractRuntimeValue(root, pattern, message || `Could not extract ${filename}`);
 }
 
 function extractExpectedRelease(root) {
@@ -27,53 +33,21 @@ function extractExpectedServiceWorkerCache(root) {
   return match[1];
 }
 
-const extractExpectedToolbarAsset = (root) => extractRuntimeValue(
-  root,
-  /stylesheet\.href\s*=\s*['"]([^'"]*editor-toolbar-release\.css[^'"]*)['"]/,
-  'Could not extract toolbar stylesheet'
-);
-const extractExpectedAssetManagerStyle = (root) => extractRuntimeValue(
-  root,
-  /stylesheet\.href\s*=\s*['"]([^'"]*editor-asset-manager\.css[^'"]*)['"]/,
-  'Could not extract asset manager stylesheet'
-);
-const extractExpectedAssetManagerScript = (root) => extractRuntimeValue(
-  root,
-  /script\.src\s*=\s*['"]([^'"]*editor-asset-manager\.js[^'"]*)['"]/,
-  'Could not extract asset manager script'
-);
-const extractExpectedTemplateManagerStyle = (root) => extractRuntimeValue(
-  root,
-  /stylesheet\.href\s*=\s*['"]([^'"]*editor-template-manager\.css[^'"]*)['"]/,
-  'Could not extract template manager stylesheet'
-);
-const extractExpectedTemplateManagerScript = (root) => extractRuntimeValue(
-  root,
-  /script\.src\s*=\s*['"]([^'"]*editor-template-manager\.js[^'"]*)['"]/,
-  'Could not extract template manager script'
-);
-const extractExpectedVersionManagerStyle = (root) => extractRuntimeValue(
-  root,
-  /stylesheet\.href\s*=\s*['"]([^'"]*editor-version-manager\.css[^'"]*)['"]/,
-  'Could not extract version manager stylesheet'
-);
-const extractExpectedVersionManagerScript = (root) => extractRuntimeValue(
-  root,
-  /script\.src\s*=\s*['"]([^'"]*editor-version-manager\.js[^'"]*)['"]/,
-  'Could not extract version manager script'
-);
-const extractExpectedProductivityStyle = (root) => extractRuntimeValue(
-  root,
-  /stylesheet\.href\s*=\s*['"]([^'"]*editor-productivity-tools\.css[^'"]*)['"]/,
-  'Could not extract productivity tools stylesheet'
-);
-const extractExpectedProductivityScript = (root) => extractRuntimeValue(
-  root,
-  /script\.src\s*=\s*['"]([^'"]*editor-productivity-tools\.js[^'"]*)['"]/,
-  'Could not extract productivity tools script'
-);
+const extractExpectedToolbarAsset = root => extractRuntimeAsset(root, 'editor-toolbar-release.css');
+const extractExpectedAssetManagerStyle = root => extractRuntimeAsset(root, 'editor-asset-manager.css');
+const extractExpectedAssetManagerScript = root => extractRuntimeAsset(root, 'editor-asset-manager.js');
+const extractExpectedTemplateManagerStyle = root => extractRuntimeAsset(root, 'editor-template-manager.css');
+const extractExpectedTemplateManagerScript = root => extractRuntimeAsset(root, 'editor-template-manager.js');
+const extractExpectedVersionManagerStyle = root => extractRuntimeAsset(root, 'editor-version-manager.css');
+const extractExpectedVersionManagerScript = root => extractRuntimeAsset(root, 'editor-version-manager.js');
+const extractExpectedProductivityStyle = root => extractRuntimeAsset(root, 'editor-productivity-tools.css');
+const extractExpectedProductivityScript = root => extractRuntimeAsset(root, 'editor-productivity-tools.js');
+const extractExpectedBrandKitStyle = root => extractRuntimeAsset(root, 'brand-kit.css');
+const extractExpectedBrandKitClient = root => extractRuntimeAsset(root, 'brand-kit-client.js');
+const extractExpectedDashboardBrandKitScript = root => extractRuntimeAsset(root, 'dashboard-brand-kit.js');
+const extractExpectedEditorBrandKitScript = root => extractRuntimeAsset(root, 'editor-brand-kit.js');
 
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function requestWithRetry(url, options = {}) {
   const fetchImpl = options.fetchImpl || global.fetch;
@@ -91,7 +65,9 @@ async function requestWithRetry(url, options = {}) {
       const target = new URL(url);
       target.searchParams.set('__verify', `${token}-${attempt}`);
       const response = await fetchImpl(target.toString(), {
-        redirect: 'follow', cache: 'no-store', signal: controller.signal,
+        redirect: 'follow',
+        cache: 'no-store',
+        signal: controller.signal,
         headers: { accept: '*/*', 'cache-control': 'no-cache', pragma: 'no-cache' }
       });
       const body = await response.text();
@@ -142,7 +118,11 @@ async function verifyProduction(options = {}) {
     versionManagerStyle: options.expectedVersionManagerStyle || extractExpectedVersionManagerStyle(rootDir),
     versionManagerScript: options.expectedVersionManagerScript || extractExpectedVersionManagerScript(rootDir),
     productivityStyle: options.expectedProductivityStyle || extractExpectedProductivityStyle(rootDir),
-    productivityScript: options.expectedProductivityScript || extractExpectedProductivityScript(rootDir)
+    productivityScript: options.expectedProductivityScript || extractExpectedProductivityScript(rootDir),
+    brandKitStyle: options.expectedBrandKitStyle || extractExpectedBrandKitStyle(rootDir),
+    brandKitClient: options.expectedBrandKitClient || extractExpectedBrandKitClient(rootDir),
+    dashboardBrandKitScript: options.expectedDashboardBrandKitScript || extractExpectedDashboardBrandKitScript(rootDir),
+    editorBrandKitScript: options.expectedEditorBrandKitScript || extractExpectedEditorBrandKitScript(rootDir)
   };
   const requestOptions = {
     fetchImpl: options.fetchImpl || global.fetch,
@@ -163,11 +143,15 @@ async function verifyProduction(options = {}) {
 
   await checkUrl('Arabic editor shell', `${publicOrigin}/nfc/editor.html`, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js']);
   await checkUrl('English editor shell', `${publicOrigin}/nfc/editor-en.html`, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js']);
+  await checkUrl('Arabic dashboard shell', `${publicOrigin}/nfc/dashboard.html`, ['dashboard-main', 'runtime-config.js', 'auth.js']);
+  await checkUrl('English dashboard shell', `${publicOrigin}/nfc/dashboard-en.html`, ['dashboard-main', 'runtime-config.js', 'auth.js']);
   await checkUrl('Runtime release marker', `${publicOrigin}/nfc/runtime-config.js`, [
     expected.release, expected.toolbarAsset, expected.assetManagerStyle, expected.assetManagerScript,
     expected.templateManagerStyle, expected.templateManagerScript,
     expected.versionManagerStyle, expected.versionManagerScript,
-    expected.productivityStyle, expected.productivityScript, apiOrigin
+    expected.productivityStyle, expected.productivityScript,
+    expected.brandKitStyle, expected.brandKitClient, expected.dashboardBrandKitScript,
+    expected.editorBrandKitScript, apiOrigin
   ]);
   await checkUrl('Toolbar release stylesheet', `${publicOrigin}${expected.toolbarAsset.split('?')[0]}`, [
     '--editor-toolbar-offset: 88px', 'padding-top: var(--editor-toolbar-offset)',
@@ -183,8 +167,7 @@ async function verifyProduction(options = {}) {
     '.editor-template-manager-panel', '.editor-template-card-preview', '.editor-template-modal-dialog'
   ]);
   await checkUrl('Template manager script', `${publicOrigin}${expected.templateManagerScript.split('?')[0]}`, [
-    "const VERSION = '8.2.0'", "makeTemplate('executive-navy'", "makeTemplate('medical-trust'",
-    'createPersonalTemplate', 'editor:templateapplied'
+    "const VERSION = '8.2.0'", "makeTemplate('executive-navy'", 'createPersonalTemplate', 'editor:templateapplied'
   ]);
   await checkUrl('Version manager stylesheet', `${publicOrigin}${expected.versionManagerStyle.split('?')[0]}`, [
     '.editor-cloud-version-popover', '.editor-version-sync-badge', '.editor-version-comparison'
@@ -196,13 +179,25 @@ async function verifyProduction(options = {}) {
     '.editor-productivity-toolbar', '.editor-productivity-selected', '.editor-productivity-context-menu'
   ]);
   await checkUrl('Productivity tools script', `${publicOrigin}${expected.productivityScript.split('?')[0]}`, [
-    "const VERSION = '9.0.0'", 'groupSelection', 'distributeSelection', 'moveToOtherFace',
-    'editor:productivityselectionchange'
+    "const VERSION = '9.0.0'", 'groupSelection', 'distributeSelection', 'moveToOtherFace'
+  ]);
+  await checkUrl('Brand Kit stylesheet', `${publicOrigin}${expected.brandKitStyle.split('?')[0]}`, [
+    '.brand-kit-workspace', '.brand-kit-modal', '.brand-kit-editor-actions'
+  ]);
+  await checkUrl('Brand Kit API client', `${publicOrigin}${expected.brandKitClient.split('?')[0]}`, [
+    "const VERSION = '10.0.0'", 'installFormSubmitBridge', 'applyDesigns', 'addMember'
+  ]);
+  await checkUrl('Dashboard Brand Kit workspace', `${publicOrigin}${expected.dashboardBrandKitScript.split('?')[0]}`, [
+    "const VERSION = '10.0.0'", 'section-brand-kit', 'applyDesigns', 'updateMember'
+  ]);
+  await checkUrl('Editor Brand Kit integration', `${publicOrigin}${expected.editorBrandKitScript.split('?')[0]}`, [
+    "const VERSION = '10.0.0'", 'applyIdentity', 'saveTemplate', 'editor:brandkitapplied'
   ]);
   await checkUrl('Service Worker release cache', `${publicOrigin}/nfc/sw.js`, [
     `CACHE_VERSION = '${expected.serviceWorkerCache}'`, '/nfc/editor-toolbar-release.css',
     '/nfc/editor-asset-manager.js', '/nfc/editor-template-manager.js', '/nfc/editor-version-manager.js',
-    '/nfc/editor-productivity-tools.js'
+    '/nfc/editor-productivity-tools.js', '/nfc/brand-kit.css', '/nfc/brand-kit-client.js',
+    '/nfc/dashboard-brand-kit.js', '/nfc/editor-brand-kit.js'
   ]);
 
   checks.push(await executeCheck('API health snapshot', async () => {
@@ -234,10 +229,13 @@ async function verifyProduction(options = {}) {
     return { url, release: payload.release, version: payload.version };
   }));
 
-  const failed = checks.filter((item) => item.status === 'failed');
+  const failed = checks.filter(item => item.status === 'failed');
   return {
-    status: failed.length ? 'failed' : 'passed', checkedAt: new Date().toISOString(),
-    publicOrigin, apiOrigin, expected,
+    status: failed.length ? 'failed' : 'passed',
+    checkedAt: new Date().toISOString(),
+    publicOrigin,
+    apiOrigin,
+    expected,
     totals: { checks: checks.length, passed: checks.length - failed.length, failed: failed.length },
     checks
   };
@@ -247,7 +245,8 @@ function renderSummary(report) {
   const lines = [
     '# Production release verification', '',
     `**Result:** ${report.status === 'passed' ? '✅ Passed' : '❌ Failed'}`, '',
-    `- Public frontend: \`${report.publicOrigin}\``, `- API: \`${report.apiOrigin}\``,
+    `- Public frontend: \`${report.publicOrigin}\``,
+    `- API: \`${report.apiOrigin}\``,
     `- Expected release: \`${report.expected.release}\``,
     `- Expected Service Worker cache: \`${report.expected.serviceWorkerCache}\``, '',
     '| Check | Result | Duration |', '|---|---:|---:|'
@@ -283,15 +282,29 @@ async function main() {
 }
 
 module.exports = {
-  extractExpectedRelease, extractExpectedServiceWorkerCache, extractExpectedToolbarAsset,
-  extractExpectedAssetManagerStyle, extractExpectedAssetManagerScript,
-  extractExpectedTemplateManagerStyle, extractExpectedTemplateManagerScript,
-  extractExpectedVersionManagerStyle, extractExpectedVersionManagerScript,
-  extractExpectedProductivityStyle, extractExpectedProductivityScript,
-  normalizeOrigin, renderSummary, requestWithRetry, verifyProduction, writeReport
+  extractExpectedRelease,
+  extractExpectedServiceWorkerCache,
+  extractExpectedToolbarAsset,
+  extractExpectedAssetManagerStyle,
+  extractExpectedAssetManagerScript,
+  extractExpectedTemplateManagerStyle,
+  extractExpectedTemplateManagerScript,
+  extractExpectedVersionManagerStyle,
+  extractExpectedVersionManagerScript,
+  extractExpectedProductivityStyle,
+  extractExpectedProductivityScript,
+  extractExpectedBrandKitStyle,
+  extractExpectedBrandKitClient,
+  extractExpectedDashboardBrandKitScript,
+  extractExpectedEditorBrandKitScript,
+  normalizeOrigin,
+  renderSummary,
+  requestWithRetry,
+  verifyProduction,
+  writeReport
 };
 
-if (require.main === module) main().catch((error) => {
+if (require.main === module) main().catch(error => {
   console.error('[production-verification] Fatal error:', error);
   process.exitCode = 1;
 });
