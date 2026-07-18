@@ -70,14 +70,22 @@ module.exports = function createSeoRouter({ getDb, designsCollectionName, absolu
 
       if (db) {
         const docs = await db.collection(designsCollectionName)
-          .find({ 'data.sharedToGallery': true })
-          .project({ shortId: 1, createdAt: 1 })
+          .find({
+            'data.sharedToGallery': true,
+            $or: [
+              { 'workflow.enabled': { $ne: true } },
+              { 'workflow.status': 'published' }
+            ]
+          })
+          .project({ shortId: 1, createdAt: 1, lastModified: 1 })
           .sort({ createdAt: -1 })
           .limit(5000)
           .toArray();
         designUrls = docs.map(d => ({
           loc: `${base}/nfc/viewer.html?id=${d.shortId}`,
-          lastmod: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : undefined,
+          lastmod: (d.lastModified || d.createdAt)
+            ? new Date(d.lastModified || d.createdAt).toISOString().split('T')[0]
+            : undefined,
           changefreq: 'monthly',
           priority: '0.8'
         }));
