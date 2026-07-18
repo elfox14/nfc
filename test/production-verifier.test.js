@@ -42,6 +42,10 @@ function createFetch(overrides = {}) {
     '/nfc/brand-kit-client.js': response(200, read('brand-kit-client.js')),
     '/nfc/dashboard-brand-kit.js': response(200, read('dashboard-brand-kit.js')),
     '/nfc/editor-brand-kit.js': response(200, read('editor-brand-kit.js')),
+    '/nfc/workspace.css': response(200, read('workspace.css')),
+    '/nfc/workspace-client.js': response(200, read('workspace-client.js')),
+    '/nfc/dashboard-workspaces.js': response(200, read('dashboard-workspaces.js')),
+    '/nfc/editor-review-workflow.js': response(200, read('editor-review-workflow.js')),
     '/nfc/sw.js': response(200, read('sw.js')),
     '/healthz': response(200, JSON.stringify(health())),
     '/readyz': response(200, JSON.stringify(health())),
@@ -56,9 +60,9 @@ function createFetch(overrides = {}) {
 }
 
 describe('production release verifier', () => {
-  test('derives current release and Brand Kit assets', () => {
-    expect(verifier.extractExpectedRelease(rootDir)).toBe('2026.07.18-phase10.0');
-    expect(verifier.extractExpectedServiceWorkerCache(rootDir)).toBe('v13');
+  test('derives current Brand Kit and workspace assets', () => {
+    expect(verifier.extractExpectedRelease(rootDir)).toBe('2026.07.19-phase11.0');
+    expect(verifier.extractExpectedServiceWorkerCache(rootDir)).toBe('v14');
     expect(verifier.extractExpectedToolbarAsset(rootDir)).toBe('/nfc/editor-toolbar-release.css?v=7.2');
     expect(verifier.extractExpectedAssetManagerStyle(rootDir)).toBe('/nfc/editor-asset-manager.css?v=8.1');
     expect(verifier.extractExpectedAssetManagerScript(rootDir)).toBe('/nfc/editor-asset-manager.js?v=8.1');
@@ -72,6 +76,10 @@ describe('production release verifier', () => {
     expect(verifier.extractExpectedBrandKitClient(rootDir)).toBe('/nfc/brand-kit-client.js?v=10.0');
     expect(verifier.extractExpectedDashboardBrandKitScript(rootDir)).toBe('/nfc/dashboard-brand-kit.js?v=10.0');
     expect(verifier.extractExpectedEditorBrandKitScript(rootDir)).toBe('/nfc/editor-brand-kit.js?v=10.0');
+    expect(verifier.extractExpectedWorkspaceStyle(rootDir)).toBe('/nfc/workspace.css?v=11.0');
+    expect(verifier.extractExpectedWorkspaceClient(rootDir)).toBe('/nfc/workspace-client.js?v=11.0');
+    expect(verifier.extractExpectedDashboardWorkspacesScript(rootDir)).toBe('/nfc/dashboard-workspaces.js?v=11.0');
+    expect(verifier.extractExpectedEditorReviewWorkflowScript(rootDir)).toBe('/nfc/editor-review-workflow.js?v=11.0');
   });
 
   test('passes when production matches the repository', async () => {
@@ -84,21 +92,25 @@ describe('production release verifier', () => {
       cacheBuster: 'test'
     });
     expect(report.status).toBe('passed');
-    expect(report.totals).toEqual({ checks: 22, passed: 22, failed: 0 });
-    expect(fetchImpl).toHaveBeenCalledTimes(22);
+    expect(report.totals).toEqual({ checks: 26, passed: 26, failed: 0 });
+    expect(fetchImpl).toHaveBeenCalledTimes(26);
     expect(report.expected).toMatchObject({
-      release: '2026.07.18-phase10.0',
-      serviceWorkerCache: 'v13',
+      release: '2026.07.19-phase11.0',
+      serviceWorkerCache: 'v14',
       productivityScript: '/nfc/editor-productivity-tools.js?v=9.0',
       brandKitStyle: '/nfc/brand-kit.css?v=10.0',
       brandKitClient: '/nfc/brand-kit-client.js?v=10.0',
       dashboardBrandKitScript: '/nfc/dashboard-brand-kit.js?v=10.0',
-      editorBrandKitScript: '/nfc/editor-brand-kit.js?v=10.0'
+      editorBrandKitScript: '/nfc/editor-brand-kit.js?v=10.0',
+      workspaceStyle: '/nfc/workspace.css?v=11.0',
+      workspaceClient: '/nfc/workspace-client.js?v=11.0',
+      dashboardWorkspacesScript: '/nfc/dashboard-workspaces.js?v=11.0',
+      editorReviewWorkflowScript: '/nfc/editor-review-workflow.js?v=11.0'
     });
   });
 
   test('detects stale runtime files', async () => {
-    const stale = read('runtime-config.js').replace('2026.07.18-phase10.0', '2026.07.18-phase9.0');
+    const stale = read('runtime-config.js').replace('2026.07.19-phase11.0', '2026.07.18-phase10.0');
     const report = await verifier.verifyProduction({
       rootDir,
       fetchImpl: createFetch({ '/nfc/runtime-config.js': response(200, stale) }),
@@ -110,16 +122,16 @@ describe('production release verifier', () => {
     expect(report.checks.find(item => item.name === 'Runtime release marker').status).toBe('failed');
   });
 
-  test('detects missing Brand Kit assets', async () => {
+  test('detects missing team review assets', async () => {
     const report = await verifier.verifyProduction({
       rootDir,
-      fetchImpl: createFetch({ '/nfc/editor-brand-kit.js': response(404, 'Not Found') }),
+      fetchImpl: createFetch({ '/nfc/editor-review-workflow.js': response(404, 'Not Found') }),
       attempts: 1,
       retryDelayMs: 0,
       cacheBuster: 'test'
     });
     expect(report.status).toBe('failed');
-    expect(report.checks.find(item => item.name === 'Editor Brand Kit integration')).toMatchObject({
+    expect(report.checks.find(item => item.name === 'Editor review workflow')).toMatchObject({
       status: 'failed',
       error: expect.stringContaining('HTTP 404')
     });
