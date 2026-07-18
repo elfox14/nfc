@@ -2,6 +2,7 @@
 'use strict';
 
 const {
+  mayEdit,
   resetWorkflowAfterEdit,
   sanitizeDesignData
 } = require('../routes/workspace-design-bridge.routes')._test;
@@ -32,6 +33,19 @@ describe('workspace design bridge helpers', () => {
       lastEditedBy: 'editor-1',
       updatedAt: now
     });
+  });
+
+  test('allows the design owner and workspace editors but not reviewers to save', () => {
+    const workspace = {
+      ownerId: 'workspace-owner',
+      members: [
+        { userId: 'editor-1', role: 'editor' },
+        { userId: 'reviewer-1', role: 'reviewer' }
+      ]
+    };
+    expect(mayEdit({ owner: true, workspace }, 'design-owner')).toBe(true);
+    expect(mayEdit({ owner: false, workspace }, 'editor-1')).toBe(true);
+    expect(mayEdit({ owner: false, workspace }, 'reviewer-1')).toBe(false);
   });
 
   test('sanitizes personal content without removing visual state', () => {
