@@ -154,16 +154,34 @@ module.exports = function createWorkspaceDesignBridgeRouter({
       const designId = String(req.params.id || '');
       if (!isSafeDesignId(designId)) return next();
       const design = await db.collection(designsCollectionName).findOne({ shortId: designId });
-      if (!design?.workflow?.enabled || design.workflow.status === 'published') return next();
-      if (!req.user?.userId) return res.status(404).json({ error: 'Design not found or not published' });
-      const access = await getDesignWorkspaceAccess({ db, workspacesCollectionName, design, userId: req.user.userId });
-      if (!access.allowed) return res.status(404).json({ error: 'Design not found or not published' });
+      if (!design?.data) return res.status(404).json({ error: 'Design not found or data missing' });
+
+      const workflowEnabled = design.workflow?.enabled === true;
+      const published = design.workflow?.status === 'published';
+      if (workflowEnabled && !published) {
+        if (!req.user?.userId) return res.status(404).json({ error: 'Design not found or not published' });
+        const access = await getDesignWorkspaceAccess({ db, workspacesCollectionName, design, userId: req.user.userId });
+        if (!access.allowed) return res.status(404).json({ error: 'Design not found or not published' });
+        res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+      }
+
+      if (req.query.trackView === 'true' && (!workflowEnabled || published)) {
+        try {
+          await db.collection(designsCollectionName).updateOne(
+            { _id: design._id },
+            { $inc: { views: 1 } }
+          );
+        } catch (error) {
+          console.error(`[WorkspaceDesignBridge] Failed to increment views for ${designId}:`, error);
+        }
+      }
+
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-      res.setHeader('X-Robots-Tag', 'noindex, noarchive');
+      res.setHeader('Pragma', 'no-cache');
       return res.json(design.data);
     } catch (error) {
-      console.error('[WorkspaceDesignBridge] Private design read failed:', error);
-      return res.status(500).json({ error: 'Failed to load private workspace design' });
+      console.error('[WorkspaceDesignBridge] Design read failed:', error);
+      return res.status(500).json({ error: 'Failed to load design' });
     }
   });
 
