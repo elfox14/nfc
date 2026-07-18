@@ -24,7 +24,7 @@
     }
   }
 
-  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase8.1';
+  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase8.2';
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
@@ -74,8 +74,34 @@
     document.head.appendChild(script);
   }
 
+  function loadTemplateManager() {
+    if (!document.querySelector('link[data-editor-template-manager-style]')) {
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet';
+      stylesheet.href = '/nfc/editor-template-manager.css?v=8.2';
+      stylesheet.dataset.editorTemplateManagerStyle = 'true';
+      document.head.appendChild(stylesheet);
+    }
+
+    if (document.querySelector('script[data-editor-template-manager]')) return;
+    const script = document.createElement('script');
+    script.src = '/nfc/editor-template-manager.js?v=8.2';
+    script.async = false;
+    script.dataset.editorTemplateManager = 'true';
+    script.addEventListener('load', () => {
+      document.documentElement.dataset.editorTemplateManagerLoader = 'ready';
+    }, { once: true });
+    script.addEventListener('error', () => {
+      document.documentElement.dataset.editorTemplateManagerLoader = 'load-error';
+      console.error('[RuntimeConfig] Failed to load editor template manager.');
+    }, { once: true });
+    document.documentElement.dataset.editorTemplateManagerLoader = 'loading';
+    document.head.appendChild(script);
+  }
+
   loadToolbarReleaseStyles();
   loadAssetManager();
+  loadTemplateManager();
 
   function isSaveRequest(input, init) {
     const method = String(init?.method || input?.method || 'GET').toUpperCase();
