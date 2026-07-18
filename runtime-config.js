@@ -172,6 +172,26 @@
     });
   }
 
+  function installVersionRestoreSettlement() {
+    if (window.__EDITOR_VERSION_RESTORE_SETTLEMENT__) return;
+    window.__EDITOR_VERSION_RESTORE_SETTLEMENT__ = true;
+
+    document.addEventListener('editor:versionrestored', (event) => {
+      if (event.detail?.cloud !== true) return;
+      const confirmCloudState = () => {
+        window.EditorProductionGuard?.markSaved?.();
+        window.EditorProduction?.markSaved?.('cloud');
+        document.documentElement.dataset.editorVersionRestoreSettled = 'true';
+      };
+
+      Promise.resolve().then(confirmCloudState);
+      if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(() => window.requestAnimationFrame(confirmCloudState));
+      }
+      window.setTimeout(confirmCloudState, 180);
+    });
+  }
+
   function exposeLegacyEditorGlobals() {
     try {
       if (!window.StateManager && typeof StateManager !== 'undefined') window.StateManager = StateManager;
@@ -264,6 +284,7 @@
   function finishEditorBootstrap() {
     ensureLegacyStyleControls();
     installTemplateMobileBridge();
+    installVersionRestoreSettlement();
     exposeLegacyEditorGlobals();
     window.setTimeout(loadProductionGuard, 0);
   }
