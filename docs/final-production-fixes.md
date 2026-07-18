@@ -7,4 +7,17 @@ This release completes the remaining Phase 11 production work.
 - Production verification rejects injected editor metadata and checks the authenticated viewer bundle.
 - No database migration is required.
 
-After deployment, synchronize the updated static files and run `npm run verify:production`.
+## Files to synchronize
+
+- `editor.html`
+- `editor-en.html`
+- `view/viewer.js`
+- `scripts/verify-production-release.js`
+
+## Validation
+
+1. Deploy the latest `main` API to Render.
+2. Synchronize the updated static files to `public_html/nfc/`.
+3. Open an unpublished workspace design while signed in as a workspace member.
+4. Confirm that a signed-out visitor receives no access until the design is published.
+5. Run `npm run verify:production` and require every check to pass.
