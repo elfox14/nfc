@@ -14,7 +14,7 @@
 
   function authHeaders(extra = {}) {
     const headers = { ...extra };
-    const token = global.Auth?.getHeader?.().Authorization || global.sessionStorage?.getItem('authAccessToken');
+    const token = global.Auth?.getHeader?.()?.Authorization || global.sessionStorage?.getItem('authAccessToken');
     if (token) headers.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
     return headers;
   }
@@ -50,9 +50,10 @@
   }
 
   function installFormSubmitBridge() {
-    if (global.__BRAND_KIT_FORM_SUBMIT_BRIDGE__) return;
-    global.__BRAND_KIT_FORM_SUBMIT_BRIDGE__ = true;
-    document.addEventListener('click', event => {
+    const previous = global.__BRAND_KIT_FORM_SUBMIT_HANDLER__;
+    if (typeof previous === 'function') document.removeEventListener('click', previous);
+
+    const handler = event => {
       const trigger = event.target.closest(
         '.brand-kit-workspace form .brand-kit-primary, .brand-kit-modal form .brand-kit-primary'
       );
@@ -62,7 +63,10 @@
       if (!form) return;
       event.preventDefault();
       submitForm(form);
-    });
+    };
+
+    global.__BRAND_KIT_FORM_SUBMIT_HANDLER__ = handler;
+    document.addEventListener('click', handler);
   }
 
   const client = {
