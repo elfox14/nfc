@@ -17,7 +17,6 @@ function loadClient(fetchImpl) {
   window.fetch = fetchImpl;
   delete window.Auth;
   delete window.BrandKitClient;
-  delete window.__BRAND_KIT_FORM_SUBMIT_BRIDGE__;
   jest.isolateModules(() => require('../brand-kit-client'));
   return window.BrandKitClient;
 }
@@ -43,6 +42,22 @@ describe('Brand Kit browser client', () => {
           'Content-Type': 'application/json'
         }),
         body: JSON.stringify({ name: 'Primary', value: '#112233', role: 'primary' })
+      })
+    );
+  });
+
+  test('normalizes known font families to the editor select values', async () => {
+    const fetchImpl = jest.fn(async () => jsonResponse(201, { success: true }));
+    const client = loadClient(fetchImpl);
+
+    await client.addFont('kit-1', { name: 'Heading', family: 'Cairo, sans-serif', role: 'heading' });
+
+    expect(client.normalizeEditorFontFamily('Tajawal, sans-serif')).toBe("'Tajawal', sans-serif");
+    expect(client.normalizeEditorFontFamily("'Poppins', sans-serif")).toBe("'Poppins', sans-serif");
+    expect(fetchImpl).toHaveBeenCalledWith(
+      expect.stringContaining('/api/brand-kits/kit-1/fonts'),
+      expect.objectContaining({
+        body: JSON.stringify({ name: 'Heading', family: "'Cairo', sans-serif", role: 'heading' })
       })
     );
   });
