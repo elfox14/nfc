@@ -37,6 +37,7 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-editor-production', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-save-monitor', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-asset-manager', 'ready');
+  await expect(page.locator('html')).toHaveAttribute('data-editor-template-manager', 'ready');
 });
 
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {
@@ -158,6 +159,37 @@ test('keeps a local draft while offline', async ({ page, context }) => {
   expect(hasDraft).toBe(true);
   await context.setOffline(false);
   await page.evaluate(() => window.dispatchEvent(new Event('online')));
+});
+
+test('previews and applies a professional template without replacing content', async ({ page }) => {
+  const name = await openNameEditor(page);
+  await name.fill('بيانات المستخدم محفوظة');
+  await page.evaluate(() => (window as any).EditorWorkspace.setLibraryView('templates'));
+  await expect(page.locator('#editor-template-manager-panel')).toBeVisible();
+
+  const originalBackground = await page.locator('#front-bg-start').inputValue();
+  await page.locator('[data-template-id="medical-trust"] .editor-template-secondary').click();
+  await expect(page.locator('#editor-template-modal')).toBeVisible();
+  await expect(page.locator('.editor-template-modal-face')).toHaveCount(2);
+  await expect(page.locator('#front-bg-start')).toHaveValue(originalBackground);
+
+  await page.locator('#editor-template-modal [data-template-apply]').click();
+  await expect(page.locator('#front-bg-start')).toHaveValue('#063b46');
+  await expect(page.locator('#input-name_ar')).toHaveValue('بيانات المستخدم محفوظة');
+  await expect(page.locator('#editor-template-toast')).toBeVisible();
+});
+
+test('saves the current visual design as a personal template', async ({ page }) => {
+  await page.evaluate(() => (window as any).EditorWorkspace.setLibraryView('templates'));
+  await page.locator('.editor-template-save-current').click();
+  await expect(page.locator('#editor-template-save-dialog')).toBeVisible();
+  await page.locator('#editor-personal-template-name').fill('قالب الاختبار الشخصي');
+  await page.locator('#editor-template-save-dialog button[type="submit"]').click();
+
+  await expect(page.locator('[data-personal-template="true"]')).toContainText('قالب الاختبار الشخصي');
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mcprime-editor-personal-templates-v1') || '[]'));
+  expect(saved).toHaveLength(1);
+  expect(saved[0].design.inputs['input-name_ar']).toBeUndefined();
 });
 
 test('keeps the mobile bottom sheet usable', async ({ page, isMobile }) => {

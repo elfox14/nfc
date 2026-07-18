@@ -24,7 +24,7 @@
     }
   }
 
-  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase8.1';
+  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase8.2';
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
@@ -74,8 +74,89 @@
     document.head.appendChild(script);
   }
 
+  function loadTemplateManager() {
+    if (!document.querySelector('link[data-editor-template-manager-style]')) {
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet';
+      stylesheet.href = '/nfc/editor-template-manager.css?v=8.2';
+      stylesheet.dataset.editorTemplateManagerStyle = 'true';
+      document.head.appendChild(stylesheet);
+    }
+
+    if (document.querySelector('script[data-editor-template-manager]')) return;
+    const script = document.createElement('script');
+    script.src = '/nfc/editor-template-manager.js?v=8.2';
+    script.async = false;
+    script.dataset.editorTemplateManager = 'true';
+    script.addEventListener('load', () => {
+      document.documentElement.dataset.editorTemplateManagerLoader = 'ready';
+    }, { once: true });
+    script.addEventListener('error', () => {
+      document.documentElement.dataset.editorTemplateManagerLoader = 'load-error';
+      console.error('[RuntimeConfig] Failed to load editor template manager.');
+    }, { once: true });
+    document.documentElement.dataset.editorTemplateManagerLoader = 'loading';
+    document.head.appendChild(script);
+  }
+
   loadToolbarReleaseStyles();
   loadAssetManager();
+  loadTemplateManager();
+
+  function ensureLegacyStyleControls() {
+    if (!document.body) return;
+    const defaults = [
+      ['phone-btn-font', 'Tajawal, sans-serif'],
+      ['phone-btn-padding', '6']
+    ];
+    let host = document.getElementById('editor-legacy-style-controls');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'editor-legacy-style-controls';
+      host.hidden = true;
+      host.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(host);
+    }
+    defaults.forEach(([id, value]) => {
+      if (document.getElementById(id)) return;
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.id = id;
+      input.value = value;
+      input.dataset.editorCompatibilityControl = 'true';
+      host.appendChild(input);
+    });
+    document.documentElement.dataset.editorLegacyControls = 'ready';
+  }
+
+  function installTemplateMobileBridge() {
+    if (window.__EDITOR_TEMPLATE_MOBILE_BRIDGE__) return;
+    window.__EDITOR_TEMPLATE_MOBILE_BRIDGE__ = true;
+    document.addEventListener('editor:librarychange', (event) => {
+      if (event.detail?.view !== 'templates' || window.innerWidth > 1024) return;
+      document.querySelectorAll('.pro-sidebar').forEach((panel) => {
+        panel.classList.toggle('active-view', panel.id === 'panel-design');
+      });
+      document.querySelectorAll('.mobile-nav-item[data-target]').forEach((button) => {
+        const selected = button.dataset.target === 'panel-design';
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-selected', selected ? 'true' : 'false');
+      });
+      document.documentElement.dataset.editorTemplateMobilePanel = 'active';
+    });
+  }
+
+  function exposeLegacyEditorGlobals() {
+    try {
+      if (!window.StateManager && typeof StateManager !== 'undefined') window.StateManager = StateManager;
+      if (!window.HistoryManager && typeof HistoryManager !== 'undefined') window.HistoryManager = HistoryManager;
+      if (!window.UIManager && typeof UIManager !== 'undefined') window.UIManager = UIManager;
+      document.documentElement.dataset.editorLegacyBridge = 'ready';
+    } catch (error) {
+      document.documentElement.dataset.editorLegacyBridge = 'unavailable';
+      console.warn('[RuntimeConfig] Legacy editor globals could not be exposed:', error);
+    }
+  }
 
   function isSaveRequest(input, init) {
     const method = String(init?.method || input?.method || 'GET').toUpperCase();
@@ -154,11 +235,16 @@
     document.head.appendChild(guard);
   }
 
+  function finishEditorBootstrap() {
+    ensureLegacyStyleControls();
+    installTemplateMobileBridge();
+    exposeLegacyEditorGlobals();
+    window.setTimeout(loadProductionGuard, 0);
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      window.setTimeout(loadProductionGuard, 0);
-    }, { once: true });
+    document.addEventListener('DOMContentLoaded', finishEditorBootstrap, { once: true });
   } else {
-    loadProductionGuard();
+    finishEditorBootstrap();
   }
 }());
