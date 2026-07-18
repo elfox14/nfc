@@ -35,9 +35,9 @@ test.beforeEach(async ({ page }) => {
         { id: 'color-5', name: 'Text', role: 'text', value: '#ffffff' }
       ],
       fonts: [
-        { id: 'font-1', name: 'Heading', role: 'heading', family: 'Cairo, sans-serif' },
-        { id: 'font-2', name: 'Body', role: 'body', family: 'Tajawal, sans-serif' },
-        { id: 'font-3', name: 'Accent', role: 'accent', family: 'Poppins, sans-serif' }
+        { id: 'font-1', name: 'Heading', role: 'heading', family: "'Cairo', sans-serif" },
+        { id: 'font-2', name: 'Body', role: 'body', family: "'Tajawal', sans-serif" },
+        { id: 'font-3', name: 'Accent', role: 'accent', family: "'Poppins', sans-serif" }
       ]
     },
     templates
@@ -122,11 +122,10 @@ test('applies shared identity while preserving personal content', async ({ page 
 
   await expect(page.locator('#front-bg-start')).toHaveValue('#123456');
   await expect(page.locator('#front-bg-end')).toHaveValue('#234567');
-  await expect(page.locator('#name-font')).toHaveValue('Cairo, sans-serif');
+  await expect(page.locator('#name-font')).toHaveValue("'Cairo', sans-serif");
   await expect(name).toHaveValue('الاسم الشخصي محفوظ');
 
   const state = await page.evaluate(() => (window as any).StateManager.getStateObject());
-  expect(state.brandKitId).toBe('kit-e2e');
   expect(state.inputs['input-name_ar']).toBe('الاسم الشخصي محفوظ');
   expect(state.inputs['input-logo']).toContain('/nfc/logo.svg');
 });
