@@ -8,6 +8,8 @@ const {
   extractExpectedRelease,
   extractExpectedServiceWorkerCache,
   extractExpectedToolbarAsset,
+  extractExpectedAssetManagerStyle,
+  extractExpectedAssetManagerScript,
   verifyProduction
 } = require('../scripts/verify-production-release');
 
@@ -45,6 +47,8 @@ function createFetch(overrides = {}) {
     '/nfc/editor-en.html': response(200, read('editor-en.html')),
     '/nfc/runtime-config.js': response(200, read('runtime-config.js')),
     '/nfc/editor-toolbar-release.css': response(200, read('editor-toolbar-release.css')),
+    '/nfc/editor-asset-manager.css': response(200, read('editor-asset-manager.css')),
+    '/nfc/editor-asset-manager.js': response(200, read('editor-asset-manager.js')),
     '/nfc/sw.js': response(200, read('sw.js')),
     '/healthz': response(200, JSON.stringify(healthySnapshot())),
     '/readyz': response(200, JSON.stringify(healthySnapshot())),
@@ -67,9 +71,11 @@ function createFetch(overrides = {}) {
 
 describe('production release verifier', () => {
   test('derives expected release values from the checked-out repository', () => {
-    expect(extractExpectedRelease(rootDir)).toBe('2026.07.18-phase7.2');
-    expect(extractExpectedServiceWorkerCache(rootDir)).toBe('v8');
+    expect(extractExpectedRelease(rootDir)).toBe('2026.07.18-phase8.1');
+    expect(extractExpectedServiceWorkerCache(rootDir)).toBe('v9');
     expect(extractExpectedToolbarAsset(rootDir)).toBe('/nfc/editor-toolbar-release.css?v=7.2');
+    expect(extractExpectedAssetManagerStyle(rootDir)).toBe('/nfc/editor-asset-manager.css?v=8.1');
+    expect(extractExpectedAssetManagerScript(rootDir)).toBe('/nfc/editor-asset-manager.js?v=8.1');
   });
 
   test('passes when the live frontend and API match the repository release', async () => {
@@ -83,14 +89,20 @@ describe('production release verifier', () => {
     });
 
     expect(report.status).toBe('passed');
-    expect(report.totals).toEqual({ checks: 8, passed: 8, failed: 0 });
-    expect(fetchImpl).toHaveBeenCalledTimes(8);
+    expect(report.totals).toEqual({ checks: 10, passed: 10, failed: 0 });
+    expect(fetchImpl).toHaveBeenCalledTimes(10);
+    expect(report.expected).toMatchObject({
+      release: '2026.07.18-phase8.1',
+      serviceWorkerCache: 'v9',
+      assetManagerStyle: '/nfc/editor-asset-manager.css?v=8.1',
+      assetManagerScript: '/nfc/editor-asset-manager.js?v=8.1'
+    });
   });
 
   test('fails clearly when cPanel still serves an older runtime release', async () => {
     const current = read('runtime-config.js');
     const fetchImpl = createFetch({
-      '/nfc/runtime-config.js': response(200, current.replace('2026.07.18-phase7.2', '2026.07.18-phase7.1'))
+      '/nfc/runtime-config.js': response(200, current.replace('2026.07.18-phase8.1', '2026.07.18-phase7.2'))
     });
 
     const report = await verifyProduction({
@@ -104,6 +116,26 @@ describe('production release verifier', () => {
     expect(report.status).toBe('failed');
     expect(report.checks.find((check) => check.name === 'Runtime release marker')).toMatchObject({
       status: 'failed'
+    });
+  });
+
+  test('fails when the asset manager files were not synchronized', async () => {
+    const fetchImpl = createFetch({
+      '/nfc/editor-asset-manager.js': response(404, 'Not Found')
+    });
+
+    const report = await verifyProduction({
+      rootDir,
+      fetchImpl,
+      attempts: 1,
+      retryDelayMs: 0,
+      cacheBuster: 'test'
+    });
+
+    expect(report.status).toBe('failed');
+    expect(report.checks.find((check) => check.name === 'Asset manager script')).toMatchObject({
+      status: 'failed',
+      error: expect.stringContaining('HTTP 404')
     });
   });
 
