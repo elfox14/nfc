@@ -10,7 +10,7 @@
     open: 'Review', title: 'Design review', subtitle: 'Comments, approvals and publication status for this shared design.', close: 'Close',
     noDesign: 'Save the design first to start a review workflow.', noWorkspace: 'This design is not attached to a team workspace.', dashboard: 'Open Team Workspace',
     loading: 'Loading review…', comments: 'Comments', activity: 'Activity', addComment: 'Add comment', commentPlaceholder: 'Write clear feedback for the team…',
-    selectedElement: 'Attach to selected element', general: 'General design comment', resolve: 'Resolve', reopen: 'Reopen',
+    selectedElement: 'Attach to selected element', general: 'General design comment', resolve: 'Resolve', reopen: 'Reopen', role: 'Role',
     submit: 'Submit for review', approve: 'Approve', changes: 'Request changes', publish: 'Publish', draft: 'Return to draft',
     note: 'Optional note', changeNote: 'Describe the required changes', saved: 'Workflow updated.', error: 'Could not update the review workflow.',
     statusDraft: 'Draft', statusReview: 'In review', statusChanges: 'Changes requested', statusApproved: 'Approved', statusPublished: 'Published',
@@ -20,7 +20,7 @@
     open: 'المراجعة', title: 'مراجعة التصميم', subtitle: 'التعليقات والاعتماد وحالة النشر لهذا التصميم المشترك.', close: 'إغلاق',
     noDesign: 'احفظ التصميم أولًا لبدء دورة المراجعة.', noWorkspace: 'هذا التصميم غير مرتبط بمساحة عمل للفريق.', dashboard: 'فتح مساحة الفريق',
     loading: 'جاري تحميل المراجعة…', comments: 'التعليقات', activity: 'سجل النشاط', addComment: 'إضافة تعليق', commentPlaceholder: 'اكتب ملاحظة واضحة للفريق…',
-    selectedElement: 'ربط بالعنصر المحدد', general: 'تعليق عام على التصميم', resolve: 'تم الحل', reopen: 'إعادة الفتح',
+    selectedElement: 'ربط بالعنصر المحدد', general: 'تعليق عام على التصميم', resolve: 'تم الحل', reopen: 'إعادة الفتح', role: 'الدور',
     submit: 'إرسال للمراجعة', approve: 'اعتماد', changes: 'طلب تعديلات', publish: 'نشر', draft: 'إعادة إلى مسودة',
     note: 'ملاحظة اختيارية', changeNote: 'اكتب التعديلات المطلوبة بوضوح', saved: 'تم تحديث دورة المراجعة.', error: 'تعذر تحديث دورة المراجعة.',
     statusDraft: 'مسودة', statusReview: 'قيد المراجعة', statusChanges: 'تعديلات مطلوبة', statusApproved: 'معتمد', statusPublished: 'منشور',
@@ -58,7 +58,7 @@
 
   function button(text, className, action) {
     const node = el('button', className, text);
-    node.type = 'button';
+    node.type = action ? 'button' : 'submit';
     if (action) node.dataset.reviewAction = action;
     return node;
   }
