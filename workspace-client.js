@@ -81,10 +81,10 @@
     }, 50);
   }
 
-  function openReviewWorkflow() {
+  function openVersionHistory() {
     runWhenReady(
-      () => global.EditorReviewWorkflow && typeof global.EditorReviewWorkflow.open === 'function'
-        ? global.EditorReviewWorkflow
+      () => global.EditorVersionManager && typeof global.EditorVersionManager.open === 'function'
+        ? global.EditorVersionManager
         : null,
       api => api.open()
     );
@@ -94,6 +94,15 @@
     runWhenReady(
       () => global.EditorBrandKit && typeof global.EditorBrandKit.open === 'function'
         ? global.EditorBrandKit
+        : null,
+      api => api.open()
+    );
+  }
+
+  function openReviewWorkflow() {
+    runWhenReady(
+      () => global.EditorReviewWorkflow && typeof global.EditorReviewWorkflow.open === 'function'
+        ? global.EditorReviewWorkflow
         : null,
       api => api.open()
     );
@@ -113,6 +122,17 @@
     else menu.appendChild(button);
     document.documentElement.dataset[datasetKey] = 'ready';
     return true;
+  }
+
+  function mountMobileVersionMenu() {
+    return mountMobileMenuButton({
+      id: 'editor-versions-menu-btn',
+      icon: 'fas fa-history',
+      arabic: 'سجل الإصدارات',
+      english: 'Version history',
+      handler: openVersionHistory,
+      datasetKey: 'editorMobileVersionMenu'
+    });
   }
 
   function mountMobileBrandKitMenu() {
@@ -141,6 +161,7 @@
     if (!isEditorRoute()) return;
     const apply = () => {
       removeInjectedOutputWarning();
+      mountMobileVersionMenu();
       mountMobileBrandKitMenu();
       mountMobileReviewMenu();
     };
@@ -209,6 +230,7 @@
       return data;
     },
     removeInjectedOutputWarning,
+    mountMobileVersionMenu,
     mountMobileBrandKitMenu,
     mountMobileReviewMenu
   };
