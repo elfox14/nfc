@@ -1,0 +1,200 @@
+.editor-productivity-selected {
+  outline: 2px solid #38bdf8 !important;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.16) !important;
+}
+
+.editor-productivity-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: min(760px, 54vw);
+  padding: 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--accent-primary, #4da6ff) 25%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-color, #111827) 94%, transparent);
+  box-shadow: 0 10px 28px rgba(2, 8, 23, 0.18);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.editor-productivity-toolbar[hidden] {
+  display: none !important;
+}
+
+.editor-productivity-count {
+  flex: 0 0 auto;
+  min-width: 66px;
+  padding-inline: 8px;
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.editor-productivity-action {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary, #e2e8f0);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.editor-productivity-action:hover:not(:disabled),
+.editor-productivity-action:focus-visible {
+  background: color-mix(in srgb, var(--accent-primary, #4da6ff) 18%, transparent);
+  color: var(--accent-primary, #4da6ff);
+  transform: translateY(-1px);
+}
+
+.editor-productivity-action:disabled {
+  opacity: 0.34;
+  cursor: not-allowed;
+}
+
+.editor-layer-row.is-multi-selected {
+  border-color: color-mix(in srgb, #38bdf8 55%, transparent) !important;
+  background: color-mix(in srgb, #38bdf8 10%, transparent) !important;
+}
+
+.editor-productivity-group-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-inline-start: auto;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+  font-size: 0.62rem;
+}
+
+.editor-selection-marquee {
+  position: fixed;
+  z-index: 15000;
+  pointer-events: none;
+  border: 1px solid #38bdf8;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.editor-productivity-context-menu {
+  position: fixed;
+  z-index: 16000;
+  display: grid;
+  min-width: 230px;
+  padding: 7px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-color, #111827) 97%, transparent);
+  color: var(--text-primary, #e2e8f0);
+  box-shadow: 0 22px 64px rgba(2, 8, 23, 0.36);
+  backdrop-filter: blur(18px);
+}
+
+.editor-productivity-context-menu[hidden] {
+  display: none !important;
+}
+
+.editor-productivity-context-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+.editor-productivity-context-action i {
+  width: 18px;
+  color: var(--accent-primary, #4da6ff);
+  text-align: center;
+}
+
+.editor-productivity-context-action:hover:not(:disabled),
+.editor-productivity-context-action:focus-visible {
+  background: color-mix(in srgb, var(--accent-primary, #4da6ff) 14%, transparent);
+  outline: none;
+}
+
+.editor-productivity-context-action:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1280px) {
+  .editor-productivity-toolbar {
+    max-width: 44vw;
+  }
+
+  .editor-productivity-count {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  .editor-productivity-toolbar {
+    order: 3;
+    width: 100%;
+    max-width: none;
+    margin-top: 5px;
+    border-radius: 10px;
+  }
+
+  .editor-canvas-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .editor-productivity-action {
+    width: 36px;
+    height: 34px;
+  }
+
+  .editor-productivity-context-menu {
+    min-width: min(270px, calc(100vw - 24px));
+  }
+}
+
+@media (max-width: 620px) {
+  .editor-productivity-toolbar {
+    gap: 2px;
+    padding: 3px 4px;
+  }
+
+  .editor-productivity-count {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 1;
+    padding: 8px;
+    background: inherit;
+  }
+
+  .editor-productivity-action {
+    width: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-productivity-action,
+  .editor-productivity-selected {
+    transition: none !important;
+  }
+}
