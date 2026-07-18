@@ -36,6 +36,7 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-editor-workspace', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-production', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-save-monitor', 'ready');
+  await expect(page.locator('html')).toHaveAttribute('data-editor-asset-manager', 'ready');
 });
 
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {
@@ -58,6 +59,48 @@ test('opens professional preview and restores both card faces', async ({ page })
   await page.locator('.editor-preview-close').click({ force: true });
   await expect(page.locator('#cards-wrapper #card-front-preview')).toBeAttached();
   await expect(page.locator('#cards-wrapper #card-back-preview')).toBeAttached();
+});
+
+test('preprocesses oversized images and exposes professional crop controls', async ({ page }) => {
+  await expect(page.locator('#logo-drop-zone')).toHaveClass(/asset-drop-zone/);
+  await expect(page.locator('[data-asset-crop-toolbar]')).toBeAttached();
+  await expect(page.locator('[data-crop-action="rotate-left"]')).toBeAttached();
+  await expect(page.locator('[data-crop-action="zoom-in"]')).toBeAttached();
+
+  const result = await page.evaluate(async () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 2600;
+    canvas.height = 1800;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Canvas unavailable');
+    const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#183153');
+    gradient.addColorStop(1, '#e6f0f7');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((value) => value ? resolve(value) : reject(new Error('Image creation failed')), 'image/jpeg', 0.95);
+    });
+    const file = new File([blob], 'oversized.jpg', { type: 'image/jpeg' });
+    const manager = (window as any).EditorAssetManager;
+    const spec = manager.getSpecs().find((item: any) => item.inputId === 'input-logo-upload');
+    return manager.processFile(file, spec).then((processed: any) => ({
+      originalBytes: file.size,
+      processedBytes: processed.file.size,
+      processedName: processed.file.name,
+      width: processed.width,
+      height: processed.height,
+      optimized: processed.optimized
+    }));
+  });
+
+  expect(result.width).toBeLessThanOrEqual(2200);
+  expect(result.height).toBeLessThanOrEqual(2200);
+  expect(result.optimized).toBe(true);
+  expect(result.processedName).toContain('-optimized.');
+  expect(result.originalBytes).toBeGreaterThan(0);
+  expect(result.processedBytes).toBeGreaterThan(0);
 });
 
 test('protects unsaved work and confirms a cloud save', async ({ page }) => {
