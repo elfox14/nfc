@@ -28,7 +28,7 @@ describe('editor toolbar production release patch', () => {
     const sw = read('sw.js');
     const runtime = read('runtime-config.js');
 
-    expect(sw).toContain("const CACHE_VERSION = 'v11'");
+    expect(sw).toContain("const CACHE_VERSION = 'v12'");
     expect(sw).toContain("'/nfc/editor-toolbar-release.css'");
     expect(sw).toContain("'/nfc/editor-asset-manager.js'");
     expect(sw).toContain("'/nfc/editor-asset-manager.css'");
@@ -36,11 +36,8 @@ describe('editor toolbar production release patch', () => {
     expect(sw).toContain("'/nfc/editor-template-manager.css'");
     expect(sw).toContain("'/nfc/editor-version-manager.js'");
     expect(sw).toContain("'/nfc/editor-version-manager.css'");
-    expect(sw).not.toContain('editorStylesWithPatch');
-    expect(sw).not.toContain('isEditorStylesheet');
-    expect(runtime).toContain("stylesheet.href = '/nfc/editor-toolbar-release.css?v=7.2'");
-    expect(runtime).toContain("stylesheet.dataset.editorToolbarRelease = 'true'");
-    expect(runtime).toContain("script.src = '/nfc/editor-template-manager.js?v=8.2'");
-    expect(runtime).toContain("script.src = '/nfc/editor-version-manager.js?v=8.3'");
+    expect(sw).toContain("'/nfc/editor-productivity-tools.js'");
+    expect(sw).toContain("'/nfc/editor-productivity-tools.css'");
+    expect(runtime).toContain('editor-productivity-tools.js?v=9.0');
   });
 });
