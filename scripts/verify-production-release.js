@@ -37,6 +37,20 @@ function extractExpectedToolbarAsset(rootDir) {
   return match[1];
 }
 
+function extractExpectedAssetManagerStyle(rootDir) {
+  const source = readUtf8(rootDir, 'runtime-config.js');
+  const match = source.match(/stylesheet\.href\s*=\s*['"]([^'"]*editor-asset-manager\.css[^'"]*)['"]/);
+  if (!match) throw new Error('Could not extract the asset manager stylesheet URL from runtime-config.js');
+  return match[1];
+}
+
+function extractExpectedAssetManagerScript(rootDir) {
+  const source = readUtf8(rootDir, 'runtime-config.js');
+  const match = source.match(/script\.src\s*=\s*['"]([^'"]*editor-asset-manager\.js[^'"]*)['"]/);
+  if (!match) throw new Error('Could not extract the asset manager script URL from runtime-config.js');
+  return match[1];
+}
+
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -139,6 +153,8 @@ async function verifyProduction(options = {}) {
   const expectedRelease = options.expectedRelease || extractExpectedRelease(rootDir);
   const expectedCache = options.expectedCache || extractExpectedServiceWorkerCache(rootDir);
   const expectedToolbarAsset = options.expectedToolbarAsset || extractExpectedToolbarAsset(rootDir);
+  const expectedAssetManagerStyle = options.expectedAssetManagerStyle || extractExpectedAssetManagerStyle(rootDir);
+  const expectedAssetManagerScript = options.expectedAssetManagerScript || extractExpectedAssetManagerScript(rootDir);
   const requestOptions = {
     fetchImpl: options.fetchImpl || global.fetch,
     attempts: options.attempts || DEFAULT_ATTEMPTS,
@@ -169,8 +185,20 @@ async function verifyProduction(options = {}) {
     const url = `${publicOrigin}/nfc/runtime-config.js`;
     const { response, body } = await requestWithRetry(url, requestOptions);
     assertStatus(response, 200, 'runtime-config.js');
-    assertContains(body, [expectedRelease, expectedToolbarAsset, apiOrigin], 'runtime-config.js');
-    return { url, expectedRelease, expectedToolbarAsset };
+    assertContains(body, [
+      expectedRelease,
+      expectedToolbarAsset,
+      expectedAssetManagerStyle,
+      expectedAssetManagerScript,
+      apiOrigin
+    ], 'runtime-config.js');
+    return {
+      url,
+      expectedRelease,
+      expectedToolbarAsset,
+      expectedAssetManagerStyle,
+      expectedAssetManagerScript
+    };
   }));
 
   checks.push(await executeCheck('Toolbar release stylesheet', async () => {
@@ -186,11 +214,44 @@ async function verifyProduction(options = {}) {
     return { url, bytes: Buffer.byteLength(body) };
   }));
 
+  checks.push(await executeCheck('Asset manager stylesheet', async () => {
+    const assetPath = expectedAssetManagerStyle.split('?')[0];
+    const url = `${publicOrigin}${assetPath}`;
+    const { response, body } = await requestWithRetry(url, requestOptions);
+    assertStatus(response, 200, 'editor-asset-manager.css');
+    assertContains(body, [
+      '.asset-drop-zone',
+      '.asset-upload-status',
+      '.asset-crop-toolbar'
+    ], 'editor-asset-manager.css');
+    return { url, bytes: Buffer.byteLength(body) };
+  }));
+
+  checks.push(await executeCheck('Asset manager script', async () => {
+    const assetPath = expectedAssetManagerScript.split('?')[0];
+    const url = `${publicOrigin}${assetPath}`;
+    const { response, body } = await requestWithRetry(url, requestOptions);
+    assertStatus(response, 200, 'editor-asset-manager.js');
+    assertContains(body, [
+      "const VERSION = '8.1.0'",
+      "inputId: 'input-logo-upload'",
+      "inputId: 'input-photo-upload'",
+      'editor:assetprocessed',
+      'data-crop-action'
+    ], 'editor-asset-manager.js');
+    return { url, bytes: Buffer.byteLength(body) };
+  }));
+
   checks.push(await executeCheck('Service Worker release cache', async () => {
     const url = `${publicOrigin}/nfc/sw.js`;
     const { response, body } = await requestWithRetry(url, requestOptions);
     assertStatus(response, 200, 'sw.js');
-    assertContains(body, [`CACHE_VERSION = '${expectedCache}'`, '/nfc/editor-toolbar-release.css'], 'sw.js');
+    assertContains(body, [
+      `CACHE_VERSION = '${expectedCache}'`,
+      '/nfc/editor-toolbar-release.css',
+      '/nfc/editor-asset-manager.css',
+      '/nfc/editor-asset-manager.js'
+    ], 'sw.js');
     return { url, expectedCache };
   }));
 
@@ -246,7 +307,9 @@ async function verifyProduction(options = {}) {
     expected: {
       release: expectedRelease,
       serviceWorkerCache: expectedCache,
-      toolbarAsset: expectedToolbarAsset
+      toolbarAsset: expectedToolbarAsset,
+      assetManagerStyle: expectedAssetManagerStyle,
+      assetManagerScript: expectedAssetManagerScript
     },
     totals: {
       checks: checks.length,
@@ -314,6 +377,8 @@ module.exports = {
   extractExpectedRelease,
   extractExpectedServiceWorkerCache,
   extractExpectedToolbarAsset,
+  extractExpectedAssetManagerStyle,
+  extractExpectedAssetManagerScript,
   normalizeOrigin,
   renderSummary,
   requestWithRetry,
