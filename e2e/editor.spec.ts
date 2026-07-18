@@ -316,8 +316,9 @@ test('groups, distributes, copies, and moves multiple layers across card faces',
     const element = document.querySelector('[data-editor-selectable="name"]');
     element?.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 160, clientY: 140 }));
   });
-  await expect(page.locator('#editor-productivity-context-menu')).toBeVisible();
-  await expect(page.locator('[data-productivity-action="copy"]')).toBeVisible();
+  const contextMenu = page.locator('#editor-productivity-context-menu');
+  await expect(contextMenu).toBeVisible();
+  await expect(contextMenu.locator('[data-productivity-action="copy"]')).toBeVisible();
   await page.keyboard.press('Escape');
 });
 
