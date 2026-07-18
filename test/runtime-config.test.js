@@ -77,7 +77,7 @@ describe('Runtime API configuration', () => {
     expect(runConfig('https://preview.example.com').apiBase).toBeUndefined();
   });
 
-  it('loads professional editor managers, Brand Kit assets, and the production guard on editor routes', () => {
+  it('loads editor managers, Brand Kit, workspace review, and the production guard', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html');
     const toolbarStyles = editor.appendedNodes.find((node) => node.dataset.editorToolbarRelease === 'true');
     const assetStyles = editor.appendedNodes.find((node) => node.dataset.editorAssetManagerStyle === 'true');
@@ -90,11 +90,14 @@ describe('Runtime API configuration', () => {
     const productivityScript = editor.appendedNodes.find((node) => node.dataset.editorProductivityTools === 'true');
     const brandStyles = editor.appendedNodes.find((node) => node.dataset.brandKitStyle === 'true');
     const brandClient = editor.appendedNodes.find((node) => node.dataset.brandKitClient === 'true');
+    const workspaceStyles = editor.appendedNodes.find((node) => node.dataset.workspaceStyle === 'true');
+    const workspaceClient = editor.appendedNodes.find((node) => node.dataset.workspaceClient === 'true');
     const editorBrandKit = editor.appendedNodes.find((node) => node.dataset.editorBrandKit === 'true');
+    const reviewWorkflow = editor.appendedNodes.find((node) => node.dataset.editorReviewWorkflow === 'true');
     const guard = editor.appendedNodes.find((node) => node.dataset.editorProductionGuard === 'true');
 
-    expect(editor.release).toBe('2026.07.18-phase10.0');
-    expect(editor.appendedNodes).toHaveLength(13);
+    expect(editor.release).toBe('2026.07.19-phase11.0');
+    expect(editor.appendedNodes).toHaveLength(16);
     expect(toolbarStyles.href).toBe('/nfc/editor-toolbar-release.css?v=7.2');
     expect(assetStyles.href).toBe('/nfc/editor-asset-manager.css?v=8.1');
     expect(assetScript.src).toBe('/nfc/editor-asset-manager.js?v=8.1');
@@ -106,23 +109,32 @@ describe('Runtime API configuration', () => {
     expect(productivityScript.src).toBe('/nfc/editor-productivity-tools.js?v=9.0');
     expect(brandStyles.href).toBe('/nfc/brand-kit.css?v=10.0');
     expect(brandClient.src).toBe('/nfc/brand-kit-client.js?v=10.0');
+    expect(workspaceStyles.href).toBe('/nfc/workspace.css?v=11.0');
+    expect(workspaceClient.src).toBe('/nfc/workspace-client.js?v=11.0');
     expect(editorBrandKit.src).toBe('/nfc/editor-brand-kit.js?v=10.0');
+    expect(reviewWorkflow.src).toBe('/nfc/editor-review-workflow.js?v=11.0');
     expect(assetScript.async).toBe(false);
-    expect(brandClient.async).toBe(false);
-    expect(editorBrandKit.async).toBe(false);
+    expect(workspaceClient.async).toBe(false);
+    expect(reviewWorkflow.async).toBe(false);
     expect(guard.src).toBe('/nfc/editor-production-guard.js?v=1.0.3');
   });
 
-  it('loads only shared Brand Kit dashboard assets on dashboard routes', () => {
+  it('loads Brand Kit and team workspace dashboard assets only on dashboard routes', () => {
     const dashboard = runConfig('https://mcprim.com', undefined, '/nfc/dashboard.html');
 
-    expect(dashboard.appendedNodes).toHaveLength(3);
+    expect(dashboard.appendedNodes).toHaveLength(6);
     expect(dashboard.appendedNodes.find(node => node.dataset.brandKitStyle === 'true').href)
       .toBe('/nfc/brand-kit.css?v=10.0');
     expect(dashboard.appendedNodes.find(node => node.dataset.brandKitClient === 'true').src)
       .toBe('/nfc/brand-kit-client.js?v=10.0');
+    expect(dashboard.appendedNodes.find(node => node.dataset.workspaceStyle === 'true').href)
+      .toBe('/nfc/workspace.css?v=11.0');
+    expect(dashboard.appendedNodes.find(node => node.dataset.workspaceClient === 'true').src)
+      .toBe('/nfc/workspace-client.js?v=11.0');
     expect(dashboard.appendedNodes.find(node => node.dataset.dashboardBrandKit === 'true').src)
       .toBe('/nfc/dashboard-brand-kit.js?v=10.0');
+    expect(dashboard.appendedNodes.find(node => node.dataset.dashboardWorkspaces === 'true').src)
+      .toBe('/nfc/dashboard-workspaces.js?v=11.0');
     expect(dashboard.appendedNodes.some(node => node.dataset.editorAssetManager === 'true')).toBe(false);
   });
 
@@ -134,29 +146,34 @@ describe('Runtime API configuration', () => {
   it('loads editor assets immediately and waits before bootstrapping the save guard', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html', 'loading');
 
-    expect(editor.appendedNodes).toHaveLength(12);
+    expect(editor.appendedNodes).toHaveLength(15);
+    expect(editor.appendedNodes.some((node) => node.dataset.workspaceClient === 'true')).toBe(true);
+    expect(editor.appendedNodes.some((node) => node.dataset.editorReviewWorkflow === 'true')).toBe(true);
     expect(editor.appendedNodes.some((node) => node.dataset.brandKitClient === 'true')).toBe(true);
-    expect(editor.appendedNodes.some((node) => node.dataset.editorBrandKit === 'true')).toBe(true);
     expect(editor.appendedNodes.some((node) => node.dataset.editorAssetManager === 'true')).toBe(true);
     editor.triggerDomReady();
-    expect(editor.appendedNodes).toHaveLength(13);
-    expect(editor.appendedNodes[12].dataset.editorProductionGuard).toBe('true');
+    expect(editor.appendedNodes).toHaveLength(16);
+    expect(editor.appendedNodes[15].dataset.editorProductionGuard).toBe('true');
   });
 
-  it('reports when editor and Brand Kit loaders become ready', () => {
+  it('reports when editor, Brand Kit and workspace loaders become ready', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html');
     editor.triggerNodeLoad('brandKitClient');
+    editor.triggerNodeLoad('workspaceClient');
     editor.triggerNodeLoad('editorAssetManager');
     editor.triggerNodeLoad('editorTemplateManager');
     editor.triggerNodeLoad('editorVersionManager');
     editor.triggerNodeLoad('editorProductivityTools');
     editor.triggerNodeLoad('editorBrandKit');
+    editor.triggerNodeLoad('editorReviewWorkflow');
     expect(editor.document.documentElement.dataset.brandKitClientLoader).toBe('ready');
+    expect(editor.document.documentElement.dataset.workspaceClientLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorAssetManagerLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorTemplateManagerLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorVersionManagerLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorProductivityToolsLoader).toBe('ready');
     expect(editor.document.documentElement.dataset.editorBrandKitLoader).toBe('ready');
+    expect(editor.document.documentElement.dataset.editorReviewWorkflowLoader).toBe('ready');
   });
 
   it('keeps save monitoring active after another script replaces fetch', async () => {
