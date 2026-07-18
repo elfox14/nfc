@@ -24,7 +24,7 @@
     }
   }
 
-  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase10.0';
+  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.19-phase11.0';
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
@@ -82,7 +82,23 @@
     });
   }
 
+  function loadSharedWorkspaceAssets() {
+    loadStyle({
+      selector: 'link[data-workspace-style]',
+      href: '/nfc/workspace.css?v=11.0',
+      datasetKey: 'workspaceStyle',
+      readyDataset: 'workspaceStyleLoader'
+    });
+    loadScript({
+      selector: 'script[data-workspace-client]',
+      src: '/nfc/workspace-client.js?v=11.0',
+      datasetKey: 'workspaceClient',
+      readyDataset: 'workspaceClientLoader'
+    });
+  }
+
   loadSharedBrandKitAssets();
+  loadSharedWorkspaceAssets();
 
   if (isDashboard) {
     loadScript({
@@ -90,6 +106,12 @@
       src: '/nfc/dashboard-brand-kit.js?v=10.0',
       datasetKey: 'dashboardBrandKit',
       readyDataset: 'dashboardBrandKitLoader'
+    });
+    loadScript({
+      selector: 'script[data-dashboard-workspaces]',
+      src: '/nfc/dashboard-workspaces.js?v=11.0',
+      datasetKey: 'dashboardWorkspaces',
+      readyDataset: 'dashboardWorkspacesLoader'
     });
     return;
   }
@@ -152,12 +174,22 @@
     });
   }
 
+  function loadEditorReviewWorkflow() {
+    loadScript({
+      selector: 'script[data-editor-review-workflow]',
+      src: '/nfc/editor-review-workflow.js?v=11.0',
+      datasetKey: 'editorReviewWorkflow',
+      readyDataset: 'editorReviewWorkflowLoader'
+    });
+  }
+
   loadToolbarReleaseStyles();
   loadAssetManager();
   loadTemplateManager();
   loadVersionManager();
   loadProductivityTools();
   loadEditorBrandKit();
+  loadEditorReviewWorkflow();
 
   function ensureLegacyStyleControls() {
     if (!document.body) return;
