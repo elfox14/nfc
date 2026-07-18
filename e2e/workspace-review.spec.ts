@@ -1,6 +1,18 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.setTimeout(30_000);
+
+async function openReview(page: Page, isMobile: boolean) {
+  if (isMobile) {
+    await page.locator('#toolbar-more-btn').click();
+    const menuButton = page.locator('#editor-review-workflow-menu-btn');
+    await expect(menuButton).toBeVisible();
+    await menuButton.click();
+  } else {
+    await page.locator('#editor-review-workflow-btn').click();
+  }
+  await expect(page.locator('#workspace-review-modal')).toBeVisible();
+}
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -126,13 +138,15 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-editor-workspace', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-workspace-client', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-review-workflow-loader', 'ready');
+  await expect(page.locator('html')).toHaveAttribute('data-editor-output-warning', 'removed');
+  await expect(page.locator('body')).not.toContainText('Warning: truncated output');
   await expect(page.locator('#editor-review-workflow-btn')).toBeAttached();
+  await expect(page.locator('#editor-review-workflow-menu-btn')).toBeAttached();
 });
 
-test('comments, submits, approves and publishes a shared design', async ({ page }) => {
+test('comments, submits, approves and publishes a shared design', async ({ page, isMobile }) => {
   await page.evaluate(() => (window as any).EditorWorkspace.select('name'));
-  await page.locator('#editor-review-workflow-btn').click({ force: true });
-  await expect(page.locator('#workspace-review-modal')).toBeVisible();
+  await openReview(page, isMobile);
   await expect(page.locator('#workspace-review-modal')).toContainText('MC PRIME Review Team');
   await expect(page.locator('.workspace-status')).toContainText('مسودة');
 
@@ -157,13 +171,12 @@ test('comments, submits, approves and publishes a shared design', async ({ page 
   await expect(page.locator('.workspace-activity-list')).toContainText('تم نشر التصميم');
 });
 
-test('keeps the review launcher usable on mobile layouts', async ({ page, isMobile }) => {
+test('keeps review available in the mobile more menu without toolbar overlap', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'Mobile project only');
-  const launcher = page.locator('#editor-review-workflow-btn');
-  await expect(launcher).toBeVisible();
-  const box = await launcher.boundingBox();
-  expect(box?.width).toBeGreaterThanOrEqual(36);
-  expect(box?.height).toBeGreaterThanOrEqual(36);
-  await launcher.click();
+  await expect(page.locator('#editor-review-workflow-btn')).toBeHidden();
+  await page.locator('#toolbar-more-btn').click();
+  const menuButton = page.locator('#editor-review-workflow-menu-btn');
+  await expect(menuButton).toBeVisible();
+  await menuButton.click();
   await expect(page.locator('#workspace-review-modal')).toBeVisible();
 });
