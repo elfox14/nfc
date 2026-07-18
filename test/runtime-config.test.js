@@ -11,14 +11,15 @@ function runConfig(origin, configuredBase, pathname = '/', readyState = 'complet
   const url = new URL(origin);
   const appendedNodes = [];
   let domReadyHandler;
-  const scriptListeners = {};
   const document = {
     readyState,
     querySelector: () => null,
-    createElement: () => ({
+    createElement: (tagName) => ({
+      tagName: String(tagName).toUpperCase(),
       dataset: {},
+      listeners: {},
       addEventListener(name, handler) {
-        scriptListeners[name] = handler;
+        this.listeners[name] = handler;
       }
     }),
     addEventListener: (name, handler) => {
@@ -47,7 +48,11 @@ function runConfig(origin, configuredBase, pathname = '/', readyState = 'complet
     initialFetch,
     markSaved,
     triggerDomReady: () => domReadyHandler?.(),
-    triggerScriptLoad: () => scriptListeners.load?.()
+    triggerNodeLoad: (datasetKey) => {
+      const node = appendedNodes.find((candidate) => candidate.dataset[datasetKey] === 'true');
+      node?.listeners.load?.();
+      return node;
+    }
   };
 }
 
@@ -68,33 +73,44 @@ describe('Runtime API configuration', () => {
     expect(runConfig('https://preview.example.com').apiBase).toBeUndefined();
   });
 
-  it('loads toolbar styles and the production guard only on editor routes', () => {
+  it('loads editor release styles, the asset manager, and the production guard only on editor routes', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html');
     const dashboard = runConfig('https://mcprim.com', undefined, '/nfc/dashboard.html');
-    const stylesheet = editor.appendedNodes.find((node) => node.dataset.editorToolbarRelease === 'true');
+    const toolbarStyles = editor.appendedNodes.find((node) => node.dataset.editorToolbarRelease === 'true');
+    const assetStyles = editor.appendedNodes.find((node) => node.dataset.editorAssetManagerStyle === 'true');
+    const assetScript = editor.appendedNodes.find((node) => node.dataset.editorAssetManager === 'true');
     const guard = editor.appendedNodes.find((node) => node.dataset.editorProductionGuard === 'true');
 
-    expect(editor.release).toBe('2026.07.18-phase7.2');
-    expect(editor.appendedNodes).toHaveLength(2);
-    expect(stylesheet.href).toBe('/nfc/editor-toolbar-release.css?v=7.2');
-    expect(stylesheet.rel).toBe('stylesheet');
+    expect(editor.release).toBe('2026.07.18-phase8.1');
+    expect(editor.appendedNodes).toHaveLength(4);
+    expect(toolbarStyles.href).toBe('/nfc/editor-toolbar-release.css?v=7.2');
+    expect(toolbarStyles.rel).toBe('stylesheet');
+    expect(assetStyles.href).toBe('/nfc/editor-asset-manager.css?v=8.1');
+    expect(assetScript.src).toBe('/nfc/editor-asset-manager.js?v=8.1');
+    expect(assetScript.async).toBe(false);
     expect(guard.src).toBe('/nfc/editor-production-guard.js?v=1.0.3');
     expect(dashboard.appendedNodes).toHaveLength(0);
   });
 
-  it('loads toolbar styles immediately and waits before bootstrapping the save guard', () => {
+  it('loads editor assets immediately and waits before bootstrapping the save guard', () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html', 'loading');
 
-    expect(editor.appendedNodes).toHaveLength(1);
-    expect(editor.appendedNodes[0].dataset.editorToolbarRelease).toBe('true');
+    expect(editor.appendedNodes).toHaveLength(3);
+    expect(editor.appendedNodes.some((node) => node.dataset.editorAssetManager === 'true')).toBe(true);
     editor.triggerDomReady();
-    expect(editor.appendedNodes).toHaveLength(2);
-    expect(editor.appendedNodes[1].dataset.editorProductionGuard).toBe('true');
+    expect(editor.appendedNodes).toHaveLength(4);
+    expect(editor.appendedNodes[3].dataset.editorProductionGuard).toBe('true');
+  });
+
+  it('reports when the asset manager loader becomes ready', () => {
+    const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html');
+    editor.triggerNodeLoad('editorAssetManager');
+    expect(editor.document.documentElement.dataset.editorAssetManagerLoader).toBe('ready');
   });
 
   it('keeps save monitoring active after another script replaces fetch', async () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html');
-    editor.triggerScriptLoad();
+    editor.triggerNodeLoad('editorProductionGuard');
 
     expect(editor.document.documentElement.dataset.editorSaveMonitor).toBe('ready');
     expect(editor.document.documentElement.dataset.editorSaveMonitorCount).toBe('0');
@@ -111,7 +127,7 @@ describe('Runtime API configuration', () => {
 
   it('does not confirm a failed cloud save', async () => {
     const editor = runConfig('https://mcprim.com', undefined, '/nfc/editor.html');
-    editor.triggerScriptLoad();
+    editor.triggerNodeLoad('editorProductionGuard');
     editor.window.fetch = jest.fn(async () => ({ ok: false, status: 503 }));
 
     await editor.window.fetch('/api/save-design', { method: 'POST' });

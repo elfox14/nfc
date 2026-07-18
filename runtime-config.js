@@ -24,7 +24,7 @@
     }
   }
 
-  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase7.2';
+  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.18-phase8.1';
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
@@ -49,7 +49,33 @@
     document.head.appendChild(stylesheet);
   }
 
+  function loadAssetManager() {
+    if (!document.querySelector('link[data-editor-asset-manager-style]')) {
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet';
+      stylesheet.href = '/nfc/editor-asset-manager.css?v=8.1';
+      stylesheet.dataset.editorAssetManagerStyle = 'true';
+      document.head.appendChild(stylesheet);
+    }
+
+    if (document.querySelector('script[data-editor-asset-manager]')) return;
+    const script = document.createElement('script');
+    script.src = '/nfc/editor-asset-manager.js?v=8.1';
+    script.async = false;
+    script.dataset.editorAssetManager = 'true';
+    script.addEventListener('load', () => {
+      document.documentElement.dataset.editorAssetManagerLoader = 'ready';
+    }, { once: true });
+    script.addEventListener('error', () => {
+      document.documentElement.dataset.editorAssetManagerLoader = 'load-error';
+      console.error('[RuntimeConfig] Failed to load editor asset manager.');
+    }, { once: true });
+    document.documentElement.dataset.editorAssetManagerLoader = 'loading';
+    document.head.appendChild(script);
+  }
+
   loadToolbarReleaseStyles();
+  loadAssetManager();
 
   function isSaveRequest(input, init) {
     const method = String(init?.method || input?.method || 'GET').toUpperCase();
