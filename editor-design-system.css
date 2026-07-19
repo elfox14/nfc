@@ -1846,3 +1846,25 @@ html[dir="ltr"] .editor-workspace-ready .pro-layout > * {
         display: none;
     }
 }
+
+/* Keep square and portrait logos inside the card in editor, capture and preview. */
+.editor-body .card-content-layer #card-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 80%;
+    max-height: 190px;
+}
+
+.editor-body .card-content-layer #card-logo-img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    max-height: 190px;
+    object-fit: contain;
+}
+
+.editor-body .cards-wrapper[data-layout="vertical"] .card-content-layer #card-logo,
+.editor-body .cards-wrapper[data-layout="vertical"] .card-content-layer #card-logo-img {
+    max-height: 300px;
+}
