@@ -55,6 +55,7 @@
     <script src="security-utils.js" defer></script>
     <script src="mobile.js" defer></script>
     <script src="script-core.js?v=2.1" defer></script>
+    <script src="/nfc/editor-default-card.js" defer></script>
     <script src="state-manager-proxy.js" defer></script>
     <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
@@ -499,13 +500,19 @@
                                 </div>
                                 <h1 id="card-name" data-input-target-id="name-accordion"
                                     style="font-size: 22px; color: rgb(230, 240, 247); font-family: Tajawal, sans-serif;">
+                                    اسمك هنا
                                 </h1>
                                 <h2 class="tagline" id="card-tagline" data-input-target-id="tagline-accordion"
                                     style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">
+                                    المسمى الوظيفي / الشركة
                                 </h2>
+                                <div class="phone-button-draggable-wrapper draggable-on-card text-only-mode editor-default-phone-preview"
+                                    id="phone-default-preview" data-x="0" data-y="0">
+                                    <a href="tel:01000000000" class="phone-button" aria-label="اتصال على 01000000000">
+                                        <span>01000000000</span>
+                                    </a>
+                                </div>
                                 <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
-                                <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
-                                    data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
                             </div>
                             <div class="mc-prime-branding">MC PRIME NFC</div>
                         </div>
@@ -514,7 +521,8 @@
                             <div class="card-background-layer" id="back-bg-image-layer"></div>
                             <div class="card-background-layer" id="back-bg-gradient-layer"></div>
                             <div class="card-content-layer card-back-content-layer" id="card-back-content">
-                                <!-- JS will populate this -->
+                                <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
+                                    data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
                             </div>
                             <div class="mc-prime-branding">MC PRIME NFC</div>
                         </div>
@@ -1194,23 +1202,22 @@
                                 style="display:flex; background:rgba(0,0,0,0.3); border-radius:8px; padding:4px; margin-bottom:12px;">
                                 <label
                                     style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;"
-                                    class="toggle-phone-text">
-                                    <input type="radio" name="phone-mode-fake" value="text" style="display:none;">
+                                    class="toggle-phone-text active-mode">
+                                    <input type="radio" name="phone-mode-fake" value="text" style="display:none;" checked>
                                     <i class="fas fa-align-left"></i> كنص
                                 </label>
                                 <label
                                     style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;"
-                                    class="toggle-phone-btn active-mode">
-                                    <input type="radio" name="phone-mode-fake" value="buttons" style="display:none;"
-                                        checked>
+                                    class="toggle-phone-btn">
+                                    <input type="radio" name="phone-mode-fake" value="buttons" style="display:none;">
                                     <i class="fas fa-stop"></i> كأزرار
                                 </label>
                                 <!-- Real checkbox hidden, toggled via JS to keep compatibility -->
-                                <input type="checkbox" id="toggle-phone-buttons" checked style="display:none;">
+                                <input type="checkbox" id="toggle-phone-buttons" style="display:none;">
                             </div>
 
                             <!-- TEXT SETTINGS -->
-                            <div id="phone-text-controls" style="display: none;">
+                            <div id="phone-text-controls" class="visible">
                                 <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0;">
                                     <div>
                                         <label class="lp-label">شكل العرض</label>

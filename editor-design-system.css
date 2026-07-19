@@ -1868,3 +1868,17 @@ html[dir="ltr"] .editor-workspace-ready .pro-layout > * {
 .editor-body .cards-wrapper[data-layout="vertical"] .card-content-layer #card-logo-img {
     max-height: 240px;
 }
+
+/* Match the first paint to the hydrated default card and avoid a blank editor flash. */
+.editor-body .editor-default-phone-preview {
+    margin: 0;
+    color: #e6f0f7;
+    font: 500 14px/1.4 Tajawal, Poppins, sans-serif;
+}
+
+.editor-body .editor-default-phone-preview .phone-button {
+    color: inherit;
+    background: transparent;
+    border: 0;
+    padding: 2px 8px;
+}

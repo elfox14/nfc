@@ -46,6 +46,7 @@ function createFetch(overrides = {}) {
     '/nfc/workspace-client.js': response(200, read('workspace-client.js')),
     '/nfc/dashboard-workspaces.js': response(200, read('dashboard-workspaces.js')),
     '/nfc/editor-review-workflow.js': response(200, read('editor-review-workflow.js')),
+    '/nfc/editor-default-card.js': response(200, read('editor-default-card.js')),
     '/nfc/viewer-logo-fit.css': response(200, read('viewer-logo-fit.css')),
     '/nfc/view/viewer.js': response(200, read('view/viewer.js')),
     '/nfc/sw.js': response(200, read('sw.js')),
@@ -63,8 +64,8 @@ function createFetch(overrides = {}) {
 
 describe('production release verifier', () => {
   test('derives current Brand Kit and workspace assets', () => {
-    expect(verifier.extractExpectedRelease(rootDir)).toBe('2026.07.20-phase13.1');
-    expect(verifier.extractExpectedServiceWorkerCache(rootDir)).toBe('v17');
+    expect(verifier.extractExpectedRelease(rootDir)).toBe('2026.07.20-phase14.0');
+    expect(verifier.extractExpectedServiceWorkerCache(rootDir)).toBe('v18');
     expect(verifier.extractExpectedToolbarAsset(rootDir)).toBe('/nfc/editor-toolbar-release.css?v=7.2');
     expect(verifier.extractExpectedAssetManagerStyle(rootDir)).toBe('/nfc/editor-asset-manager.css?v=8.1');
     expect(verifier.extractExpectedAssetManagerScript(rootDir)).toBe('/nfc/editor-asset-manager.js?v=8.1');
@@ -94,11 +95,11 @@ describe('production release verifier', () => {
       cacheBuster: 'test'
     });
     expect(report.status).toBe('passed');
-    expect(report.totals).toEqual({ checks: 28, passed: 28, failed: 0 });
-    expect(fetchImpl).toHaveBeenCalledTimes(28);
+    expect(report.totals).toEqual({ checks: 29, passed: 29, failed: 0 });
+    expect(fetchImpl).toHaveBeenCalledTimes(29);
     expect(report.expected).toMatchObject({
-      release: '2026.07.20-phase13.1',
-      serviceWorkerCache: 'v17',
+      release: '2026.07.20-phase14.0',
+      serviceWorkerCache: 'v18',
       productivityScript: '/nfc/editor-productivity-tools.js?v=9.0',
       brandKitStyle: '/nfc/brand-kit.css?v=10.0',
       brandKitClient: '/nfc/brand-kit-client.js?v=10.0',
@@ -112,7 +113,7 @@ describe('production release verifier', () => {
   });
 
   test('detects stale runtime files', async () => {
-    const stale = read('runtime-config.js').replace('2026.07.20-phase13.1', '2026.07.20-phase12.0');
+    const stale = read('runtime-config.js').replace('2026.07.20-phase14.0', '2026.07.20-phase13.1');
     const report = await verifier.verifyProduction({
       rootDir,
       fetchImpl: createFetch({ '/nfc/runtime-config.js': response(200, stale) }),

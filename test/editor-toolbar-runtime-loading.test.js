@@ -24,7 +24,7 @@ describe('private workspace runtime asset delivery', () => {
     expect(document.querySelector('script[data-editor-brand-kit]').getAttribute('src')).toBe('/nfc/editor-brand-kit.js?v=10.0');
     expect(document.querySelector('script[data-editor-review-workflow]').getAttribute('src')).toBe('/nfc/editor-review-workflow.js?v=11.0');
     expect(document.querySelector('script[data-editor-asset-manager]')).not.toBeNull();
-    expect(window.__MC_PRIME_RELEASE).toBe('2026.07.20-phase13.1');
+    expect(window.__MC_PRIME_RELEASE).toBe('2026.07.20-phase14.0');
   });
 
   test('loads dashboard Brand Kit and team workspace without editor managers', () => {
@@ -49,9 +49,10 @@ describe('private workspace runtime asset delivery', () => {
     expect(document.querySelector('script[data-dashboard-workspaces]')).toBeNull();
   });
 
-  test('service worker v17 precaches logo fitting, observability, Brand Kit, workspace and editor assets', () => {
+  test('service worker v18 precaches default card, logo fitting, observability, Brand Kit, workspace and editor assets', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
-    expect(source).toContain("const CACHE_VERSION = 'v17'");
+    expect(source).toContain("const CACHE_VERSION = 'v18'");
+    expect(source).toContain("'/nfc/editor-default-card.js'");
     expect(source).toContain("'/nfc/editor-logo-fit.js'");
     expect(source).toContain("'/nfc/viewer-logo-fit.css'");
     expect(source).toContain("'/nfc/client-observability.js'");
