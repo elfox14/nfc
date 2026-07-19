@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v14';
+const CACHE_VERSION = 'v15';
 const STATIC_CACHE = `mcprime-static-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
@@ -9,6 +9,7 @@ const PRECACHE_ASSETS = [
   '/nfc/cookie-consent.css',
   '/nfc/cookie-consent.js',
   '/nfc/error-reporter.js',
+  '/nfc/client-observability.js',
   '/nfc/runtime-config.js',
   '/nfc/editor-production-guard.js',
   '/nfc/editor-toolbar-release.css',

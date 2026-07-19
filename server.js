@@ -133,6 +133,9 @@ app.use(createViewerRouter({ getDb: () => db, designsCollectionName, rootDir, ab
 const createSystemRouter = require('./routes/system.routes');
 app.use(createSystemRouter({ getDb: () => db, rootDir }));
 
+const createObservabilityRouter = require('./routes/observability.routes');
+app.use('/api/observability', createObservabilityRouter({ getDb: () => db }));
+
 registerCacheAndRedirectMiddleware(app);
 
 // --- UPLOADS FOLDER ---
