@@ -91,6 +91,44 @@ module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFF
     }
   });
 
+  router.get('/observability', async (req, res) => {
+    try {
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: 'DB not connected' });
+      const hours = clampPositiveInt(req.query.hours, 24, 168);
+      const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+      const rows = await db.collection('observabilityHourly')
+        .find({ bucket: { $gte: since } }, { projection: { _id: 0, expiresAt: 0, createdAt: 0, updatedAt: 0 } })
+        .sort({ bucket: 1 })
+        .limit(5000)
+        .toArray();
+
+      const events = {};
+      const metrics = {};
+      const releases = {};
+      rows.forEach((row) => {
+        releases[row.release || 'unknown'] = (releases[row.release || 'unknown'] || 0) + (row.count || 0);
+        if (row.kind === 'metric') {
+          const metric = metrics[row.name] || { count: 0, sum: 0, max: 0 };
+          metric.count += row.valueCount || 0;
+          metric.sum += row.valueSum || 0;
+          metric.max = Math.max(metric.max, row.valueMax || 0);
+          metrics[row.name] = metric;
+        } else {
+          events[row.name] = (events[row.name] || 0) + (row.count || 0);
+        }
+      });
+      Object.values(metrics).forEach((metric) => {
+        metric.average = metric.count ? Math.round(metric.sum / metric.count) : 0;
+        delete metric.sum;
+      });
+      return res.json({ hours, generatedAt: new Date().toISOString(), events, metrics, releases, rows });
+    } catch (err) {
+      console.error('Admin observability error:', err);
+      return res.status(500).json({ error: 'Failed to fetch observability' });
+    }
+  });
+
   // 3. List users
   router.get('/users', async (req, res) => {
     try {

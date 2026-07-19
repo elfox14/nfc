@@ -229,6 +229,11 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-state { padding: 40px; text-align: center; color: var(--text-secondary); }
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .metric-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+        .metric-card small { color: var(--text-secondary); display: block; margin-bottom: 8px; }
+        .metric-card strong { font-size: 1.65rem; }
+        .metric-note { color: var(--text-secondary); font-size: 0.85rem; margin-top: 6px; }
     </style>
     <link rel="stylesheet" href="/nfc/premium-ui.css">
   <link rel="icon" href="/nfc/mc-prime-nfc.png" type="image/png">
@@ -266,6 +271,9 @@
                 </a>
                 <a class="nav-item" onclick="switchView('errors'); loadErrors();">
                     <i class="fas fa-exclamation-triangle"></i> سجل الأخطاء
+                </a>
+                <a class="nav-item" onclick="switchView('observability'); loadObservability();">
+                    <i class="fas fa-wave-square"></i> مراقبة التشغيل
                 </a>
             </div>
             <div style="padding: 24px; margin-top: auto;">
@@ -344,6 +352,24 @@
                     <div id="errors-container">
                         <!-- Loaded via JS -->
                     </div>
+                </div>
+            </div>
+
+            <div id="view-observability" class="view">
+                <div class="table-header" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;">
+                    <div>
+                        <h2>مؤشرات آخر 24 ساعة</h2>
+                        <p class="metric-note">بيانات مجمعة بلا أسماء أو بريد أو معرّفات تصميم، وتُحذف تلقائيًا بعد 30 يومًا.</p>
+                    </div>
+                    <button class="btn" style="width:auto;padding:6px 12px;font-size:.85rem" onclick="loadObservability()"><i class="fas fa-sync-alt"></i> تحديث</button>
+                </div>
+                <div id="observability-summary" class="metric-grid"></div>
+                <div class="table-container">
+                    <div class="table-header"><h2>الأداء وتجربة الاستخدام</h2></div>
+                    <table>
+                        <thead><tr><th>المؤشر</th><th>المتوسط</th><th>أعلى قيمة</th><th>العينات</th></tr></thead>
+                        <tbody id="observability-metrics"></tbody>
+                    </table>
                 </div>
             </div>
         </main>
@@ -427,7 +453,8 @@
             const titles = {
                 'dashboard': 'نظرة عامة',
                 'users': 'المستخدمين',
-                'errors': 'سجل الأخطاء'
+                'errors': 'سجل الأخطاء',
+                'observability': 'مراقبة التشغيل'
             };
             document.getElementById('page-title').textContent = titles[viewName];
         }
@@ -577,6 +604,42 @@
                 }
             } catch (e) {
                 container.innerHTML = `<div style="padding: 40px; text-align: center; color: var(--danger);">خطأ في جلب سجل الأخطاء</div>`;
+            }
+        }
+
+        async function loadObservability() {
+            const summary = document.getElementById('observability-summary');
+            const metricsBody = document.getElementById('observability-metrics');
+            summary.innerHTML = '<div class="loading-state"><div class="loader"></div></div>';
+            metricsBody.innerHTML = '';
+            try {
+                const res = await fetch(getApiUrl('/api/admin/observability?hours=24'), { headers: { 'x-admin-token': token } });
+                if (res.status === 401 || res.status === 403) return logout();
+                if (!res.ok) throw new Error('request failed');
+                const data = await res.json();
+                const events = data.events || {};
+                const success = events.save_succeeded || 0;
+                const failed = events.save_failed || 0;
+                const attempts = success + failed;
+                const saveRate = attempts ? Math.round(success * 100 / attempts) : 0;
+                const cards = [
+                    ['زيارات المحرر', events.page_view || 0, 'fa-eye'],
+                    ['عمليات حفظ ناجحة', success, 'fa-cloud-arrow-up'],
+                    ['معدل نجاح الحفظ', `${saveRate}%`, 'fa-circle-check'],
+                    ['فتح المعاينة', events.preview_opened || 0, 'fa-display']
+                ];
+                summary.innerHTML = cards.map(([label, value, icon]) => `<div class="metric-card"><small><i class="fas ${icon}"></i> ${label}</small><strong>${value}</strong></div>`).join('');
+
+                const labels = { ttfb: 'TTFB', fcp: 'FCP', lcp: 'LCP', cls: 'CLS × 1000', inp: 'INP' };
+                const order = ['ttfb', 'fcp', 'lcp', 'cls', 'inp'];
+                metricsBody.innerHTML = order.map(name => {
+                    const metric = data.metrics?.[name] || { average: 0, max: 0, count: 0 };
+                    const unit = name === 'cls' ? '' : ' ms';
+                    return `<tr><td><strong>${labels[name]}</strong></td><td>${metric.average}${unit}</td><td>${Math.round(metric.max || 0)}${unit}</td><td>${metric.count}</td></tr>`;
+                }).join('');
+                updateTime();
+            } catch (_) {
+                summary.innerHTML = '<div style="color:var(--danger);padding:20px">تعذر تحميل مؤشرات التشغيل.</div>';
             }
         }
     </script>

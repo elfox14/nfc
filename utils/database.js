@@ -44,6 +44,13 @@ async function createIndexes(db, collectionNames) {
 
   await db.collection(designVersionsCollectionName).createIndex({ designShortId: 1, ownerId: 1, createdAt: -1 });
   await db.collection(designVersionsCollectionName).createIndex({ designShortId: 1, versionId: 1 }, { unique: true });
+
+  const observability = db.collection('observabilityHourly');
+  await observability.createIndex(
+    { bucket: 1, kind: 1, name: 1, page: 1, device: 1, release: 1 },
+    { unique: true }
+  );
+  await observability.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 }
 
 async function connectDatabase({
