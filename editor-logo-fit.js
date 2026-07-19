@@ -7,6 +7,21 @@
   let frame = null;
   let applying = false;
 
+  function syncLogoSizeToControl() {
+    const logo = document.getElementById('card-logo');
+    const sizeControl = document.getElementById('logo-size');
+    if (!logo || !sizeControl) return false;
+
+    const size = Number.parseFloat(sizeControl.value);
+    if (!Number.isFinite(size)) return false;
+    const nextWidth = `${Math.min(80, Math.max(10, size))}%`;
+    if (logo.style.width === nextWidth) return false;
+    applying = true;
+    logo.style.width = nextWidth;
+    applying = false;
+    return true;
+  }
+
   function clampLogoToCard() {
     const logo = document.getElementById('card-logo');
     const content = logo?.parentElement;
@@ -51,6 +66,7 @@
     if (frame !== null) cancelFrame(frame);
     frame = requestFrame(() => {
       frame = null;
+      syncLogoSizeToControl();
       clampLogoToCard();
     });
   }
@@ -60,8 +76,14 @@
     const image = document.getElementById('card-logo-img');
     if (!logo || !image) return;
 
+    syncLogoSizeToControl();
     image.addEventListener('load', schedule);
     document.getElementById('logo-size')?.addEventListener('input', schedule);
+    document.getElementById('visibility-logo')?.addEventListener('input', () => {
+      // The core renderer detaches hidden elements and appends them again when shown.
+      // Run after that render so the restored logo uses the configured size.
+      global.setTimeout(schedule, 0);
+    });
     document.querySelectorAll('input[name="placement-logo"], input[name="logo-align"], .lp-dpad[data-target-id="card-logo"] .move-btn')
       .forEach((control) => control.addEventListener('click', () => global.setTimeout(schedule, 0)));
     ['editor:templateapplied', 'editor:brandkitapplied', 'editor:cloudsavesuccess', 'editor:logofitrequest']
@@ -73,10 +95,11 @@
     const observer = new MutationObserver(() => { if (!applying) schedule(); });
     observer.observe(logo, { attributes: true, attributeFilter: ['style', 'data-x', 'data-y'] });
     observer.observe(image, { attributes: true, attributeFilter: ['src', 'style'] });
-    [0, 250, 1000].forEach((delay) => global.setTimeout(schedule, delay));
+    global.addEventListener?.('load', schedule, { once: true });
+    [0, 100, 500, 1500, 3000].forEach((delay) => global.setTimeout(schedule, delay));
   }
 
-  global.EditorLogoFit = { clamp: clampLogoToCard, schedule };
+  global.EditorLogoFit = { clamp: clampLogoToCard, schedule, syncSize: syncLogoSizeToControl };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
 })(window);

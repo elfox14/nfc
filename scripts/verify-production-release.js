@@ -229,7 +229,7 @@ async function verifyProduction(options = {}) {
     'window.Auth?.apiFetchWithRefresh', "credentials: 'include'", "cache: 'no-store'"
   ]);
   await checkUrl('Viewer logo fit stylesheet', `${publicOrigin}/nfc/viewer-logo-fit.css`, [
-    '#card-logo-img', 'max-height: 190px', 'object-fit: contain'
+    '#card-logo-img', 'max-height: 140px', 'object-fit: contain'
   ]);
   await checkUrl('Service Worker release cache', `${publicOrigin}/nfc/sw.js`, [
     `CACHE_VERSION = '${expected.serviceWorkerCache}'`, '/nfc/editor-toolbar-release.css',
