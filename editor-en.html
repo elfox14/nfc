@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 40144)
-Total output lines: 2494
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 
@@ -1012,7 +1009,587 @@ Total output lines: 2494
                     <!-- ADVANCED MOVEMENT DPAD -->
                     <details class="lp-sub-accordion" style="margin-top: 10px;">
                         <summary class="lp-sub-summary">
-                  …10144 tokens truncated…                  style="display:none;"> Front
+                            <i class="fas fa-arrows-up-down-left-right"></i> Fine Position
+                        </summary>
+                        <div class="lp-section" style="border:none;">
+                            <div class="lp-dpad position-controls-grid" data-target-id="card-name">
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn"
+                                        data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                <div class="lp-dpad-row">
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i
+                                            class="fas fa-chevron-left"></i></button>
+                                    <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i
+                                            class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn"
+                                        data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </details>
+
+            <!-- ═══ TAGLINE PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" open id="tagline-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-briefcase"></i></span>
+                    <span class="lp-summary-label">Job Title</span>
+                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-tagline" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body" id="tagline-controls-fieldset">
+                    <div class="lp-section" style="padding-top:0;">
+                        <textarea id="input-tagline_ar" class="lp-input" rows="1" data-lang="en" style="display:none;"
+                            data-update-target="card-tagline" data-update-property="innerText"
+                            placeholder="المسمى الوظيفي أو النشاط"></textarea>
+                        <textarea id="input-tagline_en" class="lp-input" rows="1" data-lang="en"
+                            data-update-target="card-tagline" data-update-property="innerText"
+                            placeholder="Job Title / Company"></textarea>
+                    </div>
+
+                    <div class="lp-section lp-grid-2">
+                        <div>
+                            <label class="lp-label"><i class="fas fa-text-width"></i> Font</label>
+                            <select id="tagline-font" class="lp-input lp-select" data-update-target="card-tagline"
+                                data-update-property="style.fontFamily"
+                                style="height:32px; padding-top:0; padding-bottom:0;">
+                                <option value="'Poppins', sans-serif">Poppins</option>
+                                <option value="'Tajawal', sans-serif">Tajawal</option>
+                                <option value="'Cairo', sans-serif">Cairo</option>
+                                <option value="'Almarai', sans-serif">Almarai</option>
+                                <option value="'Amiri', serif">Amiri</option>
+                                <option value="'Changa', sans-serif">Changa</option>
+                                <option value="'Readex Pro', sans-serif">Readex Pro</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                            <label class="lp-label"><i class="fas fa-palette"></i> Color</label>
+                            <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                <input type="color" id="tagline-color" value="#4da6ff" class="lp-color-pick"
+                                    data-update-target="card-tagline" data-update-property="style.color">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-text-height"></i> Size</label>
+                        <div class="lp-slider-wrap">
+                            <input type="range" id="tagline-font-size" min="12" max="32" value="14" class="lp-slider"
+                                data-update-target="card-tagline" data-update-property="style.fontSize"
+                                data-update-unit="px" oninput="this.nextElementSibling.textContent=this.value+'px'">
+                            <span class="lp-slider-val">14px</span>
+                        </div>
+                    </div>
+
+                    <div class="lp-section" style="border:none; padding-bottom:0;">
+                        <label class="lp-label"><i class="fas fa-layer-group"></i> Placement</label>
+                        <div class="lp-placement-btns">
+                            <label class="lp-place-btn lp-place-active">
+                                <input type="radio" name="placement-tagline" value="front" checked> <i
+                                    class="fas fa-id-card"></i> Front
+                            </label>
+                            <label class="lp-place-btn">
+                                <input type="radio" name="placement-tagline" value="back"> <i
+                                    class="fas fa-id-card-alt"></i> Back
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- ADVANCED MOVEMENT DPAD -->
+                    <details class="lp-sub-accordion" style="margin-top: 10px;">
+                        <summary class="lp-sub-summary">
+                            <i class="fas fa-arrows-up-down-left-right"></i> Fine Position
+                        </summary>
+                        <div class="lp-section" style="border:none;">
+                            <div class="lp-dpad position-controls-grid" data-target-id="card-tagline">
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn"
+                                        data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                <div class="lp-dpad-row">
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i
+                                            class="fas fa-chevron-left"></i></button>
+                                    <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i
+                                            class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn"
+                                        data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </details>
+
+            <!-- ═══ BIO / ABOUT PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" open id="bio-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-align-right"></i></span>
+                    <span class="lp-summary-label">About Me (Bio)</span>
+                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-bio" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body" id="bio-controls-fieldset">
+                    <div class="lp-section" style="padding-top:0;">
+                        <textarea id="input-bio_ar" class="lp-input" rows="3" data-lang="en" style="display:none;"
+                            placeholder="اكتب نبذة تعريفية قصيرة تظهر تحت المسمى الوظيفي"></textarea>
+                        <textarea id="input-bio_en" class="lp-input" rows="3" data-lang="en"
+                            placeholder="Write a short about me snippet"></textarea>
+                    </div>
+
+                    <div class="lp-section" style="border:none; padding-bottom:0;">
+                        <label class="lp-label"><i class="fas fa-toggle-on"></i> Availability Status</label>
+                        <select id="input-availability" class="lp-input lp-select" style="margin-top: 5px;">
+                            <option value="">Don't show status</option>
+                            <option value="available">Available for work (green badge)</option>
+                            <option value="freelance">Available for freelance</option>
+                            <option value="busy">Currently busy</option>
+                        </select>
+                    </div>
+                </div>
+            </details>
+
+            <!-- ═══ PHONE NUMBERS PANEL — Premium v2 ═══ -->
+            <details class="lp-details-final lp-accordion" id="phones-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-phone-alt"></i></span>
+                    <span class="lp-summary-label">Phone Numbers</span>
+                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-phones" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body">
+
+                    <!-- ① Manage Numbers Card -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-list-ol"></i> Manage Numbers</span>
+                        </div>
+                        <div class="lp-section" style="padding-top:0; border:none;">
+                            <div id="phone-numbers-container"></div>
+                            <button id="add-phone-btn" class="lp-upload-btn"
+                                style="width:100%; justify-content:center; margin-top:8px;">
+                                <i class="fas fa-plus"></i> Add Phone Number
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ② Display Style Card -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-paint-roller"></i> Style & Layout</span>
+                        </div>
+
+                        <div class="lp-section" style="padding-top:0;">
+                            <!-- Segmented Control for Layout Mode -->
+                            <div class="lp-segment-control"
+                                style="display:flex; background:rgba(0,0,0,0.3); border-radius:8px; padding:4px; margin-bottom:12px;">
+                                <label
+                                    style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;"
+                                    class="toggle-phone-text active-mode">
+                                    <input type="radio" name="phone-mode-fake" value="text" style="display:none;" checked>
+                                    <i class="fas fa-align-left"></i> As Text
+                                </label>
+                                <label
+                                    style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;"
+                                    class="toggle-phone-btn">
+                                    <input type="radio" name="phone-mode-fake" value="buttons" style="display:none;">
+                                    <i class="fas fa-stop"></i> As Buttons
+                                </label>
+                                <!-- Real checkbox hidden, toggled via JS to keep compatibility -->
+                                <input type="checkbox" id="toggle-phone-buttons" style="display:none;">
+                            </div>
+
+                            <!-- TEXT SETTINGS -->
+                            <div id="phone-text-controls" class="visible">
+                                <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0;">
+                                    <div>
+                                        <label class="lp-label">Layout</label>
+                                        <div class="lp-align-btns">
+                                            <label class="lp-align-btn lp-align-active">
+                                                <input type="radio" name="phone-text-layout" value="row" checked>
+                                                Horizontal
+                                            </label>
+                                            <label class="lp-align-btn">
+                                                <input type="radio" name="phone-text-layout" value="column"> Vertical
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                                        <label class="lp-label">Color</label>
+                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                            <input type="color" id="phone-text-color" value="#e6f0f7"
+                                                class="lp-color-pick">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lp-section">
+                                    <label class="lp-label">Font Size</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="phone-text-size" min="10" max="24" value="14"
+                                            class="lp-slider"
+                                            oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">14px</span>
+                                    </div>
+                                </div>
+                                <div class="lp-section" style="border:none; padding-bottom:0;">
+                                    <label class="lp-label">Font</label>
+                                    <select id="phone-text-font" class="lp-input lp-select"
+                                        style="height:32px; padding-top:0; padding-bottom:0;">
+                                        <option value="'Tajawal', sans-serif">Tajawal</option>
+                                        <option value="'Cairo', sans-serif">Cairo</option>
+                                        <option value="'Lalezar', cursive">Lalezar</option>
+                                        <option value="'Almarai', sans-serif">Almarai</option>
+                                        <option value="'Amiri', serif">Amiri</option>
+                                        <option value="'Changa', sans-serif">Changa</option>
+                                        <option value="'Readex Pro', sans-serif">Readex Pro</option>
+                                        <option value="'Poppins', sans-serif">Poppins</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- BUTTON SETTINGS -->
+                            <div id="phone-btn-controls">
+                                <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0px;">
+                                    <div>
+                                        <label class="lp-label">Bg Color</label>
+                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                            <input type="color" id="phone-btn-bg-color" value="#4da6ff"
+                                                class="lp-color-pick">
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                                        <label class="lp-label">Text Color</label>
+                                        <div class="lp-color-pick-wrap" style="margin-top:2px;">
+                                            <input type="color" id="phone-btn-text-color" value="#ffffff"
+                                                class="lp-color-pick">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lp-section">
+                                    <label class="lp-label">Font Size</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="phone-btn-font-size" min="10" max="24" value="12"
+                                            class="lp-slider"
+                                            oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">12px</span>
+                                    </div>
+                                </div>
+                                <div class="lp-section">
+                                    <label class="lp-label">Padding</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="phone-btn-padding" min="4" max="16" value="6"
+                                            class="lp-slider"
+                                            oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">6px</span>
+                                    </div>
+                                </div>
+                                <div class="lp-section" style="border:none; padding-bottom:0;">
+                                    <label class="lp-label">Font</label>
+                                    <select id="phone-btn-font" class="lp-input lp-select"
+                                        style="height:32px; padding-top:0; padding-bottom:0;">
+                                        <option value="'Poppins', sans-serif">Poppins</option>
+                                        <option value="'Tajawal', sans-serif">Tajawal</option>
+                                        <option value="'Cairo', sans-serif">Cairo</option>
+                                        <option value="'Almarai', sans-serif">Almarai</option>
+                                        <option value="'Amiri', serif">Amiri</option>
+                                        <option value="'Changa', sans-serif">Changa</option>
+                                       …1412 tokens truncated…center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="upload" style="display:none;">
+                                <i class="fas fa-upload"></i> Upload
+                            </label>
+                        </div>
+
+                        <!-- Auto Card Button -->
+                        <div id="qr-auto-card-group" style="display:block;">
+                            <button id="generate-auto-qr-btn" class="lp-upload-btn"
+                                style="width:100%;justify-content:center;background:linear-gradient(135deg,rgba(77,166,255,0.3),rgba(77,166,255,0.1)) !important;border-color:rgba(77,166,255,0.5) !important;box-shadow:0 4px 12px rgba(77,166,255,0.2) !important;">
+                                <i class="fas fa-qrcode"></i> Create / Update QR
+                            </button>
+                            <p
+                                style="font-size:0.72rem;color:var(--text-secondary);margin-top:10px;text-align:center;line-height:1.5;opacity:0.8;">
+                                Saves your design and creates a QR for your card share link.</p>
+                        </div>
+
+                        <!-- Custom URL input -->
+                        <div class="form-group" id="qr-url-group" style="display:none; margin-top:8px;">
+                            <input type="url" id="input-qr-url" value="mcprime_qr.png" class="lp-input"
+                                placeholder="https://...">
+                        </div>
+
+                        <!-- Upload input -->
+                        <div class="form-group" id="qr-upload-group" style="display:none; margin-top:8px;">
+                            <div class="lp-upload-zone" style="flex-direction:column;gap:8px;text-align:center;"
+                                onclick="document.getElementById('input-qr-upload').click()">
+                                <i class="fas fa-cloud-upload-alt"
+                                    style="font-size:24px;color:var(--accent-primary);"></i>
+                                <span style="font-size:0.78rem;color:var(--text-secondary);">Upload QR Image (Max
+                                    2MB)</span>
+                                <input type="file" id="input-qr-upload" accept="image/*" style="display:none;">
+                            </div>
+                            <div class="input-error-msg" id="qr-upload-error"></div>
+                            <div class="spinner" id="qr-spinner" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- ② APPEARANCE CARD -->
+                    <div class="lp-card" id="qr-customization-group">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-paint-brush"></i> Appearance</span>
+                        </div>
+
+                        <!-- Colors -->
+                        <div class="lp-section lp-grid-2" style="padding-top:0;">
+                            <div>
+                                <label class="lp-label"><i class="fas fa-circle"></i> QR Color</label>
+                                <div class="lp-color-pick-wrap">
+                                    <input type="color" id="qr-dots-color" value="#000000" class="lp-color-pick">
+                                </div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                                <label class="lp-label"><i class="fas fa-circle" style="color:#ccc;"></i>
+                                    Background</label>
+                                <div class="lp-color-pick-wrap">
+                                    <input type="color" id="qr-bg-color" value="#ffffff" class="lp-color-pick">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dots type -->
+                        <div class="lp-section">
+                            <label class="lp-label"><i class="fas fa-ellipsis-h"></i> Dot Style</label>
+                            <select id="qr-dots-type" class="lp-input lp-select"
+                                style="height:32px;padding-top:0;padding-bottom:0;">
+                                <option value="square">Square</option>
+                                <option value="dots">Dots</option>
+                                <option value="rounded" selected>Rounded</option>
+                                <option value="classy">Classy</option>
+                                <option value="classy-rounded">Classy Rounded</option>
+                                <option value="extra-rounded">Extra Rounded</option>
+                            </select>
+                        </div>
+
+                        <!-- Corners type -->
+                        <div class="lp-section">
+                            <label class="lp-label"><i class="fas fa-vector-square"></i> Corner Style</label>
+                            <select id="qr-corners-type" class="lp-input lp-select"
+                                style="height:32px;padding-top:0;padding-bottom:0;">
+                                <option value="square">Square</option>
+                                <option value="dot">Dot</option>
+                                <option value="extra-rounded" selected>Extra Rounded</option>
+                            </select>
+                        </div>
+
+                        <!-- Logo toggle -->
+                        <div class="lp-section" style="border:none;padding-bottom:0;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <label class="lp-label" style="margin-bottom:0;"><i class="fas fa-star"></i> Include
+                                    Card Logo</label>
+                                <label class="lp-toggle lp-toggle-sm" onclick="event.stopPropagation()">
+                                    <input type="checkbox" id="qr-use-logo" checked>
+                                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ③ SIZE & POSITION CARD -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-expand-arrows-alt"></i> Size & Position</span>
+                        </div>
+
+                        <!-- Size slider -->
+                        <div class="lp-section" style="padding-top:0;">
+                            <label class="lp-label"><i class="fas fa-expand"></i> Size</label>
+                            <div class="lp-slider-wrap">
+                                <input type="range" id="qr-size" min="15" max="50" value="30" class="lp-slider"
+                                    oninput="this.nextElementSibling.textContent=this.value+'%'">
+                                <span class="lp-slider-val">30%</span>
+                            </div>
+                        </div>
+
+                        <!-- Placement -->
+                        <div class="lp-section">
+                            <label class="lp-label"><i class="fas fa-layer-group"></i> Placement</label>
+                            <div class="lp-placement-btns" id="qr-placement-btns">
+                                <label class="lp-place-btn">
+                                    <input type="radio" name="placement-qr" value="front"> <i
+                                        class="fas fa-id-card"></i> Front
+                                </label>
+                                <label class="lp-place-btn lp-place-active">
+                                    <input type="radio" name="placement-qr" value="back" checked> <i
+                                        class="fas fa-id-card-alt"></i> Back
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- D-Pad -->
+                        <details class="lp-sub-accordion" style="margin-top: 10px;">
+                            <summary class="lp-sub-summary">
+                                <i class="fas fa-arrows-up-down-left-right"></i> Fine Position
+                            </summary>
+                            <div class="lp-section" style="border:none;">
+                                <div class="lp-dpad position-controls-grid" data-target-id="qr-code-wrapper">
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn"
+                                            data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                    <div class="lp-dpad-row">
+                                        <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i
+                                                class="fas fa-chevron-left"></i></button>
+                                        <div class="lp-dpad-center"><i class="fas fa-qrcode"
+                                                style="font-size:8px;opacity:0.3;"></i></div>
+                                        <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i
+                                                class="fas fa-chevron-right"></i></button>
+                                    </div>
+                                    <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn"
+                                            data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                </div>
+            </details>
+
+
+
+            <!-- ═══ SOCIAL / CONTACT PANEL — Premium v2 ═══ -->
+            <details class="lp-details-final lp-accordion" id="contact-info-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-share-alt"></i></span>
+                    <span class="lp-summary-label">Contact Info</span>
+                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="toggle-master-social" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body">
+                    <div id="social-controls-wrapper" style="display:block;">
+
+                        <!-- ① DISPLAY STYLE CARD -->
+                        <div class="lp-card">
+                            <div class="lp-card-header">
+                                <span class="lp-card-title"><i class="fas fa-paint-roller"></i> Appearance &
+                                    Styling</span>
+                            </div>
+
+                            <!-- Segment: Buttons vs Text -->
+                            <div
+                                style="display:flex; background:rgba(0,0,0,0.3); border-radius:8px; padding:4px; gap:4px; margin-bottom:12px;">
+                                <label class="social-mode-btn" data-mode="buttons"
+                                    style="flex:1;text-align:center;padding:7px;border-radius:6px;font-size:0.8rem;font-weight:700;cursor:pointer;background:var(--accent-primary);color:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.2);transition:all .2s;">
+                                    <input type="radio" name="social-mode-fake" value="buttons" style="display:none;"
+                                        checked>
+                                    <i class="fas fa-th-large"></i> As Buttons
+                                </label>
+                                <label class="social-mode-btn" data-mode="text"
+                                    style="flex:1;text-align:center;padding:7px;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;background:transparent;color:var(--text-secondary);transition:all .2s;">
+                                    <input type="radio" name="social-mode-fake" value="text" style="display:none;">
+                                    <i class="fas fa-align-left"></i> As Text
+                                </label>
+                                <!-- Hidden real checkbox for JS compatibility -->
+                                <input type="checkbox" id="toggle-social-buttons" checked style="display:none;">
+                            </div>
+
+                            <!-- BUTTON STYLE settings -->
+                            <div id="social-btn-style">
+                                <div class="lp-section lp-grid-2" style="padding-top:0;">
+                                    <div>
+                                        <label class="lp-label"><i class="fas fa-circle"></i> Button Color</label>
+                                        <div class="lp-color-pick-wrap"><input type="color" id="back-buttons-bg-color"
+                                                value="#364f6b" class="lp-color-pick"></div>
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                                        <label class="lp-label"><i class="fas fa-font"></i> Text Color</label>
+                                        <div class="lp-color-pick-wrap"><input type="color" id="back-buttons-text-color"
+                                                value="#aab8c2" class="lp-color-pick"></div>
+                                    </div>
+                                </div>
+                                <div class="lp-section">
+                                    <label class="lp-label"><i class="fas fa-expand"></i> Icon Size</label>
+                                    <div class="lp-slider-wrap">
+                                        <input type="range" id="back-buttons-size" min="10" max="20" value="10"
+                                            class="lp-slider"
+                                            oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                        <span class="lp-slider-val">10px</span>
+                                    </div>
+                                </div>
+                                <div class="lp-section" style="border:none;padding-bottom:0;">
+                                    <label class="lp-label"><i class="fas fa-font"></i> Font</label>
+                                    <select id="back-buttons-font" class="lp-input lp-select"
+                                        style="height:32px;padding-top:0;padding-bottom:0;">
+                                        <option value="'Poppins', sans-serif">Poppins</option>
+                                        <option value="'Tajawal', sans-serif">Tajawal</option>
+                                        <option value="'Cairo', sans-serif">Cairo</option>
+                                        <option value="'Almarai', sans-serif">Almarai</option>
+                                        <option value="'Amiri', serif">Amiri</option>
+                                        <option value="'Changa', sans-serif">Changa</option>
+                                        <option value="'Readex Pro', sans-serif">Readex Pro</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- TEXT STYLE settings -->
+                            <div id="social-text-controls" style="display:none;">
+                                <div class="lp-section lp-grid-2" style="padding-top:0;">
+                                    <div>
+                                        <label class="lp-label"><i class="fas fa-text-height"></i> Font Size</label>
+                                        <div class="lp-slider-wrap">
+                                            <input type="range" id="social-text-size" min="10" max="24" value="12"
+                                                class="lp-slider"
+                                                oninput="this.nextElementSibling.textContent=this.value+'px'">
+                                            <span class="lp-slider-val">12px</span>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                                        <label class="lp-label"><i class="fas fa-palette"></i> Color</label>
+                                        <div class="lp-color-pick-wrap"><input type="color" id="social-text-color"
+                                                value="#e6f0f7" class="lp-color-pick"></div>
+                                    </div>
+                                </div>
+                                <div class="lp-section" style="border:none;padding-bottom:0;">
+                                    <label class="lp-label"><i class="fas fa-font"></i> Font</label>
+                                    <select id="social-text-font" class="lp-input lp-select"
+                                        style="height:32px;padding-top:0;padding-bottom:0;">
+                                        <option value="'Tajawal', sans-serif">Tajawal</option>
+                                        <option value="'Cairo', sans-serif">Cairo</option>
+                                        <option value="'Poppins', sans-serif">Poppins</option>
+                                        <option value="'Almarai', sans-serif">Almarai</option>
+                                        <option value="'Amiri', serif">Amiri</option>
+                                        <option value="'Changa', sans-serif">Changa</option>
+                                        <option value="'Readex Pro', sans-serif">Readex Pro</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ② STATIC FIELDS CARD -->
+                        <div class="lp-card">
+                            <div class="lp-card-header">
+                                <span class="lp-card-title"><i class="fas fa-list-ul"></i> Fixed Contact Fields</span>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="lp-section" id="form-group-static-email" style="padding-top:0;">
+                                <label class="lp-label"><i class="fas fa-envelope" style="color:#a78bfa;"></i> Email
+                                    Address</label>
+                                <input type="email" id="input-email" value="" class="lp-input"
+                                    placeholder="example@email.com" style="margin-bottom:8px;">
+                                <div
+                                    style="display:flex;gap:4px;background:rgba(0,0,0,0.25);border-radius:7px;padding:3px;">
+                                    <label
+                                        style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;color:var(--text-secondary);transition:all .2s;"
+                                        class="static-place-label">
+                                        <input type="radio" name="placement-static-email" value="front"
+                                            style="display:none;"> Front
                                     </label>
                                     <label
                                         style="flex:1;text-align:center;padding:4px;border-radius:5px;font-size:0.73rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:#fff;transition:all .2s;"
