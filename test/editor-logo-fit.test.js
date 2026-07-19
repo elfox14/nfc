@@ -9,7 +9,8 @@ describe('editor logo fit guard', () => {
       <div class="card-content-layer" id="card-content">
         <div id="card-logo" data-x="0" data-y="100"><img id="card-logo-img" alt=""></div>
       </div>
-      <input id="logo-size" type="range">
+      <input id="logo-size" type="range" min="10" max="80" value="34">
+      <input id="visibility-logo" type="checkbox" checked>
     `;
     window.requestAnimationFrame = (callback) => { callback(); return 1; };
     window.cancelAnimationFrame = jest.fn();
@@ -44,5 +45,22 @@ describe('editor logo fit guard', () => {
 
     expect(window.EditorLogoFit.clamp()).toBe(false);
     expect(logo.style.transform).toBe('');
+  });
+
+  test('uses the configured size on first render and after hide then show', () => {
+    const logo = document.getElementById('card-logo');
+    require('../editor-logo-fit');
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+
+    expect(logo.style.width).toBe('34%');
+
+    const visibility = document.getElementById('visibility-logo');
+    visibility.checked = false;
+    visibility.dispatchEvent(new Event('input', { bubbles: true }));
+    visibility.checked = true;
+    visibility.dispatchEvent(new Event('input', { bubbles: true }));
+    jest.runOnlyPendingTimers();
+
+    expect(logo.style.width).toBe('34%');
   });
 });
