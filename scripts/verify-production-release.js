@@ -152,7 +152,7 @@ async function verifyProduction(options = {}) {
   async function checkEditorDocument(name, url) {
     checks.push(await executeCheck(name, async () => {
       const { response, body } = await requestWithRetry(url, requestOptions);
-      assertResponse(response, body, name, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js']);
+      assertResponse(response, body, name, ['id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js', 'editor-logo-fit.js']);
       const normalized = body.replace(/^\uFEFF/, '');
       if (!normalized.startsWith('<!DOCTYPE html>')) throw new Error(`${name} does not start with <!DOCTYPE html>`);
       if (/Warning:\s*truncated output|Total output lines:/i.test(normalized.slice(0, 400))) throw new Error(`${name} contains injected output metadata`);
@@ -228,12 +228,16 @@ async function verifyProduction(options = {}) {
   await checkUrl('Authenticated private viewer support', `${publicOrigin}/nfc/view/viewer.js`, [
     'window.Auth?.apiFetchWithRefresh', "credentials: 'include'", "cache: 'no-store'"
   ]);
+  await checkUrl('Viewer logo fit stylesheet', `${publicOrigin}/nfc/viewer-logo-fit.css`, [
+    '#card-logo-img', 'max-height: 190px', 'object-fit: contain'
+  ]);
   await checkUrl('Service Worker release cache', `${publicOrigin}/nfc/sw.js`, [
     `CACHE_VERSION = '${expected.serviceWorkerCache}'`, '/nfc/editor-toolbar-release.css',
     '/nfc/editor-asset-manager.js', '/nfc/editor-template-manager.js', '/nfc/editor-version-manager.js',
     '/nfc/editor-productivity-tools.js', '/nfc/brand-kit.css', '/nfc/brand-kit-client.js',
     '/nfc/dashboard-brand-kit.js', '/nfc/editor-brand-kit.js', '/nfc/workspace.css',
-    '/nfc/workspace-client.js', '/nfc/dashboard-workspaces.js', '/nfc/editor-review-workflow.js'
+    '/nfc/workspace-client.js', '/nfc/dashboard-workspaces.js', '/nfc/editor-review-workflow.js',
+    '/nfc/editor-logo-fit.js', '/nfc/viewer-logo-fit.css'
   ]);
 
   checks.push(await executeCheck('API health snapshot', async () => {
