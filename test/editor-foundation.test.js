@@ -64,6 +64,7 @@ describe.each(editorFiles)('%s foundation', (file) => {
         expect(document.querySelectorAll('script[src^="editor-creative-tools.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src="/nfc/editor-logo-fit.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src^="/nfc/editor-default-card.js"]')).toHaveLength(1);
+        expect(document.querySelectorAll('script[src^="/nfc/editor-hydration.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src^="/nfc/editor-design-loader.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src^="/nfc/editor-interact-fallback.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('link[href^="editor-design-system.css"]')).toHaveLength(1);
@@ -71,22 +72,35 @@ describe.each(editorFiles)('%s foundation', (file) => {
         expect(document.querySelectorAll('style')).toHaveLength(0);
     });
 
-    test('first paint matches the hydrated default card', () => {
-        const { document } = loadEditor(file);
+    test('keeps the card protected until the saved or default state is hydrated', () => {
+        const { source, document } = loadEditor(file);
         const front = document.getElementById('card-front-content');
         const back = document.getElementById('card-back-content');
-        const phone = document.getElementById('phone-default-preview');
 
+        expect(document.documentElement.dataset.editorHydrated).toBe('false');
+        expect(document.documentElement.dataset.editorHydration).toBe('pending');
+        expect(document.getElementById('cards-wrapper').getAttribute('aria-busy')).toBe('true');
+        expect(document.getElementById('editor-card-hydration-placeholder')).not.toBeNull();
+        expect(document.getElementById('phone-default-preview')).toBeNull();
         expect(front.querySelector('#qr-code-wrapper')).toBeNull();
         expect(back.querySelector('#qr-code-wrapper')).not.toBeNull();
         expect(document.getElementById('card-name').textContent.trim()).not.toBe('');
         expect(document.getElementById('card-tagline').textContent.trim()).not.toBe('');
-        expect(phone.textContent.trim()).toBe('01000000000');
-        expect(phone.previousElementSibling.id).toBe('card-tagline');
         expect(document.getElementById('toggle-phone-buttons').checked).toBe(false);
         expect(front.classList.contains('editor-default-front-layout')).toBe(true);
         expect(back.classList.contains('editor-default-back-layout')).toBe(true);
         expect(document.getElementById('editor-default-qr-preview')).not.toBeNull();
+        expect(source).toContain('editor-hydration.js?v=1.0');
+    });
+
+    test('binds gallery, save, undo and redo actions exactly once', () => {
+        const script = fs.readFileSync(path.join(__dirname, '..', 'script-main.js'), 'utf8');
+        const count = marker => script.split(marker).length - 1;
+
+        expect(count('buttons.showGallery.addEventListener')).toBe(1);
+        expect(count('buttons.saveToGallery.addEventListener')).toBe(1);
+        expect(count('buttons.undoBtn?.addEventListener')).toBe(1);
+        expect(count('buttons.redoBtn?.addEventListener')).toBe(1);
     });
 
     test('provides stable inspector targets for the logo and photo', () => {
