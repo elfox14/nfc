@@ -31,6 +31,18 @@ function loadEditor(file) {
 }
 
 describe.each(editorFiles)('%s foundation', (file) => {
+    test('keeps the editor markup complete and exposes every required QR control', () => {
+        const { source, document } = loadEditor(file);
+
+        expect(source).not.toMatch(/(?:tokens\s+truncated|…\d+\s+tokens\s+truncated…)/i);
+        expect(document.getElementById('phone-btn-font')).not.toBeNull();
+        expect(document.getElementById('qr-code-accordion')).not.toBeNull();
+        expect(document.getElementById('qr-auto-card-group')).not.toBeNull();
+        expect(document.getElementById('generate-auto-qr-btn')).not.toBeNull();
+        expect(document.getElementById('qr-url-group')).not.toBeNull();
+        expect(document.getElementById('qr-upload-group')).not.toBeNull();
+    });
+
     test('uses unique IDs and one autosave status element', () => {
         const { document } = loadEditor(file);
         const ids = Array.from(document.querySelectorAll('[id]'), (element) => element.id);
