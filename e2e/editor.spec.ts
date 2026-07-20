@@ -140,14 +140,9 @@ test('loads the exact saved card selected from the dashboard', async ({ page }) 
   await expect(page.locator('#card-back-content')).not.toHaveClass(/editor-default-back-layout/);
   await expect(page.locator('#editor-design-load-status')).toHaveCount(0);
 
-  const identity = await page.evaluate(() => ({
-    currentDesignId: (window as any).Config.currentDesignId,
-    editingDesignId: localStorage.getItem('nfc:editingDesignId')
-  }));
-  expect(identity).toEqual({
-    currentDesignId: 'e2e-saved-card',
-    editingDesignId: 'e2e-saved-card'
-  });
+  await expect(page.locator('html')).toHaveAttribute('data-editor-design-id', 'e2e-saved-card');
+  const editingDesignId = await page.evaluate(() => localStorage.getItem('nfc:editingDesignId'));
+  expect(editingDesignId).toBe('e2e-saved-card');
 });
 
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {
