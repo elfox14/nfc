@@ -55,12 +55,12 @@
     <script src="security-utils.js" defer></script>
     <script src="mobile.js" defer></script>
     <script src="script-core.js?v=2.1" defer></script>
-    <script src="/nfc/editor-default-card.js" defer></script>
+    <script src="/nfc/editor-default-card.js?v=2.0" defer></script>
     <script src="state-manager-proxy.js" defer></script>
     <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
-    <script src="script-main.js" defer></script>
-    <script src="/nfc/editor-design-loader.js" defer></script>
+    <script src="script-main.js?v=2.2" defer></script>
+    <script src="/nfc/editor-design-loader.js?v=2.0" defer></script>
 
     <script src="editor-user-status.js" defer></script>
     <script src="ai-backgrounds.js" defer></script>
@@ -522,9 +522,14 @@
                         <div class="business-card card-face card-back" id="card-back-preview">
                             <div class="card-background-layer" id="back-bg-image-layer"></div>
                             <div class="card-background-layer" id="back-bg-gradient-layer"></div>
-                            <div class="card-content-layer card-back-content-layer" id="card-back-content">
+                            <div class="card-content-layer card-back-content-layer editor-default-back-layout" id="card-back-content">
                                 <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
                                     data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
+                                <div class="editor-default-qr-preview no-export" id="editor-default-qr-preview"
+                                    aria-hidden="true">
+                                    <i class="fas fa-qrcode"></i>
+                                    <span>سيظهر رمز QR بعد حفظ البطاقة</span>
+                                </div>
                             </div>
                             <div class="mc-prime-branding">MC PRIME NFC</div>
                         </div>
