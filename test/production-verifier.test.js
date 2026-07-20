@@ -100,7 +100,7 @@ describe('production release verifier', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(30);
     expect(report.expected).toMatchObject({
       release: '2026.07.21-phase16.0',
-      serviceWorkerCache: 'v19',
+      serviceWorkerCache: 'v20',
       productivityScript: '/nfc/editor-productivity-tools.js?v=9.0',
       brandKitStyle: '/nfc/brand-kit.css?v=10.0',
       brandKitClient: '/nfc/brand-kit-client.js?v=10.0',
