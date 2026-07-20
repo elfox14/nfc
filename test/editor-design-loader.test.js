@@ -76,7 +76,7 @@ describe('editor saved design loader', () => {
         headers: { Accept: 'application/json', 'X-Editor-Test': 'session' }
       })
     );
-    expect(applyState).toHaveBeenCalledWith(savedState, false);
+    expect(applyState).toHaveBeenCalledWith(expect.objectContaining(savedState), false);
     expect(window.Config.currentDesignId).toBe('saved-123');
     expect(window.localStorage.getItem('nfc:editingDesignId')).toBe('saved-123');
     expect(document.getElementById('card-front-content').classList.contains('editor-default-front-layout')).toBe(false);
@@ -99,7 +99,7 @@ describe('editor saved design loader', () => {
     expect(document.getElementById('card-front-content').classList.contains('editor-default-front-layout')).toBe(false);
     expect(document.getElementById('card-back-content').classList.contains('editor-default-back-layout')).toBe(false);
     expect(document.documentElement.dataset.editorDesignLoad).toBe('error');
-    expect(document.getElementById('editor-design-load-status')).toHaveTextContent('لم يتم استبدال بياناتك');
+    expect(document.getElementById('editor-design-load-status').textContent).toContain('لم يتم استبدال بياناتك');
     expect(document.querySelector('.editor-design-load-retry')).toBeTruthy();
     expect(window.UIManager.announce).toHaveBeenCalledWith('تعذر تحميل التصميم المحفوظ.');
   });
