@@ -154,7 +154,7 @@ async function verifyProduction(options = {}) {
       const { response, body } = await requestWithRetry(url, requestOptions);
       assertResponse(response, body, name, [
         'id="pro-toolbar"', 'runtime-config.js', 'editor-shell.js', 'editor-default-card.js',
-        'editor-design-loader.js', 'editor-logo-fit.js'
+        'editor-hydration.js', 'editor-design-loader.js', 'editor-logo-fit.js'
       ]);
       const normalized = body.replace(/^\uFEFF/, '');
       if (!normalized.startsWith('<!DOCTYPE html>')) throw new Error(`${name} does not start with <!DOCTYPE html>`);
@@ -234,6 +234,9 @@ async function verifyProduction(options = {}) {
   await checkUrl('Editor default front card preset', `${publicOrigin}/nfc/editor-default-card.js`, [
     'phone_default', "'toggle-phone-buttons': false", "qr: 'back'"
   ]);
+  await checkUrl('Editor first-paint hydration gate', `${publicOrigin}/nfc/editor-hydration.js`, [
+    'dataset.editorHydrated', 'aria-busy', 'editor:hydrated'
+  ]);
   await checkUrl('Saved design editor loader', `${publicOrigin}/nfc/editor-design-loader.js`, [
     'apiFetchWithRefresh', 'StateManager', 'editor:designloaded'
   ]);
@@ -246,7 +249,7 @@ async function verifyProduction(options = {}) {
     '/nfc/editor-productivity-tools.js', '/nfc/brand-kit.css', '/nfc/brand-kit-client.js',
     '/nfc/dashboard-brand-kit.js', '/nfc/editor-brand-kit.js', '/nfc/workspace.css',
     '/nfc/workspace-client.js', '/nfc/dashboard-workspaces.js', '/nfc/editor-review-workflow.js',
-    '/nfc/editor-default-card.js', '/nfc/editor-design-loader.js', '/nfc/editor-logo-fit.js',
+    '/nfc/editor-default-card.js', '/nfc/editor-hydration.js', '/nfc/editor-design-loader.js', '/nfc/editor-logo-fit.js',
     '/nfc/viewer-logo-fit.css'
   ]);
 

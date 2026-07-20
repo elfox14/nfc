@@ -161,6 +161,25 @@ describe('editor saved design loader', () => {
     }), false);
   });
 
+  test('deduplicates concurrent dashboard loads into one successful request', async () => {
+    window.Auth.apiFetchWithRefresh.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ inputs: { 'input-name_ar': 'طلب واحد' } })
+    });
+
+    require('../editor-design-loader');
+    const [first, second] = await Promise.all([
+      window.ShareManager.loadFromUrl(),
+      window.ShareManager.loadFromUrl()
+    ]);
+
+    expect(first).toBe(true);
+    expect(second).toBe(true);
+    expect(window.Auth.apiFetchWithRefresh).toHaveBeenCalledTimes(1);
+    expect(applyState).toHaveBeenCalledTimes(1);
+  });
+
   test('delegates collaboration links to the existing collaboration loader', async () => {
     window.history.replaceState({}, '', '/nfc/editor.html?collabId=room-1');
     require('../editor-design-loader');

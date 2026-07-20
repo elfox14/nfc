@@ -128,9 +128,25 @@ test.beforeEach(async ({ page }) => {
 
 
 test('loads the exact saved card selected from the dashboard', async ({ page }) => {
+  let savedCardRequests = 0;
+  await page.route('**/api/get-design/e2e-saved-card', async route => {
+    savedCardRequests += 1;
+    await new Promise(resolve => setTimeout(resolve, 250));
+    await route.fallback();
+  });
+
   await page.goto('/nfc/editor.html?id=e2e-saved-card', { waitUntil: 'domcontentloaded' });
 
+  await expect(page.locator('html')).toHaveAttribute('data-editor-hydrated', 'false');
+  await expect(page.locator('#cards-wrapper')).toHaveAttribute('aria-busy', 'true');
+  await expect(page.locator('#editor-card-hydration-placeholder')).toBeVisible();
+  await expect(page.locator('#cards-wrapper .card-flipper')).toBeHidden();
+  await expect(page.locator('#phone-default-preview')).toHaveCount(0);
+
   await expect(page.locator('html')).toHaveAttribute('data-editor-design-load', 'loaded');
+  await expect(page.locator('html')).toHaveAttribute('data-editor-hydrated', 'true');
+  await expect(page.locator('#cards-wrapper')).toHaveAttribute('aria-busy', 'false');
+  await expect(page.locator('#editor-card-hydration-placeholder')).toBeHidden();
   await expect(page.locator('#input-name_ar')).toHaveValue('الكارت المحفوظ من لوحة التحكم');
   await expect(page.locator('#input-tagline_ar')).toHaveValue('مدير التشغيل');
   await expect(page.locator('#card-name')).toContainText('الكارت المحفوظ من لوحة التحكم');
@@ -143,6 +159,7 @@ test('loads the exact saved card selected from the dashboard', async ({ page }) 
   await expect(page.locator('html')).toHaveAttribute('data-editor-design-id', 'e2e-saved-card');
   const editingDesignId = await page.evaluate(() => localStorage.getItem('nfc:editingDesignId'));
   expect(editingDesignId).toBe('e2e-saved-card');
+  expect(savedCardRequests).toBe(1);
 });
 
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {

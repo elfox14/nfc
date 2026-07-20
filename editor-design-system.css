@@ -2022,6 +2022,63 @@ html[dir="ltr"] .editor-workspace-ready .pro-layout > * {
     margin: 0;
 }
 
+.editor-card-hydration-placeholder {
+    position: absolute;
+    inset: 0;
+    z-index: 110;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 14px;
+    overflow: hidden;
+    color: var(--editor-text-secondary);
+    background:
+        radial-gradient(circle at 50% 18%, rgba(77, 166, 255, 0.12), transparent 38%),
+        linear-gradient(135deg, #2a3d54, #223246);
+    border: 1px solid var(--editor-border-subtle);
+    border-radius: 20px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.24);
+}
+
+.editor-card-hydration-placeholder::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+    background: linear-gradient(105deg, transparent 28%, rgba(255, 255, 255, 0.08) 45%, transparent 62%);
+    transform: translateX(-110%);
+    animation: editor-card-hydration-shimmer 1.4s ease-in-out infinite;
+}
+
+.editor-card-hydration-placeholder > i,
+.editor-card-hydration-placeholder > span {
+    position: relative;
+    z-index: 1;
+}
+
+.editor-card-hydration-placeholder > i {
+    color: var(--editor-color-primary);
+    font-size: 1.45rem;
+}
+
+.editor-card-hydration-placeholder > span {
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+html[data-editor-hydrated="false"] #cards-wrapper .card-flipper {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+html[data-editor-hydrated="true"] .editor-card-hydration-placeholder {
+    display: none;
+}
+
+html[data-editor-hydrated="true"] #cards-wrapper .card-flipper {
+    animation: editor-card-hydration-reveal 180ms ease-out both;
+}
+
 html[data-editor-design-load="loading"] #cards-wrapper .card-flipper,
 html[data-editor-design-load="error"] #cards-wrapper .card-flipper {
     opacity: 0.16;
@@ -2042,4 +2099,13 @@ html[data-editor-design-load="error"] #cards-wrapper .card-flipper {
     .editor-design-load-status {
         padding: 18px;
     }
+}
+
+@keyframes editor-card-hydration-shimmer {
+    to { transform: translateX(110%); }
+}
+
+@keyframes editor-card-hydration-reveal {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

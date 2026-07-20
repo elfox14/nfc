@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-editor-hydrated="false" data-editor-hydration="pending">
 
 <head>
     <!-- SEO: Block indexing -->
@@ -57,6 +57,7 @@
     <script src="mobile.js" defer></script>
     <script src="script-core.js?v=2.1" defer></script>
     <script src="/nfc/editor-default-card.js?v=2.0" defer></script>
+    <script src="/nfc/editor-hydration.js?v=1.0" defer></script>
     <script src="state-manager-proxy.js" defer></script>
     <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
@@ -75,7 +76,7 @@
 
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
     <link rel="stylesheet" href="/nfc/premium-ui.css">
-    <link rel="stylesheet" href="editor-design-system.css?v=6.1">
+    <link rel="stylesheet" href="editor-design-system.css?v=6.2">
 </head>
 
 <body class="editor-body">
@@ -483,9 +484,13 @@
         </aside>
 
         <main class="pro-canvas">
-            <section class="cards-wrapper" id="cards-wrapper" tabindex="0">
-
+            <section class="cards-wrapper" id="cards-wrapper" tabindex="0" aria-busy="true">
                 <div class="card-flipper-container">
+                    <div class="editor-card-hydration-placeholder" id="editor-card-hydration-placeholder"
+                        role="status" aria-live="polite">
+                        <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>
+                        <span>Preparing your card…</span>
+                    </div>
                     <div class="card-flipper">
                         <div class="business-card card-face card-front" id="card-front-preview">
                             <div class="card-background-layer" id="front-bg-image-layer"></div>
@@ -508,12 +513,6 @@
                                     style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">
                                     Job Title / Company
                                 </h2>
-                                <div class="phone-button-draggable-wrapper draggable-on-card text-only-mode editor-default-phone-preview"
-                                    id="phone-default-preview" data-x="0" data-y="0">
-                                    <a href="tel:01000000000" class="phone-button" aria-label="Call 01000000000">
-                                        <span>01000000000</span>
-                                    </a>
-                                </div>
                                 <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
                             </div>
                             <div class="mc-prime-branding">MC PRIME NFC</div>
