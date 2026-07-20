@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v20';
+const CACHE_VERSION = 'v21';
 const STATIC_CACHE = `mcprime-static-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
@@ -12,6 +12,7 @@ const PRECACHE_ASSETS = [
   '/nfc/client-observability.js',
   '/nfc/editor-default-card.js?v=2.0',
   '/nfc/editor-design-loader.js?v=2.0',
+  '/nfc/editor-interact-fallback.js?v=1.0',
   '/nfc/script-main.js?v=2.2',
   '/nfc/editor-logo-fit.js',
   '/nfc/viewer-logo-fit.css',
