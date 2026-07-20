@@ -174,6 +174,7 @@
       if (!stateManager?.applyState) throw new Error('State manager is unavailable');
 
       if (config) config.currentDesignId = designId;
+      global.document.documentElement.dataset.editorDesignId = designId;
       try {
         global.localStorage.setItem('nfc:editingDesignId', designId);
       } catch {
@@ -188,6 +189,7 @@
       return true;
     } catch (error) {
       console.error('[EditorDesignLoader] Failed to load saved design:', error);
+      delete global.document.documentElement.dataset.editorDesignId;
       setDefaultLayout(false);
       setLoadState('error', english
         ? 'The saved card could not be loaded. Your saved data was not replaced.'
