@@ -28,6 +28,39 @@ test.beforeEach(async ({ page }) => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, accessToken: 'e2e-access-token', user: { userId: 'e2e-user', email: 'editor@example.com', isVerified: true } }) });
       return;
     }
+    if (url.includes('/api/get-design/e2e-saved-card')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          inputs: {
+            'input-name_ar': 'الكارت المحفوظ من لوحة التحكم',
+            'input-tagline_ar': 'مدير التشغيل',
+            'input-logo': 'mc-prime-nfc.png',
+            'logo-size': 22,
+            'toggle-phone-buttons': false
+          },
+          dynamic: {
+            phones: [{
+              id: 'saved-phone',
+              value: '01062071741',
+              placement: 'front',
+              position: { x: 14, y: -6 }
+            }],
+            social: [],
+            staticSocial: {}
+          },
+          imageUrls: {},
+          positions: {
+            'card-logo': { x: 18, y: -10 },
+            'card-name': { x: -12, y: 7 }
+          },
+          placements: { logo: 'front', name: 'front', tagline: 'front', qr: 'back' },
+          visibilities: { logo: true, name: true, tagline: true, phones: true, qr: true }
+        })
+      });
+      return;
+    }
     if (url.includes('/api/save-design')) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, id: 'e2e-card' }) });
       return;
@@ -91,6 +124,25 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-editor-template-manager', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-version-manager', 'ready');
   await expect(page.locator('html')).toHaveAttribute('data-editor-productivity-tools', 'ready');
+});
+
+
+test('loads the exact saved card selected from the dashboard', async ({ page }) => {
+  await page.goto('/nfc/editor.html?id=e2e-saved-card', { waitUntil: 'domcontentloaded' });
+
+  await expect(page.locator('html')).toHaveAttribute('data-editor-design-load', 'loaded');
+  await expect(page.locator('#input-name_ar')).toHaveValue('الكارت المحفوظ من لوحة التحكم');
+  await expect(page.locator('#input-tagline_ar')).toHaveValue('مدير التشغيل');
+  await expect(page.locator('#card-name')).toContainText('الكارت المحفوظ من لوحة التحكم');
+  await expect(page.locator('#card-logo')).toHaveAttribute('data-x', '18');
+  await expect(page.locator('#card-name')).toHaveAttribute('data-x', '-12');
+  await expect(page.locator('#card-front-content')).not.toHaveClass(/editor-default-front-layout/);
+  await expect(page.locator('#card-back-content')).not.toHaveClass(/editor-default-back-layout/);
+  await expect(page.locator('#editor-design-load-status')).toHaveCount(0);
+
+  await expect(page.locator('html')).toHaveAttribute('data-editor-design-id', 'e2e-saved-card');
+  const editingDesignId = await page.evaluate(() => localStorage.getItem('nfc:editingDesignId'));
+  expect(editingDesignId).toBe('e2e-saved-card');
 });
 
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {

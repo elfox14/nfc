@@ -31,6 +31,18 @@ function loadEditor(file) {
 }
 
 describe.each(editorFiles)('%s foundation', (file) => {
+    test('keeps the editor markup complete and exposes every required QR control', () => {
+        const { source, document } = loadEditor(file);
+
+        expect(source).not.toMatch(/(?:tokens\s+truncated|…\d+\s+tokens\s+truncated…)/i);
+        expect(document.getElementById('phone-btn-font')).not.toBeNull();
+        expect(document.getElementById('qr-code-accordion')).not.toBeNull();
+        expect(document.getElementById('qr-auto-card-group')).not.toBeNull();
+        expect(document.getElementById('generate-auto-qr-btn')).not.toBeNull();
+        expect(document.getElementById('qr-url-group')).not.toBeNull();
+        expect(document.getElementById('qr-upload-group')).not.toBeNull();
+    });
+
     test('uses unique IDs and one autosave status element', () => {
         const { document } = loadEditor(file);
         const ids = Array.from(document.querySelectorAll('[id]'), (element) => element.id);
@@ -51,8 +63,9 @@ describe.each(editorFiles)('%s foundation', (file) => {
         expect(document.querySelectorAll('script[src^="editor-preview.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src^="editor-creative-tools.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src="/nfc/editor-logo-fit.js"]')).toHaveLength(1);
-        expect(document.querySelectorAll('script[src="/nfc/editor-default-card.js"]')).toHaveLength(1);
-        expect(document.querySelectorAll('script[src="/nfc/editor-design-loader.js"]')).toHaveLength(1);
+        expect(document.querySelectorAll('script[src^="/nfc/editor-default-card.js"]')).toHaveLength(1);
+        expect(document.querySelectorAll('script[src^="/nfc/editor-design-loader.js"]')).toHaveLength(1);
+        expect(document.querySelectorAll('script[src^="/nfc/editor-interact-fallback.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('link[href^="editor-design-system.css"]')).toHaveLength(1);
         expect(document.querySelector('script[src="toolbar-tab-nav.js"]')).toBeNull();
         expect(document.querySelectorAll('style')).toHaveLength(0);
@@ -72,6 +85,8 @@ describe.each(editorFiles)('%s foundation', (file) => {
         expect(phone.previousElementSibling.id).toBe('card-tagline');
         expect(document.getElementById('toggle-phone-buttons').checked).toBe(false);
         expect(front.classList.contains('editor-default-front-layout')).toBe(true);
+        expect(back.classList.contains('editor-default-back-layout')).toBe(true);
+        expect(document.getElementById('editor-default-qr-preview')).not.toBeNull();
     });
 
     test('provides stable inspector targets for the logo and photo', () => {

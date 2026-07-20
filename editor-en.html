@@ -44,6 +44,7 @@
     <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <script src="/nfc/editor-interact-fallback.js?v=1.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
@@ -55,12 +56,12 @@
     <script src="security-utils.js" defer></script>
     <script src="mobile.js" defer></script>
     <script src="script-core.js?v=2.1" defer></script>
-    <script src="/nfc/editor-default-card.js" defer></script>
+    <script src="/nfc/editor-default-card.js?v=2.0" defer></script>
     <script src="state-manager-proxy.js" defer></script>
     <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
-    <script src="script-main.js" defer></script>
-    <script src="/nfc/editor-design-loader.js" defer></script>
+    <script src="script-main.js?v=2.2" defer></script>
+    <script src="/nfc/editor-design-loader.js?v=2.0" defer></script>
     <script src="editor-user-status.js" defer></script>
     <script src="ai-backgrounds.js" defer></script>
     <script src="editor-panels.js" defer></script>
@@ -521,9 +522,14 @@
                         <div class="business-card card-face card-back" id="card-back-preview">
                             <div class="card-background-layer" id="back-bg-image-layer"></div>
                             <div class="card-background-layer" id="back-bg-gradient-layer"></div>
-                            <div class="card-content-layer card-back-content-layer" id="card-back-content">
+                            <div class="card-content-layer card-back-content-layer editor-default-back-layout" id="card-back-content">
                                 <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
                                     data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
+                                <div class="editor-default-qr-preview no-export" id="editor-default-qr-preview"
+                                    aria-hidden="true">
+                                    <i class="fas fa-qrcode"></i>
+                                    <span>The QR code appears after you save the card</span>
+                                </div>
                             </div>
                             <div class="mc-prime-branding">MC PRIME NFC</div>
                         </div>
@@ -1303,7 +1309,83 @@
                                         <option value="'Almarai', sans-serif">Almarai</option>
                                         <option value="'Amiri', serif">Amiri</option>
                                         <option value="'Changa', sans-serif">Changa</option>
-                                       …1412 tokens truncated…center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
+                                        <option value="'Readex Pro', sans-serif">Readex Pro</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ADVANCED MOVEMENT DPAD -->
+                    <details class="lp-sub-accordion" style="margin-top: 10px;">
+                        <summary class="lp-sub-summary">
+                            <i class="fas fa-arrows-up-down-left-right"></i> Fine Position
+                        </summary>
+                        <div class="lp-section" style="border:none;">
+                            <div class="lp-dpad position-controls-grid" data-target-id="card-phone-wrapper">
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn"
+                                        data-direction="up"><i class="fas fa-chevron-up"></i></button></div>
+                                <div class="lp-dpad-row">
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="left"><i
+                                            class="fas fa-chevron-left"></i></button>
+                                    <div class="lp-dpad-center"><i class="fas fa-circle-dot"></i></div>
+                                    <button type="button" class="lp-dpad-btn move-btn" data-direction="right"><i
+                                            class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="lp-dpad-row"><button type="button" class="lp-dpad-btn move-btn"
+                                        data-direction="down"><i class="fas fa-chevron-down"></i></button></div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </details>
+
+
+
+
+
+            <!-- ═══ QR CODE PANEL — Premium v2 ═══ -->
+            <details class="fieldset-accordion lp-accordion" open id="qr-code-accordion">
+                <summary class="lp-summary">
+                    <span class="lp-summary-icon"><i class="fas fa-qrcode"></i></span>
+                    <span class="lp-summary-label">QR Code</span>
+                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="visibility-qr" checked>
+                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                    </label>
+                </summary>
+
+                <div class="fieldset-content lp-body">
+
+                    <div id="version-debug-tag"
+                        style="background:rgba(77,166,255,0.2); color:#4da6ff; font-size:10px; padding:2px 8px; border-radius:4px; margin-bottom:10px; display:inline-block; font-weight:bold; border:1px solid rgba(77,166,255,0.3);">
+                        VERSION 3.5 [PREMIUM]</div>
+                    <!-- ① SOURCE CARD -->
+                    <div class="lp-card">
+                        <div class="lp-card-header">
+                            <span class="lp-card-title"><i class="fas fa-link"></i> Data Source</span>
+                        </div>
+
+                        <!-- Segment control for QR source -->
+                        <div id="qr-source-grid"
+                            style="display:grid !important; grid-template-columns:1fr 1fr !important; grid-template-rows: auto auto !important; gap:8px !important; margin-bottom:12px !important;">
+                            <label class="lp-qr-src-btn lp-qr-active" data-val="auto-card"
+                                style="display:flex !important;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid rgba(77,166,255,0.45);background:rgba(77,166,255,0.15);color:var(--accent-primary);font-size:0.8rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="auto-card" checked style="display:none;">
+                                <i class="fas fa-id-card"></i> Card Link
+                            </label>
+                            <label class="lp-qr-src-btn" data-val="auto-vcard"
+                                style="display:flex !important;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="auto-vcard" style="display:none;">
+                                <i class="fas fa-address-book"></i> vCard
+                            </label>
+                            <label class="lp-qr-src-btn" data-val="custom"
+                                style="display:flex !important;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
+                                <input type="radio" name="qr-source" value="custom" style="display:none;">
+                                <i class="fas fa-pen"></i> Custom
+                            </label>
+                            <label class="lp-qr-src-btn" data-val="upload"
+                                style="display:flex !important;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:var(--text-secondary);font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;">
                                 <input type="radio" name="qr-source" value="upload" style="display:none;">
                                 <i class="fas fa-upload"></i> Upload
                             </label>
