@@ -72,6 +72,8 @@ describe.each(editorFiles)('%s foundation', (file) => {
         expect(phone.previousElementSibling.id).toBe('card-tagline');
         expect(document.getElementById('toggle-phone-buttons').checked).toBe(false);
         expect(front.classList.contains('editor-default-front-layout')).toBe(true);
+        expect(back.classList.contains('editor-default-back-layout')).toBe(true);
+        expect(document.getElementById('editor-default-qr-preview')).not.toBeNull();
     });
 
     test('provides stable inspector targets for the logo and photo', () => {
