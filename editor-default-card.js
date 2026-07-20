@@ -11,12 +11,13 @@
     ...(state.inputs || {}),
     'layout-select': 'classic',
     'layout-select-visual': 'classic',
-    'logo-size': 10,
+    'logo-size': 16,
     'input-name_ar': 'اسمك هنا',
     'input-name_en': 'Your Name Here',
     'input-tagline_ar': 'المسمى الوظيفي / الشركة',
     'input-tagline_en': 'Job Title / Company',
-    'toggle-phone-buttons': false
+    'toggle-phone-buttons': false,
+    'qr-size': 32
   };
   state.dynamic = {
     ...(state.dynamic || {}),
@@ -59,14 +60,34 @@
   } catch {
     // Storage may be unavailable; the HTML default remains the safe first paint.
   }
-  if (hasRemoteDesign || hasLocalDesign) {
-    global.document.getElementById('card-front-content')
-      ?.classList.remove('editor-default-front-layout');
+
+  const usesDefaultLayout = !hasRemoteDesign && !hasLocalDesign;
+  const front = global.document.getElementById('card-front-content');
+  const back = global.document.getElementById('card-back-content');
+  front?.classList.toggle('editor-default-front-layout', usesDefaultLayout);
+  back?.classList.toggle('editor-default-back-layout', usesDefaultLayout);
+
+  function syncQrPlaceholder() {
+    const wrapper = global.document.getElementById('qr-code-wrapper');
+    const placeholder = global.document.getElementById('editor-default-qr-preview');
+    if (!placeholder) return;
+    const hasQr = Boolean(wrapper?.querySelector('canvas, img, svg'));
+    placeholder.hidden = !usesDefaultLayout || hasQr;
   }
+
+  const qrWrapper = global.document.getElementById('qr-code-wrapper');
+  if (qrWrapper && typeof global.MutationObserver === 'function') {
+    new global.MutationObserver(syncQrPlaceholder).observe(qrWrapper, {
+      childList: true,
+      subtree: true
+    });
+  }
+  syncQrPlaceholder();
 
   global.EditorDefaultCard = {
     state,
     phone: state.dynamic.phones[0],
-    usesCenteredLayout: !hasRemoteDesign && !hasLocalDesign
+    usesCenteredLayout: usesDefaultLayout,
+    syncQrPlaceholder
   };
 })(window);
