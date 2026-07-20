@@ -34,8 +34,9 @@ describe('editor toolbar production release patch', () => {
   test('ships editor managers, Brand Kit and team review through a fresh cache', () => {
     const sw = read('sw.js');
     const runtime = read('runtime-config.js');
-    expect(sw).toContain("const CACHE_VERSION = 'v18'");
+    expect(sw).toContain("const CACHE_VERSION = 'v19'");
     expect(sw).toContain("'/nfc/editor-default-card.js'");
+    expect(sw).toContain("'/nfc/editor-design-loader.js'");
     expect(sw).toContain("'/nfc/editor-logo-fit.js'");
     expect(sw).toContain("'/nfc/viewer-logo-fit.css'");
     expect(sw).toContain("'/nfc/client-observability.js'");

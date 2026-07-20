@@ -52,6 +52,7 @@ describe.each(editorFiles)('%s foundation', (file) => {
         expect(document.querySelectorAll('script[src^="editor-creative-tools.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src="/nfc/editor-logo-fit.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src="/nfc/editor-default-card.js"]')).toHaveLength(1);
+        expect(document.querySelectorAll('script[src="/nfc/editor-design-loader.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('link[href^="editor-design-system.css"]')).toHaveLength(1);
         expect(document.querySelector('script[src="toolbar-tab-nav.js"]')).toBeNull();
         expect(document.querySelectorAll('style')).toHaveLength(0);
@@ -70,6 +71,7 @@ describe.each(editorFiles)('%s foundation', (file) => {
         expect(phone.textContent.trim()).toBe('01000000000');
         expect(phone.previousElementSibling.id).toBe('card-tagline');
         expect(document.getElementById('toggle-phone-buttons').checked).toBe(false);
+        expect(front.classList.contains('editor-default-front-layout')).toBe(true);
     });
 
     test('provides stable inspector targets for the logo and photo', () => {

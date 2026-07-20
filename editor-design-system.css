@@ -1882,3 +1882,21 @@ html[dir="ltr"] .editor-workspace-ready .pro-layout > * {
     border: 0;
     padding: 2px 8px;
 }
+
+/* A compact centered baseline for new/reset cards; every child remains draggable. */
+.editor-body .card-front-content-layer.editor-default-front-layout {
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 28px 5% 44px;
+}
+
+.editor-body .card-front-content-layer.editor-default-front-layout > #card-logo,
+.editor-body .card-front-content-layer.editor-default-front-layout > #card-name,
+.editor-body .card-front-content-layer.editor-default-front-layout > #card-tagline,
+.editor-body .card-front-content-layer.editor-default-front-layout > .phone-button-draggable-wrapper {
+    flex: 0 0 auto;
+    margin: 0 !important;
+    text-align: center;
+    align-self: center;
+}

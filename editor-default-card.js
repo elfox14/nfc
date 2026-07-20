@@ -51,8 +51,22 @@
   };
   state.currentLanguage = isEnglish ? 'en' : 'ar';
 
+  const params = new URLSearchParams(global.location.search);
+  const hasRemoteDesign = params.has('id') || params.has('collabId');
+  let hasLocalDesign = false;
+  try {
+    hasLocalDesign = Boolean(global.localStorage.getItem(config.LOCAL_STORAGE_KEY));
+  } catch {
+    // Storage may be unavailable; the HTML default remains the safe first paint.
+  }
+  if (hasRemoteDesign || hasLocalDesign) {
+    global.document.getElementById('card-front-content')
+      ?.classList.remove('editor-default-front-layout');
+  }
+
   global.EditorDefaultCard = {
     state,
-    phone: state.dynamic.phones[0]
+    phone: state.dynamic.phones[0],
+    usesCenteredLayout: !hasRemoteDesign && !hasLocalDesign
   };
 })(window);
