@@ -5,7 +5,12 @@ describe('editor default card configuration', () => {
     jest.resetModules();
     window.history.replaceState({}, '', '/nfc/editor.html');
     window.localStorage.clear();
-    document.body.innerHTML = '<div id="card-front-content" class="editor-default-front-layout"></div>';
+    document.body.innerHTML = `
+      <div id="card-front-content" class="editor-default-front-layout"></div>
+      <div id="card-back-content" class="editor-default-back-layout">
+        <div id="qr-code-wrapper"></div>
+        <div id="editor-default-qr-preview"></div>
+      </div>`;
     const defaultState = {
       inputs: {},
       dynamic: {},
@@ -32,6 +37,8 @@ describe('editor default card configuration', () => {
     expect(state.inputs['input-name_ar']).toBe('اسمك هنا');
     expect(state.inputs['input-tagline_ar']).toBe('المسمى الوظيفي / الشركة');
     expect(state.inputs['toggle-phone-buttons']).toBe(false);
+    expect(state.inputs['logo-size']).toBe(16);
+    expect(state.inputs['qr-size']).toBe(32);
     expect(state.dynamic.phones).toEqual([{
       id: 'phone_default',
       value: '01000000000',
@@ -42,6 +49,8 @@ describe('editor default card configuration', () => {
     expect(state.visibilities).toMatchObject({ logo: true, name: true, tagline: true, phones: true, qr: true });
     expect(window.EditorDefaultCard.usesCenteredLayout).toBe(true);
     expect(document.getElementById('card-front-content').classList.contains('editor-default-front-layout')).toBe(true);
+    expect(document.getElementById('card-back-content').classList.contains('editor-default-back-layout')).toBe(true);
+    expect(document.getElementById('editor-default-qr-preview').hidden).toBe(false);
   });
 
   test('uses equivalent English placeholder content', () => {
@@ -59,6 +68,7 @@ describe('editor default card configuration', () => {
 
     expect(window.EditorDefaultCard.usesCenteredLayout).toBe(false);
     expect(document.getElementById('card-front-content').classList.contains('editor-default-front-layout')).toBe(false);
+    expect(document.getElementById('card-back-content').classList.contains('editor-default-back-layout')).toBe(false);
   });
 
   test('does not impose the default centering when a local design exists', () => {
@@ -67,5 +77,14 @@ describe('editor default card configuration', () => {
 
     expect(window.EditorDefaultCard.usesCenteredLayout).toBe(false);
     expect(document.getElementById('card-front-content').classList.contains('editor-default-front-layout')).toBe(false);
+    expect(document.getElementById('card-back-content').classList.contains('editor-default-back-layout')).toBe(false);
+  });
+
+  test('hides the editor-only QR placeholder when a real QR is rendered', () => {
+    require('../editor-default-card');
+    document.getElementById('qr-code-wrapper').innerHTML = '<canvas></canvas>';
+    window.EditorDefaultCard.syncQrPlaceholder();
+
+    expect(document.getElementById('editor-default-qr-preview').hidden).toBe(true);
   });
 });
