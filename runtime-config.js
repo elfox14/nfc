@@ -24,7 +24,7 @@
     }
   }
 
-  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.22-phase18';
+  window.__MC_PRIME_RELEASE = window.__MC_PRIME_RELEASE || '2026.07.22-phase19';
 
   const pathname = window.location.pathname || '';
   const isEditor = /(?:^|\/)editor(?:-en)?(?:\.html)?\/?$/i.test(pathname);
