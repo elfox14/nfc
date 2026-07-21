@@ -123,32 +123,31 @@
       transform: 'none'
     });
 
-    if (global.MobileUtils?.isMobile?.()) {
-      const showBack = element.id === 'card-back-preview';
-      remember(document.querySelector('.card-flipper-container'), {
-        perspective: 'none',
-        'transform-style': 'flat',
-        transform: 'none'
-      });
-      remember(document.querySelector('.card-flipper'), {
-        'transform-style': 'flat',
+    remember(document.querySelector('.card-flipper-container'), {
+      perspective: 'none',
+      'transform-style': 'flat',
+      transform: 'none'
+    });
+    remember(document.querySelector('.card-flipper'), {
+      'transform-style': 'flat',
+      transform: 'none',
+      transition: 'none'
+    });
+    document.querySelectorAll('.card-face').forEach(face => {
+      const visible = face === element;
+      remember(face, {
+        display: visible ? 'block' : 'none',
+        'backface-visibility': 'visible',
+        '-webkit-backface-visibility': 'visible',
         transform: 'none',
-        transition: 'none'
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        visibility: visible ? 'visible' : 'hidden',
+        opacity: visible ? '1' : '0',
+        'z-index': visible ? '10' : '-1'
       });
-      document.querySelectorAll('.card-face').forEach(face => {
-        const visible = face.classList.contains('card-front') ? !showBack : showBack;
-        remember(face, {
-          'backface-visibility': 'visible',
-          '-webkit-backface-visibility': 'visible',
-          transform: 'none',
-          position: 'absolute',
-          top: '0',
-          left: '0',
-          visibility: visible ? 'visible' : 'hidden',
-          'z-index': visible ? '10' : '-1'
-        });
-      });
-    }
+    });
 
     return () => {
       for (let index = restore.length - 1; index >= 0; index -= 1) restore[index]();
