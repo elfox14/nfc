@@ -31,10 +31,9 @@ function editorMarkup() {
                                 <h1 id="card-name"></h1>
                                 <h2 id="card-tagline"></h2>
                                 <div id="phone-buttons-wrapper"></div>
-                                <div id="qr-code-wrapper"></div>
                             </div>
                             <div id="card-back-preview" class="business-card card-back">
-                                <div id="card-back-content"></div>
+                                <div id="card-back-content"><div id="qr-code-wrapper"></div></div>
                             </div>
                         </div>
                     </div>
@@ -111,6 +110,23 @@ describe('professional editor workspace', () => {
         logo.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
         expect(window.EditorWorkspace.getState().selectedItem).toBe('logo');
         expect(document.getElementById('logo-accordion').open).toBe(true);
+    });
+
+    test('opens properties from a real pointer press on either card face', () => {
+        const name = document.getElementById('card-name');
+        name.dispatchEvent(new MouseEvent('pointerdown', { button: 0, bubbles: true }));
+
+        expect(window.EditorWorkspace.getState().selectedItem).toBe('name');
+        expect(document.getElementById('name-accordion').open).toBe(true);
+        expect(name.classList.contains('editor-element-selected')).toBe(true);
+
+        window.EditorWorkspace.setFace('back');
+        const qr = document.getElementById('qr-code-wrapper');
+        qr.dispatchEvent(new MouseEvent('pointerdown', { button: 0, bubbles: true }));
+
+        expect(window.EditorWorkspace.getState().selectedItem).toBe('qr');
+        expect(document.getElementById('qr-code-accordion').open).toBe(true);
+        expect(qr.classList.contains('editor-element-selected')).toBe(true);
     });
 
     test('controls card face, zoom and grid through one workspace state', () => {

@@ -32,12 +32,20 @@ describe('editor capture runtime', () => {
     global.Utils = window.Utils = { loadScript: jest.fn(async () => {}) };
     global.UIManager = window.UIManager = { uploadImageToServer: jest.fn(async () => '/uploads/card.png') };
     global.MobileUtils = window.MobileUtils = { isMobile: jest.fn(() => false) };
+    global.StateManager = window.StateManager = { getStateObject: jest.fn(() => ({ inputs: {}, imageUrls: {} })) };
+    global.CardManager = window.CardManager = { renderCardContent: jest.fn() };
+    window.EditorLayers = { apply: jest.fn() };
+    window.EditorWorkspace = { refreshCanvasElements: jest.fn() };
+    window.EditorProperties = { sync: jest.fn() };
+    window.EditorQrRuntime = { whenIdle: jest.fn(async () => {}) };
   });
 
   afterEach(() => {
     [
       'Config', 'ExportManager', 'ShareManager', 'Utils', 'UIManager',
-      'MobileUtils', 'html2canvas', 'EditorCaptureRuntime'
+      'MobileUtils', 'StateManager', 'CardManager', 'html2canvas',
+      'EditorCaptureRuntime', 'EditorLayers', 'EditorWorkspace',
+      'EditorProperties', 'EditorQrRuntime'
     ].forEach(key => {
       delete global[key];
       delete window[key];
@@ -108,6 +116,22 @@ describe('editor capture runtime', () => {
     expect(back.style.getPropertyPriority('transform')).toBe(original.transformPriority);
     expect(document.querySelector('.card-flipper').style.transform).toBe('rotateY(0deg)');
     expect(document.getElementById('card-front-preview').style.getPropertyValue('display')).toBe('');
+  });
+
+  test('waits for QR generation and rebuilds both faces before taking the save snapshot', async () => {
+    const freshState = { inputs: { 'input-name_ar': 'نسخة جديدة' }, imageUrls: { qrCode: 'data:image/png;base64,fresh' } };
+    StateManager.getStateObject.mockReturnValue(freshState);
+
+    eval(source);
+    const result = await EditorCaptureRuntime.prepareSaveState();
+
+    expect(window.EditorQrRuntime.whenIdle).toHaveBeenCalledTimes(1);
+    expect(StateManager.getStateObject).toHaveBeenCalledTimes(1);
+    expect(CardManager.renderCardContent).toHaveBeenCalledWith(freshState);
+    expect(window.EditorLayers.apply).toHaveBeenCalledTimes(1);
+    expect(window.EditorWorkspace.refreshCanvasElements).toHaveBeenCalledTimes(1);
+    expect(window.EditorProperties.sync).toHaveBeenCalledTimes(1);
+    expect(result).toBe(freshState);
   });
 
   test('removes only external assets from the final fallback clone', () => {

@@ -466,11 +466,25 @@
         });
     }
 
-    function markCanvasSelection(item) {
+    function elementBelongsToActiveFace(element) {
+        if (!element) return false;
+        const card = element.closest('.business-card');
+        return !card || card.id === `card-${state.face}-preview`;
+    }
+
+    function markCanvasSelection(item, preferredElement) {
         clearCanvasSelection();
         if (!item) return;
+        if (preferredElement && elementBelongsToActiveFace(preferredElement)) {
+            preferredElement.classList.add('editor-element-selected');
+            preferredElement.setAttribute('aria-current', 'true');
+            return;
+        }
         for (const selector of item.selectors) {
-            const element = document.querySelector(selector);
+            const candidates = Array.from(document.querySelectorAll(selector));
+            const element = candidates.find((candidate) => elementBelongsToActiveFace(candidate) && !candidate.hidden)
+                || candidates.find((candidate) => !candidate.hidden)
+                || candidates[0];
             if (!element) continue;
             element.classList.add('editor-element-selected');
             element.setAttribute('aria-current', 'true');
@@ -490,7 +504,7 @@
         });
         if (cardInspector) cardInspector.hidden = Boolean(item);
 
-        markCanvasSelection(item);
+        markCanvasSelection(item, settings.element);
         updateSelectionUI();
 
         if (settings.activatePanel) activateMobilePanel('panel-elements');
@@ -523,13 +537,29 @@
         annotateCanvasElements();
 
         if (!cardsWrapper) return;
-        cardsWrapper.addEventListener('click', (event) => {
+        const selectFromEvent = (event) => {
             const selectable = event.target.closest('[data-editor-selectable]');
             if (selectable) {
-                event.preventDefault();
-                selectInspector(selectable.dataset.editorSelectable);
+                selectInspector(selectable.dataset.editorSelectable, { element: selectable });
+                return true;
             }
-            else if (event.target.closest('.business-card')) selectInspector('card');
+            if (event.target.closest('.business-card')) {
+                selectInspector('card');
+                return true;
+            }
+            return false;
+        };
+
+        // Interact.js may consume the trailing click after a drag-ready pointer
+        // sequence. Select on pointerdown in the capture phase so the inspector
+        // always opens for elements on either face, while leaving the event
+        // untouched for dragging, links and native controls.
+        cardsWrapper.addEventListener('pointerdown', (event) => {
+            if (event.button !== 0) return;
+            selectFromEvent(event);
+        }, true);
+        cardsWrapper.addEventListener('click', (event) => {
+            if (selectFromEvent(event)) event.preventDefault();
         });
         cardsWrapper.addEventListener('keydown', (event) => {
             if (!['Enter', ' '].includes(event.key)) return;
