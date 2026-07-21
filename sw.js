@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v22';
+const CACHE_VERSION = 'v23';
 const STATIC_CACHE = `mcprime-static-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
@@ -14,6 +14,9 @@ const PRECACHE_ASSETS = [
   '/nfc/editor-hydration.js?v=1.0',
   '/nfc/editor-design-loader.js?v=2.0',
   '/nfc/editor-interact-fallback.js?v=1.0',
+  '/nfc/editor-qr-runtime.js?v=1.0',
+  '/nfc/vendor/qr-code-styling.js?v=1.5.0',
+  '/nfc/vendor/qrcode.min.js?v=1.0.0',
   '/nfc/script-main.js?v=2.2',
   '/nfc/editor-logo-fit.js',
   '/nfc/viewer-logo-fit.css',

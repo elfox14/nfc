@@ -67,6 +67,7 @@ describe.each(editorFiles)('%s foundation', (file) => {
         expect(document.querySelectorAll('script[src^="/nfc/editor-hydration.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src^="/nfc/editor-design-loader.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('script[src^="/nfc/editor-interact-fallback.js"]')).toHaveLength(1);
+        expect(document.querySelectorAll('script[src^="/nfc/editor-qr-runtime.js"]')).toHaveLength(1);
         expect(document.querySelectorAll('link[href^="editor-design-system.css"]')).toHaveLength(1);
         expect(document.querySelector('script[src="toolbar-tab-nav.js"]')).toBeNull();
         expect(document.querySelectorAll('style')).toHaveLength(0);
