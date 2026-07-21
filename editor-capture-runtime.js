@@ -157,8 +157,11 @@
 
   async function renderCanvas(element, scale, stripExternalAssets) {
     if (!element) throw new Error('Card face is unavailable.');
-    await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
-    const renderer = global.html2canvas || (typeof html2canvas === 'function' ? html2canvas : null);
+    let renderer = global.html2canvas || (typeof html2canvas === 'function' ? html2canvas : null);
+    if (!renderer) {
+      await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
+      renderer = global.html2canvas || (typeof html2canvas === 'function' ? html2canvas : null);
+    }
     if (!renderer) throw new Error('Card capture renderer is unavailable.');
 
     const restoreLayout = applyCaptureLayout(element);

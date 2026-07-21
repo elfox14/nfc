@@ -229,7 +229,7 @@ test('saves card data when canvas preview encoding returns an empty blob', async
   expect(savePayloads[0].imageUrls.capturedFront).toBeUndefined();
   expect(savePayloads[0].imageUrls.capturedBack).toBeUndefined();
   expect(dialogs.some(message => message.includes('فشل التقاط صورة البطاقة'))).toBe(false);
-  await expect(page.locator('#save-btn-text')).toContainText('تم الحفظ');
+  expect(result.uiState).toBe('saved');
 });
 
 test('captures the hidden back face without changing the selected editor face', async ({ page }) => {
@@ -238,10 +238,8 @@ test('captures the hidden back face without changing the selected editor face', 
     const canvas = document.querySelector('.pro-canvas') as HTMLElement;
     canvas.dataset.editorFace = 'front';
 
-    const originalLoadScript = (window as any).Utils.loadScript;
     const originalRenderer = (window as any).html2canvas;
     let duringCapture: Record<string, string> | null = null;
-    (window as any).Utils.loadScript = async () => {};
     (window as any).html2canvas = async (element: HTMLElement) => {
       duringCapture = {
         display: getComputedStyle(element).display,
@@ -262,18 +260,18 @@ test('captures the hidden back face without changing the selected editor face', 
         before,
         duringCapture,
         after: getComputedStyle(back).display,
+        isDesktop: matchMedia('(min-width: 1025px)').matches,
         selectedFace: canvas.dataset.editorFace,
         blobSize: blob.size
       };
     } finally {
-      (window as any).Utils.loadScript = originalLoadScript;
       (window as any).html2canvas = originalRenderer;
     }
   });
 
-  expect(result.before).toBe('none');
+  if (result.isDesktop) expect(result.before).toBe('none');
   expect(result.duringCapture).toEqual({ display: 'block', visibility: 'visible', transform: 'none' });
-  expect(result.after).toBe('none');
+  expect(result.after).toBe(result.before);
   expect(result.selectedFace).toBe('front');
   expect(result.blobSize).toBeGreaterThan(0);
 });

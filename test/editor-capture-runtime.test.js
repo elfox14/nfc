@@ -65,6 +65,7 @@ describe('editor capture runtime', () => {
       allowTaint: false
     });
     expect(html2canvas.mock.calls[1][1].scale).toBe(1.25);
+    expect(Utils.loadScript).not.toHaveBeenCalled();
     expect(UIManager.uploadImageToServer).toHaveBeenCalledTimes(1);
     expect(document.getElementById('cards-wrapper').style.transform).toBe('scale(.8)');
   });
@@ -94,6 +95,7 @@ describe('editor capture runtime', () => {
 
     expect(result).toBe('/uploads/card.png');
     expect(UIManager.uploadImageToServer).toHaveBeenCalledWith(expect.any(File), 'capturedBack');
+    expect(Utils.loadScript).not.toHaveBeenCalled();
     expect(back.style.getPropertyValue('display')).toBe(original.display);
     expect(back.style.getPropertyPriority('display')).toBe(original.displayPriority);
     expect(back.style.getPropertyValue('transform')).toBe(original.transform);
