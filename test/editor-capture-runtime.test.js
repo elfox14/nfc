@@ -15,6 +15,8 @@ describe('editor capture runtime', () => {
           <img id="remote-logo" src="https://images.example.com/logo.png">
           <div id="remote-background" style="background-image:url('https://images.example.com/bg.png')"></div>
         </section>
+        <section id="card-back-preview" class="card-face card-back"
+          style="display:none !important; transform:rotateY(180deg) !important"></section>
       </div>
     `;
     window.history.replaceState({}, '', '/nfc/editor.html');
@@ -65,6 +67,37 @@ describe('editor capture runtime', () => {
     expect(html2canvas.mock.calls[1][1].scale).toBe(1.25);
     expect(UIManager.uploadImageToServer).toHaveBeenCalledTimes(1);
     expect(document.getElementById('cards-wrapper').style.transform).toBe('scale(.8)');
+  });
+
+  test('captures a hidden back face on desktop and restores its exact inline state', async () => {
+    const back = document.getElementById('card-back-preview');
+    const original = {
+      display: back.style.getPropertyValue('display'),
+      displayPriority: back.style.getPropertyPriority('display'),
+      transform: back.style.getPropertyValue('transform'),
+      transformPriority: back.style.getPropertyPriority('transform')
+    };
+    const canvas = {
+      toBlob: jest.fn(callback => callback(new Blob(['back-face'], { type: 'image/png' })))
+    };
+    window.html2canvas = global.html2canvas = jest.fn(async element => {
+      expect(element).toBe(back);
+      expect(element.style.getPropertyValue('display')).toBe('block');
+      expect(element.style.getPropertyPriority('display')).toBe('important');
+      expect(element.style.getPropertyValue('visibility')).toBe('visible');
+      expect(element.style.getPropertyValue('transform')).toBe('none');
+      return canvas;
+    });
+
+    eval(source);
+    const result = await ShareManager.captureAndUploadCard(back, 'capturedBack');
+
+    expect(result).toBe('/uploads/card.png');
+    expect(UIManager.uploadImageToServer).toHaveBeenCalledWith(expect.any(File), 'capturedBack');
+    expect(back.style.getPropertyValue('display')).toBe(original.display);
+    expect(back.style.getPropertyPriority('display')).toBe(original.displayPriority);
+    expect(back.style.getPropertyValue('transform')).toBe(original.transform);
+    expect(back.style.getPropertyPriority('transform')).toBe(original.transformPriority);
   });
 
   test('removes only external assets from the final fallback clone', () => {
