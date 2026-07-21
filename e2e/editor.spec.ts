@@ -193,6 +193,45 @@ test('generates QR locally once and persists it with the card', async ({ page })
   await expect(page.locator('#qr-code-wrapper img[alt="QR Code"]')).toHaveAttribute('src', /^data:image\/png;base64,/);
 });
 
+test('saves card data when canvas preview encoding returns an empty blob', async ({ page }) => {
+  const savePayloads: any[] = [];
+  const dialogs: string[] = [];
+
+  page.on('request', request => {
+    if (request.url().includes('/api/save-design') && request.method() === 'POST') {
+      savePayloads.push(request.postDataJSON());
+    }
+  });
+  page.on('dialog', async dialog => {
+    dialogs.push(dialog.message());
+    await dialog.dismiss();
+  });
+
+  const result = await page.evaluate(async () => {
+    const originalToBlob = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function forceEmptyBlob(callback) {
+      callback(null);
+    };
+    try {
+      await (window as any).EditorUserStatus.saveToCloud(true);
+      return {
+        uiState: document.documentElement.dataset.editorUiState,
+        captureRuntime: Boolean((window as any).EditorCaptureRuntime)
+      };
+    } finally {
+      HTMLCanvasElement.prototype.toBlob = originalToBlob;
+    }
+  });
+
+  expect(result.captureRuntime).toBe(true);
+  expect(savePayloads).toHaveLength(1);
+  expect(savePayloads[0].sharedToGallery).toBe(false);
+  expect(savePayloads[0].imageUrls.capturedFront).toBeUndefined();
+  expect(savePayloads[0].imageUrls.capturedBack).toBeUndefined();
+  expect(dialogs.some(message => message.includes('فشل التقاط صورة البطاقة'))).toBe(false);
+  await expect(page.locator('#save-btn-text')).toContainText('تم الحفظ');
+});
+
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {
   await page.evaluate(() => (window as any).EditorWorkspace.select('name'));
   await expect(page.locator('.editor-transform-panel')).toBeVisible();
