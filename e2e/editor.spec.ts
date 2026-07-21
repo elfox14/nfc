@@ -215,7 +215,7 @@ test('saves card data when canvas preview encoding returns an empty blob', async
     try {
       await (window as any).EditorUserStatus.saveToCloud(true);
       return {
-        uiState: document.documentElement.dataset.editorUiState,
+        uiState: document.getElementById('autosave-indicator')?.dataset.uiState,
         captureRuntime: Boolean((window as any).EditorCaptureRuntime)
       };
     } finally {
