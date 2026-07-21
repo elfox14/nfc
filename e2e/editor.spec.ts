@@ -162,6 +162,37 @@ test('loads the exact saved card selected from the dashboard', async ({ page }) 
   expect(savedCardRequests).toBe(1);
 });
 
+test('generates QR locally once and persists it with the card', async ({ page }) => {
+  const savePayloads: any[] = [];
+  const externalQrRequests: string[] = [];
+
+  page.on('request', request => {
+    const url = request.url();
+    if (url.includes('/api/save-design') && request.method() === 'POST') {
+      savePayloads.push(request.postDataJSON());
+    }
+    if (/unpkg\.com|cdnjs\.cloudflare\.com\/ajax\/libs\/qrcodejs/i.test(url)) {
+      externalQrRequests.push(url);
+    }
+  });
+
+  const ids = await page.evaluate(async () => {
+    const runtime = (window as any).EditorQrRuntime;
+    return Promise.all([
+      runtime.generateCardLinkQr(),
+      runtime.generateCardLinkQr(),
+      runtime.generateCardLinkQr()
+    ]);
+  });
+
+  expect(ids).toEqual(['e2e-card', 'e2e-card', 'e2e-card']);
+  expect(savePayloads).toHaveLength(2);
+  expect(savePayloads[0].imageUrls.qrCode).toBeNull();
+  expect(savePayloads[1].imageUrls.qrCode).toMatch(/^data:image\/png;base64,/);
+  expect(externalQrRequests).toEqual([]);
+  await expect(page.locator('#qr-code-wrapper img[alt="QR Code"]')).toHaveAttribute('src', /^data:image\/png;base64,/);
+});
+
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {
   await page.evaluate(() => (window as any).EditorWorkspace.select('name'));
   await expect(page.locator('.editor-transform-panel')).toBeVisible();
