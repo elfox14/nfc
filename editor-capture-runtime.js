@@ -94,12 +94,15 @@
       if (!target) return;
       const previous = {};
       Object.entries(styles).forEach(([property, value]) => {
-        previous[property] = target.style.getPropertyValue(property);
+        previous[property] = {
+          value: target.style.getPropertyValue(property),
+          priority: target.style.getPropertyPriority(property)
+        };
         target.style.setProperty(property, value, 'important');
       });
       restore.push(() => {
-        Object.entries(previous).forEach(([property, value]) => {
-          if (value) target.style.setProperty(property, value);
+        Object.entries(previous).forEach(([property, prior]) => {
+          if (prior.value) target.style.setProperty(property, prior.value, prior.priority);
           else target.style.removeProperty(property);
         });
       });
@@ -111,6 +114,14 @@
     restore.push(() => noExportStyle.remove());
 
     remember(document.getElementById('cards-wrapper'), { transform: 'none' });
+    remember(element, {
+      display: 'block',
+      visibility: 'visible',
+      opacity: '1',
+      'backface-visibility': 'visible',
+      '-webkit-backface-visibility': 'visible',
+      transform: 'none'
+    });
 
     if (global.MobileUtils?.isMobile?.()) {
       const showBack = element.id === 'card-back-preview';
@@ -146,8 +157,11 @@
 
   async function renderCanvas(element, scale, stripExternalAssets) {
     if (!element) throw new Error('Card face is unavailable.');
-    await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
-    const renderer = global.html2canvas || (typeof html2canvas === 'function' ? html2canvas : null);
+    let renderer = global.html2canvas || (typeof html2canvas === 'function' ? html2canvas : null);
+    if (!renderer) {
+      await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
+      renderer = global.html2canvas || (typeof html2canvas === 'function' ? html2canvas : null);
+    }
     if (!renderer) throw new Error('Card capture renderer is unavailable.');
 
     const restoreLayout = applyCaptureLayout(element);
