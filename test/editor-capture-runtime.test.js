@@ -11,12 +11,16 @@ describe('editor capture runtime', () => {
     document.head.innerHTML = '';
     document.body.innerHTML = `
       <div id="cards-wrapper" style="transform: scale(.8)">
-        <section id="card-front-preview" class="card-face card-front">
-          <img id="remote-logo" src="https://images.example.com/logo.png">
-          <div id="remote-background" style="background-image:url('https://images.example.com/bg.png')"></div>
-        </section>
-        <section id="card-back-preview" class="card-face card-back"
-          style="display:none !important; transform:rotateY(180deg) !important"></section>
+        <div class="card-flipper-container" style="perspective: 1000px">
+          <div class="card-flipper" style="transform: rotateY(0deg); transform-style: preserve-3d">
+            <section id="card-front-preview" class="card-face card-front">
+              <img id="remote-logo" src="https://images.example.com/logo.png">
+              <div id="remote-background" style="background-image:url('https://images.example.com/bg.png')"></div>
+            </section>
+            <section id="card-back-preview" class="card-face card-back"
+              style="display:none !important; transform:rotateY(180deg) !important"></section>
+          </div>
+        </div>
       </div>
     `;
     window.history.replaceState({}, '', '/nfc/editor.html');
@@ -83,6 +87,8 @@ describe('editor capture runtime', () => {
     };
     window.html2canvas = global.html2canvas = jest.fn(async element => {
       expect(element).toBe(back);
+      expect(document.querySelector('.card-flipper').style.getPropertyValue('transform')).toBe('none');
+      expect(document.getElementById('card-front-preview').style.getPropertyValue('display')).toBe('none');
       expect(element.style.getPropertyValue('display')).toBe('block');
       expect(element.style.getPropertyPriority('display')).toBe('important');
       expect(element.style.getPropertyValue('visibility')).toBe('visible');
@@ -100,6 +106,8 @@ describe('editor capture runtime', () => {
     expect(back.style.getPropertyPriority('display')).toBe(original.displayPriority);
     expect(back.style.getPropertyValue('transform')).toBe(original.transform);
     expect(back.style.getPropertyPriority('transform')).toBe(original.transformPriority);
+    expect(document.querySelector('.card-flipper').style.transform).toBe('rotateY(0deg)');
+    expect(document.getElementById('card-front-preview').style.getPropertyValue('display')).toBe('');
   });
 
   test('removes only external assets from the final fallback clone', () => {

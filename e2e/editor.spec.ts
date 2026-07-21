@@ -207,7 +207,7 @@ test('saves card data when canvas preview encoding returns an empty blob', async
     await dialog.dismiss();
   });
 
-  const result = await page.evaluate(async () => {
+  const savePromise = page.evaluate(async () => {
     const originalToBlob = HTMLCanvasElement.prototype.toBlob;
     HTMLCanvasElement.prototype.toBlob = function forceEmptyBlob(callback) {
       callback(null);
@@ -222,10 +222,13 @@ test('saves card data when canvas preview encoding returns an empty blob', async
       HTMLCanvasElement.prototype.toBlob = originalToBlob;
     }
   });
+  await expect(page.getByText('هل تريد عرض تصميمك في صفحة المعرض؟')).toBeVisible({ timeout: 20_000 });
+  await page.getByRole('button', { name: 'نعم', exact: true }).click();
+  const result = await savePromise;
 
   expect(result.captureRuntime).toBe(true);
   expect(savePayloads).toHaveLength(1);
-  expect(savePayloads[0].sharedToGallery).toBe(false);
+  expect(savePayloads[0].sharedToGallery).toBe(true);
   expect(savePayloads[0].imageUrls.capturedFront).toBeUndefined();
   expect(savePayloads[0].imageUrls.capturedBack).toBeUndefined();
   expect(dialogs.some(message => message.includes('فشل التقاط صورة البطاقة'))).toBe(false);
@@ -244,7 +247,9 @@ test('captures the hidden back face without changing the selected editor face', 
       duringCapture = {
         display: getComputedStyle(element).display,
         visibility: getComputedStyle(element).visibility,
-        transform: element.style.getPropertyValue('transform')
+        transform: element.style.getPropertyValue('transform'),
+        flipperTransform: (document.querySelector('.card-flipper') as HTMLElement).style.getPropertyValue('transform'),
+        frontDisplay: getComputedStyle(document.getElementById('card-front-preview') as HTMLElement).display
       };
       return {
         toBlob(callback: BlobCallback) {
@@ -270,7 +275,13 @@ test('captures the hidden back face without changing the selected editor face', 
   });
 
   if (result.isDesktop) expect(result.before).toBe('none');
-  expect(result.duringCapture).toEqual({ display: 'block', visibility: 'visible', transform: 'none' });
+  expect(result.duringCapture).toEqual({
+    display: 'block',
+    visibility: 'visible',
+    transform: 'none',
+    flipperTransform: 'none',
+    frontDisplay: 'none'
+  });
   expect(result.after).toBe(result.before);
   expect(result.selectedFace).toBe('front');
   expect(result.blobSize).toBeGreaterThan(0);

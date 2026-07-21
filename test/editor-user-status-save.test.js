@@ -61,10 +61,10 @@ describe('editor cloud save resilience', () => {
     expect(ShareManager.captureAndUploadCard).toHaveBeenCalledTimes(2);
     expect(ShareManager.saveDesign).toHaveBeenCalledTimes(1);
     expect(ShareManager.saveDesign.mock.calls[0][0]).toMatchObject({
-      sharedToGallery: false,
+      sharedToGallery: true,
       imageUrls: {}
     });
-    expect(customConfirm).not.toHaveBeenCalled();
+    expect(customConfirm).toHaveBeenCalledWith('هل تريد عرض تصميمك في صفحة المعرض؟');
     expect(alert).not.toHaveBeenCalled();
     expect(window.EditorUIState.set).toHaveBeenCalledWith('saved');
     expect(UIManager.announce).toHaveBeenCalledWith(

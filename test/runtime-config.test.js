@@ -96,7 +96,7 @@ describe('Runtime API configuration', () => {
     const reviewWorkflow = editor.appendedNodes.find((node) => node.dataset.editorReviewWorkflow === 'true');
     const guard = editor.appendedNodes.find((node) => node.dataset.editorProductionGuard === 'true');
 
-    expect(editor.release).toBe('2026.07.22-phase20');
+    expect(editor.release).toBe('2026.07.22-phase21');
     expect(editor.appendedNodes).toHaveLength(16);
     expect(toolbarStyles.href).toBe('/nfc/editor-toolbar-release.css?v=7.2');
     expect(assetStyles.href).toBe('/nfc/editor-asset-manager.css?v=8.1');

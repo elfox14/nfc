@@ -34,13 +34,14 @@ describe('editor toolbar production release patch', () => {
   test('ships editor managers, Brand Kit and team review through a fresh cache', () => {
     const sw = read('sw.js');
     const runtime = read('runtime-config.js');
-    expect(sw).toContain("const CACHE_VERSION = 'v25'");
+    expect(sw).toContain("const CACHE_VERSION = 'v26'");
     expect(sw).toContain("'/nfc/editor-default-card.js?v=2.0'");
     expect(sw).toContain("'/nfc/editor-hydration.js?v=1.0'");
     expect(sw).toContain("'/nfc/editor-design-loader.js?v=2.0'");
     expect(sw).toContain("'/nfc/editor-interact-fallback.js?v=1.0'");
     expect(sw).toContain("'/nfc/editor-qr-runtime.js?v=1.0'");
-    expect(sw).toContain("'/nfc/editor-capture-runtime.js?v=1.1'");
+    expect(sw).toContain("'/nfc/editor-capture-runtime.js?v=1.2'");
+    expect(sw).toContain("'/nfc/editor-user-status.js?v=1.1'");
     expect(sw).toContain("'/nfc/vendor/qr-code-styling.js?v=1.5.0'");
     expect(sw).toContain("'/nfc/vendor/qrcode.min.js?v=1.0.0'");
     expect(sw).toContain("'/nfc/editor-logo-fit.js'");
