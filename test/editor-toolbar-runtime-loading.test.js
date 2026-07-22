@@ -24,7 +24,7 @@ describe('private workspace runtime asset delivery', () => {
     expect(document.querySelector('script[data-editor-brand-kit]').getAttribute('src')).toBe('/nfc/editor-brand-kit.js?v=10.0');
     expect(document.querySelector('script[data-editor-review-workflow]').getAttribute('src')).toBe('/nfc/editor-review-workflow.js?v=11.0');
     expect(document.querySelector('script[data-editor-asset-manager]')).not.toBeNull();
-    expect(window.__MC_PRIME_RELEASE).toBe('2026.07.22-phase21');
+    expect(window.__MC_PRIME_RELEASE).toBe('2026.07.22-phase22');
   });
 
   test('loads dashboard Brand Kit and team workspace without editor managers', () => {
@@ -49,16 +49,17 @@ describe('private workspace runtime asset delivery', () => {
     expect(document.querySelector('script[data-dashboard-workspaces]')).toBeNull();
   });
 
-  test('service worker v26 precaches hydration, saved loading, reliable two-face capture, local QR, drag fallback, default card, logo fitting, observability, Brand Kit, workspace and editor assets', () => {
+  test('service worker v27 precaches synchronized two-face saves, direct selection, local QR, drag fallback and editor assets', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
-    expect(source).toContain("const CACHE_VERSION = 'v26'");
+    expect(source).toContain("const CACHE_VERSION = 'v27'");
     expect(source).toContain("'/nfc/editor-default-card.js?v=2.0'");
     expect(source).toContain("'/nfc/editor-hydration.js?v=1.0'");
     expect(source).toContain("'/nfc/editor-design-loader.js?v=2.0'");
     expect(source).toContain("'/nfc/editor-interact-fallback.js?v=1.0'");
-    expect(source).toContain("'/nfc/editor-qr-runtime.js?v=1.0'");
-    expect(source).toContain("'/nfc/editor-capture-runtime.js?v=1.2'");
-    expect(source).toContain("'/nfc/editor-user-status.js?v=1.1'");
+    expect(source).toContain("'/nfc/editor-qr-runtime.js?v=1.1'");
+    expect(source).toContain("'/nfc/editor-capture-runtime.js?v=1.3'");
+    expect(source).toContain("'/nfc/editor-user-status.js?v=1.2'");
+    expect(source).toContain("'/nfc/editor-workspace.js?v=1.1'");
     expect(source).toContain("'/nfc/vendor/qr-code-styling.js?v=1.5.0'");
     expect(source).toContain("'/nfc/vendor/qrcode.min.js?v=1.0.0'");
     expect(source).toContain("'/nfc/editor-logo-fit.js'");

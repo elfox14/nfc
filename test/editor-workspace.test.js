@@ -31,10 +31,9 @@ function editorMarkup() {
                                 <h1 id="card-name"></h1>
                                 <h2 id="card-tagline"></h2>
                                 <div id="phone-buttons-wrapper"></div>
-                                <div id="qr-code-wrapper"></div>
                             </div>
                             <div id="card-back-preview" class="business-card card-back">
-                                <div id="card-back-content"></div>
+                                <div id="card-back-content"><div id="qr-code-wrapper"></div></div>
                             </div>
                         </div>
                     </div>
@@ -44,6 +43,7 @@ function editorMarkup() {
             <aside id="panel-share" class="pro-sidebar"></aside>
         </div>
         <nav class="mobile-bottom-nav">
+            <button id="flip-card-btn-mobile" type="button"></button>
             <button class="mobile-nav-item" data-target="panel-elements"></button>
             <button class="mobile-nav-item active" data-target="panel-design"></button>
             <button class="mobile-nav-item" data-target="panel-share"></button>
@@ -113,6 +113,46 @@ describe('professional editor workspace', () => {
         expect(document.getElementById('logo-accordion').open).toBe(true);
     });
 
+    test('opens properties from a real pointer press on either card face', () => {
+        const name = document.getElementById('card-name');
+        name.dispatchEvent(new MouseEvent('pointerdown', { button: 0, bubbles: true }));
+
+        expect(window.EditorWorkspace.getState().selectedItem).toBe('name');
+        expect(document.getElementById('name-accordion').open).toBe(true);
+        expect(name.classList.contains('editor-element-selected')).toBe(true);
+
+        window.EditorWorkspace.setFace('back');
+        const qr = document.getElementById('qr-code-wrapper');
+        qr.dispatchEvent(new MouseEvent('pointerdown', { button: 0, bubbles: true }));
+
+        expect(window.EditorWorkspace.getState().selectedItem).toBe('qr');
+        expect(document.getElementById('qr-code-accordion').open).toBe(true);
+        expect(qr.classList.contains('editor-element-selected')).toBe(true);
+    });
+
+    test('selects a nested element when a transformed face reports its parent as the pointer target', () => {
+        window.EditorWorkspace.setFace('back');
+        const backContent = document.getElementById('card-back-content');
+        const qr = document.getElementById('qr-code-wrapper');
+        backContent.getBoundingClientRect = () => ({
+            left: 0, top: 0, right: 300, bottom: 200, width: 300, height: 200
+        });
+        qr.getBoundingClientRect = () => ({
+            left: 100, top: 70, right: 160, bottom: 130, width: 60, height: 60
+        });
+
+        backContent.dispatchEvent(new MouseEvent('pointerdown', {
+            button: 0,
+            bubbles: true,
+            clientX: 120,
+            clientY: 90
+        }));
+
+        expect(window.EditorWorkspace.getState().selectedItem).toBe('qr');
+        expect(document.getElementById('qr-code-accordion').open).toBe(true);
+        expect(qr.classList.contains('editor-element-selected')).toBe(true);
+    });
+
     test('controls card face, zoom and grid through one workspace state', () => {
         window.EditorWorkspace.setFace('back');
         window.EditorWorkspace.setZoom(1.25);
@@ -124,6 +164,18 @@ describe('professional editor workspace', () => {
         expect(canvas.style.getPropertyValue('--editor-canvas-scale')).toBe('1.25');
         expect(document.querySelector('[data-editor-face="back"]').getAttribute('aria-selected')).toBe('true');
         expect(document.querySelector('[data-canvas-action="grid"]').getAttribute('aria-pressed')).toBe('true');
+    });
+
+    test('keeps the mobile card flip synchronized with the active workspace face', () => {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+
+        document.getElementById('flip-card-btn-mobile').click();
+        expect(window.EditorWorkspace.getState().face).toBe('back');
+        expect(document.querySelector('.pro-canvas').dataset.editorFace).toBe('back');
+
+        document.getElementById('flip-card-btn-mobile').click();
+        expect(window.EditorWorkspace.getState().face).toBe('front');
+        expect(document.querySelector('.pro-canvas').dataset.editorFace).toBe('front');
     });
 
     test('opens the contextual inspector as a mobile bottom sheet', () => {

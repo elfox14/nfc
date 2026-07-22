@@ -466,11 +466,25 @@
         });
     }
 
-    function markCanvasSelection(item) {
+    function elementBelongsToActiveFace(element) {
+        if (!element) return false;
+        const card = element.closest('.business-card');
+        return !card || card.id === `card-${state.face}-preview`;
+    }
+
+    function markCanvasSelection(item, preferredElement) {
         clearCanvasSelection();
         if (!item) return;
+        if (preferredElement && elementBelongsToActiveFace(preferredElement)) {
+            preferredElement.classList.add('editor-element-selected');
+            preferredElement.setAttribute('aria-current', 'true');
+            return;
+        }
         for (const selector of item.selectors) {
-            const element = document.querySelector(selector);
+            const candidates = Array.from(document.querySelectorAll(selector));
+            const element = candidates.find((candidate) => elementBelongsToActiveFace(candidate) && !candidate.hidden)
+                || candidates.find((candidate) => !candidate.hidden)
+                || candidates[0];
             if (!element) continue;
             element.classList.add('editor-element-selected');
             element.setAttribute('aria-current', 'true');
@@ -490,7 +504,7 @@
         });
         if (cardInspector) cardInspector.hidden = Boolean(item);
 
-        markCanvasSelection(item);
+        markCanvasSelection(item, settings.element);
         updateSelectionUI();
 
         if (settings.activatePanel) activateMobilePanel('panel-elements');
@@ -523,13 +537,51 @@
         annotateCanvasElements();
 
         if (!cardsWrapper) return;
-        cardsWrapper.addEventListener('click', (event) => {
-            const selectable = event.target.closest('[data-editor-selectable]');
+        const selectableAtPoint = (event) => {
+            if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return null;
+
+            return Array.from(cardsWrapper.querySelectorAll('[data-editor-selectable]'))
+                .filter((element) => {
+                    if (!elementBelongsToActiveFace(element) || element.hidden) return false;
+                    const rect = element.getBoundingClientRect();
+                    return rect.width > 0 && rect.height > 0
+                        && event.clientX >= rect.left && event.clientX <= rect.right
+                        && event.clientY >= rect.top && event.clientY <= rect.bottom;
+                })
+                .sort((first, second) => {
+                    const firstRect = first.getBoundingClientRect();
+                    const secondRect = second.getBoundingClientRect();
+                    return (firstRect.width * firstRect.height) - (secondRect.width * secondRect.height);
+                })[0] || null;
+        };
+        const selectFromEvent = (event) => {
+            // 3D card transforms can make Chromium/WebKit report the face or its
+            // full-size content layer as the event target. Resolve the smallest
+            // selectable rectangle beneath the pointer so the visible child
+            // (for example QR) still wins over its parent container.
+            const selectable = selectableAtPoint(event)
+                || event.target.closest('[data-editor-selectable]');
             if (selectable) {
-                event.preventDefault();
-                selectInspector(selectable.dataset.editorSelectable);
+                selectInspector(selectable.dataset.editorSelectable, { element: selectable });
+                return true;
             }
-            else if (event.target.closest('.business-card')) selectInspector('card');
+            if (event.target.closest('.business-card')) {
+                selectInspector('card');
+                return true;
+            }
+            return false;
+        };
+
+        // Interact.js may consume the trailing click after a drag-ready pointer
+        // sequence. Select on pointerdown in the capture phase so the inspector
+        // always opens for elements on either face, while leaving the event
+        // untouched for dragging, links and native controls.
+        cardsWrapper.addEventListener('pointerdown', (event) => {
+            if (event.button !== 0) return;
+            selectFromEvent(event);
+        }, true);
+        cardsWrapper.addEventListener('click', (event) => {
+            if (selectFromEvent(event)) event.preventDefault();
         });
         cardsWrapper.addEventListener('keydown', (event) => {
             if (!['Enter', ' '].includes(event.key)) return;
@@ -605,6 +657,17 @@
             if (action === 'fit') setZoom(1);
             if (action === 'grid') toggleGrid();
         });
+
+        // MobileUtils owns the visual 3D flip. Keep the workspace face state in
+        // sync during the same interaction so element selection and properties
+        // are resolved against the face the user can actually see.
+        const mobileFlipButton = document.getElementById('flip-card-btn-mobile');
+        if (mobileFlipButton && mobileFlipButton.dataset.editorFaceSync !== 'ready') {
+            mobileFlipButton.dataset.editorFaceSync = 'ready';
+            mobileFlipButton.addEventListener('click', () => {
+                setFace(state.face === 'front' ? 'back' : 'front');
+            }, true);
+        }
 
         setFace('front');
         setZoom(1);

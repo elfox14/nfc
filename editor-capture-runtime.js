@@ -39,6 +39,15 @@
     });
   }
 
+  function waitForFrames(count = 2) {
+    const nextFrame = global.requestAnimationFrame || (callback => global.setTimeout(callback, 0));
+    let pending = Promise.resolve();
+    for (let index = 0; index < count; index += 1) {
+      pending = pending.then(() => new Promise(resolve => nextFrame(resolve)));
+    }
+    return pending;
+  }
+
   async function waitForAssets(element) {
     const tasks = [];
     if (document.fonts?.ready) tasks.push(Promise.resolve(document.fonts.ready));
@@ -154,6 +163,35 @@
     };
   }
 
+  async function prepareSaveState() {
+    if (global.EditorQrRuntime?.whenIdle) {
+      await withTimeout(
+        global.EditorQrRuntime.whenIdle(),
+        CAPTURE_TIMEOUT_MS,
+        'QR generation did not settle before saving.'
+      );
+    }
+
+    const state = typeof StateManager !== 'undefined' && StateManager.getStateObject
+      ? StateManager.getStateObject()
+      : null;
+
+    if (state && typeof CardManager !== 'undefined' && CardManager.renderCardContent) {
+      CardManager.renderCardContent(state);
+    }
+    global.EditorLayers?.apply?.();
+    global.EditorWorkspace?.refreshCanvasElements?.();
+    global.EditorProperties?.sync?.();
+    await waitForFrames();
+
+    const faces = [
+      document.getElementById('card-front-preview'),
+      document.getElementById('card-back-preview')
+    ].filter(Boolean);
+    await Promise.all(faces.map(waitForAssets));
+    return state;
+  }
+
   async function renderCanvas(element, scale, stripExternalAssets) {
     if (!element) throw new Error('Card face is unavailable.');
     let renderer = global.html2canvas || (typeof html2canvas === 'function' ? html2canvas : null);
@@ -165,8 +203,7 @@
 
     const restoreLayout = applyCaptureLayout(element);
     try {
-      const nextFrame = global.requestAnimationFrame || (callback => global.setTimeout(callback, 0));
-      await new Promise(resolve => nextFrame(() => nextFrame(resolve)));
+      await waitForFrames();
       return await withTimeout(
         renderer(element, {
           backgroundColor: null,
@@ -260,6 +297,7 @@
     captureAndUploadCard,
     captureBlob,
     canvasToBlob,
-    sanitizeExternalAssets
+    sanitizeExternalAssets,
+    prepareSaveState
   });
 })(window);

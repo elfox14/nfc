@@ -288,13 +288,27 @@ test('captures the hidden back face without changing the selected editor face', 
 });
 
 test('selects a layer and exposes contextual transform controls', async ({ page }) => {
-  await page.evaluate(() => (window as any).EditorWorkspace.select('name'));
+  await page.locator('#card-name').click({ force: true });
   await expect(page.locator('.editor-transform-panel')).toBeVisible();
+  await expect(page.locator('#name-accordion')).toBeVisible();
   await page.locator('[data-transform-appearance="scale"]').evaluate((element: HTMLInputElement) => {
     element.value = '125';
     element.dispatchEvent(new Event('input', { bubbles: true }));
   });
   await expect(page.locator('#card-name')).toHaveAttribute('data-editor-scale', '1.25');
+
+  const desktopBackFace = page.locator('[data-editor-face="back"]');
+  if (await desktopBackFace.isVisible()) {
+    await desktopBackFace.click();
+  } else {
+    await page.locator('#flip-card-btn-mobile').click();
+  }
+  await expect(page.locator('#card-back-preview')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (window as any).EditorWorkspace.getState().face)).toBe('back');
+  await page.locator('#qr-code-wrapper').click({ force: true });
+  await expect(page.locator('#qr-code-accordion')).toBeVisible();
+  await expect(page.locator('.editor-transform-panel')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (window as any).EditorWorkspace.getState().selectedItem)).toBe('qr');
 });
 
 test('opens professional preview and restores both card faces', async ({ page }) => {

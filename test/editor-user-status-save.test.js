@@ -37,6 +37,9 @@ describe('editor cloud save resilience', () => {
       shareText: 'اطلع على بطاقتي الرقمية:'
     };
     global.customConfirm = window.customConfirm = jest.fn(async () => true);
+    window.EditorCaptureRuntime = {
+      prepareSaveState: jest.fn(async () => ({ inputs: { revision: 'fresh' }, imageUrls: {} }))
+    };
     window.EditorUIState = { set: jest.fn() };
     global.alert = window.alert = jest.fn();
 
@@ -47,7 +50,8 @@ describe('editor cloud save resilience', () => {
     localStorage.clear();
     [
       'Auth', 'DOMElements', 'StateManager', 'ShareManager', 'UIManager',
-      'MobileUtils', 'i18nMain', 'customConfirm', 'alert', 'EditorUserStatus'
+      'MobileUtils', 'i18nMain', 'customConfirm', 'alert', 'EditorUserStatus',
+      'EditorCaptureRuntime'
     ].forEach(key => {
       delete global[key];
       delete window[key];
@@ -59,9 +63,11 @@ describe('editor cloud save resilience', () => {
     await window.EditorUserStatus.saveToCloud(true);
 
     expect(ShareManager.captureAndUploadCard).toHaveBeenCalledTimes(2);
+    expect(window.EditorCaptureRuntime.prepareSaveState).toHaveBeenCalledTimes(1);
     expect(ShareManager.saveDesign).toHaveBeenCalledTimes(1);
     expect(ShareManager.saveDesign.mock.calls[0][0]).toMatchObject({
       sharedToGallery: true,
+      inputs: { revision: 'fresh' },
       imageUrls: {}
     });
     expect(customConfirm).toHaveBeenCalledWith('هل تريد عرض تصميمك في صفحة المعرض؟');

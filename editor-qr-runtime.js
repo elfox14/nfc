@@ -202,6 +202,7 @@
     STYLING_LIBRARY_URL,
     BASIC_LIBRARY_URL,
     generateCardLinkQr,
-    renderQrDataUrl
+    renderQrDataUrl,
+    whenIdle: () => activeCardGeneration || Promise.resolve()
   });
 })(window);
