@@ -6,13 +6,18 @@
 
 describe('Editor publish gate', () => {
     let trigger;
+    let downloadTrigger;
 
     beforeAll(() => {
         jest.resetModules();
         delete window.EditorPublishGate;
         document.documentElement.lang = 'ar';
-        document.body.innerHTML = '<button id="export-png-btn">تصدير PNG</button>';
-        trigger = document.getElementById('export-png-btn');
+        document.body.innerHTML = `
+            <button id="save-share-btn">حفظ ومشاركة</button>
+            <button id="download-png-front">تنزيل PNG</button>
+        `;
+        trigger = document.getElementById('save-share-btn');
+        downloadTrigger = document.getElementById('download-png-front');
         window.EditorSmartValidation = { run: jest.fn(() => []) };
         require('../editor-publish-gate');
         document.dispatchEvent(new Event('DOMContentLoaded'));
@@ -29,8 +34,17 @@ describe('Editor publish gate', () => {
         }
     });
 
-    test('recognizes export and share triggers', () => {
+    test('recognizes share triggers but leaves local downloads direct', () => {
         expect(window.EditorPublishGate.isPublishTrigger(trigger)).not.toBeNull();
+        expect(window.EditorPublishGate.isPublishTrigger(downloadTrigger)).toBeNull();
+    });
+
+    test('does not open the publish review for local downloads', () => {
+        const handler = jest.fn();
+        downloadTrigger.addEventListener('click', handler, { once: true });
+        downloadTrigger.click();
+        expect(handler).toHaveBeenCalledTimes(1);
+        expect(document.getElementById('editor-publish-gate')).toBeNull();
     });
 
     test('blocks publishing when critical errors exist', () => {

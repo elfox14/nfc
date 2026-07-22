@@ -28,6 +28,18 @@ describe.each(['editor.html', 'editor-en.html'])('%s more menu', (file) => {
         expect(html).not.toContain("moreMenu.classList.toggle('show')");
     });
 
+    test('keeps save and download commands available in the three-dots menu', () => {
+        const html = read(file);
+        [
+            'save-share-btn-menu',
+            'download-png-front-menu',
+            'download-png-back-menu',
+            'download-pdf-menu',
+            'download-vcf-menu',
+            'download-qrcode-menu'
+        ].forEach((id) => expect(html).toContain(`id="${id}"`));
+    });
+
 });
 
 test('more menu opens only from the trigger and closes from outside or Escape', () => {
