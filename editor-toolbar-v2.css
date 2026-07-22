@@ -116,11 +116,14 @@
     #cards-wrapper .card-flipper-container { zoom: var(--editor-toolbar-zoom, 1); }
 }
 
-/* Low-frequency commands live in the three-dots menu. */
-.pro-toolbar .tb-nav-icons,
+/*
+ * Preserve the complete desktop command surface. Controls only move into the
+ * three-dots menu when the viewport cannot fit them without crowding.
+ */
+.pro-toolbar .tb-nav-icons { display: flex !important; }
 .pro-toolbar #theme-toggle-btn,
-.pro-toolbar #tools-dropdown-wrap,
-.pro-toolbar #lang-toggle-btn { display: none !important; }
+.pro-toolbar #lang-toggle-btn { display: inline-flex !important; }
+.pro-toolbar #tools-dropdown-wrap { display: block !important; }
 .pro-toolbar .tb-mobile-more { display: inline-flex !important; }
 
 #toolbar-more-menu-floating {
@@ -150,6 +153,20 @@
         box-shadow: 0 22px 60px rgba(0, 0, 0, 0.42) !important;
     }
     [dir="ltr"] #toolbar-more-menu-floating { right: 16px !important; left: auto !important; }
+}
+
+/* Progressive disclosure: hide navigation first, then secondary utilities. */
+@media (max-width: 1760px) {
+    .pro-toolbar .tb-nav-icons { display: none !important; }
+}
+
+@media (max-width: 1600px) {
+    .pro-toolbar #theme-toggle-btn { display: none !important; }
+}
+
+@media (max-width: 1460px) {
+    .pro-toolbar #tools-dropdown-wrap,
+    .pro-toolbar #lang-toggle-btn { display: none !important; }
 }
 
 @media (max-width: 1500px) {
@@ -190,7 +207,6 @@
     .tb-design-identity,
     .tb-zoom-controls,
     .pro-toolbar #preview-mode-btn,
-    .pro-toolbar .autosave-indicator,
     .pro-toolbar .download-container,
     .pro-toolbar #save-share-btn,
     .pro-toolbar .user-status-bar,
@@ -212,6 +228,17 @@
     }
     .pro-toolbar .tb-mobile-quick-actions { display: inline-flex !important; margin: 0 !important; }
     .pro-toolbar #mobile-save-btn span { display: none !important; }
+    .pro-toolbar .autosave-indicator {
+        display: inline-flex !important;
+        width: 30px !important;
+        min-width: 30px !important;
+        height: 30px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        justify-content: center !important;
+        border-radius: 9px !important;
+    }
+    .pro-toolbar .autosave-indicator span { display: none !important; }
     #toolbar-more-menu-floating {
         top: auto !important;
         right: 10px !important;
