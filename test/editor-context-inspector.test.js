@@ -37,8 +37,11 @@ describe('Context inspector', () => {
     });
 
     test('creates a contextual inspector in the editor layout', () => {
-        expect(document.getElementById('editor-context-inspector')).not.toBeNull();
-        expect(document.querySelector('.pro-layout').contains(document.getElementById('editor-context-inspector'))).toBe(true);
+        const inspector = document.getElementById('editor-context-inspector');
+        expect(inspector).not.toBeNull();
+        expect(document.querySelector('.pro-layout').contains(inspector)).toBe(true);
+        expect(inspector.hidden).toBe(true);
+        expect(inspector.getAttribute('aria-hidden')).toBe('true');
     });
 
     test('selects a card element and identifies its type', () => {

@@ -1232,3 +1232,15 @@ body.preview-mode-active .pro-toolbar { display: none !important; }
     background: rgba(255,255,255,0.1);
     border-color: var(--accent-primary);
 }
+
+/* The detached mobile menu must never participate in document layout while closed. */
+#toolbar-more-menu-floating[hidden] {
+    display: none !important;
+}
+
+#toolbar-more-menu-floating.open {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
