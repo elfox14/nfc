@@ -537,8 +537,30 @@
         annotateCanvasElements();
 
         if (!cardsWrapper) return;
+        const selectableAtPoint = (event) => {
+            if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return null;
+
+            return Array.from(cardsWrapper.querySelectorAll('[data-editor-selectable]'))
+                .filter((element) => {
+                    if (!elementBelongsToActiveFace(element) || element.hidden) return false;
+                    const rect = element.getBoundingClientRect();
+                    return rect.width > 0 && rect.height > 0
+                        && event.clientX >= rect.left && event.clientX <= rect.right
+                        && event.clientY >= rect.top && event.clientY <= rect.bottom;
+                })
+                .sort((first, second) => {
+                    const firstRect = first.getBoundingClientRect();
+                    const secondRect = second.getBoundingClientRect();
+                    return (firstRect.width * firstRect.height) - (secondRect.width * secondRect.height);
+                })[0] || null;
+        };
         const selectFromEvent = (event) => {
-            const selectable = event.target.closest('[data-editor-selectable]');
+            // 3D card transforms can make Chromium/WebKit report the face or its
+            // full-size content layer as the event target. Resolve the smallest
+            // selectable rectangle beneath the pointer so the visible child
+            // (for example QR) still wins over its parent container.
+            const selectable = selectableAtPoint(event)
+                || event.target.closest('[data-editor-selectable]');
             if (selectable) {
                 selectInspector(selectable.dataset.editorSelectable, { element: selectable });
                 return true;

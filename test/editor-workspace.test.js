@@ -130,6 +130,29 @@ describe('professional editor workspace', () => {
         expect(qr.classList.contains('editor-element-selected')).toBe(true);
     });
 
+    test('selects a nested element when a transformed face reports its parent as the pointer target', () => {
+        window.EditorWorkspace.setFace('back');
+        const backContent = document.getElementById('card-back-content');
+        const qr = document.getElementById('qr-code-wrapper');
+        backContent.getBoundingClientRect = () => ({
+            left: 0, top: 0, right: 300, bottom: 200, width: 300, height: 200
+        });
+        qr.getBoundingClientRect = () => ({
+            left: 100, top: 70, right: 160, bottom: 130, width: 60, height: 60
+        });
+
+        backContent.dispatchEvent(new MouseEvent('pointerdown', {
+            button: 0,
+            bubbles: true,
+            clientX: 120,
+            clientY: 90
+        }));
+
+        expect(window.EditorWorkspace.getState().selectedItem).toBe('qr');
+        expect(document.getElementById('qr-code-accordion').open).toBe(true);
+        expect(qr.classList.contains('editor-element-selected')).toBe(true);
+    });
+
     test('controls card face, zoom and grid through one workspace state', () => {
         window.EditorWorkspace.setFace('back');
         window.EditorWorkspace.setZoom(1.25);

@@ -305,7 +305,7 @@ test('selects a layer and exposes contextual transform controls', async ({ page 
   }
   await expect(page.locator('#card-back-preview')).toBeVisible();
   await expect.poll(() => page.evaluate(() => (window as any).EditorWorkspace.getState().face)).toBe('back');
-  await page.locator('#qr-code-wrapper').click();
+  await page.locator('#qr-code-wrapper').click({ force: true });
   await expect(page.locator('#qr-code-accordion')).toBeVisible();
   await expect(page.locator('.editor-transform-panel')).toBeVisible();
   await expect.poll(() => page.evaluate(() => (window as any).EditorWorkspace.getState().selectedItem)).toBe('qr');
