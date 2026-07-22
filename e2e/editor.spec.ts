@@ -297,8 +297,14 @@ test('selects a layer and exposes contextual transform controls', async ({ page 
   });
   await expect(page.locator('#card-name')).toHaveAttribute('data-editor-scale', '1.25');
 
-  await page.locator('[data-editor-face="back"]').click({ force: true });
+  const desktopBackFace = page.locator('[data-editor-face="back"]');
+  if (await desktopBackFace.isVisible()) {
+    await desktopBackFace.click();
+  } else {
+    await page.locator('#flip-card-btn-mobile').click();
+  }
   await expect(page.locator('#card-back-preview')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (window as any).EditorWorkspace.getState().face)).toBe('back');
   await page.locator('#qr-code-wrapper').click({ force: true });
   await expect(page.locator('#qr-code-accordion')).toBeVisible();
   await expect(page.locator('.editor-transform-panel')).toBeVisible();

@@ -636,6 +636,17 @@
             if (action === 'grid') toggleGrid();
         });
 
+        // MobileUtils owns the visual 3D flip. Keep the workspace face state in
+        // sync during the same interaction so element selection and properties
+        // are resolved against the face the user can actually see.
+        const mobileFlipButton = document.getElementById('flip-card-btn-mobile');
+        if (mobileFlipButton && mobileFlipButton.dataset.editorFaceSync !== 'ready') {
+            mobileFlipButton.dataset.editorFaceSync = 'ready';
+            mobileFlipButton.addEventListener('click', () => {
+                setFace(state.face === 'front' ? 'back' : 'front');
+            }, true);
+        }
+
         setFace('front');
         setZoom(1);
     }

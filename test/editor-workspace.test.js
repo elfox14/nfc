@@ -43,6 +43,7 @@ function editorMarkup() {
             <aside id="panel-share" class="pro-sidebar"></aside>
         </div>
         <nav class="mobile-bottom-nav">
+            <button id="flip-card-btn-mobile" type="button"></button>
             <button class="mobile-nav-item" data-target="panel-elements"></button>
             <button class="mobile-nav-item active" data-target="panel-design"></button>
             <button class="mobile-nav-item" data-target="panel-share"></button>
@@ -140,6 +141,18 @@ describe('professional editor workspace', () => {
         expect(canvas.style.getPropertyValue('--editor-canvas-scale')).toBe('1.25');
         expect(document.querySelector('[data-editor-face="back"]').getAttribute('aria-selected')).toBe('true');
         expect(document.querySelector('[data-canvas-action="grid"]').getAttribute('aria-pressed')).toBe('true');
+    });
+
+    test('keeps the mobile card flip synchronized with the active workspace face', () => {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+
+        document.getElementById('flip-card-btn-mobile').click();
+        expect(window.EditorWorkspace.getState().face).toBe('back');
+        expect(document.querySelector('.pro-canvas').dataset.editorFace).toBe('back');
+
+        document.getElementById('flip-card-btn-mobile').click();
+        expect(window.EditorWorkspace.getState().face).toBe('front');
+        expect(document.querySelector('.pro-canvas').dataset.editorFace).toBe('front');
     });
 
     test('opens the contextual inspector as a mobile bottom sheet', () => {
