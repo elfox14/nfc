@@ -25,6 +25,8 @@ describe.each(['editor.html', 'editor-en.html'])('%s more menu', (file) => {
         expect(html).toContain('aria-controls="toolbar-more-menu-floating"');
         expect(html).toContain('toolbar-enhancements.css?v=4.3');
         expect(html).toContain('editor-panels.js?v=1.1');
+        expect(html).toContain('editor-toolbar-v2.css?v=1.0');
+        expect(html).toContain('editor-toolbar-v2.js?v=1.0');
         expect(html).not.toContain("moreMenu.classList.toggle('show')");
     });
 
@@ -38,6 +40,23 @@ describe.each(['editor.html', 'editor-en.html'])('%s more menu', (file) => {
             'download-vcf-menu',
             'download-qrcode-menu'
         ].forEach((id) => expect(html).toContain(`id="${id}"`));
+    });
+
+    test('renders the professional title, face switch and zoom controls exactly once', () => {
+        const html = read(file);
+        [
+            'toolbar-design-title',
+            'toolbar-face-front',
+            'toolbar-face-back',
+            'toolbar-zoom-out',
+            'toolbar-zoom-value',
+            'toolbar-zoom-in'
+        ].forEach((id) => {
+            const exactId = new RegExp(`(?:^|\\s)id="${id}"`, 'g');
+            expect(html.match(exactId)).toHaveLength(1);
+        });
+        expect(html).toContain('data-toolbar-language-target');
+        expect(html).toContain('id="preview-mode-btn-menu"');
     });
 
 });
@@ -79,4 +98,10 @@ test('closed floating menu is excluded from layout even if other styles set disp
     expect(read('toolbar-enhancements.original.css')).toMatch(
         /#toolbar-more-menu-floating\[hidden\]\s*\{[^}]*display:\s*none\s*!important/
     );
+});
+
+test('mobile more menu is presented as a bottom sheet', () => {
+    const css = read('editor-toolbar-v2.css');
+    expect(css).toMatch(/@media \(max-width: 768px\)[\s\S]*#toolbar-more-menu-floating[\s\S]*bottom:/);
+    expect(css).toContain('max-height: min(68vh, 620px)');
 });
