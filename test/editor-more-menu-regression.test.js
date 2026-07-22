@@ -25,7 +25,7 @@ describe.each(['editor.html', 'editor-en.html'])('%s more menu', (file) => {
         expect(html).toContain('aria-controls="toolbar-more-menu-floating"');
         expect(html).toContain('toolbar-enhancements.css?v=4.3');
         expect(html).toContain('editor-panels.js?v=1.1');
-        expect(html).toContain('editor-toolbar-v2.css?v=1.0');
+        expect(html).toContain('editor-toolbar-v2.css?v=1.1');
         expect(html).toContain('editor-toolbar-v2.js?v=1.0');
         expect(html).not.toContain("moreMenu.classList.toggle('show')");
     });
@@ -57,6 +57,11 @@ describe.each(['editor.html', 'editor-en.html'])('%s more menu', (file) => {
         });
         expect(html).toContain('data-toolbar-language-target');
         expect(html).toContain('id="preview-mode-btn-menu"');
+    });
+
+    test('keeps the editor guide available when desktop tools collapse', () => {
+        const html = read(file);
+        expect(html).toMatch(/href="how-to-use-editor(?:-en)?\.html"[^>]*class="menu-item-link"/);
     });
 
 });
@@ -104,4 +109,18 @@ test('mobile more menu is presented as a bottom sheet', () => {
     const css = read('editor-toolbar-v2.css');
     expect(css).toMatch(/@media \(max-width: 768px\)[\s\S]*#toolbar-more-menu-floating[\s\S]*bottom:/);
     expect(css).toContain('max-height: min(68vh, 620px)');
+});
+
+test('desktop commands use responsive priority instead of being globally removed', () => {
+    const css = read('editor-toolbar-v2.css');
+    expect(css).toMatch(/\.pro-toolbar #theme-toggle-btn,[\s\S]*#lang-toggle-btn \{ display: inline-flex !important; \}/);
+    expect(css).toContain('.pro-toolbar #tools-dropdown-wrap { display: block !important; }');
+    expect(css).toMatch(/@media \(max-width: 1760px\)[\s\S]*\.tb-nav-icons \{ display: none !important; \}/);
+    expect(css).toMatch(/@media \(max-width: 1460px\)[\s\S]*#tools-dropdown-wrap,[\s\S]*#lang-toggle-btn \{ display: none !important; \}/);
+});
+
+test('mobile toolbar retains a compact save-state indicator', () => {
+    const css = read('editor-toolbar-v2.css');
+    expect(css).toMatch(/@media \(max-width: 768px\)[\s\S]*\.autosave-indicator \{[\s\S]*display: inline-flex !important;/);
+    expect(css).toMatch(/\.autosave-indicator span \{ display: none !important; \}/);
 });
