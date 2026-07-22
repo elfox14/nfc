@@ -94,7 +94,11 @@ router.post('/register', [
 
     setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
 
-    res.status(201).json({ success: true, user: { name, email, userId, isVerified: false } });
+    res.status(201).json({
+      success: true,
+      accessToken,
+      user: { name, email, userId, isVerified: false }
+    });
 
   } catch (err) {
     if (err.code === 11000) {
@@ -150,10 +154,11 @@ router.post('/login', [
     setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
 
     console.log(`[Login] Successful login for userId: ${user.userId}`);
-    // Include isVerified so frontend can show verification reminder.
-    // The access token stays in the HttpOnly cookie and is never exposed to JS.
+    // Include isVerified so frontend can show the verification reminder. The
+    // short-lived token is a tab-scoped fallback when cross-origin cookies fail.
     const loginResponse = { 
       success: true, 
+      accessToken,
       user: { name: user.name, email: user.email, userId: user.userId, isVerified: !!user.isVerified } 
     };
     if (!user.isVerified) {
@@ -308,9 +313,20 @@ router.get('/google/callback', async (req, res) => {
     // SECURITY: Generate a very short-lived (60s), one-time-use token to initialize the session
     // This allows the SPA to boot even if third-party cookies are blocked by the browser.
     const sessionInitToken = jwt.sign(
-      { userId: user.userId, email: user.email, type: 'session-init' },
+      { userId: user.userId, email: user.email, type: 'session-init', jti: nanoid(16) },
       process.env.JWT_SECRET,
       { expiresIn: '60s' }
+    );
+
+    // Store only a hash so the initialization token is short-lived and one-time.
+    await getDb().collection(usersCollectionName).updateOne(
+      { userId: user.userId },
+      {
+        $set: {
+          sessionInitTokenHash: hashToken(sessionInitToken),
+          sessionInitTokenExpiry: new Date(Date.now() + 60 * 1000)
+        }
+      }
     );
 
     // Send success signal to popup opener via postMessage
@@ -648,7 +664,11 @@ router.post('/refresh', async (req, res) => {
 
     setAuthCookies(res, { accessToken: newAccessToken, refreshToken: newRefreshToken });
 
-    res.json({ success: true, user: { name: user.name, email: user.email, userId: user.userId } });
+    res.json({
+      success: true,
+      accessToken: newAccessToken,
+      user: { name: user.name, email: user.email, userId: user.userId }
+    });
 
   } catch (err) {
     console.error('Token refresh error:', err);
@@ -704,6 +724,7 @@ router.post('/session-init', async (req, res) => {
   try {
     const { initToken } = req.body;
     if (!initToken) return res.status(400).json({ error: 'Token required' });
+    if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
 
     const decoded = jwt.verify(initToken, process.env.JWT_SECRET);
 
@@ -711,10 +732,24 @@ router.post('/session-init', async (req, res) => {
       return res.status(401).json({ error: 'Invalid token type' });
     }
 
-    console.log(`[SessionInit] Confirmed for userId: ${decoded.userId}`);
+    const users = getDb().collection(usersCollectionName);
+    const consumeResult = await users.updateOne(
+      {
+        userId: decoded.userId,
+        sessionInitTokenHash: hashToken(initToken),
+        sessionInitTokenExpiry: { $gt: new Date() }
+      },
+      { $unset: { sessionInitTokenHash: '', sessionInitTokenExpiry: '' } }
+    );
+
+    if (consumeResult.matchedCount !== 1) {
+      return res.status(401).json({ error: 'Session token already used or expired' });
+    }
+
+    console.log(`[SessionInit] Consumed for userId: ${decoded.userId}`);
 
     // Fetch the full user from DB to ensure we have the name
-    const user = await getDb().collection(usersCollectionName).findOne(
+    const user = await users.findOne(
       { userId: decoded.userId },
       { projection: { name: 1, email: 1, userId: 1 } }
     );
@@ -723,9 +758,11 @@ router.post('/session-init', async (req, res) => {
       return res.status(401).json({ error: 'User not found during initialization' });
     }
 
-    // Cookies were already set by /google/callback — just return user info.
+    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+
     res.json({
       success: true,
+      accessToken,
       user: { userId: user.userId, email: user.email, name: user.name }
     });
 

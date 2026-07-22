@@ -75,7 +75,11 @@
             var raw = String(input.value || '').trim();
             if (!raw) return;
             var id = input.id.toLowerCase();
-            var likelyLink = input.type === 'url' || /website|facebook|linkedin|instagram|tiktok|twitter|telegram|youtube|snapchat|qr-url/.test(id);
+            var isStyleControl = input.type === 'color' || input.type === 'range' ||
+                input.dataset.inputType === 'static-social-style' || /-(color|size)$/.test(id);
+            // The QR field has its own source-aware validation in checkQr().
+            if (isStyleControl || id === 'input-qr-url') return;
+            var likelyLink = input.type === 'url' || /website|facebook|linkedin|instagram|tiktok|twitter|telegram|youtube|snapchat/.test(id);
             if (likelyLink && !validUrl(raw)) issues.push(issue('invalid-link', 'error', 'رابط غير صالح: ' + raw, 'Invalid link: ' + raw, input.id));
         });
         return issues;
@@ -175,7 +179,7 @@
         panel = document.createElement('section');
         panel.id = 'editor-smart-validation';
         panel.className = 'eci-section editor-smart-validation';
-        panel.innerHTML = '<div class="esv-head"><div><span class="eci-label">' + (isAr ? 'مراجعة ما قبل النشر' : 'Pre-publish review') + '</span><h3>' + (isAr ? 'التحقق الذكي' : 'Smart validation') + '</h3></div><button type="button" id="esv-run"><i class="fas fa-wand-magic-sparkles"></i><span>' + (isAr ? 'فحص الآن' : 'Run checks') + '</span></button></div><div id="esv-results" class="esv-results"><p>' + (isAr ? 'شغّل الفحص قبل المشاركة أو التصدير.' : 'Run validation before sharing or exporting.') + '</p></div>';
+        panel.innerHTML = '<div class="esv-head"><div><span class="eci-label">' + (isAr ? 'مراجعة ما قبل النشر' : 'Pre-publish review') + '</span><h3>' + (isAr ? 'التحقق الذكي' : 'Smart validation') + '</h3></div><button type="button" id="esv-run"><i class="fas fa-wand-magic-sparkles"></i><span>' + (isAr ? 'فحص الآن' : 'Run checks') + '</span></button></div><div id="esv-results" class="esv-results"><p>' + (isAr ? 'شغّل الفحص قبل المشاركة أو النشر.' : 'Run validation before sharing or publishing.') + '</p></div>';
         var advanced = document.getElementById('eci-advanced');
         inspector.insertBefore(panel, advanced || null);
         resultsHost = panel.querySelector('#esv-results');

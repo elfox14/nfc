@@ -1,6 +1,6 @@
 /**
  * MC PRIME NFC — Publish Gate v1.0
- * Runs smart validation before share/export actions and blocks critical errors.
+ * Runs smart validation before publish/share actions and blocks critical errors.
  */
 (function (global) {
     'use strict';
@@ -27,7 +27,7 @@
             trigger.title,
             trigger.textContent
         ].filter(Boolean).join(' ').toLowerCase();
-        return /export|download|publish|share|تصدير|تحميل|نشر|مشاركة|save-share/.test(key) ? trigger : null;
+        return /publish|share|نشر|مشاركة|save-share/.test(key) ? trigger : null;
     }
 
     function summarize(issues) {

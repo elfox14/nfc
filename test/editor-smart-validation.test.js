@@ -13,6 +13,9 @@ describe('Editor smart validation', () => {
             <input id="input-name_en" value="">
             <input id="input-website" type="url" value="not a url">
             <input id="input-qr-url" value="bad url">
+            <input id="input-static-website-color" type="color" value="#e6f0f7">
+            <input id="input-static-facebook-color" type="color" value="#e6f0f7">
+            <input id="input-static-linkedin-color" type="color" value="#e6f0f7">
             <select id="qr-source"><option value="custom" selected>custom</option></select>
             <input id="name-color" value="#777777">
             <input id="front-bg-start" value="#777777">
@@ -32,6 +35,8 @@ describe('Editor smart validation', () => {
         expect(issues.some((entry) => entry.code === 'missing-name')).toBe(true);
         expect(issues.some((entry) => entry.code === 'invalid-link')).toBe(true);
         expect(issues.some((entry) => entry.code === 'qr-invalid')).toBe(true);
+        expect(issues.filter((entry) => entry.code === 'invalid-link')).toHaveLength(1);
+        expect(issues.some((entry) => /static-(website|facebook|linkedin)-color/.test(entry.target || ''))).toBe(false);
     });
 
     test('detects small QR and unsafe placement', () => {
