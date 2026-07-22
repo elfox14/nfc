@@ -65,7 +65,7 @@
     <script src="ai-backgrounds.js" defer></script>
     <script src="editor-tour.js" defer></script>
     <script src="editor-panels.js?v=1.1" defer></script>
-    <script src="editor-toolbar-v2.js?v=1.0" defer></script>
+    <script src="editor-toolbar-v2.js?v=1.1" defer></script>
 
     <!-- English placeholder initialization -->
     <script>
@@ -141,7 +141,7 @@
 
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
     <link rel="stylesheet" href="/nfc/premium-ui.css">
-    <link rel="stylesheet" href="editor-toolbar-v2.css?v=1.1">
+    <link rel="stylesheet" href="editor-toolbar-v2.css?v=2.0">
 </head>
 
 <body class="editor-body">
@@ -249,6 +249,21 @@
                 <output id="toolbar-zoom-value" aria-live="polite">100%</output>
                 <button type="button" id="toolbar-zoom-in" aria-label="Zoom in" title="Zoom in">
                     <i class="fas fa-plus"></i>
+                </button>
+            </div>
+
+            <div class="tb-view-controls" role="group" aria-label="Card view tools">
+                <button type="button" id="toolbar-grid-toggle" class="tb-icon-btn" aria-pressed="false"
+                    title="Show or hide grid" aria-label="Grid">
+                    <i class="fas fa-border-all"></i>
+                </button>
+                <button type="button" id="toolbar-safe-area-toggle" class="tb-icon-btn" aria-pressed="false"
+                    title="Show or hide safe area" aria-label="Safe area">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button type="button" id="toolbar-snap-now" class="tb-icon-btn"
+                    title="Snap selected element to grid" aria-label="Snap to grid">
+                    <i class="fas fa-magnet"></i>
                 </button>
             </div>
 
@@ -364,6 +379,7 @@
                 <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="More" aria-label="More Options"
                     aria-controls="toolbar-more-menu-floating" aria-expanded="false">
                     <i class="fas fa-ellipsis-v"></i>
+                    <span class="tb-more-button-label">More</span>
                 </button>
                 <ul id="toolbar-more-menu" class="tb-mobile-more-menu">
                     <li><a href="index-en.html" class="tb-dropdown-item"><i class="fas fa-home"></i> Home</a></li>
@@ -2677,6 +2693,11 @@
         <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> Gallery</button>
         <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> Save to Gallery</button>
         <button id="save-share-btn-menu"><i class="fas fa-save"></i> Save &amp; Share</button>
+        <hr>
+        <span class="tb-more-label">View &amp; alignment</span>
+        <button id="toolbar-grid-toggle-menu"><i class="fas fa-border-all"></i> Grid</button>
+        <button id="toolbar-safe-area-toggle-menu"><i class="fas fa-expand"></i> Safe area</button>
+        <button id="toolbar-snap-now-menu"><i class="fas fa-magnet"></i> Snap selection to grid</button>
         <hr>
         <span class="tb-more-label">Download</span>
         <button id="download-png-front-menu"><i class="fas fa-image"></i> Download Front PNG</button>

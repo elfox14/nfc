@@ -162,6 +162,48 @@
         });
     }
 
+    function syncViewControls() {
+        var alignment = global.EditorSmartAlignment;
+        var gridEnabled = Boolean(alignment && alignment.isGridEnabled && alignment.isGridEnabled());
+        var safeEnabled = Boolean(alignment && alignment.isSafeAreaEnabled && alignment.isSafeAreaEnabled());
+        [
+            ['toolbar-grid-toggle', gridEnabled],
+            ['toolbar-grid-toggle-menu', gridEnabled],
+            ['toolbar-safe-area-toggle', safeEnabled],
+            ['toolbar-safe-area-toggle-menu', safeEnabled]
+        ].forEach(function (entry) {
+            var button = document.getElementById(entry[0]);
+            if (!button) return;
+            button.classList.toggle('is-active', entry[1]);
+            button.setAttribute('aria-pressed', String(entry[1]));
+        });
+    }
+
+    function bindViewControls() {
+        var grid = document.getElementById('toolbar-grid-toggle');
+        var safe = document.getElementById('toolbar-safe-area-toggle');
+        var snap = document.getElementById('toolbar-snap-now');
+
+        if (grid) grid.addEventListener('click', function () {
+            if (global.EditorSmartAlignment && global.EditorSmartAlignment.toggleGrid) {
+                global.EditorSmartAlignment.toggleGrid();
+                syncViewControls();
+            }
+        });
+        if (safe) safe.addEventListener('click', function () {
+            if (global.EditorSmartAlignment && global.EditorSmartAlignment.toggleSafeArea) {
+                global.EditorSmartAlignment.toggleSafeArea();
+                syncViewControls();
+            }
+        });
+        if (snap) snap.addEventListener('click', function () {
+            if (global.EditorSmartAlignment && global.EditorSmartAlignment.snapSelected) {
+                global.EditorSmartAlignment.snapSelected(8);
+            }
+        });
+        syncViewControls();
+    }
+
     function init() {
         var toolbar = document.getElementById('pro-toolbar');
         if (!toolbar || toolbar.dataset.professionalToolbarReady === 'true') return;
@@ -169,6 +211,7 @@
         bindDesignTitle();
         bindFaceSwitch();
         bindZoom();
+        bindViewControls();
         protectExportsFromVisualZoom();
         bindLanguageLinks();
     }
@@ -177,6 +220,7 @@
         init: init,
         setActiveFace: setActiveFace,
         syncTitleFromCard: syncTitleFromCard,
+        syncViewControls: syncViewControls,
         getZoom: function () { return zoomLevels[zoomIndex]; }
     };
 
