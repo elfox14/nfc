@@ -25,36 +25,8 @@ const Auth = {
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
     get API_SESSION_INIT() { return `${this.getBaseUrl()}/api/auth/session-init`; },
 
-    // HttpOnly cookies remain the primary authentication mechanism. A short-lived
-    // bearer token is kept in sessionStorage only when a cross-origin browser
-    // blocks those cookies (mcprim.com frontend + Render API).
-    token: null,
+    token: null, // Legacy placeholder; browser auth uses HttpOnly cookies only.
     user: JSON.parse(localStorage.getItem('authUser') || 'null'),
-
-    _readAccessToken() {
-        try {
-            return sessionStorage.getItem('authAccessToken');
-        } catch {
-            return null;
-        }
-    },
-
-    _writeAccessToken(token) {
-        try {
-            if (token) sessionStorage.setItem('authAccessToken', token);
-        } catch {
-            // Storage can be unavailable in private/restricted browser contexts.
-        }
-    },
-
-    _clearAccessToken() {
-        try {
-            sessionStorage.removeItem('authAccessToken');
-            sessionStorage.removeItem('authToken');
-        } catch {
-            // Nothing else to clear when storage is unavailable.
-        }
-    },
 
     isLoggedIn() {
         const userStr = localStorage.getItem('authUser');
@@ -65,28 +37,19 @@ const Auth = {
         console.log('[Auth] Setting session:', { user: user?.email });
         this.user = user;
         localStorage.setItem('authUser', JSON.stringify(user));
-        if (typeof token === 'string' && token) {
-            this.token = token;
-            this._writeAccessToken(token);
-        } else {
-            this.token = null;
-            this._clearAccessToken();
-        }
+        this.token = null;
         localStorage.removeItem('authToken');
     },
 
     clearSession() {
         this.user = null;
-        this.token = null;
         localStorage.removeItem('authUser');
         localStorage.removeItem('authToken'); // Clean up legacy token if present
-        this._clearAccessToken();
     },
 
     getHeader() {
         localStorage.removeItem('authToken');
-        if (!this.token) this.token = this._readAccessToken();
-        return this.token ? { Authorization: `Bearer ${this.token}` } : {};
+        return {};
     },
 
     isEnglish() {
@@ -159,26 +122,7 @@ const Auth = {
         }
     },
 
-    // One promise is shared by every caller, including page boot and API retry.
-    // Refresh-token rotation makes concurrent refresh requests invalidate each other.
-    _refreshPromise: null,
-
     async refreshSession() {
-        if (this._refreshPromise) return this._refreshPromise;
-
-        const refreshPromise = this._performRefreshSession();
-        this._refreshPromise = refreshPromise;
-
-        try {
-            return await refreshPromise;
-        } finally {
-            if (this._refreshPromise === refreshPromise) {
-                this._refreshPromise = null;
-            }
-        }
-    },
-
-    async _performRefreshSession() {
         console.log('[Auth] Attempting to refresh session...');
         try {
             const res = await fetch(this.API_REFRESH, {
@@ -202,7 +146,7 @@ const Auth = {
 
             if (data.success && data.user) {
                 console.log('[Auth] Session refreshed successfully');
-                this.setSession(data.accessToken || data.token, data.user);
+                this.setSession(data.token, data.user);
                 return true;
             } else {
                 console.warn('[Auth] Refresh failed:', data.error || 'Unknown error');
@@ -232,7 +176,7 @@ const Auth = {
             const data = await res.json();
             if (data.success) {
                 console.log('[Auth] Session initialized successfully via token');
-                if (data.user) this.setSession(data.accessToken || data.token, data.user);
+                if (data.user) this.setSession(data.token, data.user);
                 return true;
             }
         } catch (err) {
@@ -244,6 +188,9 @@ const Auth = {
 
     // Variable to store the last error for UI feedback
     lastInitError: null,
+
+    // Singleton promise to prevent concurrent refreshes
+    _refreshPromise: null,
 
     async apiFetchWithRefresh(url, options = {}) {
         // Ensure headers exist and inject auth token
@@ -260,7 +207,14 @@ const Auth = {
             if (res.status === 401 || res.status === 403) {
                 console.warn('[Auth] Token expired or unauthorized. Attempting refresh...');
 
-                const refreshed = await this.refreshSession();
+                // Ensure only one refresh call happens at a time
+                if (!this._refreshPromise) {
+                    this._refreshPromise = this.refreshSession().finally(() => {
+                        this._refreshPromise = null;
+                    });
+                }
+                
+                const refreshed = await this._refreshPromise;
 
                 if (refreshed) {
                     console.log('[Auth] Refresh successful, retrying original request...');
@@ -612,11 +566,8 @@ const Auth = {
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.location.pathname.includes('dashboard')) {
-        const params = new URLSearchParams(window.location.search);
-        const oauthRedirectPending = params.has('oauthSuccess') || params.has('initToken');
-        // The dashboard's own boot handler consumes initToken first. Starting a
-        // refresh here at the same time can race refresh-token rotation.
-        if (!oauthRedirectPending && !Auth.isLoggedIn()) {
+        // Only refresh if not already logged in (e.g., from #gauth hash or localStorage)
+        if (!Auth.isLoggedIn()) {
             await Auth.refreshSession();
         }
     }

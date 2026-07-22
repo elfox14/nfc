@@ -1219,14 +1219,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const apiUrl = `${API_BASE_URL}/api/get-design/${cardId}?trackView=true`;
                 console.log(`Fetching data from: ${apiUrl}`);
-                const requestOptions = {
-                    credentials: 'include',
-                    cache: 'no-store',
-                    headers: window.Auth?.getHeader?.() || {}
-                };
-                const response = window.Auth?.apiFetchWithRefresh
-                    ? await window.Auth.apiFetchWithRefresh(apiUrl, requestOptions)
-                    : await fetch(apiUrl, requestOptions);
+                const response = await fetch(apiUrl);
 
                 if (!response.ok) {
                     const errorText = await response.text();

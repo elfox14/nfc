@@ -1,7 +1,0 @@
-node_modules/
-coverage/
-playwright-report/
-test-results/
-vendor/
-*.min.js
-*.original.js

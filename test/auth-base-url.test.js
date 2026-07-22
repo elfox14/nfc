@@ -7,14 +7,13 @@ const vm = require('vm');
 
 function loadAuthRuntime({ origin = 'https://nfc-new.onrender.com', configuredBase } = {}) {
   const source = fs.readFileSync(path.join(__dirname, '..', 'auth.js'), 'utf8');
-  const runtimeConfig = fs.readFileSync(path.join(__dirname, '..', 'runtime-config.js'), 'utf8');
   const localStorage = {
     getItem: () => null,
     setItem: () => {},
     removeItem: () => {}
   };
   const window = {
-    location: { origin, hostname: new URL(origin).hostname, pathname: '/nfc/login' },
+    location: { origin, pathname: '/nfc/login' },
     __API_BASE_URL: configuredBase,
     innerWidth: 1280,
     open: () => null
@@ -37,7 +36,7 @@ function loadAuthRuntime({ origin = 'https://nfc-new.onrender.com', configuredBa
     URLSearchParams
   });
 
-  vm.runInContext(`${runtimeConfig}\n${source}\n;globalThis.__authUnderTest = Auth;`, context);
+  vm.runInContext(`${source}\n;globalThis.__authUnderTest = Auth;`, context);
   return { auth: context.__authUnderTest, window };
 }
 
@@ -59,11 +58,21 @@ describe('Auth API base URL', () => {
     expect(auth.getBaseUrl()).toBe('https://api.example.com');
   });
 
-  it('uses the Render API for the public MC PRIME frontend', () => {
-    const auth = loadAuth({ origin: 'https://www.mcprim.com' });
+  it('does not retain the retired Render hostname in active client assets', () => {
+    const activeAssets = [
+      'auth.js',
+      'script-core.js',
+      'viewer.js',
+      'admin.html',
+      'gallery.html',
+      'gallery-en.html',
+      'view/viewer.js'
+    ];
 
-    expect(auth.getBaseUrl()).toBe('https://nfc-vjy6.onrender.com');
-    expect(auth.API_LOGIN).toBe('https://nfc-vjy6.onrender.com/api/auth/login');
+    for (const asset of activeAssets) {
+      const contents = fs.readFileSync(path.join(__dirname, '..', asset), 'utf8');
+      expect(contents).not.toContain('nfc-vjy6.onrender.com');
+    }
   });
 
   it('uses a full-page Google redirect when the API is cross-origin', () => {

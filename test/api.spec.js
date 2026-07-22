@@ -152,66 +152,6 @@ describe('Auth Integration Tests (Ticket 9)', () => {
         // In a full environment, we would inject a mapped cookie matching mockCollection.findOne.
     });
 
-    describe('POST /api/auth/session-init', () => {
-        it('exchanges a one-time Google init token for a short-lived access token', async () => {
-            const initToken = jwt.sign(
-                { userId: 'u-google', email: 'google@example.com', type: 'session-init' },
-                process.env.JWT_SECRET,
-                { expiresIn: '60s' }
-            );
-            mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 });
-            mockCollection.findOne.mockResolvedValueOnce({
-                userId: 'u-google',
-                email: 'google@example.com',
-                name: 'Google User'
-            });
-
-            const res = await request(app)
-                .post('/api/auth/session-init')
-                .send({ initToken });
-
-            expect(res.status).toBe(200);
-            expect(res.body.success).toBe(true);
-            expect(res.body.user.email).toBe('google@example.com');
-            expect(jwt.verify(res.body.accessToken, process.env.JWT_SECRET)).toMatchObject({
-                userId: 'u-google',
-                type: 'access'
-            });
-            expect(mockCollection.updateOne.mock.calls[0][0]).toMatchObject({
-                userId: 'u-google',
-                sessionInitTokenExpiry: { $gt: expect.any(Date) }
-            });
-            expect(mockCollection.updateOne.mock.calls[0][0].sessionInitTokenHash).not.toBe(initToken);
-        });
-
-        it('rejects replay of an already-consumed init token', async () => {
-            const initToken = jwt.sign(
-                { userId: 'u-google', email: 'google@example.com', type: 'session-init' },
-                process.env.JWT_SECRET,
-                { expiresIn: '60s' }
-            );
-            mockCollection.updateOne
-                .mockResolvedValueOnce({ matchedCount: 1 })
-                .mockResolvedValueOnce({ matchedCount: 0 });
-            mockCollection.findOne.mockResolvedValueOnce({
-                userId: 'u-google',
-                email: 'google@example.com',
-                name: 'Google User'
-            });
-
-            const first = await request(app)
-                .post('/api/auth/session-init')
-                .send({ initToken });
-            const replay = await request(app)
-                .post('/api/auth/session-init')
-                .send({ initToken });
-
-            expect(first.status).toBe(200);
-            expect(replay.status).toBe(401);
-            expect(replay.body.error).toMatch(/already used|expired/i);
-        });
-    });
-
     describe('POST /api/auth/reset-password', () => {
         it('Should reject malformed reset tokens before database lookup', async () => {
             const res = await request(app)

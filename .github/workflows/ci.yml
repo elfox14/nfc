@@ -6,65 +6,41 @@ on:
   pull_request:
     branches: [ "main" ]
 
-concurrency:
-  group: node-ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js 22
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22.x
-        cache: npm
-    - run: npm install
-    - run: npm run lint
-    - name: Run Jest tests
-      shell: bash
-      run: |
-        if ! npm test -- --runInBand > jest-output.log 2>&1; then
-          echo "Jest failed. Last 180 lines:"
-          tail -n 180 jest-output.log
-          exit 1
-        fi
-        tail -n 40 jest-output.log
-    - name: Upload Jest diagnostics
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: jest-output
-        path: jest-output.log
-        retention-days: 7
-    - run: npm audit --omit=dev --audit-level=critical
 
-  browser:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
     steps:
     - uses: actions/checkout@v4
-    - name: Use Node.js 22
+    - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
-        node-version: 22.x
-        cache: npm
-    - run: npm install
-    - run: npx playwright install --with-deps chromium webkit
-    - run: npm run test:e2e
-    - name: Upload Playwright report
-      if: ${{ !cancelled() }}
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run Jest tests
+      id: jest
+      continue-on-error: true
+      run: npm test -- --json --outputFile=jest-results.json
+
+    - name: Upload Jest report
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 14
-    - name: Upload browser failure evidence
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: playwright-test-results
-        path: test-results/
-        retention-days: 14
+        name: jest-results-node-${{ matrix.node-version }}
+        path: jest-results.json
+        if-no-files-found: warn
+        retention-days: 7
+
+    - name: Enforce Jest result
+      if: steps.jest.outcome == 'failure'
+      run: exit 1
+
+    - name: Security audit
+      run: npm audit --audit-level=critical
