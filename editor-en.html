@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" data-editor-hydrated="false" data-editor-hydration="pending">
+<html lang="en" dir="ltr">
 
 <head>
     <!-- SEO: Block indexing -->
@@ -37,6 +37,7 @@
     <link rel="stylesheet" href="style.css?v=4.2">
     <link rel="stylesheet" href="mobile.css?v=4.2">
     <link rel="stylesheet" href="toast.css?v=4.2">
+    <link rel="stylesheet" href="editor-enhancements.css?v=5.5">
     <link rel="stylesheet" href="toolbar-enhancements.css?v=4.2">
     <link rel="stylesheet" href="logo-panel.css?v=4.2">
     <link rel="stylesheet" href="ai-suggestion-panel.css?v=1.0">
@@ -44,41 +45,100 @@
     <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
-    <script src="/nfc/editor-interact-fallback.js?v=1.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
 
     <!-- Project JavaScript files (order matters) -->
     <script src="lang-switcher.js" defer></script>
-    <script src="/nfc/runtime-config.js?v=1.0"></script>
-    <script src="/nfc/auth.js?v=3.4" defer></script>
+    <script src="/nfc/auth.js?v=3.1" defer></script>
     <script src="security-utils.js" defer></script>
     <script src="mobile.js" defer></script>
     <script src="script-core.js?v=2.1" defer></script>
-    <script src="/nfc/editor-default-card.js?v=2.0" defer></script>
-    <script src="/nfc/editor-hydration.js?v=1.0" defer></script>
     <script src="state-manager-proxy.js" defer></script>
     <script src="script-ui.js" defer></script>
     <script src="script-card.js" defer></script>
-    <script src="script-main.js?v=2.2" defer></script>
-    <script src="/nfc/editor-qr-runtime.js?v=1.1" defer></script>
-    <script src="/nfc/editor-capture-runtime.js?v=1.3" defer></script>
-    <script src="/nfc/editor-design-loader.js?v=2.0" defer></script>
-    <script src="/nfc/editor-user-status.js?v=1.2" defer></script>
+    <script src="script-main.js" defer></script>
+    <script src="editor-enhancements.js" defer></script>
+    <script src="editor-user-status.js" defer></script>
     <script src="ai-backgrounds.js" defer></script>
+    <script src="editor-tour.js" defer></script>
     <script src="editor-panels.js" defer></script>
-    <script src="editor-shell.js?v=1.0" defer></script>
-    <script src="editor-workspace.js?v=1.1" defer></script>
-    <script src="editor-layers.js?v=1.0" defer></script>
-    <script src="editor-properties.js?v=1.0" defer></script>
-    <script src="editor-validation.js?v=1.0" defer></script>
-    <script src="editor-preview.js?v=1.0" defer></script>
-    <script src="editor-creative-tools.js?v=1.0" defer></script>
+
+    <!-- English placeholder initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set English placeholders for input fields
+            setTimeout(function () {
+                const nameInput = document.getElementById('input-name_ar');
+                const taglineInput = document.getElementById('input-tagline_ar');
+
+                if (nameInput) {
+                    nameInput.placeholder = 'Your Full Name Here';
+                    if (!nameInput.value || nameInput.value === 'اسمك الكامل هنا') {
+                        nameInput.value = 'Your Full Name Here';
+                    }
+                }
+                if (taglineInput) {
+                    taglineInput.placeholder = 'Job Title / Company';
+                    if (!taglineInput.value || taglineInput.value === 'المسمى الوظيفي / الشركة') {
+                        taglineInput.value = 'Job Title / Company';
+                    }
+                }
+            }, 100);
+        });
+    </script>
+
+    <style>
+        /* =============================================================== */
+        /* == START: DESKTOP FIX FOR FLIP CARD STRUCTURE                == */
+        /* =============================================================== */
+
+        /* This code block undoes the flip effect on screens wider than 1024px */
+        @media (min-width: 1025px) {
+
+            /* 1. Make the flipper a flex container to arrange cards side-by-side */
+            .card-flipper {
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+                /* <<< THIS IS THE SPACE BETWEEN CARDS ON DESKTOP */
+
+                /* 2. Reset 3D properties so it behaves like a normal container */
+                transform-style: flat;
+                position: relative;
+                transform: none;
+            }
+
+            /* 3. Make each card face a normal, non-overlapping block */
+            .card-face {
+                position: relative !important;
+                /* Override absolute positioning */
+                transform: none !important;
+                /* Remove any rotation */
+                backface-visibility: visible !important;
+                /* Reset visibility */
+                pointer-events: auto !important;
+                /* Ensure both are clickable */
+            }
+
+            /* 4. The main card wrapper now just centers the flipper container */
+            .cards-wrapper {
+                transform: none;
+                /* Ensure no scaling is applied from old styles */
+                gap: 0;
+                /* The gap is now handled by .card-flipper */
+            }
+
+            /* 5. Hide the mobile-only flip button on desktop */
+            #flip-card-btn-mobile {
+                display: none !important;
+            }
+        }
+    </style>
 
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
     <link rel="stylesheet" href="/nfc/premium-ui.css">
-    <link rel="stylesheet" href="editor-design-system.css?v=6.2">
 </head>
 
 <body class="editor-body">
@@ -87,7 +147,36 @@
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
-    <header class="pro-toolbar" id="pro-toolbar" role="banner">
+    <header class="pro-toolbar" id="pro-toolbar" style="direction: ltr; flex-direction: row;">
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const langBtn = document.getElementById('lang-toggle-btn');
+                if (langBtn) {
+                    const setLangText = () => {
+                        const label = langBtn.querySelector('.tb-label');
+                        if (label && label.textContent.trim() !== 'ع') {
+                            label.textContent = 'ع';
+                            langBtn.style.fontFamily = "'Tajawal', sans-serif";
+                            langBtn.style.fontWeight = "bold";
+                        } else if (!label && langBtn.textContent.trim() !== 'ع') {
+                            langBtn.innerHTML = 'ع'; // Fallback if no tb-label span is present
+                        }
+                    };
+
+                    // Initial set
+                    setTimeout(setLangText, 100);
+
+                    // Observer to prevent unwarranted changes
+                    const observer = new MutationObserver((mutations) => {
+                        observer.disconnect();
+                        setLangText();
+                        observer.observe(langBtn, { childList: true, characterData: true, subtree: true });
+                    });
+
+                    observer.observe(langBtn, { childList: true, characterData: true, subtree: true });
+                }
+            });
+        </script>
 
         <!-- ═══ ZONE 1: LEFT — Brand + History ═══ -->
         <div class="tb-zone tb-left">
@@ -95,7 +184,7 @@
             <!-- Logo -->
             <a href="index-en.html" class="tb-logo" title="Back to Home">
                 <img src="https://www.mcprim.com/nfc/mc-prime-nfc.png" alt="MC PRIME Logo"
-                    class="tb-brand-image">
+                    style="height:30px;width:auto;">
                 <span class="tb-logo-text">MC PRIME</span>
             </a>
 
@@ -104,14 +193,14 @@
 
             <!-- Nav Icons -->
             <nav class="tb-nav-icons" aria-label="Navigation">
-                <a href="index-en.html" class="tb-icon-btn" title="Home" aria-label="Home">
-                    <i class="fas fa-home" aria-hidden="true"></i>
+                <a href="index-en.html" class="tb-icon-btn" title="Home">
+                    <i class="fas fa-home"></i>
                 </a>
-                <a href="gallery-en.html" class="tb-icon-btn" title="Gallery" aria-label="Gallery">
-                    <i class="fas fa-images" aria-hidden="true"></i>
+                <a href="gallery-en.html" class="tb-icon-btn" title="Gallery">
+                    <i class="fas fa-images"></i>
                 </a>
-                <a href="blog-en.html" class="tb-icon-btn" title="Blog" aria-label="Blog">
-                    <i class="fas fa-newspaper" aria-hidden="true"></i>
+                <a href="blog-en.html" class="tb-icon-btn" title="Blog">
+                    <i class="fas fa-newspaper"></i>
                 </a>
             </nav>
 
@@ -129,14 +218,12 @@
 
             <!-- Mobile Quick Actions: Save & Share (visible only on mobile) -->
             <div class="tb-mobile-quick-actions" id="mobile-quick-actions">
-                <button id="mobile-save-btn" class="tb-mqa-btn tb-mqa-save" title="Save" aria-label="Save"
-                    data-editor-command="design.save-share">
-                    <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+                <button id="mobile-save-btn" class="tb-mqa-btn tb-mqa-save" title="Save" aria-label="Save">
+                    <i class="fas fa-cloud-upload-alt"></i>
                     <span>Save</span>
                 </button>
-                <button id="mobile-share-btn" class="tb-mqa-btn tb-mqa-share" title="Share" aria-label="Share"
-                    data-editor-command="card.share">
-                    <i class="fas fa-share-alt" aria-hidden="true"></i>
+                <button id="mobile-share-btn" class="tb-mqa-btn tb-mqa-share" title="Share" aria-label="Share">
+                    <i class="fas fa-share-alt"></i>
                     <span>Share</span>
                 </button>
             </div>
@@ -163,8 +250,8 @@
 
             <!-- 🔧 Tools Dropdown -->
             <div class="tb-dropdown-wrap" id="tools-dropdown-wrap">
-                <button class="tb-action-btn tb-tools-trigger" id="tools-menu-btn" aria-haspopup="menu"
-                    aria-controls="tools-dropdown-menu" aria-expanded="false">
+                <button class="tb-action-btn tb-tools-trigger" id="tools-menu-btn" aria-haspopup="true"
+                    aria-expanded="false">
                     <i class="fas fa-tools"></i>
                     <span class="tb-label">Tools</span>
                     <i class="fas fa-chevron-down tb-caret"></i>
@@ -204,7 +291,7 @@
             <button id="lang-toggle-btn" class="tb-action-btn tb-lang" title="Toggle Language"
                 onclick="window.location.href='editor.html' + window.location.search">
                 <i class="fas fa-language"></i>
-                <span class="tb-label tb-lang-ar">ع</span>
+                <span class="tb-label">AR</span>
             </button>
 
             <div class="tb-divider"></div>
@@ -215,16 +302,14 @@
             <div class="tb-divider"></div>
 
             <!-- Auto-save Indicator -->
-            <div id="autosave-indicator" class="tb-autosave autosave-indicator" title="Auto-save status"
-                role="status" aria-live="polite" aria-atomic="true" data-ui-state="saved">
-                <i class="fas fa-cloud-check" aria-hidden="true"></i>
+            <div id="autosave-indicator" class="tb-autosave autosave-indicator" title="Auto-save status">
+                <i class="fas fa-cloud-check"></i>
                 <span id="autosave-status">Saved</span>
             </div>
 
             <!-- Download dropdown -->
             <div class="download-container tb-dropdown-wrap">
-                <button id="download-options-btn" class="tb-action-btn" aria-haspopup="menu"
-                    aria-controls="download-menu" aria-expanded="false">
+                <button id="download-options-btn" class="tb-action-btn">
                     <i class="fas fa-download"></i>
                     <span class="tb-label">Download</span>
                     <i class="fas fa-chevron-down tb-caret"></i>
@@ -246,10 +331,18 @@
 
             <!-- Mobile More -->
             <div class="toolbar-more-container">
-                <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="More" aria-label="More Options"
-                    aria-haspopup="menu" aria-controls="toolbar-more-menu-floating" aria-expanded="false">
-                    <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+                <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="More" aria-label="More Options">
+                    <i class="fas fa-ellipsis-v"></i>
                 </button>
+                <ul id="toolbar-more-menu" class="tb-mobile-more-menu">
+                    <li><a href="index-en.html" class="tb-dropdown-item"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="gallery-en.html" class="tb-dropdown-item"><i class="fas fa-images"></i> Gallery</a>
+                    </li>
+                    <li><a href="blog-en.html" class="tb-dropdown-item"><i class="fas fa-newspaper"></i> Blog</a></li>
+                    <div class="tb-dropdown-divider"></div>
+                    <li><button id="reset-design-btn-more" class="tb-dropdown-item tb-danger"><i
+                                class="fas fa-trash-alt"></i> Reset Design</button></li>
+                </ul>
             </div>
 
         </div>
@@ -486,19 +579,14 @@
         </aside>
 
         <main class="pro-canvas">
-            <section class="cards-wrapper" id="cards-wrapper" tabindex="0" aria-busy="true">
+            <section class="cards-wrapper" id="cards-wrapper" tabindex="0">
+
                 <div class="card-flipper-container">
-                    <div class="editor-card-hydration-placeholder" id="editor-card-hydration-placeholder"
-                        role="status" aria-live="polite">
-                        <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>
-                        <span>Preparing your card…</span>
-                    </div>
                     <div class="card-flipper">
                         <div class="business-card card-face card-front" id="card-front-preview">
                             <div class="card-background-layer" id="front-bg-image-layer"></div>
                             <div class="card-background-layer" id="front-bg-gradient-layer"></div>
-                            <div class="card-content-layer card-front-content-layer editor-default-front-layout"
-                                id="card-front-content">
+                            <div class="card-content-layer card-front-content-layer" id="card-front-content">
 
                                 <div id="card-logo" data-input-target-id="logo-drop-zone">
                                     <img src="mc-prime-nfc.png" alt="MC PRIME Smart Business Card Logo"
@@ -516,6 +604,8 @@
                                     Job Title / Company
                                 </h2>
                                 <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
+                                <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
+                                    data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
                             </div>
                             <div class="mc-prime-branding">MC PRIME NFC</div>
                         </div>
@@ -523,14 +613,8 @@
                         <div class="business-card card-face card-back" id="card-back-preview">
                             <div class="card-background-layer" id="back-bg-image-layer"></div>
                             <div class="card-background-layer" id="back-bg-gradient-layer"></div>
-                            <div class="card-content-layer card-back-content-layer editor-default-back-layout" id="card-back-content">
-                                <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
-                                    data-input-target-id="qr-code-accordion" style="width: 30%;"></div>
-                                <div class="editor-default-qr-preview no-export" id="editor-default-qr-preview"
-                                    aria-hidden="true">
-                                    <i class="fas fa-qrcode"></i>
-                                    <span>The QR code appears after you save the card</span>
-                                </div>
+                            <div class="card-content-layer card-back-content-layer" id="card-back-content">
+                                <!-- JS will populate this -->
                             </div>
                             <div class="mc-prime-branding">MC PRIME NFC</div>
                         </div>
@@ -548,7 +632,7 @@
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
 
             <!-- ═══ LOGO PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" id="logo-accordion" open>
+            <details class="fieldset-accordion lp-accordion" open>
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-image"></i></span>
                     <span class="lp-summary-label">Logo</span>
@@ -727,7 +811,7 @@
             <!-- Panel JS moved to editor-panels.js -->
 
             <!-- ═══ PHOTO PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" id="photo-accordion" open>
+            <details class="fieldset-accordion lp-accordion" open>
                 <summary class="lp-summary">
                     <span class="lp-summary-icon"><i class="fas fa-user-circle"></i></span>
                     <span class="lp-summary-label">Personal Photo</span>
@@ -1202,22 +1286,23 @@
                                 style="display:flex; background:rgba(0,0,0,0.3); border-radius:8px; padding:4px; margin-bottom:12px;">
                                 <label
                                     style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;"
-                                    class="toggle-phone-text active-mode">
-                                    <input type="radio" name="phone-mode-fake" value="text" style="display:none;" checked>
+                                    class="toggle-phone-text">
+                                    <input type="radio" name="phone-mode-fake" value="text" style="display:none;">
                                     <i class="fas fa-align-left"></i> As Text
                                 </label>
                                 <label
                                     style="flex:1; text-align:center; padding:6px; cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary); transition:all 0.2s; border-radius:6px;"
-                                    class="toggle-phone-btn">
-                                    <input type="radio" name="phone-mode-fake" value="buttons" style="display:none;">
+                                    class="toggle-phone-btn active-mode">
+                                    <input type="radio" name="phone-mode-fake" value="buttons" style="display:none;"
+                                        checked>
                                     <i class="fas fa-stop"></i> As Buttons
                                 </label>
                                 <!-- Real checkbox hidden, toggled via JS to keep compatibility -->
-                                <input type="checkbox" id="toggle-phone-buttons" style="display:none;">
+                                <input type="checkbox" id="toggle-phone-buttons" checked style="display:none;">
                             </div>
 
                             <!-- TEXT SETTINGS -->
-                            <div id="phone-text-controls" class="visible">
+                            <div id="phone-text-controls" style="display: none;">
                                 <div class="lp-section lp-grid-2" style="border:none; padding-bottom:0;">
                                     <div>
                                         <label class="lp-label">Layout</label>
@@ -2104,26 +2189,25 @@
         <fieldset class="fieldset">
             <legend>Save & Share</legend>
             <div class="form-group">
-                <button class="btn btn-primary mobile-action-btn mobile-action-primary"
-                    data-editor-command="cloud.save">
+                <button class="btn btn-primary mobile-action-btn" data-trigger-id="save-to-cloud-btn"
+                    style="width: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; font-weight: 600;">
                     <i class="fas fa-cloud-upload-alt"></i> Save Design
                 </button>
             </div>
             <div class="form-group">
-                <button class="btn btn-success mobile-action-btn mobile-action-wide"
-                    data-editor-command="card.share">
+                <button class="btn btn-success mobile-action-btn" data-trigger-id="share-card-btn" style="width: 100%;">
                     <i class="fas fa-share-alt"></i> Share Card
                 </button>
             </div>
             <div class="form-group">
-                <button class="btn btn-secondary mobile-action-btn mobile-action-wide"
-                    data-editor-command="gallery.save">
+                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="save-to-gallery-btn"
+                    style="width: 100%;">
                     <i class="fas fa-save"></i> Save to Gallery
                 </button>
             </div>
             <div class="form-group">
-                <button class="btn btn-secondary mobile-action-btn mobile-action-wide"
-                    data-editor-command="gallery.open">
+                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn"
+                    style="width: 100%;">
                     <i class="fas fa-images"></i> View Gallery
                 </button>
             </div>
@@ -2132,30 +2216,30 @@
         <fieldset class="fieldset">
             <legend>Download</legend>
             <div class="control-grid">
-                <button class="btn btn-secondary mobile-action-btn" data-editor-command="export.png.front">
+                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-front">
                     <i class="fas fa-image"></i> Front (PNG)
                 </button>
-                <button class="btn btn-secondary mobile-action-btn" data-editor-command="export.png.back">
+                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-back">
                     <i class="fas fa-image"></i> Back (PNG)
                 </button>
             </div>
-            <div class="control-grid mobile-action-group-gap">
-                <button class="btn btn-secondary mobile-action-btn" data-editor-command="export.pdf">
+            <div class="control-grid" style="margin-top: 10px;">
+                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-pdf">
                     <i class="fas fa-file-pdf"></i> PDF
                 </button>
-                <button class="btn btn-secondary mobile-action-btn" data-editor-command="export.vcf">
+                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-vcf">
                     <i class="fas fa-address-card"></i> Contact (VCF)
                 </button>
             </div>
-            <div class="form-group mobile-action-group-gap">
-                <button class="btn btn-secondary mobile-action-btn mobile-action-wide"
-                    data-editor-command="export.qr">
+            <div class="form-group" style="margin-top: 10px;">
+                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-qrcode"
+                    style="width: 100%;">
                     <i class="fas fa-qrcode"></i> QR Code
                 </button>
             </div>
-            <div class="form-group mobile-action-group-gap">
-                <button class="btn btn-secondary mobile-action-btn mobile-action-wide"
-                    data-editor-command="export.html">
+            <div class="form-group" style="margin-top: 10px;">
+                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-html"
+                    style="width: 100%;">
                     <i class="fas fa-globe"></i> Web Package (HTML)
                 </button>
             </div>
@@ -2164,14 +2248,14 @@
         <fieldset class="fieldset">
             <legend>Other</legend>
             <div class="form-group">
-                <button class="btn btn-secondary mobile-action-btn mobile-action-wide"
-                    data-editor-command="editor.share">
+                <button class="btn btn-secondary mobile-action-btn" data-trigger-id="share-editor-btn"
+                    style="width: 100%;">
                     <i class="fas fa-edit"></i> Share Editor Link
                 </button>
             </div>
             <div class="form-group">
-                <button class="btn btn-danger mobile-action-btn mobile-action-wide"
-                    data-editor-command="design.reset">
+                <button class="btn btn-danger mobile-action-btn" data-trigger-id="reset-design-btn"
+                    style="width: 100%;">
                     <i class="fas fa-undo"></i> Reset Design
                 </button>
             </div>
@@ -2514,7 +2598,7 @@
         </div>
     </div>
 
-    <nav class="mobile-bottom-nav" role="tablist" aria-label="Editor sections">
+    <nav class="mobile-bottom-nav">
         <button class="mobile-nav-item active" data-target="panel-elements">
             <i class="fas fa-pen"></i>
             <span>Content</span>
@@ -2528,6 +2612,12 @@
             <span>Save & Share</span>
         </button>
     </nav>
+    <script>
+        // Set dynamic year for editor footer
+        const editorYearSpan = document.getElementById('editor-footer-year');
+        if (editorYearSpan) editorYearSpan.textContent = new Date().getFullYear();
+    </script>
+
     <!-- Mobile More Menu (Floating) -->
     <div id="toolbar-more-menu-floating" class="toolbar-more-menu">
         <!-- User Status Bar (Mobile) -->
@@ -2548,11 +2638,11 @@
         <a href="blog-en.html" class="menu-item-link"><i class="fas fa-blog"></i> Blog</a>
         <hr class="mobile-only-hr">
 
-        <button id="theme-toggle-btn-menu" data-editor-command="theme.toggle"><i class="fas fa-adjust"></i> Theme</button>
-        <button id="show-gallery-btn-menu" data-editor-command="gallery.open"><i class="fas fa-images"></i> Gallery</button>
-        <button id="save-to-gallery-btn-menu" data-editor-command="gallery.save"><i class="fas fa-bookmark"></i> Save to Gallery</button>
-        <button id="start-collab-btn-menu" data-editor-command="collaboration.start"><i class="fas fa-users"></i> Collaborate</button>
-        <button id="share-editor-btn-menu" data-editor-command="editor.share"><i class="fas fa-link"></i> Share Link</button>
+        <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> Theme</button>
+        <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> Gallery</button>
+        <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> Save to Gallery</button>
+        <button id="start-collab-btn-menu"><i class="fas fa-users"></i> Collaborate</button>
+        <button id="share-editor-btn-menu"><i class="fas fa-link"></i> Share Link</button>
         <hr>
         <a href="login-en.html" id="mobile-menu-login-link" class="menu-item-link"><i class="fas fa-sign-in-alt"></i>
             Login</a>
@@ -2561,16 +2651,157 @@
         <button id="mobile-menu-logout-btn" style="color: #dc3545; display: none;"><i class="fas fa-sign-out-alt"></i>
             Logout</button>
         <hr>
-        <button id="reset-design-btn-menu" data-editor-command="design.reset" style="color: #dc3545;"><i class="fas fa-undo"></i> Reset</button>
+        <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> Reset</button>
     </div>
 
-    <!-- Existing editor enhancements -->
+    <!-- [NEW] Editor Premium Enhancements -->
+    <script src="toolbar-tab-nav.js"></script>
+    <script src="editor-premium-v2.js" defer></script>
 
+    <!-- Toolbar Dropdowns & Mobile Fallbacks -->
+    <script>
+        // ── Mobile Proxy Bindings ──────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+            // Buttons with data-trigger-id automatically click their desktop counterparts
+            document.querySelectorAll('[data-trigger-id]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetId = btn.getAttribute('data-trigger-id');
+                    const targetBtn = document.getElementById(targetId);
+                    if (targetBtn) targetBtn.click();
+                });
+            });
 
+            // Buttons with specific IDs ending in -menu also proxy (fallback)
+            document.querySelectorAll('[id$="-menu"]').forEach(btn => {
+                const baseId = btn.id.replace('-menu', '');
+                const targetBtn = document.getElementById(baseId);
+                if (targetBtn) {
+                    btn.addEventListener('click', () => targetBtn.click());
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // ── Toolbar Dropdowns: Tools & Download ────────────────────────────────────
+        (function () {
+            document.addEventListener('DOMContentLoaded', function () {
+                const toolsWrap = document.getElementById('tools-dropdown-wrap');
+                const toolsBtn = document.getElementById('tools-menu-btn');
+                const dlWrap = document.querySelector('.download-container.tb-dropdown-wrap');
+                const dlBtn = document.getElementById('download-options-btn');
+
+                if (dlWrap) dlWrap.id = 'download-options-wrap';
+
+                function toggleMenu(wrap, btn, forceState) {
+                    if (!wrap || !btn) return;
+                    const isOpen = wrap.classList.contains('open');
+                    const nextState = (forceState !== undefined) ? forceState : !isOpen;
+
+                    wrap.classList.toggle('open', nextState);
+                    btn.setAttribute('aria-expanded', nextState);
+
+                    // If opening this one, close the other
+                    if (nextState) {
+                        if (wrap === toolsWrap && dlWrap) toggleMenu(dlWrap, dlBtn, false);
+                        if (wrap === dlWrap && toolsWrap) toggleMenu(toolsWrap, toolsBtn, false);
+                    }
+                }
+
+                if (toolsBtn) {
+                    toolsBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        toggleMenu(toolsWrap, toolsBtn);
+                    });
+                }
+
+                if (dlBtn) {
+                    dlBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        toggleMenu(dlWrap, dlBtn);
+                    });
+                }
+
+                document.addEventListener('click', function (e) {
+                    if (toolsWrap && toolsWrap.classList.contains('open') && !toolsWrap.contains(e.target)) {
+                        toggleMenu(toolsWrap, toolsBtn, false);
+                    }
+                    if (dlWrap && dlWrap.classList.contains('open') && !dlWrap.contains(e.target)) {
+                        toggleMenu(dlWrap, dlBtn, false);
+                    }
+                });
+
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        toggleMenu(toolsWrap, toolsBtn, false);
+                        toggleMenu(dlWrap, dlBtn, false);
+                    }
+                });
+
+                // Close menu when a tool or download item is clicked
+                document.querySelectorAll('.tb-dropdown-menu .tb-dropdown-item, .tb-dropdown-menu li button').forEach(item => {
+                    item.addEventListener('click', () => {
+                        setTimeout(() => {
+                            toggleMenu(toolsWrap, toolsBtn, false);
+                            toggleMenu(dlWrap, dlBtn, false);
+                        }, 100);
+                    });
+                });
+
+                // 2. Mobile 'More' Menu Toggle
+                const moreBtn = document.getElementById('toolbar-more-btn');
+                const moreMenu = document.getElementById('toolbar-more-menu-floating');
+                if (moreBtn && moreMenu) {
+                    moreBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        moreMenu.classList.toggle('show');
+                    });
+                    document.addEventListener('click', function (e) {
+                        if (!moreMenu.contains(e.target) && e.target !== moreBtn) {
+                            moreMenu.classList.remove('show');
+                        }
+                    });
+                }
+            });
+        })();
+    </script>
+
+    <script>
+        // ── Accordion Init & Global Fixes ──────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // 1. Close all top-level fieldset-accordion panels
+            document.querySelectorAll('details.fieldset-accordion').forEach(function (d) {
+                d.removeAttribute('open');
+            });
+
+            // 2. Fix social-controls-wrapper: JS sets display:block but parent is flex,
+            //    so we upgrade it to display:flex + column
+            var scw = document.getElementById('social-controls-wrapper');
+            if (scw) {
+                var observer = new MutationObserver(function (mutations) {
+                    mutations.forEach(function (m) {
+                        if (m.attributeName === 'style') {
+                            if (scw.style.display === 'block') {
+                                scw.style.display = 'flex';
+                                scw.style.flexDirection = 'column';
+                                scw.style.gap = '12px';
+                            }
+                        }
+                    });
+                });
+                observer.observe(scw, { attributes: true, attributeFilter: ['style'] });
+
+                if (scw.style.display !== 'none') {
+                    scw.style.display = 'flex';
+                    scw.style.flexDirection = 'column';
+                    scw.style.gap = '12px';
+                }
+            }
+        });
+    </script>
 
     <script src="/nfc/cookie-consent.js" defer></script>
-    <script src="/nfc/editor-logo-fit.js" defer></script>
-    <script src="/nfc/client-observability.js" defer></script>
     <script src="/nfc/error-reporter.js" defer></script>
     <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/nfc/sw.js',{scope:'/nfc/'}).catch(e=>console.warn('SW reg failed:',e))}</script>
     <script src="/nfc/premium-ui.js" defer></script>

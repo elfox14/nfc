@@ -32,7 +32,7 @@ function trackError(error, context = {}) {
   const entry = {
     timestamp: new Date().toISOString(),
     message: redactSensitiveValue(error.message || String(error)),
-    stack: redactSensitiveValue(error.stack?.split('\n').slice(0, 6).join('\n')),
+    stack: redactSensitiveValue(error.stack?.split('\n').slice(0, 5).join('\n')),
     ...safeContext,
   };
   errorBuffer.push(entry);
@@ -50,34 +50,10 @@ function registerClientErrorRoute(app) {
   });
 
   app.post('/api/client-error', clientErrorLimiter, express.json({ limit: '4kb' }), (req, res) => {
-    const {
-      message,
-      source,
-      line,
-      col,
-      url: pageUrl,
-      stack,
-      release,
-      context,
-      userAgent,
-      timestamp: clientTimestamp
-    } = req.body || {};
+    const { message, source, line, col, url: pageUrl } = req.body || {};
     if (!message) return res.status(400).end();
-
-    const clientError = new Error(String(message));
-    if (stack) clientError.stack = String(stack);
-    console.error(`[ClientError] ${redactSensitiveValue(String(message))} | ${redactSensitiveValue(source || '')}:${line || 0} | ${redactSensitiveValue(pageUrl || '')} | release=${redactSensitiveValue(release || 'unknown')}`);
-    trackError(clientError, {
-      route: 'CLIENT',
-      source,
-      line,
-      col,
-      pageUrl,
-      release,
-      clientContext: context,
-      userAgent,
-      clientTimestamp
-    });
+    console.error(`[ClientError] ${redactSensitiveValue(message)} | ${redactSensitiveValue(source || '')}:${line || 0} | ${redactSensitiveValue(pageUrl || '')}`);
+    trackError(new Error(message), { route: 'CLIENT', source, line, col, pageUrl });
     res.status(204).end();
   });
 }

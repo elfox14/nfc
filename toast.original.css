@@ -1,0 +1,97 @@
+/* toast.css - أنماط الإشعارات */
+
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: opacity 0.3s ease;
+    animation: slideIn 0.3s ease;
+    direction: rtl;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast i {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.toast-error {
+    border-right: 4px solid #e74c3c;
+}
+
+.toast-error i {
+    color: #e74c3c;
+}
+
+.toast-success {
+    border-right: 4px solid #2ecc71;
+}
+
+.toast-success i {
+    color: #2ecc71;
+}
+
+.toast-warning {
+    border-right: 4px solid #f39c12;
+}
+
+.toast-warning i {
+    color: #f39c12;
+}
+
+.toast-info {
+    border-right: 4px solid #3498db;
+}
+
+.toast-info i {
+    color: #3498db;
+}
+
+/* Dark mode support */
+html.dark-mode .toast {
+    background: #2c3e50;
+    color: #ecf0f1;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    #toast-container {
+        left: 10px;
+        right: 10px;
+        top: 10px;
+        max-width: none;
+    }
+    
+    .toast {
+        font-size: 13px;
+        padding: 12px 14px;
+    }
+}

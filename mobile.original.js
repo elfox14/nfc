@@ -1,0 +1,406 @@
+// Mobile Specific Logic
+window.MobileUtils = {
+    isMobile: () => window.innerWidth <= 1024,
+
+    init: () => {
+        console.log('Mobile Mode Initialized');
+        MobileUtils.handleResize();
+        window.addEventListener('resize', MobileUtils.handleResize);
+        MobileUtils.setupNavigation();
+        MobileUtils.setupActionButtons();
+        MobileUtils.setupClickToEdit();
+        MobileUtils.setupCardFlipper();
+        MobileUtils.updateMobileCardScale(); // Add this line
+    },
+
+    handleResize: () => {
+        const isMobile = MobileUtils.isMobile();
+        document.body.classList.toggle('is-mobile', isMobile);
+
+        if (isMobile) {
+            if (!document.querySelector('.active-view')) {
+                MobileUtils.switchView('panel-elements');
+            }
+            MobileUtils.updateMobileCardScale(); // Add this line
+        } else {
+            document.querySelectorAll('.active-view').forEach(el => el.classList.remove('active-view'));
+            document.querySelectorAll('.pro-sidebar').forEach(el => el.style.display = '');
+            document.querySelector('.pro-canvas').style.display = '';
+            document.getElementById('panel-share').style.display = 'none';
+            const cardFlipper = document.querySelector('.card-flipper');
+            if (cardFlipper) {
+                cardFlipper.classList.remove('is-flipped');
+            }
+            document.getElementById('card-front-preview').style.pointerEvents = 'auto';
+            document.getElementById('card-back-preview').style.pointerEvents = 'auto';
+            // Reset scale on desktop
+            const cardsWrapper = document.getElementById('cards-wrapper');
+            if (cardsWrapper) cardsWrapper.style.transform = '';
+            const flipperContainer = document.querySelector('.card-flipper-container');
+            if (flipperContainer) flipperContainer.style.transform = '';
+        }
+    },
+
+    // --- Dynamically scale the card to fit the preview area ---
+    updateMobileCardScale: () => {
+        if (!MobileUtils.isMobile()) return;
+
+        const canvas = document.querySelector('.pro-canvas');
+        const cardsWrapper = document.getElementById('cards-wrapper');
+        const flipperContainer = document.querySelector('.card-flipper-container');
+        if (!canvas || !cardsWrapper || !flipperContainer) return;
+
+        const layout = cardsWrapper.dataset.layout || 'classic';
+
+        // Base card dimensions (CSS reference size)
+        let cardWidth, cardHeight;
+        if (layout === 'vertical') {
+            cardWidth = 330;
+            cardHeight = 510;
+        } else {
+            cardWidth = 510;
+            cardHeight = 330;
+        }
+
+        // Available space: canvas minus padding and flip button area
+        const canvasRect = canvas.getBoundingClientRect();
+        const availableWidth = canvasRect.width - 24; // 12px horizontal padding
+        const availableHeight = canvasRect.height - 64; // flip button + more vertical breathing room
+
+        // Calculate scale to fit, capped at 1.0 to prevent pixelation
+        const scaleX = availableWidth / cardWidth;
+        const scaleY = availableHeight / cardHeight;
+        const scale = Math.min(scaleX, scaleY, 1.0);
+
+        // Apply scale to the flipper container (not wrapper, so flip button stays normal)
+        flipperContainer.style.transform = `scale(${scale})`;
+        flipperContainer.style.transformOrigin = 'center center';
+        
+        // Reset any old wrapper transform
+        cardsWrapper.style.transform = '';
+    },
+
+    setupNavigation: () => {
+        const navItems = document.querySelectorAll('.mobile-nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = item.getAttribute('data-target');
+                MobileUtils.switchView(targetId);
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+    },
+
+    setupCardFlipper: () => {
+        const flipButton = document.getElementById('flip-card-btn-mobile');
+        const cardFlipper = document.querySelector('.card-flipper');
+        const cardFront = document.getElementById('card-front-preview');
+        const cardBack = document.getElementById('card-back-preview');
+
+        if (flipButton && cardFlipper && cardFront && cardBack) {
+            flipButton.addEventListener('click', () => {
+                const isFlipped = cardFlipper.classList.toggle('is-flipped');
+
+                if (isFlipped) {
+                    cardFront.style.pointerEvents = 'none';
+                    cardBack.style.pointerEvents = 'auto';
+                } else {
+                    cardFront.style.pointerEvents = 'auto';
+                    cardBack.style.pointerEvents = 'none';
+                }
+            });
+            cardBack.style.pointerEvents = 'none';
+        }
+    },
+
+    switchView: (targetId) => {
+        const sidebars = document.querySelectorAll('.pro-sidebar');
+        sidebars.forEach(view => {
+            view.classList.remove('active-view');
+            if (window.MobileUtils.isMobile()) {
+                view.style.display = 'none';
+            }
+        });
+
+        const targetView = document.getElementById(targetId);
+        if (targetView) {
+            targetView.classList.add('active-view');
+            targetView.style.display = 'block';
+        }
+
+        const navItem = document.querySelector(`.mobile-nav-item[data-target="${targetId}"]`);
+        if (navItem) {
+            document.querySelectorAll('.mobile-nav-item').forEach(nav => nav.classList.remove('active'));
+            navItem.classList.add('active');
+        }
+    },
+
+    // --- إظهار Toast مرئي على الموبايل ---
+    showMobileToast: (message, type = 'success') => {
+        // Remove existing toast if any
+        const existing = document.getElementById('mobile-toast-notification');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'mobile-toast-notification';
+        const bgColor = type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)'
+            : type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)'
+                : 'linear-gradient(135deg, #4da6ff, #3b82f6)';
+        const icon = type === 'success' ? 'fa-check-circle'
+            : type === 'error' ? 'fa-exclamation-circle'
+                : 'fa-info-circle';
+
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: ${bgColor};
+            color: white;
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            z-index: 99999;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            max-width: 85vw;
+            text-align: center;
+            white-space: nowrap;
+        `;
+        toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+        document.body.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+            });
+        });
+
+        // Animate out and remove
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    },
+
+    // --- إخفاء panel-share والـ sidebars قبل عرض Modal ---
+    hidePanelBeforeModal: () => {
+        if (!MobileUtils.isMobile()) return;
+        const sidebars = document.querySelectorAll('.pro-sidebar');
+        sidebars.forEach(view => {
+            view.classList.remove('active-view');
+            view.style.display = 'none';
+        });
+        // Reset nav active state
+        document.querySelectorAll('.mobile-nav-item').forEach(nav => nav.classList.remove('active'));
+    },
+
+    setupActionButtons: () => {
+        const actionButtons = document.querySelectorAll('.mobile-action-btn');
+
+        // Retry if buttons not found yet (may be injected dynamically)
+        if (!actionButtons || actionButtons.length === 0) {
+            console.warn('[MobileUtils] No .mobile-action-btn found — retrying in 200ms');
+            setTimeout(MobileUtils.setupActionButtons, 200);
+            return;
+        }
+
+        actionButtons.forEach(btn => {
+            // Avoid double-binding
+            if (btn.dataset.mobileInitialized) return;
+            btn.dataset.mobileInitialized = 'true';
+
+            btn.addEventListener('click', (e) => {
+                const triggerId = btn.getAttribute('data-trigger-id');
+                if (!triggerId) {
+                    console.warn('[MobileUtils] mobile-action-btn missing data-trigger-id', btn);
+                    return;
+                }
+
+                // --- معالجة خاصة لزر الحفظ على الموبايل ---
+                if (triggerId === 'save-to-cloud-btn') {
+                    MobileUtils.handleMobileSave(btn);
+                    return;
+                }
+
+                // --- معالجة خاصة لزر المشاركة على الموبايل ---
+                if (triggerId === 'share-card-btn') {
+                    MobileUtils.handleMobileShare(btn);
+                    return;
+                }
+
+                // الأزرار الأخرى: تشغيل بشكل عادي
+                const originalBtn = document.getElementById(triggerId);
+                if (originalBtn) originalBtn.click();
+                else console.warn('[MobileUtils] originalBtn not found for triggerId:', triggerId);
+            });
+        });
+
+        console.log(`[MobileUtils] setupActionButtons: ${actionButtons.length} buttons bound`);
+    },
+
+    // --- معالج الحفظ على الموبايل ---
+    handleMobileSave: async (proxyBtn) => {
+        const isEnglish = document.documentElement.lang.includes('en');
+
+        if (typeof EditorUserStatus === 'undefined' || !EditorUserStatus.saveToCloud) {
+            console.warn('[MobileUtils] EditorUserStatus not available — falling back to original btn');
+            const originalBtn = document.getElementById('save-to-cloud-btn');
+            if (originalBtn) originalBtn.click();
+            else MobileUtils.showMobileToast(isEnglish ? 'Save not available' : 'الحفظ غير متاح', 'error');
+            return;
+        }
+
+        console.log('[MobileUtils] handleMobileSave called');
+        try {
+            await EditorUserStatus.saveToCloud(true);
+
+            // Notify other tabs (dashboard) that a design was saved so they can refresh
+            try {
+                if (typeof window.loadMyDesigns === 'function') {
+                    window.loadMyDesigns();
+                } else {
+                    localStorage.setItem('nfc:design_saved', String(Date.now()));
+                }
+            } catch (notifyErr) {
+                console.warn('[MobileUtils] notify dashboard failed', notifyErr);
+            }
+        } catch (err) {
+            console.error('[MobileUtils] Save error:', err);
+            MobileUtils.showMobileToast(
+                isEnglish ? 'Save failed: ' + err.message : 'فشل الحفظ: ' + err.message,
+                'error'
+            );
+            // Ensure btn is re-enabled
+            if (proxyBtn) { proxyBtn.disabled = false; }
+        }
+    },
+
+    // --- معالج المشاركة على الموبايل ---
+    handleMobileShare: async (proxyBtn) => {
+        // التحقق من تسجيل الدخول أولاً
+        const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
+        if (!isLoggedIn) {
+            const isEnglish = document.documentElement.lang.includes('en');
+            MobileUtils.showMobileToast(
+                isEnglish ? 'Please log in to share your card' : 'يجب تسجيل الدخول لمشاركة بطاقتك',
+                'error'
+            );
+            setTimeout(() => {
+                window.location.href = isEnglish ? 'login-en.html?redirect=editor-en.html' : 'login.html?redirect=editor.html';
+            }, 1500);
+            return;
+        }
+
+        if (typeof ShareManager === 'undefined' || !ShareManager.shareCard) {
+            const originalBtn = document.getElementById('share-card-btn');
+            if (originalBtn) originalBtn.click();
+            return;
+        }
+
+        // استدعاء المشاركة مباشرة — ShareManager.showFallback يُخفي اللوحات تلقائياً
+        try {
+            await ShareManager.shareCard();
+        } catch (err) {
+            console.error('[MobileUtils] Share error:', err);
+            MobileUtils.showMobileToast('حدث خطأ أثناء المشاركة. حاول مجدداً.', 'error');
+        }
+    },
+
+    setupClickToEdit: () => {
+        const cardsWrapper = document.getElementById('cards-wrapper');
+        if (!cardsWrapper) return;
+
+        cardsWrapper.addEventListener('click', (e) => {
+            const clickableElement = e.target.closest('.draggable-on-card');
+            if (!clickableElement) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const targetControlId = clickableElement.dataset.controlId || clickableElement.dataset.inputTargetId;
+            if (!targetControlId) return;
+
+            const targetControl = document.getElementById(targetControlId);
+            if (!targetControl) return;
+
+            if (window.MobileUtils && window.MobileUtils.isMobile()) {
+                MobileUtils.switchView('panel-elements');
+            } else {
+                const navItem = document.querySelector('[data-target="panel-elements"]');
+                if (navItem) navItem.click();
+            }
+
+            setTimeout(() => {
+                targetControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                const firstInput = targetControl.querySelector('input, textarea, select');
+                if (firstInput) firstInput.focus();
+
+                targetControl.classList.add('click-to-edit-highlight');
+                setTimeout(() => targetControl.classList.remove('click-to-edit-highlight'), 2000);
+
+                const accordion = targetControl.closest('details');
+                if (accordion && !accordion.open) {
+                    accordion.open = true;
+                }
+            }, 100);
+        });
+    },
+
+    configureTourSteps: (steps) => {
+        if (window.MobileUtils.isMobile()) {
+            // 1. Design Panel -> Target Design Tab
+            const designStep = steps.find(s => s.id === 'design_panel');
+            if (designStep) {
+                designStep.attachTo = { element: '.mobile-nav-item[data-target="panel-design"]', on: 'top' };
+                designStep.text = "استخدم هذا الزر للوصول إلى خيارات التصميم والألوان والخلفيات.";
+            }
+
+            // 2. Elements Panel -> Target Content Tab
+            const elementsStep = steps.find(s => s.id === 'elements_panel');
+            if (elementsStep) {
+                elementsStep.attachTo = { element: '.mobile-nav-item[data-target="panel-elements"]', on: 'top' };
+                elementsStep.text = "استخدم هذا الزر لإضافة وتعديل بياناتك وصورك.";
+            }
+
+            // 3. Canvas -> No change needed, but ensure it's visible
+            const canvasStep = steps.find(s => s.id === 'canvas_drag');
+            if (canvasStep) {
+                canvasStep.attachTo = { element: '#cards-wrapper', on: 'bottom' };
+            }
+
+            // 4. Actions Toolbar -> Target More Button
+            const actionsStep = steps.find(s => s.id === 'actions_toolbar');
+            if (actionsStep) {
+                actionsStep.attachTo = { element: '#toolbar-more-btn', on: 'bottom' };
+                actionsStep.text = "اضغط هنا للوصول إلى خيارات الحفظ، المشاركة، والمزيد.";
+            }
+        }
+    }
+};
+
+// Wait for critical dependencies before initializing
+function _mobileWaitForDepsAndInit() {
+    if (typeof ShareManager === 'undefined' || typeof EditorUserStatus === 'undefined') {
+        console.log('[MobileUtils] Waiting for ShareManager / EditorUserStatus...');
+        setTimeout(_mobileWaitForDepsAndInit, 150);
+        return;
+    }
+    console.log('[MobileUtils] Dependencies ready — initializing');
+    MobileUtils.init();
+}
+
+// Use window.load to ensure all scripts are fully executed
+window.addEventListener('load', _mobileWaitForDepsAndInit);
