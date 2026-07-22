@@ -25,8 +25,8 @@ describe.each(['editor.html', 'editor-en.html'])('%s more menu', (file) => {
         expect(html).toContain('aria-controls="toolbar-more-menu-floating"');
         expect(html).toContain('toolbar-enhancements.css?v=4.3');
         expect(html).toContain('editor-panels.js?v=1.1');
-        expect(html).toContain('editor-toolbar-v2.css?v=1.1');
-        expect(html).toContain('editor-toolbar-v2.js?v=1.0');
+        expect(html).toContain('editor-toolbar-v2.css?v=2.0');
+        expect(html).toContain('editor-toolbar-v2.js?v=1.1');
         expect(html).not.toContain("moreMenu.classList.toggle('show')");
     });
 
@@ -50,13 +50,17 @@ describe.each(['editor.html', 'editor-en.html'])('%s more menu', (file) => {
             'toolbar-face-back',
             'toolbar-zoom-out',
             'toolbar-zoom-value',
-            'toolbar-zoom-in'
+            'toolbar-zoom-in',
+            'toolbar-grid-toggle',
+            'toolbar-safe-area-toggle',
+            'toolbar-snap-now'
         ].forEach((id) => {
             const exactId = new RegExp(`(?:^|\\s)id="${id}"`, 'g');
             expect(html.match(exactId)).toHaveLength(1);
         });
         expect(html).toContain('data-toolbar-language-target');
         expect(html).toContain('id="preview-mode-btn-menu"');
+        expect(html).toContain('class="tb-more-button-label"');
     });
 
     test('keeps the editor guide available when desktop tools collapse', () => {
@@ -111,12 +115,28 @@ test('mobile more menu is presented as a bottom sheet', () => {
     expect(css).toContain('max-height: min(68vh, 620px)');
 });
 
-test('desktop commands use responsive priority instead of being globally removed', () => {
+test('desktop toolbar uses deterministic physical grid areas in RTL and LTR', () => {
+    const css = read('editor-toolbar-v2.css');
+    expect(css).toContain('grid-template-areas: "brand core actions"');
+    expect(css).toContain('[dir="rtl"] .pro-toolbar { grid-template-areas: "actions core brand"; }');
+    expect(css).toContain('.pro-toolbar .tb-left { grid-area: brand;');
+    expect(css).toContain('.pro-toolbar .tb-right { grid-area: actions;');
+});
+
+test('desktop commands compact labels before moving controls into overflow', () => {
     const css = read('editor-toolbar-v2.css');
     expect(css).toMatch(/\.pro-toolbar #theme-toggle-btn,[\s\S]*#lang-toggle-btn \{ display: inline-flex !important; \}/);
     expect(css).toContain('.pro-toolbar #tools-dropdown-wrap { display: block !important; }');
-    expect(css).toMatch(/@media \(max-width: 1760px\)[\s\S]*\.tb-nav-icons \{ display: none !important; \}/);
-    expect(css).toMatch(/@media \(max-width: 1460px\)[\s\S]*#tools-dropdown-wrap,[\s\S]*#lang-toggle-btn \{ display: none !important; \}/);
+    expect(css).toMatch(/@media \(max-width: 1760px\)[\s\S]*#preview-mode-btn \.tb-label,[\s\S]*#download-options-btn \.tb-label/);
+    expect(css).toMatch(/@media \(max-width: 1040px\)[\s\S]*#tools-dropdown-wrap,[\s\S]*#lang-toggle-btn \{ display: none !important; \}/);
+});
+
+test('view and alignment tools remain available from the overflow menu', () => {
+    ['editor.html', 'editor-en.html'].forEach((file) => {
+        const html = read(file);
+        ['toolbar-grid-toggle-menu', 'toolbar-safe-area-toggle-menu', 'toolbar-snap-now-menu']
+            .forEach((id) => expect(html).toContain(`id="${id}"`));
+    });
 });
 
 test('mobile toolbar retains a compact save-state indicator', () => {

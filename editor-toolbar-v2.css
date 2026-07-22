@@ -1,24 +1,28 @@
 /* MC PRIME editor toolbar — professional shell v2 */
 .pro-toolbar {
-    grid-template-columns: minmax(260px, 1fr) auto minmax(360px, 1fr) !important;
+    direction: ltr;
+    grid-template-columns: minmax(max-content, 1fr) max-content minmax(max-content, 1fr) !important;
+    grid-template-areas: "brand core actions";
     min-height: 68px !important;
     padding: 0 14px !important;
-    column-gap: 14px !important;
+    column-gap: 10px !important;
     overflow: visible !important;
 }
 
 .pro-toolbar .tb-zone { min-width: 0; }
-.pro-toolbar .tb-left { justify-self: start; }
-.pro-toolbar .tb-right { justify-self: end; }
+.pro-toolbar .tb-left { grid-area: brand; justify-self: stretch; justify-content: flex-start; }
+.pro-toolbar .tb-center { grid-area: core; }
+.pro-toolbar .tb-right { grid-area: actions; justify-self: stretch; justify-content: flex-end; }
+[dir="rtl"] .pro-toolbar { grid-template-areas: "actions core brand"; }
+[dir="rtl"] .pro-toolbar .tb-zone { direction: rtl; }
 
 .pro-toolbar .tb-center {
     justify-self: center;
     gap: 6px !important;
     height: 48px;
-    padding: 4px 6px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 15px;
-    background: rgba(255, 255, 255, 0.025);
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
 }
 
 .tb-design-identity {
@@ -58,7 +62,8 @@
 }
 
 .tb-face-switch,
-.tb-zoom-controls {
+.tb-zoom-controls,
+.tb-view-controls {
     display: inline-flex;
     align-items: center;
     flex-shrink: 0;
@@ -66,6 +71,14 @@
     border-radius: 11px;
     background: rgba(4, 12, 24, 0.22);
     padding: 3px;
+}
+
+.tb-view-controls { gap: 2px; }
+.tb-view-controls .tb-icon-btn.is-active {
+    color: #fff !important;
+    border-color: rgba(77, 166, 255, 0.55) !important;
+    background: rgba(77, 166, 255, 0.2) !important;
+    box-shadow: inset 0 0 0 1px rgba(77, 166, 255, 0.12);
 }
 
 .tb-face-switch button,
@@ -125,6 +138,18 @@
 .pro-toolbar #lang-toggle-btn { display: inline-flex !important; }
 .pro-toolbar #tools-dropdown-wrap { display: block !important; }
 .pro-toolbar .tb-mobile-more { display: inline-flex !important; }
+.pro-toolbar .autosave-indicator { display: inline-flex !important; }
+.pro-toolbar #toolbar-more-btn {
+    width: auto !important;
+    min-width: 40px !important;
+    padding: 0 11px !important;
+    gap: 7px;
+}
+.tb-more-button-label {
+    display: inline !important;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
 
 #toolbar-more-menu-floating {
     width: min(290px, calc(100vw - 24px));
@@ -155,35 +180,75 @@
     [dir="ltr"] #toolbar-more-menu-floating { right: 16px !important; left: auto !important; }
 }
 
-/* Progressive disclosure: hide navigation first, then secondary utilities. */
+/* Compact labels before moving any command into the overflow menu. */
 @media (max-width: 1760px) {
-    .pro-toolbar .tb-nav-icons { display: none !important; }
+    .pro-toolbar {
+        grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr) !important;
+        column-gap: 8px !important;
+        padding-inline: 10px !important;
+    }
+    .tb-design-identity { width: 132px; }
+    .pro-toolbar #preview-mode-btn .tb-label,
+    .pro-toolbar #tools-menu-btn .tb-label,
+    .pro-toolbar #tools-menu-btn .tb-caret,
+    .pro-toolbar #lang-toggle-btn .tb-label,
+    .pro-toolbar #download-options-btn .tb-label,
+    .pro-toolbar #download-options-btn .tb-caret,
+    .pro-toolbar .autosave-indicator span,
+    .tb-user-name,
+    .pro-toolbar .tb-user-pill .tb-user-name { display: none !important; }
+    .pro-toolbar #preview-mode-btn,
+    .pro-toolbar #tools-menu-btn,
+    .pro-toolbar #lang-toggle-btn,
+    .pro-toolbar #download-options-btn,
+    .pro-toolbar .tb-user-pill {
+        width: 40px !important;
+        min-width: 40px !important;
+        padding: 0 !important;
+    }
+    .pro-toolbar .autosave-indicator {
+        width: 32px !important;
+        min-width: 32px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        justify-content: center !important;
+    }
 }
 
-@media (max-width: 1600px) {
-    .pro-toolbar #theme-toggle-btn { display: none !important; }
+@media (max-width: 1580px) {
+    .pro-toolbar .tb-view-controls { display: none !important; }
+    .pro-toolbar .tb-zone { gap: 7px !important; }
 }
 
 @media (max-width: 1460px) {
-    .pro-toolbar #tools-dropdown-wrap,
-    .pro-toolbar #lang-toggle-btn { display: none !important; }
-}
-
-@media (max-width: 1500px) {
-    .pro-toolbar {
-        grid-template-columns: minmax(210px, 1fr) auto minmax(310px, 1fr) !important;
-        column-gap: 8px !important;
+    .pro-toolbar .tb-nav-icons,
+    .tb-design-identity,
+    .pro-toolbar .user-status-bar { display: none !important; }
+    .pro-toolbar #save-share-btn {
+        width: 42px !important;
+        min-width: 42px !important;
+        padding: 0 !important;
     }
-    .tb-design-identity { width: 130px; }
-    .tb-user-name,
-    .pro-toolbar .tb-user-pill { max-width: 44px !important; }
+    .pro-toolbar #save-share-btn span { display: none !important; }
 }
 
 @media (max-width: 1220px) {
-    .pro-toolbar { grid-template-columns: auto 1fr auto !important; }
-    .tb-design-identity,
-    .pro-toolbar .user-status-bar,
+    .pro-toolbar {
+        grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+        column-gap: 5px !important;
+    }
     .tb-zoom-controls { display: none !important; }
+    .tb-face-switch button span { display: none; }
+    .tb-face-switch button { width: 36px; min-width: 36px; padding: 0; }
+    .pro-toolbar #toolbar-more-btn { width: 40px !important; padding: 0 !important; }
+    .pro-toolbar #toolbar-more-btn .tb-more-button-label { display: none !important; }
+}
+
+@media (max-width: 1040px) {
+    .pro-toolbar #preview-mode-btn,
+    .pro-toolbar #theme-toggle-btn,
+    .pro-toolbar #tools-dropdown-wrap,
+    .pro-toolbar #lang-toggle-btn { display: none !important; }
 }
 
 @media (max-width: 768px) {

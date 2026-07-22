@@ -66,7 +66,7 @@
     <script src="ai-backgrounds.js" defer></script>
     <script src="editor-tour.js" defer></script>
     <script src="editor-panels.js?v=1.1" defer></script>
-    <script src="editor-toolbar-v2.js?v=1.0" defer></script>
+    <script src="editor-toolbar-v2.js?v=1.1" defer></script>
 
     <style>
         /* =============================================================== */
@@ -118,7 +118,7 @@
 
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
     <link rel="stylesheet" href="/nfc/premium-ui.css">
-    <link rel="stylesheet" href="editor-toolbar-v2.css?v=1.1">
+    <link rel="stylesheet" href="editor-toolbar-v2.css?v=2.0">
 </head>
 
 <body class="editor-body">
@@ -197,6 +197,21 @@
                 <output id="toolbar-zoom-value" aria-live="polite">100%</output>
                 <button type="button" id="toolbar-zoom-in" aria-label="تكبير" title="تكبير">
                     <i class="fas fa-plus"></i>
+                </button>
+            </div>
+
+            <div class="tb-view-controls" role="group" aria-label="أدوات عرض البطاقة">
+                <button type="button" id="toolbar-grid-toggle" class="tb-icon-btn" aria-pressed="false"
+                    title="إظهار أو إخفاء الشبكة" aria-label="الشبكة">
+                    <i class="fas fa-border-all"></i>
+                </button>
+                <button type="button" id="toolbar-safe-area-toggle" class="tb-icon-btn" aria-pressed="false"
+                    title="إظهار أو إخفاء المساحة الآمنة" aria-label="المساحة الآمنة">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button type="button" id="toolbar-snap-now" class="tb-icon-btn"
+                    title="التقاط العنصر المحدد للشبكة" aria-label="التقاط للشبكة">
+                    <i class="fas fa-magnet"></i>
                 </button>
             </div>
 
@@ -311,6 +326,7 @@
                 <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="المزيد"
                     aria-label="More Options" aria-controls="toolbar-more-menu-floating" aria-expanded="false">
                     <i class="fas fa-ellipsis-v"></i>
+                    <span class="tb-more-button-label">المزيد</span>
                 </button>
                 <ul id="toolbar-more-menu" class="tb-mobile-more-menu">
                     <li><a href="index.html" class="tb-dropdown-item"><i class="fas fa-home"></i> الرئيسية</a></li>
@@ -2584,6 +2600,11 @@
         <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> المعرض</button>
         <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> حفظ بالمعرض</button>
         <button id="save-share-btn-menu"><i class="fas fa-save"></i> حفظ ومشاركة</button>
+        <hr>
+        <span class="tb-more-label">العرض والمحاذاة</span>
+        <button id="toolbar-grid-toggle-menu"><i class="fas fa-border-all"></i> الشبكة</button>
+        <button id="toolbar-safe-area-toggle-menu"><i class="fas fa-expand"></i> المساحة الآمنة</button>
+        <button id="toolbar-snap-now-menu"><i class="fas fa-magnet"></i> التقاط العنصر للشبكة</button>
         <hr>
         <span class="tb-more-label">التنزيل</span>
         <button id="download-png-front-menu"><i class="fas fa-image"></i> تنزيل الواجهة PNG</button>

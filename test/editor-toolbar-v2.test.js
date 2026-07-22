@@ -21,6 +21,11 @@ describe('Professional editor toolbar', () => {
                 <button id="toolbar-zoom-out"></button>
                 <output id="toolbar-zoom-value"></output>
                 <button id="toolbar-zoom-in"></button>
+                <button id="toolbar-grid-toggle"></button>
+                <button id="toolbar-safe-area-toggle"></button>
+                <button id="toolbar-snap-now"></button>
+                <button id="toolbar-grid-toggle-menu"></button>
+                <button id="toolbar-safe-area-toggle-menu"></button>
             </header>
             <textarea id="input-name_ar">بطاقة محمود</textarea>
             <div id="cards-wrapper">
@@ -40,6 +45,13 @@ describe('Professional editor toolbar', () => {
         });
         originalHtml2canvas = jest.fn(() => Promise.resolve({ ok: true }));
         window.html2canvas = originalHtml2canvas;
+        window.EditorSmartAlignment = {
+            toggleGrid: jest.fn(),
+            toggleSafeArea: jest.fn(),
+            snapSelected: jest.fn(),
+            isGridEnabled: jest.fn(() => window.EditorSmartAlignment.toggleGrid.mock.calls.length % 2 === 1),
+            isSafeAreaEnabled: jest.fn(() => window.EditorSmartAlignment.toggleSafeArea.mock.calls.length % 2 === 1)
+        };
         require('../editor-toolbar-v2');
         document.dispatchEvent(new Event('DOMContentLoaded'));
     });
@@ -48,6 +60,7 @@ describe('Professional editor toolbar', () => {
         jest.runOnlyPendingTimers();
         jest.useRealTimers();
         delete window.html2canvas;
+        delete window.EditorSmartAlignment;
     });
 
     test('keeps the toolbar title synchronized with the card name using one input event', () => {
@@ -105,5 +118,18 @@ describe('Professional editor toolbar', () => {
 
         expect(originalHtml2canvas).toHaveBeenCalledTimes(1);
         expect(document.documentElement.style.getPropertyValue('--editor-toolbar-zoom')).toBe('1.1');
+    });
+
+    test('reuses smart alignment APIs for grid, safe area and snap controls', () => {
+        document.getElementById('toolbar-grid-toggle').click();
+        document.getElementById('toolbar-safe-area-toggle').click();
+        document.getElementById('toolbar-snap-now').click();
+
+        expect(window.EditorSmartAlignment.toggleGrid).toHaveBeenCalledTimes(1);
+        expect(window.EditorSmartAlignment.toggleSafeArea).toHaveBeenCalledTimes(1);
+        expect(window.EditorSmartAlignment.snapSelected).toHaveBeenCalledWith(8);
+        expect(document.getElementById('toolbar-grid-toggle').getAttribute('aria-pressed')).toBe('true');
+        expect(document.getElementById('toolbar-grid-toggle-menu').classList.contains('is-active')).toBe(true);
+        expect(document.getElementById('toolbar-safe-area-toggle-menu').classList.contains('is-active')).toBe(true);
     });
 });
