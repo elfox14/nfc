@@ -281,10 +281,23 @@
         setTimeout(wireAllDpads, 2000);
     }
 
+    function loadContextInspector() {
+        if (document.getElementById('editor-context-inspector-script')) return;
+        var script = document.createElement('script');
+        script.id = 'editor-context-inspector-script';
+        script.src = 'editor-context-inspector.js?v=1.1';
+        script.defer = true;
+        document.head.appendChild(script);
+    }
+
     // Wait for DOM ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAllPanels);
+        document.addEventListener('DOMContentLoaded', function () {
+            initAllPanels();
+            loadContextInspector();
+        });
     } else {
         initAllPanels();
+        loadContextInspector();
     }
 })();

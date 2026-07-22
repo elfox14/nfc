@@ -38,7 +38,7 @@
     <link rel="stylesheet" href="mobile.css?v=4.2">
     <link rel="stylesheet" href="toast.css?v=4.2">
     <link rel="stylesheet" href="editor-enhancements.css?v=5.5">
-    <link rel="stylesheet" href="toolbar-enhancements.css?v=4.2">
+    <link rel="stylesheet" href="toolbar-enhancements.css?v=4.3">
     <link rel="stylesheet" href="logo-panel.css?v=4.2">
     <link rel="stylesheet" href="ai-suggestion-panel.css?v=1.0">
 
@@ -63,7 +63,7 @@
     <script src="editor-user-status.js" defer></script>
     <script src="ai-backgrounds.js" defer></script>
     <script src="editor-tour.js" defer></script>
-    <script src="editor-panels.js" defer></script>
+    <script src="editor-panels.js?v=1.1" defer></script>
 
     <!-- English placeholder initialization -->
     <script>
@@ -331,7 +331,8 @@
 
             <!-- Mobile More -->
             <div class="toolbar-more-container">
-                <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="More" aria-label="More Options">
+                <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="More" aria-label="More Options"
+                    aria-controls="toolbar-more-menu-floating" aria-expanded="false">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
                 <ul id="toolbar-more-menu" class="tb-mobile-more-menu">
@@ -2619,7 +2620,7 @@
     </script>
 
     <!-- Mobile More Menu (Floating) -->
-    <div id="toolbar-more-menu-floating" class="toolbar-more-menu">
+    <div id="toolbar-more-menu-floating" class="toolbar-more-menu" hidden aria-hidden="true">
         <!-- User Status Bar (Mobile) -->
         <div id="mobile-menu-user-status"
             style="padding: 10px 16px; border-bottom: 1px solid var(--accent-secondary); margin-bottom: 5px; text-align: left; display: flex; flex-direction: column; gap: 8px;">
@@ -2752,14 +2753,28 @@
                 const moreBtn = document.getElementById('toolbar-more-btn');
                 const moreMenu = document.getElementById('toolbar-more-menu-floating');
                 if (moreBtn && moreMenu) {
+                    function setMoreMenuOpen(isOpen) {
+                        moreMenu.hidden = !isOpen;
+                        moreMenu.classList.toggle('open', isOpen);
+                        moreMenu.setAttribute('aria-hidden', String(!isOpen));
+                        moreBtn.setAttribute('aria-expanded', String(isOpen));
+                    }
+
+                    setMoreMenuOpen(false);
                     moreBtn.addEventListener('click', function (e) {
                         e.stopPropagation();
-                        moreMenu.classList.toggle('show');
+                        setMoreMenuOpen(moreMenu.hidden);
                     });
                     document.addEventListener('click', function (e) {
                         if (!moreMenu.contains(e.target) && e.target !== moreBtn) {
-                            moreMenu.classList.remove('show');
+                            setMoreMenuOpen(false);
                         }
+                    });
+                    document.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape') setMoreMenuOpen(false);
+                    });
+                    moreMenu.addEventListener('click', function (e) {
+                        if (e.target.closest('a, button')) setMoreMenuOpen(false);
                     });
                 }
             });
