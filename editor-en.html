@@ -65,6 +65,7 @@
     <script src="ai-backgrounds.js" defer></script>
     <script src="editor-tour.js" defer></script>
     <script src="editor-panels.js?v=1.1" defer></script>
+    <script src="editor-toolbar-v2.js?v=1.0" defer></script>
 
     <!-- English placeholder initialization -->
     <script>
@@ -140,6 +141,7 @@
 
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
     <link rel="stylesheet" href="/nfc/premium-ui.css">
+    <link rel="stylesheet" href="editor-toolbar-v2.css?v=1.0">
 </head>
 
 <body class="editor-body">
@@ -189,6 +191,12 @@
                 <span class="tb-logo-text">MC PRIME</span>
             </a>
 
+            <div class="tb-design-identity">
+                <label for="toolbar-design-title">Card name</label>
+                <input id="toolbar-design-title" type="text" maxlength="80" autocomplete="off"
+                    placeholder="Card name" aria-label="Card name">
+            </div>
+
             <!-- Divider -->
             <div class="tb-divider"></div>
 
@@ -207,7 +215,24 @@
 
             <div class="tb-divider"></div>
 
-            <!-- Undo / Redo -->
+        </div>
+
+        <!-- ═══ ZONE 2: CENTER — Core Actions ═══ -->
+        <div class="tb-zone tb-center">
+
+            <div class="tb-face-switch" role="group" aria-label="Card face">
+                <button type="button" id="toolbar-face-front" class="is-active" aria-pressed="true"
+                    title="Go to the front face">
+                    <i class="fas fa-id-card"></i><span>Front</span>
+                </button>
+                <button type="button" id="toolbar-face-back" aria-pressed="false"
+                    title="Go to the back face">
+                    <i class="fas fa-address-card"></i><span>Back</span>
+                </button>
+            </div>
+
+            <div class="tb-divider"></div>
+
             <div class="tb-history">
                 <button id="undo-btn" class="tb-icon-btn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>
                     <i class="fas fa-undo"></i>
@@ -217,22 +242,15 @@
                 </button>
             </div>
 
-            <!-- Mobile Quick Actions: Save & Share (visible only on mobile) -->
-            <div class="tb-mobile-quick-actions" id="mobile-quick-actions">
-                <button id="mobile-save-btn" class="tb-mqa-btn tb-mqa-save" title="Save" aria-label="Save">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <span>Save</span>
+            <div class="tb-zoom-controls" role="group" aria-label="Canvas zoom">
+                <button type="button" id="toolbar-zoom-out" aria-label="Zoom out" title="Zoom out">
+                    <i class="fas fa-minus"></i>
                 </button>
-                <button id="mobile-share-btn" class="tb-mqa-btn tb-mqa-share" title="Share" aria-label="Share">
-                    <i class="fas fa-share-alt"></i>
-                    <span>Share</span>
+                <output id="toolbar-zoom-value" aria-live="polite">100%</output>
+                <button type="button" id="toolbar-zoom-in" aria-label="Zoom in" title="Zoom in">
+                    <i class="fas fa-plus"></i>
                 </button>
             </div>
-
-        </div>
-
-        <!-- ═══ ZONE 2: CENTER — Core Actions ═══ -->
-        <div class="tb-zone tb-center">
 
             <!-- Preview -->
             <button id="preview-mode-btn" class="tb-action-btn" title="Preview Mode (Ctrl+P)" aria-label="Preview">
@@ -329,6 +347,17 @@
                 <i class="fas fa-paper-plane"></i>
                 <span id="save-btn-text">Save & Share</span>
             </button>
+
+            <div class="tb-mobile-quick-actions" id="mobile-quick-actions">
+                <button id="mobile-save-btn" class="tb-mqa-btn tb-mqa-save" title="Save" aria-label="Save">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Save</span>
+                </button>
+                <button id="mobile-share-btn" class="tb-mqa-btn tb-mqa-share" title="Share" aria-label="Share">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Share</span>
+                </button>
+            </div>
 
             <!-- Mobile More -->
             <div class="toolbar-more-container">
@@ -2640,11 +2669,14 @@
         <a href="blog-en.html" class="menu-item-link"><i class="fas fa-blog"></i> Blog</a>
         <hr class="mobile-only-hr">
 
+        <span class="tb-more-label">Editor</span>
+        <button id="preview-mode-btn-menu" class="tb-mobile-only-action"><i class="fas fa-eye"></i> Preview</button>
         <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> Theme</button>
         <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> Gallery</button>
         <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> Save to Gallery</button>
         <button id="save-share-btn-menu"><i class="fas fa-save"></i> Save &amp; Share</button>
         <hr>
+        <span class="tb-more-label">Download</span>
         <button id="download-png-front-menu"><i class="fas fa-image"></i> Download Front PNG</button>
         <button id="download-png-back-menu"><i class="fas fa-images"></i> Download Back PNG</button>
         <button id="download-pdf-menu"><i class="fas fa-file-pdf"></i> Download PDF</button>
@@ -2654,6 +2686,9 @@
         <button id="start-collab-btn-menu"><i class="fas fa-users"></i> Collaborate</button>
         <button id="share-editor-btn-menu"><i class="fas fa-link"></i> Share Link</button>
         <hr>
+        <span class="tb-more-label">Account</span>
+        <a href="editor.html" class="menu-item-link" data-toolbar-language-target="editor.html"><i
+                class="fas fa-language"></i> العربية</a>
         <a href="login-en.html" id="mobile-menu-login-link" class="menu-item-link"><i class="fas fa-sign-in-alt"></i>
             Login</a>
         <a href="signup-en.html" id="mobile-menu-signup-link" class="menu-item-link"><i class="fas fa-user-plus"></i>

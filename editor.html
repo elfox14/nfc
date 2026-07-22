@@ -66,6 +66,7 @@
     <script src="ai-backgrounds.js" defer></script>
     <script src="editor-tour.js" defer></script>
     <script src="editor-panels.js?v=1.1" defer></script>
+    <script src="editor-toolbar-v2.js?v=1.0" defer></script>
 
     <style>
         /* =============================================================== */
@@ -117,6 +118,7 @@
 
     <link rel="stylesheet" href="/nfc/cookie-consent.css">
     <link rel="stylesheet" href="/nfc/premium-ui.css">
+    <link rel="stylesheet" href="editor-toolbar-v2.css?v=1.0">
 </head>
 
 <body class="editor-body">
@@ -137,6 +139,12 @@
                 <span class="tb-logo-text">MC PRIME</span>
             </a>
 
+            <div class="tb-design-identity">
+                <label for="toolbar-design-title">اسم البطاقة</label>
+                <input id="toolbar-design-title" type="text" maxlength="80" autocomplete="off"
+                    placeholder="اسم البطاقة" aria-label="اسم البطاقة">
+            </div>
+
             <!-- Divider -->
             <div class="tb-divider"></div>
 
@@ -155,7 +163,24 @@
 
             <div class="tb-divider"></div>
 
-            <!-- Undo / Redo -->
+        </div>
+
+        <!-- ═══ ZONE 2: CENTER — Core Actions ═══ -->
+        <div class="tb-zone tb-center">
+
+            <div class="tb-face-switch" role="group" aria-label="وجه البطاقة">
+                <button type="button" id="toolbar-face-front" class="is-active" aria-pressed="true"
+                    title="الانتقال إلى الوجه الأمامي">
+                    <i class="fas fa-id-card"></i><span>الأمامي</span>
+                </button>
+                <button type="button" id="toolbar-face-back" aria-pressed="false"
+                    title="الانتقال إلى الوجه الخلفي">
+                    <i class="fas fa-address-card"></i><span>الخلفي</span>
+                </button>
+            </div>
+
+            <div class="tb-divider"></div>
+
             <div class="tb-history">
                 <button id="undo-btn" class="tb-icon-btn" title="تراجع (Ctrl+Z)" aria-label="تراجع" disabled>
                     <i class="fas fa-undo"></i>
@@ -165,22 +190,15 @@
                 </button>
             </div>
 
-            <!-- Mobile Quick Actions: Save & Share (visible only on mobile) -->
-            <div class="tb-mobile-quick-actions" id="mobile-quick-actions">
-                <button id="mobile-save-btn" class="tb-mqa-btn tb-mqa-save" title="حفظ" aria-label="حفظ">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <span>حفظ</span>
+            <div class="tb-zoom-controls" role="group" aria-label="تكبير مساحة التصميم">
+                <button type="button" id="toolbar-zoom-out" aria-label="تصغير" title="تصغير">
+                    <i class="fas fa-minus"></i>
                 </button>
-                <button id="mobile-share-btn" class="tb-mqa-btn tb-mqa-share" title="مشاركة" aria-label="مشاركة">
-                    <i class="fas fa-share-alt"></i>
-                    <span>مشاركة</span>
+                <output id="toolbar-zoom-value" aria-live="polite">100%</output>
+                <button type="button" id="toolbar-zoom-in" aria-label="تكبير" title="تكبير">
+                    <i class="fas fa-plus"></i>
                 </button>
             </div>
-
-        </div>
-
-        <!-- ═══ ZONE 2: CENTER — Core Actions ═══ -->
-        <div class="tb-zone tb-center">
 
             <!-- Preview -->
             <button id="preview-mode-btn" class="tb-action-btn" title="وضع المعاينة (Ctrl+P)" aria-label="معاينة">
@@ -276,6 +294,17 @@
                 <i class="fas fa-paper-plane"></i>
                 <span id="save-btn-text">حفظ ومشاركة</span>
             </button>
+
+            <div class="tb-mobile-quick-actions" id="mobile-quick-actions">
+                <button id="mobile-save-btn" class="tb-mqa-btn tb-mqa-save" title="حفظ" aria-label="حفظ">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>حفظ</span>
+                </button>
+                <button id="mobile-share-btn" class="tb-mqa-btn tb-mqa-share" title="مشاركة" aria-label="مشاركة">
+                    <i class="fas fa-share-alt"></i>
+                    <span>مشاركة</span>
+                </button>
+            </div>
 
             <!-- Mobile More -->
             <div class="toolbar-more-container">
@@ -2547,11 +2576,14 @@
         <a href="blog.html" class="menu-item-link"><i class="fas fa-blog"></i> المدونة</a>
         <hr class="mobile-only-hr">
 
+        <span class="tb-more-label">المحرر</span>
+        <button id="preview-mode-btn-menu" class="tb-mobile-only-action"><i class="fas fa-eye"></i> معاينة</button>
         <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> المظهر</button>
         <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> المعرض</button>
         <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> حفظ بالمعرض</button>
         <button id="save-share-btn-menu"><i class="fas fa-save"></i> حفظ ومشاركة</button>
         <hr>
+        <span class="tb-more-label">التنزيل</span>
         <button id="download-png-front-menu"><i class="fas fa-image"></i> تنزيل الواجهة PNG</button>
         <button id="download-png-back-menu"><i class="fas fa-images"></i> تنزيل الخلفية PNG</button>
         <button id="download-pdf-menu"><i class="fas fa-file-pdf"></i> تنزيل PDF</button>
@@ -2561,6 +2593,9 @@
         <button id="start-collab-btn-menu"><i class="fas fa-users"></i> تعاون</button>
         <button id="share-editor-btn-menu"><i class="fas fa-link"></i> مشاركة الرابط</button>
         <hr>
+        <span class="tb-more-label">الحساب</span>
+        <a href="editor-en.html" class="menu-item-link" data-toolbar-language-target="editor-en.html"><i
+                class="fas fa-language"></i> English</a>
         <a href="login.html" id="mobile-menu-login-link" class="menu-item-link"><i class="fas fa-sign-in-alt"></i> تسجيل
             دخول</a>
         <a href="signup.html" id="mobile-menu-signup-link" class="menu-item-link"><i class="fas fa-user-plus"></i> إنشاء

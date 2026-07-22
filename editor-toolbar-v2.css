@@ -1,0 +1,237 @@
+/* MC PRIME editor toolbar — professional shell v2 */
+.pro-toolbar {
+    grid-template-columns: minmax(260px, 1fr) auto minmax(360px, 1fr) !important;
+    min-height: 68px !important;
+    padding: 0 14px !important;
+    column-gap: 14px !important;
+    overflow: visible !important;
+}
+
+.pro-toolbar .tb-zone { min-width: 0; }
+.pro-toolbar .tb-left { justify-self: start; }
+.pro-toolbar .tb-right { justify-self: end; }
+
+.pro-toolbar .tb-center {
+    justify-self: center;
+    gap: 6px !important;
+    height: 48px;
+    padding: 4px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.tb-design-identity {
+    display: grid;
+    gap: 2px;
+    width: min(180px, 16vw);
+    min-width: 120px;
+}
+
+.tb-design-identity label {
+    color: var(--text-secondary, #91a3b7);
+    font-size: 0.62rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.tb-design-identity input {
+    width: 100%;
+    min-width: 0;
+    padding: 2px 0 4px;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    outline: 0;
+    background: transparent;
+    color: var(--text-primary, #e6f0f7);
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.tb-design-identity input:hover,
+.tb-design-identity input:focus {
+    border-bottom-color: rgba(77, 166, 255, 0.55);
+    color: #fff;
+}
+
+.tb-face-switch,
+.tb-zoom-controls {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 11px;
+    background: rgba(4, 12, 24, 0.22);
+    padding: 3px;
+}
+
+.tb-face-switch button,
+.tb-zoom-controls button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 32px;
+    min-width: 34px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary, #91a3b7);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+}
+
+.tb-face-switch button:hover,
+.tb-zoom-controls button:hover:not(:disabled) {
+    color: #fff;
+    background: rgba(77, 166, 255, 0.1);
+}
+
+.tb-face-switch button.is-active {
+    color: #fff;
+    background: linear-gradient(135deg, #2563eb, #4da6ff);
+    box-shadow: 0 4px 14px rgba(77, 166, 255, 0.28);
+}
+
+.tb-zoom-controls { gap: 0; }
+.tb-zoom-controls button { padding: 0; }
+.tb-zoom-controls button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+#toolbar-zoom-value {
+    min-width: 44px;
+    color: var(--text-primary, #e6f0f7);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+@media (min-width: 1025px) {
+    #cards-wrapper .card-flipper-container { zoom: var(--editor-toolbar-zoom, 1); }
+}
+
+/* Low-frequency commands live in the three-dots menu. */
+.pro-toolbar .tb-nav-icons,
+.pro-toolbar #theme-toggle-btn,
+.pro-toolbar #tools-dropdown-wrap,
+.pro-toolbar #lang-toggle-btn { display: none !important; }
+.pro-toolbar .tb-mobile-more { display: inline-flex !important; }
+
+#toolbar-more-menu-floating {
+    width: min(290px, calc(100vw - 24px));
+    max-height: calc(100vh - 112px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+#toolbar-more-menu-floating .tb-more-label {
+    display: block;
+    padding: 7px 12px 4px;
+    color: var(--text-secondary, #91a3b7);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+@media (min-width: 769px) {
+    #toolbar-more-menu-floating {
+        top: 88px !important;
+        right: auto !important;
+        left: 16px !important;
+        border-radius: 14px !important;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.42) !important;
+    }
+    [dir="ltr"] #toolbar-more-menu-floating { right: 16px !important; left: auto !important; }
+}
+
+@media (max-width: 1500px) {
+    .pro-toolbar {
+        grid-template-columns: minmax(210px, 1fr) auto minmax(310px, 1fr) !important;
+        column-gap: 8px !important;
+    }
+    .tb-design-identity { width: 130px; }
+    .tb-user-name,
+    .pro-toolbar .tb-user-pill { max-width: 44px !important; }
+}
+
+@media (max-width: 1220px) {
+    .pro-toolbar { grid-template-columns: auto 1fr auto !important; }
+    .tb-design-identity,
+    .pro-toolbar .user-status-bar,
+    .tb-zoom-controls { display: none !important; }
+}
+
+@media (max-width: 768px) {
+    .pro-toolbar {
+        top: 8px !important;
+        right: 8px !important;
+        left: 8px !important;
+        grid-template-columns: auto 1fr auto !important;
+        width: auto !important;
+        height: 58px !important;
+        min-height: 58px !important;
+        padding: 0 7px !important;
+        column-gap: 4px !important;
+        border-radius: 16px !important;
+    }
+    .pro-toolbar .tb-left,
+    .pro-toolbar .tb-center,
+    .pro-toolbar .tb-right { gap: 3px !important; }
+    .pro-toolbar .tb-center { height: 42px; padding: 0; border: 0; background: transparent; }
+    .tb-logo-text,
+    .tb-design-identity,
+    .tb-zoom-controls,
+    .pro-toolbar #preview-mode-btn,
+    .pro-toolbar .autosave-indicator,
+    .pro-toolbar .download-container,
+    .pro-toolbar #save-share-btn,
+    .pro-toolbar .user-status-bar,
+    .pro-toolbar .tb-divider,
+    .pro-toolbar #mobile-share-btn { display: none !important; }
+    .pro-toolbar .tb-logo { width: 34px; justify-content: center; }
+    .pro-toolbar .tb-logo img { width: 28px !important; height: 28px !important; object-fit: contain; }
+    .tb-face-switch { padding: 2px; border-radius: 10px; }
+    .tb-face-switch button { width: 34px; min-width: 34px; height: 32px; padding: 0; }
+    .tb-face-switch button span { display: none; }
+    .pro-toolbar .tb-history .tb-icon-btn,
+    .pro-toolbar #toolbar-more-btn,
+    .pro-toolbar #mobile-save-btn {
+        width: 34px !important;
+        min-width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+    }
+    .pro-toolbar .tb-mobile-quick-actions { display: inline-flex !important; margin: 0 !important; }
+    .pro-toolbar #mobile-save-btn span { display: none !important; }
+    #toolbar-more-menu-floating {
+        top: auto !important;
+        right: 10px !important;
+        bottom: calc(74px + env(safe-area-inset-bottom)) !important;
+        left: 10px !important;
+        width: auto !important;
+        max-height: min(68vh, 620px);
+        padding: 10px !important;
+        border-radius: 20px !important;
+        transform: translateY(18px) scale(0.98);
+        transform-origin: bottom center;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.58) !important;
+    }
+    #toolbar-more-menu-floating.open { transform: translateY(0) scale(1) !important; }
+    #toolbar-more-menu-floating button,
+    #toolbar-more-menu-floating .menu-item-link { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tb-face-switch button,
+    .tb-design-identity input,
+    #toolbar-more-menu-floating { transition: none !important; }
+}
