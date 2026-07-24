@@ -162,9 +162,15 @@ describe('Editor independent card layer resizing', () => {
         expect(mutation.mock.calls[0][0].detail.action).toBe('independent-resize');
     });
 
-    test('is loaded once by the shared context inspector', () => {
-        var inspector = fs.readFileSync(path.join(__dirname, '..', 'editor-context-inspector.js'), 'utf8');
-        expect((inspector.match(/editor-independent-resize\.js\?v=1\.0/g) || [])).toHaveLength(1);
-        expect(inspector).toContain('data-editor-independent-resize-loader');
+    test('disables geometry transitions on the logo image itself', () => {
+        var styles = document.getElementById('editor-independent-resize-css').textContent;
+        expect(styles).toContain('#card-logo #card-logo-img');
+        expect(styles).toContain('#card-logo .logo-front');
+    });
+
+    test.each(['editor.html', 'editor-en.html'])('loads the fresh controller directly in %s', (file) => {
+        var html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+        expect((html.match(/editor-independent-resize\.js\?v=1\.1/g) || [])).toHaveLength(1);
+        expect((html.match(/editor-extension-persistence\.js\?v=1\.1/g) || [])).toHaveLength(1);
     });
 });

@@ -224,6 +224,8 @@
             '.card-content-layer>#card-name,.card-content-layer>#card-tagline,.card-content-layer>#qr-code-wrapper,',
             '.card-content-layer>#card-logo,.card-content-layer>#card-personal-photo-wrapper{',
             'transition-property:opacity,box-shadow,filter,color,background-color,border-color!important}',
+            '.card-content-layer>#card-logo #card-logo-img,.card-content-layer>#card-logo .logo-front{',
+            'transition-property:opacity,filter,background-color,border-color!important}',
             '.card-content-layer>.phone-button-draggable-wrapper .phone-button,',
             '.card-content-layer>.draggable-social-link a{',
             'transition-property:transform,opacity,box-shadow,filter,color,background-color,border-color!important}'
