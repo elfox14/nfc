@@ -285,21 +285,39 @@ router.post('/upload-image-public', publicUploadLimiter, upload.single('image'),
 router.post('/save-design', verifyToken, async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
-    let data = req.body || {};
-    if (data.inputs) data.inputs = sanitizeInputs(data.inputs);
-    if (data.dynamic) {
-      if (data.dynamic.phones) {
-        data.dynamic.phones = data.dynamic.phones.map(phone => ({ ...phone, value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : '' }));
+    const sanitizeDesignState = (designState) => {
+      if (!designState || typeof designState !== 'object' || Array.isArray(designState)) {
+        return {};
       }
-      if (data.dynamic.social) {
-        data.dynamic.social = data.dynamic.social.map(link => ({ ...link, value: link && link.value ? DOMPurify.sanitize(String(link.value)) : '' }));
-      }
-      if (data.dynamic.staticSocial) {
-        for (const key in data.dynamic.staticSocial) {
-          if (data.dynamic.staticSocial[key] && data.dynamic.staticSocial[key].value) {
-            data.dynamic.staticSocial[key].value = DOMPurify.sanitize(String(data.dynamic.staticSocial[key].value));
+
+      if (designState.inputs) designState.inputs = sanitizeInputs(designState.inputs);
+      if (designState.dynamic) {
+        if (designState.dynamic.phones) {
+          designState.dynamic.phones = designState.dynamic.phones.map(phone => ({ ...phone, value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : '' }));
+        }
+        if (designState.dynamic.social) {
+          designState.dynamic.social = designState.dynamic.social.map(link => ({ ...link, value: link && link.value ? DOMPurify.sanitize(String(link.value)) : '' }));
+        }
+        if (designState.dynamic.staticSocial) {
+          for (const key in designState.dynamic.staticSocial) {
+            if (designState.dynamic.staticSocial[key] && designState.dynamic.staticSocial[key].value) {
+              designState.dynamic.staticSocial[key].value = DOMPurify.sanitize(String(designState.dynamic.staticSocial[key].value));
+            }
           }
         }
+      }
+
+      return designState;
+    };
+
+    let data = sanitizeDesignState(req.body || {});
+    if (data.publishedState) {
+      data.publishedState = sanitizeDesignState(data.publishedState);
+      // Reject recursive snapshots even if a crafted client sends one.
+      delete data.publishedState.publishedState;
+      delete data.publishedState.publishedAt;
+      if (!data.publishedState.inputs && !data.publishedState.dynamic) {
+        delete data.publishedState;
       }
     }
     const existingId = req.query.id;
@@ -348,8 +366,9 @@ router.post('/save-design', verifyToken, async (req, res) => {
       }
     }
 
-    // Helper: preserve captured card images from existing design during auto-save
-    const preserveCapturedImages = (existingDoc) => {
+    // Preserve the complete published revision during draft-only saves. The
+    // captured images and their editable state must always move together.
+    const preservePublishedRevision = (existingDoc) => {
       if (existingDoc?.data?.imageUrls) {
         if (!data.imageUrls) data.imageUrls = {};
         const existing = existingDoc.data.imageUrls;
@@ -360,6 +379,12 @@ router.post('/save-design', verifyToken, async (req, res) => {
           data.imageUrls.capturedBack = existing.capturedBack;
         }
       }
+      if (!data.publishedState && existingDoc?.data?.publishedState) {
+        data.publishedState = existingDoc.data.publishedState;
+      }
+      if (!data.publishedAt && existingDoc?.data?.publishedAt) {
+        data.publishedAt = existingDoc.data.publishedAt;
+      }
     };
 
     const updateDoc = {
@@ -369,9 +394,10 @@ router.post('/save-design', verifyToken, async (req, res) => {
     };
 
     if (isUpdate) {
-      // Preserve captured images during auto-save (which doesn't re-capture)
+      // A draft save must never separate captured images from the state that
+      // produced them.
       const existingDoc = await getDb().collection(designsCollectionName).findOne({ shortId: shortId });
-      preserveCapturedImages(existingDoc);
+      preservePublishedRevision(existingDoc);
 
       await getDb().collection(designsCollectionName).updateOne(
         { shortId: shortId },

@@ -639,6 +639,15 @@ const ShareManager = {
         });
     },
 
+    createPublishedState(state) {
+        const publishedState = JSON.parse(JSON.stringify(state || {}));
+        // A published snapshot must stay one level deep. This prevents an
+        // older snapshot from being nested again on every subsequent publish.
+        delete publishedState.publishedState;
+        delete publishedState.publishedAt;
+        return publishedState;
+    },
+
     async saveDesign(stateToSave = null) {
         const state = stateToSave || StateManager.getStateObject();
         try {
@@ -732,6 +741,12 @@ const ShareManager = {
         // Ask user if they want to display their design in the gallery
         shareState.sharedToGallery = await customConfirm(i18nMain.galleryPrompt);
 
+        // Keep the editable state that produced the two captured images. Other
+        // actions may save a newer draft later, but dashboard Edit must always
+        // reconstruct the same card shown by those captured images.
+        shareState.publishedAt = new Date().toISOString();
+        shareState.publishedState = this.createPublishedState(shareState);
+
         UIManager.setButtonLoadingState(DOMElements.buttons.shareCard, true, i18nMain.generating);
         if (mobileShareProxyBtn) UIManager.setButtonLoadingState(mobileShareProxyBtn, true, i18nMain.generating || 'جاري الإنشاء...');
 
@@ -758,6 +773,9 @@ const ShareManager = {
         const editorUrl = new URL(window.location.href);
         editorUrl.searchParams.delete('id');
         editorUrl.searchParams.set('id', designId);
+        // A shared editor link intentionally opens the latest draft. Normal
+        // dashboard edit links omit this flag and restore the published card.
+        editorUrl.searchParams.set('mode', 'draft');
 
         this.performShare(editorUrl.href, 'تعديل بطاقة العمل', 'استخدم هذا الرابط لتعديل تصميم بطاقة العمل.');
     },
@@ -818,10 +836,21 @@ const ShareManager = {
                     }
                 });
 
-                let state = result.inputs ? result : (result.data || result);
+                const storedState = result.inputs ? result : (result.data || result);
+                const wantsDraft = params.get('mode') === 'draft';
+                const hasPublishedState = storedState &&
+                    storedState.publishedState &&
+                    (storedState.publishedState.inputs || storedState.publishedState.dynamic);
+                const state = !wantsDraft && hasPublishedState
+                    ? storedState.publishedState
+                    : storedState;
 
                 if (state && (state.inputs || state.dynamic)) {
-                    console.log("[ShareManager] DOM ready. Applying design state...");
+                    console.log(
+                        hasPublishedState && !wantsDraft
+                            ? "[ShareManager] DOM ready. Applying published design state..."
+                            : "[ShareManager] DOM ready. Applying draft design state..."
+                    );
                     Config.currentDesignId = designId;
                     localStorage.setItem('nfc:editingDesignId', designId);
                     StateManager.applyState(state, false);
