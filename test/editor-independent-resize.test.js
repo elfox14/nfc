@@ -143,6 +143,28 @@ describe('Editor independent card layer resizing', () => {
         expect(tagline.getAttribute('data-y')).toBe('0');
     });
 
+    test('converts viewport movement into local card coordinates when the canvas is scaled', () => {
+        var card = document.getElementById('card-front-content');
+        var name = document.getElementById('card-name');
+        var phase = 'before';
+
+        Object.defineProperty(card, 'offsetWidth', { configurable: true, value: 600 });
+        Object.defineProperty(card, 'offsetHeight', { configurable: true, value: 360 });
+        card.getBoundingClientRect = () => rect(0, 0, 300, 180);
+        name.getBoundingClientRect = () => {
+            var localY = parseFloat(name.getAttribute('data-y')) || 0;
+            var base = phase === 'before' ? rect(100, 60, 100, 20) : rect(100, 40, 100, 20);
+            return rect(base.left, base.top + localY * 0.5, base.width, base.height);
+        };
+
+        var snapshot = window.EditorIndependentResize.capture();
+        phase = 'after';
+        window.EditorIndependentResize.reconcile(snapshot);
+
+        expect(name.getAttribute('data-y')).toBe('40');
+        expect(window.EditorIndependentResize.viewportScale(name)).toEqual({ x: 0.5, y: 0.5 });
+    });
+
     test('installs once and emits one history mutation per reconciliation', () => {
         var name = document.getElementById('card-name');
         var phase = 'before';
@@ -170,7 +192,8 @@ describe('Editor independent card layer resizing', () => {
 
     test.each(['editor.html', 'editor-en.html'])('loads the fresh controller directly in %s', (file) => {
         var html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
-        expect((html.match(/editor-independent-resize\.js\?v=1\.1/g) || [])).toHaveLength(1);
+        expect((html.match(/editor-independent-resize\.js\?v=1\.2/g) || [])).toHaveLength(1);
         expect((html.match(/editor-extension-persistence\.js\?v=1\.1/g) || [])).toHaveLength(1);
+        expect((html.match(/script-card\.js\?v=2\.2/g) || [])).toHaveLength(1);
     });
 });

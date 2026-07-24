@@ -1121,6 +1121,7 @@ const StateManager = {
             dynamic: { phones: [], social: [], staticSocial: {} },
             imageUrls: {},
             positions: {},
+            anchors: {},
             placements: {},
             visibilities: {}
         };
@@ -1224,6 +1225,20 @@ const StateManager = {
             const el = document.getElementById(id);
             if (el) {
                 state.positions[id] = { x: parseFloat(el.getAttribute('data-x')) || 0, y: parseFloat(el.getAttribute('data-y')) || 0 };
+
+                const container = el.closest('.card-content-layer');
+                if (container && typeof el.getBoundingClientRect === 'function') {
+                    const cardRect = container.getBoundingClientRect();
+                    const elementRect = el.getBoundingClientRect();
+                    if (cardRect.width > 0 && cardRect.height > 0 && elementRect.width > 0 && elementRect.height > 0) {
+                        state.anchors[id] = {
+                            x: Math.round((((elementRect.left + elementRect.width / 2) - cardRect.left) / cardRect.width) * 100000) / 100000,
+                            y: Math.round((((elementRect.top + elementRect.height / 2) - cardRect.top) / cardRect.height) * 100000) / 100000
+                        };
+                    } else if (window.editorState && window.editorState.anchors && window.editorState.anchors[id]) {
+                        state.anchors[id] = { ...window.editorState.anchors[id] };
+                    }
+                }
             }
         });
 
@@ -1246,6 +1261,67 @@ const StateManager = {
 
     save() { try { const state = this.getStateObject(); localStorage.setItem(Config.LOCAL_STORAGE_KEY, JSON.stringify(state)); } catch (e) { console.error("Failed to save state:", e); } },
     load() { try { const savedState = localStorage.getItem(Config.LOCAL_STORAGE_KEY); if (savedState) { this.applyState(JSON.parse(savedState), false); return true; } return false; } catch (e) { console.error("Failed to load state:", e); return false; } },
+
+    applyStoredPositions(positions) {
+        if (!positions) return;
+
+        for (const [id, pos] of Object.entries(positions)) {
+            let elementId = id;
+            if (id.startsWith('form-group-static-') && !document.getElementById(id)) {
+                elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
+            }
+            if (id.startsWith('dynsocial_') && !document.getElementById(id)) {
+                elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`;
+            }
+
+            const targetEl = document.getElementById(elementId);
+            if (targetEl && pos) {
+                const x = Number.parseFloat(pos.x) || 0;
+                const y = Number.parseFloat(pos.y) || 0;
+                targetEl.style.transform = `translate(${x}px, ${y}px)`;
+                targetEl.setAttribute('data-x', x);
+                targetEl.setAttribute('data-y', y);
+            }
+        }
+    },
+
+    applyStoredAnchors(anchors) {
+        if (!anchors) return;
+
+        for (const [id, anchor] of Object.entries(anchors)) {
+            const targetEl = document.getElementById(id);
+            const container = targetEl && targetEl.closest('.card-content-layer');
+            if (!targetEl || !container || !anchor) continue;
+
+            const cardRect = container.getBoundingClientRect();
+            const elementRect = targetEl.getBoundingClientRect();
+            if (cardRect.width <= 0 || cardRect.height <= 0 || elementRect.width <= 0 || elementRect.height <= 0) continue;
+
+            const anchorX = Number.parseFloat(anchor.x);
+            const anchorY = Number.parseFloat(anchor.y);
+            if (!Number.isFinite(anchorX) || !Number.isFinite(anchorY)) continue;
+
+            const targetCenterX = cardRect.left + anchorX * cardRect.width;
+            const targetCenterY = cardRect.top + anchorY * cardRect.height;
+            const currentCenterX = elementRect.left + elementRect.width / 2;
+            const currentCenterY = elementRect.top + elementRect.height / 2;
+            const scaleX = container.offsetWidth > 0 ? cardRect.width / container.offsetWidth : 1;
+            const scaleY = container.offsetHeight > 0 ? cardRect.height / container.offsetHeight : 1;
+            const currentX = Number.parseFloat(targetEl.getAttribute('data-x')) || 0;
+            const currentY = Number.parseFloat(targetEl.getAttribute('data-y')) || 0;
+            const nextX = currentX + (targetCenterX - currentCenterX) / (scaleX || 1);
+            const nextY = currentY + (targetCenterY - currentCenterY) / (scaleY || 1);
+
+            targetEl.style.transform = `translate(${nextX}px, ${nextY}px)`;
+            targetEl.setAttribute('data-x', nextX);
+            targetEl.setAttribute('data-y', nextY);
+        }
+    },
+
+    restoreGeometry(state) {
+        this.applyStoredPositions(state && state.positions);
+        this.applyStoredAnchors(state && state.anchors);
+    },
 
     applyState(state, triggerSave = true) {
         if (!state) return;
@@ -1351,28 +1427,6 @@ const StateManager = {
             input.dispatchEvent(new Event('change', { bubbles: true }));
         });
 
-        if (state.positions) {
-            for (const [id, pos] of Object.entries(state.positions)) {
-                let elementId = id;
-                if (id.startsWith('form-group-static-') && !document.getElementById(id)) {
-                    elementId = `social-link-static-${id.replace('form-group-static-', '')}`;
-                }
-                if (id.startsWith('dynsocial_') && !document.getElementById(id)) {
-                    elementId = `social-link-${id.replace(/[^a-zA-Z0-9-]/g, '-')}`;
-                }
-
-                const targetEl = document.getElementById(elementId);
-
-                if (targetEl && pos) {
-                    targetEl.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
-                    targetEl.setAttribute('data-x', pos.x);
-                    targetEl.setAttribute('data-y', pos.y);
-                }
-            }
-        } else {
-            // DragManager.resetPositions(); // You might need to implement this
-        }
-
         if (state.inputs && state.inputs['theme-select-input']) {
             UIManager.setActiveThumbnail(state.inputs['theme-select-input']);
         }
@@ -1388,7 +1442,6 @@ const StateManager = {
         }
 
         CardManager.handleMasterSocialToggle();
-        this.isApplyingState = false;
 
         if (!state.inputs || !state.inputs['layout-select-visual']) {
             console.log("[StateManager] Layout select missing in state, defaulting to classic");
@@ -1397,6 +1450,20 @@ const StateManager = {
             console.log("[StateManager] Applying layout from state:", state.inputs['layout-select-visual']);
             CardManager.applyLayout(state.inputs['layout-select-visual']);
         }
+
+        // Geometry must be restored only after all elements have been re-parented,
+        // rendered and the saved layout has been activated.
+        this.restoreGeometry(state);
+
+        if (state.anchors) {
+            requestAnimationFrame(() => this.applyStoredAnchors(state.anchors));
+            const logoImg = DOMElements.draggable.logoImg;
+            if (logoImg && !logoImg.complete) {
+                logoImg.addEventListener('load', () => this.applyStoredAnchors(state.anchors), { once: true });
+            }
+        }
+
+        this.isApplyingState = false;
     },
 
     reset() {
