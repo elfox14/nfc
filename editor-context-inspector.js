@@ -111,6 +111,7 @@
         if (!global.EditorExtensionPersistence) loadScript('editor-extension-persistence.js?v=1.0', 'data-editor-extension-persistence-loader');
         if (!global.EditorSmartValidation) loadScript('editor-smart-validation.js?v=1.0', 'data-editor-smart-validation-loader');
         if (!global.EditorPublishGate) loadScript('editor-publish-gate.js?v=1.0', 'data-editor-publish-gate-loader');
+        if (!global.EditorIndependentResize) loadScript('editor-independent-resize.js?v=1.0', 'data-editor-independent-resize-loader');
     }
     global.EditorContextInspector = { select: setSelected, getSelected: function () { return selectedElement; } };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
