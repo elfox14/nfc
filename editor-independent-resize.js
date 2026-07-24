@@ -1,5 +1,5 @@
 /**
- * MC PRIME NFC — Independent card layer resizing v1.0
+ * MC PRIME NFC — Independent card layer resizing v1.2
  *
  * Keeps every card layer visually anchored while another layer changes size.
  * The legacy editor intentionally keeps the core layers in a flex layout, so
@@ -101,10 +101,25 @@
         return layers;
     }
 
+    function viewportScale(element) {
+        var container = element.closest('.card-content-layer');
+        if (!container || typeof container.getBoundingClientRect !== 'function') {
+            return { x: 1, y: 1 };
+        }
+        var rect = normalizeRect(container.getBoundingClientRect());
+        var width = Number(container.offsetWidth);
+        var height = Number(container.offsetHeight);
+        return {
+            x: width > 0 && rect.width > 0 ? rect.width / width : 1,
+            y: height > 0 && rect.height > 0 ? rect.height / height : 1
+        };
+    }
+
     function translate(element, deltaX, deltaY) {
         if (Math.abs(deltaX) < 0.05 && Math.abs(deltaY) < 0.05) return false;
-        var x = rounded(number(element.getAttribute('data-x')) + deltaX);
-        var y = rounded(number(element.getAttribute('data-y')) + deltaY);
+        var scale = viewportScale(element);
+        var x = rounded(number(element.getAttribute('data-x')) + deltaX / (scale.x || 1));
+        var y = rounded(number(element.getAttribute('data-y')) + deltaY / (scale.y || 1));
         element.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
         element.setAttribute('data-x', String(x));
         element.setAttribute('data-y', String(y));
@@ -242,7 +257,8 @@
     global.EditorIndependentResize = {
         capture: capture,
         reconcile: reconcile,
-        collectLayers: collectLayers
+        collectLayers: collectLayers,
+        viewportScale: viewportScale
     };
 
     init();
