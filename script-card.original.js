@@ -1082,7 +1082,11 @@ const CardManager = {
     },
 
     applyLayout(layoutName = 'classic') {
-        DOMElements.cardsWrapper.dataset.layout = layoutName;
+        const supportedLayout = layoutName === 'vertical' ? 'vertical' : 'classic';
+        DOMElements.cardsWrapper.dataset.layout = supportedLayout;
+        if (DOMElements.layoutSelect) {
+            DOMElements.layoutSelect.value = supportedLayout;
+        }
         if (window.MobileUtils && window.MobileUtils.isMobile()) {
             window.MobileUtils.updateMobileCardScale();
         }
@@ -1346,13 +1350,16 @@ const StateManager = {
 
         if (state.inputs) {
             for (const [key, value] of Object.entries(state.inputs)) {
+                const normalizedValue = (key === 'layout-select-visual' || key === 'layout-select') && value === 'modern'
+                    ? 'classic'
+                    : value;
                 const radioInputs = document.querySelectorAll(`input[name="${key}"][type="radio"]`);
-                if (radioInputs.length > 0) { radioInputs.forEach(radio => radio.checked = radio.value === value); }
+                if (radioInputs.length > 0) { radioInputs.forEach(radio => radio.checked = radio.value === normalizedValue); }
                 else {
                     const input = document.getElementById(key);
                     if (input) {
-                        if (input.type === 'checkbox') { input.checked = value; }
-                        else { input.value = value || ''; }
+                        if (input.type === 'checkbox') { input.checked = normalizedValue; }
+                        else { input.value = normalizedValue || ''; }
                     }
                 }
             }
@@ -1467,10 +1474,21 @@ const StateManager = {
     },
 
     reset() {
-        if (confirm('هل أنت متأكد أنك تريد إعادة تعيين التصميم بالكامل؟ سيتم حذف أي بيانات محفوظة.')) {
-            localStorage.removeItem(Config.LOCAL_STORAGE_KEY);
-            window.location.reload();
-        }
+        const isEnglish = document.documentElement.lang === 'en';
+        const message = isEnglish
+            ? 'Reset the entire design to its defaults? Your unsaved changes will be removed.'
+            : 'هل تريد إعادة التصميم بالكامل إلى الوضع الافتراضي؟ سيتم حذف التغييرات غير المحفوظة.';
+
+        if (!confirm(message)) return;
+
+        localStorage.removeItem(Config.LOCAL_STORAGE_KEY);
+        localStorage.removeItem('nfc:editingDesignId');
+        localStorage.removeItem('mcprime_editor_extensions_v1');
+        Config.currentDesignId = null;
+
+        // Remove ?id=... before reloading, otherwise the saved design is loaded again.
+        window.history.replaceState({}, '', window.location.pathname);
+        window.location.reload();
     },
 
     saveDebounced: Utils.debounce(() => {

@@ -182,7 +182,7 @@ html[dir="ltr"] .pro-sidebar-right {
 
 .layout-selector-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
     margin-bottom: 10px;
 }
@@ -1879,57 +1879,6 @@ html[dir="ltr"] .testimonial-card {
 }
 
 
-
-.shepherd-title {
-    color: var(--text-primary);
-    font-weight: 600;
-    font-size: 1.1rem;
-}
-
-.shepherd-text {
-    color: var(--text-secondary);
-    padding: 15px;
-    font-size: 0.95rem;
-    line-height: 1.7;
-}
-
-.shepherd-text b {
-    color: var(--accent-primary);
-}
-
-.shepherd-button {
-    background-color: var(--accent-primary);
-    padding: 8px 18px;
-    border-radius: 6px;
-    margin: 0 5px;
-    transition: background-color 0.2s ease;
-    text-transform: none;
-}
-
-.shepherd-button:not(.shepherd-button-secondary):hover {
-    background-color: #62b5ff;
-}
-
-.shepherd-button.shepherd-button-secondary {
-    background-color: var(--accent-secondary);
-}
-
-.shepherd-button.shepherd-button-secondary:hover {
-    background-color: #4a6a8a;
-}
-
-.shepherd-cancel-icon {
-    font-size: 1.5rem;
-    color: var(--text-secondary);
-}
-
-.shepherd-cancel-icon:hover {
-    color: var(--text-primary);
-}
-
-.shepherd-arrow::before {
-    background-color: var(--form-bg);
-}
 
 .help-tabs-nav {
     display: flex;

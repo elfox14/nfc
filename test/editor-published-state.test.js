@@ -31,7 +31,7 @@ describe('Editor published-state contract', () => {
     });
 
     test('both editor languages load the cache-busted implementation', () => {
-        expect(editorAr).toContain('script-main.js?v=2.3');
-        expect(editorEn).toContain('script-main.js?v=2.3');
+        expect(editorAr).toContain('script-main.js?v=2.4');
+        expect(editorEn).toContain('script-main.js?v=2.4');
     });
 });
