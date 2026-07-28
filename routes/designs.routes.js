@@ -379,6 +379,23 @@ router.post('/save-design', verifyToken, async (req, res) => {
           data.imageUrls.capturedBack = existing.capturedBack;
         }
       }
+
+      // Compatibility for cards saved before publishedState was introduced.
+      // Their top-level data is still the editable state that produced the
+      // captured faces. Snapshot it before the first draft-only auto-save can
+      // replace it.
+      const existingData = existingDoc?.data;
+      const hasLegacyPublishedFaces = existingData?.imageUrls?.capturedFront
+        && existingData?.imageUrls?.capturedBack;
+      if (!data.publishedState && !existingData?.publishedState && hasLegacyPublishedFaces) {
+        data.publishedState = JSON.parse(JSON.stringify(existingData));
+        delete data.publishedState.publishedState;
+        delete data.publishedState.publishedAt;
+        data.publishedAt = existingData.publishedAt
+          || existingDoc.lastModified?.toISOString?.()
+          || new Date().toISOString();
+      }
+
       if (!data.publishedState && existingDoc?.data?.publishedState) {
         data.publishedState = existingDoc.data.publishedState;
       }

@@ -107,4 +107,41 @@ describe('Published card revision persistence', () => {
         expect(insertedData.publishedState.publishedAt).toBeUndefined();
         expect(insertedData.publishedState.inputs['input-name_ar']).not.toContain('<script>');
     });
+
+    test('first draft save protects the last captured revision for legacy cards', async () => {
+        const existingDoc = {
+            ownerId: 'owner-1',
+            lastModified: new Date('2026-07-20T09:30:00.000Z'),
+            data: {
+                inputs: { 'logo-size': '80', 'input-name_ar': 'التصميم المحفوظ' },
+                positions: { 'card-logo': { x: 10, y: 20 } },
+                imageUrls: {
+                    capturedFront: 'https://uploads.example/legacy-front.webp',
+                    capturedBack: 'https://uploads.example/legacy-back.webp'
+                }
+            }
+        };
+
+        mockCollection.findOne
+            .mockResolvedValueOnce({ userId: 'owner-1', isVerified: true })
+            .mockResolvedValueOnce(existingDoc)
+            .mockResolvedValueOnce(existingDoc);
+        mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 });
+
+        const response = await request(app)
+            .post('/api/save-design?id=legacy-card')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                inputs: { 'logo-size': '25', 'input-name_ar': 'مسودة غير محفوظة' },
+                imageUrls: {}
+            });
+
+        expect(response.status).toBe(200);
+        const savedData = mockCollection.updateOne.mock.calls[0][1].$set.data;
+        expect(savedData.inputs['input-name_ar']).toBe('مسودة غير محفوظة');
+        expect(savedData.publishedState.inputs['input-name_ar']).toBe('التصميم المحفوظ');
+        expect(savedData.publishedState.positions).toEqual(existingDoc.data.positions);
+        expect(savedData.publishedAt).toBe('2026-07-20T09:30:00.000Z');
+        expect(savedData.imageUrls).toEqual(existingDoc.data.imageUrls);
+    });
 });
