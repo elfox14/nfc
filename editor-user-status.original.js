@@ -302,6 +302,14 @@ const EditorUserStatus = {
                     ? 'Would you like to display your design in the gallery page?'
                     : 'هل تريد عرض تصميمك في صفحة المعرض؟';
                 state.sharedToGallery = await customConfirm(galleryPromptMsg);
+
+                // The toolbar save button uses EditorUserStatus.saveToCloud(),
+                // not ShareManager.shareCard(). Keep an immutable editable
+                // snapshot beside the captured faces so a later auto-save can
+                // update only the draft without changing what Dashboard > Edit
+                // restores.
+                state.publishedAt = new Date().toISOString();
+                state.publishedState = ShareManager.createPublishedState(state);
             } else {
                 // Auto-save: don't overwrite previously captured card images
                 // getStateObject() sets imageUrls.front/back to background URLs, not captured images

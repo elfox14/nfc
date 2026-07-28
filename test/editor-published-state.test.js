@@ -9,6 +9,7 @@ const path = require('path');
 
 describe('Editor published-state contract', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'script-main.original.js'), 'utf8');
+    const userStatusSource = fs.readFileSync(path.join(__dirname, '..', 'editor-user-status.original.js'), 'utf8');
     const editorAr = fs.readFileSync(path.join(__dirname, '..', 'editor.html'), 'utf8');
     const editorEn = fs.readFileSync(path.join(__dirname, '..', 'editor-en.html'), 'utf8');
 
@@ -26,6 +27,14 @@ describe('Editor published-state contract', () => {
         expect(source).toContain('? storedState.publishedState');
     });
 
+    test('the actual toolbar save path publishes the captured editable state', () => {
+        expect(userStatusSource).toContain('state.publishedState = ShareManager.createPublishedState(state);');
+        expect(userStatusSource.indexOf('state.imageUrls.capturedBack = backImageUrl;'))
+            .toBeLessThan(userStatusSource.indexOf('state.publishedState = ShareManager.createPublishedState(state);'));
+        expect(userStatusSource.indexOf('state.publishedState = ShareManager.createPublishedState(state);'))
+            .toBeLessThan(userStatusSource.indexOf('const designId = await ShareManager.saveDesign(state);'));
+    });
+
     test('shared editor links explicitly request the draft revision', () => {
         expect(source).toContain("editorUrl.searchParams.set('mode', 'draft');");
     });
@@ -33,5 +42,7 @@ describe('Editor published-state contract', () => {
     test('both editor languages load the cache-busted implementation', () => {
         expect(editorAr).toContain('script-main.js?v=2.4');
         expect(editorEn).toContain('script-main.js?v=2.4');
+        expect(editorAr).toContain('editor-user-status.js?v=1.1');
+        expect(editorEn).toContain('editor-user-status.js?v=1.1');
     });
 });
