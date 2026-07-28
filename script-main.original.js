@@ -1561,8 +1561,6 @@ const App = {
 
         UIManager.announce("محرر بطاقة الأعمال جاهز للاستخدام.");
 
-        TourManager.init();
-
         // Initialize Undo/Redo buttons
         if (DOMElements.buttons.undoBtn) {
             DOMElements.buttons.undoBtn.addEventListener('click', () => {

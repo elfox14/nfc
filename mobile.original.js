@@ -357,37 +357,6 @@ window.MobileUtils = {
                 }
             }, 100);
         });
-    },
-
-    configureTourSteps: (steps) => {
-        if (window.MobileUtils.isMobile()) {
-            // 1. Design Panel -> Target Design Tab
-            const designStep = steps.find(s => s.id === 'design_panel');
-            if (designStep) {
-                designStep.attachTo = { element: '.mobile-nav-item[data-target="panel-design"]', on: 'top' };
-                designStep.text = "استخدم هذا الزر للوصول إلى خيارات التصميم والألوان والخلفيات.";
-            }
-
-            // 2. Elements Panel -> Target Content Tab
-            const elementsStep = steps.find(s => s.id === 'elements_panel');
-            if (elementsStep) {
-                elementsStep.attachTo = { element: '.mobile-nav-item[data-target="panel-elements"]', on: 'top' };
-                elementsStep.text = "استخدم هذا الزر لإضافة وتعديل بياناتك وصورك.";
-            }
-
-            // 3. Canvas -> No change needed, but ensure it's visible
-            const canvasStep = steps.find(s => s.id === 'canvas_drag');
-            if (canvasStep) {
-                canvasStep.attachTo = { element: '#cards-wrapper', on: 'bottom' };
-            }
-
-            // 4. Actions Toolbar -> Target More Button
-            const actionsStep = steps.find(s => s.id === 'actions_toolbar');
-            if (actionsStep) {
-                actionsStep.attachTo = { element: '#toolbar-more-btn', on: 'bottom' };
-                actionsStep.text = "اضغط هنا للوصول إلى خيارات الحفظ، المشاركة، والمزيد.";
-            }
-        }
     }
 };
 

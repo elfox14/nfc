@@ -194,6 +194,6 @@ describe('Editor independent card layer resizing', () => {
         var html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
         expect((html.match(/editor-independent-resize\.js\?v=1\.2/g) || [])).toHaveLength(1);
         expect((html.match(/editor-extension-persistence\.js\?v=1\.1/g) || [])).toHaveLength(1);
-        expect((html.match(/script-card\.js\?v=2\.2/g) || [])).toHaveLength(1);
+        expect((html.match(/script-card\.js\?v=2\.3/g) || [])).toHaveLength(1);
     });
 });

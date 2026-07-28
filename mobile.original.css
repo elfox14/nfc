@@ -30,12 +30,6 @@
     display: none;
 }
 
-/* Hide Shepherd tour on mobile */
-.shepherd-active {
-    display: none;
-}
-
-
 /* ==========================================================================
    MOBILE LAYOUT (≤ 1024px)
    ========================================================================== */
@@ -533,11 +527,6 @@
     .toolbar-btn-mobile-hidden {
         display: none;
     }
-
-    .shepherd-active {
-        display: none !important;
-    }
-
 
     /* --- 8. MODALS — Full-screen on mobile --- */
     .modal-overlay {

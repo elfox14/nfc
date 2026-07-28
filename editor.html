@@ -35,8 +35,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
     <!-- ملفات التنسيق الخاصة بالمشروع -->
-    <link rel="stylesheet" href="style.css?v=2.2">
-    <link rel="stylesheet" href="mobile.css?v=2.2">
+    <link rel="stylesheet" href="style.css?v=4.3">
+    <link rel="stylesheet" href="mobile.css?v=4.3">
     <link rel="stylesheet" href="toast.css">
     <link rel="stylesheet" href="editor-enhancements.css?v=3.5">
     <link rel="stylesheet" href="toolbar-enhancements.css?v=4.3">
@@ -47,26 +47,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css" />
 
     <!-- ملفات الجافاسكريبت الخاصة بالمشروع (الترتيب مهم) -->
     <script src="lang-switcher.js" defer></script>
     <script src="/nfc/auth.js?v=3.5" defer></script>
     <script src="security-utils.js" defer></script>
-    <script src="mobile.js" defer></script>
+    <script src="mobile.js?v=2.1" defer></script>
     <script src="script-core.js?v=2.1" defer></script>
     <script src="state-manager-proxy.js" defer></script>
-    <script src="script-ui.js" defer></script>
-    <script src="script-card.js?v=2.2" defer></script>
-    <script src="script-main.js?v=2.3" defer></script>
+    <script src="script-ui.js?v=2.1" defer></script>
+    <script src="script-card.js?v=2.3" defer></script>
+    <script src="script-main.js?v=2.4" defer></script>
     <script src="editor-extension-persistence.js?v=1.1" defer></script>
     <script src="editor-independent-resize.js?v=1.2" defer></script>
 
     <script src="editor-enhancements.js" defer></script>
     <script src="editor-user-status.js" defer></script>
     <script src="ai-backgrounds.js" defer></script>
-    <script src="editor-tour.js" defer></script>
     <script src="editor-panels.js?v=1.1" defer></script>
     <script src="editor-toolbar-v2.js?v=1.1" defer></script>
 
@@ -323,23 +320,6 @@
                 </button>
             </div>
 
-            <!-- Mobile More -->
-            <div class="toolbar-more-container">
-                <button id="toolbar-more-btn" class="tb-icon-btn tb-mobile-more" title="المزيد"
-                    aria-label="More Options" aria-controls="toolbar-more-menu-floating" aria-expanded="false">
-                    <i class="fas fa-ellipsis-v"></i>
-                    <span class="tb-more-button-label">المزيد</span>
-                </button>
-                <ul id="toolbar-more-menu" class="tb-mobile-more-menu">
-                    <li><a href="index.html" class="tb-dropdown-item"><i class="fas fa-home"></i> الرئيسية</a></li>
-                    <li><a href="gallery.html" class="tb-dropdown-item"><i class="fas fa-images"></i> المعرض</a></li>
-                    <li><a href="blog.html" class="tb-dropdown-item"><i class="fas fa-newspaper"></i> المدونة</a></li>
-                    <div class="tb-dropdown-divider"></div>
-                    <li><button id="reset-design-btn-more" class="tb-dropdown-item tb-danger"><i
-                                class="fas fa-trash-alt"></i> مسح التصميم</button></li>
-                </ul>
-            </div>
-
         </div>
     </header>
 
@@ -356,13 +336,6 @@
                         <div class="layout-preview-box">
                             <i class="far fa-id-card"></i>
                             <span>كلاسيكي</span>
-                        </div>
-                    </label>
-                    <label class="layout-option">
-                        <input type="radio" name="layout-select-visual" value="modern">
-                        <div class="layout-preview-box">
-                            <i class="fas fa-columns"></i>
-                            <span>عصري</span>
                         </div>
                     </label>
                     <label class="layout-option">
@@ -2575,62 +2548,6 @@
         </button>
     </nav>
 
-    <!-- Mobile More Menu (Moved to body to avoid overflow issues) -->
-    <div id="toolbar-more-menu-floating" class="toolbar-more-menu" hidden aria-hidden="true">
-        <!-- User Status Bar (Mobile) -->
-        <div id="mobile-menu-user-status"
-            style="padding: 10px 16px; border-bottom: 1px solid var(--accent-secondary); margin-bottom: 5px; text-align: right; display: flex; flex-direction: column; gap: 8px;">
-            <span id="mobile-menu-user-text" style="font-weight: bold; color: var(--accent-primary);">غير مسجل</span>
-            <div style="display: flex; gap: 5px; justify-content: flex-end;">
-                <a href="dashboard.html" id="mobile-menu-dashboard-link" class="btn btn-secondary"
-                    style="display: none; padding: 4px 8px; font-size: 12px;"><i class="fas fa-tachometer-alt"></i> لوحة
-                    التحكم</a>
-            </div>
-        </div>
-
-        <!-- Navigation Links (Mobile Only) -->
-        <a href="index.html" class="menu-item-link"><i class="fas fa-home"></i> الرئيسية</a>
-        <a href="gallery.html" class="menu-item-link"><i class="fas fa-images"></i> المعرض</a>
-        <a href="blog.html" class="menu-item-link"><i class="fas fa-blog"></i> المدونة</a>
-        <hr class="mobile-only-hr">
-
-        <span class="tb-more-label">المحرر</span>
-        <a href="how-to-use-editor.html" class="menu-item-link" target="_blank" rel="noopener"><i
-                class="fas fa-book-open"></i> شرح المحرر</a>
-        <button id="preview-mode-btn-menu" class="tb-mobile-only-action"><i class="fas fa-eye"></i> معاينة</button>
-        <button id="theme-toggle-btn-menu"><i class="fas fa-adjust"></i> المظهر</button>
-        <button id="show-gallery-btn-menu"><i class="fas fa-images"></i> المعرض</button>
-        <button id="save-to-gallery-btn-menu"><i class="fas fa-bookmark"></i> حفظ بالمعرض</button>
-        <button id="save-share-btn-menu"><i class="fas fa-save"></i> حفظ ومشاركة</button>
-        <hr>
-        <span class="tb-more-label">العرض والمحاذاة</span>
-        <button id="toolbar-grid-toggle-menu"><i class="fas fa-border-all"></i> الشبكة</button>
-        <button id="toolbar-safe-area-toggle-menu"><i class="fas fa-expand"></i> المساحة الآمنة</button>
-        <button id="toolbar-snap-now-menu"><i class="fas fa-magnet"></i> التقاط العنصر للشبكة</button>
-        <hr>
-        <span class="tb-more-label">التنزيل</span>
-        <button id="download-png-front-menu"><i class="fas fa-image"></i> تنزيل الواجهة PNG</button>
-        <button id="download-png-back-menu"><i class="fas fa-images"></i> تنزيل الخلفية PNG</button>
-        <button id="download-pdf-menu"><i class="fas fa-file-pdf"></i> تنزيل PDF</button>
-        <button id="download-vcf-menu"><i class="fas fa-address-card"></i> تنزيل جهة الاتصال VCF</button>
-        <button id="download-qrcode-menu"><i class="fas fa-qrcode"></i> تنزيل رمز QR</button>
-        <hr>
-        <button id="start-collab-btn-menu"><i class="fas fa-users"></i> تعاون</button>
-        <button id="share-editor-btn-menu"><i class="fas fa-link"></i> مشاركة الرابط</button>
-        <hr>
-        <span class="tb-more-label">الحساب</span>
-        <a href="editor-en.html" class="menu-item-link" data-toolbar-language-target="editor-en.html"><i
-                class="fas fa-language"></i> English</a>
-        <a href="login.html" id="mobile-menu-login-link" class="menu-item-link"><i class="fas fa-sign-in-alt"></i> تسجيل
-            دخول</a>
-        <a href="signup.html" id="mobile-menu-signup-link" class="menu-item-link"><i class="fas fa-user-plus"></i> إنشاء
-            حساب</a>
-        <button id="mobile-menu-logout-btn" style="color: #dc3545; display: none;"><i class="fas fa-sign-out-alt"></i>
-            تسجيل خروج</button>
-        <hr>
-        <button id="reset-design-btn-menu" style="color: #dc3545;"><i class="fas fa-undo"></i> إعادة تعيين</button>
-    </div>
-
     <!-- [NEW] Editor Premium Enhancements -->
     <script src="toolbar-tab-nav.js"></script>
     <script src="editor-premium-v2.js" defer></script>
@@ -2725,34 +2642,6 @@
                     });
                 });
 
-                // 2. Mobile 'More' Menu Toggle
-                const moreBtn = document.getElementById('toolbar-more-btn');
-                const moreMenu = document.getElementById('toolbar-more-menu-floating');
-                if (moreBtn && moreMenu) {
-                    function setMoreMenuOpen(isOpen) {
-                        moreMenu.hidden = !isOpen;
-                        moreMenu.classList.toggle('open', isOpen);
-                        moreMenu.setAttribute('aria-hidden', String(!isOpen));
-                        moreBtn.setAttribute('aria-expanded', String(isOpen));
-                    }
-
-                    setMoreMenuOpen(false);
-                    moreBtn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        setMoreMenuOpen(moreMenu.hidden);
-                    });
-                    document.addEventListener('click', function (e) {
-                        if (!moreMenu.contains(e.target) && e.target !== moreBtn) {
-                            setMoreMenuOpen(false);
-                        }
-                    });
-                    document.addEventListener('keydown', function (e) {
-                        if (e.key === 'Escape') setMoreMenuOpen(false);
-                    });
-                    moreMenu.addEventListener('click', function (e) {
-                        if (e.target.closest('a, button')) setMoreMenuOpen(false);
-                    });
-                }
             });
         })();
     </script>
