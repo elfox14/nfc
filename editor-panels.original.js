@@ -59,6 +59,10 @@
     function syncRadioGroup(containerSelector, radioName, activeClass) {
         document.querySelectorAll(containerSelector + ' input[name="' + radioName + '"]').forEach(function (r) {
             r.addEventListener('change', function () {
+                // State restoration dispatches change for every form control.
+                // An unchecked radio must never replace the saved selection.
+                if (!r.checked) return;
+
                 document.querySelectorAll(containerSelector + ' input[name="' + radioName + '"]').forEach(function (ir) {
                     var parent = ir.closest('.lp-align-btn') || ir.closest('.lp-place-btn');
                     if (parent) parent.classList.remove(activeClass);
@@ -101,6 +105,10 @@
         // Photo shape visual sync
         document.querySelectorAll('input[name="photo-shape"]').forEach(function (radio) {
             radio.addEventListener('change', function () {
+                // applyState emits change events for checked and unchecked
+                // radios. Only the checked shape is allowed to style the card.
+                if (!this.checked) return;
+
                 var shape = this.value;
                 var wrapper = document.getElementById('card-personal-photo-wrapper');
                 var preview = document.getElementById('card-personal-photo');

@@ -292,13 +292,33 @@ const CardManager = {
         const borderColor = DOMElements.photoControls.borderColor.value;
         const borderWidth = DOMElements.photoControls.borderWidth.value;
         const opacity = document.getElementById('photo-opacity').value;
+        const shapeStyles = {
+            circle: {
+                borderRadius: '50%',
+                clipPath: 'none'
+            },
+            rounded: {
+                borderRadius: '15%',
+                clipPath: 'none'
+            },
+            square: {
+                borderRadius: '0',
+                clipPath: 'none'
+            },
+            hexagon: {
+                borderRadius: '0',
+                clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+            }
+        };
+        const selectedShape = shapeStyles[shape] || shapeStyles.circle;
 
         const safeUrl = (typeof sanitizeURL === 'function') ? sanitizeURL(imageUrl) : imageUrl;
 
         wrapper.style.width = `${size}%`;
         wrapper.style.paddingBottom = `${size}%`;
         wrapper.style.height = 0;
-        wrapper.style.borderRadius = shape === 'circle' ? '50%' : '8px';
+        wrapper.style.borderRadius = selectedShape.borderRadius;
+        wrapper.style.clipPath = selectedShape.clipPath;
         wrapper.style.border = `${borderWidth}px solid ${borderColor}`;
         wrapper.style.backgroundImage = safeUrl ? `url(${safeUrl})` : 'none';
         wrapper.style.display = safeUrl ? 'block' : 'none';
@@ -309,7 +329,8 @@ const CardManager = {
             if (safeUrl) {
                 preview.src = safeUrl;
             }
-            preview.style.borderRadius = shape === 'circle' ? '50%' : '8px';
+            preview.style.borderRadius = selectedShape.borderRadius;
+            preview.style.clipPath = selectedShape.clipPath;
         }
 
         this.updatePersonalPhotoAlignment();
