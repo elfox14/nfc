@@ -24,6 +24,8 @@ Configure every `sync: false` variable from `render.yaml` manually on the existi
 
 The workflow repeats audits, unit tests, and Playwright tests; packages the static site; deploys the exact commit to Render; waits for database-backed readiness; deploys the matching static package; then verifies that the public `release.json` contains the exact same SHA before creating the tag and GitHub Release.
 
+If `workflow_dispatch` is unavailable, merge a reviewed change to `.github/release-command.json` on `main` with `ref` and optional `releaseTag`. Changes to that file are an auditable alternative trigger for the same protected workflow; refs and tags are validated before checkout.
+
 ## Rollback
 
 1. Run the same workflow.
@@ -31,4 +33,4 @@ The workflow repeats audits, unit tests, and Playwright tests; packages the stat
 3. Leave `release_tag` empty.
 4. Approve the protected `production` environment.
 
-Both halves are redeployed from the same historical ref. A rollback is successful only when `/healthz.release` and the public `/nfc/release.json.sha` both equal the resolved historical SHA. Release artifacts are retained for 90 days, and immutable tags remain available as rollback points.
+Both halves are redeployed from the same historical ref. The workflow stamps `release.json` itself, so rollback commits created before manifest support remain verifiable. A rollback is successful only when `/healthz.release` and the public `/nfc/release.json.sha` both equal the resolved historical SHA. Release artifacts are retained for 90 days, and immutable tags remain available as rollback points.

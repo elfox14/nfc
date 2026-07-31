@@ -11,6 +11,10 @@ on:
         description: New release tag (leave empty for rollback/redeploy)
         required: false
         default: ""
+  push:
+    branches: ["main"]
+    paths:
+      - .github/release-command.json
 
 permissions:
   contents: write
@@ -45,9 +49,24 @@ jobs:
       EMAIL_PROVIDER: console
       PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout release controller
+        uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Resolve deployment request
+        id: request
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_REF: ${{ inputs.ref }}
+          INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          node -e "const fs=require('fs');let request;if(process.env.EVENT_NAME==='workflow_dispatch'){request={ref:process.env.INPUT_REF,releaseTag:process.env.INPUT_RELEASE_TAG||''}}else{request=JSON.parse(fs.readFileSync('.github/release-command.json','utf8'))}if(!request||!request.ref||!/^[A-Za-z0-9._\/-]{1,160}$/.test(request.ref))throw new Error('Invalid release ref');if(request.releaseTag&&!/^v[0-9]+\.[0-9]+\.[0-9]+$/.test(request.releaseTag))throw new Error('Invalid release tag');fs.appendFileSync(process.env.GITHUB_OUTPUT,'ref='+request.ref+'\nrelease_tag='+(request.releaseTag||'')+'\n')"
+
+      - name: Checkout deployment ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.request.outputs.ref }}
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
@@ -60,9 +79,9 @@ jobs:
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Validate release tag
-        if: ${{ inputs.release_tag != '' }}
+        if: ${{ steps.request.outputs.release_tag != '' }}
         env:
-          RELEASE_TAG: ${{ inputs.release_tag }}
+          RELEASE_TAG: ${{ steps.request.outputs.release_tag }}
         run: |
           expected_tag="v$(node -p "require('./package.json').version")"
           test "${RELEASE_TAG}" = "${expected_tag}"
@@ -81,6 +100,15 @@ jobs:
         env:
           RELEASE_SHA: ${{ steps.release_ref.outputs.sha }}
         run: npm run package:static
+
+      # Historical rollback refs may predate release.json support in the
+      # repository's packaging script. Always stamp the artifact from the
+      # current deployment workflow so old refs remain independently verifiable.
+      - name: Stamp immutable static release manifest
+        env:
+          DEPLOY_SHA: ${{ steps.release_ref.outputs.sha }}
+        run: |
+          node -e "const fs=require('fs');const version=require('./package.json').version;fs.writeFileSync('dist/static/nfc/release.json',JSON.stringify({version,sha:process.env.DEPLOY_SHA},null,2)+'\n')"
 
       - name: Upload immutable static release artifact
         uses: actions/upload-artifact@v4
@@ -150,11 +178,11 @@ jobs:
           exit 1
 
       - name: Create immutable GitHub release
-        if: ${{ inputs.release_tag != '' }}
+        if: ${{ steps.request.outputs.release_tag != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
           DEPLOY_SHA: ${{ steps.release_ref.outputs.sha }}
-          RELEASE_TAG: ${{ inputs.release_tag }}
+          RELEASE_TAG: ${{ steps.request.outputs.release_tag }}
         run: |
           git tag --annotate "${RELEASE_TAG}" "${DEPLOY_SHA}" --message "MC PRIME NFC ${RELEASE_TAG}"
           git push origin "${RELEASE_TAG}"
