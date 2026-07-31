@@ -11,6 +11,7 @@
     "test": "jest",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui",
+    "build:assets": "node minify-assets.js",
     "build:sw": "terser sw.original.js -o sw.js --compress --mangle",
     "check:assets": "node scripts/check-generated-assets.js",
     "package:static": "node scripts/package-static-site.js",
@@ -73,10 +74,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mcprime/nfc-business-card.git"
+    "url": "git+https://github.com/elfox14/nfc.git"
   },
   "bugs": {
-    "url": "https://github.com/mcprime/nfc-business-card/issues"
+    "url": "https://github.com/elfox14/nfc/issues"
   },
   "homepage": "https://www.mcprim.com/nfc/"
 }

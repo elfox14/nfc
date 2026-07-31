@@ -1,27 +1,41 @@
 const fs = require('fs');
 const path = require('path');
-const terser = require('terser');
+const { discoverGeneratedAssetPairs, minifyAsset } = require('./generated-assets');
 
 async function main() {
   const root = path.resolve(__dirname, '..');
-  const generatedPairs = [
-    ['sw.original.js', 'sw.js'],
-    ['script-ui.original.js', 'script-ui.js'],
-    ['editor-enhancements.original.js', 'editor-enhancements.js']
-  ];
+  const pairs = discoverGeneratedAssetPairs(root);
 
-  for (const [sourceName, generatedName] of generatedPairs) {
-    const source = fs.readFileSync(path.join(root, sourceName), 'utf8');
-    const generated = fs.readFileSync(path.join(root, generatedName), 'utf8').trim();
-    const result = await terser.minify(source, { compress: true, mangle: true });
+  if (pairs.length === 0) {
+    throw new Error('No .original.css or .original.js source assets were found.');
+  }
 
-    if (!result.code || result.code.trim() !== generated) {
-      console.error(`${generatedName} is stale. Rebuild it from ${sourceName} and commit both files.`);
-      process.exit(1);
+  const staleAssets = [];
+  for (const pair of pairs) {
+    const relativeSource = path.relative(root, pair.sourcePath);
+    const relativeGenerated = path.relative(root, pair.generatedPath);
+
+    if (!fs.existsSync(pair.generatedPath)) {
+      staleAssets.push(`${relativeGenerated} is missing (source: ${relativeSource})`);
+      continue;
+    }
+
+    const source = fs.readFileSync(pair.sourcePath, 'utf8');
+    const expected = await minifyAsset(source, pair.type, relativeSource);
+    const actual = fs.readFileSync(pair.generatedPath, 'utf8').trim();
+
+    if (actual !== expected.trim()) {
+      staleAssets.push(`${relativeGenerated} is stale (source: ${relativeSource})`);
     }
   }
 
-  console.log('Generated assets are synchronized.');
+  if (staleAssets.length > 0) {
+    console.error(staleAssets.join('\n'));
+    console.error('Run `npm run build:assets` and commit both source and generated files.');
+    process.exit(1);
+  }
+
+  console.log(`Generated assets are synchronized (${pairs.length} pairs).`);
 }
 
 main().catch((error) => {
