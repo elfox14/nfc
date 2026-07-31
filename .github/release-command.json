@@ -1,6 +1,6 @@
 {
-  "requestId": "retry-release-v2.1.0-ftps-pinned-host-2026-08-01",
+  "requestId": "retry-release-v2.1.0-current-cpanel-server-2026-08-01",
   "ref": "d29abc73f57fd8ba7a3b124bb1fa5d660f616b5a",
   "releaseTag": "v2.1.0",
-  "reason": "Retry production release with the certificate-valid FTPS hostname pinned to the assigned server IP"
+  "reason": "Deploy to the current goroda cPanel server and the FTP account home directory"
 }
