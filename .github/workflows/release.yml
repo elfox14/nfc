@@ -153,6 +153,7 @@ jobs:
           exit 1
 
       - name: Deploy matching static package
+        timeout-minutes: 18
         env:
           STATIC_FTP_URL: ${{ secrets.STATIC_FTP_URL }}
           STATIC_FTP_USERNAME: ${{ secrets.STATIC_FTP_USERNAME }}
@@ -162,7 +163,31 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lftp
           remote_dir="${STATIC_REMOTE_DIR:-/nfc}"
-          lftp -u "${STATIC_FTP_USERNAME},${STATIC_FTP_PASSWORD}" "${STATIC_FTP_URL}" -e "set ftp:ssl-force true; set ssl:verify-certificate true; mirror --reverse --delete --verbose dist/static/nfc ${remote_dir}; bye"
+          if [[ ! "${remote_dir}" =~ ^/[A-Za-z0-9._/-]+$ ]] || [[ "${remote_dir}" == "/" ]] || [[ "${remote_dir}" == *".."* ]]; then
+            echo "STATIC_REMOTE_DIR must be a safe absolute non-root path" >&2
+            exit 1
+          fi
+
+          # Keep the release marker absent while files are changing and upload
+          # it last. Consumers can therefore never mistake a partial mirror for
+          # a completed deployment. Bound lftp retries so a broken FTP endpoint
+          # fails clearly instead of consuming the runner for hours.
+          timeout --signal=TERM --kill-after=30s 15m \
+            lftp -u "${STATIC_FTP_USERNAME},${STATIC_FTP_PASSWORD}" "${STATIC_FTP_URL}" <<LFTP
+          set cmd:fail-exit yes
+          set ftp:ssl-force true
+          set ftp:ssl-protect-data true
+          set ssl:verify-certificate true
+          set net:timeout 20
+          set net:max-retries 3
+          set net:reconnect-interval-base 5
+          set net:reconnect-interval-max 30
+          mkdir -p "${remote_dir}"
+          rm -f "${remote_dir}/release.json"
+          mirror --reverse --delete --verbose --parallel=2 --exclude-glob release.json dist/static/nfc "${remote_dir}"
+          put -O "${remote_dir}" dist/static/nfc/release.json
+          bye
+          LFTP
 
       - name: Verify matching static release
         env:
