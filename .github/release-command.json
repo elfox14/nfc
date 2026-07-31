@@ -1,0 +1,6 @@
+{
+  "requestId": "release-v2.1.0-2026-07-31",
+  "ref": "d29abc73f57fd8ba7a3b124bb1fa5d660f616b5a",
+  "releaseTag": "v2.1.0",
+  "reason": "Initial production release after launch-readiness verification"
+}
