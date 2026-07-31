@@ -60,16 +60,15 @@
 
     <button class="lang-btn" onclick="switchLang('ar')">&#1593;&#1585;&#1576;&#1610;</button>
 
-    <p>Our platform respects user privacy and does not share their information with any third party. We temporarily
-      store designs only to improve the service. You can request deletion of all your data at any time by contacting
-      us.</p>
+    <p>Our platform respects user privacy. We retain account details, designs, saved cards, and account-related
+      requests to provide the service until the user deletes them or deletes the account.</p>
 
     <h3>Google API Services Usage Disclosure</h3>
     <p>If you choose to "Sign in with Google," our application will only request access to your basic profile
       information (Name and Email) for the purpose of creating your account and securely authenticating your login. We
-      are fully committed to not selling or sharing this data with any third parties, and it is used exclusively within
-      our platform to enable your use of our NFC digital card services. You can revoke access and delete your account
-      at any time via your Google Account's Privacy and Security settings.</p>
+      use it to create and authenticate your MC PRIME account. Revoking the app in your Google Account stops future
+      Google access, but it does not automatically delete your MC PRIME account or the data stored by us. You can
+      delete that data from the dashboard as described below.</p>
 
     <h3>Data Accessed</h3>
     <p>When you sign in with Google, our application requests access only to the following basic information:</p>
@@ -85,11 +84,19 @@
     <p>The Google data we collect is used exclusively for the following purposes:</p>
     <ul>
       <li>Creating a user account and logging into the MC PRIME platform</li>
-      <li>Displaying the user's name and profile picture within the application</li>
+      <li>Displaying the user's name and managing the account session</li>
       <li>Enabling the user to create and manage their digital business cards</li>
     </ul>
-    <p>We do not sell, share, or use your data for advertising, tracking, or training AI/ML models. You can delete
-      your account and all associated data at any time by contacting us or through your account settings.</p>
+    <p>We do not sell, share, or use your account data for advertising or training AI/ML models. We do not store your
+      Google password or Google access tokens. We store the Google account identifier, name, and email address linked
+      to the MC PRIME account.</p>
+
+    <h3>Data Export and Account Deletion</h3>
+    <p>Signed-in users can open <strong>Dashboard &rarr; Privacy Settings</strong> to download a JSON copy of their
+      account data or permanently delete the account. Deletion removes the user record, owned designs, saved cards,
+      and related save requests from MongoDB and invalidates the login session. We also attempt to delete known
+      user-image identifiers from the configured storage provider. Provider CDN copies or backups may remain until
+      their technical retention period expires.</p>
 
     <h3>Cookies and Google AdSense</h3>
     <p>

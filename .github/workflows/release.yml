@@ -1,0 +1,132 @@
+name: Release and Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref, tag, or full commit SHA to deploy
+        required: true
+        default: main
+      release_tag:
+        description: New release tag (leave empty for rollback/redeploy)
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: production-release
+  cancel-in-progress: false
+
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MONGO_URI: mongodb://127.0.0.1:27017/mcnfc_release
+      MONGO_DB: mcnfc_release
+      JWT_SECRET: release-test-jwt-secret-which-is-longer-than-32-characters
+      TOKEN_HASH_SECRET: release-test-hash-secret-which-is-different-and-long
+      GOOGLE_CLIENT_ID: release-test-client-id
+      PUBLIC_BASE_URL: http://127.0.0.1:3000/nfc
+      SITE_BASE_URL: http://127.0.0.1:3000
+      ALLOWED_ORIGINS: http://127.0.0.1:3000,http://localhost:3000
+      EMAIL_PROVIDER: console
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Resolve immutable release commit
+        id: release_ref
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - run: npm ci
+      - run: npm run check:assets
+      - run: npm run audit:prod
+      - run: npm test -- --runInBand
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: npm run package:static
+
+      - name: Upload immutable static release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nfc-static-${{ steps.release_ref.outputs.sha }}
+          path: dist/static/nfc
+          retention-days: 90
+
+      - name: Validate production deployment secrets
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          API_HEALTH_URL: ${{ secrets.API_HEALTH_URL }}
+          STATIC_FTP_URL: ${{ secrets.STATIC_FTP_URL }}
+          STATIC_FTP_USERNAME: ${{ secrets.STATIC_FTP_USERNAME }}
+          STATIC_FTP_PASSWORD: ${{ secrets.STATIC_FTP_PASSWORD }}
+          STATIC_REMOTE_DIR: ${{ vars.STATIC_REMOTE_DIR }}
+        run: |
+          : "${RENDER_DEPLOY_HOOK_URL:?Missing RENDER_DEPLOY_HOOK_URL}"
+          : "${API_HEALTH_URL:?Missing API_HEALTH_URL}"
+          : "${STATIC_FTP_URL:?Missing STATIC_FTP_URL}"
+          : "${STATIC_FTP_USERNAME:?Missing STATIC_FTP_USERNAME}"
+          : "${STATIC_FTP_PASSWORD:?Missing STATIC_FTP_PASSWORD}"
+          case "${STATIC_REMOTE_DIR:-/nfc}" in ""|"/") exit 1 ;; esac
+
+      - name: Deploy API commit to Render
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          DEPLOY_SHA: ${{ steps.release_ref.outputs.sha }}
+        run: curl --fail --silent --show-error --request POST "${RENDER_DEPLOY_HOOK_URL}&ref=${DEPLOY_SHA}"
+
+      - name: Wait for API readiness
+        env:
+          API_HEALTH_URL: ${{ secrets.API_HEALTH_URL }}
+          DEPLOY_SHA: ${{ steps.release_ref.outputs.sha }}
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --show-error "${API_HEALTH_URL}" | EXPECTED_SHA="${DEPLOY_SHA}" node -e "let body='';process.stdin.on('data',c=>body+=c);process.stdin.on('end',()=>{const health=JSON.parse(body);process.exit(health.status==='ok'&&health.release===process.env.EXPECTED_SHA?0:1)})"; then
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1
+
+      - name: Deploy matching static package
+        env:
+          STATIC_FTP_URL: ${{ secrets.STATIC_FTP_URL }}
+          STATIC_FTP_USERNAME: ${{ secrets.STATIC_FTP_USERNAME }}
+          STATIC_FTP_PASSWORD: ${{ secrets.STATIC_FTP_PASSWORD }}
+          STATIC_REMOTE_DIR: ${{ vars.STATIC_REMOTE_DIR }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+          remote_dir="${STATIC_REMOTE_DIR:-/nfc}"
+          lftp -u "${STATIC_FTP_USERNAME},${STATIC_FTP_PASSWORD}" "${STATIC_FTP_URL}" -e "set ftp:ssl-force true; set ssl:verify-certificate true; mirror --reverse --delete --verbose dist/static/nfc ${remote_dir}; bye"
+
+      - name: Create immutable GitHub release
+        if: ${{ inputs.release_tag != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_SHA: ${{ steps.release_ref.outputs.sha }}
+        run: |
+          git tag --annotate "${{ inputs.release_tag }}" "${DEPLOY_SHA}" --message "MC PRIME NFC ${{ inputs.release_tag }}"
+          git push origin "${{ inputs.release_tag }}"
+          gh release create "${{ inputs.release_tag }}" --verify-tag --generate-notes --title "MC PRIME NFC ${{ inputs.release_tag }}"

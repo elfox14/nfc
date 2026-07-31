@@ -3,7 +3,6 @@ const multer = require('multer');
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const { nanoid } = require('nanoid');
 const EmailService = require('../email-service');
 const verifyToken = require('../auth-middleware');
@@ -32,7 +31,7 @@ module.exports = function createDesignsRouter({
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 4 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype && file.mimetype.startsWith('image/')) {
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -50,7 +49,7 @@ const upload = multer({
 function handleMulterErrors(err, req, res, next) {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: `حجم الملف كبير جدًا. الحد الأقصى ${err.field ? err.field : '10'} ميجابايت.` });
+      return res.status(413).json({ error: 'حجم الملف كبير جدًا. الحد الأقصى 5 ميجابايت.' });
     }
     return res.status(400).json({ error: `خطأ في رفع الملف: ${err.message}` });
   } else if (err) {
@@ -167,11 +166,19 @@ router.post('/upload-image', verifyToken, upload.single('image'), handleMulterEr
           cloud: true
         });
       } catch (cloudErr) {
-        console.warn('[Upload] Cloudinary upload failed, falling back to local:', cloudErr.message);
+        console.warn('[Upload] Cloudinary upload failed:', cloudErr.message);
       }
     }
 
-    // fallback: Local storage (Ephemeral/Development)
+    // Render's filesystem is ephemeral. Production uploads must never return a
+    // URL that will disappear after a restart or redeploy.
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(503).json({
+        error: 'خدمة تخزين الصور غير متوفرة حالياً. حاول مرة أخرى لاحقاً.'
+      });
+    }
+
+    // Local fallback is intentionally limited to development and automated tests.
     // For local storage with overwrite: use deterministic filename
     const filename = deterministicId
       ? `user_${userId}_${purpose}.webp`
@@ -196,17 +203,18 @@ router.post('/upload-image', verifyToken, upload.single('image'), handleMulterEr
   }
 });
 
-// === PUBLIC UPLOAD PROXY (for unauthenticated users editing cards) ===
-// Rate-limited strictly to prevent abuse — no auth required
+// === LEGACY UPLOAD ALIAS ===
+// Kept for older clients, but authentication now happens before Multer reads the
+// request body so anonymous traffic cannot consume image-processing resources.
 const publicUploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // 20 uploads per 15 minutes per IP
+  max: process.env.NODE_ENV === 'test' ? 100 : 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'محاولات رفع كثيرة. حاول مرة أخرى لاحقاً. / Too many uploads. Try again later.' }
 });
 
-router.post('/upload-image-public', publicUploadLimiter, upload.single('image'), handleMulterErrors, async (req, res) => {
+router.post('/upload-image-public', verifyToken, publicUploadLimiter, upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
       if (!res.headersSent) {
@@ -263,11 +271,17 @@ router.post('/upload-image-public', publicUploadLimiter, upload.single('image'),
         console.log('[PublicUpload] Image uploaded to Cloudinary:', result.secure_url);
         return res.json({ success: true, url: result.secure_url, cloud: true });
       } catch (cloudErr) {
-        console.warn('[PublicUpload] Cloudinary upload failed, falling back to local:', cloudErr.message);
+        console.warn('[PublicUpload] Cloudinary upload failed:', cloudErr.message);
       }
     }
 
-    // Phase 3: Local fallback
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(503).json({
+        error: 'خدمة تخزين الصور غير متوفرة حالياً. حاول مرة أخرى لاحقاً.'
+      });
+    }
+
+    // Development/test-only local fallback.
     const filename = nanoid(10) + '.webp';
     const out = path.join(uploadDir, filename);
     await fs.promises.writeFile(out, processedBuffer);

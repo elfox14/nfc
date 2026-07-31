@@ -37,4 +37,43 @@ describe('Production environment validation', () => {
 
     expect(() => assertEnv()).toThrow('ADMIN_TOKEN_SHA256');
   });
+
+  it('requires durable image storage in production', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.MONGO_URI = 'mongodb://example';
+    process.env.JWT_SECRET = 'a'.repeat(32);
+    process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
+    process.env.ADMIN_TOKEN_SHA256 = 'c'.repeat(64);
+    process.env.EMAIL_PROVIDER = 'resend';
+    process.env.EMAIL_API_KEY = 'email-key';
+    delete process.env.CLOUDINARY_CLOUD_NAME;
+    delete process.env.CLOUDINARY_API_KEY;
+    delete process.env.CLOUDINARY_API_SECRET;
+    delete process.env.EXTERNAL_UPLOAD_URL;
+    delete process.env.UPLOAD_SECRET;
+
+    expect(() => assertEnv()).toThrow('Production image storage');
+  });
+
+  it('accepts Cloudinary and rejects a half-configured Google OAuth client', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.MONGO_URI = 'mongodb://example';
+    process.env.JWT_SECRET = 'a'.repeat(32);
+    process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
+    process.env.ADMIN_TOKEN_SHA256 = 'c'.repeat(64);
+    process.env.EMAIL_PROVIDER = 'resend';
+    process.env.EMAIL_API_KEY = 'email-key';
+    process.env.CLOUDINARY_CLOUD_NAME = 'cloud';
+    process.env.CLOUDINARY_API_KEY = 'key';
+    process.env.CLOUDINARY_API_SECRET = 'secret';
+    process.env.GOOGLE_CLIENT_ID = 'client';
+    delete process.env.GOOGLE_CLIENT_SECRET;
+
+    expect(() => assertEnv()).toThrow('must be configured together');
+
+    process.env.GOOGLE_CLIENT_SECRET = 'client-secret';
+    expect(() => assertEnv()).not.toThrow();
+  });
 });

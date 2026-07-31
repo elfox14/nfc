@@ -1,3 +1,7 @@
+const fs = require('fs');
+const path = require('path');
+const ejs = require('ejs');
+
 const {
   buildContactLinksHtml,
   displaySocialValue,
@@ -87,5 +91,36 @@ describe('Viewer route helpers', () => {
     });
 
     expect(legacy.inputs['input-name_ar']).toBe('بطاقة قديمة');
+  });
+
+  it('renders published cards whose dynamic items predate position metadata', () => {
+    const template = fs.readFileSync(path.join(__dirname, '..', 'viewer.ejs'), 'utf8');
+    const html = ejs.render(template, {
+      pageUrl: 'https://example.test/nfc/viewer.html?id=legacy1',
+      name: 'Legacy card',
+      tagline: 'Still supported',
+      ogImage: 'https://example.test/card.png',
+      keywords: 'legacy',
+      canonical: 'https://example.test/nfc/viewer.html?id=legacy1',
+      contactLinksHtml: '',
+      design: {
+        inputs: {
+          'input-name': 'Legacy card',
+          'input-tagline': 'Still supported',
+          'qr-source': 'none'
+        },
+        dynamic: {
+          phones: [
+            { value: '+201000000000', placement: 'front' },
+            { value: '+201111111111', placement: 'back' }
+          ],
+          social: [{ platform: 'website', value: 'example.test', placement: 'back' }]
+        }
+      }
+    });
+
+    expect(html).toContain('Legacy card');
+    expect(html).toContain('transform: translate(0px, 0px);');
+    expect(html).not.toMatch(/\sonclick=/i);
   });
 });

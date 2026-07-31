@@ -22,19 +22,31 @@ function createApp({ db = null, isMobile = false } = {}) {
 
 describe('System routes', () => {
   it('reports health and database connection state', async () => {
-    const res = await request(createApp({ db: {} })).get('/healthz');
+    const db = { command: jest.fn().mockResolvedValue({ ok: 1 }) };
+    const res = await request(createApp({ db })).get('/healthz');
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('ok');
-    expect(res.body.dbConnected).toBe(true);
+    expect(res.body.database).toBe('connected');
     expect(res.body.timestamp).toBeDefined();
+    expect(db.command).toHaveBeenCalledWith({ ping: 1 });
   });
 
-  it('reports API health', async () => {
+  it('returns 503 when the database has not connected', async () => {
     const res = await request(createApp()).get('/api/health');
 
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: 'ok' });
+    expect(res.status).toBe(503);
+    expect(res.body.status).toBe('unavailable');
+    expect(res.body.database).toBe('disconnected');
+  });
+
+  it('returns 503 when the database ping fails', async () => {
+    const db = { command: jest.fn().mockRejectedValue(new Error('connection lost')) };
+    const res = await request(createApp({ db })).get('/healthz');
+
+    expect(res.status).toBe(503);
+    expect(res.body.status).toBe('unavailable');
+    expect(res.body.database).toBe('disconnected');
   });
 
   it('serves the desktop editor when mobile editor is unavailable', async () => {

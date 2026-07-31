@@ -607,6 +607,18 @@
                         <button class="privacy-save-btn" id="save-privacy-btn">
                             <i class="fas fa-save"></i> Save Settings
                         </button>
+                        <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.12);">
+                            <h3><i class="fas fa-database"></i> Account Data</h3>
+                            <p>Download a copy of your data or permanently delete your account, cards, and related requests.</p>
+                            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;">
+                                <button class="privacy-save-btn" id="export-account-data-btn" type="button" style="margin:0;">
+                                    <i class="fas fa-download"></i> Export My Data
+                                </button>
+                                <button class="privacy-save-btn" id="delete-account-btn" type="button" style="margin:0;background:#c0392b;">
+                                    <i class="fas fa-user-times"></i> Permanently Delete Account
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -917,6 +929,41 @@
                 btn.style.background = '#2ecc71';
                 setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i> Save Settings'; btn.style.background = ''; btn.disabled = false; }, 2000);
             } catch (err) { console.error(err); btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error'; btn.disabled = false; }
+        });
+
+        document.getElementById('export-account-data-btn').addEventListener('click', async () => {
+            const response = await Auth.apiFetchWithRefresh(`${baseUrl}/api/auth/export-data`, {
+                headers: Auth.getHeader()
+            });
+            if (!response.ok) {
+                alert('Data export is unavailable right now. Please try again.');
+                return;
+            }
+            const blob = await response.blob();
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `mcprime-data-${Auth.user?.userId || 'account'}.json`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        });
+
+        document.getElementById('delete-account-btn').addEventListener('click', async () => {
+            const confirmation = prompt('This action is permanent. Type DELETE to remove your account and all its data:');
+            if (confirmation !== 'DELETE') return;
+            if (!confirm('Are you sure you want to permanently delete this account?')) return;
+
+            const response = await Auth.apiFetchWithRefresh(`${baseUrl}/api/auth/account`, {
+                method: 'DELETE',
+                headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ confirmation })
+            });
+            if (!response.ok) {
+                alert('Account deletion failed. Please try again.');
+                return;
+            }
+            localStorage.removeItem('authUser');
+            localStorage.removeItem('authToken');
+            window.location.replace('/nfc/index-en.html?accountDeleted=1');
         });
 
         async function generateSignatureFromDashboard(shortId) {

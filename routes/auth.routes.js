@@ -9,8 +9,24 @@ const verifyToken = require('../auth-middleware');
 const { passwordValidator } = require('../utils/password-policy');
 const { redactSensitiveData } = require('../utils/error-tracking');
 const { setAuthCookies, clearAuthCookies } = require('../utils/auth-cookies');
+const {
+  OAUTH_STATE_COOKIE,
+  createOAuthState,
+  verifyOAuthState,
+  oauthStateCookieOptions,
+  clearOAuthStateCookieOptions
+} = require('../utils/oauth-state');
 
-module.exports = function createAuthRouter({ getDb, usersCollectionName, authLimiter, allowedOrigins }) {
+module.exports = function createAuthRouter({
+  getDb,
+  usersCollectionName,
+  designsCollectionName,
+  savedCardsCollectionName,
+  cardRequestsCollectionName,
+  authLimiter,
+  allowedOrigins,
+  cloudinary
+}) {
   const router = express.Router();
 
   router.use((req, res, next) => {
@@ -185,12 +201,12 @@ router.get('/google', (req, res) => {
   const host = req.get('host');
   const redirectUri = `${proto}://${host}/api/auth/google/callback`;
 
-  // Only store the language (ar/en) in state — rebuild full redirect URL from PUBLIC_BASE_URL
   const lang = (req.query.lang === 'en') ? 'en' : 'ar';
-  const statePayload = Buffer.from(JSON.stringify({ lang })).toString('base64url');
+  const { nonce, state } = createOAuthState(lang);
+  res.cookie(OAUTH_STATE_COOKIE, nonce, oauthStateCookieOptions());
 
   const scope = 'email profile';
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=${encodeURIComponent(statePayload)}`;
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=${encodeURIComponent(state)}`;
 
   res.redirect(authUrl);
 });
@@ -199,14 +215,16 @@ router.get('/google', (req, res) => {
 router.get('/google/callback', async (req, res) => {
   const { code, error, state } = req.query;
 
-  // Determine language from state
   let lang = 'ar';
-  if (state) {
-    try {
-      const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
-      if (decoded.lang === 'en') lang = 'en';
-    } catch (e) { /* use default */ }
+  try {
+    const verifiedState = verifyOAuthState(state, req.cookies?.[OAUTH_STATE_COOKIE]);
+    lang = verifiedState.lang;
+  } catch (stateError) {
+    res.clearCookie(OAUTH_STATE_COOKIE, clearOAuthStateCookieOptions());
+    const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
+    return res.redirect(`${frontendBase}/login.html?error=invalid_oauth_state`);
   }
+  res.clearCookie(OAUTH_STATE_COOKIE, clearOAuthStateCookieOptions());
 
   // Build the absolute redirect URL to the FRONTEND (mcprim.com), not the Render backend
   const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
@@ -713,6 +731,127 @@ router.get('/me', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Get user info error:', err);
     res.status(500).json({ error: 'Failed to get user info' });
+  }
+});
+
+// Export the authenticated user's account data without credentials or token hashes.
+router.get('/export-data', verifyToken, async (req, res) => {
+  try {
+    const db = getDb();
+    if (!db) return res.status(503).json({ error: 'DB not connected' });
+
+    const userId = req.user.userId;
+    const [user, designs, savedCards, submittedRequests, receivedRequests] = await Promise.all([
+      db.collection(usersCollectionName).findOne(
+        { userId },
+        {
+          projection: {
+            _id: 0,
+            userId: 1,
+            email: 1,
+            name: 1,
+            googleId: 1,
+            isVerified: 1,
+            cardPrivacy: 1,
+            createdAt: 1
+          }
+        }
+      ),
+      db.collection(designsCollectionName).find({ ownerId: userId }).toArray(),
+      db.collection(savedCardsCollectionName).find({ userId }).toArray(),
+      db.collection(cardRequestsCollectionName).find({ requesterId: userId }).toArray(),
+      db.collection(cardRequestsCollectionName).find(
+        { ownerUserId: userId },
+        { projection: { requesterEmail: 0 } }
+      ).toArray()
+    ]);
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const exportPayload = {
+      exportedAt: new Date().toISOString(),
+      account: user,
+      designs,
+      savedCards,
+      cardRequests: {
+        submitted: submittedRequests,
+        received: receivedRequests
+      }
+    };
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="mcprime-data-${userId}.json"`);
+    return res.status(200).send(JSON.stringify(exportPayload, null, 2));
+  } catch (err) {
+    console.error('Export account data error:', err);
+    return res.status(500).json({ error: 'Failed to export account data' });
+  }
+});
+
+// Permanently delete the authenticated account and its MongoDB-owned data.
+router.delete('/account', verifyToken, authLimiter, async (req, res) => {
+  try {
+    if (req.body?.confirmation !== 'DELETE') {
+      return res.status(400).json({ error: 'Type DELETE to confirm account deletion.' });
+    }
+
+    const db = getDb();
+    if (!db) return res.status(503).json({ error: 'DB not connected' });
+
+    const userId = req.user.userId;
+    const user = await db.collection(usersCollectionName).findOne(
+      { userId },
+      { projection: { userId: 1, _id: 0 } }
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const ownedDesigns = await db.collection(designsCollectionName)
+      .find({ ownerId: userId }, { projection: { shortId: 1, _id: 0 } })
+      .toArray();
+    const designIds = ownedDesigns.map((design) => design.shortId).filter(Boolean);
+
+    await Promise.all([
+      db.collection(designsCollectionName).deleteMany({ ownerId: userId }),
+      db.collection(savedCardsCollectionName).deleteMany({
+        $or: [
+          { userId },
+          ...(designIds.length ? [{ designShortId: { $in: designIds } }] : [])
+        ]
+      }),
+      db.collection(cardRequestsCollectionName).deleteMany({
+        $or: [
+          { ownerUserId: userId },
+          { requesterId: userId },
+          ...(designIds.length ? [{ designShortId: { $in: designIds } }] : [])
+        ]
+      })
+    ]);
+
+    // Cloudinary cleanup is best-effort. MongoDB deletion remains authoritative,
+    // and provider CDN caches may take time to expire.
+    if (
+      cloudinary?.api?.delete_resources_by_prefix &&
+      process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET
+    ) {
+      try {
+        await cloudinary.api.delete_resources_by_prefix(`mcprim/user_${userId}_`);
+      } catch (cloudError) {
+        console.warn('[DeleteAccount] Cloudinary cleanup failed:', cloudError.message);
+      }
+    }
+
+    const deletion = await db.collection(usersCollectionName).deleteOne({ userId });
+    if (deletion.deletedCount !== 1) {
+      return res.status(500).json({ error: 'Account deletion did not complete.' });
+    }
+
+    clearAuthCookies(res);
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    return res.status(500).json({ error: 'Failed to delete account' });
   }
 });
 

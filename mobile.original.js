@@ -360,16 +360,13 @@ window.MobileUtils = {
     }
 };
 
-// Wait for critical dependencies before initializing
-function _mobileWaitForDepsAndInit() {
-    if (typeof ShareManager === 'undefined' || typeof EditorUserStatus === 'undefined') {
-        console.log('[MobileUtils] Waiting for ShareManager / EditorUserStatus...');
-        setTimeout(_mobileWaitForDepsAndInit, 150);
-        return;
-    }
-    console.log('[MobileUtils] Dependencies ready — initializing');
+function _mobileInit() {
+    console.log('[MobileUtils] Initializing');
     MobileUtils.init();
 }
 
-// Use window.load to ensure all scripts are fully executed
-window.addEventListener('load', _mobileWaitForDepsAndInit);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _mobileInit, { once: true });
+} else {
+    _mobileInit();
+}
