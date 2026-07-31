@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { selectPublishedDesignData } = require('../utils/published-design');
 
 const PLATFORMS = {
   whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
@@ -140,7 +141,8 @@ module.exports = function createViewerRouter({
       }
 
       const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-      if (!doc || !doc.data) {
+      const publishedDesign = selectPublishedDesignData(doc?.data);
+      if (!doc || !publishedDesign) {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
         return res.status(404).send('Design not found or data is missing');
       }
@@ -154,11 +156,11 @@ module.exports = function createViewerRouter({
 
       const base = absoluteBaseUrl(req);
       const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
-      const inputs = doc.data.inputs || {};
+      const inputs = publishedDesign.inputs || {};
       const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية');
       const tagline = DOMPurify.sanitize(inputs['input-tagline'] || '');
-      const dynamicData = doc.data.dynamic || {};
-      const imageUrls = doc.data.imageUrls || {};
+      const dynamicData = publishedDesign.dynamic || {};
+      const imageUrls = publishedDesign.imageUrls || {};
 
       let ogImage = `${base}/nfc/og-image.png`;
       if (imageUrls.front) {
@@ -179,7 +181,7 @@ module.exports = function createViewerRouter({
         tagline,
         ogImage,
         keywords,
-        design: doc.data,
+        design: publishedDesign,
         canonical: pageUrl,
         contactLinksHtml: buildContactLinksHtml(dynamicData, DOMPurify)
       });
@@ -210,5 +212,6 @@ module.exports._private = {
   buildContactLinksHtml,
   displaySocialValue,
   isSafeViewerId,
+  selectPublishedDesignData,
   socialUrl
 };

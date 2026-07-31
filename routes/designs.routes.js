@@ -9,6 +9,7 @@ const EmailService = require('../email-service');
 const verifyToken = require('../auth-middleware');
 const rateLimit = require('express-rate-limit');
 const { ObjectId } = require('mongodb');
+const { selectPublishedDesignData } = require('../utils/published-design');
 
 const uploadDir = path.join(__dirname, '..', 'uploads');
 
@@ -593,6 +594,8 @@ router.post('/save-card/:designId', verifyToken, async (req, res) => {
     // Find the design
     const design = await getDb().collection(designsCollectionName).findOne({ shortId: designId });
     if (!design) return res.status(404).json({ error: 'Design not found' });
+    const publishedDesign = selectPublishedDesignData(design.data);
+    if (!publishedDesign) return res.status(404).json({ error: 'Design not found' });
 
     // Can't save your own card
     if (design.ownerId === requesterId) {
@@ -628,7 +631,7 @@ router.post('/save-card/:designId', verifyToken, async (req, res) => {
       { projection: { name: 1, email: 1 } }
     );
 
-    const cardName = design.data?.inputs?.['input-name_ar'] || design.data?.inputs?.['input-name_en'] || 'بطاقة';
+    const cardName = publishedDesign.inputs?.['input-name_ar'] || publishedDesign.inputs?.['input-name_en'] || 'بطاقة';
 
     if (ownerPrivacy === 'deny_all') {
       return res.status(403).json({ error: 'Card owner does not allow saving', status: 'denied' });
@@ -640,7 +643,7 @@ router.post('/save-card/:designId', verifyToken, async (req, res) => {
         userId: requesterId,
         designShortId: designId,
         ownerName: cardName,
-        cardThumb: design.data?.imageUrls?.front || null,
+        cardThumb: publishedDesign.imageUrls?.capturedFront || publishedDesign.imageUrls?.front || null,
         savedAt: new Date()
       });
       return res.json({ success: true, status: 'saved' });
@@ -653,7 +656,7 @@ router.post('/save-card/:designId', verifyToken, async (req, res) => {
       requesterEmail: requester?.email || '',
       designShortId: designId,
       cardName,
-      cardThumb: design.data?.imageUrls?.front || null,
+      cardThumb: publishedDesign.imageUrls?.capturedFront || publishedDesign.imageUrls?.front || null,
       ownerUserId: design.ownerId,
       status: 'pending',
       createdAt: new Date()
@@ -829,6 +832,30 @@ router.get('/design-owner/:designId', async (req, res) => {
   }
 });
 
+router.get('/get-design/:id/draft', verifyToken, async (req, res) => {
+  try {
+    if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
+    const id = String(req.params.id);
+    if (!isSafePublicId(id)) {
+      return res.status(404).json({ error: 'Design not found or data missing' });
+    }
+
+    const doc = await getDb().collection(designsCollectionName).findOne({ shortId: id });
+    if (!doc || !doc.data || doc.ownerId !== req.user.userId) {
+      return res.status(404).json({ error: 'Design not found or data missing' });
+    }
+
+    res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    return res.json(doc.data);
+  } catch (e) {
+    console.error('Get draft design error:', e);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Fetch failed' });
+    }
+  }
+});
+
 router.get('/get-design/:id', async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
@@ -839,7 +866,8 @@ router.get('/get-design/:id', async (req, res) => {
     
     const doc = await getDb().collection(designsCollectionName).findOne({ shortId: id });
 
-    if (!doc || !doc.data) {
+    const publishedData = selectPublishedDesignData(doc?.data);
+    if (!doc || !publishedData) {
       console.warn(`[API] Design not found for ID: ${id}`);
       return res.status(404).json({ error: 'Design not found or data missing' });
     }
@@ -859,7 +887,7 @@ router.get('/get-design/:id', async (req, res) => {
     console.log(`[API] Design found for ID: ${id}. Returning data.`);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
-    res.json(doc.data);
+    res.json(publishedData);
   } catch (e) {
     console.error('Get design error:', e);
     if (!res.headersSent) {
@@ -913,17 +941,41 @@ router.get('/gallery', async (req, res) => {
     const sortBy = ['createdAt', 'views'].includes(req.query.sortBy) ? req.query.sortBy : 'createdAt';
     const searchTerm = req.query.search ? String(req.query.search).trim().slice(0, 80) : '';
 
-    // Build search query - only show designs shared to gallery
-    const query = { 'data.sharedToGallery': true };
+    // A gallery entry is public, so it must be selected from the immutable
+    // published revision. The legacy branch keeps older cards visible only
+    // when both captured faces prove they were published.
+    const publishedGalleryFilter = {
+      $or: [
+        { 'data.publishedState.sharedToGallery': true },
+        {
+          'data.publishedState': { $exists: false },
+          'data.sharedToGallery': true,
+          'data.imageUrls.capturedFront': { $exists: true, $nin: [null, ''] },
+          'data.imageUrls.capturedBack': { $exists: true, $nin: [null, ''] }
+        }
+      ]
+    };
+    let query = publishedGalleryFilter;
     if (searchTerm) {
       const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(escaped, 'i'); // Case-insensitive search (escaped)
-      query['$or'] = [
-        { 'data.inputs.input-name_ar': regex },
-        { 'data.inputs.input-name_en': regex },
-        { 'data.inputs.input-tagline_ar': regex },
-        { 'data.inputs.input-tagline_en': regex }
-      ];
+      query = {
+        $and: [
+          publishedGalleryFilter,
+          {
+            $or: [
+              { 'data.publishedState.inputs.input-name_ar': regex },
+              { 'data.publishedState.inputs.input-name_en': regex },
+              { 'data.publishedState.inputs.input-tagline_ar': regex },
+              { 'data.publishedState.inputs.input-tagline_en': regex },
+              { 'data.inputs.input-name_ar': regex },
+              { 'data.inputs.input-name_en': regex },
+              { 'data.inputs.input-tagline_ar': regex },
+              { 'data.inputs.input-tagline_en': regex }
+            ]
+          }
+        ]
+      };
     }
 
     // Build sort options
@@ -942,6 +994,8 @@ router.get('/gallery', async (req, res) => {
     const designs = await getDb().collection(designsCollectionName)
       .find(query)
       .project({
+        'data.publishedState': 1,
+        'data.publishedAt': 1,
         'data.inputs.input-name_ar': 1,
         'data.inputs.input-name_en': 1,
         'data.inputs.input-tagline_ar': 1,
@@ -957,9 +1011,16 @@ router.get('/gallery', async (req, res) => {
       .limit(limit)
       .toArray();
 
+    const publicDesigns = designs
+      .map(design => ({
+        ...design,
+        data: selectPublishedDesignData(design.data)
+      }))
+      .filter(design => design.data);
+
     res.json({
       success: true,
-      designs,
+      designs: publicDesigns,
       pagination: {
         page,
         totalPages,
