@@ -170,6 +170,10 @@ jobs:
             echo "STATIC_REMOTE_DIR must be . for the FTP home or a safe absolute non-root path" >&2
             exit 1
           fi
+          prepare_remote_dir=""
+          if [[ "${remote_dir}" != "." ]]; then
+            prepare_remote_dir="mkdir -p \"${remote_dir}\""
+          fi
 
           readarray -t ftp_endpoint < <(STATIC_FTP_URL="${STATIC_FTP_URL}" node -e "const u=new URL(process.env.STATIC_FTP_URL);if(u.username||u.password)throw new Error('STATIC_FTP_URL must not contain credentials');if(!['ftp:','ftps:'].includes(u.protocol))throw new Error('STATIC_FTP_URL must use ftp:// or ftps://');console.log(u.protocol);console.log(u.hostname)")
           ftp_protocol="${ftp_endpoint[0]}"
@@ -208,7 +212,7 @@ jobs:
           set net:max-retries 3
           set net:reconnect-interval-base 5
           set net:reconnect-interval-max 30
-          mkdir -p "${remote_dir}"
+          ${prepare_remote_dir}
           rm -f "${remote_dir}/release.json"
           mirror --reverse --delete --verbose --parallel=2 --exclude-glob release.json dist/static/nfc "${remote_dir}"
           put -O "${remote_dir}" dist/static/nfc/release.json
