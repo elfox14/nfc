@@ -10,6 +10,9 @@
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const sharp = require('sharp');
 
 // Mock MongoDB
 const mockCollection = {
@@ -36,6 +39,9 @@ jest.mock('mongodb', () => ({
   }
 }));
 
+const createDesignsRouter = require('../routes/designs.routes');
+const { DOMPurify, sanitizeInputs } = require('../utils/sanitize');
+
 jest.setTimeout(30000);
 
 // Setup Test Environment Variables
@@ -51,6 +57,18 @@ describe('Health Check', () => {
     const res = await request(app).get('/healthz');
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('ok');
+  });
+});
+
+describe('Static source isolation', () => {
+  it.each([
+    '/nfc/server.js',
+    '/nfc/package.json',
+    '/nfc/routes/auth.routes.js',
+    '/nfc/sw.original.js'
+  ])('does not expose server or source-only file %s', async (url) => {
+    const res = await request(app).get(url);
+    expect(res.status).toBe(404);
   });
 });
 
@@ -78,15 +96,15 @@ describe('Client Error Reporting', () => {
   });
 });
 
-describe('Public Upload Proxy', () => {
-  it('POST /api/upload-image-public should reject request without image', async () => {
+describe('Legacy Upload Alias', () => {
+  it('POST /api/upload-image-public should require authentication before parsing files', async () => {
     const res = await request(app)
       .post('/api/upload-image-public');
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(401);
   });
 
-  it('POST /api/upload-image-public should reject non-image files', async () => {
+  it('POST /api/upload-image-public should reject anonymous file bodies', async () => {
     const res = await request(app)
       .post('/api/upload-image-public')
       .attach('image', Buffer.from('not an image'), {
@@ -94,7 +112,7 @@ describe('Public Upload Proxy', () => {
         contentType: 'text/plain'
       });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(401);
   });
 });
 
@@ -113,6 +131,58 @@ describe('Authenticated Upload', () => {
 
     // Auth middleware returns 401 or 403 depending on token validity
     expect([401, 403]).toContain(res.status);
+  });
+
+  it('POST /api/upload-image should reject files larger than 5 MB', async () => {
+    const token = jwt.sign({ userId: 'upload-user', type: 'access' }, process.env.JWT_SECRET);
+    const res = await request(app)
+      .post('/api/upload-image')
+      .set('Authorization', `Bearer ${token}`)
+      .attach('image', Buffer.alloc((5 * 1024 * 1024) + 1, 1), {
+        filename: 'large.png',
+        contentType: 'image/png'
+      });
+
+    expect(res.status).toBe(413);
+  });
+
+  it('never falls back to ephemeral local storage in production', async () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    const token = jwt.sign({ userId: 'upload-user', type: 'access' }, process.env.JWT_SECRET);
+
+    try {
+      const validPng = await sharp({
+        create: { width: 1, height: 1, channels: 4, background: '#ffffff' }
+      }).png().toBuffer();
+      const productionUploadApp = express();
+      productionUploadApp.use(express.json());
+      productionUploadApp.use(cookieParser());
+      productionUploadApp.use('/api', createDesignsRouter({
+        getDb: () => mockDb,
+        designsCollectionName: 'designs',
+        usersCollectionName: 'users',
+        cardRequestsCollectionName: 'cardRequests',
+        savedCardsCollectionName: 'savedCards',
+        absoluteBaseUrl: () => 'https://api.example.test',
+        sanitizeInputs,
+        DOMPurify,
+        cloudinary: {}
+      }));
+
+      const res = await request(productionUploadApp)
+        .post('/api/upload-image')
+        .set('Authorization', `Bearer ${token}`)
+        .attach('image', validPng, {
+          filename: 'pixel.png',
+          contentType: 'image/png'
+        });
+
+      expect(res.status).toBe(503);
+      expect(res.body.error).toMatch(/تخزين الصور/);
+    } finally {
+      process.env.NODE_ENV = originalNodeEnv;
+    }
   });
 });
 

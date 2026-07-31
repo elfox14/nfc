@@ -75,12 +75,12 @@ const mongoUrl = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB || 'mcnfc';
 const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 const usersCollectionName = 'users'; // New Users Collection
-const backgroundsCollectionName = process.env.MONGO_BACKGROUNDS_COLL || 'backgrounds';
 const savedCardsCollectionName = 'savedCards';
 const cardRequestsCollectionName = 'cardRequests';
 let db;
+let mongoClient;
 
-connectDatabase({
+const databaseReady = connectDatabase({
   mongoUrl,
   dbName,
   collectionNames: {
@@ -90,14 +90,15 @@ connectDatabase({
     cardRequestsCollectionName
   }
 })
-  .then(database => {
-    db = database;
+  .then(connection => {
+    db = connection.db;
+    mongoClient = connection.client;
     console.log('MongoDB connected');
     console.log('MongoDB indexes created');
   })
-  .catch(err => { 
-    console.error('Mongo connect error', err); 
-    process.exit(1); 
+  .catch(err => {
+    console.error('Mongo connect error', err);
+    throw err;
   });
 
 const rootDir = __dirname;
@@ -123,8 +124,10 @@ registerCacheAndRedirectMiddleware(app);
 
 // --- UPLOADS FOLDER ---
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
+if (process.env.NODE_ENV !== 'production') {
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+  app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
+}
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -168,9 +171,13 @@ app.use('/api', createDesignsRouter({
 const createAuthRouter = require('./routes/auth.routes');
 app.use('/api/auth', createAuthRouter({ 
   getDb: () => db, 
-  usersCollectionName, 
+  usersCollectionName,
+  designsCollectionName,
+  savedCardsCollectionName,
+  cardRequestsCollectionName,
   authLimiter,
-  allowedOrigins
+  allowedOrigins,
+  cloudinary
 }));
 
 const createSeoRouter = require('./routes/seo.routes');
@@ -200,12 +207,12 @@ app.use('/api/admin', adminLimiter, createAdminRouter({
 }));
 
 // --- 404 NOT FOUND HANDLER ---
-app.use((req, res, next) => {
+app.use((req, res, _next) => {
   res.status(404).sendFile(path.join(rootDir, '404.html'));
 });
 
 // --- GENERAL ERROR HANDLER (must be AFTER all routes) ---
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   trackError(err, {
     route: `${req.method} ${req.originalUrl}`,
     ip: req.ip,
@@ -237,12 +244,72 @@ const server = http.createServer(app);
 registerRealtimeCollaboration(server);
 
 
-// --- START SERVER (تغيير app.listen إلى server.listen) ---
-if (require.main === module) {
-  server.listen(port, () => {
-    console.log(`Server running on port: ${port}`);
-    console.log('WebSocket server is also running.');
+async function startServer() {
+  // Do not accept traffic until MongoDB is connected and indexes have been
+  // attempted. A failed startup exits so Render can restart the instance.
+  await databaseReady;
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(port, () => {
+      server.removeListener('error', reject);
+      console.log(`Server running on port: ${port}`);
+      console.log('WebSocket server is also running.');
+      resolve(server);
+    });
   });
 }
 
+let shutdownStarted = false;
+async function closeDatabase() {
+  db = undefined;
+  if (mongoClient) {
+    await mongoClient.close();
+    mongoClient = undefined;
+  }
+}
+
+function shutdown(signal) {
+  if (shutdownStarted) return;
+  shutdownStarted = true;
+  console.log(`[Shutdown] ${signal} received; draining HTTP connections.`);
+
+  const forceExit = setTimeout(() => {
+    console.error('[Shutdown] Grace period expired.');
+    process.exit(1);
+  }, 25_000);
+  forceExit.unref();
+
+  const finish = async (serverError) => {
+    try {
+      await closeDatabase();
+    } catch (dbError) {
+      console.error('[Shutdown] MongoDB close failed:', dbError.message);
+      serverError = serverError || dbError;
+    }
+    clearTimeout(forceExit);
+    process.exit(serverError ? 1 : 0);
+  };
+
+  if (server.listening) {
+    server.close(finish);
+  } else {
+    finish();
+  }
+}
+
+if (require.main === module) {
+  process.once('SIGTERM', () => shutdown('SIGTERM'));
+  process.once('SIGINT', () => shutdown('SIGINT'));
+  startServer().catch((err) => {
+    console.error('[FATAL] Server startup failed:', err.message);
+    process.exit(1);
+  });
+} else {
+  // Keep test imports from creating an unhandled rejection while still making
+  // the asynchronous database handle available to mocked route tests.
+  databaseReady.catch(() => {});
+}
+
 module.exports = app;
+module.exports.startServer = startServer;
+module.exports.databaseReady = databaseReady;

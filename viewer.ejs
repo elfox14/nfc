@@ -650,11 +650,20 @@
         }
         return style;
         }
+
+        function getDynamicPositionStyle(item) {
+        const pos = item && item.position ? item.position : {};
+        const rawX = Number(pos.x);
+        const rawY = Number(pos.y);
+        const x = Number.isFinite(rawX) ? rawX : 0;
+        const y = Number.isFinite(rawY) ? rawY : 0;
+        return `transform: translate(${x}px, ${y}px);`;
+        }
         %>
 
         <div class="cards-container">
             <!-- تطبيق data-layout لتفعيل CSS الوضع الطولي -->
-            <div class="cards-wrapper" id="card" onclick="this.classList.toggle('is-flipped'); if('vibrate' in navigator) navigator.vibrate(25);"
+            <div class="cards-wrapper" id="card"
                 data-layout="<%= layout %>">
 
                 <!-- === الوجه الأمامي === -->
@@ -707,7 +716,7 @@
                                                                     {
                                                                     if (phone.placement === 'front' && phone.value) { %>
                                                                     <div class="draggable-element"
-                                                                        style="transform: translate(<%= phone.position.x %>px, <%= phone.position.y %>px);">
+                                                                        style="<%= getDynamicPositionStyle(phone) %>">
                                                                         <a href="tel:<%= phone.value %>"
                                                                             class="phone-btn" style="
                                 <%= getBtnStyle('phone-btn') %>
@@ -776,7 +785,7 @@
                                                                     {
                                                                     if (phone.placement === 'back' && phone.value) { %>
                                                                     <div class="draggable-element"
-                                                                        style="transform: translate(<%= phone.position.x %>px, <%= phone.position.y %>px);">
+                                                                        style="<%= getDynamicPositionStyle(phone) %>">
                                                                         <a href="tel:<%= phone.value %>"
                                                                             class="phone-btn" style="
                                 <%= getBtnStyle('phone-btn') %>
@@ -794,83 +803,55 @@
                                                                     <% }}); } %>
 
                                                                         <!-- روابط التواصل الاجتماعي (Static & Dynamic) -->
-                                                                        <% const platforms={ whatsapp: {
-                                                                            icon: 'fab fa-whatsapp' ,
-                                                                            prefix: 'https://wa.me/' }, email: {
-                                                                            icon: 'fas fa-envelope' , prefix: 'mailto:'
-                                                                            }, website: { icon: 'fas fa-globe' ,
-                                                                            prefix: '' }, facebook: {
-                                                                            icon: 'fab fa-facebook-f' , prefix: '' },
-                                                                            linkedin: { icon: 'fab fa-linkedin-in' ,
-                                                                            prefix: '' }, instagram: {
-                                                                            icon: 'fab fa-instagram' , prefix: '' }, x:
-                                                                            { icon: 'fab fa-xing' , prefix: '' },
-                                                                            telegram: { icon: 'fab fa-telegram' ,
-                                                                            prefix: '' }, tiktok: {
-                                                                            icon: 'fab fa-tiktok' , prefix: '' },
-                                                                            snapchat: { icon: 'fab fa-snapchat' ,
-                                                                            prefix: '' }, youtube: {
-                                                                            icon: 'fab fa-youtube' , prefix: '' },
-                                                                            pinterest: { icon: 'fab fa-pinterest' ,
-                                                                            prefix: '' } }; // دمج القوائم (Static +
-                                                                            Dynamic) const allSocials=[]; // إضافة
-                                                                            الروابط الثابتة if(dynamic.staticSocial) {
-                                                                            Object.entries(dynamic.staticSocial).forEach(([key,
-                                                                            data])=> {
-                                                                            if(data && data.value) {
-                                                                            allSocials.push({ ...data, type: key,
-                                                                            isStatic: true });
+                                                                        <%
+                                                                            const platforms = {
+                                                                                whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
+                                                                                email: { icon: 'fas fa-envelope', prefix: 'mailto:' },
+                                                                                website: { icon: 'fas fa-globe', prefix: '' },
+                                                                                facebook: { icon: 'fab fa-facebook-f', prefix: '' },
+                                                                                linkedin: { icon: 'fab fa-linkedin-in', prefix: '' },
+                                                                                instagram: { icon: 'fab fa-instagram', prefix: '' },
+                                                                                x: { icon: 'fab fa-xing', prefix: '' },
+                                                                                telegram: { icon: 'fab fa-telegram', prefix: '' },
+                                                                                tiktok: { icon: 'fab fa-tiktok', prefix: '' },
+                                                                                snapchat: { icon: 'fab fa-snapchat', prefix: '' },
+                                                                                youtube: { icon: 'fab fa-youtube', prefix: '' },
+                                                                                pinterest: { icon: 'fab fa-pinterest', prefix: '' }
+                                                                            };
+                                                                            const allSocials = [];
+                                                                            if (dynamic.staticSocial) {
+                                                                                Object.entries(dynamic.staticSocial).forEach(([key, data]) => {
+                                                                                    if (data && data.value) {
+                                                                                        allSocials.push({ ...data, type: key, isStatic: true });
+                                                                                    }
+                                                                                });
                                                                             }
-                                                                            });
+                                                                            if (dynamic.social) {
+                                                                                dynamic.social.forEach(item => {
+                                                                                    if (item && item.value) {
+                                                                                        allSocials.push({ ...item, type: item.platform, isStatic: false });
+                                                                                    }
+                                                                                });
                                                                             }
-                                                                            // إضافة الروابط الديناميكية
-                                                                            if(dynamic.social) {
-                                                                            dynamic.social.forEach(item => {
-                                                                            if(item && item.value) {
-                                                                            allSocials.push({ ...item, type:
-                                                                            item.platform, isStatic: false });
-                                                                            }
-                                                                            });
-                                                                            }
-                                                                            %>
+                                                                        %>
 
                                                                             <% allSocials.forEach(item=> {
-                                                                                const platform = platforms[item.type] ||
-                                                                                { icon: 'fas fa-link', prefix: '' };
-                                                                                const btnBg =
-                                                                                inputs['back-buttons-bg-color'];
-                                                                                const btnColor =
-                                                                                inputs['back-buttons-text-color'];
-                                                                                // التحقق مما إذا كان هناك ألوان مخصصة
-                                                                                const customColor = item.color ||
-                                                                                inputs[`input-static-${item.type}-color`]
-                                                                                || btnColor;
-                                                                                const customSize = item.size ||
-                                                                                inputs[`input-static-${item.type}-size`]
-                                                                                || inputs['social-text-size'];
+                                                                                const platform = platforms[item.type] || { icon: 'fas fa-link', prefix: '' };
+                                                                                const btnBg = inputs['back-buttons-bg-color'];
+                                                                                const btnColor = inputs['back-buttons-text-color'];
+                                                                                const customColor = item.color || inputs[`input-static-${item.type}-color`] || btnColor;
+                                                                                const customSize = item.size || inputs[`input-static-${item.type}-size`] || inputs['social-text-size'];
 
                                                                                 let url = item.value;
-                                                                                if (item.type === 'email' &&
-                                                                                !url.startsWith('mailto:')) url =
-                                                                                'mailto:' + url;
-                                                                                else if (item.type === 'whatsapp') url =
-                                                                                'https://wa.me/' +
-                                                                                url.replace(/\D/g,'');
-                                                                                else if (!url.startsWith('http')) url =
-                                                                                'https://' + url;
+                                                                                if (item.type === 'email' && !url.startsWith('mailto:')) url = 'mailto:' + url;
+                                                                                else if (item.type === 'whatsapp') url = 'https://wa.me/' + url.replace(/\D/g,'');
+                                                                                else if (!url.startsWith('http')) url = 'https://' + url;
 
-                                                                                // التحقق من مكان العنصر (الافتراضي
-                                                                                خلفي)
-                                                                                const itemPlacement = item.placement ||
-                                                                                'back';
-
-                                                                                // عرض العنصر فقط إذا كان في الوجه
-                                                                                الخلفي (أو الأمامي إذا أردت دعم ذلك
-                                                                                للروابط)
+                                                                                const itemPlacement = item.placement || 'back';
                                                                                 if (itemPlacement === 'back') {
                                                                                 %>
                                                                                 <div class="draggable-element"
-                                                                                    style="transform: translate(<%= item.position.x %>px, <%= item.position.y %>px);">
+                                                                                    style="<%= getDynamicPositionStyle(item) %>">
                                                                                     <a href="<%= url %>" target="_blank"
                                                                                         class="social-btn" style="
                                 <%= getBtnStyle('back-buttons') %>
@@ -923,17 +904,17 @@
 
             <!-- Contact Actions Row (Share / Call) replacing old actions bar -->
             <div class="secondary-actions">
-                <button class="sec-action-btn story-gen-btn" onclick="openStoryGenerator()">
+                <button class="sec-action-btn story-gen-btn" id="ejs-story-open-btn">
                     <i class="fab fa-instagram"></i> ستوري
                 </button>
                 <a href="tel:<%= (dynamic.phones && dynamic.phones[0]) ? dynamic.phones[0].value.replace(/\D/g,'') : '' %>"
                     class="sec-action-btn">
                     <i class="fas fa-phone"></i> اتصال
                 </a>
-                <button class="sec-action-btn" onclick="shareCard()">
+                <button class="sec-action-btn" id="ejs-share-btn">
                     <i class="fas fa-share-alt"></i> مشاركة
                 </button>
-                <button class="sec-action-btn" onclick="openQrModal()">
+                <button class="sec-action-btn" id="ejs-qr-open-btn">
                     <i class="fas fa-qrcode"></i> QR
                 </button>
             </div>
@@ -975,7 +956,7 @@
                             </div>
                             <span class="contact-text" dir="ltr"><%= display %></span>
                         </a>
-                        <button class="copy-btn" onclick="copyToClipboard('<%= display %>')" aria-label="نسخ">
+                        <button class="copy-btn" aria-label="نسخ">
                             <i class="fas fa-copy"></i>
                         </button>
                     </div>
@@ -1013,7 +994,7 @@
 
         <!-- STICKY FOOTER -->
         <div class="sticky-footer fade-in-up" style="animation-delay: 0.4s;">
-            <button class="save-contact-btn" id="ejs-save-btn" onclick="saveContactEnhanced()">
+            <button class="save-contact-btn" id="ejs-save-btn">
                 <i class="fas fa-user-plus"></i> <span style="font-weight:700">حفظ كجهة اتصال</span>
             </button>
             <div class="footer-powered">
@@ -1022,11 +1003,11 @@
         </div>
 
         <!-- QR Modal -->
-        <div id="qrModal" class="qr-modal-overlay" onclick="closeQrModal(event)">
+        <div id="qrModal" class="qr-modal-overlay">
             <div class="qr-modal-box">
                 <div class="qr-modal-header">
                     <h4>كود المشاركة السريع</h4>
-                    <button class="close-btn" onclick="closeQrModal()">&times;</button>
+                    <button class="close-btn" id="ejs-qr-close-btn">&times;</button>
                 </div>
                 <div class="qr-code-display">
                     <img src="<%= images.qrCode || 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' + encodeURIComponent(pageUrl) %>" alt="QR Code">
@@ -1243,7 +1224,7 @@ END:VCARD`;
                             <div style="padding:18px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
                                 <div class="qr-modal-header" style="margin-bottom:8px;">
                                     <h4><i class="fab fa-instagram" style="color:#E4405F;margin-left:8px;"></i> مولّد صورة الستوري</h4>
-                                    <button class="close-btn" onclick="closeStoryModal()">&times;</button>
+                                    <button class="close-btn" data-story-action="close">&times;</button>
                                 </div>
                                 <p style="color:#9ca3af;font-size:0.85rem;margin:0;text-align:center;">اختر الثيم وحمّل صورة جاهزة للستوري</p>
                             </div>
@@ -1265,15 +1246,15 @@ END:VCARD`;
 
                             <!-- Sticky Action Buttons (ALWAYS VISIBLE) -->
                             <div style="padding:14px 20px 18px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;background:#1f2937;">
-                                <button onclick="shareStory()" style="width:100%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border:none;padding:16px;border-radius:50px;font-size:1.15rem;cursor:pointer;font-weight:800;font-family:inherit;margin-bottom:10px;box-shadow:0 4px 20px rgba(220,39,67,0.35);display:flex;align-items:center;justify-content:center;gap:10px;">
+                                <button data-story-action="share" style="width:100%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border:none;padding:16px;border-radius:50px;font-size:1.15rem;cursor:pointer;font-weight:800;font-family:inherit;margin-bottom:10px;box-shadow:0 4px 20px rgba(220,39,67,0.35);display:flex;align-items:center;justify-content:center;gap:10px;">
                                     <i class="fas fa-paper-plane" style="font-size:1.1rem;"></i>
                                     <span>📤 شارك الآن</span>
                                 </button>
                                 <div style="display:flex;gap:8px;">
-                                    <button onclick="downloadStory()" style="flex:1;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);padding:12px;border-radius:50px;font-size:0.9rem;cursor:pointer;font-weight:600;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+                                    <button data-story-action="download" style="flex:1;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);padding:12px;border-radius:50px;font-size:0.9rem;cursor:pointer;font-weight:600;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
                                         <i class="fas fa-download"></i> تحميل الصورة
                                     </button>
-                                    <button onclick="closeStoryModal()" style="flex:1;background:rgba(255,255,255,0.05);color:#9ca3af;border:1px solid rgba(255,255,255,0.1);padding:12px;border-radius:50px;font-size:0.9rem;cursor:pointer;font-weight:600;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+                                    <button data-story-action="close" style="flex:1;background:rgba(255,255,255,0.05);color:#9ca3af;border:1px solid rgba(255,255,255,0.1);padding:12px;border-radius:50px;font-size:0.9rem;cursor:pointer;font-weight:600;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
                                         <i class="fas fa-times"></i> إغلاق
                                     </button>
                                 </div>
@@ -1293,6 +1274,12 @@ END:VCARD`;
                             storyTheme = btn.dataset.theme;
                             renderEjsStory();
                         });
+                    });
+
+                    modal.querySelector('[data-story-action="share"]').addEventListener('click', shareStory);
+                    modal.querySelector('[data-story-action="download"]').addEventListener('click', downloadStory);
+                    modal.querySelectorAll('[data-story-action="close"]').forEach(btn => {
+                        btn.addEventListener('click', closeStoryModal);
                     });
 
                     modal.addEventListener('click', e => { if (e.target === modal) closeStoryModal(); });
@@ -1532,6 +1519,17 @@ END:VCARD`;
                     if (e.name !== 'AbortError') showToast('فشلت المشاركة', 'error');
                 }
             }
+
+            document.getElementById('card')?.addEventListener('click', function() {
+                this.classList.toggle('is-flipped');
+                if ('vibrate' in navigator) navigator.vibrate(25);
+            });
+            document.getElementById('ejs-story-open-btn')?.addEventListener('click', openStoryGenerator);
+            document.getElementById('ejs-share-btn')?.addEventListener('click', shareCard);
+            document.getElementById('ejs-qr-open-btn')?.addEventListener('click', openQrModal);
+            document.getElementById('ejs-save-btn')?.addEventListener('click', saveContactEnhanced);
+            document.getElementById('ejs-qr-close-btn')?.addEventListener('click', () => closeQrModal());
+            document.getElementById('qrModal')?.addEventListener('click', closeQrModal);
         </script>
     <script src="/nfc/premium-ui.js" defer></script>
 </body>

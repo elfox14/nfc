@@ -5,13 +5,37 @@ const path = require('path');
 module.exports = function createSystemRouter({ getDb, rootDir }) {
   const router = express.Router();
 
-  router.get('/healthz', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString(), dbConnected: !!getDb() });
-  });
+  async function healthCheck(req, res) {
+    const db = getDb();
+    if (!db) {
+      return res.status(503).json({
+        status: 'unavailable',
+        database: 'disconnected',
+        release: process.env.RENDER_GIT_COMMIT || process.env.RELEASE_SHA || null,
+        timestamp: new Date().toISOString()
+      });
+    }
 
-  router.get('/api/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
-  });
+    try {
+      await db.command({ ping: 1 });
+      return res.status(200).json({
+        status: 'ok',
+        database: 'connected',
+        release: process.env.RENDER_GIT_COMMIT || process.env.RELEASE_SHA || null,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      return res.status(503).json({
+        status: 'unavailable',
+        database: 'disconnected',
+        release: process.env.RENDER_GIT_COMMIT || process.env.RELEASE_SHA || null,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  router.get('/healthz', healthCheck);
+  router.get('/api/health', healthCheck);
 
   router.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
     if (req.useragent.isMobile) {

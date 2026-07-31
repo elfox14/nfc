@@ -674,7 +674,7 @@
         // Create indicator
         const indicator = document.createElement('div');
         indicator.className = 'autosave-indicator';
-        indicator.id = 'autosave-indicator';
+        indicator.id = 'local-autosave-indicator';
         indicator.innerHTML = '<i class="fas fa-check"></i><span>Saved automatically</span>';
         document.body.appendChild(indicator);
 
@@ -742,7 +742,7 @@
     }
 
     function performAutosave() {
-        const indicator = document.getElementById('autosave-indicator');
+        const indicator = document.getElementById('local-autosave-indicator');
 
         // Show saving state
         indicator.innerHTML = '<i class="fas fa-spinner"></i><span>Saving...</span>';

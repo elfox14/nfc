@@ -48,6 +48,25 @@ function assertEnv() {
   if (!process.env.EMAIL_API_KEY) {
     throw new Error('EMAIL_API_KEY must be configured in production.');
   }
+
+  const hasCloudinary = [
+    'CLOUDINARY_CLOUD_NAME',
+    'CLOUDINARY_API_KEY',
+    'CLOUDINARY_API_SECRET'
+  ].every(name => Boolean(process.env[name]));
+  const hasExternalUpload = Boolean(
+    process.env.EXTERNAL_UPLOAD_URL && process.env.UPLOAD_SECRET
+  );
+  if (!hasCloudinary && !hasExternalUpload) {
+    throw new Error(
+      'Production image storage must configure Cloudinary or EXTERNAL_UPLOAD_URL and UPLOAD_SECRET.'
+    );
+  }
+
+  const googleOAuthValues = [process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET];
+  if (googleOAuthValues.some(Boolean) && !googleOAuthValues.every(Boolean)) {
+    throw new Error('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be configured together.');
+  }
 }
 
 module.exports = assertEnv;

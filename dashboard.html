@@ -611,6 +611,18 @@
                         <button class="privacy-save-btn" id="save-privacy-btn">
                             <i class="fas fa-save"></i> حفظ الإعدادات
                         </button>
+                        <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.12);">
+                            <h3><i class="fas fa-database"></i> بيانات الحساب</h3>
+                            <p>يمكنك تنزيل نسخة من بياناتك أو حذف الحساب والبطاقات والطلبات المرتبطة به نهائياً.</p>
+                            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;">
+                                <button class="privacy-save-btn" id="export-account-data-btn" type="button" style="margin:0;">
+                                    <i class="fas fa-download"></i> تصدير بياناتي
+                                </button>
+                                <button class="privacy-save-btn" id="delete-account-btn" type="button" style="margin:0;background:#c0392b;">
+                                    <i class="fas fa-user-times"></i> حذف الحساب نهائياً
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -973,6 +985,41 @@
                 btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> حدث خطأ';
                 btn.disabled = false;
             }
+        });
+
+        document.getElementById('export-account-data-btn').addEventListener('click', async () => {
+            const response = await Auth.apiFetchWithRefresh(`${baseUrl}/api/auth/export-data`, {
+                headers: Auth.getHeader()
+            });
+            if (!response.ok) {
+                alert('تعذر تصدير البيانات الآن. حاول مرة أخرى.');
+                return;
+            }
+            const blob = await response.blob();
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `mcprime-data-${Auth.user?.userId || 'account'}.json`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        });
+
+        document.getElementById('delete-account-btn').addEventListener('click', async () => {
+            const confirmation = prompt('هذا الإجراء نهائي. اكتب DELETE لتأكيد حذف الحساب وكل بياناته:');
+            if (confirmation !== 'DELETE') return;
+            if (!confirm('هل أنت متأكد من حذف الحساب نهائياً؟')) return;
+
+            const response = await Auth.apiFetchWithRefresh(`${baseUrl}/api/auth/account`, {
+                method: 'DELETE',
+                headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ confirmation })
+            });
+            if (!response.ok) {
+                alert('تعذر حذف الحساب. حاول مرة أخرى.');
+                return;
+            }
+            localStorage.removeItem('authUser');
+            localStorage.removeItem('authToken');
+            window.location.replace('/nfc/index.html?accountDeleted=1');
         });
 
         async function generateSignatureFromDashboard(shortId) {

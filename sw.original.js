@@ -1,23 +1,8 @@
-/**
- * MC PRIME NFC — Service Worker
- * Strategy: Network-First for HTML/API, Cache-First for static assets
- *
- * Features:
- * - Offline page fallback
- * - Smart asset caching (CSS, JS, images)
- * - Background sync ready
- * - Auto-update with skipWaiting
- */
+const CACHE_VERSION = 'v5';
+const STATIC_CACHE = `mcprime-static-${CACHE_VERSION}`;
 
-const CACHE_NAME = 'mcprime-v4';
-const STATIC_CACHE = 'mcprime-static-v4';
-const API_CACHE = 'mcprime-api-v4';
-
-// Assets to pre-cache on install
 const PRECACHE_ASSETS = [
-  '/nfc/',
-  '/nfc/index.html',
-  '/nfc/editor.html',
+  '/nfc/offline.html',
   '/nfc/style.css',
   '/nfc/homepage.css',
   '/nfc/mobile.css',
@@ -29,92 +14,91 @@ const PRECACHE_ASSETS = [
   '/nfc/mcprime-logo-optimized.webp',
 ];
 
-// Offline fallback page (minimal)
 const OFFLINE_PAGE = '/nfc/offline.html';
 
-// ─── Install ───────────────────────────────────
+const SENSITIVE_PATHS = [
+  '/nfc/dashboard',
+  '/nfc/dashboard.html',
+  '/nfc/dashboard-en',
+  '/nfc/dashboard-en.html',
+  '/nfc/login',
+  '/nfc/login.html',
+  '/nfc/login-en',
+  '/nfc/login-en.html',
+  '/nfc/signup',
+  '/nfc/signup.html',
+  '/nfc/signup-en',
+  '/nfc/signup-en.html',
+  '/nfc/forgot-password',
+  '/nfc/forgot-password.html',
+  '/nfc/reset-password',
+  '/nfc/reset-password.html',
+  '/nfc/verify-email',
+  '/nfc/verify-email.html',
+];
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => {
-      console.log('[SW] Pre-caching static assets');
-      return cache.addAll(PRECACHE_ASSETS).catch((err) => {
+    caches.open(STATIC_CACHE).then((cache) =>
+      cache.addAll(PRECACHE_ASSETS).catch((err) => {
         console.warn('[SW] Some assets failed to pre-cache:', err);
-      });
-    })
+      })
+    )
   );
-  // Activate immediately without waiting for other tabs
   self.skipWaiting();
 });
 
-// ─── Activate ──────────────────────────────────
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key !== STATIC_CACHE && key !== API_CACHE)
-          .map((key) => {
-            console.log('[SW] Removing old cache:', key);
-            return caches.delete(key);
-          })
+          .filter((key) => key.startsWith('mcprime-') && key !== STATIC_CACHE)
+          .map((key) => caches.delete(key))
       )
     )
   );
-  // Take control of all clients immediately
   self.clients.claim();
 });
 
-// ─── Fetch Strategy ────────────────────────────
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests and chrome-extension URLs
   if (request.method !== 'GET') return;
+  if (url.origin !== self.location.origin) return;
   if (url.protocol === 'chrome-extension:') return;
+  if (url.pathname.startsWith('/api/')) return;
 
-  // API requests: Network-only (don't cache dynamic data)
-  if (url.pathname.startsWith('/api/')) {
+  if (isSensitiveRequest(request, url)) {
+    event.respondWith(fetch(request));
     return;
   }
 
-  // HTML pages: Network-First with offline fallback
-  if (request.headers.get('accept')?.includes('text/html') || 
-      url.pathname.endsWith('.html') || 
-      url.pathname.endsWith('/')) {
+  if (isHtmlRequest(request, url)) {
     event.respondWith(networkFirstWithFallback(request));
     return;
   }
 
-  // Static assets (CSS, JS, images, fonts): Stale-While-Revalidate
-  // Returns cached version immediately but updates cache in background
   if (isStaticAsset(url.pathname)) {
     event.respondWith(staleWhileRevalidate(request));
-    return;
   }
 });
-
-// ─── Strategies ────────────────────────────────
 
 async function networkFirstWithFallback(request) {
   try {
     const networkResponse = await fetch(request);
-    // Cache successful HTML responses
-    if (networkResponse.ok) {
+    if (canCacheResponse(request, networkResponse)) {
       const cache = await caches.open(STATIC_CACHE);
-      cache.put(request, networkResponse.clone());
+      await cache.put(request, networkResponse.clone());
     }
     return networkResponse;
   } catch (error) {
-    // Try cache
     const cached = await caches.match(request);
     if (cached) return cached;
-    
-    // Last resort: offline page
+
     const offlineCached = await caches.match(OFFLINE_PAGE);
-    if (offlineCached) return offlineCached;
-    
-    return new Response('Offline', { status: 503, statusText: 'Offline' });
+    return offlineCached || new Response('Offline', { status: 503, statusText: 'Offline' });
   }
 }
 
@@ -122,24 +106,44 @@ async function staleWhileRevalidate(request) {
   const cache = await caches.open(STATIC_CACHE);
   const cached = await cache.match(request);
 
-  // Always fetch from network in background to update cache
-  const networkPromise = fetch(request).then((networkResponse) => {
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  }).catch(() => null);
+  const networkPromise = fetch(request)
+    .then(async (networkResponse) => {
+      if (canCacheResponse(request, networkResponse)) {
+        await cache.put(request, networkResponse.clone());
+      }
+      return networkResponse;
+    })
+    .catch(() => null);
 
-  // Return cached version immediately if available, otherwise wait for network
-  if (cached) {
-    return cached;
-  }
+  if (cached) return cached;
 
   const networkResponse = await networkPromise;
-  if (networkResponse) return networkResponse;
-  return new Response('', { status: 408, statusText: 'Offline' });
+  return networkResponse || new Response('', { status: 408, statusText: 'Offline' });
+}
+
+function isHtmlRequest(request, url) {
+  return request.headers.get('accept')?.includes('text/html') ||
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('/');
 }
 
 function isStaticAsset(pathname) {
-  return /\.(css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot)$/i.test(pathname);
+  return /\.(css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot|json)$/i.test(pathname);
+}
+
+function isSensitiveRequest(request, url) {
+  if (request.headers.has('authorization')) return true;
+  if (request.headers.has('cookie')) return true;
+  return SENSITIVE_PATHS.some((path) => url.pathname === path || url.pathname.startsWith(`${path}/`));
+}
+
+function canCacheResponse(request, response) {
+  if (!response || !response.ok) return false;
+  if (request.headers.has('authorization') || request.headers.has('cookie')) return false;
+
+  const cacheControl = response.headers.get('cache-control') || '';
+  if (/\b(no-store|private)\b/i.test(cacheControl)) return false;
+  if (response.headers.has('set-cookie')) return false;
+
+  return true;
 }

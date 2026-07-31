@@ -1,16 +1,19 @@
 {
   "name": "digital-card-server",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Enhanced Server for the Digital Business Card Editor with improved security and performance",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "lint": "eslint .",
+    "lint": "eslint server.js auth-middleware.js email-service.js routes utils scripts test --ext .js --max-warnings=100",
     "format": "prettier --write \"**/*.js\"",
     "test": "jest",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui",
+    "build:sw": "terser sw.original.js -o sw.js --compress --mangle",
+    "check:assets": "node scripts/check-generated-assets.js",
+    "package:static": "node scripts/package-static-site.js",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "audit:editor": "node scripts/audit-editor-markup.js",
     "audit:editor:strict": "node scripts/audit-editor-markup.js --strict"

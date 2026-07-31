@@ -42,7 +42,7 @@ async function connectDatabase({
     onIndexesWarning('Some indexes may already exist:', indexErr.message);
   }
 
-  return db;
+  return { db, client };
 }
 
 module.exports = {

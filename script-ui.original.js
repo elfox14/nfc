@@ -315,78 +315,29 @@ const UIManager = {
     },
 
     async uploadImageToServer(file, purpose = null) {
-        const formData = new FormData();
-        formData.append("image", file);
-        // NOTE: Secret is sent server-side via server.js proxy (UPLOAD_SECRET env var).
-        // The direct PHP fallback relies on the server's UPLOAD_SECRET environment variable.
-
-        // Build deterministic overwrite ID from user info + purpose
         const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
-        let overwriteId = null;
-        if (isLoggedIn && purpose) {
-            try {
-                const user = JSON.parse(localStorage.getItem('authUser') || 'null');
-                if (user && user.userId) {
-                    overwriteId = `user_${user.userId}_${purpose}`;
-                }
-            } catch (e) { /* ignore */ }
-        }
-
-        // إرسال معرف الاستبدال للسيرفر الخارجي
-        if (overwriteId) {
-            formData.append("overwrite_id", overwriteId);
+        if (!isLoggedIn) {
+            throw new Error(
+                _isEnglishPage
+                    ? 'Please sign in before uploading images.'
+                    : 'يرجى تسجيل الدخول قبل رفع الصور.'
+            );
         }
 
         try {
-            // Try authenticated upload to local server first (supports Cloudinary overwrite)
-            if (isLoggedIn && purpose) {
-                try {
-                    console.log(`[Upload] Uploading with purpose: ${purpose} (overwrite mode)`);
-                    const localFormData = new FormData();
-                    localFormData.append("image", file);
-                    localFormData.append("purpose", purpose);
+            const formData = new FormData();
+            formData.append("image", file);
+            if (purpose) formData.append("purpose", purpose);
 
-                    const localResponse = await Auth.apiFetchWithRefresh(`${Config.API_BASE_URL}/api/upload-image`, {
-                        method: "POST",
-                        body: localFormData
-                    });
-                    const localResult = await localResponse.json();
-                    if (localResponse.ok && localResult.url) {
-                        console.log(`[Upload] Overwrite upload succeeded:`, localResult.url);
-                        return localResult.url;
-                    }
-                } catch (authUploadErr) {
-                    console.warn("[Upload] Authenticated overwrite upload failed, falling back:", authUploadErr.message);
-                }
-            }
-
-            // Fallback: Public upload proxy (server handles secret and external upload)
-            console.log("[Upload] Using public upload proxy...");
-            const publicFormData = new FormData();
-            publicFormData.append("image", file);
-            if (overwriteId) {
-                publicFormData.append("overwrite_id", overwriteId);
-            }
-
-            const response = await fetch(`${Config.API_BASE_URL}/api/upload-image-public`, {
+            const response = await Auth.apiFetchWithRefresh(`${Config.API_BASE_URL}/api/upload-image`, {
                 method: "POST",
-                body: publicFormData
+                body: formData
             });
-
             const result = await response.json();
-
             if (!response.ok) {
                 throw new Error(result.error || "Server error");
             }
-
-            // Cache-bust for overwritten images
-            let finalUrl = result.url;
-            if (overwriteId && finalUrl && !finalUrl.includes('v=')) {
-                const separator = finalUrl.includes('?') ? '&' : '?';
-                finalUrl = `${finalUrl}${separator}v=${Date.now()}`;
-            }
-
-            return finalUrl;
+            return result.url;
         } catch (error) {
             console.error("Image upload failed:", error);
             throw new Error("فشل رفع الصورة. تأكد من اتصالك بالإنترنت. / Upload failed. Check your internet connection.");

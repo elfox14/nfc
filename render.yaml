@@ -1,11 +1,59 @@
 services:
   - type: web
     name: nfc-business-card-editor
-    env: node
-    buildCommand: npm install
-    startCommand: node server.js
+    runtime: node
+    branch: main
+    autoDeployTrigger: off
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /healthz
+    maxShutdownDelaySeconds: 30
     envVars:
       - key: NODE_VERSION
-        value: 22.14.0
+        value: 22.23.1
       - key: NODE_ENV
         value: production
+      - key: TRUST_PROXY
+        value: "true"
+      - key: MONGO_DB
+        value: mcnfc
+      - key: MONGO_DESIGNS_COLL
+        value: designs
+      - key: MONGO_BACKGROUNDS_COLL
+        value: backgrounds
+      - key: ALLOWED_ORIGINS
+        value: https://www.mcprim.com,https://mcprim.com
+      - key: PUBLIC_BASE_URL
+        value: https://mcprim.com/nfc
+      - key: SITE_BASE_URL
+        value: https://mcprim.com
+      - key: EMAIL_PROVIDER
+        value: resend
+      - key: EMAIL_FROM_ADDRESS
+        value: noreply@mcprim.com
+      - key: EMAIL_FROM_NAME
+        value: MC PRIME NFC
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: TOKEN_HASH_SECRET
+        sync: false
+      - key: ADMIN_TOKEN_SHA256
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: EXTERNAL_UPLOAD_URL
+        sync: false
+      - key: UPLOAD_SECRET
+        sync: false
+      - key: EMAIL_API_KEY
+        sync: false

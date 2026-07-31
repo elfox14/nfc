@@ -51,6 +51,35 @@ function setNfcStaticHeaders(res, filePath) {
 }
 
 function registerNfcStaticFiles(app, rootDir) {
+  const blockedFiles = new Set([
+    'server.js',
+    'auth-middleware.js',
+    'email-service.js',
+    'package.json',
+    'package-lock.json',
+    'render.yaml',
+    'playwright.config.ts',
+    'jest.config.js',
+    'minify-assets.js'
+  ]);
+  const blockedDirectories = new Set([
+    'routes', 'utils', 'test', 'e2e', 'scripts', 'docs', 'coverage', 'node_modules', '.github', '.git'
+  ]);
+
+  app.use('/nfc', (req, res, next) => {
+    const segments = req.path.split('/').filter(Boolean);
+    const basename = segments[segments.length - 1] || '';
+    if (
+      segments.some((segment) => blockedDirectories.has(segment)) ||
+      blockedFiles.has(basename) ||
+      basename.includes('.original.') ||
+      basename.startsWith('.env')
+    ) {
+      return res.status(404).end();
+    }
+    next();
+  });
+
   app.use('/nfc', express.static(rootDir, {
     extensions: ['html'],
     setHeaders: setNfcStaticHeaders
