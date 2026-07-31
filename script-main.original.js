@@ -811,7 +811,11 @@ const ShareManager = {
             if (Config.DEBUG_MODE) console.log('[DEBUG] loadFromUrl - designId from URL:', designId);
             
             try {
-                const fetchUrl = `${Config.API_BASE_URL}/api/get-design/${designId}`;
+                const wantsDraft = params.get('mode') === 'draft';
+                const designPath = wantsDraft
+                    ? `/api/get-design/${designId}/draft`
+                    : `/api/get-design/${designId}`;
+                const fetchUrl = `${Config.API_BASE_URL}${designPath}`;
                 const response = await fetch(fetchUrl, {
                     credentials: 'include',
                     cache: 'no-store'
@@ -837,7 +841,6 @@ const ShareManager = {
                 });
 
                 const storedState = result.inputs ? result : (result.data || result);
-                const wantsDraft = params.get('mode') === 'draft';
                 const hasPublishedState = storedState &&
                     storedState.publishedState &&
                     (storedState.publishedState.inputs || storedState.publishedState.dynamic);

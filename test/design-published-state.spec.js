@@ -41,6 +41,7 @@ describe('Published card revision persistence', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        Object.values(mockCollection).forEach(mockFn => mockFn.mockReset());
         token = jwt.sign({ userId: 'owner-1', type: 'access' }, process.env.JWT_SECRET);
     });
 
@@ -143,5 +144,82 @@ describe('Published card revision persistence', () => {
         expect(savedData.publishedState.positions).toEqual(existingDoc.data.positions);
         expect(savedData.publishedAt).toBe('2026-07-20T09:30:00.000Z');
         expect(savedData.imageUrls).toEqual(existingDoc.data.imageUrls);
+    });
+
+    test('public reads return only the published snapshot', async () => {
+        mockCollection.findOne.mockResolvedValueOnce({
+            _id: 'design-db-id',
+            ownerId: 'owner-1',
+            data: {
+                inputs: { 'input-name_ar': 'اسم المسودة السري' },
+                dynamic: { phones: [{ value: '01111111111' }] },
+                publishedAt: '2026-07-31T12:00:00.000Z',
+                publishedState: {
+                    inputs: { 'input-name_ar': 'الاسم المنشور' },
+                    dynamic: { phones: [{ value: '01000000000' }] },
+                    imageUrls: {
+                        capturedFront: 'https://uploads.example/front.webp',
+                        capturedBack: 'https://uploads.example/back.webp'
+                    }
+                }
+            }
+        });
+        mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 });
+
+        const response = await request(app).get('/api/get-design/card-1?trackView=true');
+
+        expect(response.status).toBe(200);
+        expect(response.body.inputs['input-name_ar']).toBe('الاسم المنشور');
+        expect(response.body.dynamic.phones[0].value).toBe('01000000000');
+        expect(response.body.publishedState).toBeUndefined();
+        expect(JSON.stringify(response.body)).not.toContain('اسم المسودة السري');
+        expect(JSON.stringify(response.body)).not.toContain('01111111111');
+    });
+
+    test('public reads reject draft-only cards', async () => {
+        mockCollection.findOne.mockResolvedValueOnce({
+            ownerId: 'owner-1',
+            data: {
+                inputs: { 'input-name_ar': 'مسودة خاصة' },
+                dynamic: { phones: [{ value: '01111111111' }] }
+            }
+        });
+
+        const response = await request(app).get('/api/get-design/card-1');
+
+        expect(response.status).toBe(404);
+    });
+
+    test('only the owner can read the latest draft', async () => {
+        const draftData = {
+            inputs: { 'input-name_ar': 'اسم المسودة' },
+            dynamic: { phones: [{ value: '01111111111' }] }
+        };
+        mockCollection.findOne.mockResolvedValueOnce({
+            ownerId: 'owner-1',
+            data: draftData
+        });
+
+        const response = await request(app)
+            .get('/api/get-design/card-1/draft')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(draftData);
+        expect(response.headers['cache-control']).toContain('private');
+        expect(response.headers['cache-control']).toContain('no-store');
+    });
+
+    test('draft reads do not reveal cards owned by another user', async () => {
+        mockCollection.findOne.mockResolvedValueOnce({
+            ownerId: 'owner-2',
+            data: { inputs: { 'input-name_ar': 'مسودة شخص آخر' } }
+        });
+
+        const response = await request(app)
+            .get('/api/get-design/card-1/draft')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(404);
     });
 });

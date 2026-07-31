@@ -2,6 +2,7 @@ const {
   buildContactLinksHtml,
   displaySocialValue,
   isSafeViewerId,
+  selectPublishedDesignData,
   socialUrl
 } = require('../routes/viewer.routes')._private;
 
@@ -46,5 +47,45 @@ describe('Viewer route helpers', () => {
 
   it('renders the empty state when no contact data exists', () => {
     expect(buildContactLinksHtml({}, DOMPurify)).toContain('لم يقم صاحب البطاقة');
+  });
+
+  it('returns the immutable published state instead of the latest draft', () => {
+    const result = selectPublishedDesignData({
+      inputs: { 'input-name_ar': 'اسم المسودة' },
+      dynamic: { phones: [{ value: '01111111111' }] },
+      publishedAt: '2026-07-31T12:00:00.000Z',
+      publishedState: {
+        inputs: { 'input-name_ar': 'الاسم المنشور' },
+        dynamic: { phones: [{ value: '01000000000' }] },
+        imageUrls: {
+          capturedFront: 'https://uploads.example/published-front.webp',
+          capturedBack: 'https://uploads.example/published-back.webp'
+        }
+      }
+    });
+
+    expect(result.inputs['input-name_ar']).toBe('الاسم المنشور');
+    expect(result.dynamic.phones[0].value).toBe('01000000000');
+    expect(result.publishedState).toBeUndefined();
+    expect(result.publishedAt).toBe('2026-07-31T12:00:00.000Z');
+  });
+
+  it('does not expose a draft-only card', () => {
+    expect(selectPublishedDesignData({
+      inputs: { 'input-name_ar': 'مسودة خاصة' },
+      dynamic: { phones: [{ value: '01111111111' }] }
+    })).toBeNull();
+  });
+
+  it('keeps legacy published cards that have both captured faces', () => {
+    const legacy = selectPublishedDesignData({
+      inputs: { 'input-name_ar': 'بطاقة قديمة' },
+      imageUrls: {
+        capturedFront: 'https://uploads.example/front.webp',
+        capturedBack: 'https://uploads.example/back.webp'
+      }
+    });
+
+    expect(legacy.inputs['input-name_ar']).toBe('بطاقة قديمة');
   });
 });

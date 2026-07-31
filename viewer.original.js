@@ -85,6 +85,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadedScripts = new Set();
 
+    // Defense in depth: old API responses or server-injected data may contain
+    // both a mutable draft and an immutable published snapshot. The public
+    // viewer must always prefer the published snapshot.
+    function selectPublishedCardData(data) {
+        if (!data || typeof data !== 'object') return data;
+        const publishedState = data.publishedState;
+        if (publishedState && typeof publishedState === 'object' &&
+            (publishedState.inputs || publishedState.dynamic)) {
+            return publishedState;
+        }
+        return data;
+    }
+
     function loadScript(url) {
         if (loadedScripts.has(url)) return Promise.resolve();
         return new Promise((resolve, reject) => {
@@ -1357,6 +1370,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 data = await response.json();
             }
 
+            data = selectPublishedCardData(data);
             if (!data || typeof data !== 'object' || !data.inputs) throw new Error(i18n.receivedDataInvalid);
 
             await processCardData(data);

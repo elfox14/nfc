@@ -37,11 +37,18 @@ describe('Editor published-state contract', () => {
 
     test('shared editor links explicitly request the draft revision', () => {
         expect(source).toContain("editorUrl.searchParams.set('mode', 'draft');");
+        expect(source).toContain('? `/api/get-design/${designId}/draft`');
+    });
+
+    test('the public viewer prefers a published snapshot defensively', () => {
+        const viewerSource = fs.readFileSync(path.join(__dirname, '..', 'viewer.original.js'), 'utf8');
+        expect(viewerSource).toContain('function selectPublishedCardData(data)');
+        expect(viewerSource).toContain('data = selectPublishedCardData(data);');
     });
 
     test('both editor languages load the cache-busted implementation', () => {
-        expect(editorAr).toContain('script-main.js?v=2.4');
-        expect(editorEn).toContain('script-main.js?v=2.4');
+        expect(editorAr).toContain('script-main.js?v=2.5');
+        expect(editorEn).toContain('script-main.js?v=2.5');
         expect(editorAr).toContain('editor-user-status.js?v=1.1');
         expect(editorEn).toContain('editor-user-status.js?v=1.1');
     });
