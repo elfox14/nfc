@@ -168,6 +168,19 @@ jobs:
             exit 1
           fi
 
+          ftp_protocol="$(STATIC_FTP_URL="${STATIC_FTP_URL}" node -e "const u=new URL(process.env.STATIC_FTP_URL);if(u.username||u.password)throw new Error('STATIC_FTP_URL must not contain credentials');if(!['ftp:','ftps:'].includes(u.protocol))throw new Error('STATIC_FTP_URL must use ftp:// or ftps://');process.stdout.write(u.protocol)")"
+          curl_tls_args=()
+          if [[ "${ftp_protocol}" == "ftp:" ]]; then
+            # ftp:// on port 21 uses explicit TLS. ftps:// is reserved for
+            # providers that advertise implicit TLS (normally port 990).
+            curl_tls_args+=(--ssl-reqd)
+          fi
+          echo "Checking the configured ${ftp_protocol} endpoint before deployment"
+          curl --fail --silent --show-error \
+            --connect-timeout 15 --max-time 45 \
+            --user "${STATIC_FTP_USERNAME}:${STATIC_FTP_PASSWORD}" \
+            --list-only "${curl_tls_args[@]}" "${STATIC_FTP_URL%/}/" >/dev/null
+
           # Keep the release marker absent while files are changing and upload
           # it last. Consumers can therefore never mistake a partial mirror for
           # a completed deployment. Bound lftp retries so a broken FTP endpoint
