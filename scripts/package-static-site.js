@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'dist', 'static', 'nfc');
@@ -45,6 +46,16 @@ for (const directory of assetDirectories) {
     fs.cpSync(source, path.join(output, directory), { recursive: true });
   }
 }
+
+const releaseSha = process.env.RELEASE_SHA || execFileSync('git', ['rev-parse', 'HEAD'], {
+  cwd: root,
+  encoding: 'utf8'
+}).trim();
+const { version } = require('../package.json');
+fs.writeFileSync(
+  path.join(output, 'release.json'),
+  `${JSON.stringify({ version, sha: releaseSha }, null, 2)}\n`
+);
 
 for (const forbidden of serverOnlyFiles) {
   if (fs.existsSync(path.join(output, forbidden))) {

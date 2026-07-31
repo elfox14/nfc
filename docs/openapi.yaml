@@ -1,187 +1,593 @@
 openapi: 3.0.3
 info:
   title: MC PRIME NFC API
-  version: 1.0.0
-  description: >
-    Core REST APIs powering the NFC Digital Business Card platform.
-    Features Native Authentications, Caching optimizations, and Social Object validations.
+  version: 2.1.0
+  description: |
+    REST API for authentication, digital-card editing, publishing, media uploads,
+    privacy controls, account export, and account deletion.
+
+    Authenticated endpoints accept either a Bearer access token or the secure
+    `accessToken` cookie. The public design endpoint returns only the published
+    revision; draft data is available only to the authenticated owner.
+  license:
+    name: MIT
+    url: https://github.com/elfox14/nfc/blob/main/LICENSE
 servers:
-  - url: https://api.mcprim.com
-    description: Production Server
+  - url: https://nfc-vjy6.onrender.com
+    description: Production API
   - url: http://localhost:3000
-    description: Localhost Development Development
+    description: Local development
+tags:
+  - name: System
+    description: Service readiness and database connectivity
+  - name: Authentication
+    description: Email, password, Google OAuth, and session lifecycle
+  - name: Account
+    description: Authenticated profile and privacy rights
+  - name: Designs
+    description: Draft, publication, gallery, and ownership operations
+  - name: Uploads
+    description: Authenticated image processing and durable storage
+
+# Public by default; protected operations override this explicitly.
+security: []
 
 paths:
+  /healthz:
+    get:
+      tags: [System]
+      summary: Check API and MongoDB readiness
+      operationId: getHealth
+      responses:
+        '200':
+          description: API is ready and MongoDB responded to ping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '503':
+          description: MongoDB is disconnected or did not respond
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+
   /api/auth/register:
     post:
-      summary: Reigster a new user account
+      tags: [Authentication]
+      summary: Register with email and password
+      operationId: register
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - email
-                - password
-                - name
+              additionalProperties: false
+              required: [name, email, password]
               properties:
                 name:
                   type: string
-                  example: "John Doe"
                 email:
                   type: string
                   format: email
-                  example: "john@example.com"
                 password:
                   type: string
-                  minLength: 6
-                  example: "securePassword123"
-                phone:
-                  type: string
-                  example: "+123456789"
+                  minLength: 8
+                  maxLength: 128
+                  pattern: '^(?=.*[A-Za-z])(?=.*\d).+$'
+                  description: Must contain at least one letter and one number
       responses:
         '201':
-          description: Created successfully (JWT + Refresh Cookie issued)
+          $ref: '#/components/responses/AuthSuccess'
         '400':
-          description: Validation Error or Email already exists
+          $ref: '#/components/responses/BadRequest'
         '500':
-          description: Internal Server Error
+          $ref: '#/components/responses/ServerError'
 
   /api/auth/login:
     post:
-      summary: Authenticate user using Email & Password
+      tags: [Authentication]
+      summary: Sign in with email and password
+      operationId: login
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - email
-                - password
+              additionalProperties: false
+              required: [email, password]
               properties:
                 email:
                   type: string
                   format: email
                 password:
                   type: string
+                  maxLength: 128
       responses:
         '200':
-          description: Success (JWT issued, HttpOnly Refresh Cookie sent)
+          $ref: '#/components/responses/AuthSuccess'
         '400':
-          description: Invalid Credentials
+          description: Invalid input or credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
-  /api/auth/refresh:
-    post:
-      summary: Renew Access Token securely via HttpOnly Cookie Payload
-      responses:
-        '200':
-          description: Refreshed Access Token
-        '401':
-          description: No refresh token provided
-        '403':
-          description: Token rotated or revoked previously
-
-  /api/auth/logout:
-    post:
-      summary: Logout securely revoking Refresh Token states
-      responses:
-        '200':
-          description: Logged out effectively clearing HttpOnly Cookies.
-
-  /api/save-design:
-    post:
-      summary: Create or optionally update a Digital Card profile JSON definition
-      security:
-        - BearerAuth: []
+  /api/auth/google:
+    get:
+      tags: [Authentication]
+      summary: Start Google OAuth
+      operationId: startGoogleOAuth
       parameters:
         - in: query
-          name: id
+          name: lang
           schema:
             type: string
-          description: Target ShortId (for updating)
+            enum: [ar, en]
+            default: ar
+      responses:
+        '302':
+          description: Redirects to Google with a signed, nonce-bound state value
+        '500':
+          description: Google OAuth is not configured
+
+  /api/auth/google/callback:
+    get:
+      tags: [Authentication]
+      summary: Complete Google OAuth
+      operationId: completeGoogleOAuth
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+        - in: query
+          name: state
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: error
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Popup completion page; authentication cookies are set on success
+        '302':
+          description: Redirects to login when state or authorization is invalid
+
+  /api/auth/forgot-password:
+    post:
+      tags: [Authentication]
+      summary: Request a password-reset email
+      operationId: forgotPassword
+      description: Always returns success for valid input to prevent email enumeration.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required: [email]
               properties:
-                inputs:
-                  type: object
-                  properties:
-                    input-name:
-                      type: string
-                    input-tagline:
-                      type: string
-                dynamic:
-                  type: object
-                imageUrls:
-                  type: object
+                email:
+                  type: string
+                  format: email
       responses:
         '200':
-          description: Saved Configuration Object successfully.
-        '403':
-          description: Unauthorized update or Quota Maximum reached (>10 Designs).
-        '500':
-          description: Database Insert Failure
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
-  /api/get-design/{id}:
-    get:
-      summary: Retrieve Digital Card Design Document by ShortId (Redis Cached)
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
+  /api/auth/reset-password:
+    post:
+      tags: [Authentication]
+      summary: Reset a password using an opaque token
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                  pattern: '^(?=.*[A-Za-z])(?=.*\d).+$'
       responses:
         '200':
-          description: Found Document Definition. `X-Cache` sets HIT/MISS Header natively.
-        '404':
-          description: ShortId matching 0 DB Elements.
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/auth/verify-email:
+    post:
+      tags: [Authentication]
+      summary: Verify an email address using an opaque token
+      operationId: verifyEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Rotate the refresh token and issue a new access token
+      operationId: refreshSession
+      security:
+        - RefreshCookie: []
+      responses:
+        '200':
+          $ref: '#/components/responses/AuthSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Revoke the refresh token and clear auth cookies
+      operationId: logout
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /api/auth/me:
+    get:
+      tags: [Account]
+      summary: Get the authenticated account profile
+      operationId: getCurrentUser
+      security:
+        - BearerAuth: []
+        - AccessCookie: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, user]
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/export-data:
+    get:
+      tags: [Account]
+      summary: Export the authenticated user's stored data
+      operationId: exportAccountData
+      security:
+        - BearerAuth: []
+        - AccessCookie: []
+      responses:
+        '200':
+          description: JSON download containing profile, designs, saved cards, and card requests; credentials and token hashes are excluded
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/auth/account:
+    delete:
+      tags: [Account]
+      summary: Permanently delete the account and owned MongoDB data
+      operationId: deleteAccount
+      description: Deletes the account, owned designs, related saved cards, and card requests. Cloudinary cleanup is best-effort.
+      security:
+        - BearerAuth: []
+        - AccessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [confirmation]
+              properties:
+                confirmation:
+                  type: string
+                  enum: [DELETE]
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 
   /api/upload-image:
     post:
-      summary: Process Profile Images generating WEBP structures resolving to CDNs
+      tags: [Uploads]
+      summary: Upload and normalize an image
+      operationId: uploadImage
+      description: Accepts one image up to 5 MiB, limits decoded dimensions, resizes to at most 2560×2560, and stores WebP in durable production storage.
+      security:
+        - BearerAuth: []
+        - AccessCookie: []
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
               type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+                purpose:
+                  type: string
+                  enum: [logo, photo, front_bg, back_bg, qr, capturedFront, capturedBack]
+      responses:
+        '200':
+          $ref: '#/components/responses/UploadSuccess'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          description: File exceeds 5 MiB
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /api/upload-image-public:
+    post:
+      deprecated: true
+      tags: [Uploads]
+      summary: Legacy authenticated image-upload alias
+      operationId: uploadImageLegacy
+      description: Despite its legacy name, authentication is required. It is additionally limited to five requests per 15 minutes in production.
+      security:
+        - BearerAuth: []
+        - AccessCookie: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
               properties:
                 image:
                   type: string
                   format: binary
       responses:
         '200':
-          description: Return `url` mapping Cloudinary or CDN endpoint
-        '400':
-          description: Limits Exceeded (10MB Buffer).
+          $ref: '#/components/responses/UploadSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          description: File exceeds 5 MiB
+        '429':
+          description: Upload rate limit exceeded
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 
-  /api/upload-signature:
-    get:
-      summary: Pre-sign Client Native Cloudinary File Submissions mapping AppSecrets.
+  /api/save-design:
+    post:
+      tags: [Designs]
+      summary: Create or update an owned design
+      operationId: saveDesign
+      description: Autosave may update the editable top-level state while the existing `publishedState` snapshot is preserved. Supplying another user's id creates a fork instead of modifying it.
       security:
         - BearerAuth: []
+        - AccessCookie: []
+      parameters:
+        - in: query
+          name: id
+          description: Existing short id to update
+          schema:
+            $ref: '#/components/schemas/DesignId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesignState'
       responses:
         '200':
-          description: Cryptographic Return Object.
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, id]
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    $ref: '#/components/schemas/DesignId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Unverified-account design limit reached
+
+  /api/user/designs:
+    get:
+      tags: [Designs]
+      summary: List the authenticated user's designs
+      operationId: listOwnDesigns
+      security:
+        - BearerAuth: []
+        - AccessCookie: []
+      responses:
+        '200':
+          description: Design summaries
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  signature:
-                    type: string
-                  timestamp:
-                    type: integer
-                  cloudName:
-                    type: string
-                  apiKey:
-                    type: string
+                  success:
+                    type: boolean
+                  designs:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/user/designs/{id}:
+    delete:
+      tags: [Designs]
+      summary: Delete an owned design
+      operationId: deleteDesign
+      security:
+        - BearerAuth: []
+        - AccessCookie: []
+      parameters:
+        - $ref: '#/components/parameters/DesignId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/get-design/{id}/draft:
+    get:
+      tags: [Designs]
+      summary: Get the editable draft as its owner
+      operationId: getDesignDraft
+      description: Private, non-cacheable endpoint. Ownership is required.
+      security:
+        - BearerAuth: []
+        - AccessCookie: []
+      parameters:
+        - $ref: '#/components/parameters/DesignId'
+      responses:
+        '200':
+          description: Complete editable state, including autosaves
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DesignState'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/get-design/{id}:
+    get:
+      tags: [Designs]
+      summary: Get only the published public revision
+      operationId: getPublishedDesign
+      description: Never returns current draft/autosave fields. Unpublished designs return 404.
+      parameters:
+        - $ref: '#/components/parameters/DesignId'
+        - in: query
+          name: trackView
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Published design state
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DesignState'
+        '404':
+          description: Design does not exist or has no published revision
+
+  /api/gallery:
+    get:
+      tags: [Designs]
+      summary: List published cards shared to the gallery
+      operationId: listGallery
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 1
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [createdAt, views]
+            default: createdAt
+        - in: query
+          name: search
+          schema:
+            type: string
+            maxLength: 80
+      responses:
+        '200':
+          description: Published gallery page (20 items per page)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, designs, pagination]
+                properties:
+                  success:
+                    type: boolean
+                  designs:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      totalPages:
+                        type: integer
+                      totalDesigns:
+                        type: integer
 
 components:
   securitySchemes:
@@ -189,7 +595,186 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-    CookieAuth:
+    AccessCookie:
+      type: apiKey
+      in: cookie
+      name: accessToken
+    RefreshCookie:
       type: apiKey
       in: cookie
       name: refreshToken
+
+  parameters:
+    DesignId:
+      in: path
+      name: id
+      required: true
+      schema:
+        $ref: '#/components/schemas/DesignId'
+
+  schemas:
+    DesignId:
+      type: string
+      pattern: '^[A-Za-z0-9_-]{3,32}$'
+      example: Ab3dEf90
+    DesignState:
+      type: object
+      additionalProperties: true
+      description: Sanitized editor state. A saved owner document may contain `publishedState`; public endpoints return the selected published state itself, not the enclosing draft.
+      properties:
+        inputs:
+          type: object
+          additionalProperties: true
+        dynamic:
+          type: object
+          additionalProperties: true
+        imageUrls:
+          type: object
+          additionalProperties:
+            type: string
+        elements:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        publishedState:
+          allOf:
+            - $ref: '#/components/schemas/PublishedState'
+        publishedAt:
+          type: string
+          format: date-time
+    PublishedState:
+      type: object
+      additionalProperties: true
+      description: Immutable snapshot selected by public readers. Recursive `publishedState` and `publishedAt` fields are rejected.
+    User:
+      type: object
+      required: [userId, email, name]
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        isVerified:
+          type: boolean
+    AuthPayload:
+      type: object
+      required: [success, accessToken, user]
+      properties:
+        success:
+          type: boolean
+        accessToken:
+          type: string
+          description: Short-lived JWT; secure auth cookies are also set
+        user:
+          $ref: '#/components/schemas/User'
+        warning:
+          type: string
+          enum: [email_not_verified]
+    Health:
+      type: object
+      required: [status, database, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [ok, unavailable]
+        database:
+          type: string
+          enum: [connected, disconnected]
+        release:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+  responses:
+    AuthSuccess:
+      description: Authenticated; secure access and refresh cookies are set
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AuthPayload'
+    UploadSuccess:
+      description: Image stored successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [success, url]
+            properties:
+              success:
+                type: boolean
+              url:
+                type: string
+                format: uri
+              external:
+                type: boolean
+              cloud:
+                type: boolean
+              local:
+                type: boolean
+                description: Development and test environments only
+    Success:
+      description: Operation completed
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [success]
+            properties:
+              success:
+                type: boolean
+              message:
+                type: string
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication is required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Token or ownership is invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceUnavailable:
+      description: Database or durable storage service is unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

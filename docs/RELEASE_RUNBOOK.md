@@ -11,6 +11,7 @@ Create a protected GitHub environment named `production`, then configure:
 - `STATIC_FTP_URL`: the FTPS server URL.
 - `STATIC_FTP_USERNAME` and `STATIC_FTP_PASSWORD`.
 - Repository variable `STATIC_REMOTE_DIR`, set to the dedicated `/nfc` directory. The workflow refuses `/`.
+- Optional repository/environment variable `STATIC_RELEASE_URL`. It defaults to `https://mcprim.com/nfc/release.json`.
 
 Configure every `sync: false` variable from `render.yaml` manually on the existing Render service. Render ignores newly added `sync: false` values when an existing Blueprint is synchronized.
 
@@ -21,7 +22,7 @@ Configure every `sync: false` variable from `render.yaml` manually on the existi
 3. Set `release_tag` to the next immutable version, for example `v2.1.0`.
 4. Approve the protected `production` environment.
 
-The workflow repeats audits, unit tests, and Playwright tests; packages the static site; deploys the exact commit to Render; waits for database-backed readiness; deploys the matching static package; and creates the tag and GitHub Release.
+The workflow repeats audits, unit tests, and Playwright tests; packages the static site; deploys the exact commit to Render; waits for database-backed readiness; deploys the matching static package; then verifies that the public `release.json` contains the exact same SHA before creating the tag and GitHub Release.
 
 ## Rollback
 
@@ -30,4 +31,4 @@ The workflow repeats audits, unit tests, and Playwright tests; packages the stat
 3. Leave `release_tag` empty.
 4. Approve the protected `production` environment.
 
-Both halves are redeployed from the same historical ref. Release artifacts are retained for 90 days, and immutable tags remain available as rollback points.
+Both halves are redeployed from the same historical ref. A rollback is successful only when `/healthz.release` and the public `/nfc/release.json.sha` both equal the resolved historical SHA. Release artifacts are retained for 90 days, and immutable tags remain available as rollback points.

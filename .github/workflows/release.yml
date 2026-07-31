@@ -59,13 +59,28 @@ jobs:
         id: release_ref
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Validate release tag
+        if: ${{ inputs.release_tag != '' }}
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          expected_tag="v$(node -p "require('./package.json').version")"
+          test "${RELEASE_TAG}" = "${expected_tag}"
+          if git rev-parse --verify --quiet "refs/tags/${RELEASE_TAG}"; then
+            echo "Tag ${RELEASE_TAG} already exists. Tags are immutable." >&2
+            exit 1
+          fi
+
       - run: npm ci
       - run: npm run check:assets
       - run: npm run audit:prod
       - run: npm test -- --runInBand
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
-      - run: npm run package:static
+      - name: Package immutable static release
+        env:
+          RELEASE_SHA: ${{ steps.release_ref.outputs.sha }}
+        run: npm run package:static
 
       - name: Upload immutable static release artifact
         uses: actions/upload-artifact@v4
@@ -121,12 +136,26 @@ jobs:
           remote_dir="${STATIC_REMOTE_DIR:-/nfc}"
           lftp -u "${STATIC_FTP_USERNAME},${STATIC_FTP_PASSWORD}" "${STATIC_FTP_URL}" -e "set ftp:ssl-force true; set ssl:verify-certificate true; mirror --reverse --delete --verbose dist/static/nfc ${remote_dir}; bye"
 
+      - name: Verify matching static release
+        env:
+          STATIC_RELEASE_URL: ${{ vars.STATIC_RELEASE_URL || 'https://mcprim.com/nfc/release.json' }}
+          DEPLOY_SHA: ${{ steps.release_ref.outputs.sha }}
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error --header 'Cache-Control: no-cache' "${STATIC_RELEASE_URL}?sha=${DEPLOY_SHA}" | EXPECTED_SHA="${DEPLOY_SHA}" node -e "let body='';process.stdin.on('data',c=>body+=c);process.stdin.on('end',()=>{const release=JSON.parse(body);process.exit(release.sha===process.env.EXPECTED_SHA?0:1)})"; then
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1
+
       - name: Create immutable GitHub release
         if: ${{ inputs.release_tag != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
           DEPLOY_SHA: ${{ steps.release_ref.outputs.sha }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
-          git tag --annotate "${{ inputs.release_tag }}" "${DEPLOY_SHA}" --message "MC PRIME NFC ${{ inputs.release_tag }}"
-          git push origin "${{ inputs.release_tag }}"
-          gh release create "${{ inputs.release_tag }}" --verify-tag --generate-notes --title "MC PRIME NFC ${{ inputs.release_tag }}"
+          git tag --annotate "${RELEASE_TAG}" "${DEPLOY_SHA}" --message "MC PRIME NFC ${RELEASE_TAG}"
+          git push origin "${RELEASE_TAG}"
+          gh release create "${RELEASE_TAG}" --verify-tag --generate-notes --title "MC PRIME NFC ${RELEASE_TAG}"

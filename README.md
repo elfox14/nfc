@@ -1,124 +1,69 @@
-# MC PRIME NFC - بطاقات الأعمال الرقمية
+# MC PRIME NFC
 
-<div align="center">
+منصة عربية/إنجليزية لإنشاء بطاقات أعمال رقمية ونشرها ومشاركتها عبر رابط أو QR وNFC.
 
-![MC PRIME Logo](./logo.svg)
+[الموقع](https://mcprim.com/nfc/) · [مرجع API](./docs/openapi.yaml) · [دليل الإصدار والاسترجاع](./docs/RELEASE_RUNBOOK.md)
 
-**منصة متكاملة لإنشاء ومشاركة بطاقات الأعمال الرقمية باستخدام تقنية NFC**
+## ما الذي يقدمه المشروع؟
 
-[العرض التجريبي](https://mcprim.com/nfc) | [التوثيق](#التثبيت) | [المساهمة](./CONTRIBUTING.md)
+- محرر بطاقات بوجهين مع الحفظ التلقائي والمعاينة والتنزيل.
+- تسجيل بالبريد وGoogle OAuth مع Access/Refresh tokens آمنة.
+- فصل صريح بين المسودة والنسخة المنشورة؛ نقاط العرض العامة لا تعيد المسودة.
+- رفع صور موثّق، وإعادة ترميز WebP، وحد 5 MiB، وتخزين إنتاج دائم عبر Cloudinary أو خدمة رفع خارجية.
+- تصدير بيانات الحساب وحذف الحساب والبيانات التابعة له.
+- واجهة ثابتة على `mcprim.com/nfc` وAPI على Render، ينشرهما Workflow واحد من الـSHA نفسه.
 
-</div>
+## المتطلبات
 
----
+- Node.js 22.x
+- npm 9 أو أحدث
+- MongoDB
+- Cloudinary أو `EXTERNAL_UPLOAD_URL` في الإنتاج إذا كانت خاصية رفع الصور مطلوبة
 
-## 🌟 المميزات
-
-- ✨ **محرر مرئي** - تصميم البطاقات بدون كتابة كود
-- 📱 **تصميم متجاوب** - يعمل على جميع الأجهزة
-- 🔗 **مشاركة سهلة** - QR Code ورابط مباشر
-- 🌐 **ثنائي اللغة** - عربي وإنجليزي
-- 🔐 **آمن** - تسجيل دخول وحماية البيانات
-- 📊 **تحليلات** - تتبع المشاهدات عبر GTM
-
----
-
-## 🚀 البدء السريع
-
-### المتطلبات
-- Node.js 18+
-- MongoDB Atlas (أو محلي)
-- حساب Cloudinary (للصور)
-
-### التثبيت
+## التشغيل المحلي
 
 ```bash
-# استنساخ المشروع
-git clone https://github.com/your-username/nfc.git
+git clone https://github.com/elfox14/nfc.git
 cd nfc
-
-# تثبيت الاعتماديات
-npm install
-
-# إعداد المتغيرات البيئية
+npm ci
 cp .env.example .env
-# عدّل القيم في .env
-
-# تشغيل الخادم
 npm start
 ```
 
-### متغيرات `.env`
+عدّل `.env` قبل التشغيل. الحد الأدنى المعتاد هو `MONGO_URI` و`JWT_SECRET` و`TOKEN_HASH_SECRET`. إعدادات Google والبريد والتخزين اختيارية محليًا، لكنها مطلوبة في الإنتاج للميزات المرتبطة بها. ملف [`.env.example`](./.env.example) و[`render.yaml`](./render.yaml) هما المرجع الكامل للأسماء.
 
-```env
-MONGO_URI=mongodb+srv://...
-JWT_SECRET=your_secret_key
-CLOUDINARY_CLOUD_NAME=your_cloud
-CLOUDINARY_API_KEY=your_key
-CLOUDINARY_API_SECRET=your_secret
-PUBLIC_BASE_URL=https://your-domain.com/nfc
+لا تضع القيم السرية في Git. متغيرات `sync: false` في `render.yaml` تُضبط يدويًا في Render، وأسرار النشر تُحفظ داخل GitHub Environment باسم `production`.
 
-# اختياري - لإرسال البريد
-EMAIL_PROVIDER=sendgrid
-EMAIL_API_KEY=your_sendgrid_key
-EMAIL_FROM_ADDRESS=noreply@your-domain.com
+## أوامر الجودة
+
+```bash
+npm run lint             # ESLint
+npm test -- --runInBand  # اختبارات Jest
+npm run test:e2e         # سيناريوهات Playwright للمنتج
+npm run audit:prod       # يفشل عند ثغرات high أو critical
+npm run build:assets     # يبني كل CSS/JS من ملفات .original
+npm run check:assets     # يتحقق من كل الأزواج ويمنع الانحراف
+npm run package:static   # ينشئ حزمة الواجهة الثابتة
 ```
 
----
+اختبارات E2E تحتاج MongoDB، وتشغّل خادم الاختبار وفق إعداد [`playwright.config.ts`](./playwright.config.ts). يشغّل CI التدقيق، وESLint، واختبارات Jest وPlaywright، وفحص الأصول.
 
-## 📁 هيكل المشروع
+## API والخصوصية
 
-```
-nfc/
-├── server.js           # الخادم الرئيسي (Express)
-├── auth-middleware.js  # التحقق من JWT
-├── email-service.js    # خدمة البريد
-├── auth.js             # مكتبة المصادقة (Frontend)
-├── script-*.js         # سكربتات الواجهة
-├── *.html              # صفحات HTML
-├── *.css               # أنماط CSS
-└── test/               # الاختبارات
-```
+- المسودة الخاصة: `GET /api/get-design/{id}/draft` وتتطلب ملكية البطاقة.
+- النسخة المنشورة العامة فقط: `GET /api/get-design/{id}`.
+- بيانات الحساب: `GET /api/auth/export-data`.
+- الحذف الدائم: `DELETE /api/auth/account` مع `{ "confirmation": "DELETE" }`.
+- الجاهزية: `GET /healthz` ويعيد `503` إذا تعذر اتصال MongoDB.
 
----
+التفاصيل والأجسام والاستجابات موثقة في [`docs/openapi.yaml`](./docs/openapi.yaml).
 
-## 🔌 API Endpoints
+## الإصدار والنشر
 
-| Method | Endpoint | الوصف |
-|--------|----------|-------|
-| POST | `/api/auth/register` | تسجيل مستخدم جديد |
-| POST | `/api/auth/login` | تسجيل الدخول |
-| POST | `/api/auth/forgot-password` | طلب استعادة كلمة المرور |
-| POST | `/api/auth/reset-password/:token` | تعيين كلمة مرور جديدة |
-| GET | `/api/auth/verify-email/:token` | تأكيد البريد الإلكتروني |
-| GET | `/api/user/designs` | جلب تصاميم المستخدم |
-| POST | `/api/save-design` | حفظ تصميم جديد |
-| GET | `/api/get-design/:id` | جلب تصميم |
+الإصدار الحالي: `2.1.0`.
 
----
+يُستخدم Workflow **Release and Rollback** لنشر الـAPI والواجهة من commit واحد، والتحقق من صحة قاعدة البيانات، ثم إنشاء Tag وGitHub Release غير قابلين للتغيير. الاسترجاع يعيد نشر الجزأين من Tag أو SHA تاريخي. اتبع [`docs/RELEASE_RUNBOOK.md`](./docs/RELEASE_RUNBOOK.md) ولا تنشر الجزأين يدويًا كلًا على حدة.
 
-## 🚢 النشر على Render
+## الترخيص
 
-1. أنشئ خدمة Web Service جديدة
-2. اربط مستودع Git
-3. **Build Command:** `npm install`
-4. **Start Command:** `node server.js`
-5. أضف متغيرات البيئة من `.env`
-
----
-
-## 🤝 المساهمة
-
-نرحب بمساهماتك! اطلع على [دليل المساهمة](./CONTRIBUTING.md).
-
----
-
-## 📄 الترخيص
-
-MIT License - انظر [LICENSE](./LICENSE) للتفاصيل.
-
----
-
-<div align="center">
-صنع بـ ❤️ بواسطة <a href="https://mcprim.com">MC PRIME</a>
-</div>
+[MIT](./LICENSE) © MC PRIME.
