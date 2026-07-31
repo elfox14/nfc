@@ -131,7 +131,7 @@ jobs:
           : "${STATIC_FTP_URL:?Missing STATIC_FTP_URL}"
           : "${STATIC_FTP_USERNAME:?Missing STATIC_FTP_USERNAME}"
           : "${STATIC_FTP_PASSWORD:?Missing STATIC_FTP_PASSWORD}"
-          case "${STATIC_REMOTE_DIR:-/nfc}" in ""|"/") exit 1 ;; esac
+          case "${STATIC_REMOTE_DIR:-/mcprim.com/nfc}" in ""|"/") exit 1 ;; esac
 
       - name: Deploy API commit to Render
         env:
@@ -162,7 +162,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y lftp
-          remote_dir="${STATIC_REMOTE_DIR:-/nfc}"
+          remote_dir="${STATIC_REMOTE_DIR:-/mcprim.com/nfc}"
           if [[ ! "${remote_dir}" =~ ^/[A-Za-z0-9._/-]+$ ]] || [[ "${remote_dir}" == "/" ]] || [[ "${remote_dir}" == *".."* ]]; then
             echo "STATIC_REMOTE_DIR must be a safe absolute non-root path" >&2
             exit 1
