@@ -10,7 +10,7 @@ Create a protected GitHub environment named `production`, then configure:
 - `API_HEALTH_URL`: the public Render `/healthz` URL.
 - `STATIC_FTP_URL`: the FTPS server URL.
 - `STATIC_FTP_USERNAME` and `STATIC_FTP_PASSWORD`.
-- Repository variable `STATIC_REMOTE_DIR`, set to the dedicated `/nfc` directory. The workflow refuses `/`.
+- Optional repository variable `STATIC_REMOTE_DIR`. It defaults to the site's FTP-visible `/mcprim.com/nfc` directory; set it only when the FTP account exposes a different root. The workflow refuses `/`.
 - Optional repository/environment variable `STATIC_RELEASE_URL`. It defaults to `https://mcprim.com/nfc/release.json`.
 
 Configure every `sync: false` variable from `render.yaml` manually on the existing Render service. Render ignores newly added `sync: false` values when an existing Blueprint is synchronized.
