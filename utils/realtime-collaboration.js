@@ -1,10 +1,13 @@
 const jwt = require('jsonwebtoken');
 const { WebSocketServer } = require('ws');
 const url = require('url');
+const { sanitizeDesignState } = require('./sanitize');
 const {
   WS_LIMITS,
   getClientIP,
   isSafeCollabId,
+  isValidWsClaims,
+  parseCollaborationMessage,
   parseWsJsonMessage
 } = require('./websocket-security');
 
@@ -12,13 +15,13 @@ function registerRealtimeCollaboration(server) {
   const wss = new WebSocketServer({ server });
   const rooms = new Map();
   const wsConnectionsPerIP = new Map();
+  const trustProxy = process.env.TRUST_PROXY === 'true';
 
   wss.on('connection', (ws, req) => {
-    const clientIP = getClientIP(req);
+    const clientIP = getClientIP(req, trustProxy);
     const currentCount = wsConnectionsPerIP.get(clientIP) || 0;
 
     if (currentCount >= WS_LIMITS.MAX_CONNECTIONS_PER_IP) {
-      console.log(`WebSocket rejected: IP ${clientIP} exceeded max connections (${WS_LIMITS.MAX_CONNECTIONS_PER_IP})`);
       ws.close(1008, 'Too many connections from your IP');
       return;
     }
@@ -32,111 +35,101 @@ function registerRealtimeCollaboration(server) {
 
     const parameters = new url.URL(req.url, `ws://${req.headers.host}`).searchParams;
     const collabId = parameters.get('collabId');
-
     if (!isSafeCollabId(collabId)) {
-      console.log('Connection rejected: Invalid collabId.');
-      ws.close(1008, 'Valid collabId is required');
+      ws.close(1008, 'Valid collaboration room is required');
       return;
     }
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {
-      console.error('CRITICAL: WebSocket connection rejected because JWT_SECRET is not configured on the server.');
-      ws.close(1011, 'Internal Server Error: Authentication configuration missing');
+      console.error('CRITICAL: WebSocket rejected because JWT_SECRET is missing.');
+      ws.close(1011, 'Authentication configuration missing');
       return;
     }
 
     let authenticated = false;
     const authTimeout = setTimeout(() => {
-      if (!authenticated) {
-        console.log(`WebSocket auth timeout for room: ${collabId}`);
-        ws.close(1008, 'Authentication timeout');
-      }
+      if (!authenticated) ws.close(1008, 'Authentication timeout');
     }, 10000);
 
     ws.once('message', (message) => {
       try {
-        if (message.length > WS_LIMITS.MAX_MESSAGE_SIZE) {
-          clearTimeout(authTimeout);
-          ws.close(1009, 'Message too large');
+        const data = parseWsJsonMessage(message);
+        if (data.type !== 'auth' || typeof data.token !== 'string') {
+          throw new Error('Authentication required as first message');
+        }
+
+        const decoded = jwt.verify(data.token, secret, { algorithms: ['HS256'] });
+        if (!isValidWsClaims(decoded, collabId)) {
+          throw new Error('Invalid WebSocket token scope');
+        }
+
+        authenticated = true;
+        clearTimeout(authTimeout);
+
+        if (!rooms.has(collabId)) {
+          rooms.set(collabId, { clients: new Set(), latestState: null, designId: decoded.designId });
+        }
+        const room = rooms.get(collabId);
+        if (room.designId !== decoded.designId) {
+          ws.close(1008, 'Room scope mismatch');
+          return;
+        }
+        if (room.clients.size >= WS_LIMITS.MAX_ROOM_SIZE) {
+          ws.close(1008, 'Room is full');
           return;
         }
 
-        const data = parseWsJsonMessage(message);
-        if (data.type === 'auth' && data.token) {
-          const decoded = jwt.verify(data.token, secret);
-          if (decoded.type !== 'access' || !decoded.userId) {
-            throw new Error('Invalid WebSocket token type');
-          }
-
-          authenticated = true;
-          clearTimeout(authTimeout);
-
-          if (!rooms.has(collabId)) {
-            rooms.set(collabId, new Set());
-          }
-          const room = rooms.get(collabId);
-
-          if (room.size >= WS_LIMITS.MAX_ROOM_SIZE) {
-            ws.close(1008, 'Room is full');
-            return;
-          }
-
-          room.add(ws);
-          console.log(`Client authenticated and joined room: ${collabId}. Room size: ${room.size}`);
-          ws.send(JSON.stringify({ type: 'auth', success: true }));
-
-          let messageTimestamps = [];
-
-          ws.on('message', (msg) => {
-            try {
-              if (msg.length > WS_LIMITS.MAX_MESSAGE_SIZE) {
-                ws.send(JSON.stringify({ type: 'error', message: 'Message too large' }));
-                return;
-              }
-              parseWsJsonMessage(msg);
-
-              const now = Date.now();
-              messageTimestamps = messageTimestamps.filter(t => now - t < WS_LIMITS.RATE_WINDOW_MS);
-              messageTimestamps.push(now);
-
-              if (messageTimestamps.length > WS_LIMITS.MAX_MESSAGES_PER_SEC) {
-                ws.send(JSON.stringify({ type: 'error', message: 'Rate limit exceeded. Slow down.' }));
-                return;
-              }
-
-              room.forEach(client => {
-                if (client !== ws && client.readyState === ws.OPEN) {
-                  client.send(msg.toString());
-                }
-              });
-            } catch (error) {
-              ws.send(JSON.stringify({ type: 'error', message: 'Invalid collaboration message' }));
-            }
-          });
-
-          ws.on('close', () => {
-            room.delete(ws);
-            console.log(`Client disconnected from room: ${collabId}. Room size: ${room.size}`);
-            if (room.size === 0) {
-              rooms.delete(collabId);
-              console.log(`Room ${collabId} is now empty and has been closed.`);
-            }
-          });
-        } else {
-          console.log('WebSocket connection rejected: First message was not auth.');
-          clearTimeout(authTimeout);
-          ws.close(1008, 'Authentication required as first message');
+        room.clients.add(ws);
+        ws.send(JSON.stringify({ type: 'auth', success: true, role: decoded.role }));
+        if (room.latestState) {
+          ws.send(JSON.stringify({ type: 'state', state: room.latestState }));
         }
-      } catch (err) {
-        console.log('WebSocket connection rejected: Invalid auth token.');
+
+        let messageTimestamps = [];
+        ws.on('message', (msg) => {
+          try {
+            const now = Date.now();
+            messageTimestamps = messageTimestamps.filter(timestamp => now - timestamp < WS_LIMITS.RATE_WINDOW_MS);
+            if (messageTimestamps.length >= WS_LIMITS.MAX_MESSAGES_PER_SEC) {
+              ws.send(JSON.stringify({ type: 'error', code: 'RATE_LIMITED' }));
+              return;
+            }
+            messageTimestamps.push(now);
+
+            const collaborationMessage = parseCollaborationMessage(msg);
+            const state = sanitizeDesignState(collaborationMessage.state);
+            if (!state.inputs || !state.dynamic) {
+              throw new Error('Collaboration state is not renderable');
+            }
+
+            const outbound = JSON.stringify({ type: 'state', state });
+            if (Buffer.byteLength(outbound) > WS_LIMITS.MAX_MESSAGE_SIZE) {
+              ws.send(JSON.stringify({ type: 'error', code: 'MESSAGE_TOO_LARGE' }));
+              return;
+            }
+
+            room.latestState = state;
+            room.clients.forEach(client => {
+              if (client !== ws && client.readyState === 1) client.send(outbound);
+            });
+          } catch {
+            ws.send(JSON.stringify({ type: 'error', code: 'INVALID_MESSAGE' }));
+          }
+        });
+
+        ws.on('close', () => {
+          room.clients.delete(ws);
+          if (room.clients.size === 0) rooms.delete(collabId);
+        });
+      } catch {
         clearTimeout(authTimeout);
         ws.close(1008, 'Invalid authentication token');
       }
     });
 
-    ws.on('error', (error) => {
-      console.error('WebSocket error:', error);
+    ws.on('error', error => {
+      console.error('WebSocket error:', error.message);
       clearTimeout(authTimeout);
     });
   });

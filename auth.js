@@ -608,7 +608,7 @@ const Auth = {
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.location.pathname.includes('dashboard')) {
-        const params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
         const oauthRedirectPending = params.has('oauthSuccess') || params.has('initToken');
         // The dashboard consumes initToken itself; avoid racing refresh-token rotation.
         if (!oauthRedirectPending && !Auth.isLoggedIn()) {

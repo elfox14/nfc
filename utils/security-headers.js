@@ -30,7 +30,6 @@ function applySecurityHeaders(app) {
       scriptSrc: [
         "'self'",
         "'unsafe-inline'",
-        "'unsafe-eval'",
         "https://cdnjs.cloudflare.com",
         "https://cdn.jsdelivr.net",
         "https://www.youtube.com",
@@ -80,6 +79,9 @@ function applySecurityHeaders(app) {
           : [])
       ],
       objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
       upgradeInsecureRequests: [],
     },
   }));

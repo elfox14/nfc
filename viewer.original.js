@@ -85,6 +85,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadedScripts = new Set();
 
+    const BLOCKED_FRAGMENT_ELEMENTS = 'script,iframe,object,embed,svg,math,base,meta,link,style,form,input,button,textarea,select';
+    const DANGEROUS_STYLE_VALUE = /(?:expression\s*\(|javascript\s*:|behavior\s*:|@import|url\s*\(\s*["']?\s*data\s*:\s*text\/html)/i;
+
+    function isSafeClientUrl(value, { allowContact = false } = {}) {
+        if (typeof value !== 'string' || value.length > 8 * 1024 * 1024) return false;
+        const trimmed = value.trim();
+        if (!trimmed || /[\u0000-\u001f]/.test(trimmed)) return false;
+        if (/^data:/i.test(trimmed)) {
+            return /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[a-z0-9+/=\s]+$/i.test(trimmed);
+        }
+        try {
+            const parsed = new URL(trimmed, window.location.origin);
+            const allowedProtocols = allowContact
+                ? ['http:', 'https:', 'mailto:', 'tel:']
+                : ['http:', 'https:'];
+            return allowedProtocols.includes(parsed.protocol) && !parsed.username && !parsed.password;
+        } catch {
+            return false;
+        }
+    }
+
+    function sanitizeHtmlFragment(html) {
+        const template = document.createElement('template');
+        template.innerHTML = String(html || '');
+        template.content.querySelectorAll(BLOCKED_FRAGMENT_ELEMENTS).forEach(element => element.remove());
+        template.content.querySelectorAll('*').forEach(element => {
+            [...element.attributes].forEach(attribute => {
+                const name = attribute.name.toLowerCase();
+                const value = attribute.value;
+                if (name.startsWith('on') || ['srcdoc', 'formaction', 'xlink:href'].includes(name)) {
+                    element.removeAttribute(attribute.name);
+                    return;
+                }
+                if ((name === 'src' && !isSafeClientUrl(value)) ||
+                    (name === 'href' && !isSafeClientUrl(value, { allowContact: true }))) {
+                    element.removeAttribute(attribute.name);
+                    return;
+                }
+                if (name === 'style' && DANGEROUS_STYLE_VALUE.test(value)) {
+                    element.removeAttribute(attribute.name);
+                }
+            });
+        });
+        return template.content;
+    }
+
+    function setSafeHtml(element, html) {
+        element.replaceChildren(sanitizeHtmlFragment(html));
+    }
+
+    function appendSafeHtml(element, html) {
+        element.appendChild(sanitizeHtmlFragment(html));
+    }
+
     // Defense in depth: old API responses or server-injected data may contain
     // both a mutable draft and an immutable published snapshot. The public
     // viewer must always prefer the published snapshot.
@@ -151,7 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
-        toast.innerHTML = `<i class="fas ${iconMap[type] || iconMap.info}"></i><span>${message}</span>`;
+        const icon = document.createElement('i');
+        icon.className = `fas ${iconMap[type] || iconMap.info}`;
+        const text = document.createElement('span');
+        text.textContent = String(message || '');
+        toast.append(icon, text);
         container.appendChild(toast);
 
         requestAnimationFrame(() => {
@@ -405,7 +463,11 @@ document.addEventListener('DOMContentLoaded', () => {
             a.className = 'contact-link';
             a.target = '_blank';
             a.rel = 'noopener noreferrer';
-            a.innerHTML = `<i class="${platform.icon}"></i><span>${displayValue}</span>`;
+            const icon = document.createElement('i');
+            icon.className = platform.icon;
+            const label = document.createElement('span');
+            label.textContent = displayValue;
+            a.append(icon, label);
 
             // Toast on click for phone/email
             if (key === 'email' || key === 'whatsapp') {
@@ -440,11 +502,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (phone && phone.value) {
                     const phoneValueClean = phone.value.replace(/\D/g, '');
                     if (phoneValueClean !== whatsappNumberClean) {
-                        const sanitizedValue = phone.value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         const a = document.createElement('a');
                         a.href = `tel:${phoneValueClean}`;
                         a.className = 'contact-link';
-                        a.innerHTML = `<i class="fas fa-phone"></i><span>${sanitizedValue}</span>`;
+                        const icon = document.createElement('i');
+                        icon.className = 'fas fa-phone';
+                        const label = document.createElement('span');
+                        label.textContent = phone.value;
+                        a.append(icon, label);
                         a.addEventListener('click', () => trackClick('phone_call'));
                         container.appendChild(a);
                     }
@@ -507,9 +572,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const renderElement = (elementHTML, placement, containerCollection) => {
             if (containerCollection[placement]) {
-                containerCollection[placement].insertAdjacentHTML('beforeend', elementHTML);
+                appendSafeHtml(containerCollection[placement], elementHTML);
             } else {
-                containerCollection.front.insertAdjacentHTML('beforeend', elementHTML);
+                appendSafeHtml(containerCollection.front, elementHTML);
             }
         };
 
@@ -523,17 +588,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const frontBgImage = imageUrls.front ? `url(${imageUrls.front})` : 'none';
         const backBgImage = imageUrls.back ? `url(${imageUrls.back})` : 'none';
 
-        frontCardContainer.innerHTML = `
+        setSafeHtml(frontCardContainer, `
             <div class="card-background-layer" style="background-image: ${frontBgImage} !important; background-size: cover; background-position: center;"></div>
             <div class="card-background-layer" style="background: linear-gradient(135deg, ${frontStartColor}, ${frontEndColor}) !important; opacity: ${frontOpacity} !important;"></div>
             <div class="card-content-layer" id="card-front-content-render"></div>
-        `;
+        `);
 
-        backCardContainer.innerHTML = `
+        setSafeHtml(backCardContainer, `
             <div class="card-background-layer" style="background-image: ${backBgImage} !important; background-size: cover; background-position: center;"></div>
             <div class="card-background-layer" style="background: linear-gradient(135deg, ${backStartColor}, ${backEndColor}) !important; opacity: ${backOpacity} !important;"></div>
             <div class="card-content-layer" id="card-back-content-render"></div>
-        `;
+        `);
 
         const containers = {
             front: document.getElementById('card-front-content-render'),
@@ -912,8 +977,8 @@ document.addEventListener('DOMContentLoaded', () => {
             backCardRenderArea.style.left = '-9999px';
             backCardRenderArea.style.visibility = 'hidden';
 
-            frontDisplay.innerHTML = `<img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardFront}">`;
-            backDisplay.innerHTML = `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardBack}">`;
+            setSafeHtml(frontDisplay, `<img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardFront}">`);
+            setSafeHtml(backDisplay, `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardBack}">`);
 
             const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
             flipWrapper.addEventListener('click', flipFn);
@@ -1021,8 +1086,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const capturedBack = imageUrls.capturedBack;
 
             if (capturedFront && capturedBack) {
-                frontDisplay.innerHTML = `<img src="${capturedFront}" alt="${i18n.cardFront}" loading="lazy">`;
-                backDisplay.innerHTML = `<img src="${capturedBack}" alt="${i18n.cardBack}" loading="lazy">`;
+                setSafeHtml(frontDisplay, `<img src="${capturedFront}" alt="${i18n.cardFront}" loading="lazy">`);
+                setSafeHtml(backDisplay, `<img src="${capturedBack}" alt="${i18n.cardBack}" loading="lazy">`);
 
                 const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
                 flipWrapper.addEventListener('click', flipFn);

@@ -6,12 +6,16 @@ const WS_LIMITS = {
   RATE_WINDOW_MS: 1000,
 };
 
-function getClientIP(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+function getClientIP(req, trustProxy = false) {
+  if (trustProxy) {
+    const forwarded = req.headers['x-forwarded-for']?.split(',')[0]?.trim();
+    if (forwarded) return forwarded;
+  }
+  return req.socket.remoteAddress || 'unknown';
 }
 
 function isSafeCollabId(collabId) {
-  return typeof collabId === 'string' && /^[A-Za-z0-9_-]{3,64}$/.test(collabId);
+  return typeof collabId === 'string' && /^[A-Za-z0-9_-]{24,64}$/.test(collabId);
 }
 
 function parseWsJsonMessage(message, maxSize = WS_LIMITS.MAX_MESSAGE_SIZE) {
@@ -24,9 +28,32 @@ function parseWsJsonMessage(message, maxSize = WS_LIMITS.MAX_MESSAGE_SIZE) {
   return JSON.parse(message.toString());
 }
 
+function parseCollaborationMessage(message) {
+  const data = parseWsJsonMessage(message);
+  if (!data || data.type !== 'state' || !data.state || typeof data.state !== 'object' || Array.isArray(data.state)) {
+    const err = new Error('Invalid collaboration message schema');
+    err.code = 'INVALID_COLLABORATION_MESSAGE';
+    throw err;
+  }
+  return data;
+}
+
+function isValidWsClaims(decoded, collabId) {
+  return Boolean(
+    decoded &&
+    decoded.type === 'ws' &&
+    decoded.userId &&
+    decoded.collabId === collabId &&
+    decoded.designId &&
+    ['owner', 'editor'].includes(decoded.role)
+  );
+}
+
 module.exports = {
   WS_LIMITS,
   getClientIP,
   isSafeCollabId,
+  isValidWsClaims,
+  parseCollaborationMessage,
   parseWsJsonMessage
 };

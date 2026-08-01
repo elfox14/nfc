@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const { selectPublishedDesignData } = require('../utils/published-design');
+const { sanitizeDesignState, sanitizeText, sanitizeUrl } = require('../utils/sanitize');
 
 const PLATFORMS = {
   whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
@@ -34,35 +35,58 @@ function displaySocialValue(rawValue) {
   return rawValue.replace(/^(https?:\/\/)?(www\.)?/, '');
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function safeContactUrl(platformKey, rawValue) {
+  if (platformKey === 'email') {
+    const email = sanitizeText(rawValue, 254).trim();
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? `mailto:${email}` : null;
+  }
+  if (platformKey === 'whatsapp') {
+    const number = String(rawValue || '').replace(/\D/g, '').slice(0, 20);
+    return number ? `https://wa.me/${number}` : null;
+  }
+  const fullUrl = socialUrl(platformKey, sanitizeText(rawValue));
+  return fullUrl ? sanitizeUrl(fullUrl, { allowRelative: false, allowDataImage: false }) : null;
+}
+
 function contactLinkHtml({ icon, href, copyValue, label, target = true, copyLabel = 'نسخ الرابط' }) {
   const targetAttrs = target ? ' target="_blank" rel="noopener noreferrer"' : '';
   return `
-                <div class="contact-link-wrapper" data-copy-value="${copyValue}">
-                    <a href="${href}" class="contact-link"${targetAttrs}>
+                <div class="contact-link-wrapper" data-copy-value="${escapeHtml(copyValue)}">
+                    <a href="${escapeHtml(href)}" class="contact-link"${targetAttrs}>
                         <i class="${icon}"></i>
-                        <span>${label}</span>
+                        <span>${escapeHtml(label)}</span>
                     </a>
-                    <button class="copy-link-btn" aria-label="${copyLabel}">
+                    <button class="copy-link-btn" aria-label="${escapeHtml(copyLabel)}">
                         <i class="fas fa-copy"></i>
                     </button>
                 </div>
             `;
 }
 
-function buildContactLinksHtml(dynamicData = {}, DOMPurify) {
+function buildContactLinksHtml(dynamicData = {}) {
   const linksHTML = [];
   const staticSocial = dynamicData.staticSocial || {};
 
   Object.entries(staticSocial).forEach(([key, linkData]) => {
     if (linkData && linkData.value && PLATFORMS[key]) {
-      const value = DOMPurify.sanitize(linkData.value);
-      const fullUrl = socialUrl(key, value);
+      const value = sanitizeText(linkData.value);
+      const fullUrl = safeContactUrl(key, value);
+      if (!fullUrl) return;
       const displayValue = key === 'email' || key === 'whatsapp' ? value : displaySocialValue(value);
 
       linksHTML.push(contactLinkHtml({
         icon: PLATFORMS[key].icon,
-        href: encodeURI(fullUrl),
-        copyValue: encodeURI(fullUrl),
+        href: fullUrl,
+        copyValue: fullUrl,
         label: displayValue
       }));
     }
@@ -71,8 +95,8 @@ function buildContactLinksHtml(dynamicData = {}, DOMPurify) {
   if (dynamicData.phones) {
     dynamicData.phones.forEach(phone => {
       if (phone && phone.value) {
-        const sanitizedValue = DOMPurify.sanitize(phone.value);
-        const cleanNumber = sanitizedValue.replace(/\D/g, '');
+        const sanitizedValue = sanitizeText(phone.value, 100);
+        const cleanNumber = String(phone.value).replace(/\D/g, '').slice(0, 20);
         linksHTML.push(contactLinkHtml({
           icon: 'fas fa-phone',
           href: `tel:${cleanNumber}`,
@@ -88,12 +112,13 @@ function buildContactLinksHtml(dynamicData = {}, DOMPurify) {
   if (dynamicData.social) {
     dynamicData.social.forEach(link => {
       if (link && link.value && link.platform && PLATFORMS[link.platform]) {
-        const value = DOMPurify.sanitize(link.value);
-        const fullUrl = socialUrl(link.platform, value);
+        const value = sanitizeText(link.value);
+        const fullUrl = safeContactUrl(link.platform, value);
+        if (!fullUrl) return;
         linksHTML.push(contactLinkHtml({
           icon: PLATFORMS[link.platform].icon,
-          href: encodeURI(fullUrl),
-          copyValue: encodeURI(fullUrl),
+          href: fullUrl,
+          copyValue: fullUrl,
           label: displaySocialValue(value)
         }));
       }
@@ -117,7 +142,6 @@ module.exports = function createViewerRouter({
   designsCollectionName,
   rootDir,
   absoluteBaseUrl,
-  DOMPurify
 }) {
   const router = express.Router();
 
@@ -141,11 +165,12 @@ module.exports = function createViewerRouter({
       }
 
       const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
-      const publishedDesign = selectPublishedDesignData(doc?.data);
-      if (!doc || !publishedDesign) {
+      const publishedRevision = selectPublishedDesignData(doc?.data);
+      if (!doc || !publishedRevision) {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
         return res.status(404).send('Design not found or data is missing');
       }
+      const publishedDesign = sanitizeDesignState(publishedRevision);
 
       db.collection(designsCollectionName).updateOne(
         { shortId: id },
@@ -157,8 +182,8 @@ module.exports = function createViewerRouter({
       const base = absoluteBaseUrl(req);
       const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
       const inputs = publishedDesign.inputs || {};
-      const name = DOMPurify.sanitize(inputs['input-name'] || 'بطاقة عمل رقمية');
-      const tagline = DOMPurify.sanitize(inputs['input-tagline'] || '');
+      const name = sanitizeText(inputs['input-name'] || 'بطاقة عمل رقمية');
+      const tagline = sanitizeText(inputs['input-tagline'] || '');
       const dynamicData = publishedDesign.dynamic || {};
       const imageUrls = publishedDesign.imageUrls || {};
 
@@ -183,7 +208,7 @@ module.exports = function createViewerRouter({
         keywords,
         design: publishedDesign,
         canonical: pageUrl,
-        contactLinksHtml: buildContactLinksHtml(dynamicData, DOMPurify)
+        contactLinksHtml: buildContactLinksHtml(dynamicData)
       });
     } catch (e) {
       console.error('Error in /nfc/viewer route:', e);

@@ -16,6 +16,11 @@ const {
   oauthStateCookieOptions,
   clearOAuthStateCookieOptions
 } = require('../utils/oauth-state');
+const { isSafeCollabId } = require('../utils/websocket-security');
+
+function isSafeDesignId(value) {
+  return typeof value === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(value);
+}
 
 module.exports = function createAuthRouter({
   getDb,
@@ -395,7 +400,7 @@ router.get('/google/callback', async (req, res) => {
 
           // If popup didn't close, fallback to redirect (pass initToken to bypass cookie blocking)
           setTimeout(function() {
-            window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1&initToken=' + ${JSON.stringify(sessionInitToken)});
+            window.location.replace(${JSON.stringify(dashboardPage)} + '#oauthSuccess=1&initToken=' + encodeURIComponent(${JSON.stringify(sessionInitToken)}));
           }, 1000);
         } else {
           // Path 2: No opener (COOP blocked it) — close popup; parent will recover via BroadcastChannel or cookie refresh
@@ -403,7 +408,7 @@ router.get('/google/callback', async (req, res) => {
 
           // If popup didn't close (some browsers), fallback to redirect
           setTimeout(function() {
-            window.location.replace(${JSON.stringify(dashboardPage)} + '?oauthSuccess=1&initToken=' + ${JSON.stringify(sessionInitToken)});
+            window.location.replace(${JSON.stringify(dashboardPage)} + '#oauthSuccess=1&initToken=' + encodeURIComponent(${JSON.stringify(sessionInitToken)}));
           }, 1000);
         }
       })();
@@ -411,7 +416,7 @@ router.get('/google/callback', async (req, res) => {
 
     res.send(`<!DOCTYPE html>
     <html lang="${lang}">
-    <head><meta charset="utf-8"><title>Google Login</title></head>
+    <head><meta charset="utf-8"><meta name="referrer" content="no-referrer"><title>Google Login</title></head>
     <body>
     <script nonce="${res.locals.cspNonce}">${script}</script>
     </body>
@@ -910,16 +915,85 @@ router.post('/session-init', async (req, res) => {
   }
 });
 
-// Issue a short-lived token for WebSocket authentication
-// WebSocket can't send cookies, so the client fetches this token via HTTP (with cookies),
-// then sends it as the first WebSocket message
-router.get('/ws-token', verifyToken, (req, res) => {
+// Create a bearer invitation that is scoped to one random collaboration room.
+// The frontend puts it in the URL fragment, which browsers do not send in HTTP
+// requests or Referer headers.
+router.post('/collaboration-invite', verifyToken, async (req, res) => {
+  try {
+    const designId = req.body?.designId;
+    if (!isSafeDesignId(designId)) {
+      return res.status(400).json({ error: 'Valid designId is required' });
+    }
+    const design = await getDb().collection(designsCollectionName).findOne({
+      shortId: designId,
+      ownerId: req.user.userId
+    });
+    if (!design) return res.status(404).json({ error: 'Design not found' });
+
+    const collabId = nanoid(32);
+    const invite = jwt.sign(
+      {
+        type: 'collab-invite',
+        collabId,
+        designId,
+        ownerId: req.user.userId,
+        role: 'editor',
+        jti: nanoid(16)
+      },
+      process.env.JWT_SECRET,
+      { algorithm: 'HS256', expiresIn: '1h' }
+    );
+    return res.status(201).json({ success: true, collabId, invite, expiresIn: 3600 });
+  } catch (error) {
+    console.error('[Collaboration] Failed to create invitation:', error.message);
+    return res.status(500).json({ error: 'Failed to create collaboration invitation' });
+  }
+});
+
+// Exchange a room invitation for a 30-second, room-bound WebSocket token.
+router.post('/ws-token', verifyToken, async (req, res) => {
+  const { collabId, invite } = req.body || {};
+  if (!isSafeCollabId(collabId) || typeof invite !== 'string') {
+    return res.status(400).json({ error: 'Valid collaboration invitation is required' });
+  }
+
+  let invitation;
+  try {
+    invitation = jwt.verify(invite, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+  } catch {
+    return res.status(401).json({ error: 'Invalid or expired collaboration invitation' });
+  }
+
+  if (
+    invitation.type !== 'collab-invite' ||
+    invitation.collabId !== collabId ||
+    !isSafeDesignId(invitation.designId) ||
+    !invitation.ownerId
+  ) {
+    return res.status(401).json({ error: 'Invalid collaboration invitation scope' });
+  }
+
+  const design = await getDb().collection(designsCollectionName).findOne({
+    shortId: invitation.designId,
+    ownerId: invitation.ownerId
+  });
+  if (!design) return res.status(404).json({ error: 'Collaboration design not found' });
+
+  const role = req.user.userId === invitation.ownerId ? 'owner' : 'editor';
   const wsToken = jwt.sign(
-    { userId: req.user.userId, email: req.user.email, type: 'access' },
+    {
+      userId: req.user.userId,
+      type: 'ws',
+      collabId,
+      designId: invitation.designId,
+      ownerId: invitation.ownerId,
+      role,
+      jti: nanoid(16)
+    },
     process.env.JWT_SECRET,
-    { expiresIn: '30s' } // Very short-lived — only for WebSocket handshake
+    { algorithm: 'HS256', expiresIn: '30s' }
   );
-  res.json({ success: true, token: wsToken });
+  return res.json({ success: true, token: wsToken });
 });
 
 

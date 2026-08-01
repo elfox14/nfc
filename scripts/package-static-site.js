@@ -31,6 +31,11 @@ const assetDirectories = ['backgrounds', 'images', 'libs'];
 fs.rmSync(path.join(root, 'dist', 'static'), { recursive: true, force: true });
 fs.mkdirSync(output, { recursive: true });
 
+const apacheHeaders = path.join(root, '.htaccess');
+if (fs.existsSync(apacheHeaders)) {
+  fs.copyFileSync(apacheHeaders, path.join(output, '.htaccess'));
+}
+
 for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
   if (!entry.isFile()) continue;
   const ext = path.extname(entry.name).toLowerCase();

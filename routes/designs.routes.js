@@ -22,8 +22,7 @@ module.exports = function createDesignsRouter({
   usersCollectionName, 
   cardRequestsCollectionName, savedCardsCollectionName,
   absoluteBaseUrl,
-  sanitizeInputs,
-  DOMPurify,
+  sanitizeDesignState,
   cloudinary
 }) {
   const router = express.Router();
@@ -58,8 +57,16 @@ function handleMulterErrors(err, req, res, next) {
   next();
 }
 
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 100 : 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: req => req.user.userId,
+  message: { error: 'محاولات رفع كثيرة. حاول مرة أخرى لاحقاً. / Too many uploads. Try again later.' }
+});
 
-router.post('/upload-image', verifyToken, upload.single('image'), handleMulterErrors, async (req, res) => {
+router.post('/upload-image', verifyToken, uploadLimiter, upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
       if (!res.headersSent) {
@@ -102,7 +109,8 @@ router.post('/upload-image', verifyToken, upload.single('image'), handleMulterEr
 
         const externalResponse = await fetch(process.env.EXTERNAL_UPLOAD_URL, {
           method: 'POST',
-          body: formData
+          body: formData,
+          signal: AbortSignal.timeout(12_000)
         });
 
         if (externalResponse.ok) {
@@ -206,15 +214,7 @@ router.post('/upload-image', verifyToken, upload.single('image'), handleMulterEr
 // === LEGACY UPLOAD ALIAS ===
 // Kept for older clients, but authentication now happens before Multer reads the
 // request body so anonymous traffic cannot consume image-processing resources.
-const publicUploadLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'test' ? 100 : 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'محاولات رفع كثيرة. حاول مرة أخرى لاحقاً. / Too many uploads. Try again later.' }
-});
-
-router.post('/upload-image-public', verifyToken, publicUploadLimiter, upload.single('image'), handleMulterErrors, async (req, res) => {
+router.post('/upload-image-public', verifyToken, uploadLimiter, upload.single('image'), handleMulterErrors, async (req, res) => {
   try {
     if (!req.file) {
       if (!res.headersSent) {
@@ -242,7 +242,8 @@ router.post('/upload-image-public', verifyToken, publicUploadLimiter, upload.sin
 
         const externalResponse = await fetch(process.env.EXTERNAL_UPLOAD_URL, {
           method: 'POST',
-          body: formData
+          body: formData,
+          signal: AbortSignal.timeout(12_000)
         });
 
         if (externalResponse.ok) {
@@ -300,34 +301,10 @@ router.post('/upload-image-public', verifyToken, publicUploadLimiter, upload.sin
 router.post('/save-design', verifyToken, async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
-    const sanitizeDesignState = (designState) => {
-      if (!designState || typeof designState !== 'object' || Array.isArray(designState)) {
-        return {};
-      }
-
-      if (designState.inputs) designState.inputs = sanitizeInputs(designState.inputs);
-      if (designState.dynamic) {
-        if (designState.dynamic.phones) {
-          designState.dynamic.phones = designState.dynamic.phones.map(phone => ({ ...phone, value: phone && phone.value ? DOMPurify.sanitize(String(phone.value)) : '' }));
-        }
-        if (designState.dynamic.social) {
-          designState.dynamic.social = designState.dynamic.social.map(link => ({ ...link, value: link && link.value ? DOMPurify.sanitize(String(link.value)) : '' }));
-        }
-        if (designState.dynamic.staticSocial) {
-          for (const key in designState.dynamic.staticSocial) {
-            if (designState.dynamic.staticSocial[key] && designState.dynamic.staticSocial[key].value) {
-              designState.dynamic.staticSocial[key].value = DOMPurify.sanitize(String(designState.dynamic.staticSocial[key].value));
-            }
-          }
-        }
-      }
-
-      return designState;
-    };
-
-    let data = sanitizeDesignState(req.body || {});
-    if (data.publishedState) {
-      data.publishedState = sanitizeDesignState(data.publishedState);
+    const rawData = req.body || {};
+    let data = sanitizeDesignState(rawData);
+    if (rawData.publishedState) {
+      data.publishedState = sanitizeDesignState(rawData.publishedState);
       // Reject recursive snapshots even if a crafted client sends one.
       delete data.publishedState.publishedState;
       delete data.publishedState.publishedAt;
@@ -335,9 +312,13 @@ router.post('/save-design', verifyToken, async (req, res) => {
         delete data.publishedState;
       }
     }
+    if (typeof rawData.publishedAt === 'string' && !Number.isNaN(Date.parse(rawData.publishedAt))) {
+      data.publishedAt = new Date(rawData.publishedAt).toISOString();
+    }
     const existingId = req.query.id;
     let shortId = existingId || nanoid(8);
     let isUpdate = false;
+    let ownedExistingDesign = null;
 
     // Retrieve ownerId from authenticated session via verifyToken
     let ownerId = req.user.userId;
@@ -361,14 +342,16 @@ router.post('/save-design', verifyToken, async (req, res) => {
     if (existingId) {
       const existingDesign = await getDb().collection(designsCollectionName).findOne({ shortId: existingId });
       if (existingDesign) {
-        if (existingDesign.ownerId && existingDesign.ownerId !== ownerId) {
-          // Design belongs to another user — fork it as a new design
+        if (existingDesign.ownerId !== ownerId) {
+          // Never let a save implicitly claim someone else's design or an
+          // unmigrated ownerless record. A copy receives a fresh public ID.
           shortId = nanoid(8);
           isUpdate = false;
-          console.log(`[SaveDesign] Forking design ${existingId} as new ${shortId} (different owner)`);
+          console.log(`[SaveDesign] Forking inaccessible design ${existingId} as new ${shortId}`);
         } else {
           // Same owner — update in place
           isUpdate = true;
+          ownedExistingDesign = existingDesign;
           console.log(`[SaveDesign] Updating existing design: ${existingId}`);
         }
       } else {
@@ -428,13 +411,18 @@ router.post('/save-design', verifyToken, async (req, res) => {
     if (isUpdate) {
       // A draft save must never separate captured images from the state that
       // produced them.
-      const existingDoc = await getDb().collection(designsCollectionName).findOne({ shortId: shortId });
-      preservePublishedRevision(existingDoc);
+      preservePublishedRevision(ownedExistingDesign);
 
-      await getDb().collection(designsCollectionName).updateOne(
-        { shortId: shortId },
+      const result = await getDb().collection(designsCollectionName).updateOne(
+        { shortId, ownerId },
         { $set: updateDoc }
       );
+      if (result.matchedCount !== 1) {
+        return res.status(409).json({
+          error: 'Design ownership changed. Reload before saving.',
+          code: 'DESIGN_OWNERSHIP_CHANGED'
+        });
+      }
     } else {
       await getDb().collection(designsCollectionName).insertOne({
         shortId,
@@ -599,7 +587,16 @@ router.put('/card-privacy', verifyToken, async (req, res) => {
 });
 
 // Request to save someone's card
-router.post('/save-card/:designId', verifyToken, async (req, res) => {
+const saveCardLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 100 : 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: req => req.user.userId,
+  message: { error: 'طلبات كثيرة. حاول مرة أخرى لاحقاً. / Too many requests. Try again later.' }
+});
+
+router.post('/save-card/:designId', verifyToken, saveCardLimiter, async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
     const designId = String(req.params.designId);
@@ -608,8 +605,9 @@ router.post('/save-card/:designId', verifyToken, async (req, res) => {
     // Find the design
     const design = await getDb().collection(designsCollectionName).findOne({ shortId: designId });
     if (!design) return res.status(404).json({ error: 'Design not found' });
-    const publishedDesign = selectPublishedDesignData(design.data);
-    if (!publishedDesign) return res.status(404).json({ error: 'Design not found' });
+    const publishedRevision = selectPublishedDesignData(design.data);
+    if (!publishedRevision) return res.status(404).json({ error: 'Design not found' });
+    const publishedDesign = sanitizeDesignState(publishedRevision);
 
     // Can't save your own card
     if (design.ownerId === requesterId) {
@@ -880,8 +878,8 @@ router.get('/get-design/:id', async (req, res) => {
     
     const doc = await getDb().collection(designsCollectionName).findOne({ shortId: id });
 
-    const publishedData = selectPublishedDesignData(doc?.data);
-    if (!doc || !publishedData) {
+    const publishedRevision = selectPublishedDesignData(doc?.data);
+    if (!doc || !publishedRevision) {
       console.warn(`[API] Design not found for ID: ${id}`);
       return res.status(404).json({ error: 'Design not found or data missing' });
     }
@@ -901,7 +899,7 @@ router.get('/get-design/:id', async (req, res) => {
     console.log(`[API] Design found for ID: ${id}. Returning data.`);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
-    res.json(publishedData);
+    res.json(sanitizeDesignState(publishedRevision));
   } catch (e) {
     console.error('Get design error:', e);
     if (!res.headersSent) {
@@ -1026,11 +1024,11 @@ router.get('/gallery', async (req, res) => {
       .toArray();
 
     const publicDesigns = designs
-      .map(design => ({
-        ...design,
-        data: selectPublishedDesignData(design.data)
-      }))
-      .filter(design => design.data);
+      .map(design => {
+        const revision = selectPublishedDesignData(design.data);
+        return revision ? { ...design, data: sanitizeDesignState(revision) } : null;
+      })
+      .filter(Boolean);
 
     res.json({
       success: true,
