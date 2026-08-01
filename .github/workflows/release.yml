@@ -239,6 +239,8 @@ jobs:
           DEPLOY_SHA: ${{ steps.release_ref.outputs.sha }}
           RELEASE_TAG: ${{ steps.request.outputs.release_tag }}
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag --annotate "${RELEASE_TAG}" "${DEPLOY_SHA}" --message "MC PRIME NFC ${RELEASE_TAG}"
           git push origin "${RELEASE_TAG}"
           gh release create "${RELEASE_TAG}" --verify-tag --generate-notes --title "MC PRIME NFC ${RELEASE_TAG}"
