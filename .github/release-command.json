@@ -1,6 +1,6 @@
 {
-  "requestId": "retry-release-v2.1.0-ftp-home-ready-2026-08-01",
+  "requestId": "release-v2.1.0-bounded-verifier-2026-08-01",
   "ref": "d29abc73f57fd8ba7a3b124bb1fa5d660f616b5a",
   "releaseTag": "v2.1.0",
-  "reason": "Retry after confirming FTPS authentication and handling the existing FTP home directory"
+  "reason": "Complete v2.1.0 after successful API and FTPS deployment with bounded static verification"
 }
