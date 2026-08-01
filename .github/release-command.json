@@ -1,6 +1,6 @@
 {
-  "requestId": "rollback-v2.1.0-validation-2026-08-01",
-  "ref": "55a9b16bae612c8c7b2597fd89bd62739f1562ca",
+  "requestId": "restore-v2.1.0-after-rollback-drill-2026-08-01",
+  "ref": "v2.1.0",
   "releaseTag": "",
-  "reason": "Production rollback drill from v2.1.0 to the previous verified release commit"
+  "reason": "Restore the production API and static application to v2.1.0 after the successful rollback drill"
 }
