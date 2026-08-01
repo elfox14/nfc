@@ -786,6 +786,69 @@ const CardManager = {
         this.updateSocialTextStyles();
     },
 
+    async getQrLogoDataUrl() {
+        const logoSrc = DOMElements.draggable.logoImg?.src;
+        const useLogo = document.getElementById('qr-use-logo')?.checked === true;
+
+        if (!useLogo || !logoSrc || logoSrc.includes('mc-prime-nfc.png')) return null;
+        if (logoSrc.startsWith('data:')) return logoSrc;
+
+        const response = await fetch(logoSrc, { mode: 'cors', credentials: 'omit', cache: 'no-store' });
+        if (!response.ok) throw new Error(`Unable to load the QR logo (${response.status}).`);
+
+        const blob = await response.blob();
+        if (!blob.type.startsWith('image/')) throw new Error('The selected QR logo is not a valid image.');
+
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('Unable to read the selected QR logo.'));
+            reader.readAsDataURL(blob);
+        });
+    },
+
+    async exportStyledQr(data) {
+        const dotsColorElement = document.getElementById('qr-dots-color') || document.getElementById('qr-color');
+        const bgColorElement = document.getElementById('qr-bg-color');
+        const dotsTypeElement = document.getElementById('qr-dots-type');
+        const cornersTypeElement = document.getElementById('qr-corners-type');
+        const logoDataUrl = await this.getQrLogoDataUrl();
+
+        const qrCode = new QRCodeStyling({
+            width: 300,
+            height: 300,
+            type: 'canvas',
+            data,
+            image: logoDataUrl,
+            dotsOptions: {
+                color: dotsColorElement ? dotsColorElement.value : '#000000',
+                type: dotsTypeElement ? dotsTypeElement.value : 'rounded'
+            },
+            backgroundOptions: {
+                color: bgColorElement ? bgColorElement.value : '#ffffff'
+            },
+            imageOptions: {
+                margin: 10,
+                imageSize: 0.4,
+                hideBackgroundDots: true
+            },
+            cornersSquareOptions: {
+                type: cornersTypeElement ? cornersTypeElement.value : 'extra-rounded',
+                color: dotsColorElement ? dotsColorElement.value : '#000000'
+            }
+        });
+
+        const pngBlob = await qrCode.getRawData('png');
+        if (!pngBlob) throw new Error('The QR image could not be exported.');
+
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('The QR image could not be read.'));
+            reader.readAsDataURL(pngBlob);
+        });
+    },
+
     async generateVCardQr() {
         const qrSource = document.querySelector('input[name="qr-source"]:checked')?.value;
         if (qrSource !== 'auto-vcard') return;
@@ -800,62 +863,8 @@ const CardManager = {
         try {
             await Utils.loadScript(Config.SCRIPT_URLS.qrCodeStyling);
 
-            const currentLogo = DOMElements.draggable.logoImg.src;
-            const isDefaultLogo = currentLogo.includes('mc-prime-nfc.png');
-
-            const safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
-
-            const isUseLogoElement = document.getElementById('qr-use-logo');
-            const isUseLogoChecked = isUseLogoElement ? isUseLogoElement.checked : false;
-            
-            const dotsColorElement = document.getElementById('qr-dots-color') || document.getElementById('qr-color');
-            const dotsColor = dotsColorElement ? dotsColorElement.value : "#000000";
-            
-            const bgColorElement = document.getElementById('qr-bg-color');
-            const bgColor = bgColorElement ? bgColorElement.value : "#ffffff";
-            
-            const dotsTypeElement = document.getElementById('qr-dots-type');
-            const dotsType = dotsTypeElement ? dotsTypeElement.value : "rounded";
-            
-            const cornersTypeElement = document.getElementById('qr-corners-type');
-            const cornersType = cornersTypeElement ? cornersTypeElement.value : "extra-rounded";
-
-            const qrCode = new QRCodeStyling({
-                width: 300,
-                height: 300,
-                data: vCardData,
-                image: (isDefaultLogo || !isUseLogoChecked) ? null : safeLogo,
-                dotsOptions: {
-                    color: dotsColor,
-                    type: dotsType
-                },
-                backgroundOptions: {
-                    color: bgColor,
-                },
-                imageOptions: {
-                    crossOrigin: "anonymous",
-                    margin: 10,
-                    imageSize: 0.4
-                },
-                cornersSquareOptions: {
-                    type: cornersType,
-                    color: dotsColor
-                }
-            });
-
-            const container = DOMElements.qrCodeTempGenerator;
-            container.innerHTML = '';
-
-            await qrCode.append(container);
-
-            setTimeout(() => {
-                const canvas = container.querySelector('canvas');
-                if (canvas) {
-                    this.autoGeneratedQrDataUrl = canvas.toDataURL();
-                    this.updateQrCodeDisplay();
-                }
-                container.innerHTML = '';
-            }, 100);
+            this.autoGeneratedQrDataUrl = await this.exportStyledQr(vCardData);
+            this.updateQrCodeDisplay();
 
         } catch (error) {
             console.error("Failed to generate Styled QR code:", error);
@@ -878,67 +887,9 @@ const CardManager = {
             viewerUrl.searchParams.set('id', designId);
             const finalUrl = viewerUrl.href;
 
-            const currentLogo = DOMElements.draggable.logoImg.src;
-            const isDefaultLogo = currentLogo.includes('mc-prime-nfc.png');
-            let safeLogo = (typeof sanitizeURL === 'function') ? sanitizeURL(currentLogo) : currentLogo;
-
-            if (!isDefaultLogo && safeLogo && safeLogo.startsWith('http')) {
-                safeLogo += (safeLogo.includes('?') ? '&' : '?') + 'cb=' + Date.now();
-            }
-
-            const isUseLogoElement = document.getElementById('qr-use-logo');
-            const isUseLogoChecked = isUseLogoElement ? isUseLogoElement.checked : false;
-            
-            const dotsColorElement = document.getElementById('qr-dots-color') || document.getElementById('qr-color');
-            const dotsColor = dotsColorElement ? dotsColorElement.value : "#000000";
-            
-            const bgColorElement = document.getElementById('qr-bg-color');
-            const bgColor = bgColorElement ? bgColorElement.value : "#ffffff";
-            
-            const dotsTypeElement = document.getElementById('qr-dots-type');
-            const dotsType = dotsTypeElement ? dotsTypeElement.value : "rounded";
-            
-            const cornersTypeElement = document.getElementById('qr-corners-type');
-            const cornersType = cornersTypeElement ? cornersTypeElement.value : "extra-rounded";
-
-            const qrCode = new QRCodeStyling({
-                width: 300,
-                height: 300,
-                data: finalUrl,
-                image: (isDefaultLogo || !isUseLogoChecked) ? null : safeLogo,
-                dotsOptions: {
-                    color: dotsColor,
-                    type: dotsType
-                },
-                backgroundOptions: {
-                    color: bgColor,
-                },
-                imageOptions: {
-                    crossOrigin: "anonymous",
-                    margin: 10,
-                    imageSize: 0.4
-                },
-                cornersSquareOptions: {
-                    type: cornersType,
-                    color: dotsColor // Using same color for corners for simplicity
-                }
-            });
-
-            const container = DOMElements.qrCodeTempGenerator;
-            container.innerHTML = '';
-            await qrCode.append(container);
-
-            setTimeout(() => {
-                const canvas = container.querySelector('canvas');
-                if (canvas) {
-                    this.autoGeneratedQrDataUrl = canvas.toDataURL();
-                    this.updateQrCodeDisplay();
-                    UIManager.announce("تم إنشاء QR Code بنجاح.");
-                } else {
-                    alert("حدث خطأ أثناء إنشاء QR Code.");
-                }
-                container.innerHTML = '';
-            }, 100);
+            this.autoGeneratedQrDataUrl = await this.exportStyledQr(finalUrl);
+            this.updateQrCodeDisplay();
+            UIManager.announce("تم إنشاء QR Code بنجاح.");
 
         } catch (error) {
             console.error("Error generating shareable QR code:", error);
