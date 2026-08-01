@@ -350,7 +350,9 @@
     </div>
 
     <script>
-        let token = localStorage.getItem('adminToken') || '';
+        // Never persist the privileged token across browser sessions.
+        localStorage.removeItem('adminToken');
+        let token = sessionStorage.getItem('adminToken') || '';
         let currentUserPage = 1;
         let searchTimeout = null;
 
@@ -377,7 +379,7 @@
                 
                 if (res.ok) {
                     token = input;
-                    localStorage.setItem('adminToken', token);
+                    sessionStorage.setItem('adminToken', token);
                     document.getElementById('auth-overlay').style.display = 'none';
                     document.getElementById('app').style.display = 'block';
                     loadDashboard(await res.json());
@@ -394,7 +396,7 @@
 
         function logout() {
             token = '';
-            localStorage.removeItem('adminToken');
+            sessionStorage.removeItem('adminToken');
             document.getElementById('auth-overlay').style.display = 'flex';
             document.getElementById('app').style.display = 'none';
             document.getElementById('admin-token').value = '';

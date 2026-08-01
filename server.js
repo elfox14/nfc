@@ -17,7 +17,7 @@ const path = require('path');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
-const { DOMPurify, sanitizeInputs } = require('./utils/sanitize');
+const { sanitizeDesignState } = require('./utils/sanitize');
 const useragent = require('express-useragent');
 const http = require('http');
 const cloudinary = require('cloudinary').v2;
@@ -112,10 +112,8 @@ function absoluteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
-// sanitizeInputs and DOMPurify are now imported from utils/sanitize.js
-
 const createViewerRouter = require('./routes/viewer.routes');
-app.use(createViewerRouter({ getDb: () => db, designsCollectionName, rootDir, absoluteBaseUrl, DOMPurify }));
+app.use(createViewerRouter({ getDb: () => db, designsCollectionName, rootDir, absoluteBaseUrl }));
 
 const createSystemRouter = require('./routes/system.routes');
 app.use(createSystemRouter({ getDb: () => db, rootDir }));
@@ -162,8 +160,7 @@ app.use('/api', createDesignsRouter({
   cardRequestsCollectionName,
   savedCardsCollectionName,
   absoluteBaseUrl,
-  sanitizeInputs,
-  DOMPurify,
+  sanitizeDesignState,
   cloudinary
 }));
 
@@ -241,7 +238,10 @@ process.on('uncaughtException', (error) => {
 });
 
 const server = http.createServer(app);
-registerRealtimeCollaboration(server);
+registerRealtimeCollaboration(server, {
+  getDb: () => db,
+  designsCollectionName
+});
 
 
 async function startServer() {

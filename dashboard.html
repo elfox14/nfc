@@ -652,7 +652,7 @@
         // URL cleanup is moved inside DOMContentLoaded so we can process initToken first
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
+            const urlParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
             const initToken = urlParams.get('initToken');
             const hasOauthSuccess = urlParams.has('oauthSuccess');
             
@@ -662,11 +662,7 @@
                     await Auth.sessionInit(initToken);
                 }
                 
-                urlParams.delete('oauthSuccess');
-                urlParams.delete('initToken');
-                const newSearch = urlParams.toString();
-                const cleanUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
-                history.replaceState(null, '', cleanUrl);
+                history.replaceState(null, '', window.location.pathname + window.location.search);
             }
 
             Auth.user = JSON.parse(localStorage.getItem('authUser') || 'null');

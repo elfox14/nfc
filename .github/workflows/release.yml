@@ -17,7 +17,7 @@ on:
       - .github/release-command.json
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: production-release
@@ -27,6 +27,11 @@ jobs:
   verify-and-deploy:
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
+    outputs:
+      release_sha: ${{ steps.release_ref.outputs.sha }}
+      release_tag: ${{ steps.request.outputs.release_tag }}
     services:
       mongodb:
         image: mongo:7
@@ -50,7 +55,7 @@ jobs:
       PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
     steps:
       - name: Checkout release controller
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
@@ -64,12 +69,12 @@ jobs:
           node -e "const fs=require('fs');let request;if(process.env.EVENT_NAME==='workflow_dispatch'){request={ref:process.env.INPUT_REF,releaseTag:process.env.INPUT_RELEASE_TAG||''}}else{request=JSON.parse(fs.readFileSync('.github/release-command.json','utf8'))}if(!request||!request.ref||!/^[A-Za-z0-9._\/-]{1,160}$/.test(request.ref))throw new Error('Invalid release ref');if(request.releaseTag&&!/^v[0-9]+\.[0-9]+\.[0-9]+$/.test(request.releaseTag))throw new Error('Invalid release tag');fs.appendFileSync(process.env.GITHUB_OUTPUT,'ref='+request.ref+'\nrelease_tag='+(request.releaseTag||'')+'\n')"
 
       - name: Checkout deployment ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ steps.request.outputs.ref }}
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22.x
           cache: npm
@@ -77,6 +82,11 @@ jobs:
       - name: Resolve immutable release commit
         id: release_ref
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Require deployment commit to be merged to main
+        run: |
+          git fetch origin main --tags
+          git merge-base --is-ancestor HEAD origin/main
 
       - name: Validate release tag
         if: ${{ steps.request.outputs.release_tag != '' }}
@@ -111,7 +121,7 @@ jobs:
           node -e "const fs=require('fs');const version=require('./package.json').version;fs.writeFileSync('dist/static/nfc/release.json',JSON.stringify({version,sha:process.env.DEPLOY_SHA},null,2)+'\n')"
 
       - name: Upload immutable static release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: nfc-static-${{ steps.release_ref.outputs.sha }}
           path: dist/static/nfc
@@ -232,12 +242,22 @@ jobs:
           done
           exit 1
 
+
+  create-release:
+    needs: verify-and-deploy
+    if: ${{ needs.verify-and-deploy.outputs.release_tag != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
       - name: Create immutable GitHub release
-        if: ${{ steps.request.outputs.release_tag != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
-          DEPLOY_SHA: ${{ steps.release_ref.outputs.sha }}
-          RELEASE_TAG: ${{ steps.request.outputs.release_tag }}
+          DEPLOY_SHA: ${{ needs.verify-and-deploy.outputs.release_sha }}
+          RELEASE_TAG: ${{ needs.verify-and-deploy.outputs.release_tag }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

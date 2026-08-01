@@ -60,10 +60,21 @@ function registerNfcStaticFiles(app, rootDir) {
     'render.yaml',
     'playwright.config.ts',
     'jest.config.js',
-    'minify-assets.js'
+    'minify-assets.js',
+    'add-og-tags.js',
+    'audit-pages.js',
+    'convert-images.js',
+    'fix-consistency.js',
+    'fix-hreflang.js',
+    'inject-premium.js',
+    'optimize-images.js'
   ]);
   const blockedDirectories = new Set([
-    'routes', 'utils', 'test', 'e2e', 'scripts', 'docs', 'coverage', 'node_modules', '.github', '.git'
+    'routes', 'utils', 'test', 'e2e', 'scripts', 'docs', 'coverage', 'node_modules',
+    'view', 'views', 'public', '.github', '.git'
+  ]);
+  const blockedExtensions = new Set([
+    '.ejs', '.cjs', '.mjs', '.ts', '.map', '.md', '.yaml', '.yml', '.lock', '.log'
   ]);
 
   app.use('/nfc', (req, res, next) => {
@@ -72,6 +83,7 @@ function registerNfcStaticFiles(app, rootDir) {
     if (
       segments.some((segment) => blockedDirectories.has(segment)) ||
       blockedFiles.has(basename) ||
+      blockedExtensions.has(path.extname(basename).toLowerCase()) ||
       basename.includes('.original.') ||
       basename.startsWith('.env')
     ) {

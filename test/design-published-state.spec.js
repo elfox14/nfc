@@ -146,6 +146,39 @@ describe('Published card revision persistence', () => {
         expect(savedData.imageUrls).toEqual(existingDoc.data.imageUrls);
     });
 
+    test('ownerless legacy cards are forked instead of being claimed', async () => {
+        mockCollection.findOne
+            .mockResolvedValueOnce({ userId: 'owner-1', isVerified: true })
+            .mockResolvedValueOnce({ shortId: 'legacy-ownerless', data: { inputs: { 'input-name': 'Legacy' } } });
+        mockCollection.insertOne.mockResolvedValueOnce({ insertedId: 'new-design' });
+
+        const response = await request(app)
+            .post('/api/save-design?id=legacy-ownerless')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ inputs: { 'input-name': 'My copy' } });
+
+        expect(response.status).toBe(200);
+        expect(response.body.id).not.toBe('legacy-ownerless');
+        expect(mockCollection.updateOne).not.toHaveBeenCalled();
+        expect(mockCollection.insertOne.mock.calls[0][0]).toMatchObject({ ownerId: 'owner-1' });
+    });
+
+    test('owned updates use an atomic owner filter', async () => {
+        const existing = { shortId: 'card-1', ownerId: 'owner-1', data: { inputs: {} } };
+        mockCollection.findOne
+            .mockResolvedValueOnce({ userId: 'owner-1', isVerified: true })
+            .mockResolvedValueOnce(existing);
+        mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 });
+
+        const response = await request(app)
+            .post('/api/save-design?id=card-1')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ inputs: { 'input-name': 'Owned' } });
+
+        expect(response.status).toBe(200);
+        expect(mockCollection.updateOne.mock.calls[0][0]).toEqual({ shortId: 'card-1', ownerId: 'owner-1' });
+    });
+
     test('public reads return only the published snapshot', async () => {
         mockCollection.findOne.mockResolvedValueOnce({
             _id: 'design-db-id',

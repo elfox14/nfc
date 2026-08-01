@@ -60,20 +60,19 @@ const i18nMain = {
 const CollaborationManager = {
     ws: null,
     collabId: null,
+    inviteToken: null,
     isActive: false,
 
     init() {
-        // 1. تحقق من وجود `collabId` في الرابط عند تحميل الصفحة
-        const params = new URLSearchParams(window.location.search);
-        this.collabId = params.get('collabId');
+        // Collaboration secrets live in the fragment so they are never sent
+        // in HTTP requests, Referer headers, or server access logs.
+        const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        this.collabId = fragment.get('collabId');
+        this.inviteToken = fragment.get('invite');
 
-        if (this.collabId) {
-            // قم بإزالة معرف التصميم العادي لمنع التعارض
-            params.delete('id');
-            const newUrl = `${window.location.pathname}?${params.toString()}`;
-            window.history.replaceState({}, '', newUrl);
-
-            this.connect(this.collabId);
+        if (this.collabId && this.inviteToken) {
+            window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
+            this.connect(this.collabId, this.inviteToken);
         }
 
         // 2. ربط الأحداث بالأزرار والمودال
@@ -96,17 +95,33 @@ const CollaborationManager = {
             if (!designId) {
                 throw new Error(_isEnglishPage ? 'Failed to save design for session.' : 'فشل حفظ التصميم لإنشاء جلسة.');
             }
-            this.collabId = designId;
+            const inviteResponse = await Auth.apiFetchWithRefresh(
+                `${Config.API_BASE_URL}/api/auth/collaboration-invite`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ designId })
+                }
+            );
+            const invitation = await inviteResponse.json();
+            if (!inviteResponse.ok || !invitation.success) {
+                throw new Error(invitation.error || (_isEnglishPage ? 'Failed to create secure invitation.' : 'فشل إنشاء دعوة آمنة.'));
+            }
+            this.collabId = invitation.collabId;
+            this.inviteToken = invitation.invite;
 
             // 4. أنشئ الرابط واعرضه في المودال
             const collabUrl = new URL(window.location.origin + window.location.pathname);
-            collabUrl.search = `?collabId=${this.collabId}`;
+            collabUrl.hash = new URLSearchParams({
+                collabId: this.collabId,
+                invite: this.inviteToken
+            }).toString();
 
             document.getElementById('collab-link-input').value = collabUrl.href;
             UIManager.showModal(document.getElementById('collab-modal-overlay'));
 
             // 5. اتصل بالـ WebSocket
-            this.connect(this.collabId);
+            this.connect(this.collabId, this.inviteToken);
 
         } catch (error) {
             console.error("Failed to start collaboration session:", error);
@@ -116,22 +131,30 @@ const CollaborationManager = {
         }
     },
 
-    connect(collabId) {
+    connect(collabId, inviteToken) {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             return; // متصل بالفعل
         }
 
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        // SECURITY: Do NOT put token in URL — send via first message instead
-        const wsUrl = `${protocol}//${window.location.host}?collabId=${collabId}`;
+        const apiUrl = new URL(Config.API_BASE_URL);
+        const protocol = apiUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+        // Only the random room identifier is visible during the WS upgrade.
+        const wsUrl = `${protocol}//${apiUrl.host}?collabId=${encodeURIComponent(collabId)}`;
 
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = async () => {
             console.log('WebSocket connection opened, fetching auth token...');
             try {
-                // Fetch a short-lived token via cookies for WebSocket auth
-                const res = await fetch('/api/auth/ws-token', { credentials: 'include' });
+                // Exchange the fragment-only invitation for a room-bound token.
+                const res = await Auth.apiFetchWithRefresh(
+                    `${Config.API_BASE_URL}/api/auth/ws-token`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ collabId, invite: inviteToken })
+                    }
+                );
                 const data = await res.json();
                 if (data.success && data.token) {
                     this.ws.send(JSON.stringify({ type: 'auth', token: data.token }));
@@ -156,6 +179,9 @@ const CollaborationManager = {
                         this.isActive = true;
                         this.updateStatus('متصل');
                         document.body.classList.add('collaboration-active');
+                        if (data.role === 'owner') {
+                            this.sendState(StateManager.getStateObject());
+                        }
                     } else {
                         console.error('WebSocket authentication failed');
                         this.updateStatus('فشل المصادقة');
@@ -163,9 +189,10 @@ const CollaborationManager = {
                     return;
                 }
 
-                // Normal collaboration messages
-                console.log('Received state from collaborator:', data);
-                StateManager.applyState(data, false);
+                if (data.type === 'state' && data.state) {
+                    console.log('Received state from collaborator.');
+                    StateManager.applyState(data.state, false);
+                }
             } catch (error) {
                 console.error('Error processing incoming message:', error);
             }
@@ -189,7 +216,7 @@ const CollaborationManager = {
     sendState(state) {
         // 7. أرسل التحديثات إلى الخادم
         if (this.isActive && this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify(state));
+            this.ws.send(JSON.stringify({ type: 'state', state }));
         }
     },
 
