@@ -25,6 +25,73 @@ const Auth = {
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
     get API_SESSION_INIT() { return `${this.getBaseUrl()}/api/auth/session-init`; },
 
+    _csrfToken: null,
+    _csrfPromise: null,
+
+    async getCsrfToken(forceRefresh = false) {
+        if (!forceRefresh && this._csrfToken) return this._csrfToken;
+        if (this._csrfPromise) return this._csrfPromise;
+
+        const csrfPromise = (async () => {
+            const response = await fetch(`${this.getBaseUrl()}/api/csrf-token`, {
+                method: 'GET',
+                credentials: 'include',
+                cache: 'no-store',
+                headers: { Accept: 'application/json' }
+            });
+            if (!response.ok) throw new Error(`CSRF token request failed: HTTP ${response.status}`);
+
+            const data = await response.json();
+            if (typeof data.csrfToken !== 'string' || !data.csrfToken) {
+                throw new Error('CSRF token response was invalid');
+            }
+            this._csrfToken = data.csrfToken;
+            return data.csrfToken;
+        })();
+
+        this._csrfPromise = csrfPromise;
+        try {
+            return await csrfPromise;
+        } finally {
+            if (this._csrfPromise === csrfPromise) this._csrfPromise = null;
+        }
+    },
+
+    async _isCsrfFailure(response) {
+        if (response.status !== 403 || typeof response.clone !== 'function') return false;
+        try {
+            const data = await response.clone().json();
+            return data?.code === 'INVALID_CSRF_TOKEN';
+        } catch {
+            return false;
+        }
+    },
+
+    async csrfFetch(url, options = {}) {
+        const requestOptions = { ...options, credentials: 'include' };
+        const method = String(requestOptions.method || 'GET').toUpperCase();
+        const unsafe = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+
+        if (unsafe) {
+            const csrfToken = await this.getCsrfToken();
+            requestOptions.headers = {
+                ...(requestOptions.headers || {}),
+                'X-CSRF-Token': csrfToken
+            };
+        }
+
+        let response = await fetch(url, requestOptions);
+        if (unsafe && await this._isCsrfFailure(response)) {
+            const csrfToken = await this.getCsrfToken(true);
+            requestOptions.headers = {
+                ...(requestOptions.headers || {}),
+                'X-CSRF-Token': csrfToken
+            };
+            response = await fetch(url, requestOptions);
+        }
+        return response;
+    },
+
     // HttpOnly cookies remain primary. This tab-scoped, short-lived bearer is a
     // fallback for browsers that block cross-origin cookies to the Render API.
     token: null,
@@ -99,7 +166,7 @@ const Auth = {
 
     async login(email, password) {
         try {
-            const res = await fetch(this.API_LOGIN, {
+            const res = await this.csrfFetch(this.API_LOGIN, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -131,7 +198,7 @@ const Auth = {
 
     async register(name, email, password) {
         try {
-            const res = await fetch(this.API_REGISTER, {
+            const res = await this.csrfFetch(this.API_REGISTER, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -177,7 +244,7 @@ const Auth = {
     async _performRefreshSession() {
         console.log('[Auth] Attempting to refresh session...');
         try {
-            const res = await fetch(this.API_REFRESH, {
+            const res = await this.csrfFetch(this.API_REFRESH, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -212,7 +279,7 @@ const Auth = {
     async sessionInit(token) {
         console.log('[Auth] Initializing session via token...');
         try {
-            const res = await fetch(this.API_SESSION_INIT, {
+            const res = await this.csrfFetch(this.API_SESSION_INIT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -250,7 +317,7 @@ const Auth = {
         options.cache = 'no-store';
 
         try {
-            let res = await fetch(url, options);
+            let res = await this.csrfFetch(url, options);
 
             // If token expired (401) or forbidden (403)
             if (res.status === 401 || res.status === 403) {
@@ -262,7 +329,7 @@ const Auth = {
                     console.log('[Auth] Refresh successful, retrying original request...');
                     // Update headers with the NEW token
                     options.headers = { ...options.headers, ...this.getHeader() };
-                    res = await fetch(url, options);
+                    res = await this.csrfFetch(url, options);
                 } else {
                     console.error('[Auth] Refresh failed, logging out.');
                     this.logout('SessionExpired');
@@ -278,7 +345,7 @@ const Auth = {
 
     async logout() {
         try {
-            await fetch(this.API_LOGOUT, {
+            await this.csrfFetch(this.API_LOGOUT, {
                 method: 'POST',
                 credentials: 'include'
             });

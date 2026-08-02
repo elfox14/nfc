@@ -72,6 +72,18 @@ describe('public launch security regressions', () => {
     expect(server).toMatch(/authActionLimiter = rateLimit\([\s\S]*?skipSuccessfulRequests: false/);
   });
 
+  test('unsafe API requests require a signed CSRF cookie matching a custom header', () => {
+    const server = read('server.js');
+    const csrf = read('utils/csrf-protection.js');
+    const auth = read('auth.js');
+    expect(server).toContain('registerCsrfProtection(app, process.env.COOKIE_SIGNING_SECRET)');
+    expect(csrf).toContain("req.signedCookies?.[CSRF_COOKIE_NAME]");
+    expect(csrf).toContain("req.get(CSRF_HEADER_NAME)");
+    expect(csrf).toContain("crypto.createHmac('sha256', secret)");
+    expect(csrf).toContain('crypto.timingSafeEqual');
+    expect(auth).toContain("'X-CSRF-Token': csrfToken");
+  });
+
   test('third-party Actions are immutable and secret scanning is not verified-only', () => {
     const workflows = [
       read('.github/workflows/ci.yml'),

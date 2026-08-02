@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-const request = require('supertest');
+const request = require('./csrf-test-request');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');

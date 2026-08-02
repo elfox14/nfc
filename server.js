@@ -24,6 +24,7 @@ const cloudinary = require('cloudinary').v2;
 const applySecurityHeaders = require('./utils/security-headers');
 const applyCors = require('./utils/cors-config');
 const { applyFetchMetadataProtection } = require('./utils/fetch-metadata');
+const { registerCsrfProtection } = require('./utils/csrf-protection');
 const { registerRealtimeCollaboration } = require('./utils/realtime-collaboration');
 const { connectDatabase } = require('./utils/database');
 const {
@@ -68,6 +69,7 @@ applyFetchMetadataProtection(app, allowedOrigins);
 
 app.use(express.json({ limit: '512kb' }));
 app.use(cookieParser(process.env.COOKIE_SIGNING_SECRET));
+registerCsrfProtection(app, process.env.COOKIE_SIGNING_SECRET);
 app.set('view engine', 'ejs');
 
 // --- DATABASE CONNECTION ---
