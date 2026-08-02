@@ -1,6 +1,6 @@
 {
-  "requestId": "restore-v2.1.0-after-rollback-drill-2026-08-01",
-  "ref": "v2.1.0",
+  "requestId": "deploy-security-launch-blockers-2026-08-02",
+  "ref": "5b95c7e7d9749401404dbf898b3e9456840f99af",
   "releaseTag": "",
-  "reason": "Restore the production API and static application to v2.1.0 after the successful rollback drill"
+  "reason": "Deploy the merged public launch security fixes to Render and the matching cPanel static site"
 }
