@@ -3,10 +3,13 @@ const path = require('path');
 const ejs = require('ejs');
 
 const {
+  buildVCard,
+  buildViewerCsp,
   buildContactLinksHtml,
   displaySocialValue,
   isSafeViewerId,
   selectPublishedDesignData,
+  serializeForInlineScript,
   socialUrl
 } = require('../routes/viewer.routes')._private;
 
@@ -51,6 +54,29 @@ describe('Viewer route helpers', () => {
 
   it('renders the empty state when no contact data exists', () => {
     expect(buildContactLinksHtml({}, DOMPurify)).toContain('لم يقم صاحب البطاقة');
+  });
+
+  it('escapes vCard control characters and serializes script data safely', () => {
+    const vcard = buildVCard(
+      {
+        'input-name': 'Name\nTEL:injected',
+        'input-tagline': 'Role;Admin'
+      },
+      { phones: [{ value: '+20,100' }] }
+    );
+
+    expect(vcard).toContain('FN:Name\\nTEL:injected');
+    expect(vcard).toContain('TITLE:Role\\;Admin');
+    expect(vcard).toContain('TEL;TYPE=CELL:+20\\,100');
+    expect(serializeForInlineScript('</script><script>attack()</script>'))
+      .not.toContain('<script>');
+  });
+
+  it('uses a nonce-only script policy for the public viewer', () => {
+    const policy = buildViewerCsp('test-nonce');
+    expect(policy).toContain("script-src 'self' 'nonce-test-nonce'");
+    const scriptDirective = policy.split(';').find(part => part.trim().startsWith('script-src'));
+    expect(scriptDirective).not.toContain("'unsafe-inline'");
   });
 
   it('returns the immutable published state instead of the latest draft', () => {
@@ -103,6 +129,12 @@ describe('Viewer route helpers', () => {
       keywords: 'legacy',
       canonical: 'https://example.test/nfc/viewer.html?id=legacy1',
       contactLinksHtml: '',
+      cspNonce: 'test-nonce',
+      vcardJson: serializeForInlineScript('BEGIN:VCARD\r\nEND:VCARD'),
+      viewerScriptDataJson: serializeForInlineScript({
+        name: 'Legacy card',
+        tagline: 'Still supported'
+      }),
       design: {
         inputs: {
           'input-name': 'Legacy card',
@@ -122,5 +154,34 @@ describe('Viewer route helpers', () => {
     expect(html).toContain('Legacy card');
     expect(html).toContain('transform: translate(0px, 0px);');
     expect(html).not.toMatch(/\sonclick=/i);
+  });
+
+  it('never emits card fields as executable EJS source', () => {
+    const template = fs.readFileSync(path.join(__dirname, '..', 'viewer.ejs'), 'utf8');
+    const payload = '${globalThis.xssProof=1}`</script><script>attack()</script>';
+    const html = ejs.render(template, {
+      pageUrl: 'https://example.test/nfc/viewer.html?id=safe1',
+      name: payload,
+      tagline: payload,
+      ogImage: 'https://example.test/card.png',
+      keywords: 'security',
+      canonical: 'https://example.test/nfc/viewer.html?id=safe1',
+      contactLinksHtml: '',
+      cspNonce: 'test-nonce',
+      vcardJson: serializeForInlineScript(buildVCard({ 'input-name': payload }, {})),
+      viewerScriptDataJson: serializeForInlineScript({ name: payload, tagline: payload }),
+      design: {
+        inputs: {
+          'input-name': payload,
+          'input-tagline': payload,
+          'qr-source': 'none'
+        },
+        dynamic: { phones: [], social: [], staticSocial: {} }
+      }
+    });
+
+    expect(html).not.toContain('</script><script>attack()');
+    expect(html).not.toContain('const vcard = `');
+    expect(html).toContain('nonce="test-nonce"');
   });
 });

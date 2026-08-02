@@ -1,6 +1,24 @@
 const crypto = require('crypto');
 const helmet = require('helmet');
 
+function buildNonceOnlyHtmlCsp(nonce) {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'"
+  ].join('; ');
+}
+
+function setNonceOnlyHtmlCsp(res) {
+  res.setHeader('Content-Security-Policy', buildNonceOnlyHtmlCsp(res.locals.cspNonce));
+}
+
 function applySecurityHeaders(app) {
   app.use(helmet.frameguard({ action: 'deny' }));
   app.use(helmet.noSniff());
@@ -88,3 +106,5 @@ function applySecurityHeaders(app) {
 }
 
 module.exports = applySecurityHeaders;
+module.exports.buildNonceOnlyHtmlCsp = buildNonceOnlyHtmlCsp;
+module.exports.setNonceOnlyHtmlCsp = setNonceOnlyHtmlCsp;

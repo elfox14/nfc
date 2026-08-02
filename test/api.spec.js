@@ -58,7 +58,7 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             const res = await request(app)
                 .post('/api/auth/register')
-                .send({ name: 'Test User', email: 'test@example.com', password: 'password123' });
+                .send({ name: 'Test User', email: 'test@example.com', password: 'CorrectHorse42' });
 
             expect(res.status).toBe(201);
             expect(res.body.success).toBe(true);
@@ -81,7 +81,7 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             const res = await request(app)
                 .post('/api/auth/register')
-                .send({ name: 'Test User 2', email: 'test@example.com', password: 'password123' });
+                .send({ name: 'Test User 2', email: 'test@example.com', password: 'CorrectHorse42' });
 
             expect(res.status).toBe(400);
             expect(res.body.error).toBe('User already exists');
@@ -153,6 +153,25 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             expect(res.status).toBe(403);
             expect(mockCollection.findOne).not.toHaveBeenCalled();
+        });
+
+        it('atomically rejects a refresh token that loses a rotation race', async () => {
+            const refreshToken = 'a'.repeat(128);
+            mockCollection.findOne.mockResolvedValueOnce({
+                userId: 'user-1', email: 'test@example.com', name: 'Test User'
+            });
+            mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 0 });
+
+            const res = await request(app)
+                .post('/api/auth/refresh')
+                .set('Cookie', [`refreshToken=${refreshToken}`]);
+
+            expect(res.status).toBe(403);
+            expect(res.body.error).toBe('Refresh token was already used');
+            expect(mockCollection.updateOne.mock.calls[0][0]).toMatchObject({
+                userId: 'user-1',
+                refreshTokenHash: expect.any(String)
+            });
         });
 
         // In a full environment, we would inject a mapped cookie matching mockCollection.findOne.

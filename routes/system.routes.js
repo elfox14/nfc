@@ -24,7 +24,7 @@ module.exports = function createSystemRouter({ getDb, rootDir }) {
         release: process.env.RENDER_GIT_COMMIT || process.env.RELEASE_SHA || null,
         timestamp: new Date().toISOString()
       });
-    } catch (error) {
+    } catch (_error) {
       return res.status(503).json({
         status: 'unavailable',
         database: 'disconnected',

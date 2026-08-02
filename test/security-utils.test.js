@@ -56,6 +56,18 @@ describe('Production environment validation', () => {
     expect(() => assertEnv()).toThrow('Production image storage');
   });
 
+  it('rejects a plaintext admin token even when a hash is also configured', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.MONGO_URI = 'mongodb://example';
+    process.env.JWT_SECRET = 'a'.repeat(32);
+    process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
+    process.env.ADMIN_TOKEN_SHA256 = 'c'.repeat(64);
+    process.env.ADMIN_TOKENH = 'plaintext-admin-token';
+
+    expect(() => assertEnv()).toThrow('instead of ADMIN_TOKENH');
+  });
+
   it('accepts Cloudinary and rejects a half-configured Google OAuth client', () => {
     process.env.NODE_ENV = 'production';
     process.env.MONGO_URI = 'mongodb://example';

@@ -859,7 +859,11 @@
                 }
             } catch (err) {
                 console.error('Load saved cards exception:', err);
-                grid.innerHTML = `<p style="text-align: center; color: #ff5252;">خطأ: ${err.message}</p>`;
+                grid.replaceChildren();
+                const errorMessage = document.createElement('p');
+                errorMessage.style.cssText = 'text-align:center;color:#ff5252;';
+                errorMessage.textContent = `خطأ: ${String(err.message || 'تعذر تحميل التصاميم')}`;
+                grid.appendChild(errorMessage);
             }
         }
 

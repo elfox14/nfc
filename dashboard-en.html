@@ -835,7 +835,11 @@
                 }
             } catch (err) {
                 console.error('Load saved cards exception:', err);
-                grid.innerHTML = `<p style="text-align: center; color: #ff5252;">Error: ${err.message}</p>`;
+                grid.replaceChildren();
+                const errorMessage = document.createElement('p');
+                errorMessage.style.cssText = 'text-align:center;color:#ff5252;';
+                errorMessage.textContent = `Error: ${String(err.message || 'Unable to load designs')}`;
+                grid.appendChild(errorMessage);
             }
         }
 

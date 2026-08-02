@@ -54,6 +54,9 @@ jobs:
     - name: Security audit
       run: npm run audit:prod
 
+    - name: Development toolchain audit
+      run: npm run audit:all
+
   e2e:
     runs-on: ubuntu-latest
     services:

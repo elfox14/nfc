@@ -1,4 +1,4 @@
-const { createIndexes } = require('../utils/database');
+const { connectDatabase, createIndexes } = require('../utils/database');
 
 describe('Database indexes', () => {
   it('creates the expected indexes for core collections', async () => {
@@ -28,5 +28,25 @@ describe('Database indexes', () => {
       { unique: true }
     );
     expect(collections.get('cardRequests').createIndex).toHaveBeenCalledWith({ ownerUserId: 1, status: 1 });
+  });
+
+  it('fails startup when a mandatory security index cannot be created', async () => {
+    const createIndex = jest.fn().mockRejectedValue(new Error('duplicate values prevent unique index'));
+    const db = { collection: jest.fn(() => ({ createIndex })) };
+    const client = { db: jest.fn(() => db) };
+    const connect = jest.fn().mockResolvedValueOnce(client);
+
+    await expect(connectDatabase({
+      mongoUrl: 'mongodb://test',
+      dbName: 'test',
+      connect,
+      collectionNames: {
+        designsCollectionName: 'designs',
+        usersCollectionName: 'users',
+        savedCardsCollectionName: 'savedCards',
+        cardRequestsCollectionName: 'cardRequests'
+      }
+    })).rejects.toThrow('duplicate values prevent unique index');
+
   });
 });
