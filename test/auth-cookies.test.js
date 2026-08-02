@@ -6,6 +6,7 @@ describe('Auth cookie options', () => {
       httpOnly: true,
       secure: true,
       sameSite: 'None',
+      signed: true,
       path: '/'
     });
   });
@@ -15,6 +16,7 @@ describe('Auth cookie options', () => {
       httpOnly: true,
       secure: true,
       sameSite: 'None',
+      signed: true,
       path: '/api/auth'
     });
   });

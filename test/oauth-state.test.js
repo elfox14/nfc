@@ -45,6 +45,7 @@ describe('Google OAuth state binding', () => {
     expect(oauthStateCookieOptions()).toMatchObject({
       httpOnly: true,
       sameSite: 'lax',
+      signed: true,
       path: '/api/auth/google',
       maxAge: 10 * 60 * 1000
     });

@@ -30,7 +30,7 @@ cp .env.example .env
 npm start
 ```
 
-عدّل `.env` قبل التشغيل. الحد الأدنى المعتاد هو `MONGO_URI` و`JWT_SECRET` و`TOKEN_HASH_SECRET`. إعدادات Google والبريد والتخزين اختيارية محليًا، لكنها مطلوبة في الإنتاج للميزات المرتبطة بها. ملف [`.env.example`](./.env.example) و[`render.yaml`](./render.yaml) هما المرجع الكامل للأسماء.
+عدّل `.env` قبل التشغيل. الحد الأدنى المعتاد هو `MONGO_URI` و`JWT_SECRET` و`TOKEN_HASH_SECRET` و`COOKIE_SIGNING_SECRET`. إعدادات Google والبريد والتخزين اختيارية محليًا، لكنها مطلوبة في الإنتاج للميزات المرتبطة بها. ملف [`.env.example`](./.env.example) و[`render.yaml`](./render.yaml) هما المرجع الكامل للأسماء.
 
 لا تضع القيم السرية في Git. متغيرات `sync: false` في `render.yaml` تُضبط يدويًا في Render، وأسرار النشر تُحفظ داخل GitHub Environment باسم `production`.
 

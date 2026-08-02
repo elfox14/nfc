@@ -31,6 +31,7 @@ describe('Production environment validation', () => {
     process.env.MONGO_URI = 'mongodb://example';
     process.env.JWT_SECRET = 'a'.repeat(32);
     process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.COOKIE_SIGNING_SECRET = 'd'.repeat(32);
     process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
     delete process.env.ADMIN_TOKEN_SHA256;
     process.env.EMAIL_PROVIDER = 'console';
@@ -43,6 +44,7 @@ describe('Production environment validation', () => {
     process.env.MONGO_URI = 'mongodb://example';
     process.env.JWT_SECRET = 'a'.repeat(32);
     process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.COOKIE_SIGNING_SECRET = 'd'.repeat(32);
     process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
     process.env.ADMIN_TOKEN_SHA256 = 'c'.repeat(64);
     process.env.EMAIL_PROVIDER = 'resend';
@@ -61,6 +63,7 @@ describe('Production environment validation', () => {
     process.env.MONGO_URI = 'mongodb://example';
     process.env.JWT_SECRET = 'a'.repeat(32);
     process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.COOKIE_SIGNING_SECRET = 'd'.repeat(32);
     process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
     process.env.ADMIN_TOKEN_SHA256 = 'c'.repeat(64);
     process.env.ADMIN_TOKENH = 'plaintext-admin-token';
@@ -73,6 +76,7 @@ describe('Production environment validation', () => {
     process.env.MONGO_URI = 'mongodb://example';
     process.env.JWT_SECRET = 'a'.repeat(32);
     process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.COOKIE_SIGNING_SECRET = 'd'.repeat(32);
     process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
     process.env.ADMIN_TOKEN_SHA256 = 'c'.repeat(64);
     process.env.EMAIL_PROVIDER = 'resend';
@@ -87,5 +91,16 @@ describe('Production environment validation', () => {
 
     process.env.GOOGLE_CLIENT_SECRET = 'client-secret';
     expect(() => assertEnv()).not.toThrow();
+  });
+
+  it('requires an independent cookie signing secret in production', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.MONGO_URI = 'mongodb://example';
+    process.env.JWT_SECRET = 'a'.repeat(32);
+    process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.COOKIE_SIGNING_SECRET = process.env.JWT_SECRET;
+    process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
+
+    expect(() => assertEnv()).toThrow('COOKIE_SIGNING_SECRET must be different');
   });
 });

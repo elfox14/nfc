@@ -224,7 +224,7 @@ router.get('/google/callback', async (req, res) => {
 
   let lang;
   try {
-    const verifiedState = verifyOAuthState(state, req.cookies?.[OAUTH_STATE_COOKIE]);
+    const verifiedState = verifyOAuthState(state, req.signedCookies?.[OAUTH_STATE_COOKIE]);
     lang = verifiedState.lang;
   } catch (_stateError) {
     res.clearCookie(OAUTH_STATE_COOKIE, clearOAuthStateCookieOptions());
@@ -659,7 +659,7 @@ router.post('/refresh', async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
 
-    const tokenFromCookie = req.cookies?.refreshToken;
+    const tokenFromCookie = req.signedCookies?.refreshToken;
     if (!tokenFromCookie) {
       console.warn('[Refresh] No refresh token found in cookies');
       return res.status(401).json({ error: 'No refresh token provided' });
@@ -712,7 +712,7 @@ router.post('/refresh', async (req, res) => {
 // --- LOGOUT ROUTE ---
 router.post('/logout', async (req, res) => {
   try {
-    const tokenFromCookie = req.cookies?.refreshToken;
+    const tokenFromCookie = req.signedCookies?.refreshToken;
 
     if (tokenFromCookie && getDb()) {
       // Remove refresh token from DB

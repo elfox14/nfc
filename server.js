@@ -67,7 +67,7 @@ const allowedOrigins = applyCors(app);
 applyFetchMetadataProtection(app, allowedOrigins);
 
 app.use(express.json({ limit: '512kb' }));
-app.use(cookieParser());
+app.use(cookieParser(process.env.COOKIE_SIGNING_SECRET));
 app.set('view engine', 'ejs');
 
 // --- DATABASE CONNECTION ---

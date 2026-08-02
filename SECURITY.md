@@ -13,8 +13,10 @@ remove it from Git history. If any credential may have been shared or committed:
 
 1. Rotate the MongoDB database user password and restrict its network access.
 2. Rotate the Cloudinary API secret and revoke the old credential.
-3. Generate independent random values for `JWT_SECRET`, `TOKEN_HASH_SECRET`, and
-   `UPLOAD_SECRET`; never reuse a value between purposes.
+3. Generate independent random values for `JWT_SECRET`, `TOKEN_HASH_SECRET`,
+   `COOKIE_SIGNING_SECRET`, and `UPLOAD_SECRET`; never reuse a value between
+   purposes. Rotating `COOKIE_SIGNING_SECRET` intentionally invalidates every
+   existing signed browser cookie.
 4. Generate a new random admin token, store only its SHA-256 digest as
    `ADMIN_TOKEN_SHA256`, and discard the plaintext after placing it in the
    approved password manager.

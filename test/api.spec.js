@@ -4,6 +4,7 @@
 const request = require('supertest');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // Note: Redis mock removed — server.js does not use Redis.
 
@@ -37,11 +38,22 @@ jest.setTimeout(30000);
 // Setup Test Environment Variables
 process.env.NODE_ENV = 'test';
 // SECURITY: Use a strong random secret for each test run (never hardcode secrets)
-process.env.JWT_SECRET = require('crypto').randomBytes(32).toString('hex');
+process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
+process.env.COOKIE_SIGNING_SECRET = crypto.randomBytes(32).toString('hex');
 process.env.MONGO_URI = 'mongodb://fake-uri';
 process.env.PUBLIC_BASE_URL = 'http://localhost:3000';
 
 const app = require('../server.js');
+
+function signedCookie(name, value) {
+    const digest = crypto
+        .createHmac('sha256', process.env.COOKIE_SIGNING_SECRET)
+        .update(value)
+        .digest('base64')
+        .replace(/=+$/, '');
+    const signedValue = `s:${value}.${digest}`;
+    return `${name}=${encodeURIComponent(signedValue)}`;
+}
 
 describe('Auth Integration Tests (Ticket 9)', () => {
 
@@ -149,9 +161,29 @@ describe('Auth Integration Tests (Ticket 9)', () => {
         it('Should reject malformed refresh tokens before database lookup', async () => {
             const res = await request(app)
                 .post('/api/auth/refresh')
-                .set('Cookie', ['refreshToken=not-a-valid-token']);
+                .set('Cookie', [signedCookie('refreshToken', 'not-a-valid-token')]);
 
             expect(res.status).toBe(403);
+            expect(mockCollection.findOne).not.toHaveBeenCalled();
+        });
+
+        it('Should reject an unsigned refresh token before database lookup', async () => {
+            const res = await request(app)
+                .post('/api/auth/refresh')
+                .set('Cookie', [`refreshToken=${'a'.repeat(128)}`]);
+
+            expect(res.status).toBe(401);
+            expect(mockCollection.findOne).not.toHaveBeenCalled();
+        });
+
+        it('Should reject a forged signed refresh token before database lookup', async () => {
+            const legitimate = signedCookie('refreshToken', 'a'.repeat(128));
+            const forged = `${legitimate.slice(0, -1)}x`;
+            const res = await request(app)
+                .post('/api/auth/refresh')
+                .set('Cookie', [forged]);
+
+            expect(res.status).toBe(401);
             expect(mockCollection.findOne).not.toHaveBeenCalled();
         });
 
@@ -164,7 +196,7 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             const res = await request(app)
                 .post('/api/auth/refresh')
-                .set('Cookie', [`refreshToken=${refreshToken}`]);
+                .set('Cookie', [signedCookie('refreshToken', refreshToken)]);
 
             expect(res.status).toBe(403);
             expect(res.body.error).toBe('Refresh token was already used');
@@ -172,6 +204,15 @@ describe('Auth Integration Tests (Ticket 9)', () => {
                 userId: 'user-1',
                 refreshTokenHash: expect.any(String)
             });
+        });
+
+        it('ignores unsigned refresh tokens during logout', async () => {
+            const res = await request(app)
+                .post('/api/auth/logout')
+                .set('Cookie', [`refreshToken=${'a'.repeat(128)}`]);
+
+            expect(res.status).toBe(200);
+            expect(mockCollection.updateOne).not.toHaveBeenCalled();
         });
 
         // In a full environment, we would inject a mapped cookie matching mockCollection.findOne.
