@@ -78,7 +78,7 @@ describe('public launch security regressions', () => {
     const auth = read('auth.js');
     expect(server).toContain('registerCsrfProtection(app, process.env.COOKIE_SIGNING_SECRET)');
     expect(csrf).toContain("req.signedCookies?.[CSRF_COOKIE_NAME]");
-    expect(csrf).toContain("req.cookies[CSRF_COOKIE_NAME]");
+    expect(csrf).toContain('req.cookies.csrfToken');
     expect(csrf).toContain("req.get(CSRF_HEADER_NAME)");
     expect(csrf).toContain("crypto.createHmac('sha256', secret)");
     expect(csrf).toContain('crypto.timingSafeEqual');
