@@ -69,6 +69,15 @@ applyFetchMetadataProtection(app, allowedOrigins);
 
 app.use(express.json({ limit: '512kb' }));
 app.use(cookieParser(process.env.COOKIE_SIGNING_SECRET));
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api/', apiLimiter);
 registerCsrfProtection(app, process.env.COOKIE_SIGNING_SECRET);
 app.set('view engine', 'ejs');
 
@@ -128,15 +137,6 @@ if (process.env.NODE_ENV !== 'production') {
   if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
   app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 }
-
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Too many requests from this IP, please try again after 15 minutes'
-});
-app.use('/api/', apiLimiter);
 
 // Failed login attempts are counted separately so a successful login can
 // clear pressure without weakening registration or email-action throttles.

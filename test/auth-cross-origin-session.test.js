@@ -109,6 +109,30 @@ describe('Cross-origin auth fallback', () => {
     expect(fetchImpl.mock.calls[3][1].headers['X-CSRF-Token']).toBe('new-token');
   });
 
+  it.each([
+    'https://evil.example/api/auth/logout',
+    'https://nfc-vjy6.onrender.com/api/user/../auth/account',
+    'https://nfc-vjy6.onrender.com/not-api/auth/logout'
+  ])('rejects untrusted or endpoint-confusing API URLs: %s', async (url) => {
+    const fetchImpl = jest.fn();
+    const { auth } = loadAuth(fetchImpl);
+
+    await expect(auth.csrfFetch(url, { method: 'POST' })).rejects.toThrow(
+      'Refusing to send credentials to an untrusted API URL'
+    );
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it('rebuilds trusted API query parameters through URI encoding', () => {
+    const { auth } = loadAuth(jest.fn());
+
+    expect(auth.getTrustedApiUrl(
+      'https://nfc-vjy6.onrender.com/api/gallery?search=launch card&sortBy=createdAt'
+    )).toBe(
+      'https://nfc-vjy6.onrender.com/api/gallery?search=launch%20card&sortBy=createdAt'
+    );
+  });
+
   it('clears the tab-scoped bearer token with the session', () => {
     const { auth, sessionStorage } = loadAuth(jest.fn());
     auth.setSession('temporary-access-token', { userId: 'u1' });

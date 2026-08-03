@@ -67,7 +67,36 @@ const Auth = {
         }
     },
 
+    getTrustedApiUrl(requestUrl) {
+        const rawUrl = String(requestUrl);
+        const trustedBase = new URL(this.getBaseUrl());
+        const candidate = new URL(rawUrl, `${trustedBase.origin}/`);
+        const hasSafeApiPath = /^\/api\/[A-Za-z0-9/_-]+$/.test(candidate.pathname);
+        const hasTraversalSyntax = /(?:^|\/)\.{1,2}(?:\/|$)|%2e|%2f|%5c|\\/i.test(rawUrl);
+
+        if (
+            candidate.origin !== trustedBase.origin ||
+            candidate.username ||
+            candidate.password ||
+            !hasSafeApiPath ||
+            hasTraversalSyntax
+        ) {
+            throw new Error('Refusing to send credentials to an untrusted API URL');
+        }
+
+        const safePath = candidate.pathname
+            .split('/')
+            .map(segment => encodeURIComponent(segment))
+            .join('/');
+        const safeQuery = [...candidate.searchParams.entries()]
+            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+            .join('&');
+
+        return `${trustedBase.origin}${safePath}${safeQuery ? `?${safeQuery}` : ''}`;
+    },
+
     async csrfFetch(url, options = {}) {
+        const trustedUrl = this.getTrustedApiUrl(url);
         const requestOptions = { ...options, credentials: 'include' };
         const method = String(requestOptions.method || 'GET').toUpperCase();
         const unsafe = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
@@ -80,14 +109,14 @@ const Auth = {
             };
         }
 
-        let response = await fetch(url, requestOptions);
+        let response = await fetch(trustedUrl, requestOptions);
         if (unsafe && await this._isCsrfFailure(response)) {
             const csrfToken = await this.getCsrfToken(true);
             requestOptions.headers = {
                 ...(requestOptions.headers || {}),
                 'X-CSRF-Token': csrfToken
             };
-            response = await fetch(url, requestOptions);
+            response = await fetch(trustedUrl, requestOptions);
         }
         return response;
     },

@@ -78,10 +78,15 @@ describe('public launch security regressions', () => {
     const auth = read('auth.js');
     expect(server).toContain('registerCsrfProtection(app, process.env.COOKIE_SIGNING_SECRET)');
     expect(csrf).toContain("req.signedCookies?.[CSRF_COOKIE_NAME]");
+    expect(csrf).toContain("req.cookies[CSRF_COOKIE_NAME]");
     expect(csrf).toContain("req.get(CSRF_HEADER_NAME)");
     expect(csrf).toContain("crypto.createHmac('sha256', secret)");
     expect(csrf).toContain('crypto.timingSafeEqual');
     expect(auth).toContain("'X-CSRF-Token': csrfToken");
+    expect(auth).toContain("/^\\/api\\/[A-Za-z0-9/_-]+$/");
+    expect(server.indexOf("app.use('/api/', apiLimiter)")).toBeLessThan(
+      server.indexOf('registerCsrfProtection(app, process.env.COOKIE_SIGNING_SECRET)')
+    );
   });
 
   test('third-party Actions are immutable and secret scanning is not verified-only', () => {
