@@ -35,7 +35,6 @@ function isStrongPassword(password) {
     password.length <= 128 &&
     /[A-Za-z\u0600-\u06FF]/.test(password) &&
     /\d/.test(password) &&
-    /[^A-Za-z0-9\u0600-\u06FF]/.test(password) && // At least one special character
     !BLOCKED_PASSWORDS.has(normalized)
   );
 }

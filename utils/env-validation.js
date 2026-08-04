@@ -39,16 +39,8 @@ function assertEnv() {
     throw new Error('ALLOWED_ORIGINS must be configured in production.');
   }
 
-  // ADMIN_TOKENH should be removed from Render env vars — warn instead of crashing
-  // so the service can start while the old variable is being cleaned up.
-  if (process.env.ADMIN_TOKENH && !process.env.ADMIN_TOKEN_SHA256) {
-    throw new Error('Use ADMIN_TOKEN_SHA256 instead of ADMIN_TOKENH in production.');
-  }
   if (process.env.ADMIN_TOKENH) {
-    console.warn(
-      '[Security Warning] ADMIN_TOKENH is still set as an environment variable. ' +
-      'Please remove it from Render Dashboard — only ADMIN_TOKEN_SHA256 is needed.'
-    );
+    throw new Error('Use ADMIN_TOKEN_SHA256 instead of ADMIN_TOKENH in production.');
   }
 
   if (!process.env.ADMIN_TOKEN_SHA256) {
