@@ -1,10 +1,19 @@
 const cors = require('cors');
 
 function parseAllowedOrigins() {
-  return (process.env.ALLOWED_ORIGINS || '')
+  const configured = (process.env.ALLOWED_ORIGINS || '')
     .split(',')
     .map(s => s.trim())
     .filter(Boolean);
+
+  if (process.env.RENDER_EXTERNAL_HOSTNAME) {
+    const renderOrigin = `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`;
+    if (!configured.includes(renderOrigin)) {
+      configured.push(renderOrigin);
+    }
+  }
+
+  return configured;
 }
 
 function normalizeUrl(origin) {
@@ -23,7 +32,17 @@ function isAllowedOrigin(origin, allowedOrigins) {
     return normalizeUrl(baseDomain) === normalizeUrl(origin);
   });
 
-  return isConfigured || (process.env.NODE_ENV !== 'production' && isLocalDevelopmentOrigin(origin));
+  if (isConfigured) return true;
+
+  // Allow render.com subdomains automatically in production when accessing via default Render host
+  try {
+    const url = new URL(origin);
+    if (url.hostname.endsWith('.onrender.com') || url.hostname.endsWith('.render.com')) {
+      return true;
+    }
+  } catch {}
+
+  return process.env.NODE_ENV !== 'production' && isLocalDevelopmentOrigin(origin);
 }
 
 function getRefererOrigin(referer) {
@@ -71,9 +90,6 @@ function applyCors(app) {
   app.use(cors({
     origin: (origin, cb) => {
       if (!origin) {
-        if (process.env.NODE_ENV === 'production') {
-          return cb(null, false);
-        }
         return cb(null, true);
       }
 
