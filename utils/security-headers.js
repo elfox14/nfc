@@ -37,17 +37,22 @@ function applySecurityHeaders(app) {
     next();
   });
 
+  // Generate a fresh cryptographic nonce for every request.
+  // HTML pages and EJS views must inject this nonce into every <script> tag.
   app.use((req, res, next) => {
     res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
     next();
   });
 
-  app.use(helmet.contentSecurityPolicy({
-    directives: {
+  app.use((req, res, next) => {
+    const nonce = res.locals.cspNonce;
+
+    const cspDirectives = {
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
-        "'unsafe-inline'",
+        // Nonce replaces 'unsafe-inline' — every inline script must carry this nonce
+        (req, res) => `'nonce-${res.locals.cspNonce}'`,
         "https://cdnjs.cloudflare.com",
         "https://cdn.jsdelivr.net",
         "https://www.youtube.com",
@@ -101,8 +106,10 @@ function applySecurityHeaders(app) {
       formAction: ["'self'"],
       frameAncestors: ["'none'"],
       upgradeInsecureRequests: [],
-    },
-  }));
+    };
+
+    helmet.contentSecurityPolicy({ directives: cspDirectives })(req, res, next);
+  });
 }
 
 module.exports = applySecurityHeaders;

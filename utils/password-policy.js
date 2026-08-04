@@ -1,26 +1,50 @@
 const MIN_PASSWORD_LENGTH = 12;
+
+// Common weak passwords — expand this list over time
 const BLOCKED_PASSWORDS = new Set([
   'password123456',
   'qwerty12345678',
   'admin123456789',
-  'mcprime123456'
+  'mcprime123456',
+  'password1234',
+  '123456789012',
+  'abcdefghijkl',
+  'qwertyuioplk',
+  'aaaaaaaaaaaa',
+  '111111111111',
+  'abc123456789',
+  'letmein12345',
+  'welcome12345',
+  'monkey123456',
+  'dragon123456',
 ]);
 
+/**
+ * Returns true if the password meets all strength requirements:
+ * - 12–128 characters
+ * - At least one letter (Arabic or Latin)
+ * - At least one digit
+ * - At least one special character
+ * - Not in the blocked list
+ */
 function isStrongPassword(password) {
-  const normalized = typeof password === 'string' ? password.toLowerCase() : '';
+  if (typeof password !== 'string') return false;
+  const normalized = password.toLowerCase();
   return (
-    typeof password === 'string' &&
     password.length >= MIN_PASSWORD_LENGTH &&
     password.length <= 128 &&
-    /[A-Za-z]/.test(password) &&
+    /[A-Za-z\u0600-\u06FF]/.test(password) &&
     /\d/.test(password) &&
+    /[^A-Za-z0-9\u0600-\u06FF]/.test(password) && // At least one special character
     !BLOCKED_PASSWORDS.has(normalized)
   );
 }
 
 function passwordValidator(value) {
   if (!isStrongPassword(value)) {
-    throw new Error('Password must be 12-128 characters, include letters and numbers, and not be commonly used');
+    throw new Error(
+      'Password must be 12–128 characters, include letters, numbers, and at least one special character (!@#$%^&* etc.), and not be commonly used'
+    );
   }
   return true;
 }

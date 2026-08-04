@@ -67,14 +67,16 @@ function registerNfcStaticFiles(app, rootDir) {
     'fix-consistency.js',
     'fix-hreflang.js',
     'inject-premium.js',
-    'optimize-images.js'
+    'optimize-images.js',
+    'upload-config.php',  // PHP config — must never be served publicly
+    'upload.php',         // PHP upload handler — not served from Node.js
   ]);
   const blockedDirectories = new Set([
     'routes', 'utils', 'test', 'e2e', 'scripts', 'docs', 'coverage', 'node_modules',
     'view', 'views', 'public', '.github', '.git'
   ]);
   const blockedExtensions = new Set([
-    '.ejs', '.cjs', '.mjs', '.ts', '.map', '.md', '.yaml', '.yml', '.lock', '.log'
+    '.ejs', '.cjs', '.mjs', '.ts', '.map', '.md', '.yaml', '.yml', '.lock', '.log', '.php'
   ]);
 
   app.use('/nfc', (req, res, next) => {

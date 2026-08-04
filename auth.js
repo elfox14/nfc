@@ -157,7 +157,10 @@ const Auth = {
     },
 
     setSession(token, user) {
-        console.log('[Auth] Setting session:', { user: user?.email });
+        // Avoid logging user PII (email) in production environments.
+        if (typeof __DEV__ !== 'undefined' && __DEV__) {
+            console.log('[Auth] Setting session for user');
+        }
         this.user = user;
         localStorage.setItem('authUser', JSON.stringify(user));
         if (typeof token === 'string' && token) {
@@ -271,7 +274,6 @@ const Auth = {
     },
 
     async _performRefreshSession() {
-        console.log('[Auth] Attempting to refresh session...');
         try {
             const res = await this.csrfFetch(this.API_REFRESH, {
                 method: 'POST',
@@ -293,7 +295,6 @@ const Auth = {
             const data = await res.json();
 
             if (data.success && data.user) {
-                console.log('[Auth] Session refreshed successfully');
                 this.setSession(data.accessToken || data.token, data.user);
                 return true;
             } else {
@@ -306,7 +307,6 @@ const Auth = {
     },
 
     async sessionInit(token) {
-        console.log('[Auth] Initializing session via token...');
         try {
             const res = await this.csrfFetch(this.API_SESSION_INIT, {
                 method: 'POST',
@@ -323,7 +323,6 @@ const Auth = {
 
             const data = await res.json();
             if (data.success) {
-                console.log('[Auth] Session initialized successfully via token');
                 if (data.user) this.setSession(data.accessToken || data.token, data.user);
                 return true;
             }

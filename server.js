@@ -205,6 +205,23 @@ const adminLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Protect admin.html page itself from automated enumeration.
+// This rate limiter fires BEFORE the HTML page is served, limiting recon attempts.
+const adminPageLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 1000 : 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests. Please try again later.',
+  skipSuccessfulRequests: false,
+});
+
+app.get(['/nfc/admin', '/nfc/admin.html'], adminPageLimiter, (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  res.sendFile(path.join(rootDir, 'admin.html'));
+});
+
 const createAdminRouter = require('./routes/admin.routes');
 app.use('/api/admin', adminLimiter, createAdminRouter({ 
   getDb: () => db, 
