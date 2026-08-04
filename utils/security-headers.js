@@ -51,7 +51,11 @@ function applySecurityHeaders(app) {
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
-        // Nonce replaces 'unsafe-inline' — every inline script must carry this nonce
+        // 'unsafe-inline' is required for static HTML pages that contain inline scripts.
+        // The nonce below is also included so that templated pages can migrate to nonce-based
+        // execution in the future; when a nonce is adopted, 'unsafe-inline' will be ignored
+        // by CSP Level-2+ browsers on those responses.
+        "'unsafe-inline'",
         (req, res) => `'nonce-${res.locals.cspNonce}'`,
         "https://cdnjs.cloudflare.com",
         "https://cdn.jsdelivr.net",
