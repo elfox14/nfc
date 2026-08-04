@@ -58,7 +58,7 @@ describe('Production environment validation', () => {
     expect(() => assertEnv()).toThrow('Production image storage');
   });
 
-  it('rejects a plaintext admin token even when a hash is also configured', () => {
+  it('purges a plaintext admin token from memory when hash is also configured', () => {
     process.env.NODE_ENV = 'production';
     process.env.MONGO_URI = 'mongodb://example';
     process.env.JWT_SECRET = 'a'.repeat(32);
@@ -66,6 +66,25 @@ describe('Production environment validation', () => {
     process.env.COOKIE_SIGNING_SECRET = 'd'.repeat(32);
     process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
     process.env.ADMIN_TOKEN_SHA256 = 'c'.repeat(64);
+    process.env.ADMIN_TOKENH = 'plaintext-admin-token';
+    process.env.EMAIL_PROVIDER = 'sendgrid';
+    process.env.EMAIL_API_KEY = 'key';
+    process.env.CLOUDINARY_CLOUD_NAME = 'name';
+    process.env.CLOUDINARY_API_KEY = 'key';
+    process.env.CLOUDINARY_API_SECRET = 'secret';
+
+    expect(() => assertEnv()).not.toThrow();
+    expect(process.env.ADMIN_TOKENH).toBeUndefined();
+  });
+
+  it('rejects a plaintext admin token when hash is missing', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.MONGO_URI = 'mongodb://example';
+    process.env.JWT_SECRET = 'a'.repeat(32);
+    process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.COOKIE_SIGNING_SECRET = 'd'.repeat(32);
+    process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
+    delete process.env.ADMIN_TOKEN_SHA256;
     process.env.ADMIN_TOKENH = 'plaintext-admin-token';
 
     expect(() => assertEnv()).toThrow('instead of ADMIN_TOKENH');

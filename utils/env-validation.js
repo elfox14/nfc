@@ -40,7 +40,14 @@ function assertEnv() {
   }
 
   if (process.env.ADMIN_TOKENH) {
-    throw new Error('Use ADMIN_TOKEN_SHA256 instead of ADMIN_TOKENH in production.');
+    if (!process.env.ADMIN_TOKEN_SHA256) {
+      throw new Error('Use ADMIN_TOKEN_SHA256 instead of ADMIN_TOKENH in production.');
+    }
+    console.warn(
+      '[Security Warning] ADMIN_TOKENH is set in environment. ' +
+      'Removing plaintext token from memory and using ADMIN_TOKEN_SHA256.'
+    );
+    delete process.env.ADMIN_TOKENH;
   }
 
   if (!process.env.ADMIN_TOKEN_SHA256) {
