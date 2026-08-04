@@ -98,11 +98,16 @@ function applySecurityHeaders(app) {
         "https://cdn.jsdelivr.net",
         "https://*.mcprim.com",
         "https://mcprim.com",
+        "https://*.onrender.com",
+        "wss://*.onrender.com",
         "https://res.cloudinary.com",
         "https://www.google-analytics.com",
         "https://pagead2.googlesyndication.com",
         ...(process.env.RENDER_EXTERNAL_HOSTNAME
-          ? [`wss://${process.env.RENDER_EXTERNAL_HOSTNAME}`]
+          ? [
+              `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`,
+              `wss://${process.env.RENDER_EXTERNAL_HOSTNAME}`
+            ]
           : [])
       ],
       objectSrc: ["'none'"],
