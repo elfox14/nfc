@@ -2,12 +2,17 @@ const crypto = require('crypto');
 const helmet = require('helmet');
 
 function buildNonceOnlyHtmlCsp(nonce) {
+  const renderHost = process.env.RENDER_EXTERNAL_HOSTNAME;
+  const renderConnect = renderHost
+    ? ` https://${renderHost} wss://${renderHost}`
+    : '';
+
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
-    "connect-src 'self'",
+    `connect-src 'self' https://*.mcprim.com https://mcprim.com https://*.onrender.com wss://*.onrender.com https://res.cloudinary.com${renderConnect}`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
