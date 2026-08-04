@@ -16,6 +16,11 @@ describe('production dependency security policy', () => {
     );
   });
 
+  test('also audits the development toolchain at high severity', () => {
+    expect(packageJson.scripts['audit:all']).toBe('npm audit --audit-level=high');
+    expect(workflow).toContain('run: npm run audit:all');
+  });
+
   test('uses the locked dependency graph and enforces the production audit in CI', () => {
     expect(workflow).toContain('run: npm ci');
     expect(workflow).toContain('run: npm run audit:prod');

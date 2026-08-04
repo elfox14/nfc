@@ -24,6 +24,7 @@ const cloudinary = require('cloudinary').v2;
 const applySecurityHeaders = require('./utils/security-headers');
 const applyCors = require('./utils/cors-config');
 const { applyFetchMetadataProtection } = require('./utils/fetch-metadata');
+const { registerCsrfProtection } = require('./utils/csrf-protection');
 const { registerRealtimeCollaboration } = require('./utils/realtime-collaboration');
 const { connectDatabase } = require('./utils/database');
 const {
@@ -67,7 +68,17 @@ const allowedOrigins = applyCors(app);
 applyFetchMetadataProtection(app, allowedOrigins);
 
 app.use(express.json({ limit: '512kb' }));
-app.use(cookieParser());
+app.use(cookieParser(process.env.COOKIE_SIGNING_SECRET));
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api/', apiLimiter);
+registerCsrfProtection(app, process.env.COOKIE_SIGNING_SECRET);
 app.set('view engine', 'ejs');
 
 // --- DATABASE CONNECTION ---
@@ -127,29 +138,27 @@ if (process.env.NODE_ENV !== 'production') {
   app.use('/uploads', express.static(uploadDir, { maxAge: '30d', immutable: true }));
 }
 
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Too many requests from this IP, please try again after 15 minutes'
-});
-app.use('/api/', apiLimiter);
-
-// Stricter rate limiting for auth endpoints (5 attempts per 15 minutes)
-const authLimiter = rateLimit({
+// Failed login attempts are counted separately so a successful login can
+// clear pressure without weakening registration or email-action throttles.
+const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'test' ? 100 : 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'محاولات كثيرة جداً. حاول مرة أخرى بعد 15 دقيقة.' },
-  skipSuccessfulRequests: true // Don't count successful logins
+  skipSuccessfulRequests: true
 });
-app.use('/api/auth/login', authLimiter);
-app.use('/api/auth/register', authLimiter);
-app.use('/api/auth/forgot-password', authLimiter);
-app.use('/api/auth/reset-password', authLimiter);
-app.use('/api/auth/verify-email', authLimiter);
+const authActionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 100 : 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'طلبات مصادقة كثيرة جداً. حاول مرة أخرى بعد 15 دقيقة.' },
+  skipSuccessfulRequests: false
+});
+app.use('/api/auth/login', loginLimiter);
+app.use('/api/auth/register', authActionLimiter);
+app.use('/api/auth/forgot-password', authActionLimiter);
 
 // --- DESIGNS & UPLOADS ROUTES (MODULAR) ---
 const createDesignsRouter = require('./routes/designs.routes');
@@ -172,7 +181,7 @@ app.use('/api/auth', createAuthRouter({
   designsCollectionName,
   savedCardsCollectionName,
   cardRequestsCollectionName,
-  authLimiter,
+  authLimiter: authActionLimiter,
   allowedOrigins,
   cloudinary
 }));
@@ -240,7 +249,8 @@ process.on('uncaughtException', (error) => {
 const server = http.createServer(app);
 registerRealtimeCollaboration(server, {
   getDb: () => db,
-  designsCollectionName
+  designsCollectionName,
+  allowedOrigins
 });
 
 

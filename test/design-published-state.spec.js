@@ -4,7 +4,7 @@
 
 'use strict';
 
-const request = require('supertest');
+const request = require('./csrf-test-request');
 const jwt = require('jsonwebtoken');
 
 const mockCollection = {
@@ -107,6 +107,18 @@ describe('Published card revision persistence', () => {
         expect(insertedData.publishedState.publishedState).toBeUndefined();
         expect(insertedData.publishedState.publishedAt).toBeUndefined();
         expect(insertedData.publishedState.inputs['input-name_ar']).not.toContain('<script>');
+    });
+
+    test('rejects attacker-controlled public design identifiers', async () => {
+        const response = await request(app)
+            .post('/api/save-design?id=..%2Fadmin%3Fx%3D1')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ inputs: { 'input-name': 'Safe card' } });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe('Invalid design ID format.');
+        expect(mockCollection.insertOne).not.toHaveBeenCalled();
+        expect(mockCollection.updateOne).not.toHaveBeenCalled();
     });
 
     test('first draft save protects the last captured revision for legacy cards', async () => {

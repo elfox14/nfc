@@ -1,9 +1,10 @@
 /**
  * @jest-environment node
  */
-const request = require('supertest');
+const request = require('./csrf-test-request');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // Note: Redis mock removed — server.js does not use Redis.
 
@@ -37,11 +38,22 @@ jest.setTimeout(30000);
 // Setup Test Environment Variables
 process.env.NODE_ENV = 'test';
 // SECURITY: Use a strong random secret for each test run (never hardcode secrets)
-process.env.JWT_SECRET = require('crypto').randomBytes(32).toString('hex');
+process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
+process.env.COOKIE_SIGNING_SECRET = crypto.randomBytes(32).toString('hex');
 process.env.MONGO_URI = 'mongodb://fake-uri';
 process.env.PUBLIC_BASE_URL = 'http://localhost:3000';
 
 const app = require('../server.js');
+
+function signedCookie(name, value) {
+    const digest = crypto
+        .createHmac('sha256', process.env.COOKIE_SIGNING_SECRET)
+        .update(value)
+        .digest('base64')
+        .replace(/=+$/, '');
+    const signedValue = `s:${value}.${digest}`;
+    return `${name}=${encodeURIComponent(signedValue)}`;
+}
 
 describe('Auth Integration Tests (Ticket 9)', () => {
 
@@ -58,7 +70,7 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             const res = await request(app)
                 .post('/api/auth/register')
-                .send({ name: 'Test User', email: 'test@example.com', password: 'password123' });
+                .send({ name: 'Test User', email: 'test@example.com', password: 'CorrectHorse42' });
 
             expect(res.status).toBe(201);
             expect(res.body.success).toBe(true);
@@ -81,7 +93,7 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             const res = await request(app)
                 .post('/api/auth/register')
-                .send({ name: 'Test User 2', email: 'test@example.com', password: 'password123' });
+                .send({ name: 'Test User 2', email: 'test@example.com', password: 'CorrectHorse42' });
 
             expect(res.status).toBe(400);
             expect(res.body.error).toBe('User already exists');
@@ -149,10 +161,58 @@ describe('Auth Integration Tests (Ticket 9)', () => {
         it('Should reject malformed refresh tokens before database lookup', async () => {
             const res = await request(app)
                 .post('/api/auth/refresh')
-                .set('Cookie', ['refreshToken=not-a-valid-token']);
+                .set('Cookie', [signedCookie('refreshToken', 'not-a-valid-token')]);
 
             expect(res.status).toBe(403);
             expect(mockCollection.findOne).not.toHaveBeenCalled();
+        });
+
+        it('Should reject an unsigned refresh token before database lookup', async () => {
+            const res = await request(app)
+                .post('/api/auth/refresh')
+                .set('Cookie', [`refreshToken=${'a'.repeat(128)}`]);
+
+            expect(res.status).toBe(401);
+            expect(mockCollection.findOne).not.toHaveBeenCalled();
+        });
+
+        it('Should reject a forged signed refresh token before database lookup', async () => {
+            const legitimate = signedCookie('refreshToken', 'a'.repeat(128));
+            const forged = `${legitimate.slice(0, -1)}x`;
+            const res = await request(app)
+                .post('/api/auth/refresh')
+                .set('Cookie', [forged]);
+
+            expect(res.status).toBe(401);
+            expect(mockCollection.findOne).not.toHaveBeenCalled();
+        });
+
+        it('atomically rejects a refresh token that loses a rotation race', async () => {
+            const refreshToken = 'a'.repeat(128);
+            mockCollection.findOne.mockResolvedValueOnce({
+                userId: 'user-1', email: 'test@example.com', name: 'Test User'
+            });
+            mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 0 });
+
+            const res = await request(app)
+                .post('/api/auth/refresh')
+                .set('Cookie', [signedCookie('refreshToken', refreshToken)]);
+
+            expect(res.status).toBe(403);
+            expect(res.body.error).toBe('Refresh token was already used');
+            expect(mockCollection.updateOne.mock.calls[0][0]).toMatchObject({
+                userId: 'user-1',
+                refreshTokenHash: expect.any(String)
+            });
+        });
+
+        it('ignores unsigned refresh tokens during logout', async () => {
+            const res = await request(app)
+                .post('/api/auth/logout')
+                .set('Cookie', [`refreshToken=${'a'.repeat(128)}`]);
+
+            expect(res.status).toBe(200);
+            expect(mockCollection.updateOne).not.toHaveBeenCalled();
         });
 
         // In a full environment, we would inject a mapped cookie matching mockCollection.findOne.

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const { WebSocketServer } = require('ws');
 const url = require('url');
 const { sanitizeDesignState } = require('./sanitize');
+const { isAllowedOrigin } = require('./cors-config');
 const {
   WS_LIMITS,
   getClientIP,
@@ -11,13 +12,28 @@ const {
   parseWsJsonMessage
 } = require('./websocket-security');
 
-function registerRealtimeCollaboration(server) {
-  const wss = new WebSocketServer({ server });
+function registerRealtimeCollaboration(server, { allowedOrigins = [] } = {}) {
+  // Enforce the payload ceiling while ws is receiving frames. Checking only
+  // inside the message handler is too late because the full payload has
+  // already been buffered by then.
+  const wss = new WebSocketServer({
+    server,
+    maxPayload: WS_LIMITS.MAX_MESSAGE_SIZE
+  });
   const rooms = new Map();
   const wsConnectionsPerIP = new Map();
   const trustProxy = process.env.TRUST_PROXY === 'true';
 
   wss.on('connection', (ws, req) => {
+    const requestOrigin = req.headers.origin;
+    if (
+      (process.env.NODE_ENV === 'production' && !requestOrigin) ||
+      (requestOrigin && !isAllowedOrigin(requestOrigin, allowedOrigins))
+    ) {
+      ws.close(1008, 'WebSocket origin is not allowed');
+      return;
+    }
+
     const clientIP = getClientIP(req, trustProxy);
     const currentCount = wsConnectionsPerIP.get(clientIP) || 0;
 

@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
         rel="stylesheet">
-    <script src="/nfc/auth.js?v=3.5"></script>
+    <script src="/nfc/auth.js?v=3.6"></script>
     <script src="/nfc/lang-switcher.js"></script>
     <style>
         :root {
@@ -835,7 +835,11 @@
                 }
             } catch (err) {
                 console.error('Load saved cards exception:', err);
-                grid.innerHTML = `<p style="text-align: center; color: #ff5252;">Error: ${err.message}</p>`;
+                grid.replaceChildren();
+                const errorMessage = document.createElement('p');
+                errorMessage.style.cssText = 'text-align:center;color:#ff5252;';
+                errorMessage.textContent = `Error: ${String(err.message || 'Unable to load designs')}`;
+                grid.appendChild(errorMessage);
             }
         }
 

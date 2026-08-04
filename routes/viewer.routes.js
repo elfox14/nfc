@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const { selectPublishedDesignData } = require('../utils/published-design');
 const { sanitizeDesignState, sanitizeText, sanitizeUrl } = require('../utils/sanitize');
+const { serializeForInlineScript } = require('../utils/inline-script');
 
 const PLATFORMS = {
   whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
@@ -42,6 +43,51 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function escapeVCardValue(value) {
+  return sanitizeText(value)
+    .replace(/\\/g, '\\\\')
+    .replace(/\r\n|\r|\n/g, '\\n')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,');
+}
+
+function buildVCard(inputs = {}, dynamicData = {}) {
+  const lines = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${escapeVCardValue(inputs['input-name'] || '')}`,
+    `TITLE:${escapeVCardValue(inputs['input-tagline'] || '')}`
+  ];
+
+  for (const phone of dynamicData.phones || []) {
+    if (phone?.value) lines.push(`TEL;TYPE=CELL:${escapeVCardValue(phone.value)}`);
+  }
+
+  const email = dynamicData.staticSocial?.email?.value;
+  if (email) lines.push(`EMAIL:${escapeVCardValue(email)}`);
+
+  const website = dynamicData.staticSocial?.website?.value;
+  if (website) lines.push(`URL:${escapeVCardValue(website)}`);
+
+  lines.push('END:VCARD');
+  return lines.join('\r\n');
+}
+
+function buildViewerCsp(nonce) {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
+    "img-src 'self' data: https:",
+    "connect-src 'self' https:",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'"
+  ].join('; ');
 }
 
 function safeContactUrl(platformKey, rawValue) {
@@ -186,6 +232,7 @@ module.exports = function createViewerRouter({
       const tagline = sanitizeText(inputs['input-tagline'] || '');
       const dynamicData = publishedDesign.dynamic || {};
       const imageUrls = publishedDesign.imageUrls || {};
+      const cspNonce = res.locals.cspNonce;
 
       let ogImage = `${base}/nfc/og-image.png`;
       if (imageUrls.front) {
@@ -200,6 +247,11 @@ module.exports = function createViewerRouter({
         ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])
       ].filter(Boolean).join(', ');
 
+      // The public viewer has one server-rendered inline script. Give it a
+      // route-specific nonce and serialize all card data as JavaScript data,
+      // never as executable template source.
+      res.setHeader('Content-Security-Policy', buildViewerCsp(cspNonce));
+
       res.render(path.join(rootDir, 'viewer.ejs'), {
         pageUrl,
         name,
@@ -208,7 +260,10 @@ module.exports = function createViewerRouter({
         keywords,
         design: publishedDesign,
         canonical: pageUrl,
-        contactLinksHtml: buildContactLinksHtml(dynamicData)
+        contactLinksHtml: buildContactLinksHtml(dynamicData),
+        cspNonce,
+        vcardJson: serializeForInlineScript(buildVCard(inputs, dynamicData)),
+        viewerScriptDataJson: serializeForInlineScript({ name, tagline })
       });
     } catch (e) {
       console.error('Error in /nfc/viewer route:', e);
@@ -234,9 +289,13 @@ module.exports = function createViewerRouter({
 };
 
 module.exports._private = {
+  buildVCard,
+  buildViewerCsp,
   buildContactLinksHtml,
   displaySocialValue,
+  escapeVCardValue,
   isSafeViewerId,
   selectPublishedDesignData,
+  serializeForInlineScript,
   socialUrl
 };

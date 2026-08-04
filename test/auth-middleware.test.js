@@ -9,7 +9,7 @@ describe('Auth Middleware', () => {
     const originalJwtSecret = process.env.JWT_SECRET;
 
     beforeEach(() => {
-        req = { headers: {} };
+        req = { headers: {}, signedCookies: {} };
         res = {
             status: jest.fn().mockReturnThis(),
             json: jest.fn()
@@ -42,6 +42,28 @@ describe('Auth Middleware', () => {
         verifyToken(req, res, next);
         expect(next).toHaveBeenCalled();
         expect(req.user).toEqual(mockUser);
+    });
+
+    test('accepts a signature-verified access cookie', () => {
+        req.signedCookies.accessToken = 'signed-access-token';
+        const mockUser = { userId: '123', email: 'test@example.com', type: 'access' };
+        jwt.verify.mockReturnValue(mockUser);
+
+        verifyToken(req, res, next);
+
+        expect(jwt.verify).toHaveBeenCalledWith('signed-access-token', process.env.JWT_SECRET);
+        expect(next).toHaveBeenCalled();
+        expect(req.user).toEqual(mockUser);
+    });
+
+    test('ignores an unsigned access cookie', () => {
+        req.cookies = { accessToken: 'attacker-controlled-token' };
+
+        verifyToken(req, res, next);
+
+        expect(jwt.verify).not.toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(next).not.toHaveBeenCalled();
     });
 
     test('should return 500 if JWT_SECRET is not configured', () => {

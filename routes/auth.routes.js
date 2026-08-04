@@ -17,6 +17,8 @@ const {
   clearOAuthStateCookieOptions
 } = require('../utils/oauth-state');
 const { isSafeCollabId } = require('../utils/websocket-security');
+const { setNonceOnlyHtmlCsp } = require('../utils/security-headers');
+const { serializeForInlineScript } = require('../utils/inline-script');
 
 function isSafeDesignId(value) {
   return typeof value === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(value);
@@ -220,11 +222,11 @@ router.get('/google', (req, res) => {
 router.get('/google/callback', async (req, res) => {
   const { code, error, state } = req.query;
 
-  let lang = 'ar';
+  let lang;
   try {
-    const verifiedState = verifyOAuthState(state, req.cookies?.[OAUTH_STATE_COOKIE]);
+    const verifiedState = verifyOAuthState(state, req.signedCookies?.[OAUTH_STATE_COOKIE]);
     lang = verifiedState.lang;
-  } catch (stateError) {
+  } catch (_stateError) {
     res.clearCookie(OAUTH_STATE_COOKIE, clearOAuthStateCookieOptions());
     const frontendBase = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/$/, '');
     return res.redirect(`${frontendBase}/login.html?error=invalid_oauth_state`);
@@ -366,8 +368,8 @@ router.get('/google/callback', async (req, res) => {
           bc.postMessage({
             type: 'google-auth',
             success: true,
-            initToken: ${JSON.stringify(sessionInitToken)},
-            user: ${JSON.stringify({ userId: user.userId, email: user.email, name: user.name })}
+            initToken: ${serializeForInlineScript(sessionInitToken)},
+            user: ${serializeForInlineScript({ userId: user.userId, email: user.email, name: user.name })}
           });
           bc.close();
         } catch (e) { /* BroadcastChannel not supported */ }
@@ -378,10 +380,10 @@ router.get('/google/callback', async (req, res) => {
             var msg = {
               type: 'google-auth',
               success: true,
-              initToken: ${JSON.stringify(sessionInitToken)},
-              user: ${JSON.stringify({ userId: user.userId, email: user.email, name: user.name })}
+              initToken: ${serializeForInlineScript(sessionInitToken)},
+              user: ${serializeForInlineScript({ userId: user.userId, email: user.email, name: user.name })}
             };
-            var origins = ${JSON.stringify(allowedOrigins)};
+            var origins = ${serializeForInlineScript(allowedOrigins)};
             origins.forEach(function(base) {
               try {
                 window.opener.postMessage(msg, base);
@@ -400,7 +402,7 @@ router.get('/google/callback', async (req, res) => {
 
           // If popup didn't close, fallback to redirect (pass initToken to bypass cookie blocking)
           setTimeout(function() {
-            window.location.replace(${JSON.stringify(dashboardPage)} + '#oauthSuccess=1&initToken=' + encodeURIComponent(${JSON.stringify(sessionInitToken)}));
+            window.location.replace(${serializeForInlineScript(dashboardPage)} + '#oauthSuccess=1&initToken=' + encodeURIComponent(${serializeForInlineScript(sessionInitToken)}));
           }, 1000);
         } else {
           // Path 2: No opener (COOP blocked it) — close popup; parent will recover via BroadcastChannel or cookie refresh
@@ -408,12 +410,13 @@ router.get('/google/callback', async (req, res) => {
 
           // If popup didn't close (some browsers), fallback to redirect
           setTimeout(function() {
-            window.location.replace(${JSON.stringify(dashboardPage)} + '#oauthSuccess=1&initToken=' + encodeURIComponent(${JSON.stringify(sessionInitToken)}));
+            window.location.replace(${serializeForInlineScript(dashboardPage)} + '#oauthSuccess=1&initToken=' + encodeURIComponent(${serializeForInlineScript(sessionInitToken)}));
           }, 1000);
         }
       })();
     `;
 
+    setNonceOnlyHtmlCsp(res);
     res.send(`<!DOCTYPE html>
     <html lang="${lang}">
     <head><meta charset="utf-8"><meta name="referrer" content="no-referrer"><title>Google Login</title></head>
@@ -436,9 +439,9 @@ router.get('/google/callback', async (req, res) => {
             var msg = {
               type: 'google-auth',
               success: false,
-              error: ${JSON.stringify(errorMessage)}
+              error: ${serializeForInlineScript(errorMessage)}
             };
-            var origins = ${JSON.stringify(allowedOrigins)};
+            var origins = ${serializeForInlineScript(allowedOrigins)};
             origins.forEach(function(origin) { window.opener.postMessage(msg, origin); });
           }
         } catch (e) { console.error('[GoogleAuth] postMessage error failed:', e); }
@@ -447,11 +450,12 @@ router.get('/google/callback', async (req, res) => {
 
         // Fallback: redirect to login page with error
         setTimeout(function() {
-          window.location.replace(${JSON.stringify(loginPage)} + '?error=' + ${JSON.stringify(encodeURIComponent(errorMessage))});
+          window.location.replace(${serializeForInlineScript(loginPage)} + '?error=' + ${serializeForInlineScript(encodeURIComponent(errorMessage))});
         }, 500);
       })();
     `;
 
+    setNonceOnlyHtmlCsp(res);
     res.send(`<!DOCTYPE html>
     <html lang="${lang}">
     <head><meta charset="utf-8"><title>Google Login Error</title></head>
@@ -655,7 +659,7 @@ router.post('/refresh', async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
 
-    const tokenFromCookie = req.cookies?.refreshToken;
+    const tokenFromCookie = req.signedCookies?.refreshToken;
     if (!tokenFromCookie) {
       console.warn('[Refresh] No refresh token found in cookies');
       return res.status(401).json({ error: 'No refresh token provided' });
@@ -679,11 +683,17 @@ router.post('/refresh', async (req, res) => {
     const newRefreshToken = createRefreshToken();
     const newHashedRefresh = hashToken(newRefreshToken);
 
-    // Update DB with new hashed refresh token (invalidates old one)
-    await getDb().collection(usersCollectionName).updateOne(
-      { userId: user.userId },
+    // Compare-and-swap rotation: only one concurrent request using the old
+    // token may replace it. A replay that loses the race is rejected.
+    const rotation = await getDb().collection(usersCollectionName).updateOne(
+      { userId: user.userId, refreshTokenHash: hashedToken },
       { $set: { refreshTokenHash: newHashedRefresh } }
     );
+
+    if (rotation.matchedCount !== 1) {
+      clearAuthCookies(res);
+      return res.status(403).json({ error: 'Refresh token was already used' });
+    }
 
     setAuthCookies(res, { accessToken: newAccessToken, refreshToken: newRefreshToken });
 
@@ -702,7 +712,7 @@ router.post('/refresh', async (req, res) => {
 // --- LOGOUT ROUTE ---
 router.post('/logout', async (req, res) => {
   try {
-    const tokenFromCookie = req.cookies?.refreshToken;
+    const tokenFromCookie = req.signedCookies?.refreshToken;
 
     if (tokenFromCookie && getDb()) {
       // Remove refresh token from DB

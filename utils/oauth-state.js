@@ -56,6 +56,7 @@ function oauthStateCookieOptions() {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
+    signed: true,
     path: '/api/auth/google',
     maxAge: OAUTH_STATE_TTL_MS
   };
@@ -64,6 +65,7 @@ function oauthStateCookieOptions() {
 function clearOAuthStateCookieOptions() {
   const options = oauthStateCookieOptions();
   delete options.maxAge;
+  delete options.signed;
   return options;
 }
 

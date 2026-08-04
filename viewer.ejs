@@ -1022,7 +1022,9 @@
             <%- contactLinksHtml %>
         </div>
 
-        <script>
+        <script nonce="<%= cspNonce %>">
+            const viewerScriptData = <%- viewerScriptDataJson %>;
+
             // UI Interactions Logic
             function openQrModal() {
                 const modal = document.getElementById('qrModal');
@@ -1052,7 +1054,11 @@
                 const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
                 const toast = document.createElement('div');
                 toast.className = 'ejs-toast toast-' + type;
-                toast.innerHTML = '<i class="fas ' + (iconMap[type] || iconMap.info) + '"></i><span>' + message + '</span>';
+                const icon = document.createElement('i');
+                icon.className = 'fas ' + (iconMap[type] || iconMap.info);
+                const label = document.createElement('span');
+                label.textContent = String(message);
+                toast.append(icon, label);
                 container.appendChild(toast);
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => { toast.classList.add('show'); });
@@ -1089,17 +1095,7 @@
 
             // VCF Generation Logic
             function saveContact() {
-                const vcard = `BEGIN:VCARD
-VERSION:3.0
-FN:<%= inputs['input-name'] %>
-TITLE:<%= inputs['input-tagline'] %>
-<% if (dynamic.phones) { dynamic.phones.forEach(p => { %>TEL;TYPE=CELL:<%= p.value %>
-<% }) } %>
-<% if (dynamic.staticSocial && dynamic.staticSocial.email) { %>EMAIL:<%= dynamic.staticSocial.email.value %>
-<% } %>
-<% if (dynamic.staticSocial && dynamic.staticSocial.website) { %>URL:<%= dynamic.staticSocial.website.value %>
-<% } %>
-END:VCARD`;
+                const vcard = <%- vcardJson %>;
 
                 const blob = new Blob([vcard], { type: 'text/vcard' });
                 const url = URL.createObjectURL(blob);
@@ -1164,7 +1160,7 @@ END:VCARD`;
                 if (navigator.share) {
                     try {
                         await navigator.share({
-                            title: '<%= name %>',
+                            title: viewerScriptData.name,
                             text: 'تفضل بطاقة عملي الرقمية',
                             url: window.location.href
                         });
@@ -1194,7 +1190,7 @@ END:VCARD`;
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             files: [file],
-                            title: '<%= inputs["input-name"] %>',
+                            title: viewerScriptData.name,
                             text: 'اسحب للأعلى لزيارة بطاقتي!'
                         });
                     } else {
@@ -1421,12 +1417,12 @@ END:VCARD`;
                 const nameY = 1100;
                 ctx.fillStyle = theme.text;
                 ctx.font = '800 60px "Cairo", "Tajawal", sans-serif';
-                ctx.fillText('<%= inputs["input-name"] || "" %>', canvas.width / 2, nameY);
+                ctx.fillText(viewerScriptData.name, canvas.width / 2, nameY);
 
                 // Tagline
                 ctx.fillStyle = theme.sub;
                 ctx.font = '500 34px "Tajawal", "Poppins", sans-serif';
-                ctx.fillText('<%= inputs["input-tagline"] || "" %>', canvas.width / 2, nameY + 55);
+                ctx.fillText(viewerScriptData.tagline, canvas.width / 2, nameY + 55);
 
                 // Divider
                 ctx.strokeStyle = theme.accent; ctx.globalAlpha = 0.25; ctx.lineWidth = 1;
@@ -1511,7 +1507,7 @@ END:VCARD`;
                     const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
                     const file = new File([blob], 'story_card.png', { type: 'image/png' });
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({ files: [file], title: '<%= inputs["input-name"] || "بطاقة رقمية" %>', text: 'اسحب للأعلى لزيارة بطاقتي!' });
+                        await navigator.share({ files: [file], title: viewerScriptData.name || 'بطاقة رقمية', text: 'اسحب للأعلى لزيارة بطاقتي!' });
                     } else {
                         downloadStory();
                     }
