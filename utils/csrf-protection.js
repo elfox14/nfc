@@ -47,12 +47,12 @@ function verifySignedCsrfToken(token, secret) {
 function verifyCsrfToken(req, secret) {
   const signedCookieToken = req.signedCookies?.[CSRF_COOKIE_NAME];
   if (typeof signedCookieToken === 'string') {
-    req.cookies.csrfToken = signedCookieToken;
+    req.cookies[CSRF_COOKIE_NAME] = signedCookieToken;
   } else {
-    delete req.cookies.csrfToken;
+    delete req.cookies[CSRF_COOKIE_NAME];
   }
 
-  const cookieToken = req.cookies.csrfToken;
+  const cookieToken = req.cookies[CSRF_COOKIE_NAME];
   const headerToken = req.get(CSRF_HEADER_NAME);
 
   if (!verifySignedCsrfToken(headerToken, secret)) return false;
