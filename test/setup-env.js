@@ -1,7 +1,6 @@
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test_secret_value_for_jest';
 process.env.TOKEN_HASH_SECRET = process.env.TOKEN_HASH_SECRET || 'test_hash_secret_value_for_jest';
-process.env.COOKIE_SIGNING_SECRET = process.env.COOKIE_SIGNING_SECRET || 'test_cookie_signing_secret_value_for_jest';
 process.env.MONGO_URI = process.env.MONGO_URI || 'mongodb://fake-uri';
 process.env.PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || 'http://localhost:3000';
 

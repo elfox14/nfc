@@ -30,17 +30,17 @@ async function connectDatabase({
   mongoUrl,
   dbName,
   collectionNames,
-  connect = async url => {
-    const { MongoClient } = require('mongodb');
-    return MongoClient.connect(url);
-  }
+  onIndexesWarning = console.warn
 }) {
-  const client = await connect(mongoUrl);
+  const { MongoClient } = require('mongodb');
+  const client = await MongoClient.connect(mongoUrl);
   const db = client.db(dbName);
 
-  // Unique ownership and token indexes are security boundaries. Refuse to
-  // accept traffic when any mandatory index cannot be created or verified.
-  await createIndexes(db, collectionNames);
+  try {
+    await createIndexes(db, collectionNames);
+  } catch (indexErr) {
+    onIndexesWarning('Some indexes may already exist:', indexErr.message);
+  }
 
   return { db, client };
 }

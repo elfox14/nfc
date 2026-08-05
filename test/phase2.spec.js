@@ -7,7 +7,7 @@
  * - Health check
  * - WebSocket limits validation
  */
-const request = require('./csrf-test-request');
+const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const express = require('express');

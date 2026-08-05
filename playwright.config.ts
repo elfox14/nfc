@@ -43,7 +43,6 @@ export default defineConfig({
       MONGO_DB: process.env.MONGO_DB || 'mcnfc_e2e',
       JWT_SECRET: process.env.JWT_SECRET || 'e2e-jwt-secret-at-least-thirty-two-characters',
       TOKEN_HASH_SECRET: process.env.TOKEN_HASH_SECRET || 'e2e-hash-secret-at-least-thirty-two-characters',
-      COOKIE_SIGNING_SECRET: process.env.COOKIE_SIGNING_SECRET || 'e2e-cookie-secret-at-least-thirty-two-characters',
       GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || 'e2e-google-client-id',
       GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || 'e2e-google-client-secret',
       PUBLIC_BASE_URL: `${baseURL}/nfc`,

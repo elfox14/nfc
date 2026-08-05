@@ -316,9 +316,6 @@ router.post('/save-design', verifyToken, async (req, res) => {
       data.publishedAt = new Date(rawData.publishedAt).toISOString();
     }
     const existingId = req.query.id;
-    if (existingId !== undefined && !isSafePublicId(existingId)) {
-      return res.status(400).json({ error: 'Invalid design ID format.' });
-    }
     let shortId = existingId || nanoid(8);
     let isUpdate = false;
     let ownedExistingDesign = null;

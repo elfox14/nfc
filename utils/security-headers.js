@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const helmet = require('helmet');
 
+<<<<<<< HEAD
 function buildNonceOnlyHtmlCsp(nonce) {
   const renderHost = process.env.RENDER_EXTERNAL_HOSTNAME;
   const renderConnect = renderHost
@@ -24,6 +25,8 @@ function setNonceOnlyHtmlCsp(res) {
   res.setHeader('Content-Security-Policy', buildNonceOnlyHtmlCsp(res.locals.cspNonce));
 }
 
+=======
+>>>>>>> parent of 1bcf56b (Merge pull request #118 from elfox14/agent/security-launch-hardening-round-2)
 function applySecurityHeaders(app) {
   app.use(helmet.frameguard({ action: 'deny' }));
   app.use(helmet.noSniff());
@@ -127,5 +130,3 @@ function applySecurityHeaders(app) {
 }
 
 module.exports = applySecurityHeaders;
-module.exports.buildNonceOnlyHtmlCsp = buildNonceOnlyHtmlCsp;
-module.exports.setNonceOnlyHtmlCsp = setNonceOnlyHtmlCsp;

@@ -6,7 +6,6 @@ function baseCookieOptions(path, maxAge) {
     httpOnly: true,
     secure: true,
     sameSite: 'None',
-    signed: true,
     path,
     ...(maxAge ? { maxAge } : {})
   };
@@ -21,15 +20,11 @@ function refreshCookieOptions() {
 }
 
 function clearAccessCookieOptions() {
-  const options = baseCookieOptions('/');
-  delete options.signed;
-  return options;
+  return baseCookieOptions('/');
 }
 
 function clearRefreshCookieOptions() {
-  const options = baseCookieOptions('/api/auth');
-  delete options.signed;
-  return options;
+  return baseCookieOptions('/api/auth');
 }
 
 function setAuthCookies(res, { accessToken, refreshToken }) {

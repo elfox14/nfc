@@ -1,5 +1,4 @@
 import { expect, request as playwrightRequest, test } from '@playwright/test';
-import type { APIRequestContext } from '@playwright/test';
 import sharp = require('sharp');
 
 const password = 'Launch!2026Password';
@@ -7,14 +6,6 @@ const publishedName = 'Published Launch Card';
 const privateDraftName = 'Private Autosave Name';
 const publishedPhone = '+201000000000';
 const privateDraftPhone = '+201111111111';
-
-async function csrfHeader(request: APIRequestContext) {
-  const response = await request.get('/api/csrf-token');
-  if (!response.ok()) throw new Error(`CSRF token setup failed: HTTP ${response.status()}`);
-  const { csrfToken } = await response.json();
-  if (typeof csrfToken !== 'string' || !csrfToken) throw new Error('CSRF token setup returned no token');
-  return { 'X-CSRF-Token': csrfToken };
-}
 
 function publishedState() {
   return {
@@ -83,10 +74,7 @@ test.describe.serial('release-critical product journey', () => {
 
     const accessToken = await page.evaluate(() => sessionStorage.getItem('authAccessToken'));
     expect(accessToken).toBeTruthy();
-    const authHeaders = {
-      Authorization: `Bearer ${accessToken}`,
-      ...await csrfHeader(request)
-    };
+    const authHeaders = { Authorization: `Bearer ${accessToken}` };
 
     // OAuth state must be signed, random, HttpOnly, and bound to this browser.
     const oauthStart = await context.request.get('/api/auth/google?lang=en', { maxRedirects: 0 });
@@ -112,13 +100,10 @@ test.describe.serial('release-critical product journey', () => {
     expect(mismatchedCallback.status()).toBe(302);
     expect(mismatchedCallback.headers().location).toContain('error=invalid_oauth_state');
 
-    const attackerCsrfHeader = await csrfHeader(attackerContext);
-
     const validPng = await sharp({
       create: { width: 1, height: 1, channels: 4, background: '#ffffff' }
     }).png().toBuffer();
     const anonymousUpload = await attackerContext.post('/api/upload-image-public', {
-      headers: attackerCsrfHeader,
       multipart: {
         image: {
           name: 'pixel.png',
@@ -233,9 +218,6 @@ test.describe.serial('release-critical product journey', () => {
     });
     expect(deleteAccount.status()).toBe(200);
     expect((await request.get(`/api/get-design/${designId}`)).status()).toBe(404);
-    expect((await request.post('/api/auth/login', {
-      headers: authHeaders,
-      data: { email, password }
-    })).status()).toBe(400);
+    expect((await request.post('/api/auth/login', { data: { email, password } })).status()).toBe(400);
   });
 });

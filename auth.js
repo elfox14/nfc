@@ -25,102 +25,6 @@ const Auth = {
     get API_USER_DESIGNS() { return `${this.getBaseUrl()}/api/user/designs`; },
     get API_SESSION_INIT() { return `${this.getBaseUrl()}/api/auth/session-init`; },
 
-    _csrfToken: null,
-    _csrfPromise: null,
-
-    async getCsrfToken(forceRefresh = false) {
-        if (!forceRefresh && this._csrfToken) return this._csrfToken;
-        if (this._csrfPromise) return this._csrfPromise;
-
-        const csrfPromise = (async () => {
-            const response = await fetch(`${this.getBaseUrl()}/api/csrf-token`, {
-                method: 'GET',
-                credentials: 'include',
-                cache: 'no-store',
-                headers: { Accept: 'application/json' }
-            });
-            if (!response.ok) throw new Error(`CSRF token request failed: HTTP ${response.status}`);
-
-            const data = await response.json();
-            if (typeof data.csrfToken !== 'string' || !data.csrfToken) {
-                throw new Error('CSRF token response was invalid');
-            }
-            this._csrfToken = data.csrfToken;
-            return data.csrfToken;
-        })();
-
-        this._csrfPromise = csrfPromise;
-        try {
-            return await csrfPromise;
-        } finally {
-            if (this._csrfPromise === csrfPromise) this._csrfPromise = null;
-        }
-    },
-
-    async _isCsrfFailure(response) {
-        if (response.status !== 403 || typeof response.clone !== 'function') return false;
-        try {
-            const data = await response.clone().json();
-            return data?.code === 'INVALID_CSRF_TOKEN';
-        } catch {
-            return false;
-        }
-    },
-
-    getTrustedApiUrl(requestUrl) {
-        const rawUrl = String(requestUrl);
-        const trustedBase = new URL(this.getBaseUrl());
-        const candidate = new URL(rawUrl, `${trustedBase.origin}/`);
-        const hasSafeApiPath = /^\/api\/[A-Za-z0-9/_-]+$/.test(candidate.pathname);
-        const hasTraversalSyntax = /(?:^|\/)\.{1,2}(?:\/|$)|%2e|%2f|%5c|\\/i.test(rawUrl);
-
-        if (
-            candidate.origin !== trustedBase.origin ||
-            candidate.username ||
-            candidate.password ||
-            !hasSafeApiPath ||
-            hasTraversalSyntax
-        ) {
-            throw new Error('Refusing to send credentials to an untrusted API URL');
-        }
-
-        const safePath = candidate.pathname
-            .split('/')
-            .map(segment => encodeURIComponent(segment))
-            .join('/');
-        const safeQuery = [...candidate.searchParams.entries()]
-            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-            .join('&');
-
-        return `${trustedBase.origin}${safePath}${safeQuery ? `?${safeQuery}` : ''}`;
-    },
-
-    async csrfFetch(url, options = {}) {
-        const trustedUrl = this.getTrustedApiUrl(url);
-        const requestOptions = { ...options, credentials: 'include' };
-        const method = String(requestOptions.method || 'GET').toUpperCase();
-        const unsafe = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
-
-        if (unsafe) {
-            const csrfToken = await this.getCsrfToken();
-            requestOptions.headers = {
-                ...(requestOptions.headers || {}),
-                'X-CSRF-Token': csrfToken
-            };
-        }
-
-        let response = await fetch(trustedUrl, requestOptions);
-        if (unsafe && await this._isCsrfFailure(response)) {
-            const csrfToken = await this.getCsrfToken(true);
-            requestOptions.headers = {
-                ...(requestOptions.headers || {}),
-                'X-CSRF-Token': csrfToken
-            };
-            response = await fetch(trustedUrl, requestOptions);
-        }
-        return response;
-    },
-
     // HttpOnly cookies remain primary. This tab-scoped, short-lived bearer is a
     // fallback for browsers that block cross-origin cookies to the Render API.
     token: null,
@@ -198,7 +102,7 @@ const Auth = {
 
     async login(email, password) {
         try {
-            const res = await this.csrfFetch(this.API_LOGIN, {
+            const res = await fetch(this.API_LOGIN, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -230,7 +134,7 @@ const Auth = {
 
     async register(name, email, password) {
         try {
-            const res = await this.csrfFetch(this.API_REGISTER, {
+            const res = await fetch(this.API_REGISTER, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -275,7 +179,7 @@ const Auth = {
 
     async _performRefreshSession() {
         try {
-            const res = await this.csrfFetch(this.API_REFRESH, {
+            const res = await fetch(this.API_REFRESH, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -308,7 +212,7 @@ const Auth = {
 
     async sessionInit(token) {
         try {
-            const res = await this.csrfFetch(this.API_SESSION_INIT, {
+            const res = await fetch(this.API_SESSION_INIT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -345,7 +249,7 @@ const Auth = {
         options.cache = 'no-store';
 
         try {
-            let res = await this.csrfFetch(url, options);
+            let res = await fetch(url, options);
 
             // If token expired (401) or forbidden (403)
             if (res.status === 401 || res.status === 403) {
@@ -357,7 +261,7 @@ const Auth = {
                     console.log('[Auth] Refresh successful, retrying original request...');
                     // Update headers with the NEW token
                     options.headers = { ...options.headers, ...this.getHeader() };
-                    res = await this.csrfFetch(url, options);
+                    res = await fetch(url, options);
                 } else {
                     console.error('[Auth] Refresh failed, logging out.');
                     this.logout('SessionExpired');
@@ -373,7 +277,7 @@ const Auth = {
 
     async logout() {
         try {
-            await this.csrfFetch(this.API_LOGOUT, {
+            await fetch(this.API_LOGOUT, {
                 method: 'POST',
                 credentials: 'include'
             });

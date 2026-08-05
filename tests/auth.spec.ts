@@ -55,7 +55,7 @@ test.describe('Authentication Flow', () => {
 
             await page.fill('#name', 'Test User');
             await page.fill('#email', 'invalid-email');
-            await page.fill('#password', 'CorrectHorse42');
+            await page.fill('#password', 'password123');
             await page.click('button[type="submit"]');
 
             // Browser should prevent submission due to invalid email

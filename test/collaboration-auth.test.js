@@ -4,7 +4,7 @@
 
 'use strict';
 
-const request = require('./csrf-test-request');
+const request = require('supertest');
 const jwt = require('jsonwebtoken');
 
 const mockCollection = {

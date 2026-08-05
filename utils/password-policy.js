@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const MIN_PASSWORD_LENGTH = 12;
 
 // Common weak passwords — expand this list over time
@@ -36,20 +37,32 @@ function isStrongPassword(password) {
     /[A-Za-z\u0600-\u06FF]/.test(password) &&
     /\d/.test(password) &&
     !BLOCKED_PASSWORDS.has(normalized)
+=======
+function isStrongPassword(password) {
+  return (
+    typeof password === 'string' &&
+    password.length >= 8 &&
+    password.length <= 128 &&
+    /[A-Za-z]/.test(password) &&
+    /\d/.test(password)
+>>>>>>> parent of 1bcf56b (Merge pull request #118 from elfox14/agent/security-launch-hardening-round-2)
   );
 }
 
 function passwordValidator(value) {
   if (!isStrongPassword(value)) {
+<<<<<<< HEAD
     throw new Error(
       'Password must be 12–128 characters, include letters, numbers, and at least one special character (!@#$%^&* etc.), and not be commonly used'
     );
+=======
+    throw new Error('Password must be 8-128 characters and include letters and numbers');
+>>>>>>> parent of 1bcf56b (Merge pull request #118 from elfox14/agent/security-launch-hardening-round-2)
   }
   return true;
 }
 
 module.exports = {
-  MIN_PASSWORD_LENGTH,
   isStrongPassword,
   passwordValidator
 };

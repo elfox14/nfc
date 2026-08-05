@@ -22,21 +22,6 @@ describe('public launch security regressions', () => {
     expect(routes).not.toContain("'?oauthSuccess=1&initToken='");
   });
 
-  test('login and signup pages share strict redirect validation and reject legacy URL tokens', () => {
-    const pages = [
-      read('login.html'),
-      read('login-en.html'),
-      read('signup.html'),
-      read('signup-en.html')
-    ];
-    pages.forEach(page => {
-      expect(page).toContain('AuthRedirect.getSafeTarget');
-      expect(page).not.toContain("redirectParam.startsWith('http')");
-    });
-    expect(pages[0]).not.toContain("params.get('google_token')");
-    expect(pages[1]).not.toContain("params.get('google_token')");
-  });
-
   test('admin credentials are tab-scoped and legacy persistence is removed', () => {
     const admin = read('admin.html');
     expect(admin).toContain("sessionStorage.setItem('adminToken', token)");
@@ -52,6 +37,7 @@ describe('public launch security regressions', () => {
     expect(apache).not.toContain("'unsafe-eval'");
   });
 
+<<<<<<< HEAD
   test('server-rendered auth and viewer pages use nonce-only script policies', () => {
     const authRoutes = read('routes/auth.routes.js');
     const viewerRoutes = read('routes/viewer.routes.js');
@@ -89,10 +75,11 @@ describe('public launch security regressions', () => {
     );
   });
 
+=======
+>>>>>>> parent of 1bcf56b (Merge pull request #118 from elfox14/agent/security-launch-hardening-round-2)
   test('third-party Actions are immutable and secret scanning is not verified-only', () => {
     const workflows = [
       read('.github/workflows/ci.yml'),
-      read('.github/workflows/codeql.yml'),
       read('.github/workflows/release.yml'),
       read('.github/workflows/secret-scan.yml')
     ].join('\n');

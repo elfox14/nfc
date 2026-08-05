@@ -4,11 +4,9 @@ const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     let token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
 
-    // Only trust the HttpOnly cookie after cookie-parser has verified its
-    // server-side signature. Unsigned or tampered cookies must never become
-    // authentication credentials.
-    if (!token && req.signedCookies && req.signedCookies.accessToken) {
-        token = req.signedCookies.accessToken;
+    // Fallback to HttpOnly cookie for access token
+    if (!token && req.cookies && req.cookies.accessToken) {
+        token = req.cookies.accessToken;
     }
 
     if (!token) {
