@@ -94,6 +94,7 @@
         align-items: center !important;
         justify-content: space-between !important;
         box-sizing: border-box !important;
+        gap: 6px !important;
     }
 
     /* Mobile Toolbar Zone Layout */
@@ -105,53 +106,101 @@
     }
 
     .tb-zone.tb-center {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 6px !important;
-        flex: 1 !important;
+        display: none !important; /* Kept hidden on mobile to prevent toolbar overflow */
     }
 
     .tb-zone.tb-right {
-        flex: 0 0 auto !important;
+        flex: 1 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: flex-end !important;
-        gap: 4px !important;
+        gap: 5px !important;
     }
 
-    /* Face switcher on mobile toolbar */
-    .tb-face-switch {
+    /* Logo on mobile toolbar */
+    .tb-logo-text { display: none !important; }
+    .tb-logo img {
+        height: 24px !important;
+        width: auto !important;
+        object-fit: contain !important;
+    }
+
+    /* Language button on mobile toolbar */
+    #lang-toggle-btn {
         display: inline-flex !important;
-        background: rgba(255, 255, 255, 0.08) !important;
-        padding: 2px !important;
-        border-radius: 20px !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        background: rgba(77, 166, 255, 0.12) !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(77, 166, 255, 0.25) !important;
+        color: #4da6ff !important;
+        height: 32px !important;
+        align-items: center !important;
+        gap: 3px !important;
+        min-width: auto !important;
+        box-sizing: border-box !important;
     }
 
-    .tb-face-switch button {
+    /* Save Design CTA on mobile toolbar */
+    #save-share-btn {
+        display: inline-flex !important;
         padding: 4px 10px !important;
         font-size: 11px !important;
-        border-radius: 16px !important;
-    }
-
-    .tb-face-switch button span {
-        font-size: 11px !important;
-    }
-
-    /* Undo/Redo history on mobile toolbar */
-    .tb-history {
-        display: flex !important;
-        gap: 3px !important;
-    }
-
-    .tb-history .tb-icon-btn {
-        width: 32px !important;
+        font-weight: 700 !important;
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        border-radius: 12px !important;
+        border: none !important;
+        color: #ffffff !important;
         height: 32px !important;
-        min-width: 32px !important;
-        font-size: 12px !important;
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-radius: 8px !important;
+        align-items: center !important;
+        gap: 4px !important;
+        white-space: nowrap !important;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+        cursor: pointer !important;
+        box-sizing: border-box !important;
+    }
+
+    #save-share-btn .tb-label,
+    #save-share-btn #save-btn-text {
+        display: inline !important;
+        font-size: 11px !important;
+        color: #ffffff !important;
+    }
+
+    /* User Account / Login on mobile toolbar */
+    .user-status-bar {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        margin: 0 !important;
+    }
+
+    .user-status-bar .tb-pill-btn,
+    .user-status-bar .tb-user-pill {
+        display: inline-flex !important;
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        color: #e6f0f7 !important;
+        height: 32px !important;
+        align-items: center !important;
+        gap: 4px !important;
+        white-space: nowrap !important;
+        text-decoration: none !important;
+        box-sizing: border-box !important;
+    }
+
+    .user-status-bar .tb-user-name {
+        display: inline-block !important;
+        max-width: 65px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        font-size: 11px !important;
     }
 
     /* Hide desktop-only bulky toolbar elements on mobile */
@@ -160,11 +209,11 @@
     #preview-mode-btn,
     .tb-nav-icons,
     .tb-divider,
-    .tb-label,
     .tb-autosave,
-    .user-status-bar,
     .download-container,
-    .tb-design-identity {
+    .tb-design-identity,
+    .tb-face-switch,
+    .tb-history {
         display: none !important;
     }
 

@@ -94,6 +94,29 @@ function registerNfcStaticFiles(app, rootDir) {
     next();
   });
 
+  // Serve logo assets at root level as well to prevent logo 404s regardless of URL path
+  const logoFiles = new Set([
+    'mc-prime-nfc.png',
+    'mcprime-logo-optimized.png',
+    'mcprime-logo-optimized.webp',
+    'mcprime-logo-transparent.png',
+    'logo.svg',
+    'logo.png',
+    'favicon.ico'
+  ]);
+
+  app.get('*', (req, res, next) => {
+    const basename = path.basename(req.path).toLowerCase();
+    if (logoFiles.has(basename)) {
+      const targetFile = path.join(rootDir, basename);
+      if (fs.existsSync(targetFile)) {
+        setNfcStaticHeaders(res, targetFile);
+        return res.sendFile(targetFile);
+      }
+    }
+    next();
+  });
+
   app.use('/nfc', express.static(rootDir, {
     extensions: ['html'],
     setHeaders: setNfcStaticHeaders
