@@ -303,7 +303,6 @@
     .pro-toolbar #show-gallery-btn,
     .pro-toolbar #save-to-gallery-btn,
     .pro-toolbar #reset-design-btn,
-    .pro-toolbar .user-status-bar,
     .autosave-indicator,
     .pro-toolbar .download-container,
     /* Hide Download dropdown text */
@@ -1057,7 +1056,6 @@
     /* Hide large items */
     .tb-logo-text,
     .tb-center,
-    .user-status-bar,
     .tb-autosave,
     .tb-nav-icons,
     .tb-history,
@@ -1243,4 +1241,77 @@ body.preview-mode-active .pro-toolbar { display: none !important; }
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+}
+
+/* ── Mobile Toolbar Explicit Force-Display ────────────────────────── */
+@media (max-width: 1024px) {
+    .pro-toolbar #lang-toggle-btn {
+        display: inline-flex !important;
+        height: 32px !important;
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+        border-radius: 12px !important;
+        background: rgba(77, 166, 255, 0.12) !important;
+        border: 1px solid rgba(77, 166, 255, 0.25) !important;
+        color: #4da6ff !important;
+        min-width: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    .pro-toolbar .user-status-bar {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        margin: 0 !important;
+    }
+
+    .pro-toolbar .user-status-bar .tb-pill-btn,
+    .pro-toolbar .user-status-bar .tb-user-pill {
+        display: inline-flex !important;
+        height: 32px !important;
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+        border-radius: 12px !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        color: #e6f0f7 !important;
+        text-decoration: none !important;
+        white-space: nowrap !important;
+        box-sizing: border-box !important;
+    }
+
+    .pro-toolbar .user-status-bar .tb-user-name {
+        display: inline-block !important;
+        max-width: 65px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        font-size: 11px !important;
+    }
+
+    .pro-toolbar #save-share-btn,
+    .pro-toolbar #save-to-cloud-btn,
+    .pro-toolbar .tb-mqa-save {
+        display: inline-flex !important;
+        height: 32px !important;
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        color: #ffffff !important;
+        border: none !important;
+        white-space: nowrap !important;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+        box-sizing: border-box !important;
+    }
+
+    .pro-toolbar #save-share-btn span,
+    .pro-toolbar #save-share-btn #save-btn-text,
+    .pro-toolbar #save-to-cloud-btn span,
+    .pro-toolbar .tb-mqa-save span {
+        display: inline !important;
+        font-size: 11px !important;
+        color: #ffffff !important;
+    }
 }

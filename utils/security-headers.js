@@ -12,7 +12,8 @@ function buildNonceOnlyHtmlCsp(nonce) {
     `script-src 'self' 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
-    `connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://*.mcprim.com https://mcprim.com https://*.onrender.com wss://*.onrender.com https://res.cloudinary.com${renderConnect}`,
+    "font-src 'self' https: data:",
+    `connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://*.jsdelivr.net https://*.mcprim.com https://mcprim.com https://*.onrender.com wss://*.onrender.com https://res.cloudinary.com${renderConnect}`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -76,7 +77,7 @@ function applySecurityHeaders(app) {
         "https://cdnjs.cloudflare.com",
         "https://fonts.googleapis.com"
       ],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+      fontSrc: ["'self'", "https:", "data:", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: [
         "'self'",
         "data:",

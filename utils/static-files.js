@@ -108,7 +108,7 @@ function registerNfcStaticFiles(app, rootDir) {
   app.get('*', (req, res, next) => {
     const basename = path.basename(req.path).toLowerCase();
     if (logoFiles.has(basename)) {
-      const targetFile = path.join(rootDir, basename);
+      const targetFile = path.resolve(rootDir, basename);
       if (fs.existsSync(targetFile)) {
         setNfcStaticHeaders(res, targetFile);
         return res.sendFile(targetFile);
