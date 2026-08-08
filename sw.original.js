@@ -11,6 +11,7 @@ const PRECACHE_ASSETS = [
   '/nfc/error-reporter.js',
   '/nfc/manifest.json',
   '/nfc/logo.svg',
+  '/nfc/mc-prime-nfc.png',
   '/nfc/mcprime-logo-optimized.webp',
 ];
 

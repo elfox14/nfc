@@ -12,7 +12,7 @@ function buildNonceOnlyHtmlCsp(nonce) {
     `script-src 'self' 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
-    `connect-src 'self' https://*.mcprim.com https://mcprim.com https://*.onrender.com wss://*.onrender.com https://res.cloudinary.com${renderConnect}`,
+    `connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://*.mcprim.com https://mcprim.com https://*.onrender.com wss://*.onrender.com https://res.cloudinary.com${renderConnect}`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
