@@ -288,18 +288,19 @@
     /* Language Button on Mobile Toolbar */
     .pro-toolbar #lang-toggle-btn {
         display: inline-flex !important;
-        height: 34px !important;
-        padding: 0 8px !important;
+        height: 30px !important;
+        width: 30px !important;
+        min-width: 30px !important;
+        padding: 0 !important;
         font-size: 11px !important;
         font-weight: 700 !important;
         background: rgba(77, 166, 255, 0.12) !important;
         border: 1px solid rgba(77, 166, 255, 0.25) !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         color: #4da6ff !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 3px !important;
-        min-width: auto !important;
+        gap: 0 !important;
         flex-shrink: 0 !important;
     }
     .pro-toolbar #lang-toggle-btn .tb-label {
@@ -318,83 +319,90 @@
     .pro-toolbar .user-status-bar .tb-pill-btn,
     .pro-toolbar .user-status-bar .tb-user-pill {
         display: inline-flex !important;
-        height: 34px !important;
-        padding: 0 8px !important;
-        font-size: 11px !important;
+        height: 30px !important;
+        padding: 0 6px !important;
+        font-size: 10.5px !important;
         font-weight: 600 !important;
         background: rgba(255, 255, 255, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         color: #e6f0f7 !important;
         align-items: center !important;
-        gap: 4px !important;
+        gap: 3px !important;
         white-space: nowrap !important;
         text-decoration: none !important;
         flex-shrink: 0 !important;
     }
     .pro-toolbar .user-status-bar .tb-user-name {
         display: inline-block !important;
-        max-width: 50px !important;
+        max-width: 45px !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
-        font-size: 11px !important;
+        font-size: 10.5px !important;
     }
 
-    /* Primary Save CTA on Mobile Toolbar - Styled to auto-fit text and enlarged icon */
+    /* Primary Save CTA on Mobile Toolbar - Compacted to prevent overlap */
     .pro-toolbar #save-share-btn {
         display: inline-flex !important;
         width: auto !important;
         min-width: auto !important;
-        height: 36px !important;
-        padding: 0 12px !important;
-        font-size: 12px !important;
+        max-width: 95px !important;
+        height: 30px !important;
+        padding: 0 7px !important;
+        font-size: 10.5px !important;
         font-weight: 700 !important;
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
         border: none !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         color: #ffffff !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 6px !important;
+        gap: 3px !important;
         white-space: nowrap !important;
-        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important;
+        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3) !important;
         cursor: pointer !important;
         flex-shrink: 0 !important;
     }
     .pro-toolbar #save-share-btn i {
-        font-size: 14px !important;
+        font-size: 10.5px !important;
         margin: 0 !important;
     }
     .pro-toolbar #save-share-btn #save-btn-text,
     .pro-toolbar #save-share-btn .tb-label {
         display: inline-block !important;
-        font-size: 12px !important;
+        font-size: 10.5px !important;
         font-weight: 700 !important;
         color: #ffffff !important;
         white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 70px !important;
     }
 
-    /* Navigation Icons on Mobile Toolbar (Gallery & Blog) */
+    /* Navigation Icons on Mobile Toolbar (Gallery & Blog, hide Home) */
     .pro-toolbar .tb-nav-icons {
         display: inline-flex !important;
         align-items: center !important;
-        gap: 4px !important;
+        gap: 3px !important;
         flex-shrink: 0 !important;
+    }
+    .pro-toolbar .tb-nav-icons a[href*="index"] {
+        display: none !important;
     }
     .pro-toolbar .tb-nav-icons .tb-icon-btn {
         display: inline-flex !important;
-        width: 34px !important;
-        min-width: 34px !important;
-        height: 34px !important;
+        width: 30px !important;
+        min-width: 30px !important;
+        height: 30px !important;
         padding: 0 !important;
         align-items: center !important;
         justify-content: center !important;
         background: rgba(255, 255, 255, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         color: #8bb8e8 !important;
-        font-size: 14px !important;
+        font-size: 12px !important;
         text-decoration: none !important;
         flex-shrink: 0 !important;
     }
@@ -403,18 +411,18 @@
         color: #ffffff !important;
     }
 
-    .pro-toolbar .tb-logo { width: 34px; justify-content: center; flex-shrink: 0; }
-    .pro-toolbar .tb-logo img { width: 28px !important; height: 28px !important; object-fit: contain; }
-    .tb-face-switch { padding: 2px; border-radius: 10px; flex-shrink: 0; }
-    .tb-face-switch button { width: 34px; min-width: 34px; height: 32px; padding: 0; }
+    .pro-toolbar .tb-logo { width: 30px; justify-content: center; flex-shrink: 0; }
+    .pro-toolbar .tb-logo img { width: 26px !important; height: 26px !important; object-fit: contain; }
+    .tb-face-switch { padding: 2px; border-radius: 8px; flex-shrink: 0; }
+    .tb-face-switch button { width: 30px; min-width: 30px; height: 30px; padding: 0; }
     .tb-face-switch button span { display: none; }
     .pro-toolbar .tb-history .tb-icon-btn,
     .pro-toolbar #toolbar-more-btn {
-        width: 34px !important;
-        min-width: 34px !important;
-        height: 34px !important;
+        width: 30px !important;
+        min-width: 30px !important;
+        height: 30px !important;
         padding: 0 !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         flex-shrink: 0 !important;
     }
     .pro-toolbar .tb-mobile-quick-actions,

@@ -220,25 +220,28 @@
         display: none !important;
     }
 
-    /* Navigation Icons on Mobile Toolbar (Gallery & Blog) */
+    /* Navigation Icons on Mobile Toolbar (Gallery & Blog, hide Home) */
     .tb-nav-icons {
         display: inline-flex !important;
         align-items: center !important;
-        gap: 4px !important;
+        gap: 3px !important;
+    }
+    .tb-nav-icons a[href*="index"] {
+        display: none !important;
     }
     .tb-nav-icons .tb-icon-btn {
         display: inline-flex !important;
-        width: 34px !important;
-        min-width: 34px !important;
-        height: 34px !important;
+        width: 30px !important;
+        min-width: 30px !important;
+        height: 30px !important;
         padding: 0 !important;
         align-items: center !important;
         justify-content: center !important;
         background: rgba(255, 255, 255, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         color: #8bb8e8 !important;
-        font-size: 14px !important;
+        font-size: 12px !important;
         text-decoration: none !important;
     }
 
