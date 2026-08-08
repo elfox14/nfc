@@ -6,9 +6,12 @@ function parseAllowedOrigins() {
     .map(s => s.trim())
     .filter(Boolean);
 
+  // The deployed API origin is trusted explicitly, not as a wildcard for all
+  // Render services. This keeps the default Render hostname usable without
+  // allowing unrelated *.onrender.com origins to send credentialed requests.
   if (process.env.RENDER_EXTERNAL_HOSTNAME) {
     const renderOrigin = `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`;
-    if (!configured.includes(renderOrigin)) {
+    if (!configured.some(origin => normalizeUrl(origin) === normalizeUrl(renderOrigin))) {
       configured.push(renderOrigin);
     }
   }
@@ -17,7 +20,10 @@ function parseAllowedOrigins() {
 }
 
 function normalizeUrl(origin) {
-  return origin.replace(/^(https?:\/\/)(www\.)?/, '$1').toLowerCase();
+  return origin
+    .replace(/^(https?:\/\/)(www\.)?/, '$1')
+    .replace(/\/+$/, '')
+    .toLowerCase();
 }
 
 function isLocalDevelopmentOrigin(origin) {
@@ -27,21 +33,16 @@ function isLocalDevelopmentOrigin(origin) {
 function isAllowedOrigin(origin, allowedOrigins) {
   if (!origin) return false;
 
-  const isConfigured = allowedOrigins.some(baseDomain => {
-    if (baseDomain === origin) return true;
-    return normalizeUrl(baseDomain) === normalizeUrl(origin);
+  const normalizedOrigin = normalizeUrl(origin);
+  const isConfigured = allowedOrigins.some(baseOrigin => {
+    return normalizeUrl(baseOrigin) === normalizedOrigin;
   });
 
   if (isConfigured) return true;
 
-  // Allow render.com subdomains automatically in production when accessing via default Render host
-  try {
-    const url = new URL(origin);
-    if (url.hostname.endsWith('.onrender.com') || url.hostname.endsWith('.render.com')) {
-      return true;
-    }
-  } catch {}
-
+  // IMPORTANT: Never wildcard-trust *.onrender.com or *.render.com.
+  // A different Render service is not an application origin and must not be
+  // able to issue credentialed cross-origin requests to this API.
   return process.env.NODE_ENV !== 'production' && isLocalDevelopmentOrigin(origin);
 }
 
@@ -117,3 +118,4 @@ function applyCors(app) {
 
 module.exports = applyCors;
 module.exports.isAllowedOrigin = isAllowedOrigin;
+module.exports.parseAllowedOrigins = parseAllowedOrigins;
