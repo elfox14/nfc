@@ -203,7 +203,7 @@
         font-size: 11px !important;
     }
 
-    /* Hide desktop-only bulky toolbar elements on mobile */
+    /* Hide desktop-only bulky toolbar elements & duplicate mobile buttons */
     .tb-zoom-controls,
     .tb-view-controls,
     #preview-mode-btn,
@@ -213,7 +213,11 @@
     .download-container,
     .tb-design-identity,
     .tb-face-switch,
-    .tb-history {
+    .tb-history,
+    .tb-mobile-quick-actions,
+    #mobile-save-btn,
+    #mobile-share-btn,
+    #user-logout-btn {
         display: none !important;
     }
 

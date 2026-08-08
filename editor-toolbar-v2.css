@@ -257,15 +257,22 @@
         left: 8px !important;
         grid-template-columns: auto 1fr auto !important;
         width: auto !important;
-        height: 58px !important;
-        min-height: 58px !important;
+        height: 54px !important;
+        min-height: 54px !important;
         padding: 0 7px !important;
         column-gap: 4px !important;
         border-radius: 16px !important;
     }
     .pro-toolbar .tb-left,
-    .pro-toolbar .tb-center,
-    .pro-toolbar .tb-right { gap: 3px !important; }
+    .pro-toolbar .tb-center { gap: 3px !important; }
+    .pro-toolbar .tb-right {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 5px !important;
+        flex-wrap: nowrap !important;
+        overflow: visible !important;
+    }
     .pro-toolbar .tb-center { height: 42px; padding: 0; border: 0; background: transparent; }
     .tb-logo-text,
     .tb-design-identity,
@@ -273,13 +280,16 @@
     .pro-toolbar #preview-mode-btn,
     .pro-toolbar .download-container,
     .pro-toolbar .tb-divider,
-    .pro-toolbar #mobile-share-btn { display: none !important; }
+    .pro-toolbar #mobile-share-btn,
+    .pro-toolbar .tb-mobile-quick-actions,
+    .pro-toolbar #mobile-save-btn,
+    .pro-toolbar #user-logout-btn { display: none !important; }
 
-    /* Always show Language, User Status / Login, and Save Design CTA on Mobile Toolbar */
+    /* Language Button on Mobile Toolbar */
     .pro-toolbar #lang-toggle-btn {
         display: inline-flex !important;
         height: 34px !important;
-        padding: 4px 8px !important;
+        padding: 0 8px !important;
         font-size: 11px !important;
         font-weight: 700 !important;
         background: rgba(77, 166, 255, 0.12) !important;
@@ -287,24 +297,29 @@
         border-radius: 10px !important;
         color: #4da6ff !important;
         align-items: center !important;
+        justify-content: center !important;
         gap: 3px !important;
         min-width: auto !important;
+        flex-shrink: 0 !important;
     }
     .pro-toolbar #lang-toggle-btn .tb-label {
         display: inline !important;
         font-size: 11px !important;
     }
+
+    /* User Account Status on Mobile Toolbar */
     .pro-toolbar .user-status-bar {
         display: inline-flex !important;
         align-items: center !important;
         gap: 3px !important;
         margin: 0 !important;
+        flex-shrink: 0 !important;
     }
     .pro-toolbar .user-status-bar .tb-pill-btn,
     .pro-toolbar .user-status-bar .tb-user-pill {
         display: inline-flex !important;
         height: 34px !important;
-        padding: 4px 8px !important;
+        padding: 0 8px !important;
         font-size: 11px !important;
         font-weight: 600 !important;
         background: rgba(255, 255, 255, 0.08) !important;
@@ -315,19 +330,22 @@
         gap: 4px !important;
         white-space: nowrap !important;
         text-decoration: none !important;
+        flex-shrink: 0 !important;
     }
     .pro-toolbar .user-status-bar .tb-user-name {
         display: inline-block !important;
-        max-width: 55px !important;
+        max-width: 50px !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
         font-size: 11px !important;
     }
+
+    /* Primary Save CTA on Mobile Toolbar */
     .pro-toolbar #save-share-btn {
         display: inline-flex !important;
         height: 34px !important;
-        padding: 4px 10px !important;
+        padding: 0 10px !important;
         font-size: 11px !important;
         font-weight: 700 !important;
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
@@ -335,33 +353,36 @@
         border-radius: 10px !important;
         color: #ffffff !important;
         align-items: center !important;
+        justify-content: center !important;
         gap: 4px !important;
         white-space: nowrap !important;
         box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
         cursor: pointer !important;
+        flex-shrink: 0 !important;
     }
     .pro-toolbar #save-share-btn #save-btn-text,
     .pro-toolbar #save-share-btn .tb-label {
         display: inline !important;
         font-size: 11px !important;
         color: #ffffff !important;
+        white-space: nowrap !important;
     }
-    .pro-toolbar .tb-logo { width: 34px; justify-content: center; }
+    .pro-toolbar .tb-logo { width: 34px; justify-content: center; flex-shrink: 0; }
     .pro-toolbar .tb-logo img { width: 28px !important; height: 28px !important; object-fit: contain; }
-    .tb-face-switch { padding: 2px; border-radius: 10px; }
+    .tb-face-switch { padding: 2px; border-radius: 10px; flex-shrink: 0; }
     .tb-face-switch button { width: 34px; min-width: 34px; height: 32px; padding: 0; }
     .tb-face-switch button span { display: none; }
     .pro-toolbar .tb-history .tb-icon-btn,
-    .pro-toolbar #toolbar-more-btn,
-    .pro-toolbar #mobile-save-btn {
+    .pro-toolbar #toolbar-more-btn {
         width: 34px !important;
         min-width: 34px !important;
         height: 34px !important;
         padding: 0 !important;
         border-radius: 10px !important;
+        flex-shrink: 0 !important;
     }
-    .pro-toolbar .tb-mobile-quick-actions { display: inline-flex !important; margin: 0 !important; }
-    .pro-toolbar #mobile-save-btn span { display: none !important; }
+    .pro-toolbar .tb-mobile-quick-actions,
+    .pro-toolbar #mobile-save-btn { display: none !important; }
     .pro-toolbar .autosave-indicator {
         display: inline-flex !important;
         width: 30px !important;
