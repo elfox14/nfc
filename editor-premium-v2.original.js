@@ -53,116 +53,6 @@
         return m;
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // 1. LOGO COLOR EXTRACTOR
-    // ════════════════════════════════════════════════════════════════════════
-    function initColorExtractor() {
-        // Watch for logo image changes — trigger extraction
-        const extractColors = (imgEl) => {
-            if (!imgEl || !imgEl.src || imgEl.src.includes('mc-prime-nfc')) return;
-            try {
-                const canvas = document.createElement('canvas');
-                const size = 80;
-                canvas.width = canvas.height = size;
-                const ctx = canvas.getContext('2d');
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => {
-                    ctx.drawImage(img, 0, 0, size, size);
-                    const data = ctx.getImageData(0, 0, size, size).data;
-                    const colorMap = {};
-                    for (let i = 0; i < data.length; i += 16) {
-                        const r = Math.round(data[i] / 32) * 32;
-                        const g = Math.round(data[i + 1] / 32) * 32;
-                        const b = Math.round(data[i + 2] / 32) * 32;
-                        const a = data[i + 3];
-                        if (a < 128) continue; // skip transparent
-                        const key = `${r},${g},${b}`;
-                        colorMap[key] = (colorMap[key] || 0) + 1;
-                    }
-                    const sorted = Object.entries(colorMap)
-                        .sort((a, b) => b[1] - a[1])
-                        .slice(0, 5)
-                        .map(([k]) => {
-                            const [r, g, b] = k.split(',').map(Number);
-                            return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
-                        });
-                    showColorSwatch(sorted);
-                };
-                img.onerror = () => { };
-                img.src = imgEl.src;
-            } catch (e) { }
-        };
-
-        const showColorSwatch = (colors) => {
-            if (!colors.length) return;
-            const existing = document.getElementById('ep2-color-swatch');
-            if (existing) existing.remove();
-
-            const swatch = document.createElement('div');
-            swatch.id = 'ep2-color-swatch';
-            swatch.innerHTML = `
-                <div style="font-size:0.73rem;color:var(--text-secondary);margin-bottom:6px;font-weight:600;">
-                    <i class="fas fa-eye-dropper" style="color:#4da6ff;margin-${isAr ? 'left' : 'right'}:4px;"></i>
-                    ${isAr ? 'ألوان مستخلصة من الشعار' : 'Colors extracted from logo'}
-                </div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                    ${colors.map(c => `
-                        <div class="ep2-swatch-color" data-color="${c}" title="${c}"
-                            style="width:32px;height:32px;border-radius:7px;background:${c};cursor:pointer;border:2px solid transparent;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
-                        </div>`).join('')}
-                </div>
-                <div style="font-size:0.68rem;color:var(--text-secondary);margin-top:5px;">${isAr ? 'انقر للتطبيق على البطاقة' : 'Click to apply to card'}</div>`;
-            Object.assign(swatch.style, {
-                padding: '10px 12px', marginTop: '8px',
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '10px'
-            });
-
-            swatch.querySelectorAll('.ep2-swatch-color').forEach(el => {
-                el.onmouseenter = () => el.style.transform = 'scale(1.2)';
-                el.onmouseleave = () => el.style.transform = 'scale(1)';
-                el.addEventListener('click', () => {
-                    const color = el.dataset.color;
-                    // Darken color for gradient end
-                    const darkened = darkenHex(color, 0.65);
-                    ['front-bg-start', 'back-bg-start'].forEach(id => {
-                        const inp = document.getElementById(id);
-                        if (inp) { inp.value = color; inp.dispatchEvent(new Event('input', { bubbles: true })); }
-                    });
-                    ['front-bg-end', 'back-bg-end'].forEach(id => {
-                        const inp = document.getElementById(id);
-                        if (inp) { inp.value = darkened; inp.dispatchEvent(new Event('input', { bubbles: true })); }
-                    });
-                    toast(`✓ ${isAr ? 'تم تطبيق اللون ' + color : 'Color ' + color + ' applied'}`, color || '#4da6ff');
-                });
-            });
-
-            // Inject after logo upload section
-            const logoSection = document.querySelector('#logo-fieldset, [id*="logo"]');
-            if (logoSection) logoSection.appendChild(swatch);
-            else {
-                const sidebar = document.getElementById('panel-design');
-                if (sidebar) sidebar.appendChild(swatch);
-            }
-        };
-
-        const darkenHex = (hex, factor) => {
-            const r = Math.round(parseInt(hex.slice(1, 3), 16) * factor);
-            const g = Math.round(parseInt(hex.slice(3, 5), 16) * factor);
-            const b = Math.round(parseInt(hex.slice(5, 7), 16) * factor);
-            return '#' + [r, g, b].map(v => Math.min(255, v).toString(16).padStart(2, '0')).join('');
-        };
-
-        // Watch logo image on the card
-        const observer = new MutationObserver(() => {
-            const logoImg = document.querySelector('#card-logo img, .card-logo img, img[id*="logo"]');
-            if (logoImg) extractColors(logoImg);
-        });
-        observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
-    }
-
 
 
     // ════════════════════════════════════════════════════════════════════════
@@ -571,7 +461,6 @@
         const sidebar = document.getElementById('panel-design');
         if (!sidebar) { setTimeout(run, 600); return; }
 
-        initColorExtractor();
         initBulkLinkImport();
         initQRCustomization();
         initKeyboardShortcuts();

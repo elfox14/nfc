@@ -56,7 +56,6 @@ describe('Production environment validation', () => {
     expect(() => assertEnv()).toThrow('Production image storage');
   });
 
-<<<<<<< HEAD
   it('purges a plaintext admin token from memory when hash is also configured', () => {
     process.env.NODE_ENV = 'production';
     process.env.MONGO_URI = 'mongodb://example';
@@ -88,9 +87,6 @@ describe('Production environment validation', () => {
 
     expect(() => assertEnv()).toThrow('instead of ADMIN_TOKENH');
   });
-
-=======
->>>>>>> parent of 1bcf56b (Merge pull request #118 from elfox14/agent/security-launch-hardening-round-2)
   it('accepts Cloudinary and rejects a half-configured Google OAuth client', () => {
     process.env.NODE_ENV = 'production';
     process.env.MONGO_URI = 'mongodb://example';

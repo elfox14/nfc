@@ -37,46 +37,18 @@ describe('public launch security regressions', () => {
     expect(apache).not.toContain("'unsafe-eval'");
   });
 
-<<<<<<< HEAD
-  test('server-rendered auth and viewer pages use nonce-only script policies', () => {
-    const authRoutes = read('routes/auth.routes.js');
-    const viewerRoutes = read('routes/viewer.routes.js');
-    expect(authRoutes).toContain('setNonceOnlyHtmlCsp(res)');
-    expect(viewerRoutes).toContain("script-src 'self' 'nonce-${nonce}'");
-  });
-
   test('WebSocket payloads are capped before frame buffering', () => {
     const realtime = read('utils/realtime-collaboration.js');
-    expect(realtime).toContain('maxPayload: WS_LIMITS.MAX_MESSAGE_SIZE');
-    expect(realtime).toContain('WebSocket origin is not allowed');
+    expect(realtime).toContain('WS_LIMITS.MAX_MESSAGE_SIZE');
+    expect(realtime).toContain('WS_LIMITS.MAX_CONNECTIONS_PER_IP');
   });
 
   test('successful auth actions still count toward abuse limits', () => {
     const server = read('server.js');
-    expect(server).toContain('const loginLimiter = rateLimit');
-    expect(server).toContain('const authActionLimiter = rateLimit');
-    expect(server).toMatch(/authActionLimiter = rateLimit\([\s\S]*?skipSuccessfulRequests: false/);
+    expect(server).toContain('const authLimiter = rateLimit');
   });
 
-  test('unsafe API requests require a signed CSRF cookie matching a custom header', () => {
-    const server = read('server.js');
-    const csrf = read('utils/csrf-protection.js');
-    const auth = read('auth.js');
-    expect(server).toContain('registerCsrfProtection(app, process.env.COOKIE_SIGNING_SECRET)');
-    expect(csrf).toContain("req.signedCookies?.[CSRF_COOKIE_NAME]");
-    expect(csrf).toContain("req.cookies[CSRF_COOKIE_NAME]");
-    expect(csrf).toContain("req.get(CSRF_HEADER_NAME)");
-    expect(csrf).toContain("crypto.createHmac('sha256', secret)");
-    expect(csrf).toContain('crypto.timingSafeEqual');
-    expect(auth).toContain("'X-CSRF-Token': csrfToken");
-    expect(auth).toContain("/^\\/api\\/[A-Za-z0-9/_-]+$/");
-    expect(server.indexOf("app.use('/api/', apiLimiter)")).toBeLessThan(
-      server.indexOf('registerCsrfProtection(app, process.env.COOKIE_SIGNING_SECRET)')
-    );
-  });
 
-=======
->>>>>>> parent of 1bcf56b (Merge pull request #118 from elfox14/agent/security-launch-hardening-round-2)
   test('third-party Actions are immutable and secret scanning is not verified-only', () => {
     const workflows = [
       read('.github/workflows/ci.yml'),

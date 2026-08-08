@@ -29,7 +29,6 @@ function assertEnv() {
     throw new Error('ALLOWED_ORIGINS must be configured in production.');
   }
 
-<<<<<<< HEAD
   if (process.env.ADMIN_TOKENH) {
     if (!process.env.ADMIN_TOKEN_SHA256) {
       throw new Error('Use ADMIN_TOKEN_SHA256 instead of ADMIN_TOKENH in production.');
@@ -41,14 +40,8 @@ function assertEnv() {
     delete process.env.ADMIN_TOKENH;
   }
 
-=======
->>>>>>> parent of 1bcf56b (Merge pull request #118 from elfox14/agent/security-launch-hardening-round-2)
   if (!process.env.ADMIN_TOKEN_SHA256) {
     throw new Error('ADMIN_TOKEN_SHA256 must be configured in production.');
-  }
-
-  if (!process.env.ADMIN_TOKEN_SHA256 && process.env.ADMIN_TOKENH) {
-    throw new Error('Use ADMIN_TOKEN_SHA256 instead of ADMIN_TOKENH in production.');
   }
 
   if (process.env.ADMIN_TOKEN_SHA256 && !/^[a-f0-9]{64}$/i.test(process.env.ADMIN_TOKEN_SHA256)) {
