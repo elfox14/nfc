@@ -1,6 +1,6 @@
 {
   "name": "digital-card-server",
-  "version": "2.1.1",
+  "version": "2.1.0",
   "description": "Enhanced Server for the Digital Business Card Editor with improved security and performance",
   "main": "server.js",
   "scripts": {
@@ -58,7 +58,6 @@
     "clean-css-cli": "^5.6.3",
     "eslint": "^8.57.1",
     "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
     "nodemon": "^3.1.10",
     "playwright": "^1.58.2",
     "prettier": "^3.6.2",
