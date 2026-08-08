@@ -78,6 +78,13 @@
         registerProxyCommand('editor.share', 'share-editor-btn');
         registerProxyCommand('editor.save-share', 'save-share-btn');
         registerProxyCommand('design.reset', 'reset-design-btn');
+        registerProxyCommand('download.png-front', 'download-png-front');
+        registerProxyCommand('download.png-back', 'download-png-back');
+        registerProxyCommand('download.pdf', 'download-pdf');
+        registerProxyCommand('download.vcf', 'download-vcf');
+        registerProxyCommand('download.qrcode', 'download-qrcode');
+        registerProxyCommand('download.html', 'download-html');
+        registerProxyCommand('social.export', 'ep2-social-btn');
 
         registerCommand('qr.resize', function (context) {
             var input = document.getElementById('qr-size');
@@ -216,6 +223,13 @@
             section('tbs-tone-green', 'fa-share-nodes', isAr ? 'المشاركة والنشر' : 'Share and publish',
                 createButton({
                     className: 'tbs-full-btn',
+                    command: 'editor.save-share',
+                    icon: 'fa-cloud-upload-alt',
+                    iconClass: 'tbs-icon-blue',
+                    label: isAr ? 'حفظ ومشاركة التصميم' : 'Save & Share design'
+                }) +
+                createButton({
+                    className: 'tbs-full-btn',
                     command: 'gallery.save',
                     icon: 'fa-bookmark',
                     iconClass: 'tbs-icon-gold',
@@ -234,6 +248,54 @@
                     icon: 'fa-users',
                     iconClass: 'tbs-icon-purple',
                     label: isAr ? 'تحرير جماعي' : 'Collaborative edit'
+                })
+            ) +
+            section('tbs-tone-blue', 'fa-download', isAr ? 'خيارات التنزيل والتصدير' : 'Download & Export',
+                createButton({
+                    className: 'tbs-full-btn',
+                    command: 'download.png-front',
+                    icon: 'fa-image',
+                    iconClass: 'tbs-icon-blue',
+                    label: isAr ? 'صورة الواجهة (PNG)' : 'Front Image (PNG)'
+                }) +
+                createButton({
+                    className: 'tbs-full-btn',
+                    command: 'download.png-back',
+                    icon: 'fa-image',
+                    iconClass: 'tbs-icon-blue',
+                    label: isAr ? 'صورة الخلفية (PNG)' : 'Back Image (PNG)'
+                }) +
+                createButton({
+                    className: 'tbs-full-btn',
+                    command: 'download.pdf',
+                    icon: 'fa-file-pdf',
+                    label: isAr ? 'تنزيل PDF' : 'Download PDF'
+                }) +
+                createButton({
+                    className: 'tbs-full-btn',
+                    command: 'download.vcf',
+                    icon: 'fa-address-card',
+                    label: isAr ? 'جهة اتصال (VCF)' : 'Contact (VCF)'
+                }) +
+                createButton({
+                    className: 'tbs-full-btn',
+                    command: 'download.qrcode',
+                    icon: 'fa-qrcode',
+                    iconClass: 'tbs-icon-purple',
+                    label: isAr ? 'رمز QR Code' : 'QR Code Image'
+                }) +
+                createButton({
+                    className: 'tbs-full-btn',
+                    command: 'download.html',
+                    icon: 'fa-globe',
+                    label: isAr ? 'حزمة ويب (HTML)' : 'Web Package (HTML)'
+                }) +
+                createButton({
+                    className: 'tbs-full-btn',
+                    command: 'social.export',
+                    icon: 'fa-share-alt',
+                    iconClass: 'tbs-icon-green',
+                    label: isAr ? 'تصدير لمنصات التواصل' : 'Social Media Export'
                 })
             ) +
             '<section class="tbs-section tbs-danger-section">' +

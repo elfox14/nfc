@@ -2126,77 +2126,96 @@
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-share" style="display: none;">
             <fieldset class="fieldset">
-                <legend>الحفظ والمشاركة</legend>
-                <div class="form-group">
-                    <button class="btn btn-primary mobile-action-btn" data-trigger-id="save-share-btn"
-                        style="width: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; font-weight: 600;">
-                        <i class="fas fa-paper-plane"></i> <span id="mobile-save-btn-text">حفظ ومشاركة</span>
+                <legend><i class="fas fa-cloud-upload-alt" style="color:#4da6ff;"></i> الحفظ والمشاركة</legend>
+                <div class="control-grid">
+                    <button class="btn btn-primary mobile-action-btn" data-trigger-id="save-to-cloud-btn"
+                        style="background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; font-weight: 600;">
+                        <i class="fas fa-cloud-upload-alt"></i> <span id="mobile-save-btn-text">حفظ التصميم</span>
+                    </button>
+                    <button class="btn btn-success mobile-action-btn" data-trigger-id="share-card-btn">
+                        <i class="fas fa-share-alt"></i> <span>مشاركة البطاقة</span>
                     </button>
                 </div>
-                <div class="form-group">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="save-to-gallery-btn"
-                        style="width: 100%;">
-                        <i class="fas fa-save"></i> حفظ بالمعرض
+                <div class="control-grid" style="margin-top: 10px;">
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="save-to-gallery-btn">
+                        <i class="fas fa-bookmark" style="color:#f1c40f;"></i> <span>حفظ بالمعرض</span>
+                    </button>
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn">
+                        <i class="fas fa-images" style="color:#4da6ff;"></i> <span>عرض المعرض</span>
                     </button>
                 </div>
-                <div class="form-group">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn"
-                        style="width: 100%;">
-                        <i class="fas fa-images"></i> عرض المعرض
+                <div class="control-grid" style="margin-top: 10px;">
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="share-editor-btn">
+                        <i class="fas fa-link" style="color:#2ecc71;"></i> <span>رابط المحرر</span>
+                    </button>
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="start-collab-btn">
+                        <i class="fas fa-users" style="color:#a855f7;"></i> <span>تحرير جماعي</span>
                     </button>
                 </div>
             </fieldset>
 
             <fieldset class="fieldset">
-                <legend>التنزيل</legend>
+                <legend><i class="fas fa-download" style="color:#2ecc71;"></i> خيارات التنزيل والتصدير</legend>
                 <div class="control-grid">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-front">
-                        <i class="fas fa-image"></i> واجهة (PNG)
+                        <i class="fas fa-image" style="color:#4da6ff;"></i> <span>واجهة (PNG)</span>
                     </button>
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-back">
-                        <i class="fas fa-image"></i> خلفية (PNG)
+                        <i class="fas fa-image" style="color:#38bdf8;"></i> <span>خلفية (PNG)</span>
                     </button>
                 </div>
                 <div class="control-grid" style="margin-top: 10px;">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-pdf">
-                        <i class="fas fa-file-pdf"></i> PDF
+                        <i class="fas fa-file-pdf" style="color:#ef4444;"></i> <span>مستند (PDF)</span>
                     </button>
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-vcf">
-                        <i class="fas fa-address-card"></i> جهة اتصال (VCF)
+                        <i class="fas fa-address-card" style="color:#10b981;"></i> <span>جهة اتصال (VCF)</span>
+                    </button>
+                </div>
+                <div class="control-grid" style="margin-top: 10px;">
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-qrcode">
+                        <i class="fas fa-qrcode" style="color:#a855f7;"></i> <span>رمز (QR Code)</span>
+                    </button>
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-html">
+                        <i class="fas fa-globe" style="color:#f59e0b;"></i> <span>ملف ويب (HTML)</span>
                     </button>
                 </div>
                 <div class="form-group" style="margin-top: 10px;">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-html"
-                        style="width: 100%;">
-                        <i class="fas fa-globe"></i> ملف ويب (HTML)
-                    </button>
-                </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-qrcode"
-                        style="width: 100%;">
-                        <i class="fas fa-qrcode"></i> رمز QR Code
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="ep2-social-btn"
+                        style="width: 100%; border-color: rgba(46, 204, 113, 0.4); color: #2ecc71;">
+                        <i class="fas fa-share-alt"></i> <span>تصدير لمنصات التواصل الاجتماعي</span>
                     </button>
                 </div>
             </fieldset>
 
             <fieldset class="fieldset">
-                <legend>أخرى</legend>
-                <div class="form-group">
-                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="share-editor-btn"
-                        style="width: 100%;">
-                        <i class="fas fa-edit"></i> مشاركة رابط المحرر
+                <legend><i class="fas fa-sliders-h" style="color:#a855f7;"></i> إعدادات وتخصيص المحرر</legend>
+                <div class="control-grid">
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="lang-toggle-btn">
+                        <i class="fas fa-language" style="color:#38bdf8;"></i> <span>اللغة (AR / EN)</span>
+                    </button>
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="theme-toggle-btn">
+                        <i class="fas fa-adjust" style="color:#f1c40f;"></i> <span>تبديل المظهر</span>
                     </button>
                 </div>
-                <div class="form-group">
-                    <button class="btn btn-danger mobile-action-btn" data-trigger-id="reset-design-btn"
-                        style="width: 100%;">
-                        <i class="fas fa-undo"></i> إعادة تعيين التصميم
+                <div class="form-group" style="margin-top: 12px;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary); display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span><i class="fas fa-qrcode" style="color:#a855f7;"></i> حجم QR داخل البطاقة</span>
+                        <output id="tbs-qr-size-output-m">30</output>
+                    </label>
+                    <input id="tbs-qr-size-m" class="tbs-range" type="range" min="15" max="55" value="30"
+                        oninput="document.getElementById('qr-size') && (document.getElementById('qr-size').value=this.value, document.getElementById('qr-size').dispatchEvent(new Event('input', {bubbles:true}))); document.getElementById('tbs-qr-size-output-m').textContent=this.value;"
+                        style="width:100%; accent-color: #a855f7;">
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <button class="btn btn-secondary mobile-action-btn" data-trigger-id="ep2-help-btn" style="width: 100%;">
+                        <i class="fas fa-keyboard" style="color:#4da6ff;"></i> <span>اختصارات لوحة المفاتيح</span>
                     </button>
                 </div>
             </fieldset>
 
             <fieldset class="fieldset mobile-user-section" id="mobile-user-section">
-                <legend>الحساب</legend>
+                <legend><i class="fas fa-user-circle"></i> الحساب</legend>
                 <div class="form-group" id="mobile-user-login-container">
                     <a href="login.html" id="mobile-user-login-link" class="btn btn-secondary mobile-action-btn"
                         style="width: 100%; text-decoration: none; text-align: center;">
@@ -2220,6 +2239,16 @@
                         style="width: 100%; text-decoration: none; text-align: center; color: #dc3545; border-color: #dc3545;">
                         <i class="fas fa-sign-out-alt"></i> تسجيل خروج
                     </a>
+                </div>
+            </fieldset>
+
+            <fieldset class="fieldset tbs-danger-section" style="border-color: rgba(231,76,60,0.3); background: rgba(231,76,60,0.04);">
+                <legend style="color:#ef4444;"><i class="fas fa-triangle-exclamation"></i> منطقة الخطر</legend>
+                <div class="form-group">
+                    <button class="btn btn-danger mobile-action-btn" data-trigger-id="reset-design-btn"
+                        style="width: 100%; background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #ef4444;">
+                        <i class="fas fa-trash-alt"></i> إعادة تعيين التصميم بالكامل
+                    </button>
                 </div>
             </fieldset>
         </aside>
@@ -2543,8 +2572,8 @@
             <span>التصميم</span>
         </button>
         <button class="mobile-nav-item" data-target="panel-share">
-            <i class="fas fa-share-square"></i>
-            <span>حفظ ومشاركة</span>
+            <i class="fas fa-cog"></i>
+            <span>الإعدادات والحفظ</span>
         </button>
     </nav>
 

@@ -92,29 +92,80 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
         display: flex !important;
         align-items: center !important;
+        justify-content: space-between !important;
         box-sizing: border-box !important;
     }
 
-    /* Hide desktop-only toolbar elements */
-    .tb-zone.tb-center { display: none !important; }
-    .tb-nav-icons { display: none !important; }
-    .tb-divider { display: none !important; }
-    .tb-label { display: none !important; }
-    .tb-autosave { display: none !important; }
-    .user-status-bar { display: none !important; }
-    .download-container { display: none !important; }
-    .tb-history { display: none !important; }
-    #save-share-btn { display: none !important; }
-
+    /* Mobile Toolbar Zone Layout */
     .tb-zone.tb-left {
         flex: 0 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
         gap: 6px !important;
     }
 
-    .tb-zone.tb-right {
-        flex: 1 !important;
-        justify-content: flex-end !important;
+    .tb-zone.tb-center {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         gap: 6px !important;
+        flex: 1 !important;
+    }
+
+    .tb-zone.tb-right {
+        flex: 0 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 4px !important;
+    }
+
+    /* Face switcher on mobile toolbar */
+    .tb-face-switch {
+        display: inline-flex !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        padding: 2px !important;
+        border-radius: 20px !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    }
+
+    .tb-face-switch button {
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+        border-radius: 16px !important;
+    }
+
+    .tb-face-switch button span {
+        font-size: 11px !important;
+    }
+
+    /* Undo/Redo history on mobile toolbar */
+    .tb-history {
+        display: flex !important;
+        gap: 3px !important;
+    }
+
+    .tb-history .tb-icon-btn {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        font-size: 12px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 8px !important;
+    }
+
+    /* Hide desktop-only bulky toolbar elements on mobile */
+    .tb-zoom-controls,
+    .tb-view-controls,
+    #preview-mode-btn,
+    .tb-nav-icons,
+    .tb-divider,
+    .tb-label,
+    .tb-autosave,
+    .user-status-bar,
+    .download-container,
+    .tb-design-identity {
+        display: none !important;
     }
 
     .tb-logo-text { display: none !important; }
@@ -124,15 +175,15 @@
     }
 
     .tb-icon-btn {
-        width: 36px !important;
-        height: 36px !important;
-        min-width: 36px !important;
-        font-size: 14px !important;
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        font-size: 13px !important;
     }
 
     .tb-action-btn {
-        padding: 6px 10px !important;
-        font-size: 13px !important;
+        padding: 5px 8px !important;
+        font-size: 12px !important;
         min-width: auto !important;
     }
 
