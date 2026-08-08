@@ -247,8 +247,7 @@
 @media (max-width: 1040px) {
     .pro-toolbar #preview-mode-btn,
     .pro-toolbar #theme-toggle-btn,
-    .pro-toolbar #tools-dropdown-wrap,
-    .pro-toolbar #lang-toggle-btn { display: none !important; }
+    .pro-toolbar #tools-dropdown-wrap { display: none !important; }
 }
 
 @media (max-width: 768px) {
@@ -273,10 +272,80 @@
     .tb-zoom-controls,
     .pro-toolbar #preview-mode-btn,
     .pro-toolbar .download-container,
-    .pro-toolbar #save-share-btn,
-    .pro-toolbar .user-status-bar,
     .pro-toolbar .tb-divider,
     .pro-toolbar #mobile-share-btn { display: none !important; }
+
+    /* Always show Language, User Status / Login, and Save Design CTA on Mobile Toolbar */
+    .pro-toolbar #lang-toggle-btn {
+        display: inline-flex !important;
+        height: 34px !important;
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        background: rgba(77, 166, 255, 0.12) !important;
+        border: 1px solid rgba(77, 166, 255, 0.25) !important;
+        border-radius: 10px !important;
+        color: #4da6ff !important;
+        align-items: center !important;
+        gap: 3px !important;
+        min-width: auto !important;
+    }
+    .pro-toolbar #lang-toggle-btn .tb-label {
+        display: inline !important;
+        font-size: 11px !important;
+    }
+    .pro-toolbar .user-status-bar {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 3px !important;
+        margin: 0 !important;
+    }
+    .pro-toolbar .user-status-bar .tb-pill-btn,
+    .pro-toolbar .user-status-bar .tb-user-pill {
+        display: inline-flex !important;
+        height: 34px !important;
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 10px !important;
+        color: #e6f0f7 !important;
+        align-items: center !important;
+        gap: 4px !important;
+        white-space: nowrap !important;
+        text-decoration: none !important;
+    }
+    .pro-toolbar .user-status-bar .tb-user-name {
+        display: inline-block !important;
+        max-width: 55px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        font-size: 11px !important;
+    }
+    .pro-toolbar #save-share-btn {
+        display: inline-flex !important;
+        height: 34px !important;
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        color: #ffffff !important;
+        align-items: center !important;
+        gap: 4px !important;
+        white-space: nowrap !important;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+        cursor: pointer !important;
+    }
+    .pro-toolbar #save-share-btn #save-btn-text,
+    .pro-toolbar #save-share-btn .tb-label {
+        display: inline !important;
+        font-size: 11px !important;
+        color: #ffffff !important;
+    }
     .pro-toolbar .tb-logo { width: 34px; justify-content: center; }
     .pro-toolbar .tb-logo img { width: 28px !important; height: 28px !important; object-fit: contain; }
     .tb-face-switch { padding: 2px; border-radius: 10px; }
