@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 function registerCacheAndRedirectMiddleware(app) {
   app.use((req, res, next) => {
@@ -94,27 +95,26 @@ function registerNfcStaticFiles(app, rootDir) {
     next();
   });
 
-  // Serve logo assets at root level as well to prevent logo 404s regardless of URL path
-  const logoFiles = new Set([
-    'mc-prime-nfc.png',
-    'mcprime-logo-optimized.png',
-    'mcprime-logo-optimized.webp',
-    'mcprime-logo-transparent.png',
-    'logo.svg',
-    'logo.png',
-    'favicon.ico'
-  ]);
+  // Serve logo assets at /nfc/<filename> AND bare /<filename> to prevent 404s everywhere
+  const logoFileMap = {
+    'mc-prime-nfc.png': path.resolve(rootDir, 'mc-prime-nfc.png'),
+    'mcprime-logo-optimized.png': path.resolve(rootDir, 'mcprime-logo-optimized.png'),
+    'mcprime-logo-optimized.webp': path.resolve(rootDir, 'mcprime-logo-optimized.webp'),
+    'mcprime-logo-transparent.png': path.resolve(rootDir, 'mcprime-logo-transparent.png'),
+    'logo.svg': path.resolve(rootDir, 'logo.svg'),
+    'logo.png': path.resolve(rootDir, 'logo.png'),
+    'favicon.ico': path.resolve(rootDir, 'favicon.ico')
+  };
 
-  app.get('*', (req, res, next) => {
-    const basename = path.basename(req.path).toLowerCase();
-    if (logoFiles.has(basename)) {
-      const targetFile = path.resolve(rootDir, basename);
-      if (fs.existsSync(targetFile)) {
-        setNfcStaticHeaders(res, targetFile);
-        return res.sendFile(targetFile);
+  // Handle bare root requests like GET /mc-prime-nfc.png
+  Object.entries(logoFileMap).forEach(([filename, filePath]) => {
+    app.get(`/${filename}`, (req, res, next) => {
+      if (fs.existsSync(filePath)) {
+        setNfcStaticHeaders(res, filePath);
+        return res.sendFile(filePath);
       }
-    }
-    next();
+      next();
+    });
   });
 
   app.use('/nfc', express.static(rootDir, {
