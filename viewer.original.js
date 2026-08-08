@@ -980,7 +980,11 @@ document.addEventListener('DOMContentLoaded', () => {
             setSafeHtml(frontDisplay, `<img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardFront}">`);
             setSafeHtml(backDisplay, `<img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="${i18n.cardBack}">`);
 
-            const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
+            const flipFn = (e) => { 
+                if (e.target.closest('a, button, input, select, textarea, [data-no-flip]')) return;
+                e.stopPropagation(); 
+                flipWrapper.classList.toggle('is-flipped'); 
+            };
             flipWrapper.addEventListener('click', flipFn);
             flipBtn.addEventListener('click', flipFn);
             flipBtn.style.display = 'inline-flex';
@@ -1089,7 +1093,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 setSafeHtml(frontDisplay, `<img src="${capturedFront}" alt="${i18n.cardFront}" loading="lazy">`);
                 setSafeHtml(backDisplay, `<img src="${capturedBack}" alt="${i18n.cardBack}" loading="lazy">`);
 
-                const flipFn = (e) => { e.stopPropagation(); flipWrapper.classList.toggle('is-flipped'); };
+                const flipFn = (e) => { 
+                    if (e.target.closest('a, button, input, select, textarea, [data-no-flip]')) return;
+                    e.stopPropagation(); 
+                    flipWrapper.classList.toggle('is-flipped'); 
+                };
                 flipWrapper.addEventListener('click', flipFn);
                 flipBtn.addEventListener('click', flipFn);
                 flipBtn.style.display = 'inline-flex';

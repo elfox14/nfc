@@ -1520,10 +1520,14 @@ END:VCARD`;
                 }
             }
 
-            document.getElementById('card')?.addEventListener('click', function() {
-                this.classList.toggle('is-flipped');
-                if ('vibrate' in navigator) navigator.vibrate(25);
-            });
+            const cardToggleEl = document.getElementById('card') || document.querySelector('.cards-wrapper');
+            if (cardToggleEl) {
+                cardToggleEl.addEventListener('click', function(e) {
+                    if (e.target.closest('a, button, input, select, textarea, [data-no-flip]')) return;
+                    cardToggleEl.classList.toggle('is-flipped');
+                    if ('vibrate' in navigator) navigator.vibrate(25);
+                });
+            }
             document.getElementById('ejs-story-open-btn')?.addEventListener('click', openStoryGenerator);
             document.getElementById('ejs-share-btn')?.addEventListener('click', shareCard);
             document.getElementById('ejs-qr-open-btn')?.addEventListener('click', openQrModal);
