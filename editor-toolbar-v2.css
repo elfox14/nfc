@@ -341,12 +341,14 @@
         font-size: 11px !important;
     }
 
-    /* Primary Save CTA on Mobile Toolbar */
+    /* Primary Save CTA on Mobile Toolbar - Styled to auto-fit text and enlarged icon */
     .pro-toolbar #save-share-btn {
         display: inline-flex !important;
-        height: 34px !important;
-        padding: 0 10px !important;
-        font-size: 11px !important;
+        width: auto !important;
+        min-width: auto !important;
+        height: 36px !important;
+        padding: 0 12px !important;
+        font-size: 12px !important;
         font-weight: 700 !important;
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
         border: none !important;
@@ -354,19 +356,53 @@
         color: #ffffff !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 4px !important;
+        gap: 6px !important;
         white-space: nowrap !important;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important;
         cursor: pointer !important;
         flex-shrink: 0 !important;
     }
+    .pro-toolbar #save-share-btn i {
+        font-size: 14px !important;
+        margin: 0 !important;
+    }
     .pro-toolbar #save-share-btn #save-btn-text,
     .pro-toolbar #save-share-btn .tb-label {
-        display: inline !important;
-        font-size: 11px !important;
+        display: inline-block !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
         color: #ffffff !important;
         white-space: nowrap !important;
     }
+
+    /* Navigation Icons on Mobile Toolbar (Gallery & Blog) */
+    .pro-toolbar .tb-nav-icons {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        flex-shrink: 0 !important;
+    }
+    .pro-toolbar .tb-nav-icons .tb-icon-btn {
+        display: inline-flex !important;
+        width: 34px !important;
+        min-width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 10px !important;
+        color: #8bb8e8 !important;
+        font-size: 14px !important;
+        text-decoration: none !important;
+        flex-shrink: 0 !important;
+    }
+    .pro-toolbar .tb-nav-icons .tb-icon-btn:hover {
+        background: rgba(77, 166, 255, 0.2) !important;
+        color: #ffffff !important;
+    }
+
     .pro-toolbar .tb-logo { width: 34px; justify-content: center; flex-shrink: 0; }
     .pro-toolbar .tb-logo img { width: 28px !important; height: 28px !important; object-fit: contain; }
     .tb-face-switch { padding: 2px; border-radius: 10px; flex-shrink: 0; }

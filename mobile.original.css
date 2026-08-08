@@ -207,7 +207,6 @@
     .tb-zoom-controls,
     .tb-view-controls,
     #preview-mode-btn,
-    .tb-nav-icons,
     .tb-divider,
     .tb-autosave,
     .download-container,
@@ -219,6 +218,28 @@
     #mobile-share-btn,
     #user-logout-btn {
         display: none !important;
+    }
+
+    /* Navigation Icons on Mobile Toolbar (Gallery & Blog) */
+    .tb-nav-icons {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+    .tb-nav-icons .tb-icon-btn {
+        display: inline-flex !important;
+        width: 34px !important;
+        min-width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 10px !important;
+        color: #8bb8e8 !important;
+        font-size: 14px !important;
+        text-decoration: none !important;
     }
 
     .tb-logo-text { display: none !important; }
