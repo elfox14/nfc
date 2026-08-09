@@ -109,10 +109,6 @@
                     global.StateManager.applyStoredAnchors(state.anchors);
                 }
             }
-
-            if (state.anchors && typeof global.StateManager.applyStoredAnchors === 'function') {
-                global.StateManager.applyStoredAnchors(state.anchors);
-            }
             return true;
         } catch (error) {
             console.warn('[EditorExtensionPersistence] Geometry restore failed:', error);
