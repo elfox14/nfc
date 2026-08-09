@@ -1,0 +1,70 @@
+/*
+ * Default-card presentation only.
+ *
+ * These rules apply exclusively to a brand-new/reset editor state. They keep
+ * the intended default composition centered without changing the positioning
+ * model used by saved designs.
+ */
+
+.editor-body .card-front-content-layer.editor-default-front-layout {
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 30px 6% 42px;
+}
+
+.editor-body .card-front-content-layer.editor-default-front-layout > #card-logo,
+.editor-body .card-front-content-layer.editor-default-front-layout > #card-name,
+.editor-body .card-front-content-layer.editor-default-front-layout > #card-tagline,
+.editor-body .card-front-content-layer.editor-default-front-layout > .phone-button-draggable-wrapper {
+    flex: 0 0 auto;
+    margin: 0 !important;
+    text-align: center;
+    align-self: center;
+}
+
+.editor-body .card-front-content-layer.editor-default-front-layout > #card-logo {
+    width: 16%;
+    min-width: 58px;
+    max-width: 92px;
+    margin-bottom: 6px !important;
+}
+
+.editor-body .card-front-content-layer.editor-default-front-layout > #card-name {
+    max-width: 88%;
+    line-height: 1.25;
+}
+
+.editor-body .card-front-content-layer.editor-default-front-layout > #card-tagline {
+    max-width: 88%;
+    line-height: 1.45;
+}
+
+.editor-body .card-front-content-layer.editor-default-front-layout > .phone-button-draggable-wrapper {
+    position: relative;
+    inset: auto;
+    transform: translate(0, 0);
+    margin-top: 2px !important;
+}
+
+.editor-body .card-back-content-layer.editor-default-back-layout {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 42px 8%;
+}
+
+.editor-body .card-back-content-layer.editor-default-back-layout > #qr-code-wrapper {
+    position: relative;
+    inset: auto;
+    width: 32% !important;
+    max-width: 150px;
+    transform: translate(0, 0);
+}
+
+@media (max-width: 700px) {
+    .editor-body .card-front-content-layer.editor-default-front-layout {
+        gap: 6px;
+        padding: 24px 7% 36px;
+    }
+}
