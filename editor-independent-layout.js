@@ -1,5 +1,5 @@
 /**
- * MC PRIME NFC — Independent card element layout v1.1
+ * MC PRIME NFC — Independent card element layout v1.2
  *
  * Converts editable card layers from flow/flex positioning to independent
  * absolute positioning while preserving their current visual coordinates.
@@ -89,9 +89,9 @@
         var sy = scale.y || 1;
         var entries = [];
 
-        // IMPORTANT: measure every sibling before changing any one element to
-        // absolute positioning. Otherwise removing one flex item can move the
-        // remaining items and we would accidentally save the wrong coordinates.
+        // Measure every sibling first. This is critical while the legacy
+        // editor is still using flex/flow layout: changing one child to
+        // absolute positioning before measuring the others would reflow them.
         targets(container).forEach(function (element) {
             if (element.dataset.independentLayoutReady === 'true') return;
             var itemRect = rectOf(element);
@@ -146,24 +146,9 @@
         if (document.getElementById('editor-independent-layout-css')) return;
         var style = document.createElement('style');
         style.id = 'editor-independent-layout-css';
-        style.textContent = [
-            '.card-content-layer{position:relative!important}',
-            '.card-content-layer>#card-logo,',
-            '.card-content-layer>#card-personal-photo-wrapper,',
-            '.card-content-layer>#card-name,',
-            '.card-content-layer>#card-tagline,',
-            '.card-content-layer>#qr-code-wrapper,',
-            '.card-content-layer>.phone-button-draggable-wrapper,',
-            '.card-content-layer>.draggable-social-link,',
-            '.card-content-layer>.draggable-on-card,',
-            '.card-content-layer>.editable-element,',
-            '.card-content-layer>.card-element,',
-            '.card-content-layer>[data-element-type],',
-            '.card-content-layer>[data-editor-created="true"]{',
-            'position:absolute!important;right:auto!important;bottom:auto!important;',
-            'margin:0!important;flex:none!important;',
-            '}'
-        ].join('');
+        // Do not set child elements to absolute here. The first measurement
+        // must happen while the original flex/flow layout is intact.
+        style.textContent = '.card-content-layer{position:relative!important}';
         document.head.appendChild(style);
     }
 
@@ -191,6 +176,9 @@
     }
 
     function init() {
+        // Only the card container is normalized before measurement. Child
+        // elements are converted to absolute positioning after all of them
+        // have been measured in their original layout.
         installStyles();
         initialize();
         installObserver();
