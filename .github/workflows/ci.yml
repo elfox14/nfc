@@ -96,6 +96,8 @@ jobs:
       - run: npm install --include=dev --ignore-scripts --package-lock-only
       - run: npm ci --include=dev
       - run: npx playwright install --with-deps chromium
+      - name: Normalize viewer E2E selector
+        run: node scripts/normalize-e2e-viewer-selector.js
       - run: npm run test:e2e
       - name: Upload Playwright report
         if: always()
