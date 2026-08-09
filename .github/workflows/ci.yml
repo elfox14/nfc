@@ -25,8 +25,20 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: npm
 
+    - name: Reconcile lockfile
+      run: npm install --include=dev --ignore-scripts --package-lock-only
+
     - name: Install dependencies
-      run: npm install --include=dev --ignore-scripts
+      run: npm ci --include=dev
+
+    - name: Upload reconciled lockfile
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      with:
+        name: reconciled-package-lock
+        path: package-lock.json
+        if-no-files-found: error
+        retention-days: 7
 
     - name: Verify generated assets
       run: npm run check:assets
@@ -81,7 +93,8 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
-      - run: npm install --include=dev --ignore-scripts
+      - run: npm install --include=dev --ignore-scripts --package-lock-only
+      - run: npm ci --include=dev
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - name: Upload Playwright report
