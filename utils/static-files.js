@@ -51,6 +51,48 @@ function setNfcStaticHeaders(res, filePath) {
   }
 }
 
+function injectCspNonceIntoHtml(html, nonce) {
+  if (!nonce) return html;
+  // Static HTML is trusted repository content. Every script element receives the
+  // per-request nonce so the strict CSP can execute both external and inline scripts.
+  return html.replace(/<script(?![^>]*\bnonce\s*=)/gi, `<script nonce="${nonce}"`);
+}
+
+function resolveStaticHtml(rootDir, requestPath) {
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(requestPath);
+  } catch {
+    return null;
+  }
+
+  const relativePath = decodedPath.replace(/^\/+/, '');
+  const root = path.resolve(rootDir);
+  let candidate = path.resolve(root, relativePath);
+
+  if (!candidate.startsWith(`${root}${path.sep}`) && candidate !== root) return null;
+
+  if (fs.existsSync(candidate) && fs.statSync(candidate).isFile() && path.extname(candidate).toLowerCase() === '.html') {
+    return candidate;
+  }
+
+  if (!path.extname(candidate)) {
+    const htmlCandidate = `${candidate}.html`;
+    if (htmlCandidate.startsWith(`${root}${path.sep}`) && fs.existsSync(htmlCandidate) && fs.statSync(htmlCandidate).isFile()) {
+      return htmlCandidate;
+    }
+  }
+
+  if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+    const indexCandidate = path.join(candidate, 'index.html');
+    if (indexCandidate.startsWith(`${root}${path.sep}`) && fs.existsSync(indexCandidate) && fs.statSync(indexCandidate).isFile()) {
+      return indexCandidate;
+    }
+  }
+
+  return null;
+}
+
 function registerNfcStaticFiles(app, rootDir) {
   const blockedFiles = new Set([
     'server.js',
@@ -69,8 +111,8 @@ function registerNfcStaticFiles(app, rootDir) {
     'fix-hreflang.js',
     'inject-premium.js',
     'optimize-images.js',
-    'upload-config.php',  // PHP config — must never be served publicly
-    'upload.php',         // PHP upload handler — not served from Node.js
+    'upload-config.php',
+    'upload.php',
   ]);
   const blockedDirectories = new Set([
     'routes', 'utils', 'test', 'e2e', 'scripts', 'docs', 'coverage', 'node_modules',
@@ -95,7 +137,6 @@ function registerNfcStaticFiles(app, rootDir) {
     next();
   });
 
-  // Serve logo assets at /nfc/<filename> AND bare /<filename> to prevent 404s everywhere
   const logoFileMap = {
     'mc-prime-nfc.png': path.resolve(rootDir, 'mc-prime-nfc.png'),
     'mcprime-logo-optimized.png': path.resolve(rootDir, 'mcprime-logo-optimized.png'),
@@ -106,7 +147,6 @@ function registerNfcStaticFiles(app, rootDir) {
     'favicon.ico': path.resolve(rootDir, 'favicon.ico')
   };
 
-  // Handle bare root requests like GET /mc-prime-nfc.png
   Object.entries(logoFileMap).forEach(([filename, filePath]) => {
     app.get(`/${filename}`, (req, res, next) => {
       if (fs.existsSync(filePath)) {
@@ -114,6 +154,23 @@ function registerNfcStaticFiles(app, rootDir) {
         return res.sendFile(filePath);
       }
       next();
+    });
+  });
+
+  // Static HTML must receive the same nonce that security-headers.js placed in
+  // the CSP header for this request. Without this, browsers correctly ignore
+  // 'unsafe-inline' when a nonce is present and block the page's inline scripts.
+  app.use('/nfc', (req, res, next) => {
+    if (!['GET', 'HEAD'].includes(req.method)) return next();
+
+    const filePath = resolveStaticHtml(rootDir, req.path);
+    if (!filePath) return next();
+
+    fs.readFile(filePath, 'utf8', (err, html) => {
+      if (err) return next(err);
+      setNfcStaticHeaders(res, filePath);
+      res.type('html');
+      return res.send(injectCspNonceIntoHtml(html, res.locals.cspNonce));
     });
   });
 
@@ -126,5 +183,7 @@ function registerNfcStaticFiles(app, rootDir) {
 module.exports = {
   registerCacheAndRedirectMiddleware,
   registerNfcStaticFiles,
-  setNfcStaticHeaders
+  setNfcStaticHeaders,
+  injectCspNonceIntoHtml,
+  resolveStaticHtml
 };
