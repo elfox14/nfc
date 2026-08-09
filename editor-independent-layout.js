@@ -1,16 +1,10 @@
 /**
- * MC PRIME NFC — Independent card element layout v1.3
+ * MC PRIME NFC — Independent card element layout v1.2
  *
- * HARD RULE:
- * Every editable layer owns its own geometry. A layer may change size or
- * position without changing the layout position of any other layer on the
- * same face or on the opposite face.
- *
- * The legacy editor contains flex/flow CSS in several places. The previous
- * controller only converted direct children and could therefore leave some
- * layers participating in normal flow. This version converts every top-level
- * editable layer to absolute positioning and applies left/top with CSS
- * priority so legacy rules cannot reintroduce flex reflow.
+ * Converts editable card layers from flow/flex positioning to independent
+ * absolute positioning while preserving their current visual coordinates.
+ * Every layer keeps its own position and size; resizing or moving one layer
+ * cannot reflow its siblings.
  */
 (function (global) {
     'use strict';
@@ -30,21 +24,15 @@
         '.editable-element',
         '.card-element',
         '[data-element-type]',
-        '[data-editor-created="true"]',
-        '[data-independent-card-layer="true"]'
+        '[data-editor-created="true"]'
     ].join(',');
 
     var observer = null;
     var scheduled = false;
-    var anonymousLayerSequence = 0;
 
     function finite(value, fallback) {
         var n = Number(value);
         return Number.isFinite(n) ? n : fallback;
-    }
-
-    function round(value) {
-        return Math.round(value * 1000) / 1000;
     }
 
     function rectOf(element) {
@@ -80,37 +68,14 @@
         };
     }
 
-    function isLayer(element) {
-        return !!(element && element.matches && element.matches(SELECTOR));
+    function round(value) {
+        return Math.round(value * 1000) / 1000;
     }
 
-    function layerKey(element) {
-        if (!element.id && !element.dataset.independentResizeKey) {
-            anonymousLayerSequence += 1;
-            element.dataset.independentResizeKey = 'layer-' + anonymousLayerSequence;
-        }
-        return element.id || element.dataset.independentResizeKey || null;
-    }
-
-    /**
-     * Return only the outermost editable layers in a card face. This prevents
-     * an inner icon/image from being treated as a second independent layer
-     * when its draggable wrapper is the actual editable object.
-     */
     function targets(container) {
-        var all = Array.from(container.querySelectorAll(SELECTOR));
-        return all.filter(function (element) {
-            var parent = element.parentElement;
-            while (parent && parent !== container) {
-                if (isLayer(parent)) return false;
-                parent = parent.parentElement;
-            }
-            return parent === container;
+        return Array.from(container.children).filter(function (element) {
+            return element.matches && element.matches(SELECTOR);
         });
-    }
-
-    function setImportantStyle(element, property, value) {
-        element.style.setProperty(property, value, 'important');
     }
 
     function stabilizeContainer(container) {
@@ -124,12 +89,11 @@
         var sy = scale.y || 1;
         var entries = [];
 
-        // IMPORTANT: measure all layers before changing any one layer to
-        // absolute positioning. Otherwise the remaining flex/flow children
-        // would reflow and we would capture the wrong coordinates.
+        // Measure every sibling first. This is critical while the legacy
+        // editor is still using flex/flow layout: changing one child to
+        // absolute positioning before measuring the others would reflow them.
         targets(container).forEach(function (element) {
             if (element.dataset.independentLayoutReady === 'true') return;
-
             var itemRect = rectOf(element);
             if (!itemRect || itemRect.width <= 0 || itemRect.height <= 0) return;
 
@@ -143,19 +107,14 @@
 
         entries.forEach(function (entry) {
             var element = entry.element;
-
-            // These are intentionally !important. The editor has legacy
-            // flex/position rules that can otherwise override this controller.
-            setImportantStyle(element, 'position', 'absolute');
-            setImportantStyle(element, 'left', round(entry.left) + 'px');
-            setImportantStyle(element, 'top', round(entry.top) + 'px');
-            setImportantStyle(element, 'right', 'auto');
-            setImportantStyle(element, 'bottom', 'auto');
-            setImportantStyle(element, 'margin', '0');
-            setImportantStyle(element, 'flex', 'none');
-            setImportantStyle(element, 'float', 'none');
+            element.style.position = 'absolute';
+            element.style.left = round(entry.left) + 'px';
+            element.style.top = round(entry.top) + 'px';
+            element.style.right = 'auto';
+            element.style.bottom = 'auto';
+            element.style.margin = '0';
+            element.style.flex = 'none';
             element.dataset.independentLayoutReady = 'true';
-            layerKey(element);
         });
 
         return entries.length;
@@ -185,40 +144,16 @@
 
     function installStyles() {
         if (document.getElementById('editor-independent-layout-css')) return;
-
         var style = document.createElement('style');
         style.id = 'editor-independent-layout-css';
-        style.textContent = [
-            '.card-content-layer{position:relative!important;display:block!important}',
-            '.card-content-layer > #card-logo,',
-            '.card-content-layer > #card-personal-photo-wrapper,',
-            '.card-content-layer > #card-name,',
-            '.card-content-layer > #card-tagline,',
-            '.card-content-layer > #qr-code-wrapper,',
-            '.card-content-layer > .phone-button-draggable-wrapper,',
-            '.card-content-layer > .draggable-social-link,',
-            '.card-content-layer > .draggable-on-card,',
-            '.card-content-layer > .editable-element,',
-            '.card-content-layer > .card-element,',
-            '.card-content-layer > [data-element-type],',
-            '.card-content-layer > [data-editor-created="true"],',
-            '.card-content-layer > [data-independent-card-layer="true"]{',
-            'position:absolute!important;',
-            'margin:0!important;',
-            'flex:none!important;',
-            'float:none!important;',
-            '}',
-            '#card-logo #card-logo-img,',
-            '#card-logo .logo-front{',
-            'transition-property:opacity,filter,background-color,border-color!important;',
-            '}'
-        ].join('');
+        // Do not set child elements to absolute here. The first measurement
+        // must happen while the original flex/flow layout is intact.
+        style.textContent = '.card-content-layer{position:relative!important}';
         document.head.appendChild(style);
     }
 
     function installObserver() {
         if (observer || typeof global.MutationObserver !== 'function' || !document.body) return;
-
         observer = new global.MutationObserver(function (mutations) {
             var relevant = mutations.some(function (mutation) {
                 if (mutation.type === 'childList') return true;
@@ -232,7 +167,6 @@
             });
             if (relevant) schedule();
         });
-
         observer.observe(document.body, {
             subtree: true,
             childList: true,
@@ -242,6 +176,9 @@
     }
 
     function init() {
+        // Only the card container is normalized before measurement. Child
+        // elements are converted to absolute positioning after all of them
+        // have been measured in their original layout.
         installStyles();
         initialize();
         installObserver();
@@ -250,8 +187,7 @@
     global.EditorIndependentLayout = {
         initialize: initialize,
         stabilizeContainer: stabilizeContainer,
-        selector: SELECTOR,
-        version: '1.3'
+        selector: SELECTOR
     };
 
     if (document.readyState === 'loading') {
