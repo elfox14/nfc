@@ -1,5 +1,6 @@
 /**
  * Persists DOM-level editor extensions that are outside the legacy StateManager.
+ * Also restores the intended balanced layout for a brand-new/reset card.
  */
 (function (global) {
     'use strict';
@@ -10,7 +11,40 @@
 
     function isLocalDraft() {
         var params = new global.URLSearchParams(global.location.search || '');
-        return !params.get('id');
+        return !params.get('id') && !params.get('collabId');
+    }
+
+    function hasSavedLocalDesign() {
+        try {
+            var config = global.Config;
+            var storageKey = config && config.LOCAL_STORAGE_KEY;
+            return Boolean(storageKey && global.localStorage.getItem(storageKey));
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function installDefaultLayoutStyles() {
+        if (document.getElementById('editor-default-card-css')) return;
+        var link = document.createElement('link');
+        link.id = 'editor-default-card-css';
+        link.rel = 'stylesheet';
+        link.href = 'editor-default-card.css?v=1.0';
+        document.head.appendChild(link);
+    }
+
+    function applyDefaultCardLayout() {
+        var params = new global.URLSearchParams(global.location.search || '');
+        var hasRemoteDesign = Boolean(params.get('id') || params.get('collabId'));
+        var useDefault = !hasRemoteDesign && !hasSavedLocalDesign();
+        var front = document.getElementById('card-front-content');
+        var back = document.getElementById('card-back-content');
+
+        installDefaultLayoutStyles();
+        if (front) front.classList.toggle('editor-default-front-layout', useDefault);
+        if (back) back.classList.toggle('editor-default-back-layout', useDefault);
+
+        return useDefault;
     }
 
     function save() {
@@ -49,13 +83,20 @@
     }
 
     function init() {
+        applyDefaultCardLayout();
         if (!isLocalDraft()) return;
         document.addEventListener('editor:historycommit', save);
         global.addEventListener('beforeunload', save);
         scheduleRestore();
     }
 
-    global.EditorExtensionPersistence = { save: save, restore: restore, key: KEY, isLocalDraft: isLocalDraft };
+    global.EditorExtensionPersistence = {
+        save: save,
+        restore: restore,
+        key: KEY,
+        isLocalDraft: isLocalDraft,
+        applyDefaultCardLayout: applyDefaultCardLayout
+    };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
     else init();
 }(typeof window !== 'undefined' ? window : globalThis));
