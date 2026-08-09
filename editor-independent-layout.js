@@ -1,13 +1,10 @@
 /**
- * MC PRIME NFC — Independent card element layout v1.0
+ * MC PRIME NFC — Independent card element layout v1.1
  *
  * Converts editable card layers from flow/flex positioning to independent
  * absolute positioning while preserving their current visual coordinates.
- * A layer may be resized or moved without reflowing its siblings.
- *
- * This controller deliberately works on each face independently. Rendering or
- * moving an element between front/back is therefore unable to move unrelated
- * elements on either face.
+ * Every layer keeps its own position and size; resizing or moving one layer
+ * cannot reflow its siblings.
  */
 (function (global) {
     'use strict';
@@ -30,7 +27,6 @@
         '[data-editor-created="true"]'
     ].join(',');
 
-    var initialized = new WeakSet();
     var observer = null;
     var scheduled = false;
 
@@ -42,23 +38,26 @@
     function rectOf(element) {
         if (!element || typeof element.getBoundingClientRect !== 'function') return null;
         var r = element.getBoundingClientRect();
+        var left = finite(r.left, 0);
+        var top = finite(r.top, 0);
+        var width = Math.max(0, finite(r.width, 0));
+        var height = Math.max(0, finite(r.height, 0));
         return {
-            left: finite(r.left, 0),
-            top: finite(r.top, 0),
-            width: Math.max(0, finite(r.width, 0)),
-            height: Math.max(0, finite(r.height, 0)),
-            right: finite(r.right, finite(r.left, 0) + finite(r.width, 0)),
-            bottom: finite(r.bottom, finite(r.top, 0) + finite(r.height, 0))
+            left: left,
+            top: top,
+            width: width,
+            height: height,
+            right: finite(r.right, left + width),
+            bottom: finite(r.bottom, top + height)
         };
     }
 
-    function scaleOf(container) {
-        var rect = rectOf(container);
+    function scaleOf(container, cardRect) {
         var width = finite(container && container.offsetWidth, 0);
         var height = finite(container && container.offsetHeight, 0);
         return {
-            x: width > 0 && rect && rect.width > 0 ? rect.width / width : 1,
-            y: height > 0 && rect && rect.height > 0 ? rect.height / height : 1
+            x: width > 0 && cardRect.width > 0 ? cardRect.width / width : 1,
+            y: height > 0 && cardRect.height > 0 ? cardRect.height / height : 1
         };
     }
 
@@ -79,53 +78,51 @@
         });
     }
 
-    function stabilize(container, element) {
-        if (!element || !element.parentElement || element.parentElement !== container) return false;
-        if (!element.matches(SELECTOR)) return false;
+    function stabilizeContainer(container) {
+        if (!container) return 0;
 
         var cardRect = rectOf(container);
-        var itemRect = rectOf(element);
-        if (!cardRect || !itemRect || cardRect.width <= 0 || cardRect.height <= 0) return false;
+        if (!cardRect || cardRect.width <= 0 || cardRect.height <= 0) return 0;
 
-        var scale = scaleOf(container);
-        var transform = localTransform(element);
+        var scale = scaleOf(container, cardRect);
         var sx = scale.x || 1;
         var sy = scale.y || 1;
+        var entries = [];
 
-        // Compute the element's untransformed anchor from its current visual
-        // position. This preserves existing saved data-x/data-y exactly.
-        var left = (itemRect.left - cardRect.left) / sx - transform.x;
-        var top = (itemRect.top - cardRect.top) / sy - transform.y;
+        // IMPORTANT: measure every sibling before changing any one element to
+        // absolute positioning. Otherwise removing one flex item can move the
+        // remaining items and we would accidentally save the wrong coordinates.
+        targets(container).forEach(function (element) {
+            if (element.dataset.independentLayoutReady === 'true') return;
+            var itemRect = rectOf(element);
+            if (!itemRect || itemRect.width <= 0 || itemRect.height <= 0) return;
 
-        if (!element.dataset.independentLayoutReady) {
+            var transform = localTransform(element);
+            entries.push({
+                element: element,
+                left: (itemRect.left - cardRect.left) / sx - transform.x,
+                top: (itemRect.top - cardRect.top) / sy - transform.y
+            });
+        });
+
+        entries.forEach(function (entry) {
+            var element = entry.element;
             element.style.position = 'absolute';
-            element.style.left = round(left) + 'px';
-            element.style.top = round(top) + 'px';
+            element.style.left = round(entry.left) + 'px';
+            element.style.top = round(entry.top) + 'px';
             element.style.right = 'auto';
             element.style.bottom = 'auto';
             element.style.margin = '0';
             element.style.flex = 'none';
             element.dataset.independentLayoutReady = 'true';
-            return true;
-        }
-
-        return false;
-    }
-
-    function stabilizeContainer(container) {
-        if (!container) return 0;
-        var changed = 0;
-        targets(container).forEach(function (element) {
-            if (stabilize(container, element)) changed += 1;
         });
-        return changed;
+
+        return entries.length;
     }
 
     function initialize() {
-        var containers = document.querySelectorAll('.card-content-layer');
         var changed = 0;
-        containers.forEach(function (container) {
-            if (!initialized.has(container)) initialized.add(container);
+        document.querySelectorAll('.card-content-layer').forEach(function (container) {
             changed += stabilizeContainer(container);
         });
         return changed;
@@ -171,7 +168,7 @@
     }
 
     function installObserver() {
-        if (observer || typeof global.MutationObserver !== 'function') return;
+        if (observer || typeof global.MutationObserver !== 'function' || !document.body) return;
         observer = new global.MutationObserver(function (mutations) {
             var relevant = mutations.some(function (mutation) {
                 if (mutation.type === 'childList') return true;
