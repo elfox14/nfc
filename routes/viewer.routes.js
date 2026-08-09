@@ -25,7 +25,6 @@ function isSafeViewerId(id) {
 function socialUrl(platformKey, rawValue) {
   const platform = PLATFORMS[platformKey];
   if (!platform) return null;
-
   if (platformKey === 'email') return `${platform.prefix}${rawValue}`;
   if (platformKey === 'whatsapp') return `${platform.prefix}${rawValue.replace(/\D/g, '')}`;
   return /^(https?:\/\/)/i.test(rawValue) ? rawValue : `${platform.prefix}${rawValue}`;
@@ -82,13 +81,7 @@ function buildContactLinksHtml(dynamicData = {}) {
       const fullUrl = safeContactUrl(key, value);
       if (!fullUrl) return;
       const displayValue = key === 'email' || key === 'whatsapp' ? value : displaySocialValue(value);
-
-      linksHTML.push(contactLinkHtml({
-        icon: PLATFORMS[key].icon,
-        href: fullUrl,
-        copyValue: fullUrl,
-        label: displayValue
-      }));
+      linksHTML.push(contactLinkHtml({ icon: PLATFORMS[key].icon, href: fullUrl, copyValue: fullUrl, label: displayValue }));
     }
   });
 
@@ -97,14 +90,7 @@ function buildContactLinksHtml(dynamicData = {}) {
       if (phone && phone.value) {
         const sanitizedValue = sanitizeText(phone.value, 100);
         const cleanNumber = String(phone.value).replace(/\D/g, '').slice(0, 20);
-        linksHTML.push(contactLinkHtml({
-          icon: 'fas fa-phone',
-          href: `tel:${cleanNumber}`,
-          copyValue: cleanNumber,
-          label: sanitizedValue,
-          target: false,
-          copyLabel: 'نسخ الرقم'
-        }));
+        linksHTML.push(contactLinkHtml({ icon: 'fas fa-phone', href: `tel:${cleanNumber}`, copyValue: cleanNumber, label: sanitizedValue, target: false, copyLabel: 'نسخ الرقم' }));
       }
     });
   }
@@ -115,20 +101,12 @@ function buildContactLinksHtml(dynamicData = {}) {
         const value = sanitizeText(link.value);
         const fullUrl = safeContactUrl(link.platform, value);
         if (!fullUrl) return;
-        linksHTML.push(contactLinkHtml({
-          icon: PLATFORMS[link.platform].icon,
-          href: fullUrl,
-          copyValue: fullUrl,
-          label: displaySocialValue(value)
-        }));
+        linksHTML.push(contactLinkHtml({ icon: PLATFORMS[link.platform].icon, href: fullUrl, copyValue: fullUrl, label: displaySocialValue(value) }));
       }
     });
   }
 
-  if (linksHTML.length > 0) {
-    return `<div class="links-group">${linksHTML.join('')}</div>`;
-  }
-
+  if (linksHTML.length > 0) return `<div class="links-group">${linksHTML.join('')}</div>`;
   return `
           <div class="no-links-message">
               <i class="fas fa-info-circle"></i>
@@ -137,12 +115,12 @@ function buildContactLinksHtml(dynamicData = {}) {
       `;
 }
 
-module.exports = function createViewerRouter({
-  getDb,
-  designsCollectionName,
-  rootDir,
-  absoluteBaseUrl,
-}) {
+function injectCspNonceIntoRenderedHtml(html, nonce) {
+  if (!nonce) return html;
+  return html.replace(/<script(?![^>]*\bnonce\s*=)/gi, `<script nonce="${nonce}"`);
+}
+
+module.exports = function createViewerRouter({ getDb, designsCollectionName, rootDir, absoluteBaseUrl }) {
   const router = express.Router();
 
   router.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
@@ -158,7 +136,6 @@ module.exports = function createViewerRouter({
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
         return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
       }
-
       if (!isSafeViewerId(id)) {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
         return res.status(400).send('Invalid card ID format.');
@@ -172,13 +149,9 @@ module.exports = function createViewerRouter({
       }
       const publishedDesign = sanitizeDesignState(publishedRevision);
 
-      db.collection(designsCollectionName).updateOne(
-        { shortId: id },
-        { $inc: { views: 1 } }
-      ).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
+      db.collection(designsCollectionName).updateOne({ shortId: id }, { $inc: { views: 1 } }).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
 
       res.setHeader('X-Robots-Tag', 'index, follow');
-
       const base = absoluteBaseUrl(req);
       const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
       const inputs = publishedDesign.inputs || {};
@@ -189,18 +162,12 @@ module.exports = function createViewerRouter({
 
       let ogImage = `${base}/nfc/og-image.png`;
       if (imageUrls.front) {
-        ogImage = imageUrls.front.startsWith('http')
-          ? imageUrls.front
-          : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`;
+        ogImage = imageUrls.front.startsWith('http') ? imageUrls.front : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`;
       }
 
-      const keywords = [
-        'NFC', 'بطاقة عمل ذكية', 'كارت شخصي',
-        name,
-        ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])
-      ].filter(Boolean).join(', ');
+      const keywords = ['NFC', 'بطاقة عمل ذكية', 'كارت شخصي', name, ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])].filter(Boolean).join(', ');
 
-      res.render(path.join(rootDir, 'viewer.ejs'), {
+      return res.render(path.join(rootDir, 'viewer.ejs'), {
         pageUrl,
         name,
         tagline,
@@ -209,6 +176,9 @@ module.exports = function createViewerRouter({
         design: publishedDesign,
         canonical: pageUrl,
         contactLinksHtml: buildContactLinksHtml(dynamicData)
+      }, (renderError, html) => {
+        if (renderError) throw renderError;
+        res.type('html').send(injectCspNonceIntoRenderedHtml(html, res.locals.cspNonce));
       });
     } catch (e) {
       console.error('Error in /nfc/viewer route:', e);
@@ -220,9 +190,7 @@ module.exports = function createViewerRouter({
   router.get('/nfc/view/:id', async (req, res) => {
     try {
       const id = String(req.params.id);
-      if (!id) {
-        return res.status(404).send('Not found');
-      }
+      if (!id) return res.status(404).send('Not found');
       res.redirect(301, `/nfc/viewer.html?id=${id}`);
     } catch (e) {
       console.error('Error in /nfc/view/:id redirect route:', e);
@@ -233,10 +201,4 @@ module.exports = function createViewerRouter({
   return router;
 };
 
-module.exports._private = {
-  buildContactLinksHtml,
-  displaySocialValue,
-  isSafeViewerId,
-  selectPublishedDesignData,
-  socialUrl
-};
+module.exports._private = { buildContactLinksHtml, displaySocialValue, isSafeViewerId, selectPublishedDesignData, socialUrl };

@@ -1,30 +1,6 @@
 const crypto = require('crypto');
 const helmet = require('helmet');
 
-function buildNonceOnlyHtmlCsp(nonce) {
-  const renderHost = process.env.RENDER_EXTERNAL_HOSTNAME;
-  const renderConnect = renderHost
-    ? ` https://${renderHost} wss://${renderHost}`
-    : '';
-
-  return [
-    "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https:",
-    "font-src 'self' https: data:",
-    `connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://*.jsdelivr.net https://*.mcprim.com https://mcprim.com https://*.onrender.com wss://*.onrender.com https://res.cloudinary.com${renderConnect}`,
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'"
-  ].join('; ');
-}
-
-function setNonceOnlyHtmlCsp(res) {
-  res.setHeader('Content-Security-Policy', buildNonceOnlyHtmlCsp(res.locals.cspNonce));
-}
-
 function applySecurityHeaders(app) {
   app.use(helmet.frameguard({ action: 'deny' }));
   app.use(helmet.noSniff());
@@ -51,8 +27,6 @@ function applySecurityHeaders(app) {
   });
 
   app.use((req, res, next) => {
-    const nonce = res.locals.cspNonce;
-
     const cspDirectives = {
       defaultSrc: ["'self'"],
       scriptSrc: [

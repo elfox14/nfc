@@ -9,7 +9,8 @@ test('mobile editor exposes both faces, autosave, QR, publishing and downloads',
   await expect(page.locator('#autosave-indicator')).toBeAttached();
   await expect(page.locator('#qr-code-accordion')).toBeAttached();
   await expect(page.locator('#save-share-btn')).toBeAttached();
-  await expect(page.locator('[data-trigger-id="save-share-btn"]')).toBeAttached();
+  await expect(page.locator('.mobile-action-btn[data-trigger-id="save-to-cloud-btn"]')).toBeAttached();
+  await expect(page.locator('.mobile-action-btn[data-trigger-id="share-card-btn"]')).toBeAttached();
   await expect(page.locator('[data-trigger-id="download-vcf"]')).toBeAttached();
   await expect(page.locator('[data-trigger-id="download-qrcode"]')).toBeAttached();
 
