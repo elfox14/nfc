@@ -40,7 +40,9 @@ function isAllowedOrigin(origin, allowedOrigins) {
     if (url.hostname.endsWith('.onrender.com') || url.hostname.endsWith('.render.com')) {
       return true;
     }
-  } catch {}
+  } catch {
+    // Ignore malformed origins and continue with the local-development fallback below.
+  }
 
   return process.env.NODE_ENV !== 'production' && isLocalDevelopmentOrigin(origin);
 }
