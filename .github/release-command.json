@@ -1,6 +1,6 @@
 {
-  "requestId": "deploy-security-launch-blockers-2026-08-02",
-  "ref": "5b95c7e7d9749401404dbf898b3e9456840f99af",
+  "requestId": "deploy-main-f1fc297c-2026-08-09",
+  "ref": "f1fc297c7ee65424ec3f73f0f51c07a5f0863735",
   "releaseTag": "",
-  "reason": "Deploy the merged public launch security fixes to Render and the matching cPanel static site"
+  "reason": "Deploy current main after CI dependency and E2E repair; verify API and matching static production release"
 }
