@@ -248,18 +248,8 @@
         document.head.appendChild(style);
     }
 
-    function loadIndependentLayout() {
-        if (global.EditorIndependentLayout || document.getElementById('editor-independent-layout-script')) return;
-        var script = document.createElement('script');
-        script.id = 'editor-independent-layout-script';
-        script.src = 'editor-independent-layout.js?v=1.1';
-        script.defer = true;
-        document.head.appendChild(script);
-    }
-
     function init() {
         injectStyles();
-        loadIndependentLayout();
         document.addEventListener('input', scheduleReconcile, true);
         document.addEventListener('change', scheduleReconcile, true);
     }
