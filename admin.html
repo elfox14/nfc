@@ -38,42 +38,82 @@
         #auth-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(12px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
+            padding: 20px;
         }
         .auth-box {
             background: var(--bg-panel);
             padding: 40px;
             border-radius: var(--radius);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             width: 100%;
-            max-width: 400px;
-            text-align: center;
+            max-width: 440px;
             border: 1px solid var(--border);
         }
-        .auth-box h2 { margin-bottom: 24px; color: var(--accent); }
+        .auth-box h2 {
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .auth-box h2 i { color: var(--accent); }
+        .auth-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+            font-size: 0.95rem;
+            text-align: center;
+        }
         .input-group { margin-bottom: 20px; text-align: right; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 0.9rem; }
+        .input-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .input-group label i { color: var(--accent); }
         .input-group input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 13px 16px;
             background: var(--bg-base);
             border: 1px solid var(--border);
             border-radius: 8px;
             color: var(--text-primary);
-            font-family: monospace;
-            direction: ltr;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
         }
-        .input-group input:focus { outline: none; border-color: var(--accent); }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .pwd-container { position: relative; }
+        .pwd-toggle {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+        }
+        .pwd-toggle:hover { color: var(--text-primary); }
         .btn {
             background: var(--accent);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 14px 24px;
             border-radius: 8px;
             font-size: 1rem;
             font-weight: 600;
@@ -81,8 +121,27 @@
             cursor: pointer;
             width: 100%;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+
+        .error-banner {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 18px;
+            font-size: 0.9rem;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            text-align: right;
+        }
 
         /* --- Dashboard Layout --- */
         #app { display: none; min-height: 100vh; }
@@ -97,68 +156,121 @@
             padding: 24px 0;
             display: flex;
             flex-direction: column;
+            z-index: 100;
         }
-        .logo { padding: 0 24px 32px; font-size: 1.5rem; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 12px; }
+        .logo {
+            padding: 0 24px 28px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
         .logo i { color: var(--accent); }
         .nav-items { flex: 1; }
         .nav-item {
-            padding: 16px 24px;
+            padding: 14px 24px;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             color: var(--text-secondary);
             text-decoration: none;
             transition: all 0.2s;
             cursor: pointer;
             font-weight: 500;
+            margin: 4px 12px;
+            border-radius: 8px;
         }
         .nav-item:hover, .nav-item.active {
             color: var(--accent);
-            background: rgba(59, 130, 246, 0.1);
-            border-right: 4px solid var(--accent);
+            background: rgba(59, 130, 246, 0.12);
         }
+        .nav-item.active { font-weight: 700; color: #60a5fa; }
         .nav-item i { width: 20px; font-size: 1.1rem; }
+
+        .admin-profile {
+            padding: 16px 20px;
+            margin: 0 12px;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .admin-info { overflow: hidden; }
+        .admin-info .admin-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .admin-info .admin-role { font-size: 0.75rem; color: var(--accent); }
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .logout-btn:hover { background: rgba(239, 68, 68, 0.15); }
 
         .main-content {
             margin-right: 260px;
-            padding: 40px;
+            padding: 32px 40px;
+            min-height: 100vh;
         }
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .header h1 { font-size: 1.8rem; font-weight: 700; }
-        .header .user-info { color: var(--text-secondary); font-size: 0.9rem; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .header h1 { font-size: 1.8rem; font-weight: 800; }
+        .header .last-update { font-size: 0.85rem; color: var(--text-secondary); }
 
         /* --- Views --- */
-        .view { display: none; animation: fadeIn 0.3s ease; }
+        .view { display: none; }
         .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 40px; }
+        /* --- Stats Grid --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
         .stat-card {
             background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
             padding: 24px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             gap: 20px;
         }
-        .stat-icon { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .stat-info h3 { color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; margin-bottom: 4px; }
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .icon-blue { background: rgba(59, 130, 246, 0.15); color: var(--accent); }
+        .icon-green { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .icon-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+        .stat-info h3 { font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 4px; }
         .stat-info p { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); }
-        
-        .icon-blue { background: rgba(59, 130, 246, 0.1); color: var(--accent); }
-        .icon-green { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .icon-purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
-        .icon-red { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 
-        /* Tables */
+        /* --- Tables --- */
         .table-container {
             background: var(--bg-panel);
-            border: 1px solid var(--border);
             border-radius: var(--radius);
+            border: 1px solid var(--border);
             overflow: hidden;
+            margin-bottom: 32px;
         }
         .table-header {
             padding: 20px 24px;
@@ -168,84 +280,108 @@
             align-items: center;
         }
         .table-header h2 { font-size: 1.2rem; }
-        .search-box {
-            position: relative;
-        }
+        .search-box { position: relative; width: 300px; }
         .search-box input {
+            width: 100%;
+            padding: 8px 16px 8px 36px;
             background: var(--bg-base);
             border: 1px solid var(--border);
-            padding: 8px 16px 8px 36px;
             border-radius: 6px;
             color: var(--text-primary);
-            outline: none;
-            width: 250px;
+            font-family: inherit;
         }
         .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
-        
+
         table { width: 100%; border-collapse: collapse; text-align: right; }
         th, td { padding: 16px 24px; border-bottom: 1px solid var(--border); }
-        th { color: var(--text-secondary); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
-        td { font-size: 0.95rem; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.01); }
-        
+        th { background: var(--bg-elevated); color: var(--text-secondary); font-weight: 600; font-size: 0.85rem; }
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
+
         .badge {
             padding: 4px 10px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
+            display: inline-block;
         }
-        .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .badge.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-        .badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .badge.success { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .badge.warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
 
-        .pagination { padding: 16px 24px; display: flex; justify-content: center; gap: 8px; border-top: 1px solid var(--border); }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px;
+        }
         .page-btn {
-            background: var(--bg-elevated);
-            border: none;
-            color: var(--text-primary);
-            width: 32px;
-            height: 32px;
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .page-btn:hover { background: var(--accent); }
-        .page-btn.active { background: var(--accent); }
+        .page-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-        /* Error Log specific */
-        .error-item { padding: 16px 24px; border-bottom: 1px solid var(--border); }
+        /* --- Errors --- */
+        .error-item {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+        }
         .error-item:last-child { border-bottom: none; }
-        .error-meta { display: flex; gap: 16px; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-secondary); }
+        .error-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
         .error-msg { font-family: monospace; color: #fca5a5; background: rgba(239, 68, 68, 0.05); padding: 12px; border-radius: 6px; border-left: 3px solid var(--danger); direction: ltr; text-align: left; }
 
         .loader {
             display: inline-block;
-            width: 24px; height: 24px;
-            border: 3px solid rgba(255,255,255,0.1);
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.2);
             border-radius: 50%;
-            border-top-color: var(--accent);
-            animation: spin 1s ease-in-out infinite;
+            border-top-color: #fff;
+            animation: spin 0.8s ease-in-out infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-state { padding: 40px; text-align: center; color: var(--text-secondary); }
     </style>
     <link rel="stylesheet" href="/nfc/premium-ui.css">
-  <link rel="icon" href="/nfc/mc-prime-nfc.png" type="image/png">
+    <link rel="icon" href="/nfc/mc-prime-nfc.png" type="image/png">
 </head>
 <body>
 
     <!-- Auth Overlay -->
     <div id="auth-overlay">
         <div class="auth-box">
-            <h2><i class="fas fa-shield-alt"></i> وصول إداري</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.9rem;">يرجى إدخال رمز الوصول الإداري (Admin Token) للمتابعة.</p>
+            <h2><i class="fas fa-user-shield"></i> لوحة تحكم الإدارة</h2>
+            <p class="auth-subtitle">سجل الدخول بحساب المسؤول للمتابعة</p>
+            
             <form id="auth-form" onsubmit="event.preventDefault(); login();">
                 <div class="input-group">
-                    <input type="password" id="admin-token" placeholder="أدخل الرمز السري هنا..." required autocomplete="off">
+                    <label for="admin-email"><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <input type="email" id="admin-email" placeholder="admin@mcprim.com" required autocomplete="username" style="direction: ltr; text-align: left;">
                 </div>
-                <button type="submit" class="btn" id="login-btn">دخول</button>
-                <div id="login-error" style="color: var(--danger); margin-top: 16px; font-size: 0.9rem; display: none;">الرمز غير صحيح</div>
+                
+                <div class="input-group">
+                    <label for="admin-password"><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <div class="pwd-container">
+                        <input type="password" id="admin-password" placeholder="••••••••••••" required autocomplete="current-password" style="direction: ltr; text-align: left; padding-left: 42px;">
+                        <i class="fas fa-eye pwd-toggle" id="toggle-pwd" onclick="togglePasswordVisibility()" title="إظهار / إخفاء"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                </button>
+                
+                <div id="login-error" class="error-banner">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="login-error-text">البريد الإلكتروني أو كلمة المرور غير صحيحة.</span>
+                </div>
             </form>
         </div>
     </div>
@@ -258,44 +394,50 @@
                 MC PRIME
             </div>
             <div class="nav-items">
-                <a class="nav-item active" onclick="switchView('dashboard')">
+                <a class="nav-item active" id="nav-dashboard" onclick="switchView('dashboard')">
                     <i class="fas fa-chart-pie"></i> نظرة عامة
                 </a>
-                <a class="nav-item" onclick="switchView('users'); loadUsers();">
+                <a class="nav-item" id="nav-users" onclick="switchView('users'); loadUsers();">
                     <i class="fas fa-users"></i> المستخدمين
                 </a>
-                <a class="nav-item" onclick="switchView('errors'); loadErrors();">
+                <a class="nav-item" id="nav-errors" onclick="switchView('errors'); loadErrors();">
                     <i class="fas fa-exclamation-triangle"></i> سجل الأخطاء
                 </a>
             </div>
-            <div style="padding: 24px; margin-top: auto;">
-                <button class="btn" style="background: var(--bg-elevated); color: var(--text-secondary);" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+            <div class="admin-profile">
+                <div class="admin-info">
+                    <div class="admin-name" id="sidebar-admin-name">مسؤول النظام</div>
+                    <div class="admin-role">👑 مدير رئيسي</div>
+                </div>
+                <button class="logout-btn" onclick="logout()" title="تسجيل الخروج">
+                    <i class="fas fa-sign-out-alt"></i>
                 </button>
             </div>
         </aside>
 
         <main class="main-content">
             <div class="header">
-                <h1 id="page-title">نظرة عامة</h1>
-                <div class="user-info" id="last-update">آخر تحديث: الآن</div>
+                <div>
+                    <h1 id="page-title">نظرة عامة</h1>
+                    <span class="last-update" id="last-update"></span>
+                </div>
             </div>
 
             <!-- View: Dashboard -->
             <div id="view-dashboard" class="view active">
                 <div class="stats-grid" id="stats-container">
-                    <!-- Loaded via JS -->
+                    <div class="stat-card"><div class="stat-icon icon-blue"><i class="fas fa-spinner fa-spin"></i></div><div class="stat-info"><h3>جارٍ التحميل...</h3><p>-</p></div></div>
                 </div>
 
                 <div class="table-container">
                     <div class="table-header">
-                        <h2>أحدث التصاميم</h2>
+                        <h2>آخر البطاقات والتصاميم المنشأة</h2>
                     </div>
                     <table>
                         <thead>
                             <tr>
                                 <th>المعرف</th>
-                                <th>اسم التصميم</th>
+                                <th>اسم البطاقة</th>
                                 <th>المشاهدات</th>
                                 <th>تاريخ الإنشاء</th>
                             </tr>
@@ -311,10 +453,10 @@
             <div id="view-users" class="view">
                 <div class="table-container">
                     <div class="table-header">
-                        <h2>إدارة المستخدمين</h2>
+                        <h2>قائمة المستخدمين</h2>
                         <div class="search-box">
                             <i class="fas fa-search"></i>
-                            <input type="text" id="user-search" placeholder="بحث بالاسم أو الإيميل..." onkeyup="debounceSearch()">
+                            <input type="text" id="user-search" placeholder="بحث بالاسم أو البريد..." oninput="debounceSearch()">
                         </div>
                     </div>
                     <table>
@@ -338,8 +480,8 @@
             <div id="view-errors" class="view">
                 <div class="table-container">
                     <div class="table-header">
-                        <h2>سجل الأخطاء (آخر 50)</h2>
-                        <button class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" onclick="loadErrors()"><i class="fas fa-sync-alt"></i> تحديث</button>
+                        <h2>سجل أخطاء النظام (آخر 50)</h2>
+                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 0.85rem;" onclick="loadErrors()"><i class="fas fa-sync-alt"></i> تحديث</button>
                     </div>
                     <div id="errors-container">
                         <!-- Loaded via JS -->
@@ -350,68 +492,109 @@
     </div>
 
     <script>
-        // Never persist the privileged token across browser sessions.
         localStorage.removeItem('adminToken');
         let token = sessionStorage.getItem('adminToken') || '';
         let currentUserPage = 1;
         let searchTimeout = null;
 
-        // Base URL for API
         const getApiUrl = (path) => {
             const baseUrl = (window.__API_BASE_URL || window.location.origin).replace(/\/+$/, '');
             return `${baseUrl}${path}`;
         };
 
-        // Initialize
+        function getAuthHeaders() {
+            return {
+                'Authorization': `Bearer ${token}`,
+                'x-admin-token': token,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('admin-password');
+            const toggleIcon = document.getElementById('toggle-pwd');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                pwdInput.type = 'password';
+                toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // Initialize session
         if (token) {
             checkTokenAndLoad();
         }
 
         async function login() {
-            const input = (document.getElementById('admin-token').value || '').trim();
+            const email = (document.getElementById('admin-email').value || '').trim();
+            const password = (document.getElementById('admin-password').value || '').trim();
             const btn = document.getElementById('login-btn');
-            const errorEl = document.getElementById('login-error');
-            btn.innerHTML = '<div class="loader"></div>';
-            errorEl.style.display = 'none';
-            
+            const errorBox = document.getElementById('login-error');
+            const errorText = document.getElementById('login-error-text');
+
+            if (!email || !password) {
+                errorText.textContent = 'يرجى إدخال البريد الإلكتروني وكلمة المرور.';
+                errorBox.style.display = 'flex';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader"></div> جارٍ التحقق...';
+            errorBox.style.display = 'none';
+
             try {
-                const res = await fetch(getApiUrl('/api/admin/stats'), {
-                    headers: { 'x-admin-token': input }
+                const res = await fetch(getApiUrl('/api/admin/login'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
                 });
-                
-                if (res.ok) {
-                    token = input;
+
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.token) {
+                    token = data.token;
                     sessionStorage.setItem('adminToken', token);
+                    if (data.user) {
+                        sessionStorage.setItem('adminUser', JSON.stringify(data.user));
+                        document.getElementById('sidebar-admin-name').textContent = data.user.name || data.user.email;
+                    }
                     document.getElementById('auth-overlay').style.display = 'none';
                     document.getElementById('app').style.display = 'block';
-                    loadDashboard(await res.json());
+                    loadDashboardStats();
                 } else {
-                    const data = await res.json().catch(() => ({}));
-                    errorEl.textContent = data.error || 'رمز الدخول غير صحيح، يرجى المحاولة مرة أخرى.';
-                    errorEl.style.display = 'block';
+                    errorText.textContent = data.error || 'بيانات الدخول غير صحيحة، يرجى التأكد والمحاولة مرة أخرى.';
+                    errorBox.style.display = 'flex';
                 }
             } catch (err) {
-                errorEl.textContent = 'خطأ في الاتصال بالخادم، تأكد من الاتصال بالإنترنت.';
-                errorEl.style.display = 'block';
+                errorText.textContent = 'خطأ في الاتصال بالخادم، يرجى التحقق من اتصالك بالإنترنت.';
+                errorBox.style.display = 'flex';
             } finally {
-                btn.innerHTML = 'دخول';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> تسجيل الدخول';
             }
         }
 
         function logout() {
             token = '';
             sessionStorage.removeItem('adminToken');
+            sessionStorage.removeItem('adminUser');
             document.getElementById('auth-overlay').style.display = 'flex';
             document.getElementById('app').style.display = 'none';
-            document.getElementById('admin-token').value = '';
+            document.getElementById('admin-password').value = '';
         }
 
         async function checkTokenAndLoad() {
             try {
                 const res = await fetch(getApiUrl('/api/admin/stats'), {
-                    headers: { 'x-admin-token': token }
+                    headers: getAuthHeaders()
                 });
                 if (res.ok) {
+                    const savedUser = JSON.parse(sessionStorage.getItem('adminUser') || '{}');
+                    if (savedUser.name || savedUser.email) {
+                        document.getElementById('sidebar-admin-name').textContent = savedUser.name || savedUser.email;
+                    }
                     document.getElementById('auth-overlay').style.display = 'none';
                     document.getElementById('app').style.display = 'block';
                     loadDashboard(await res.json());
@@ -423,19 +606,36 @@
             }
         }
 
+        async function loadDashboardStats() {
+            try {
+                const res = await fetch(getApiUrl('/api/admin/stats'), {
+                    headers: getAuthHeaders()
+                });
+                if (res.ok) {
+                    loadDashboard(await res.json());
+                } else if (res.status === 401 || res.status === 403) {
+                    logout();
+                }
+            } catch (e) {
+                console.error('Stats loading error:', e);
+            }
+        }
+
         function switchView(viewName) {
             document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             
-            document.getElementById(`view-${viewName}`).classList.add('active');
-            event.currentTarget.classList.add('active');
+            const targetView = document.getElementById(`view-${viewName}`);
+            const targetNav = document.getElementById(`nav-${viewName}`);
+            if (targetView) targetView.classList.add('active');
+            if (targetNav) targetNav.classList.add('active');
             
             const titles = {
                 'dashboard': 'نظرة عامة',
                 'users': 'المستخدمين',
                 'errors': 'سجل الأخطاء'
             };
-            document.getElementById('page-title').textContent = titles[viewName];
+            document.getElementById('page-title').textContent = titles[viewName] || 'لوحة الإدارة';
         }
 
         function updateTime() {
@@ -443,7 +643,6 @@
             document.getElementById('last-update').textContent = `آخر تحديث: ${now.toLocaleTimeString('ar-EG')}`;
         }
 
-        // --- Loaders ---
         function escapeHTML(str) {
             return String(str || '').replace(/[&<>'"]/g, 
                 tag => ({
@@ -464,21 +663,21 @@
                     <div class="stat-icon icon-blue"><i class="fas fa-users"></i></div>
                     <div class="stat-info">
                         <h3>إجمالي المستخدمين</h3>
-                        <p>${data.totalUsers.toLocaleString()}</p>
+                        <p>${(data.totalUsers || 0).toLocaleString()}</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon icon-green"><i class="fas fa-user-check"></i></div>
                     <div class="stat-info">
                         <h3>مستخدمين نشطين (مؤكدين)</h3>
-                        <p>${data.verifiedUsers.toLocaleString()}</p>
+                        <p>${(data.verifiedUsers || 0).toLocaleString()}</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon icon-purple"><i class="fas fa-id-card"></i></div>
                     <div class="stat-info">
-                        <h3>إجمالي البطاقات (التصاميم)</h3>
-                        <p>${data.totalDesigns.toLocaleString()}</p>
+                        <h3>إجمالي البطاقات والتصاميم</h3>
+                        <p>${(data.totalDesigns || 0).toLocaleString()}</p>
                     </div>
                 </div>
             `;
@@ -488,14 +687,14 @@
             if (data.recentDesigns && data.recentDesigns.length > 0) {
                 tbody.innerHTML = data.recentDesigns.map(d => `
                     <tr>
-                        <td style="font-family: monospace;">${escapeHTML(d.shortId)}</td>
+                        <td style="font-family: monospace; font-weight: 600; color: var(--accent);">${escapeHTML(d.shortId)}</td>
                         <td>${escapeHTML(d.data?.inputs?.name || 'بدون اسم')}</td>
                         <td>${d.views || 0}</td>
                         <td>${new Date(d.createdAt).toLocaleDateString('ar-EG')}</td>
                     </tr>
                 `).join('');
             } else {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;">لا توجد تصاميم بعد</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--text-secondary);">لا توجد تصاميم بعد</td></tr>';
             }
         }
 
@@ -507,7 +706,7 @@
             
             try {
                 const res = await fetch(getApiUrl(`/api/admin/users?page=${page}&search=${encodeURIComponent(search)}`), {
-                    headers: { 'x-admin-token': token }
+                    headers: getAuthHeaders()
                 });
                 
                 if (res.status === 401 || res.status === 403) return logout();
@@ -529,7 +728,7 @@
                         </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;">لا يوجد مستخدمين</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--text-secondary);">لا يوجد مستخدمين</td></tr>';
                 }
 
                 // Render Pagination
@@ -557,7 +756,7 @@
             
             try {
                 const res = await fetch(getApiUrl('/api/admin/errors?limit=50'), {
-                    headers: { 'x-admin-token': token }
+                    headers: getAuthHeaders()
                 });
                 
                 if (res.status === 401 || res.status === 403) return logout();
