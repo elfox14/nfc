@@ -368,9 +368,11 @@
         }
 
         async function login() {
-            const input = document.getElementById('admin-token').value;
+            const input = (document.getElementById('admin-token').value || '').trim();
             const btn = document.getElementById('login-btn');
+            const errorEl = document.getElementById('login-error');
             btn.innerHTML = '<div class="loader"></div>';
+            errorEl.style.display = 'none';
             
             try {
                 const res = await fetch(getApiUrl('/api/admin/stats'), {
@@ -384,11 +386,13 @@
                     document.getElementById('app').style.display = 'block';
                     loadDashboard(await res.json());
                 } else {
-                    document.getElementById('login-error').style.display = 'block';
+                    const data = await res.json().catch(() => ({}));
+                    errorEl.textContent = data.error || 'رمز الدخول غير صحيح، يرجى المحاولة مرة أخرى.';
+                    errorEl.style.display = 'block';
                 }
             } catch (err) {
-                document.getElementById('login-error').textContent = 'خطأ في الاتصال بالخادم';
-                document.getElementById('login-error').style.display = 'block';
+                errorEl.textContent = 'خطأ في الاتصال بالخادم، تأكد من الاتصال بالإنترنت.';
+                errorEl.style.display = 'block';
             } finally {
                 btn.innerHTML = 'دخول';
             }
