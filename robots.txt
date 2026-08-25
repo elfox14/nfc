@@ -2,14 +2,11 @@
 User-agent: *
 Allow: /
 
-# حظر الصفحات الخاصة وغير الضرورية للفهرسة
-Disallow: /nfc/admin
-Disallow: /nfc/admin.html
-Disallow: /nfc/dashboard
-Disallow: /nfc/dashboard.html
-Disallow: /nfc/editor
-Disallow: /nfc/editor.html
-Disallow: /nfc/editor-en.html
+# حظر ملفات حساسة أو غير ضرورية
+Disallow: /admin/
+Disallow: /cgi-bin/
+Disallow: /tmp/
+Disallow: /private/
 
 # رابط الخريطة الصحيح
 Sitemap: https://www.mcprim.com/nfc/sitemap.xml
