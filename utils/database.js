@@ -32,12 +32,6 @@ async function connectDatabase({
   collectionNames,
   onIndexesWarning = console.warn
 }) {
-  const dns = require('dns');
-  try {
-    dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-  } catch (e) {
-    // Ignore if not permitted
-  }
   const { MongoClient } = require('mongodb');
   const client = await MongoClient.connect(mongoUrl);
   const db = client.db(dbName);

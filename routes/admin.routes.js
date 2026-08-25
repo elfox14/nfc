@@ -1,7 +1,5 @@
 const express = require('express');
 const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 /**
  * Admin Router
@@ -13,9 +11,6 @@ const jwt = require('jsonwebtoken');
  */
 module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFFER }) {
   const router = express.Router();
-
-  const usersCollectionName = process.env.MONGO_USERS_COLL || 'users';
-  const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 
   function sha256Hex(value) {
     return crypto.createHash('sha256').update(value).digest('hex');
@@ -31,142 +26,34 @@ module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFF
     return Math.min(parsed, max);
   }
 
-  // --- 1. ADMIN LOGIN ENDPOINT (Email + Password) ---
-  router.post('/login', async (req, res) => {
-    try {
-      const email = (req.body.email || '').trim().toLowerCase();
-      const password = (req.body.password || '').trim();
-
-      if (!email || !password) {
-        return res.status(400).json({ error: 'يرجى إدخال البريد الإلكتروني وكلمة المرور.' });
-      }
-
-      const db = getDb();
-      let adminUser = null;
-
-      if (db) {
-        // Find user by email (case-insensitive)
-        const user = await db.collection(usersCollectionName).findOne({
-          email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
-        });
-
-        if (user && user.password) {
-          const passwordMatches = await bcrypt.compare(password, user.password);
-          const isUserAdmin = user.role === 'admin' || user.isAdmin === true;
-
-          if (passwordMatches && isUserAdmin) {
-            adminUser = user;
-          }
-        }
-      }
-
-      // Legacy fallback / Emergency admin credential support
-      if (!adminUser) {
-        const expectedHash = (process.env.ADMIN_TOKEN_SHA256 || '').trim().toLowerCase();
-        const legacyExpected = (process.env.ADMIN_TOKENH || '').trim();
-        const isTokenMatch = expectedHash
-          ? /^[a-f0-9]{64}$/.test(expectedHash) && safeCompare(sha256Hex(password), expectedHash)
-          : legacyExpected && safeCompare(password, legacyExpected);
-
-        if (isTokenMatch) {
-          adminUser = {
-            _id: 'legacy-admin',
-            name: 'مسؤول النظام الرئيسي',
-            email: email || 'admin@mcprim.com',
-            role: 'admin'
-          };
-        }
-      }
-
-      if (!adminUser) {
-        return res.status(401).json({ error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة، أو الحساب ليس لديه صلاحيات الإدارة.' });
-      }
-
-      const secret = process.env.JWT_SECRET || 'mcprime_admin_fallback_secret_key_32chars';
-      const token = jwt.sign(
-        {
-          userId: adminUser._id.toString(),
-          email: adminUser.email,
-          name: adminUser.name || 'مسؤول النظام',
-          role: 'admin',
-          type: 'access'
-        },
-        secret,
-        { expiresIn: '24h' }
-      );
-
-      return res.json({
-        success: true,
-        token,
-        user: {
-          id: adminUser._id.toString(),
-          name: adminUser.name || 'مسؤول النظام',
-          email: adminUser.email,
-          role: 'admin'
-        }
-      });
-    } catch (err) {
-      console.error('Admin login error:', err);
-      return res.status(500).json({ error: 'حدث خطأ في الخادم أثناء تسجيل الدخول.' });
-    }
-  });
-
-  // --- 2. ADMIN AUTHENTICATION MIDDLEWARE ---
+  // Admin authentication middleware
   const adminAuthMiddleware = (req, res, next) => {
-    // A. Check for Bearer JWT Token or Cookie
-    const authHeader = req.headers['authorization'];
-    let jwtToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
-
-    if (!jwtToken && req.cookies && req.cookies.adminAccessToken) {
-      jwtToken = req.cookies.adminAccessToken;
-    }
-
-    if (jwtToken) {
-      try {
-        const secret = process.env.JWT_SECRET || 'mcprime_admin_fallback_secret_key_32chars';
-        const decoded = jwt.verify(jwtToken, secret);
-        if (decoded.role === 'admin' || decoded.isAdmin === true) {
-          req.admin = decoded;
-          return next();
-        }
-      } catch (e) {
-        // Token invalid/expired, fall through to token check
-      }
-    }
-
-    // B. Check for Legacy x-admin-token header (backwards compatibility)
     const expectedHash = (process.env.ADMIN_TOKEN_SHA256 || '').trim().toLowerCase();
     const legacyExpected = (process.env.ADMIN_TOKENH || '').trim();
     const provided = (req.headers['x-admin-token'] || '').trim();
 
-    const isTokenValid = expectedHash
+    const isValid = expectedHash
       ? /^[a-f0-9]{64}$/.test(expectedHash) && safeCompare(sha256Hex(provided), expectedHash)
       : legacyExpected && safeCompare(provided, legacyExpected);
 
-    if (isTokenValid) {
-      req.admin = { role: 'admin', type: 'legacy-token' };
-      return next();
+    if (!isValid) {
+      console.warn('[Admin Auth Failed]', { providedLength: provided?.length, configured: Boolean(expectedHash || legacyExpected) });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
-
-    // Unauthorized
-    return res.status(401).json({ error: 'غير مصرح بالدخول، يرجى تسجيل الدخول بحساب مسؤول.' });
+    next();
   };
 
-  // Apply auth middleware and cache-control to all following admin endpoints
+  // Apply auth middleware to all admin routes
   router.use(adminAuthMiddleware);
   router.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-store');
     next();
   });
 
-  // --- 3. GET CURRENT ADMIN PROFILE ---
-  router.get('/me', (req, res) => {
-    res.json({
-      admin: req.admin
-    });
-  });
+  const usersCollectionName = process.env.MONGO_USERS_COLL || 'users';
+  const designsCollectionName = process.env.MONGO_DESIGNS_COLL || 'designs';
 
-  // --- 4. GET RECENT SYSTEM ERRORS ---
+  // 1. Get recent errors
   router.get('/errors', (req, res) => {
     const limit = clampPositiveInt(req.query.limit, 50, Math.min(MAX_ERROR_BUFFER || 100, 100));
     res.json({
@@ -175,7 +62,7 @@ module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFF
     });
   });
 
-  // --- 5. GET SYSTEM STATISTICS ---
+  // 2. Get system statistics
   router.get('/stats', async (req, res) => {
     try {
       const db = getDb();
@@ -204,7 +91,7 @@ module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFF
     }
   });
 
-  // --- 6. LIST USERS ---
+  // 3. List users
   router.get('/users', async (req, res) => {
     try {
       const db = getDb();
@@ -245,63 +132,5 @@ module.exports = function createAdminRouter({ getDb, errorBuffer, MAX_ERROR_BUFF
     }
   });
 
-  // --- 7. CREATE OR UPDATE ADMIN CREDENTIALS (Email & Password) ---
-  router.post('/set-credentials', async (req, res) => {
-    try {
-      const email = (req.body.email || '').trim().toLowerCase();
-      const password = (req.body.password || '').trim();
-      const name = (req.body.name || 'مسؤول النظام').trim();
-
-      if (!email || !password || password.length < 6) {
-        return res.status(400).json({ error: 'يرجى إدخال بريد إلكتروني صحيح وكلمة مرور لا تقل عن 6 أحرف.' });
-      }
-
-      const db = getDb();
-      if (!db) return res.status(500).json({ error: 'DB not connected' });
-
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      const existing = await db.collection(usersCollectionName).findOne({ email });
-
-      if (existing) {
-        await db.collection(usersCollectionName).updateOne(
-          { _id: existing._id },
-          {
-            $set: {
-              password: hashedPassword,
-              name: name || existing.name,
-              role: 'admin',
-              isAdmin: true,
-              isVerified: true,
-              updatedAt: new Date()
-            }
-          }
-        );
-      } else {
-        await db.collection(usersCollectionName).insertOne({
-          email,
-          password: hashedPassword,
-          name,
-          role: 'admin',
-          isAdmin: true,
-          isVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-      }
-
-      res.json({
-        success: true,
-        message: 'تم حفظ وتحديث بيانات حساب المسؤول بنجاح.',
-        user: { email, name, role: 'admin' }
-      });
-    } catch (err) {
-      console.error('Set credentials error:', err);
-      res.status(500).json({ error: 'فشل حفظ بيانات المسؤول.' });
-    }
-  });
-
   return router;
 };
-
