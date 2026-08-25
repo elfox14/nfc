@@ -224,13 +224,6 @@
             line-height: 1.7;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-            width: 100%;
-        }
-
         .navbar {
             position: fixed;
             top: 0;
@@ -239,178 +232,6 @@
             z-index: 1000;
             padding: 15px 0;
             background: transparent;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        .navbar.scrolled {
-            background: rgba(28, 42, 59, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 10px 0;
-        }
-
-        .nav-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-        }
-
-        .nav-logo {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            flex-shrink: 0;
-        }
-
-        .nav-logo img {
-            height: 45px;
-            width: auto;
-            display: block;
-            transition: transform 0.3s ease;
-        }
-
-        .nav-logo:hover img {
-            transform: scale(1.05);
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 1.8rem;
-            align-items: center;
-            margin: 0;
-            padding: 0;
-        }
-
-        .nav-links a {
-            color: var(--text-primary-color);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: color 0.3s ease;
-            position: relative;
-            padding: 4px 0;
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--primary-color);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary-color);
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-shrink: 0;
-        }
-
-        .nav-cta {
-            padding: 10px 22px !important;
-            font-size: 0.95rem !important;
-            font-weight: 700;
-            border-radius: 8px;
-            background: linear-gradient(135deg, var(--primary-color), #00e5ff);
-            color: #0b131e !important;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 20px rgba(77, 166, 255, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        .nav-cta:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(0, 229, 255, 0.5);
-            color: #fff !important;
-        }
-
-        .lang-btn {
-            background: rgba(77, 166, 255, 0.15);
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 0.45rem 0.9rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            font-family: inherit;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .lang-btn:hover {
-            background: var(--primary-color);
-            color: #fff;
-            transform: translateY(-1px);
-        }
-
-        .nav-toggle {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            cursor: pointer;
-            padding: 8px;
-            background: transparent;
-            border: none;
-            border-radius: 6px;
-        }
-
-        .nav-toggle span {
-            width: 25px;
-            height: 3px;
-            background: var(--text-primary-color);
-            border-radius: 3px;
-            transition: all 0.3s ease;
-        }
-
-        @media (max-width: 768px) {
-            .nav-toggle {
-                display: flex;
-            }
-
-            .nav-links {
-                position: fixed;
-                top: 70px;
-                left: -100%;
-                width: 100%;
-                height: calc(100vh - 70px);
-                background: rgba(28, 42, 59, 0.98);
-                backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 2rem;
-                transition: left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            }
-
-            .nav-links.active {
-                left: 0;
-            }
-
-            .nav-cta {
-                display: none !important;
-            }
         }
 
         .hero-section {
@@ -448,16 +269,48 @@
                 transform: rotate(360deg);
             }
         }
+
+        .lang-btn {
+            background: rgba(77, 166, 255, 0.2);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+        }
+
+        .lang-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
     </style>
 
-    <!-- Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+    <!-- Fonts - Preload and async load -->
+    <link rel="preload"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+            rel="stylesheet">
+    </noscript>
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Font Awesome - Load async for performance -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    </noscript>
 
-    <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="/nfc/homepage.css">
+    <!-- Main Stylesheet - Load async -->
+    <link rel="preload" href="/nfc/homepage.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="/nfc/homepage.css">
+    </noscript>
 
     <!-- Language Switcher -->
     <script src="/nfc/lang-switcher.js" defer></script>
@@ -719,7 +572,8 @@
     <nav class="navbar" id="navbar">
         <div class="container nav-content">
             <a href="/nfc/index-en.html" class="nav-logo">
-                <img src="/nfc/mc-prime-nfc.png" alt="MC PRIME - Smart Business Cards" loading="eager" fetchpriority="high" width="150" height="45" style="height: 45px; width: auto;">
+                <img src="/nfc/mc-prime-nfc.png" alt="MC PRIME - Smart Business Cards" loading="eager" fetchpriority="high" width="150"
+                    height="45">
             </a>
             <ul class="nav-links" id="nav-links">
                 <li><a href="#features">Features</a></li>
@@ -729,11 +583,11 @@
                 <li><a href="/nfc/dashboard-en.html">Dashboard</a></li>
                 <li><a href="#faq">FAQ</a></li>
             </ul>
-            <div class="nav-actions">
-                <button onclick="switchLanguage('ar')" class="lang-btn" aria-label="Switch to Arabic">عربي</button>
+            <div style="display: flex; align-items: center;">
+                <button onclick="switchLanguage('ar')" class="lang-btn">عربي</button>
                 <a href="/nfc/editor-en.html" class="btn btn-primary nav-cta">Get Started</a>
             </div>
-            <div class="nav-toggle" id="nav-toggle" aria-label="Open menu" role="button" tabindex="0">
+            <div class="nav-toggle" id="nav-toggle" aria-label="Open menu">
                 <span></span>
                 <span></span>
                 <span></span>
