@@ -571,6 +571,7 @@
         }
 
         async function login() {
+<<<<<<< HEAD
             const email = (document.getElementById('admin-email').value || '').trim();
             const password = (document.getElementById('admin-password').value || '').trim();
             const btn = document.getElementById('login-btn');
@@ -587,6 +588,12 @@
             btn.innerHTML = '<div class="loader"></div> جارٍ التحقق...';
             errorBox.style.display = 'none';
 
+=======
+            const input = document.getElementById('admin-token').value;
+            const btn = document.getElementById('login-btn');
+            btn.innerHTML = '<div class="loader"></div>';
+            
+>>>>>>> parent of 08b7a858 (1)
             try {
                 const res = await fetch(getApiUrl('/api/admin/login'), {
                     method: 'POST',
@@ -607,12 +614,20 @@
                     document.getElementById('app').style.display = 'block';
                     loadDashboardStats();
                 } else {
+<<<<<<< HEAD
                     errorText.textContent = data.error || 'بيانات الدخول غير صحيحة، يرجى التأكد والمحاولة مرة أخرى.';
                     errorBox.style.display = 'flex';
                 }
             } catch (err) {
                 errorText.textContent = 'خطأ في الاتصال بالخادم، يرجى التحقق من اتصالك بالإنترنت.';
                 errorBox.style.display = 'flex';
+=======
+                    document.getElementById('login-error').style.display = 'block';
+                }
+            } catch (err) {
+                document.getElementById('login-error').textContent = 'خطأ في الاتصال بالخادم';
+                document.getElementById('login-error').style.display = 'block';
+>>>>>>> parent of 08b7a858 (1)
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> تسجيل الدخول';
