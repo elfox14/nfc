@@ -188,23 +188,23 @@ registerClientErrorRoute(app);
 registerNfcStaticFiles(app, rootDir);
 
 // --- ADMIN ROUTES (must be BEFORE general error handler) ---
-const adminLimiter = rateLimit({
+const adminLoginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 admin attempts per window
+  max: 30, // 30 attempts per 15 minutes
   message: { error: 'تم تجاوز الحد المسموح لمحاولات تسجيل الدخول للإدارة، يرجى المحاولة لاحقاً.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skipSuccessfulRequests: true, // Do not penalize successful logins
 });
 
-// Protect admin.html page itself from automated enumeration.
-// This rate limiter fires BEFORE the HTML page is served, limiting recon attempts.
+// Protect admin.html page from rapid automated enumeration while allowing normal browsing
 const adminPageLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'test' ? 1000 : 5,
+  max: process.env.NODE_ENV === 'test' ? 1000 : 120,
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Too many requests. Please try again later.',
-  skipSuccessfulRequests: false,
+  skipSuccessfulRequests: true,
 });
 
 app.get(['/nfc/admin', '/nfc/admin.html'], adminPageLimiter, (req, res) => {
@@ -214,10 +214,11 @@ app.get(['/nfc/admin', '/nfc/admin.html'], adminPageLimiter, (req, res) => {
 });
 
 const createAdminRouter = require('./routes/admin.routes');
-app.use('/api/admin', adminLimiter, createAdminRouter({ 
+app.use('/api/admin', createAdminRouter({ 
   getDb: () => db, 
   errorBuffer, 
-  MAX_ERROR_BUFFER 
+  MAX_ERROR_BUFFER,
+  loginLimiter: adminLoginLimiter
 }));
 
 // --- 404 NOT FOUND HANDLER ---

@@ -541,11 +541,16 @@
         };
 
         function getAuthHeaders() {
-            return {
-                'Authorization': `Bearer ${token}`,
-                'x-admin-token': token,
+            const headers = {
                 'Content-Type': 'application/json'
             };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+                if (!token.startsWith('eyJ')) {
+                    headers['x-admin-token'] = token;
+                }
+            }
+            return headers;
         }
 
         function togglePasswordVisibility() {
@@ -560,7 +565,7 @@
             }
         }
 
-        // Initialize session
+        // Initialize session on load
         if (token) {
             checkTokenAndLoad();
         }
@@ -624,6 +629,7 @@
         }
 
         async function checkTokenAndLoad() {
+            if (!token) return;
             try {
                 const res = await fetch(getApiUrl('/api/admin/stats'), {
                     headers: getAuthHeaders()
@@ -636,11 +642,13 @@
                     document.getElementById('auth-overlay').style.display = 'none';
                     document.getElementById('app').style.display = 'block';
                     loadDashboard(await res.json());
-                } else {
-                    logout();
+                } else if (res.status === 401) {
+                    sessionStorage.removeItem('adminToken');
+                    sessionStorage.removeItem('adminUser');
+                    token = '';
                 }
             } catch (e) {
-                console.error(e);
+                console.error('Token check error:', e);
             }
         }
 
@@ -651,7 +659,7 @@
                 });
                 if (res.ok) {
                     loadDashboard(await res.json());
-                } else if (res.status === 401 || res.status === 403) {
+                } else if (res.status === 401) {
                     logout();
                 }
             } catch (e) {
