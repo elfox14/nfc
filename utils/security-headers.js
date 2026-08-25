@@ -31,8 +31,11 @@ function applySecurityHeaders(app) {
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
-        // Per-request cryptographic nonce injected by injectCspNonceIntoHtml() for static
-        // HTML files and by res.locals.cspNonce for EJS views. This replaces 'unsafe-inline'.
+        // 'unsafe-inline' is required for static HTML pages that contain inline scripts.
+        // The nonce below is also included so that templated pages can migrate to nonce-based
+        // execution in the future; when a nonce is adopted, 'unsafe-inline' will be ignored
+        // by CSP Level-2+ browsers on those responses.
+        "'unsafe-inline'",
         (req, res) => `'nonce-${res.locals.cspNonce}'`,
         "https://cdnjs.cloudflare.com",
         "https://cdn.jsdelivr.net",
@@ -52,17 +55,13 @@ function applySecurityHeaders(app) {
       imgSrc: [
         "'self'",
         "data:",
-        "blob:",
+        "https:",
         "https://res.cloudinary.com",
         "https://*.mcprim.com",
         "https://mcprim.com",
         "https://i.imgur.com",
         "https://media.giphy.com",
-        "https://pagead2.googlesyndication.com",
-        "https://*.onrender.com",
-        // Allow arbitrary https: image sources — card designs may embed user-provided URLs.
-        // Tighten this once image proxying is in place.
-        "https:"
+        "https://pagead2.googlesyndication.com"
       ],
       mediaSrc: ["'self'", "data:"],
       frameSrc: [

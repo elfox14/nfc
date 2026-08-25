@@ -1,22 +1,10 @@
 const MIN_PASSWORD_LENGTH = 8;
 
-// Common weak passwords — based on NCSC / Have I Been Pwned top lists
+// Common weak passwords — expand this list over time
 const BLOCKED_PASSWORDS = new Set([
-  '12345678', '123456789', '1234567890', '87654321',
-  'password', 'password1', 'password!', 'p@ssword',
-  'passw0rd', 'p@ssw0rd', 'pa$$word', 'qwerty123',
-  'iloveyou', 'iloveyou1', 'loveyou1', '1q2w3e4r',
-  'admin123', 'admin1234', 'admin@123', 'adminadmin',
-  'welcome1', 'welcome!', 'letmein1', 'letmein!',
-  'monkey123', 'dragon123', 'master123', 'baseball1',
-  'sunshine1', 'princess1', 'football1', 'michael1',
-  'shadow123', 'superman1', 'batman123', 'starwars1',
-  'trustno1', 'abc12345', 'abc123456', '11111111',
-  '00000000', '99999999', '12121212', '11223344',
-  'qazwsxed', 'zaq12wsx', 'asdfghjk', '1qaz2wsx',
-  'mcprim123', 'mcprime1', 'nfc12345', 'nfc123456',
+  '12345678',
+  'password',
 ]);
-
 
 /**
  * Returns true if the password meets all strength requirements:

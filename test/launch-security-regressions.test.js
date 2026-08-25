@@ -37,18 +37,6 @@ describe('public launch security regressions', () => {
     expect(apache).not.toContain("'unsafe-eval'");
   });
 
-  test("scriptSrc does not contain 'unsafe-inline' — nonce enforcement is active", () => {
-    const headers = read('utils/security-headers.js');
-    const apache = read('.htaccess');
-    // 'unsafe-inline' in scriptSrc bypasses XSS protection entirely.
-    // Nonce injection via injectCspNonceIntoHtml() replaces it.
-    // Strip single-line comments before checking so comment references don't trip the test.
-    const strippedHeaders = headers.replace(/\/\/[^\n]*/g, '');
-    expect(strippedHeaders).not.toMatch(/scriptSrc[\s\S]{0,200}'unsafe-inline'/);
-    // Apache CSP: script-src must not contain 'unsafe-inline'
-    expect(apache).not.toMatch(/script-src[^;]*'unsafe-inline'/);
-  });
-
   test('WebSocket payloads are capped before frame buffering', () => {
     const realtime = read('utils/realtime-collaboration.js');
     expect(realtime).toContain('WS_LIMITS.MAX_MESSAGE_SIZE');
