@@ -364,16 +364,11 @@
 
 <<<<<<< HEAD
         function getAuthHeaders() {
-            const headers = {
+            return {
+                'Authorization': `Bearer ${token}`,
+                'x-admin-token': token,
                 'Content-Type': 'application/json'
             };
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-                if (!token.startsWith('eyJ')) {
-                    headers['x-admin-token'] = token;
-                }
-            }
-            return headers;
         }
 
         function togglePasswordVisibility() {
@@ -388,10 +383,14 @@
             }
         }
 
+<<<<<<< HEAD
         // Initialize session on load
 =======
         // Initialize
 >>>>>>> parent of d9ecc73c (2)
+=======
+        // Initialize session
+>>>>>>> parent of 18f5c95c (Fix admin authentication flow and rate limiting)
         if (token) {
             checkTokenAndLoad();
         }
@@ -479,7 +478,6 @@
         }
 
         async function checkTokenAndLoad() {
-            if (!token) return;
             try {
                 const res = await fetch(getApiUrl('/api/admin/stats'), {
                     headers: { 'x-admin-token': token }
@@ -488,13 +486,11 @@
                     document.getElementById('auth-overlay').style.display = 'none';
                     document.getElementById('app').style.display = 'block';
                     loadDashboard(await res.json());
-                } else if (res.status === 401) {
-                    sessionStorage.removeItem('adminToken');
-                    sessionStorage.removeItem('adminUser');
-                    token = '';
+                } else {
+                    logout();
                 }
             } catch (e) {
-                console.error('Token check error:', e);
+                console.error(e);
             }
         }
 
@@ -506,7 +502,7 @@
                 });
                 if (res.ok) {
                     loadDashboard(await res.json());
-                } else if (res.status === 401) {
+                } else if (res.status === 401 || res.status === 403) {
                     logout();
                 }
             } catch (e) {
