@@ -1151,27 +1151,13 @@ const EventManager = {
             spinnerEl: DOMElements.spinners.logo,
             onSuccess: (imageUrl) => {
                 DOMElements.draggable.logoImg.src = imageUrl;
-                const inputLogo = document.getElementById('input-logo');
-                if (inputLogo) {
-                    inputLogo.value = imageUrl;
-                    inputLogo.dispatchEvent(new Event('input', { bubbles: true }));
-                }
+                document.getElementById('input-logo').value = imageUrl;
                 DOMElements.previews.logo.src = imageUrl;
                 UIManager.updateFavicon(imageUrl);
             },
             cropOptions: { aspectRatio: NaN }, // Free crop for logos
             purpose: 'logo'
         }));
-
-        const logoUploadZone = document.getElementById('lp-upload-zone-click');
-        if (logoUploadZone && DOMElements.fileInputs.logo) {
-            logoUploadZone.addEventListener('click', (e) => {
-                if (!e.target.closest('label') && !e.target.closest('input')) {
-                    DOMElements.fileInputs.logo.click();
-                }
-            });
-            UIManager.setupDragDrop('lp-upload-zone-click', 'input-logo-upload');
-        }
 
         DOMElements.fileInputs.photo.addEventListener('change', e => UIManager.handleImageUpload(e, {
             maxSizeMB: Config.MAX_LOGO_SIZE_MB,
@@ -1185,17 +1171,6 @@ const EventManager = {
             cropOptions: { aspectRatio: 1 / 1 }, // Square crop for personal photos
             purpose: 'photo'
         }));
-
-        const photoUploadZone = document.getElementById('lp-photo-upload-zone-click') || document.getElementById('lp-upload-zone-photo');
-        if (photoUploadZone && DOMElements.fileInputs.photo) {
-            const photoZoneId = photoUploadZone.id;
-            photoUploadZone.addEventListener('click', (e) => {
-                if (!e.target.closest('label') && !e.target.closest('input')) {
-                    DOMElements.fileInputs.photo.click();
-                }
-            });
-            UIManager.setupDragDrop(photoZoneId, 'input-photo-upload');
-        }
 
         DOMElements.fileInputs.frontBg.addEventListener('change', e => UIManager.handleImageUpload(e, {
             maxSizeMB: Config.MAX_BG_SIZE_MB, errorEl: DOMElements.errors.logoUpload, spinnerEl: DOMElements.spinners.frontBg,

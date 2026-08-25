@@ -316,10 +316,9 @@ const UIManager = {
 
     async uploadImageToServer(file, purpose = null) {
         const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
-        const isEnglish = document.documentElement.lang === 'en';
         if (!isLoggedIn) {
             throw new Error(
-                isEnglish
+                _isEnglishPage
                     ? 'Please sign in before uploading images.'
                     : 'يرجى تسجيل الدخول قبل رفع الصور.'
             );
@@ -341,7 +340,7 @@ const UIManager = {
             return result.url;
         } catch (error) {
             console.error("Image upload failed:", error);
-            throw new Error(isEnglish ? "Upload failed. Check your internet connection." : "فشل رفع الصورة. تأكد من اتصالك بالإنترنت.");
+            throw new Error("فشل رفع الصورة. تأكد من اتصالك بالإنترنت. / Upload failed. Check your internet connection.");
         }
     },
 
@@ -356,14 +355,12 @@ const UIManager = {
 
         if (!file) return;
 
-        const isEnglish = document.documentElement.lang === 'en';
-
         if (!file.type.match(/^image\//)) {
             if (errorEl) {
-                errorEl.textContent = isEnglish ? "Please select a valid image file (JPG, PNG)." : "الرجاء اختيار ملف صورة صالح (JPG, PNG).";
+                errorEl.textContent = "الرجاء اختيار ملف صورة صالح (JPG, PNG).";
                 errorEl.style.display = "block";
             } else {
-                alert(isEnglish ? "Please select a valid image file (JPG, PNG)." : "الرجاء اختيار ملف صورة صالح (JPG, PNG).");
+                alert("الرجاء اختيار ملف صورة صالح (JPG, PNG).");
             }
             Utils.playSound("error");
             fileInput.value = '';
@@ -371,10 +368,10 @@ const UIManager = {
         }
         if (file.size > maxSizeMB * 1024 * 1024) {
             if (errorEl) {
-                errorEl.textContent = isEnglish ? `File size must be less than ${maxSizeMB} MB.` : `يجب أن يكون حجم الملف أقل من ${maxSizeMB} ميجابايت.`;
+                errorEl.textContent = `يجب أن يكون حجم الملف أقل من ${maxSizeMB} ميجابايت.`;
                 errorEl.style.display = "block";
             } else {
-                alert(isEnglish ? `File size must be less than ${maxSizeMB} MB.` : `يجب أن يكون حجم الملف أقل من ${maxSizeMB} ميجابايت.`);
+                alert(`يجب أن يكون حجم الملف أقل من ${maxSizeMB} ميجابايت.`);
             }
             Utils.playSound("error");
             fileInput.value = '';
@@ -406,29 +403,20 @@ const UIManager = {
             const fileNameClean = file.name.replace(/(\.[\w\d_-]+)$/i, cropOptions.skipCrop ? '$1' : '_cropped.png');
             const fileToUpload = dataURLtoFile(finalDataUrl, fileNameClean);
 
-            let imageUrl = finalDataUrl;
-            const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
-            if (isLoggedIn && fileToUpload) {
-                try {
-                    imageUrl = await this.uploadImageToServer(fileToUpload, purpose);
-                } catch (uploadErr) {
-                    console.warn("[UIManager] Server image upload failed, falling back to local data URL:", uploadErr);
-                    imageUrl = finalDataUrl;
-                }
-            }
+            const imageUrl = await this.uploadImageToServer(fileToUpload, purpose);
 
             if (spinnerEl) spinnerEl.style.display = "none";
 
             Utils.playSound("success");
             onSuccess(imageUrl);
-            this.announce(isEnglish ? "Image uploaded and processed successfully." : "تم رفع الصورة ومعالجتها بنجاح.");
+            this.announce("تم رفع الصورة ومعالجتها بنجاح.");
         } catch (error) {
             console.error("Image processing/upload error:", error);
             if (errorEl) {
-                errorEl.textContent = isEnglish ? "Failed to process or upload image. Please try again." : "فشل معالجة الصورة أو رفعها. حاول مرة أخرى.";
+                errorEl.textContent = "فشل معالجة الصورة أو رفعها. حاول مرة أخرى.";
                 errorEl.style.display = "block";
             } else {
-                alert(isEnglish ? "Failed to process or upload image. Please try again." : "فشل معالجة الصورة أو رفعها. حاول مرة أخرى.");
+                alert("فشل معالجة الصورة أو رفعها. حاول مرة أخرى.");
             }
             Utils.playSound("error");
         } finally {
