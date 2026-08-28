@@ -116,7 +116,7 @@ function registerNfcStaticFiles(app, rootDir) {
   ]);
   const blockedDirectories = new Set([
     'routes', 'utils', 'test', 'e2e', 'scripts', 'docs', 'coverage', 'node_modules',
-    'view', 'views', 'public', '.github', '.git'
+    '.github', '.git'
   ]);
   const blockedExtensions = new Set([
     '.ejs', '.cjs', '.mjs', '.ts', '.map', '.md', '.yaml', '.yml', '.lock', '.log', '.php'

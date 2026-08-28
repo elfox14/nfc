@@ -48,7 +48,8 @@ module.exports = function createAuthRouter({
 // Register
 router.post('/register', [
   body('email').isEmail().normalizeEmail(),
-  body('password').custom(passwordValidator),
+  body('password').custom((value, { req }) =>
+    passwordValidator(value, { email: req.body.email, name: req.body.name })),
   body('name').trim().escape().notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);

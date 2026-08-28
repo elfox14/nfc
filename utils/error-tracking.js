@@ -4,6 +4,33 @@ const rateLimit = require('express-rate-limit');
 const MAX_ERROR_BUFFER = 100;
 const errorBuffer = [];
 
+// Optional MongoDB persistence — survives restarts unlike the in-memory buffer.
+// Set ERROR_PERSISTENCE=mongo to enable. The collection is created lazily.
+let _getDb = null;
+let _errorsCollectionName = 'systemErrors';
+let _persistenceEnabled = false;
+
+function configureErrorPersistence({ getDb, enabled, collectionName }) {
+  _getDb = getDb || _getDb;
+  _persistenceEnabled = enabled ?? (_persistenceEnabled || process.env.ERROR_PERSISTENCE === 'mongo');
+  if (collectionName) _errorsCollectionName = collectionName;
+}
+
+async function _persistError(entry) {
+  if (!_persistenceEnabled || !_getDb) return;
+  try {
+    const db = _getDb();
+    if (!db) return;
+    await db.collection(_errorsCollectionName).insertOne({
+      ...entry,
+      _persistedAt: new Date()
+    });
+  } catch (persistErr) {
+    // Persistence is best-effort — never let it mask the original error.
+    console.warn('[ErrorTracker] MongoDB persistence failed:', persistErr.message);
+  }
+}
+
 function redactSensitiveValue(value) {
   if (typeof value !== 'string') return value;
 
@@ -38,6 +65,8 @@ function trackError(error, context = {}) {
   errorBuffer.push(entry);
   if (errorBuffer.length > MAX_ERROR_BUFFER) errorBuffer.shift();
   console.error(`[ErrorTracker] ${entry.timestamp} | ${safeContext.route || 'unknown'} | ${entry.message}`);
+  // Best-effort persistence — fire-and-forget so the request path is not delayed.
+  _persistError(entry);
 }
 
 function registerClientErrorRoute(app) {
@@ -64,5 +93,6 @@ module.exports = {
   trackError,
   registerClientErrorRoute,
   redactSensitiveData,
-  redactSensitiveValue
+  redactSensitiveValue,
+  configureErrorPersistence
 };

@@ -34,15 +34,10 @@ function isAllowedOrigin(origin, allowedOrigins) {
 
   if (isConfigured) return true;
 
-  // Allow render.com subdomains automatically in production when accessing via default Render host
-  try {
-    const url = new URL(origin);
-    if (url.hostname.endsWith('.onrender.com') || url.hostname.endsWith('.render.com')) {
-      return true;
-    }
-  } catch {
-    // Ignore malformed origins and continue with the local-development fallback below.
-  }
+  // NOTE: Wildcard *.onrender.com trust was removed — any app hosted on Render
+  // could have issued credentialed CORS / CSRF requests against this API.
+  // Only the explicit RENDER_EXTERNAL_HOSTNAME (added in parseAllowedOrigins)
+  // is accepted, plus local development origins outside production.
 
   return process.env.NODE_ENV !== 'production' && isLocalDevelopmentOrigin(origin);
 }

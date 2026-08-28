@@ -34,3 +34,21 @@ If `workflow_dispatch` is unavailable, merge a reviewed change to `.github/relea
 4. Approve the protected `production` environment.
 
 Both halves are redeployed from the same historical ref. The workflow stamps `release.json` itself, so rollback commits created before manifest support remain verifiable. A rollback is successful only when `/healthz.release` and the public `/nfc/release.json.sha` both equal the resolved historical SHA. Release artifacts are retained for 90 days, and immutable tags remain available as rollback points.
+
+## Git history discipline
+
+The release workflow checks out a specific commit SHA and requires it to be
+merged to `main`. Preserve a linear, traceable history so every deploy can be
+audited:
+
+- **Never force-push to `main`.** A force-push rewrites SHAs and breaks the
+  `merge-base --is-ancestor` check. If a bad commit lands, push a revert
+  commit instead.
+- **Avoid squash-merging PRs into `main`.** Squashing discards the individual
+  commit history that reviewers approved. Use regular merge commits or
+  rebase-merge so the approved SHAs remain addressable.
+- **Every release tag must point to a commit that was reviewed and tested on
+  `main`.** The workflow's `merge-base --is-ancestor` guard enforces this, but
+  keeping the history clean makes auditing straightforward.
+- **Keep commits focused.** One logical change per commit so rollback targets
+  a specific fix, not a mixed bag.

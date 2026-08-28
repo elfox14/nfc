@@ -24,8 +24,13 @@ describe('public launch security regressions', () => {
 
   test('admin credentials are tab-scoped and legacy persistence is removed', () => {
     const admin = read('admin.html');
-    expect(admin).toContain("sessionStorage.setItem('adminToken', token)");
-    expect(admin).not.toContain("localStorage.setItem('adminToken', token)");
+    const adminExternal = fs.readdirSync(path.join(root, 'js'))
+      .filter(f => f.startsWith('admin-'))
+      .map(f => read(path.join('js', f)))
+      .join('\n');
+    const combined = admin + '\n' + adminExternal;
+    expect(combined).toContain("sessionStorage.setItem('adminToken', token)");
+    expect(combined).not.toContain("localStorage.setItem('adminToken', token)");
   });
 
   test('server and cPanel policies disable eval and block active-content framing', () => {

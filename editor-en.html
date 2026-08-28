@@ -14,14 +14,7 @@
     <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
 
     <!-- Google Tag Manager -->
-    <script>(function (w, d, s, l, i) {
-            w[l] = w[l] || []; w[l].push({
-                'gtm.start':
-                    new Date().getTime(), event: 'gtm.js'
-            }); var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
+    <script src="/js/gtm-bootstrap.js"></script>
     <!-- End Google Tag Manager -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,28 +60,7 @@
     <script src="editor-toolbar-v2.js?v=1.1" defer></script>
 
     <!-- English placeholder initialization -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Set English placeholders for input fields
-            setTimeout(function () {
-                const nameInput = document.getElementById('input-name_ar');
-                const taglineInput = document.getElementById('input-tagline_ar');
-
-                if (nameInput) {
-                    nameInput.placeholder = 'Your Full Name Here';
-                    if (!nameInput.value || nameInput.value === 'اسمك الكامل هنا') {
-                        nameInput.value = 'Your Full Name Here';
-                    }
-                }
-                if (taglineInput) {
-                    taglineInput.placeholder = 'Job Title / Company';
-                    if (!taglineInput.value || taglineInput.value === 'المسمى الوظيفي / الشركة') {
-                        taglineInput.value = 'Job Title / Company';
-                    }
-                }
-            }, 100);
-        });
-    </script>
+    <script src="/js/editor-en-050f103740b0.js" defer></script>
 
     <style>
         /* =============================================================== */
@@ -150,35 +122,7 @@
     <!-- End Google Tag Manager (noscript) -->
 
     <header class="pro-toolbar" id="pro-toolbar" style="direction: ltr; flex-direction: row;">
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const langBtn = document.getElementById('lang-toggle-btn');
-                if (langBtn) {
-                    const setLangText = () => {
-                        const label = langBtn.querySelector('.tb-label');
-                        if (label && label.textContent.trim() !== 'ع') {
-                            label.textContent = 'ع';
-                            langBtn.style.fontFamily = "'Tajawal', sans-serif";
-                            langBtn.style.fontWeight = "bold";
-                        } else if (!label && langBtn.textContent.trim() !== 'ع') {
-                            langBtn.innerHTML = 'ع'; // Fallback if no tb-label span is present
-                        }
-                    };
-
-                    // Initial set
-                    setTimeout(setLangText, 100);
-
-                    // Observer to prevent unwarranted changes
-                    const observer = new MutationObserver((mutations) => {
-                        observer.disconnect();
-                        setLangText();
-                        observer.observe(langBtn, { childList: true, characterData: true, subtree: true });
-                    });
-
-                    observer.observe(langBtn, { childList: true, characterData: true, subtree: true });
-                }
-            });
-        </script>
+        <script src="/js/editor-en-12ee0f5d4b8a.js" defer></script>
 
         <!-- ═══ ZONE 1: LEFT — Brand + History ═══ -->
         <div class="tb-zone tb-left">
@@ -2657,148 +2601,22 @@
             <span>Settings & Save</span>
         </button>
     </nav>
-    <script>
-        // Set dynamic year for editor footer
-        const editorYearSpan = document.getElementById('editor-footer-year');
-        if (editorYearSpan) editorYearSpan.textContent = new Date().getFullYear();
-    </script>
+    <script src="/js/editor-en-298ce092034d.js" defer></script>
 
     <!-- [NEW] Editor Premium Enhancements -->
     <script src="toolbar-tab-nav.js"></script>
     <script src="editor-premium-v2.js" defer></script>
 
     <!-- Toolbar Dropdowns & Mobile Fallbacks -->
-    <script>
-        // ── Mobile Proxy Bindings ──────────────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', function () {
-            // Buttons with data-trigger-id automatically click their desktop counterparts
-            document.querySelectorAll('[data-trigger-id]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const targetId = btn.getAttribute('data-trigger-id');
-                    const targetBtn = document.getElementById(targetId);
-                    if (targetBtn) targetBtn.click();
-                });
-            });
+    <script src="/js/editor-en-1b54043f3dea.js" defer></script>
 
-            // Buttons with specific IDs ending in -menu also proxy (fallback)
-            document.querySelectorAll('[id$="-menu"]').forEach(btn => {
-                const baseId = btn.id.replace('-menu', '');
-                const targetBtn = document.getElementById(baseId);
-                if (targetBtn) {
-                    btn.addEventListener('click', () => targetBtn.click());
-                }
-            });
-        });
-    </script>
+    <script src="/js/editor-en-917cf4431d25.js" defer></script>
 
-    <script>
-        // ── Toolbar Dropdowns: Tools & Download ────────────────────────────────────
-        (function () {
-            document.addEventListener('DOMContentLoaded', function () {
-                const toolsWrap = document.getElementById('tools-dropdown-wrap');
-                const toolsBtn = document.getElementById('tools-menu-btn');
-                const dlWrap = document.querySelector('.download-container.tb-dropdown-wrap');
-                const dlBtn = document.getElementById('download-options-btn');
-
-                if (dlWrap) dlWrap.id = 'download-options-wrap';
-
-                function toggleMenu(wrap, btn, forceState) {
-                    if (!wrap || !btn) return;
-                    const isOpen = wrap.classList.contains('open');
-                    const nextState = (forceState !== undefined) ? forceState : !isOpen;
-
-                    wrap.classList.toggle('open', nextState);
-                    btn.setAttribute('aria-expanded', nextState);
-
-                    // If opening this one, close the other
-                    if (nextState) {
-                        if (wrap === toolsWrap && dlWrap) toggleMenu(dlWrap, dlBtn, false);
-                        if (wrap === dlWrap && toolsWrap) toggleMenu(toolsWrap, toolsBtn, false);
-                    }
-                }
-
-                if (toolsBtn) {
-                    toolsBtn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        toggleMenu(toolsWrap, toolsBtn);
-                    });
-                }
-
-                if (dlBtn) {
-                    dlBtn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        toggleMenu(dlWrap, dlBtn);
-                    });
-                }
-
-                document.addEventListener('click', function (e) {
-                    if (toolsWrap && toolsWrap.classList.contains('open') && !toolsWrap.contains(e.target)) {
-                        toggleMenu(toolsWrap, toolsBtn, false);
-                    }
-                    if (dlWrap && dlWrap.classList.contains('open') && !dlWrap.contains(e.target)) {
-                        toggleMenu(dlWrap, dlBtn, false);
-                    }
-                });
-
-                document.addEventListener('keydown', function (e) {
-                    if (e.key === 'Escape') {
-                        toggleMenu(toolsWrap, toolsBtn, false);
-                        toggleMenu(dlWrap, dlBtn, false);
-                    }
-                });
-
-                // Close menu when a tool or download item is clicked
-                document.querySelectorAll('.tb-dropdown-menu .tb-dropdown-item, .tb-dropdown-menu li button').forEach(item => {
-                    item.addEventListener('click', () => {
-                        setTimeout(() => {
-                            toggleMenu(toolsWrap, toolsBtn, false);
-                            toggleMenu(dlWrap, dlBtn, false);
-                        }, 100);
-                    });
-                });
-
-            });
-        })();
-    </script>
-
-    <script>
-        // ── Accordion Init & Global Fixes ──────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', function () {
-
-            // 1. Close all top-level fieldset-accordion panels
-            document.querySelectorAll('details.fieldset-accordion').forEach(function (d) {
-                d.removeAttribute('open');
-            });
-
-            // 2. Fix social-controls-wrapper: JS sets display:block but parent is flex,
-            //    so we upgrade it to display:flex + column
-            var scw = document.getElementById('social-controls-wrapper');
-            if (scw) {
-                var observer = new MutationObserver(function (mutations) {
-                    mutations.forEach(function (m) {
-                        if (m.attributeName === 'style') {
-                            if (scw.style.display === 'block') {
-                                scw.style.display = 'flex';
-                                scw.style.flexDirection = 'column';
-                                scw.style.gap = '12px';
-                            }
-                        }
-                    });
-                });
-                observer.observe(scw, { attributes: true, attributeFilter: ['style'] });
-
-                if (scw.style.display !== 'none') {
-                    scw.style.display = 'flex';
-                    scw.style.flexDirection = 'column';
-                    scw.style.gap = '12px';
-                }
-            }
-        });
-    </script>
+    <script src="/js/editor-en-5109bbda4598.js" defer></script>
 
     <script src="/nfc/cookie-consent.js" defer></script>
     <script src="/nfc/error-reporter.js" defer></script>
-    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/nfc/sw.js',{scope:'/nfc/'}).catch(e=>console.warn('SW reg failed:',e))}</script>
+    <script src="/js/sw-register.js"></script>
     <script src="/nfc/premium-ui.js" defer></script>
 </body>
 

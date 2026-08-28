@@ -30,7 +30,8 @@ const {
   errorBuffer,
   MAX_ERROR_BUFFER,
   trackError,
-  registerClientErrorRoute
+  registerClientErrorRoute,
+  configureErrorPersistence
 } = require('./utils/error-tracking');
 const {
   registerCacheAndRedirectMiddleware,
@@ -95,6 +96,8 @@ const databaseReady = connectDatabase({
     mongoClient = connection.client;
     console.log('MongoDB connected');
     console.log('MongoDB indexes created');
+    // Wire error persistence once the database is available.
+    configureErrorPersistence({ getDb: () => db });
   })
   .catch(err => {
     console.error('Mongo connect error', err);

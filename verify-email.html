@@ -6,14 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Google Tag Manager -->
-    <script>(function (w, d, s, l, i) {
-            w[l] = w[l] || []; w[l].push({
-                'gtm.start':
-                    new Date().getTime(), event: 'gtm.js'
-            }); var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
+    <script src="/js/gtm-bootstrap.js"></script>
     <!-- End Google Tag Manager -->
     <title>تأكيد البريد الإلكتروني - MC PRIME NFC</title>
     <link rel="stylesheet" href="/nfc/homepage.css">
@@ -142,56 +135,10 @@
         </div>
     </div>
 
-    <script>
-        async function verifyEmail() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-
-            const loadingState = document.getElementById('loading-state');
-            const successState = document.getElementById('success-state');
-            const errorState = document.getElementById('error-state');
-            const errorMessage = document.getElementById('error-message');
-
-            if (!token) {
-                loadingState.style.display = 'none';
-                errorState.style.display = 'block';
-                errorMessage.textContent = 'رابط التحقق غير صالح.';
-                return;
-            }
-
-            try {
-                const baseUrl = Auth.getBaseUrl();
-                const response = await fetch(`${baseUrl}/api/auth/verify-email`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ token })
-                });
-
-                const data = await response.json();
-                loadingState.style.display = 'none';
-
-                if (data.success) {
-                    successState.style.display = 'block';
-                } else {
-                    errorState.style.display = 'block';
-                    errorMessage.textContent = data.error || 'رابط التحقق غير صالح أو منتهي الصلاحية.';
-                }
-            } catch (err) {
-                console.error('[VerifyEmail] Error:', err);
-                loadingState.style.display = 'none';
-                errorState.style.display = 'block';
-                errorMessage.textContent = 'خطأ في الاتصال بالخادم. حاول مرة أخرى.';
-            }
-        }
-
-        // Start verification on page load
-        verifyEmail();
-    </script>
+    <script src="/js/verify-email-548907f025a5.js" defer></script>
     <script src="/nfc/cookie-consent.js" defer></script>
     <script src="/nfc/error-reporter.js" defer></script>
-    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/nfc/sw.js',{scope:'/nfc/'}).catch(e=>console.warn('SW reg failed:',e))}</script>
+    <script src="/js/sw-register.js"></script>
     <script src="/nfc/premium-ui.js" defer></script>
 </body>
 

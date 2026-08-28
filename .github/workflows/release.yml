@@ -101,6 +101,7 @@ jobs:
           fi
 
       - run: npm ci
+      - run: npm run build:assets
       - run: npm run check:assets
       - run: npm run audit:prod
       - run: npm test -- --runInBand

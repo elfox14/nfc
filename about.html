@@ -8,14 +8,7 @@
   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/about.html" />
 
   <!-- Google Tag Manager -->
-  <script>(function (w, d, s, l, i) {
-      w[l] = w[l] || []; w[l].push({
-        'gtm.start':
-          new Date().getTime(), event: 'gtm.js'
-      }); var f = d.getElementsByTagName(s)[0],
-        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-    })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
+  <script src="/js/gtm-bootstrap.js"></script>
   <!-- End Google Tag Manager -->
 
   <meta charset="UTF-8">
@@ -573,24 +566,11 @@
     </div>
   </footer>
 
-  <script>
-    // Navbar scroll effect
-    const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-      navbar.classList.toggle('scrolled', window.scrollY > 50);
-    });
-
-    // Mobile menu toggle
-    const navToggle = document.getElementById('nav-toggle');
-    const navLinks = document.getElementById('nav-links');
-    navToggle.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
-    });
-  </script>
+  <script src="/js/about-5dc155992f17.js" defer></script>
 
   <script src="/nfc/cookie-consent.js" defer></script>
   <script src="/nfc/error-reporter.js" defer></script>
-  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/nfc/sw.js',{scope:'/nfc/'}).catch(e=>console.warn('SW reg failed:',e))}</script>
+  <script src="/js/sw-register.js"></script>
   <script src="/nfc/premium-ui.js" defer></script>
 </body>
 

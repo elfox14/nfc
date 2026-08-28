@@ -58,15 +58,15 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
             const res = await request(app)
                 .post('/api/auth/register')
-                .send({ name: 'Test User', email: 'test@example.com', password: 'password123' });
+                .send({ name: 'Alice Wonder', email: 'alice@example.com', password: 'Str0ngP@ss99' });
 
             expect(res.status).toBe(201);
             expect(res.body.success).toBe(true);
             expect(jwt.verify(res.body.accessToken, process.env.JWT_SECRET)).toMatchObject({
-                email: 'test@example.com',
+                email: 'alice@example.com',
                 type: 'access'
             });
-            expect(res.body.user.email).toBe('test@example.com');
+            expect(res.body.user.email).toBe('alice@example.com');
 
             // Check if HttpOnly auth cookies are set
             const cookies = res.headers['set-cookie'];
@@ -77,11 +77,11 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
         it('Should reject duplicate emails', async () => {
             // Setup Mock: Existing user found
-            mockCollection.findOne.mockResolvedValueOnce({ email: 'test@example.com' });
+            mockCollection.findOne.mockResolvedValueOnce({ email: 'alice@example.com' });
 
             const res = await request(app)
                 .post('/api/auth/register')
-                .send({ name: 'Test User 2', email: 'test@example.com', password: 'password123' });
+                .send({ name: 'Alice Wonder 2', email: 'alice@example.com', password: 'Str0ngP@ss99' });
 
             expect(res.status).toBe(400);
             expect(res.body.error).toBe('User already exists');
@@ -92,20 +92,20 @@ describe('Auth Integration Tests (Ticket 9)', () => {
         it('Should log in user with correct credentials', async () => {
             // Hash a fake password to match
             const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash('password123', salt);
+            const hashedPassword = await bcrypt.hash('Str0ngP@ss99', salt);
 
             // Setup Mock
             mockCollection.findOne.mockResolvedValueOnce({
                 userId: 'u123',
-                email: 'test@example.com',
-                name: 'Test user',
+                email: 'alice@example.com',
+                name: 'Alice Wonder',
                 password: hashedPassword
             });
             mockCollection.insertOne.mockResolvedValueOnce({ insertedId: 'r123' });
 
             const res = await request(app)
                 .post('/api/auth/login')
-                .send({ email: 'test@example.com', password: 'password123' });
+                .send({ email: 'alice@example.com', password: 'Str0ngP@ss99' });
 
             expect(res.status).toBe(200);
             expect(res.body.success).toBe(true);
@@ -122,17 +122,17 @@ describe('Auth Integration Tests (Ticket 9)', () => {
 
         it('Should reject incorrect password', async () => {
             const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash('password123', salt);
+            const hashedPassword = await bcrypt.hash('Str0ngP@ss99', salt);
 
             mockCollection.findOne.mockResolvedValueOnce({
                 userId: 'u123',
-                email: 'test@example.com',
+                email: 'alice@example.com',
                 password: hashedPassword
             });
 
             const res = await request(app)
                 .post('/api/auth/login')
-                .send({ email: 'test@example.com', password: 'wrongpassword' });
+                .send({ email: 'alice@example.com', password: 'wrongpassword99' });
 
             expect(res.status).toBe(400);
             expect(res.body.error).toBe('Invalid credentials');
@@ -209,7 +209,7 @@ describe('Auth Integration Tests (Ticket 9)', () => {
         it('Should reject malformed reset tokens before database lookup', async () => {
             const res = await request(app)
                 .post('/api/auth/reset-password')
-                .send({ token: 'bad-token', password: 'password123' });
+                .send({ token: 'bad-token', password: 'Str0ngP@ss99' });
 
             expect(res.status).toBe(400);
             expect(mockCollection.findOne).not.toHaveBeenCalled();
@@ -232,7 +232,7 @@ describe('Auth Integration Tests (Ticket 9)', () => {
             const res = await request(app)
                 .post('/api/auth/login')
                 .set('Origin', 'https://evil.example')
-                .send({ email: 'test@example.com', password: 'password123' });
+                .send({ email: 'alice@example.com', password: 'Str0ngP@ss99' });
 
             expect(res.status).toBe(403);
             expect(mockCollection.findOne).not.toHaveBeenCalled();

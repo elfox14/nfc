@@ -17,7 +17,9 @@
     "package:static": "node scripts/package-static-site.js",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "audit:editor": "node scripts/audit-editor-markup.js",
-    "audit:editor:strict": "node scripts/audit-editor-markup.js --strict"
+    "audit:editor:strict": "node scripts/audit-editor-markup.js --strict",
+    "bundle:frontend": "node scripts/bundle-frontend.js",
+    "externalize:inline": "node scripts/externalize-inline-scripts.js"
   },
   "keywords": [
     "nfc",

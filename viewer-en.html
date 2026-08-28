@@ -6,14 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Google Tag Manager -->
-    <script>(function (w, d, s, l, i) {
-            w[l] = w[l] || []; w[l].push({
-                'gtm.start':
-                    new Date().getTime(), event: 'gtm.js'
-            }); var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', 'GTM-PLL5SLNM');</script>
+    <script src="/js/gtm-bootstrap.js"></script>
     <!-- End Google Tag Manager -->
     <title>View Card | MC PRIME</title>
     <meta name="description" content="View this smart digital business card powered by MC PRIME NFC.">
@@ -364,120 +357,14 @@
         </div>
     </div>
 
-    <script>
-        window.cardData = {};
-    </script>
+    <script src="/js/viewer-en-52dd611ca779.js" defer></script>
 
     <script src="/nfc/auth.js?v=3.5"></script>
     <!-- viewer.js with English locale override -->
     <script src="viewer.js?v=2.3"></script>
     <!-- [NEW v2.0] Premium Enhancements -->
 
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const params = new URLSearchParams(window.location.search);
-            const designId = params.get('id');
-            if (!designId) return;
-
-            const section = document.getElementById('save-card-section');
-            const btn = document.getElementById('save-card-btn');
-            const btnText = document.getElementById('save-card-text');
-            const statusP = document.getElementById('save-card-status');
-            const baseUrl = Auth.getBaseUrl();
-
-            try {
-                const ownerRes = await fetch(`${baseUrl}/api/design-owner/${designId}`);
-                const ownerData = await ownerRes.json();
-                if (!ownerData.success) return;
-
-                const isLoggedIn = Auth.isLoggedIn();
-                const currentUserId = Auth.user?.userId;
-
-                if (isLoggedIn && ownerData.ownerId === currentUserId) {
-                    const editBtn = document.getElementById('en-edit-btn');
-                    if (editBtn) {
-                        editBtn.href = `editor-en.html?id=${designId}`;
-                        editBtn.querySelector('span').textContent = 'Edit Card';
-                        editBtn.querySelector('i').className = 'fas fa-edit';
-                    }
-                    return;
-                }
-                if (ownerData.cardPrivacy === 'deny_all') return;
-
-                section.style.display = 'block';
-
-                if (!isLoggedIn) {
-                    btnText.textContent = 'Sign in to save this card';
-                    btn.querySelector('i').className = 'fas fa-sign-in-alt';
-                    btn.onclick = () => { window.location.href = '/nfc/login-en.html'; };
-                    return;
-                }
-
-                btn.onclick = async () => {
-                    const originalText = btnText.textContent;
-                    const originalIconClass = btn.querySelector('i').className;
-
-                    btn.disabled = true;
-                    btnText.textContent = 'Saving...';
-                    btn.querySelector('i').className = 'fas fa-spinner fa-spin';
-
-                    try {
-                        const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/save-card/${designId}`, {
-                            method: 'POST',
-                            headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' }
-                        });
-
-                        const data = await res.json();
-
-                        if (data.status === 'saved' || data.status === 'already_saved') {
-                            btnText.textContent = 'Saved \u2713';
-                            btn.querySelector('i').className = 'fas fa-check-circle';
-                            btn.style.background = '#2ecc71';
-                        } else if (data.status === 'requested' || data.status === 'already_requested') {
-                            btnText.textContent = 'Request Sent \u23f3';
-                            btn.querySelector('i').className = 'fas fa-clock';
-                            btn.style.background = '#f39c12';
-                            statusP.textContent = 'The card will be added after the owner approves';
-                            statusP.style.display = 'block';
-                        } else if (data.status === 'denied') {
-                            btnText.textContent = 'Save Not Available';
-                            btn.querySelector('i').className = 'fas fa-ban';
-                            btn.style.background = '#e74c3c';
-                        } else {
-                            throw new Error(data.error || 'Save failed');
-                        }
-                    } catch (err) {
-                        console.error('Save card error:', err);
-                        btnText.textContent = 'Error, try again';
-                        btn.querySelector('i').className = 'fas fa-exclamation-triangle';
-                        btn.disabled = false;
-
-                        setTimeout(() => {
-                            btnText.textContent = originalText;
-                            btn.querySelector('i').className = originalIconClass;
-                        }, 2000);
-                    }
-                };
-
-                try {
-                    const checkRes = await Auth.apiFetchWithRefresh(`${baseUrl}/api/saved-cards`, { headers: Auth.getHeader() });
-                    if (checkRes.ok) {
-                        const checkData = await checkRes.json();
-                        if (checkData.savedCards?.some(c => c.designShortId === designId)) {
-                            btnText.textContent = 'Already Saved \u2713';
-                            btn.querySelector('i').className = 'fas fa-check-circle';
-                            btn.style.background = '#2ecc71';
-                            btn.disabled = true;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Failed to check saved status:', e);
-                }
-            } catch (err) {
-                console.error('Save card init error:', err);
-            }
-        });
-    </script>
+    <script src="/js/viewer-en-626efe45f9f4.js" defer></script>
 
     <!-- [NEW v2.0] Keyboard shortcut hint -->
     <div id="shortcuts-hint" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'?',bubbles:true}))">
@@ -485,78 +372,12 @@
     </div>
 
     <!-- [NEW v2.0] 3D Tilt + Haptic Feedback -->
-    <script>
-    (function() {
-        'use strict';
-        function initHapticFlip() {
-            const wrapper = document.getElementById('cards-wrapper-viewer');
-            if (!wrapper) return;
-            wrapper.addEventListener('click', () => {
-                if ('vibrate' in navigator) navigator.vibrate(25);
-            });
-        }
-        function init3DTilt() {
-            if (window.innerWidth < 1024) return;
-            const wrapper = document.getElementById('cards-wrapper-viewer');
-            if (!wrapper) return;
-            let tiltActive = true;
-            const maxTilt = 8;
-            wrapper.addEventListener('mouseenter', () => { tiltActive = true; });
-            wrapper.addEventListener('mousemove', (e) => {
-                if (!tiltActive || wrapper.classList.contains('is-flipped')) return;
-                const rect = wrapper.getBoundingClientRect();
-                const x = (e.clientX - rect.left) / rect.width - 0.5;
-                const y = (e.clientY - rect.top) / rect.height - 0.5;
-                wrapper.style.transition = 'transform 0.1s ease-out';
-                wrapper.style.transform = `perspective(800px) rotateX(${-y * maxTilt}deg) rotateY(${x * maxTilt}deg)`;
-            });
-            wrapper.addEventListener('mouseleave', () => {
-                tiltActive = false;
-                wrapper.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-                wrapper.style.transform = '';
-            });
-            const flipBtn = document.getElementById('viewer-flip-btn');
-            if (flipBtn) {
-                flipBtn.addEventListener('click', () => {
-                    wrapper.style.transition = 'transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
-                });
-            }
-        }
-        function initSmoothTheme() {
-            const style = document.createElement('style');
-            style.textContent = `
-                body, .viewer-nav, .side-column, .viewer-container,
-                .contact-link, .btn, .info-box, .mobile-tab-btn,
-                .cards-wrapper-viewer, .business-card-viewer {
-                    transition: background-color 0.4s ease,
-                                color 0.3s ease,
-                                border-color 0.3s ease,
-                                box-shadow 0.3s ease;
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        function initWhenReady() {
-            initSmoothTheme();
-            const observer = new MutationObserver(() => {
-                const container = document.querySelector('.viewer-container');
-                if (container && container.style.display !== 'none') {
-                    initHapticFlip(); init3DTilt(); observer.disconnect();
-                }
-            });
-            observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
-            setTimeout(() => { initHapticFlip(); init3DTilt(); }, 5000);
-        }
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initWhenReady);
-        } else { initWhenReady(); }
-    })();
-    </script>
+    <script src="/js/viewer-en-e75720befb30.js" defer></script>
 
 <script src="viewer-premium-v2.js" defer></script>
     <script src="/nfc/cookie-consent.js" defer></script>
     <script src="/nfc/error-reporter.js" defer></script>
-    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/nfc/sw.js',{scope:'/nfc/'}).catch(e=>console.warn('SW reg failed:',e))}</script>
+    <script src="/js/sw-register.js"></script>
     <script src="/nfc/premium-ui.js" defer></script>
 </body>
 

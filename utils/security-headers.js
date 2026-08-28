@@ -31,11 +31,11 @@ function applySecurityHeaders(app) {
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
-        // 'unsafe-inline' is required for static HTML pages that contain inline scripts.
-        // The nonce below is also included so that templated pages can migrate to nonce-based
-        // execution in the future; when a nonce is adopted, 'unsafe-inline' will be ignored
-        // by CSP Level-2+ browsers on those responses.
-        "'unsafe-inline'",
+        // 'unsafe-inline' removed — per-request nonces (res.locals.cspNonce) are
+        // injected into every <script> tag by utils/static-files.js for static
+        // HTML and by EJS templates via <%= nonce %>. With a nonce present,
+        // CSP Level-2+ browsers already ignore 'unsafe-inline'; removing it
+        // makes the strict intent explicit and closes the gap on legacy browsers.
         (req, res) => `'nonce-${res.locals.cspNonce}'`,
         "https://cdnjs.cloudflare.com",
         "https://cdn.jsdelivr.net",
@@ -78,11 +78,11 @@ function applySecurityHeaders(app) {
         "https://cdn.jsdelivr.net",
         "https://*.mcprim.com",
         "https://mcprim.com",
-        "https://*.onrender.com",
-        "wss://*.onrender.com",
         "https://res.cloudinary.com",
         "https://www.google-analytics.com",
         "https://pagead2.googlesyndication.com",
+        // Only the explicit Render hostname is allowed — wildcards removed
+        // to prevent arbitrary *.onrender.com apps from reading API responses.
         ...(process.env.RENDER_EXTERNAL_HOSTNAME
           ? [
               `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`,

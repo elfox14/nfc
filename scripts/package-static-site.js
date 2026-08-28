@@ -26,7 +26,7 @@ const serverOnlyFiles = new Set([
   'inject-premium.js',
   'optimize-images.js'
 ]);
-const assetDirectories = ['backgrounds', 'images', 'libs'];
+const assetDirectories = ['backgrounds', 'images', 'libs', 'js'];
 
 fs.rmSync(path.join(root, 'dist', 'static'), { recursive: true, force: true });
 fs.mkdirSync(output, { recursive: true });

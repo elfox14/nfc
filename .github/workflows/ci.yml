@@ -40,6 +40,9 @@ jobs:
         if-no-files-found: error
         retention-days: 7
 
+    - name: Build generated assets
+      run: npm run build:assets
+
     - name: Verify generated assets
       run: npm run check:assets
 
