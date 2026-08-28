@@ -101,14 +101,14 @@ function processFile(filePath) {
     if (classification.type === 'empty') continue;
 
     if (classification.type === 'shared') {
-      const src = `/${classification.file}`;
+      const src = classification.file;
       const newTag = `<script src="${src}"></script>`;
       replacements.push({ old: block.fullMatch, new: newTag, file: filePath });
     } else if (classification.type === 'custom') {
       const hash = hashContent(block.content);
       const outFile = `js/${pageName}-${hash}.js`;
       const outPath = path.join(root, outFile);
-      const src = `/${outFile}`;
+      const src = outFile;
       const newTag = `<script src="${src}" defer></script>`;
       replacements.push({ old: block.fullMatch, new: newTag, file: filePath });
       customScripts.push({ outPath, content: block.content.trim() });

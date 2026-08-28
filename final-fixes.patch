@@ -1,0 +1,1316 @@
+diff --git a/404.html b/404.html
+index 8862394..3c6c358 100644
+--- a/404.html
++++ b/404.html
+@@ -3,7 +3,7 @@
+ 
+ <head>
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -227,7 +227,7 @@
+   </div>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/500.html b/500.html
+index d49d5c6..9a54ae8 100644
+--- a/500.html
++++ b/500.html
+@@ -3,7 +3,7 @@
+ 
+ <head>
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -31,7 +31,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/about.html b/about.html
+index 88af707..13792f5 100644
+--- a/about.html
++++ b/about.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/about.html" />
+ 
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+ 
+   <meta charset="UTF-8">
+@@ -566,11 +566,11 @@
+     </div>
+   </footer>
+ 
+-  <script src="/js/about-5dc155992f17.js" defer></script>
++  <script src="js/about-5dc155992f17.js" defer></script>
+ 
+   <script src="/nfc/cookie-consent.js" defer></script>
+   <script src="/nfc/error-reporter.js" defer></script>
+-  <script src="/js/sw-register.js"></script>
++  <script src="js/sw-register.js"></script>
+   <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/admin.html b/admin.html
+index 8b6c3e0..e52c0d8 100644
+--- a/admin.html
++++ b/admin.html
+@@ -349,7 +349,7 @@
+         </main>
+     </div>
+ 
+-    <script src="/js/admin-7b531addae5f.js" defer></script>
++    <script src="js/admin-7b531addae5f.js" defer></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ </html>
+diff --git a/blog-business-card-mistakes-en.html b/blog-business-card-mistakes-en.html
+index 0272106..ccca98b 100644
+--- a/blog-business-card-mistakes-en.html
++++ b/blog-business-card-mistakes-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/blog-business-card-mistakes-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/blog-business-card-mistakes.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -415,10 +415,10 @@
+     </footer>
+ 
+     <script src="viewer.js"></script>
+-    <script src="/js/blog-business-card-mistakes-en-22282d0d5ad6.js" defer></script>
++    <script src="js/blog-business-card-mistakes-en-22282d0d5ad6.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/blog-business-card-mistakes.html b/blog-business-card-mistakes.html
+index 5b83154..80a2ece 100644
+--- a/blog-business-card-mistakes.html
++++ b/blog-business-card-mistakes.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/blog-business-card-mistakes-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/blog-business-card-mistakes.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -423,10 +423,10 @@
+   </footer>
+ 
+   <script src="viewer.js"></script>
+-  <script src="/js/blog-business-card-mistakes-0c715e274391.js" defer></script>
++  <script src="js/blog-business-card-mistakes-0c715e274391.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/blog-digital-menus-for-restaurants-en.html b/blog-digital-menus-for-restaurants-en.html
+index 435a47d..e290953 100644
+--- a/blog-digital-menus-for-restaurants-en.html
++++ b/blog-digital-menus-for-restaurants-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/blog-digital-menus-for-restaurants-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/blog-digital-menus-for-restaurants.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -408,10 +408,10 @@
+     </footer>
+ 
+     <script src="viewer.js"></script>
+-    <script src="/js/blog-digital-menus-for-restaurants-en-22282d0d5ad6.js" defer></script>
++    <script src="js/blog-digital-menus-for-restaurants-en-22282d0d5ad6.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/blog-digital-menus-for-restaurants.html b/blog-digital-menus-for-restaurants.html
+index be8a47d..3cf8fc9 100644
+--- a/blog-digital-menus-for-restaurants.html
++++ b/blog-digital-menus-for-restaurants.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/blog-digital-menus-for-restaurants-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/blog-digital-menus-for-restaurants.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -416,10 +416,10 @@
+   </footer>
+ 
+   <script src="viewer.js"></script>
+-  <script src="/js/blog-digital-menus-for-restaurants-0c715e274391.js" defer></script>
++  <script src="js/blog-digital-menus-for-restaurants-0c715e274391.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/blog-en.html b/blog-en.html
+index 60a2be7..307046f 100644
+--- a/blog-en.html
++++ b/blog-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/blog-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/blog.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="utf-8" />
+     <meta content="width=device-width, initial-scale=1" name="viewport" />
+@@ -665,10 +665,10 @@
+     
+     <script src="/nfc/lang-switcher.js" defer></script>
+     <script src="viewer.js"></script>
+-    <script src="/js/blog-en-22282d0d5ad6.js" defer></script>
++    <script src="js/blog-en-22282d0d5ad6.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/blog-nfc-at-events-en.html b/blog-nfc-at-events-en.html
+index 7927a90..458af36 100644
+--- a/blog-nfc-at-events-en.html
++++ b/blog-nfc-at-events-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/blog-nfc-at-events-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/blog-nfc-at-events.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -508,10 +508,10 @@
+ 
+     <script src="/nfc/lang-switcher.js" defer></script>
+     <script src="viewer.js"></script>
+-    <script src="/js/blog-nfc-at-events-en-22282d0d5ad6.js" defer></script>
++    <script src="js/blog-nfc-at-events-en-22282d0d5ad6.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/blog-nfc-at-events.html b/blog-nfc-at-events.html
+index 3a42f65..f654959 100644
+--- a/blog-nfc-at-events.html
++++ b/blog-nfc-at-events.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/blog-nfc-at-events-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/blog-nfc-at-events.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -417,10 +417,10 @@
+   </footer>
+ 
+   <script src="viewer.js"></script>
+-  <script src="/js/blog-nfc-at-events-0c715e274391.js" defer></script>
++  <script src="js/blog-nfc-at-events-0c715e274391.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/blog.html b/blog.html
+index df404d7..4a26b23 100644
+--- a/blog.html
++++ b/blog.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/blog-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/blog.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="utf-8" />
+     <meta content="width=device-width, initial-scale=1" name="viewport" />
+@@ -709,10 +709,10 @@
+     </footer>
+     
+     <script src="viewer.js"></script>
+-    <script src="/js/blog-22282d0d5ad6.js" defer></script>
++    <script src="js/blog-22282d0d5ad6.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/chatbot-guide.js b/chatbot-guide.js
+new file mode 100644
+index 0000000..05a713a
+--- /dev/null
++++ b/chatbot-guide.js
+@@ -0,0 +1,4 @@
++// chatbot-guide.js — Placeholder for future chatbot integration.
++// This file prevents a 404 error on index.html and index-en.html.
++// Replace with actual chatbot logic when ready.
++'use strict';
+diff --git a/contact-en.html b/contact-en.html
+index c0c4ea0..ecdf544 100644
+--- a/contact-en.html
++++ b/contact-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/contact-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/contact.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -135,7 +135,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/contact.html b/contact.html
+index f571865..783db63 100644
+--- a/contact.html
++++ b/contact.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/contact-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/contact.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -71,7 +71,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/dashboard-en.html b/dashboard-en.html
+index 1c00237..35d719e 100644
+--- a/dashboard-en.html
++++ b/dashboard-en.html
+@@ -8,7 +8,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>Dashboard - MC PRIME NFC</title>
+     <link rel="stylesheet" href="/nfc/homepage.css">
+@@ -618,10 +618,10 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/dashboard-en-dbf23d06155e.js" defer></script>
++    <script src="js/dashboard-en-dbf23d06155e.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/dashboard.html b/dashboard.html
+index 8a3ae65..bedf4c2 100644
+--- a/dashboard.html
++++ b/dashboard.html
+@@ -8,7 +8,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>لوحة التحكم - MC PRIME NFC</title>
+     <link rel="stylesheet" href="/nfc/homepage.css">
+@@ -622,10 +622,10 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/dashboard-2fd86ecf204e.js" defer></script>
++    <script src="js/dashboard-2fd86ecf204e.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/editor-en.html b/editor-en.html
+index 1fb4ac9..0a31caf 100644
+--- a/editor-en.html
++++ b/editor-en.html
+@@ -14,7 +14,7 @@
+     <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
+ 
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+ 
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+@@ -60,7 +60,7 @@
+     <script src="editor-toolbar-v2.js?v=1.1" defer></script>
+ 
+     <!-- English placeholder initialization -->
+-    <script src="/js/editor-en-050f103740b0.js" defer></script>
++    <script src="js/editor-en-050f103740b0.js" defer></script>
+ 
+     <style>
+         /* =============================================================== */
+@@ -122,7 +122,7 @@
+     <!-- End Google Tag Manager (noscript) -->
+ 
+     <header class="pro-toolbar" id="pro-toolbar" style="direction: ltr; flex-direction: row;">
+-        <script src="/js/editor-en-12ee0f5d4b8a.js" defer></script>
++        <script src="js/editor-en-12ee0f5d4b8a.js" defer></script>
+ 
+         <!-- ═══ ZONE 1: LEFT — Brand + History ═══ -->
+         <div class="tb-zone tb-left">
+@@ -2601,22 +2601,22 @@
+             <span>Settings & Save</span>
+         </button>
+     </nav>
+-    <script src="/js/editor-en-298ce092034d.js" defer></script>
++    <script src="js/editor-en-298ce092034d.js" defer></script>
+ 
+     <!-- [NEW] Editor Premium Enhancements -->
+     <script src="toolbar-tab-nav.js"></script>
+     <script src="editor-premium-v2.js" defer></script>
+ 
+     <!-- Toolbar Dropdowns & Mobile Fallbacks -->
+-    <script src="/js/editor-en-1b54043f3dea.js" defer></script>
++    <script src="js/editor-en-1b54043f3dea.js" defer></script>
+ 
+-    <script src="/js/editor-en-917cf4431d25.js" defer></script>
++    <script src="js/editor-en-917cf4431d25.js" defer></script>
+ 
+-    <script src="/js/editor-en-5109bbda4598.js" defer></script>
++    <script src="js/editor-en-5109bbda4598.js" defer></script>
+ 
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/editor.html b/editor.html
+index 971e5d8..084c107 100644
+--- a/editor.html
++++ b/editor.html
+@@ -14,7 +14,7 @@
+     <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
+ 
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+ 
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+@@ -2575,14 +2575,14 @@
+     <script src="editor-premium-v2.js" defer></script>
+ 
+     <!-- Toolbar Dropdowns & Mobile Fallbacks -->
+-    <script src="/js/editor-1b54043f3dea.js" defer></script>
++    <script src="js/editor-1b54043f3dea.js" defer></script>
+ 
+-    <script src="/js/editor-917cf4431d25.js" defer></script>
++    <script src="js/editor-917cf4431d25.js" defer></script>
+ 
+-    <script src="/js/editor-5109bbda4598.js" defer></script>
++    <script src="js/editor-5109bbda4598.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/forgot-password.html b/forgot-password.html
+index 20e7b66..4d89b2b 100644
+--- a/forgot-password.html
++++ b/forgot-password.html
+@@ -8,7 +8,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>استعادة كلمة المرور - MC PRIME NFC</title>
+     <link rel="stylesheet" href="/nfc/homepage.css">
+@@ -154,10 +154,10 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/forgot-password-ea6d30397622.js" defer></script>
++    <script src="js/forgot-password-ea6d30397622.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/gallery-en.html b/gallery-en.html
+index d8c4e44..6e302e7 100644
+--- a/gallery-en.html
++++ b/gallery-en.html
+@@ -9,7 +9,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/gallery-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/gallery.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -304,11 +304,11 @@
+         </div>
+     </footer>
+ 
+-    <script src="/js/gallery-en-52a66378a0b5.js" defer></script>
++    <script src="js/gallery-en-52a66378a0b5.js" defer></script>
+ 
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/gallery.html b/gallery.html
+index e25c578..971825a 100644
+--- a/gallery.html
++++ b/gallery.html
+@@ -9,7 +9,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/gallery-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/gallery.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -285,11 +285,11 @@
+         </div>
+     </footer>
+ 
+-    <script src="/js/gallery-da13eb694fad.js" defer></script>
++    <script src="js/gallery-da13eb694fad.js" defer></script>
+ 
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/how-to-use-editor-en.html b/how-to-use-editor-en.html
+index c21206b..464af89 100644
+--- a/how-to-use-editor-en.html
++++ b/how-to-use-editor-en.html
+@@ -15,7 +15,7 @@
+         content="Complete guide to using the MC PRIME smart business card editor. Learn how to design and customize your digital card step by step.">    <link rel="icon" href="mc-prime-nfc.png" type="image/png">
+ 
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+ 
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+@@ -892,10 +892,10 @@
+         </div>
+     </footer>
+ 
+-    <script src="/js/how-to-use-editor-en-90994845c65c.js" defer></script>
++    <script src="js/how-to-use-editor-en-90994845c65c.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/how-to-use-editor.html b/how-to-use-editor.html
+index 4246cb1..e354510 100644
+--- a/how-to-use-editor.html
++++ b/how-to-use-editor.html
+@@ -74,7 +74,7 @@
+     </script>
+ 
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+ 
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+@@ -1294,10 +1294,10 @@
+         </div>
+     </footer>
+ 
+-    <script src="/js/how-to-use-editor-90994845c65c.js" defer></script>
++    <script src="js/how-to-use-editor-90994845c65c.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/index-en.html b/index-en.html
+index e3ae486..c1c5282 100644
+--- a/index-en.html
++++ b/index-en.html
+@@ -10,7 +10,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>Smart NFC Business Card - Design Your Digital Card Free | MC PRIME</title>
+     <meta name="description"
+@@ -1104,13 +1104,13 @@
+     </footer>
+ 
+     <!-- Scripts -->
+-    <script src="/js/index-en-1453c6b423ef.js" defer></script>
++    <script src="js/index-en-1453c6b423ef.js" defer></script>
+ 
+     <!-- Chatbot -->
+     <script src="/nfc/chatbot-guide.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/index.html b/index.html
+index 8706ea2..5c9a031 100644
+--- a/index.html
++++ b/index.html
+@@ -10,11 +10,11 @@
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/" />
+     <!-- Google tag (gtag.js) -->
+     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E7G4KFZKYG"></script>
+-    <script src="/js/gtag-config.js"></script>
++    <script src="js/gtag-config.js"></script>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>بطاقة عمل NFC الذكية - صمم بطاقتك الرقمية مجانًا | MC PRIME</title>
+     <meta name="description"
+@@ -1204,13 +1204,13 @@
+     </footer>
+ 
+     <!-- Scripts -->
+-    <script src="/js/index-4b2ff955cb85.js" defer></script>
++    <script src="js/index-4b2ff955cb85.js" defer></script>
+ 
+     <!-- Chatbot -->
+     <script src="/nfc/chatbot-guide.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+     <!-- Google AdSense -->
+     <script defer src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790" crossorigin="anonymous"></script>
+diff --git a/login-en.html b/login-en.html
+index 61407d2..94f837a 100644
+--- a/login-en.html
++++ b/login-en.html
+@@ -8,7 +8,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>Login - MC PRIME NFC</title>
+     <link rel="stylesheet" href="/nfc/homepage.css">
+@@ -173,10 +173,10 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/login-en-b46493a17a8f.js" defer></script>
++    <script src="js/login-en-b46493a17a8f.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/login.html b/login.html
+index b81c8df..256c0fd 100644
+--- a/login.html
++++ b/login.html
+@@ -8,7 +8,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>تسجيل الدخول - MC PRIME NFC</title>
+     <link rel="stylesheet" href="/nfc/homepage.css">
+@@ -173,10 +173,10 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/login-0be863c74f2c.js" defer></script>
++    <script src="js/login-0be863c74f2c.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-companies-egypt-en.html b/nfc-for-companies-egypt-en.html
+index 0ca637a..e539cb9 100644
+--- a/nfc-for-companies-egypt-en.html
++++ b/nfc-for-companies-egypt-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-companies-egypt-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-companies-egypt.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -218,7 +218,7 @@
+     </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-companies-egypt.html b/nfc-for-companies-egypt.html
+index 1155a38..0a3f1a9 100644
+--- a/nfc-for-companies-egypt.html
++++ b/nfc-for-companies-egypt.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-companies-egypt-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-companies-egypt.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -262,7 +262,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-companies-en.html b/nfc-for-companies-en.html
+index 84829c9..8bf362f 100644
+--- a/nfc-for-companies-en.html
++++ b/nfc-for-companies-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-companies-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-companies.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -231,7 +231,7 @@
+     </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-companies-saudi-en.html b/nfc-for-companies-saudi-en.html
+index 98647ed..1f08a9f 100644
+--- a/nfc-for-companies-saudi-en.html
++++ b/nfc-for-companies-saudi-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-companies-saudi-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-companies-saudi.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -222,7 +222,7 @@
+     </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-companies-saudi.html b/nfc-for-companies-saudi.html
+index 7cf88d9..5561416 100644
+--- a/nfc-for-companies-saudi.html
++++ b/nfc-for-companies-saudi.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-companies-saudi-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-companies-saudi.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -218,7 +218,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-companies-uae-en.html b/nfc-for-companies-uae-en.html
+index 87b1a7e..010e99e 100644
+--- a/nfc-for-companies-uae-en.html
++++ b/nfc-for-companies-uae-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-companies-uae-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-companies-uae.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -218,7 +218,7 @@
+     </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-companies-uae.html b/nfc-for-companies-uae.html
+index 704b775..cc6d3a2 100644
+--- a/nfc-for-companies-uae.html
++++ b/nfc-for-companies-uae.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-companies-uae-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-companies-uae.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -218,7 +218,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-companies.html b/nfc-for-companies.html
+index 01cf847..7bf2f93 100644
+--- a/nfc-for-companies.html
++++ b/nfc-for-companies.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-companies-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-companies.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -231,7 +231,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-freelancers-en.html b/nfc-for-freelancers-en.html
+index 41c73bd..e0b43a4 100644
+--- a/nfc-for-freelancers-en.html
++++ b/nfc-for-freelancers-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-freelancers-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-freelancers.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -263,7 +263,7 @@
+     </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-freelancers.html b/nfc-for-freelancers.html
+index a341ea7..9b74553 100644
+--- a/nfc-for-freelancers.html
++++ b/nfc-for-freelancers.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-freelancers-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-freelancers.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -263,7 +263,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-restaurants-en.html b/nfc-for-restaurants-en.html
+index 4f89961..1d591ab 100644
+--- a/nfc-for-restaurants-en.html
++++ b/nfc-for-restaurants-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-restaurants-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-restaurants.html" />
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -227,7 +227,7 @@
+     </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/nfc-for-restaurants.html b/nfc-for-restaurants.html
+index 91fd5cd..6c0bf8e 100644
+--- a/nfc-for-restaurants.html
++++ b/nfc-for-restaurants.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/nfc-for-restaurants-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/nfc-for-restaurants.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+@@ -227,7 +227,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/offline.html b/offline.html
+index 2c71874..05bf122 100644
+--- a/offline.html
++++ b/offline.html
+@@ -65,7 +65,7 @@
+     <p>تحقق من اتصالك بالإنترنت وحاول مرة أخرى. <br>ستعود الصفحة للعمل تلقائياً عند استعادة الاتصال.</p>
+     <button class="retry-btn" onclick="window.location.reload()">إعادة المحاولة</button>
+   </div>
+-  <script src="/js/offline-261eb9de4be3.js" defer></script>
++  <script src="js/offline-261eb9de4be3.js" defer></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ </html>
+diff --git a/privacy-en.html b/privacy-en.html
+index 9a20ffa..f5c2111 100644
+--- a/privacy-en.html
++++ b/privacy-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/privacy-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/privacy.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -146,7 +146,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/privacy.html b/privacy.html
+index ab79b2f..0f0e2e3 100644
+--- a/privacy.html
++++ b/privacy.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/privacy-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/privacy.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -91,7 +91,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/reset-password.html b/reset-password.html
+index 75a33bd..de4fbc6 100644
+--- a/reset-password.html
++++ b/reset-password.html
+@@ -6,7 +6,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>إعادة تعيين كلمة المرور - MC PRIME NFC</title>
+     <link rel="stylesheet" href="/nfc/homepage.css">
+@@ -157,10 +157,10 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/reset-password-fe88dc3f70e3.js" defer></script>
++    <script src="js/reset-password-fe88dc3f70e3.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/scripts/externalize-inline-scripts.js b/scripts/externalize-inline-scripts.js
+index ef873aa..8619429 100644
+--- a/scripts/externalize-inline-scripts.js
++++ b/scripts/externalize-inline-scripts.js
+@@ -101,14 +101,14 @@ function processFile(filePath) {
+     if (classification.type === 'empty') continue;
+ 
+     if (classification.type === 'shared') {
+-      const src = `/${classification.file}`;
++      const src = classification.file;
+       const newTag = `<script src="${src}"></script>`;
+       replacements.push({ old: block.fullMatch, new: newTag, file: filePath });
+     } else if (classification.type === 'custom') {
+       const hash = hashContent(block.content);
+       const outFile = `js/${pageName}-${hash}.js`;
+       const outPath = path.join(root, outFile);
+-      const src = `/${outFile}`;
++      const src = outFile;
+       const newTag = `<script src="${src}" defer></script>`;
+       replacements.push({ old: block.fullMatch, new: newTag, file: filePath });
+       customScripts.push({ outPath, content: block.content.trim() });
+diff --git a/signup-en.html b/signup-en.html
+index 50c9e84..601926a 100644
+--- a/signup-en.html
++++ b/signup-en.html
+@@ -8,7 +8,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>Create Account - MC PRIME NFC</title>
+     <link rel="stylesheet" href="/nfc/homepage.css">
+@@ -174,10 +174,10 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/signup-en-6a105c9a0708.js" defer></script>
++    <script src="js/signup-en-6a105c9a0708.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/signup.html b/signup.html
+index 24a8445..5268587 100644
+--- a/signup.html
++++ b/signup.html
+@@ -8,7 +8,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>إنشاء حساب - MC PRIME NFC</title>
+     <link rel="stylesheet" href="/nfc/homepage.css">
+@@ -174,10 +174,10 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/signup-1528ac6ecd8b.js" defer></script>
++    <script src="js/signup-1528ac6ecd8b.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/terms-en.html b/terms-en.html
+index 88730c9..7d207f5 100644
+--- a/terms-en.html
++++ b/terms-en.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/terms-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/terms.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -126,7 +126,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/terms.html b/terms.html
+index a6632b0..58f4a43 100644
+--- a/terms.html
++++ b/terms.html
+@@ -8,7 +8,7 @@
+   <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/terms-en.html" />
+   <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/terms.html" />
+   <!-- Google Tag Manager -->
+-  <script src="/js/gtm-bootstrap.js"></script>
++  <script src="js/gtm-bootstrap.js"></script>
+   <!-- End Google Tag Manager -->
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -92,7 +92,7 @@
+   </footer>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/verify-email.html b/verify-email.html
+index 335e276..364ce25 100644
+--- a/verify-email.html
++++ b/verify-email.html
+@@ -6,7 +6,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>تأكيد البريد الإلكتروني - MC PRIME NFC</title>
+     <link rel="stylesheet" href="/nfc/homepage.css">
+@@ -135,10 +135,10 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/verify-email-548907f025a5.js" defer></script>
++    <script src="js/verify-email-548907f025a5.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/viewer-en.html b/viewer-en.html
+index df6d2d0..c78c2f3 100644
+--- a/viewer-en.html
++++ b/viewer-en.html
+@@ -6,7 +6,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <title>View Card | MC PRIME</title>
+     <meta name="description" content="View this smart digital business card powered by MC PRIME NFC.">
+@@ -357,14 +357,14 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/viewer-en-52dd611ca779.js" defer></script>
++    <script src="js/viewer-en-52dd611ca779.js" defer></script>
+ 
+     <script src="/nfc/auth.js?v=3.5"></script>
+     <!-- viewer.js with English locale override -->
+     <script src="viewer.js?v=2.3"></script>
+     <!-- [NEW v2.0] Premium Enhancements -->
+ 
+-    <script src="/js/viewer-en-626efe45f9f4.js" defer></script>
++    <script src="js/viewer-en-626efe45f9f4.js" defer></script>
+ 
+     <!-- [NEW v2.0] Keyboard shortcut hint -->
+     <div id="shortcuts-hint" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'?',bubbles:true}))">
+@@ -372,12 +372,12 @@
+     </div>
+ 
+     <!-- [NEW v2.0] 3D Tilt + Haptic Feedback -->
+-    <script src="/js/viewer-en-e75720befb30.js" defer></script>
++    <script src="js/viewer-en-e75720befb30.js" defer></script>
+ 
+ <script src="viewer-premium-v2.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ 
+diff --git a/viewer.html b/viewer.html
+index b3d425a..4eb0454 100644
+--- a/viewer.html
++++ b/viewer.html
+@@ -4,7 +4,7 @@
+ <head>
+     <script src="/nfc/runtime-config.js?v=1.0"></script>
+     <!-- Google Tag Manager -->
+-    <script src="/js/gtm-bootstrap.js"></script>
++    <script src="js/gtm-bootstrap.js"></script>
+     <!-- End Google Tag Manager -->
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -402,13 +402,13 @@
+         </div>
+     </div>
+ 
+-    <script src="/js/viewer-52dd611ca779.js" defer></script>
++    <script src="js/viewer-52dd611ca779.js" defer></script>
+ 
+     <script src="/nfc/auth.js?v=3.5"></script>
+     <script src="viewer.js?v=2.3" defer></script>
+     <!-- [NEW v2.0] Premium Enhancements -->
+ 
+-    <script src="/js/viewer-dcfb7124038d.js" defer></script>
++    <script src="js/viewer-dcfb7124038d.js" defer></script>
+ 
+     <!-- [NEW v2.0] Keyboard shortcut hint -->
+     <div id="shortcuts-hint" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'?',bubbles:true}))">
+@@ -416,13 +416,13 @@
+     </div>
+ 
+     <!-- [NEW v2.0] 3D Tilt + Haptic Feedback -->
+-    <script src="/js/viewer-ad489acca7f3.js" defer></script>
++    <script src="js/viewer-ad489acca7f3.js" defer></script>
+ 
+     <!-- [NEW v2.0] Viewer Premium Features: VCF Preview, Map, Scroll Animations, Print -->
+     <script src="viewer-premium-v2.js" defer></script>
+     <script src="/nfc/cookie-consent.js" defer></script>
+     <script src="/nfc/error-reporter.js" defer></script>
+-    <script src="/js/sw-register.js"></script>
++    <script src="js/sw-register.js"></script>
+     <script src="/nfc/premium-ui.js" defer></script>
+ </body>
+ </html>
