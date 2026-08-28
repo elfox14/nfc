@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1320"/>
+      <stop offset="50%" stop-color="#121e33"/>
+      <stop offset="100%" stop-color="#050a12"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f6d365"/>
+      <stop offset="100%" stop-color="#fda085"/>
+    </linearGradient>
+    <linearGradient id="metalCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="50%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="15" stdDeviation="20" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="glowEffect" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  <circle cx="920" cy="200" r="280" fill="#fda085" opacity="0.1" filter="url(#glowEffect)"/>
+  <circle cx="250" cy="450" r="320" fill="#00d2ff" opacity="0.08" filter="url(#glowEffect)"/>
+
+  <!-- Grid Mesh -->
+  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+    <line x1="150" y1="0" x2="150" y2="630"/>
+    <line x1="450" y1="0" x2="450" y2="630"/>
+    <line x1="750" y1="0" x2="750" y2="630"/>
+    <line x1="1050" y1="0" x2="1050" y2="630"/>
+    <line x1="0" y1="150" x2="1200" y2="150"/>
+    <line x1="0" y1="350" x2="1200" y2="350"/>
+    <line x1="0" y1="550" x2="1200" y2="550"/>
+  </g>
+
+  <!-- Left Side: English Content Typography -->
+  <g transform="translate(80, 120)">
+    <!-- Category Pill -->
+    <rect x="0" y="0" width="190" height="42" rx="21" fill="rgba(246,211,101,0.15)" stroke="rgba(246,211,101,0.4)" stroke-width="1.5"/>
+    <circle cx="25" cy="21" r="6" fill="#f6d365"/>
+    <text x="45" y="26" fill="#f6d365" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="15" letter-spacing="0.5">COMPANIES IN UAE</text>
+
+    <!-- Main Title -->
+    <text x="0" y="100" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="44" letter-spacing="-1">
+      Luxury NFC Cards for
+    </text>
+    <text x="0" y="155" fill="url(#goldGrad)" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" letter-spacing="-1">
+      Companies in UAE &amp; Dubai
+    </text>
+
+    <!-- Bullet Points -->
+    <g transform="translate(0, 205)">
+      <circle cx="12" cy="14" r="5" fill="#f6d365"/>
+      <text x="32" y="20" fill="#cbd5e1" font-family="'Inter', sans-serif" font-weight="500" font-size="19">
+        Prestige Matte &amp; Titanium Metal Craftsmanship
+      </text>
+
+      <circle cx="12" cy="54" r="5" fill="#f6d365"/>
+      <text x="32" y="60" fill="#cbd5e1" font-family="'Inter', sans-serif" font-weight="500" font-size="19">
+        Ideal for Executive Meetings &amp; Global Summits
+      </text>
+
+      <circle cx="12" cy="94" r="5" fill="#f6d365"/>
+      <text x="32" y="100" fill="#cbd5e1" font-family="'Inter', sans-serif" font-weight="500" font-size="19">
+        Unforgettable First Impression Across Dubai Hubs
+      </text>
+    </g>
+
+    <!-- Branding Badge -->
+    <g transform="translate(0, 365)">
+      <rect x="0" y="0" width="280" height="46" rx="12" fill="rgba(15,23,42,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <text x="25" y="28" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="600" letter-spacing="1">
+        MC PRIME • UAE &amp; DUBAI
+      </text>
+    </g>
+  </g>
+
+  <!-- Right Side Visual: Dubai Architecture Silhouette & Smart Card -->
+  <g transform="translate(680, 80)">
+    <!-- Burj / Dubai Architectural Silhouette -->
+    <g opacity="0.25" fill="#f6d365">
+      <polygon points="205,380 215,80 220,80 230,380"/>
+      <line x1="217" y1="40" x2="217" y2="80" stroke="#f6d365" stroke-width="2"/>
+      <rect x="70" y="220" width="70" height="160" rx="4"/>
+      <rect x="290" y="180" width="80" height="200" rx="4"/>
+    </g>
+
+    <!-- Floating UAE Metal Luxury Card -->
+    <g transform="translate(140, 140) rotate(-6)" filter="url(#dropShadow)">
+      <rect x="0" y="0" width="260" height="160" rx="16" fill="url(#metalCardGrad)" stroke="url(#goldGrad)" stroke-width="2"/>
+      <rect x="25" y="30" width="45" height="36" rx="6" fill="url(#goldGrad)" stroke="#b45309" stroke-width="1"/>
+      <path d="M190 30 Q205 45 190 60" stroke="#fda085" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M200 20 Q225 45 200 70" stroke="#fda085" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+      <text x="25" y="110" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15">DUBAI VIP EDITION</text>
+      <text x="25" y="132" fill="#f6d365" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="11">UAE TITANIUM METAL PASS</text>
+    </g>
+
+    <g filter="url(#glowEffect)">
+      <circle cx="280" cy="220" r="8" fill="#f6d365"/>
+    </g>
+  </g>
+</svg>

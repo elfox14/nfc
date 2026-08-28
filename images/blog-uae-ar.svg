@@ -28,7 +28,20 @@
   <circle cx="280" cy="200" r="280" fill="#fda085" opacity="0.1" filter="url(#glowEffect)"/>
   <circle cx="950" cy="450" r="320" fill="#00d2ff" opacity="0.08" filter="url(#glowEffect)"/>
 
+  <!-- Grid Mesh -->
+  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+    <line x1="150" y1="0" x2="150" y2="630"/>
+    <line x1="450" y1="0" x2="450" y2="630"/>
+    <line x1="750" y1="0" x2="750" y2="630"/>
+    <line x1="1050" y1="0" x2="1050" y2="630"/>
+    <line x1="0" y1="150" x2="1200" y2="150"/>
+    <line x1="0" y1="350" x2="1200" y2="350"/>
+    <line x1="0" y1="550" x2="1200" y2="550"/>
+  </g>
+
+  <!-- Left Side Visual: Dubai Futuristic Skyline Silhouette & Luxury Metal NFC Card -->
   <g transform="translate(140, 80)">
+    <!-- Burj / Dubai Architectural Silhouette -->
     <g opacity="0.25" fill="#f6d365">
       <polygon points="205,380 215,80 220,80 230,380"/>
       <line x1="217" y1="40" x2="217" y2="80" stroke="#f6d365" stroke-width="2"/>
@@ -36,6 +49,7 @@
       <rect x="290" y="180" width="80" height="200" rx="4"/>
     </g>
 
+    <!-- Floating UAE Metal Luxury Card -->
     <g transform="translate(140, 140) rotate(-6)" filter="url(#dropShadow)">
       <rect x="0" y="0" width="260" height="160" rx="16" fill="url(#metalCardGrad)" stroke="url(#goldGrad)" stroke-width="2"/>
       <rect x="25" y="30" width="45" height="36" rx="6" fill="url(#goldGrad)" stroke="#b45309" stroke-width="1"/>
@@ -50,11 +64,14 @@
     </g>
   </g>
 
+  <!-- Right Side: Arabic Content Typography -->
   <g transform="translate(680, 130)">
+    <!-- Category Pill -->
     <rect x="0" y="0" width="200" height="42" rx="21" fill="rgba(246,211,101,0.15)" stroke="rgba(246,211,101,0.4)" stroke-width="1.5"/>
     <circle cx="25" cy="21" r="6" fill="#f6d365"/>
     <text x="45" y="27" fill="#f6d365" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="700" font-size="16">الشركات في الإمارات</text>
 
+    <!-- Main Title -->
     <text x="0" y="100" fill="#ffffff" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="900" font-size="44" letter-spacing="-0.5">
       كروت NFC الفاخرة
     </text>
@@ -62,6 +79,7 @@
       للشركات في دبي والإمارات
     </text>
 
+    <!-- Bullet Points -->
     <g transform="translate(0, 215)">
       <circle cx="12" cy="14" r="5" fill="#f6d365"/>
       <text x="30" y="20" fill="#cbd5e1" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="600" font-size="20">
@@ -79,6 +97,7 @@
       </text>
     </g>
 
+    <!-- Branding Badge -->
     <g transform="translate(0, 365)">
       <rect x="0" y="0" width="280" height="46" rx="12" fill="rgba(15,23,42,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
       <text x="25" y="28" fill="#94a3b8" font-family="'Segoe UI', Tahoma, sans-serif" font-size="14" font-weight="600">

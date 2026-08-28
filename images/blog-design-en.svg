@@ -24,6 +24,10 @@
       <stop offset="0%" stop-color="#ef4444"/>
       <stop offset="100%" stop-color="#b91c1c"/>
     </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d2ff"/>
+      <stop offset="100%" stop-color="#0072ff"/>
+    </linearGradient>
     <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
       <feDropShadow dx="0" dy="15" stdDeviation="20" flood-color="#000000" flood-opacity="0.6"/>
     </filter>
@@ -33,11 +37,67 @@
     </filter>
   </defs>
 
+  <!-- Background Base -->
   <rect width="1200" height="630" fill="url(#bgGrad)"/>
-  <circle cx="280" cy="200" r="280" fill="#f59e0b" opacity="0.08" filter="url(#glowEffect)"/>
-  <circle cx="950" cy="450" r="320" fill="#ef4444" opacity="0.08" filter="url(#glowEffect)"/>
+  <circle cx="920" cy="200" r="280" fill="#f59e0b" opacity="0.08" filter="url(#glowEffect)"/>
+  <circle cx="250" cy="450" r="320" fill="#ef4444" opacity="0.08" filter="url(#glowEffect)"/>
 
-  <g transform="translate(140, 100)">
+  <!-- Grid Mesh -->
+  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+    <line x1="150" y1="0" x2="150" y2="630"/>
+    <line x1="450" y1="0" x2="450" y2="630"/>
+    <line x1="750" y1="0" x2="750" y2="630"/>
+    <line x1="1050" y1="0" x2="1050" y2="630"/>
+    <line x1="0" y1="150" x2="1200" y2="150"/>
+    <line x1="0" y1="350" x2="1200" y2="350"/>
+    <line x1="0" y1="550" x2="1200" y2="550"/>
+  </g>
+
+  <!-- Left Side: English Content Typography -->
+  <g transform="translate(80, 120)">
+    <!-- Category Pill -->
+    <rect x="0" y="0" width="180" height="42" rx="21" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.4)" stroke-width="1.5"/>
+    <circle cx="25" cy="21" r="6" fill="#fbbf24"/>
+    <text x="45" y="26" fill="#fbbf24" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="15" letter-spacing="0.5">DESIGN TIPS</text>
+
+    <!-- Main Title -->
+    <text x="0" y="100" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="44" letter-spacing="-1">
+      5 Common Business Card
+    </text>
+    <text x="0" y="155" fill="url(#goldGrad)" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" letter-spacing="-1">
+      Design Mistakes
+    </text>
+
+    <!-- Bullet Points -->
+    <g transform="translate(0, 205)">
+      <circle cx="12" cy="14" r="5" fill="#fbbf24"/>
+      <text x="32" y="20" fill="#cbd5e1" font-family="'Inter', sans-serif" font-weight="500" font-size="19">
+        Avoid Cluttered Data &amp; Unreadable Small Fonts
+      </text>
+
+      <circle cx="12" cy="54" r="5" fill="#fbbf24"/>
+      <text x="32" y="60" fill="#cbd5e1" font-family="'Inter', sans-serif" font-weight="500" font-size="19">
+        Prevent Obsolete Cards &amp; Expensive Reprints
+      </text>
+
+      <circle cx="12" cy="94" r="5" fill="#fbbf24"/>
+      <text x="32" y="100" fill="#cbd5e1" font-family="'Inter', sans-serif" font-weight="500" font-size="19">
+        Upgrade to Luxury Smart NFC Contactless Cards
+      </text>
+    </g>
+
+    <!-- Branding Badge -->
+    <g transform="translate(0, 365)">
+      <rect x="0" y="0" width="280" height="46" rx="12" fill="rgba(15,23,42,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <text x="25" y="28" fill="#94a3b8" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="600" letter-spacing="1">
+        MC PRIME • DESIGN GUIDE
+      </text>
+    </g>
+  </g>
+
+  <!-- Right Side Visual: Paper Card vs Smart NFC Card Comparison -->
+  <g transform="translate(680, 100)">
+    <!-- 1. Old Paper Card (Faded, Crossed Out) -->
     <g transform="translate(40, 180) rotate(-10)" filter="url(#dropShadow)" opacity="0.65">
       <rect x="0" y="0" width="240" height="140" rx="8" fill="url(#paperGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
       <rect x="20" y="25" width="80" height="8" rx="4" fill="#94a3b8"/>
@@ -45,59 +105,28 @@
       <rect x="20" y="60" width="120" height="6" rx="3" fill="#64748b"/>
       <rect x="20" y="75" width="100" height="6" rx="3" fill="#64748b"/>
       <rect x="20" y="95" width="90" height="5" rx="2.5" fill="#475569"/>
+      <!-- Red Cross Badge -->
       <circle cx="210" cy="30" r="16" fill="url(#redGrad)"/>
       <text x="204" y="36" fill="#ffffff" font-family="Arial, sans-serif" font-weight="900" font-size="18">✕</text>
     </g>
 
+    <!-- 2. Smart Luxury NFC Card (Gold & Obsidian) -->
     <g transform="translate(130, 40) rotate(8)" filter="url(#dropShadow)">
       <rect x="0" y="0" width="280" height="175" rx="16" fill="url(#luxuryCardGrad)" stroke="url(#goldGrad)" stroke-width="2"/>
+      <!-- Gold Smart Chip -->
       <rect x="30" y="40" width="50" height="40" rx="6" fill="url(#goldGrad)" stroke="#b45309" stroke-width="1"/>
       <line x1="30" y1="60" x2="80" y2="60" stroke="#92400e" stroke-width="1.5"/>
       <line x1="55" y1="40" x2="55" y2="80" stroke="#92400e" stroke-width="1.5"/>
+      <!-- Wireless Waves -->
       <path d="M210 40 Q225 55 210 70" stroke="url(#goldGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
       <path d="M220 30 Q245 55 220 80" stroke="url(#goldGrad)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7"/>
       <path d="M230 20 Q265 55 230 90" stroke="url(#goldGrad)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.4"/>
+      <!-- Typography on Card -->
       <text x="30" y="125" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="20" letter-spacing="2">MC PRIME</text>
       <text x="30" y="148" fill="#fbbf24" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="12" letter-spacing="1">OBSIDIAN GOLD EDITION</text>
+      <!-- Green Check Badge -->
       <circle cx="245" cy="140" r="18" fill="#10b981"/>
       <text x="238" y="147" fill="#ffffff" font-family="Arial, sans-serif" font-weight="900" font-size="18">✓</text>
-    </g>
-  </g>
-
-  <g transform="translate(680, 130)">
-    <rect x="0" y="0" width="200" height="42" rx="21" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.4)" stroke-width="1.5"/>
-    <circle cx="25" cy="21" r="6" fill="#fbbf24"/>
-    <text x="45" y="27" fill="#fbbf24" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="700" font-size="16">نصائح تصميم</text>
-
-    <text x="0" y="100" fill="#ffffff" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="900" font-size="44" letter-spacing="-0.5">
-      5 أخطاء شائعة في
-    </text>
-    <text x="0" y="160" fill="url(#goldGrad)" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="900" font-size="44" letter-spacing="-0.5">
-      تصميم بطاقات العمل
-    </text>
-
-    <g transform="translate(0, 215)">
-      <circle cx="12" cy="14" r="5" fill="#fbbf24"/>
-      <text x="30" y="20" fill="#cbd5e1" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="600" font-size="20">
-        تجنب فوضى تكديس البيانات والخطوط الصغيرة
-      </text>
-
-      <circle cx="12" cy="54" r="5" fill="#fbbf24"/>
-      <text x="30" y="60" fill="#cbd5e1" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="600" font-size="20">
-        حماية بياناتك من التقادم وإعادة الطباعة
-      </text>
-
-      <circle cx="12" cy="94" r="5" fill="#fbbf24"/>
-      <text x="30" y="100" fill="#cbd5e1" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="600" font-size="20">
-        الترقية لبطاقات NFC ذكية تعكس هيبتك المهنية
-      </text>
-    </g>
-
-    <g transform="translate(0, 365)">
-      <rect x="0" y="0" width="280" height="46" rx="12" fill="rgba(15,23,42,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-      <text x="25" y="28" fill="#94a3b8" font-family="'Segoe UI', Tahoma, sans-serif" font-size="14" font-weight="600">
-        MC PRIME • DESIGN GUIDE
-      </text>
     </g>
   </g>
 </svg>

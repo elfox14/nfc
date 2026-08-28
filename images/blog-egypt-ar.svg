@@ -10,6 +10,10 @@
       <stop offset="0%" stop-color="#fbbf24"/>
       <stop offset="100%" stop-color="#d97706"/>
     </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
     <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#1e293b"/>
       <stop offset="100%" stop-color="#0f172a"/>
@@ -27,13 +31,27 @@
   <circle cx="280" cy="200" r="280" fill="#fbbf24" opacity="0.1" filter="url(#glowEffect)"/>
   <circle cx="950" cy="450" r="320" fill="#38bdf8" opacity="0.08" filter="url(#glowEffect)"/>
 
+  <!-- Grid Mesh -->
+  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+    <line x1="150" y1="0" x2="150" y2="630"/>
+    <line x1="450" y1="0" x2="450" y2="630"/>
+    <line x1="750" y1="0" x2="750" y2="630"/>
+    <line x1="1050" y1="0" x2="1050" y2="630"/>
+    <line x1="0" y1="150" x2="1200" y2="150"/>
+    <line x1="0" y1="350" x2="1200" y2="350"/>
+    <line x1="0" y1="550" x2="1200" y2="550"/>
+  </g>
+
+  <!-- Left Side Visual: Modern Pyramids Motif + Cairo Skyline & Smart NFC Card -->
   <g transform="translate(140, 90)">
+    <!-- Geometric Tech Pyramids Outline -->
     <g opacity="0.3" stroke="url(#goldGrad)" stroke-width="2" fill="none">
       <polygon points="120,320 220,160 320,320"/>
       <line x1="220" y1="160" x2="220" y2="320"/>
       <polygon points="260,320 330,210 400,320"/>
     </g>
 
+    <!-- Floating Egypt Enterprise Card -->
     <g transform="translate(140, 140) rotate(-8)" filter="url(#dropShadow)">
       <rect x="0" y="0" width="260" height="160" rx="16" fill="url(#cardGrad)" stroke="url(#goldGrad)" stroke-width="2"/>
       <rect x="25" y="30" width="45" height="36" rx="6" fill="url(#goldGrad)" stroke="#92400e" stroke-width="1"/>
@@ -48,11 +66,14 @@
     </g>
   </g>
 
+  <!-- Right Side: Arabic Content Typography -->
   <g transform="translate(680, 130)">
+    <!-- Category Pill -->
     <rect x="0" y="0" width="200" height="42" rx="21" fill="rgba(251,191,36,0.15)" stroke="rgba(251,191,36,0.4)" stroke-width="1.5"/>
     <circle cx="25" cy="21" r="6" fill="#fbbf24"/>
     <text x="45" y="27" fill="#fbbf24" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="700" font-size="16">الشركات في مصر</text>
 
+    <!-- Main Title -->
     <text x="0" y="100" fill="#ffffff" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="900" font-size="44" letter-spacing="-0.5">
       بطاقات NFC للشركات
     </text>
@@ -60,6 +81,7 @@
       في جمهورية مصر العربية
     </text>
 
+    <!-- Bullet Points -->
     <g transform="translate(0, 215)">
       <circle cx="12" cy="14" r="5" fill="#fbbf24"/>
       <text x="30" y="20" fill="#cbd5e1" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="600" font-size="20">
@@ -77,6 +99,7 @@
       </text>
     </g>
 
+    <!-- Branding Badge -->
     <g transform="translate(0, 365)">
       <rect x="0" y="0" width="280" height="46" rx="12" fill="rgba(15,23,42,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
       <text x="25" y="28" fill="#94a3b8" font-family="'Segoe UI', Tahoma, sans-serif" font-size="14" font-weight="600">

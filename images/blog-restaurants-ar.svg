@@ -14,6 +14,10 @@
       <stop offset="0%" stop-color="#ff9f43"/>
       <stop offset="100%" stop-color="#ee5253"/>
     </linearGradient>
+    <linearGradient id="blueGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d2ff"/>
+      <stop offset="100%" stop-color="#3a7bd5"/>
+    </linearGradient>
     <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
       <feDropShadow dx="0" dy="15" stdDeviation="20" flood-color="#000000" flood-opacity="0.6"/>
     </filter>
@@ -27,18 +31,37 @@
   <circle cx="280" cy="200" r="280" fill="#ff9f43" opacity="0.1" filter="url(#glowEffect)"/>
   <circle cx="950" cy="450" r="320" fill="#00d2ff" opacity="0.08" filter="url(#glowEffect)"/>
 
+  <!-- Grid Mesh -->
+  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+    <line x1="150" y1="0" x2="150" y2="630"/>
+    <line x1="450" y1="0" x2="450" y2="630"/>
+    <line x1="750" y1="0" x2="750" y2="630"/>
+    <line x1="1050" y1="0" x2="1050" y2="630"/>
+    <line x1="0" y1="150" x2="1200" y2="150"/>
+    <line x1="0" y1="350" x2="1200" y2="350"/>
+    <line x1="0" y1="550" x2="1200" y2="550"/>
+  </g>
+
+  <!-- Left Side Visual: Table Stand & QR / NFC Menu -->
   <g transform="translate(140, 70)">
+    <!-- Base Table Reflection -->
     <ellipse cx="230" cy="480" rx="200" ry="25" fill="#000000" opacity="0.5"/>
 
+    <!-- Acrylic Table Stand -->
     <g filter="url(#dropShadow)">
+      <!-- Stand Base -->
       <polygon points="120,440 340,440 310,470 150,470" fill="#0f172a" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+      <!-- Stand Body -->
       <rect x="130" y="60" width="200" height="380" rx="16" fill="url(#standGrad)" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+      <!-- Header Band with Dining Icon -->
       <rect x="130" y="60" width="200" height="70" rx="16" fill="url(#accentGrad)"/>
       <circle cx="230" cy="95" r="22" fill="rgba(255,255,255,0.2)"/>
       <path d="M220 90 L220 105 M225 90 L225 105 M235 90 L235 105 M240 90 L240 105" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
       <circle cx="230" cy="95" r="8" fill="#ffffff"/>
 
+      <!-- QR Code Mockup in Stand -->
       <rect x="165" y="160" width="130" height="130" rx="10" fill="#ffffff"/>
+      <!-- QR Blocks -->
       <rect x="175" y="170" width="32" height="32" rx="4" fill="#0f172a"/>
       <rect x="181" y="176" width="20" height="20" rx="2" fill="#ffffff"/>
       <rect x="186" y="181" width="10" height="10" fill="#0f172a"/>
@@ -48,11 +71,13 @@
       <rect x="175" y="248" width="32" height="32" rx="4" fill="#0f172a"/>
       <rect x="181" y="254" width="20" height="20" rx="2" fill="#ffffff"/>
       <rect x="186" y="259" width="10" height="10" fill="#0f172a"/>
+      <!-- Decorative QR Dots -->
       <circle cx="230" cy="225" r="6" fill="#00d2ff"/>
       <circle cx="245" cy="245" r="4" fill="#0f172a"/>
       <circle cx="225" cy="255" r="5" fill="#0f172a"/>
       <circle cx="255" cy="220" r="4" fill="#0f172a"/>
 
+      <!-- NFC Contactless Symbol & Text -->
       <g transform="translate(195, 310)">
         <circle cx="35" cy="25" r="22" fill="rgba(0,210,255,0.15)" stroke="rgba(0,210,255,0.5)" stroke-width="1.5"/>
         <path d="M30 17 Q40 25 30 33" stroke="#00d2ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
@@ -62,17 +87,21 @@
       <text x="230" y="405" fill="#ff9f43" font-family="'Cairo', sans-serif" font-weight="800" font-size="14" text-anchor="middle">MC PRIME DINING</text>
     </g>
 
+    <!-- Floating 5-Star Rating Badge -->
     <g transform="translate(40, 200)" filter="url(#dropShadow)">
       <rect x="0" y="0" width="140" height="50" rx="14" fill="#1e293b" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
       <text x="18" y="32" fill="#fbbf24" font-size="18">★★★★★</text>
     </g>
   </g>
 
+  <!-- Right Side: Arabic Content Typography -->
   <g transform="translate(680, 130)">
+    <!-- Category Pill -->
     <rect x="0" y="0" width="200" height="42" rx="21" fill="rgba(255,159,67,0.15)" stroke="rgba(255,159,67,0.4)" stroke-width="1.5"/>
     <circle cx="25" cy="21" r="6" fill="#ff9f43"/>
     <text x="45" y="27" fill="#ff9f43" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="700" font-size="16">مطاعم وكافيهات</text>
 
+    <!-- Main Title -->
     <text x="0" y="100" fill="#ffffff" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="900" font-size="44" letter-spacing="-0.5">
       المنيو الرقمي التفاعلي
     </text>
@@ -80,6 +109,7 @@
       للمطاعم والكافيهات
     </text>
 
+    <!-- Bullet Points -->
     <g transform="translate(0, 215)">
       <circle cx="12" cy="14" r="5" fill="#ff9f43"/>
       <text x="30" y="20" fill="#cbd5e1" font-family="'Cairo', 'Tajawal', sans-serif" font-weight="600" font-size="20">
@@ -97,6 +127,7 @@
       </text>
     </g>
 
+    <!-- Branding Badge -->
     <g transform="translate(0, 365)">
       <rect x="0" y="0" width="280" height="46" rx="12" fill="rgba(15,23,42,0.8)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
       <text x="25" y="28" fill="#94a3b8" font-family="'Segoe UI', Tahoma, sans-serif" font-size="14" font-weight="600">
