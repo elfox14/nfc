@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 
 <head>
-    <script src="/nfc/runtime-config.js?v=1.0"></script>
+    <script src="runtime-config.js?v=1.0"></script>
   <!-- SEO: Canonical + Hreflang -->
   <link rel="canonical" href="https://www.mcprim.com/nfc/" />
   <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/" />
@@ -162,29 +162,40 @@
             }
         ]
     }
-    </script>    <link rel="icon" id="favicon" href="/nfc/mc-prime-nfc.png" type="image/png">
+    </script>
+    <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
+    <link rel="apple-touch-icon" href="mc-prime-nfc.png">
 
     <!-- Preconnect for external resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
-    <!-- Critical CSS - Inline for faster initial render -->
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="homepage.css">
+    <link rel="stylesheet" href="homepage-interactive.css">
+    <link rel="stylesheet" href="cookie-consent.css">
+    <link rel="stylesheet" href="premium-ui.css">
+
+    <!-- Critical CSS Fixes -->
     <style>
-        /* Critical CSS for above-the-fold content */
         :root {
             --primary-color: #4da6ff;
-            --background-color: #1c2a3b;
-            --surface-color: #243447;
-            --text-primary-color: #e6f0f7;
-            --text-secondary-color: #bcc9d4;
+            --background-color: #0b131e;
+            --surface-color: rgba(36, 52, 71, 0.4);
+            --text-primary-color: #ffffff;
+            --text-secondary-color: #a0aec0;
+            --font-main: 'Tajawal', sans-serif;
+            --font-headings: 'Cairo', sans-serif;
         }
 
-        *,
-        *::before,
-        *::after {
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -193,8 +204,19 @@
         body {
             background-color: var(--background-color);
             color: var(--text-primary-color);
-            font-family: 'Tajawal', Arial, sans-serif;
+            font-family: var(--font-main);
             line-height: 1.7;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 15px;
+            padding-right: 15px;
         }
 
         .navbar {
@@ -204,14 +226,50 @@
             right: 0;
             z-index: 1000;
             padding: 15px 0;
-            background: transparent;
+            background: rgba(11, 19, 30, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            gap: 1.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
         }
 
         .hero-section {
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding-top: 100px;
+            justify-content: center;
+            padding-top: 130px;
+            padding-bottom: 80px;
+            position: relative;
+            text-align: center;
         }
 
         #loading-overlay {
@@ -220,12 +278,19 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(28, 42, 59, 0.98);
+            background: rgba(11, 19, 30, 0.98);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 99999;
+            transition: opacity 0.5s ease;
+        }
+
+        #loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
         }
 
         .loading-spinner {
@@ -238,60 +303,35 @@
         }
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
 
         .lang-btn {
-            background: rgba(77, 166, 255, 0.2);
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
+            background: rgba(77, 166, 255, 0.15);
+            border: 1px solid rgba(77, 166, 255, 0.4);
+            color: #ffffff;
+            padding: 0.45rem 0.9rem;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.85rem;
             transition: all 0.3s ease;
-            margin-right: 1rem;
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
+            display: inline-flex;
+            align-items: center;
         }
 
         .lang-btn:hover {
             background: var(--primary-color);
-            color: white;
+            color: #0b131e;
         }
     </style>
 
-    <!-- Fonts - Preload and async load -->
-    <link rel="preload"
-        href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
-        as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link
-            href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@600;700&display=swap"
-            rel="stylesheet">
-    </noscript>
-
-    <!-- Font Awesome - Load async for performance -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" as="style"
-        onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    </noscript>
-
-    <!-- Main Stylesheet - Load async -->
-    <link rel="preload" href="/nfc/homepage.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="/nfc/homepage.css">
-    </noscript>
-
     <!-- Language Switcher -->
-    <script src="/nfc/lang-switcher.js" defer></script>
+    <script src="lang-switcher.js" defer></script>
     <!-- Authentication -->
-    <script src="/nfc/auth.js?v=3.5" defer></script>
-    <link rel="stylesheet" href="/nfc/cookie-consent.css">
-    <link rel="stylesheet" href="/nfc/premium-ui.css">
-    <link rel="stylesheet" href="/nfc/homepage-interactive.css">
+    <script src="auth.js?v=3.5" defer></script>
     <style>
         /* ===== Blog Card Consolidated ===== */
         .blog-card-styled {
@@ -421,7 +461,7 @@
     <div class="reading-progress" id="reading-progress"></div>
 
     <!-- Floating CTA Button -->
-    <a href="/nfc/editor.html" class="floating-cta" id="floating-cta">
+    <a href="editor.html" class="floating-cta" id="floating-cta">
         <i class="fas fa-rocket"></i>
         <span>جرّب مجاناً الآن</span>
     </a>
@@ -440,20 +480,20 @@
     <!-- Navbar -->
     <nav class="navbar" id="navbar">
         <div class="container nav-content">
-            <a href="/nfc/" class="nav-logo">
-                <img src="/nfc/mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" fetchpriority="high" width="60" height="60" style="height: 60px; width: auto;">
+            <a href="index.html" class="nav-logo">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" fetchpriority="high" width="60" height="60" style="height: 60px; width: auto;">
             </a>
             <ul class="nav-links" id="nav-links">
                 <li><a href="#features">المميزات</a></li>
                 <li><a href="#how-it-works">كيف يعمل</a></li>
-                <li><a href="/nfc/gallery.html">المعرض</a></li>
-                <li><a href="/nfc/blog.html">المدونة</a></li>
-                <li><a href="/nfc/dashboard.html">لوحة التحكم</a></li>
+                <li><a href="gallery.html">المعرض</a></li>
+                <li><a href="blog.html">المدونة</a></li>
+                <li><a href="dashboard.html">لوحة التحكم</a></li>
                 <li><a href="#faq">الأسئلة الشائعة</a></li>
             </ul>
             <div style="display: flex; align-items: center;">
                 <button onclick="switchLanguage('en')" class="lang-btn">EN</button>
-                <a href="/nfc/editor.html" class="btn btn-primary nav-cta">ابدأ الآن</a>
+                <a href="editor.html" class="btn btn-primary nav-cta">ابدأ الآن</a>
             </div>
             <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
                 <span></span>
@@ -472,7 +512,7 @@
                     <h1 id="hero-title">صمم بطاقتك الذكية في دقائق</h1>
                     <p class="hero-subtitle">أنشئ وشارك بطاقة عمل احترافية تدعم NFC و QR Code بسهولة ومجاناً.</p>
                     <div class="hero-buttons">
-                        <a href="/nfc/editor.html" class="btn btn-primary btn-lg">ابدأ التصميم الآن مجاناً</a>
+                        <a href="editor.html" class="btn btn-primary btn-lg">ابدأ التصميم الآن مجاناً</a>
                         <a href="#how-it-works" class="btn btn-secondary">كيف يعمل؟</a>
                     </div>
 
@@ -648,39 +688,34 @@
                                 <span class="design-dot"></span>
                                 <span class="design-dot"></span>
                                 <span class="design-dot"></span>
-                                <span class="design-toolbar-title">محرر البطاقات — MC PRIME</span>
                             </div>
                             <div class="design-workspace">
-                                <div class="design-sidebar">
-                                    <div>
-                                        <div class="design-sidebar-label">اختر اللون</div>
-                                        <div class="color-picker-row" id="color-picker">
-                                            <div class="color-dot selected" style="background: linear-gradient(135deg, #0f2744, #1e4a7a)" data-bg="linear-gradient(135deg, #0f2744 0%, #1a3a60 50%, #1e4a7a 100%)" data-border="rgba(77,166,255,0.3)"></div>
-                                            <div class="color-dot" style="background: linear-gradient(135deg, #7c3aed, #a78bfa)" data-bg="linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%)" data-border="rgba(167,139,250,0.3)"></div>
-                                            <div class="color-dot" style="background: linear-gradient(135deg, #059669, #34d399)" data-bg="linear-gradient(135deg, #064e3b 0%, #059669 50%, #34d399 100%)" data-border="rgba(52,211,153,0.3)"></div>
-                                            <div class="color-dot" style="background: linear-gradient(135deg, #dc2626, #f87171)" data-bg="linear-gradient(135deg, #7f1d1d 0%, #dc2626 50%, #f87171 100%)" data-border="rgba(248,113,113,0.3)"></div>
-                                            <div class="color-dot" style="background: linear-gradient(135deg, #d97706, #fbbf24)" data-bg="linear-gradient(135deg, #78350f 0%, #d97706 50%, #fbbf24 100%)" data-border="rgba(251,191,36,0.3)"></div>
-                                        </div>
+                                <div class="design-controls">
+                                    <div class="control-group">
+                                        <label for="demo-name-input">الاسم الكامل</label>
+                                        <input type="text" id="demo-name-input" value="محمد أحمد" placeholder="اسمك الكامل" autocomplete="name">
                                     </div>
-                                    <div>
-                                        <div class="design-sidebar-label">اختر القالب</div>
-                                        <div class="template-selector" id="template-selector">
-                                            <div class="template-option selected" style="background: linear-gradient(135deg, #667eea, #764ba2)" data-template="classic"></div>
-                                            <div class="template-option" style="background: linear-gradient(135deg, #f093fb, #f5576c)" data-template="creative"></div>
-                                            <div class="template-option" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" data-template="modern"></div>
+                                    <div class="control-group">
+                                        <label for="demo-title-input">المسمى الوظيفي</label>
+                                        <input type="text" id="demo-title-input" value="مطور ويب مستقل" placeholder="وظيفتك أو عملك" autocomplete="organization-title">
+                                    </div>
+                                    <div class="control-group">
+                                        <label>لون البطاقة</label>
+                                        <div class="color-picker-row">
+                                            <button class="color-btn active" data-color="blue" style="background: linear-gradient(135deg, #0f2744, #1e4a7a);" aria-label="أزرق"></button>
+                                            <button class="color-btn" data-color="purple" style="background: linear-gradient(135deg, #2d124d, #5b21b6);" aria-label="بنفسجي"></button>
+                                            <button class="color-btn" data-color="emerald" style="background: linear-gradient(135deg, #064e3b, #047857);" aria-label="زمردي"></button>
+                                            <button class="color-btn" data-color="dark" style="background: linear-gradient(135deg, #111827, #1f2937);" aria-label="داكن"></button>
+                                            <button class="color-btn" data-color="gold" style="background: linear-gradient(135deg, #78350f, #d97706);" aria-label="ذهبي"></button>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="design-main">
-                                    <div class="mini-card-preview" id="mini-card-preview" style="background: linear-gradient(135deg, #0f2744 0%, #1a3a60 50%, #1e4a7a 100%); border: 1px solid rgba(77,166,255,0.3);">
-                                        <div>
-                                            <div class="mini-card-name">محمد أحمد</div>
-                                            <div class="mini-card-title">مطور ويب &amp; مستقل</div>
-                                        </div>
-                                        <div class="mini-card-footer-row">
-                                            <span class="mini-card-brand">MC PRIME</span>
-                                            <span class="mini-card-nfc"><i class="fas fa-wifi"></i> NFC</span>
-                                        </div>
+                                <div class="design-card-preview-wrap">
+                                    <div class="demo-card-live" id="demo-card-live">
+                                        <div class="demo-card-avatar" id="demo-avatar">م.أ</div>
+                                        <div class="demo-card-name" id="demo-name-display">محمد أحمد</div>
+                                        <div class="demo-card-title" id="demo-title-display">مطور ويب مستقل</div>
+                                        <div class="demo-card-nfc-badge"><i class="fas fa-wifi"></i> NFC</div>
                                     </div>
                                 </div>
                             </div>
@@ -689,56 +724,56 @@
 
                     <!-- Panel 2: Share -->
                     <div class="demo-panel" id="share-panel" role="tabpanel">
-                        <div class="share-animation-container">
-                            <div class="share-device">
-                                <div class="share-phone">
-                                    <div class="share-phone-screen">
-                                        <i class="fas fa-qrcode share-qr-icon"></i>
-                                    </div>
+                        <div class="share-demo-grid">
+                            <div class="share-method-card">
+                                <div class="share-icon"><i class="fas fa-wifi"></i></div>
+                                <h3>ملامسة NFC</h3>
+                                <p>قرّب بطاقتك من أي هاتف ذكي ليفتح رابط بطاقتك مباشرة</p>
+                                <div class="share-visual nfc-pulse-visual">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <div class="pulse-ring"></div>
+                                    <div class="pulse-ring"></div>
                                 </div>
-                                <span class="share-device-label">هاتفك</span>
                             </div>
-                            <div class="share-transfer">
-                                <i class="fas fa-arrow-left transfer-arrow"></i>
-                                <span class="transfer-label">مشاركة فورية</span>
-                            </div>
-                            <div class="share-device">
-                                <div class="share-phone receiver">
-                                    <div class="share-phone-screen">
-                                        <div class="receiver-card-mini">
-                                            <i class="fas fa-user-circle"></i>
-                                            <span>محمد أحمد</span>
-                                            <span>مطور ويب</span>
-                                        </div>
-                                    </div>
+                            <div class="share-method-card">
+                                <div class="share-icon"><i class="fas fa-qrcode"></i></div>
+                                <h3>رمز QR ذكي</h3>
+                                <p>امسح الكود بكاميرا أي هاتف لحفظ جهة الاتصال فوراً</p>
+                                <div class="share-visual qr-visual">
+                                    <i class="fas fa-qrcode" style="font-size: 3rem; color: var(--primary-color);"></i>
                                 </div>
-                                <span class="share-device-label">هاتف العميل</span>
+                            </div>
+                            <div class="share-method-card">
+                                <div class="share-icon"><i class="fas fa-link"></i></div>
+                                <h3>رابط مباشر</h3>
+                                <p>أرسل رابط بطاقتك عبر واتساب، تيليجرام أو البريد الإلكتروني</p>
+                                <div class="share-visual link-visual">
+                                    <span>mcprim.com/c/yourname</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Panel 3: Physical Card -->
+                    <!-- Panel 3: Print -->
                     <div class="demo-panel" id="print-panel" role="tabpanel">
-                        <div class="physical-card-showcase">
-                            <div class="physical-card-3d">
-                                <div class="physical-card-inner">
-                                    <div class="physical-card-face physical-card-front">
-                                        <div>
-                                            <h4>محمد أحمد</h4>
-                                            <span>مطور ويب &amp; مستقل</span>
-                                        </div>
-                                        <div class="physical-card-bottom">
-                                            <i class="fas fa-wifi physical-nfc-icon"></i>
-                                            <span class="physical-brand">MC PRIME</span>
-                                        </div>
-                                    </div>
+                        <div class="print-demo-container">
+                            <div class="print-card-showcase">
+                                <div class="physical-card-mockup">
+                                    <div class="card-chip"></div>
+                                    <div class="card-logo">MC PRIME</div>
+                                    <div class="card-holder-name">MOHAMED AHMED</div>
+                                    <div class="card-nfc-icon"><i class="fas fa-wifi"></i></div>
                                 </div>
                             </div>
-                            <div class="physical-features">
-                                <div class="physical-feature"><i class="fas fa-check-circle"></i> مقاومة للماء</div>
-                                <div class="physical-feature"><i class="fas fa-check-circle"></i> تعمل بلا بطارية</div>
-                                <div class="physical-feature"><i class="fas fa-check-circle"></i> عمر غير محدود</div>
-                                <div class="physical-feature"><i class="fas fa-check-circle"></i> متوافقة مع كل الهواتف</div>
+                            <div class="print-info">
+                                <h3>بطاقة NFC فعلية فاخرة</h3>
+                                <ul class="print-features-list">
+                                    <li><i class="fas fa-check-circle"></i> خامات عالية الجودة (PVC مطفي، معدن فاخر)</li>
+                                    <li><i class="fas fa-check-circle"></i> رقاقة NTAG216 مدمجة تدوم لأكثر من 10 سنوات</li>
+                                    <li><i class="fas fa-check-circle"></i> شحن سريع إلى جميع محافظات مصر والدول العربية</li>
+                                    <li><i class="fas fa-check-circle"></i> ضمان استبدال مجاني</li>
+                                </ul>
+                                <a href="contact.html" class="btn btn-primary btn-lg" style="margin-top: 1.5rem; display: inline-block;">اطلب بطاقتك الآن</a>
                             </div>
                         </div>
                     </div>
@@ -747,52 +782,58 @@
             </div>
         </section>
 
-        <!-- Gallery Preview Section -->
-        <section id="gallery-preview" class="gallery-preview-section" aria-labelledby="gallery-preview-title">
+        <!-- Dynamic Gallery Section -->
+        <section id="gallery" class="gallery-preview-section" aria-labelledby="gallery-title">
             <div class="container">
-                <h2 id="gallery-preview-title">تصاميم مميزة من مستخدمينا</h2>
-                <p style="text-align: center; color: var(--text-secondary-color); margin-bottom: 2rem;">
-                    استلهم من إبداعات مجتمعنا واستخدم أي تصميم كنقطة انطلاق
+                <h2 id="gallery-title" class="reveal">نماذج من تصاميمنا</h2>
+                <p class="reveal" style="text-align: center; color: var(--text-secondary-color); margin-bottom: 2rem;">
+                    تصفح بعض البطاقات التي تم إنشاؤها عبر منصتنا
                 </p>
 
                 <!-- Gallery Slider -->
                 <div class="gallery-slider-wrapper reveal">
                     <div class="gallery-slider" id="gallery-slider">
+                        <!-- Card 1 -->
                         <div class="gallery-preview-card">
                             <div class="gallery-card-img bg-gradient-brand">
                                 <i class="fas fa-user-tie"></i>
                             </div>
-                            <div class="card-name">تصميم احترافي</div>
+                            <div class="card-name">تصميم تنفيذي كلاسيكي</div>
                         </div>
+                        <!-- Card 2 -->
                         <div class="gallery-preview-card">
                             <div class="gallery-card-img bg-gradient-pink">
-                                <i class="fas fa-palette"></i>
+                                <i class="fas fa-paint-brush"></i>
                             </div>
-                            <div class="card-name">تصميم إبداعي</div>
+                            <div class="card-name">تصميم إبداعي حديث</div>
                         </div>
+                        <!-- Card 3 -->
                         <div class="gallery-preview-card">
                             <div class="gallery-card-img bg-gradient-blue">
-                                <i class="fas fa-briefcase"></i>
+                                <i class="fas fa-code"></i>
                             </div>
-                            <div class="card-name">تصميم شركات</div>
+                            <div class="card-name">تصميم تقني للمطورين</div>
                         </div>
+                        <!-- Card 4 -->
                         <div class="gallery-preview-card">
                             <div class="gallery-card-img bg-gradient-green">
-                                <i class="fas fa-leaf"></i>
+                                <i class="fas fa-briefcase"></i>
                             </div>
-                            <div class="card-name">تصميم عصري</div>
+                            <div class="card-name">تصميم أنيق للأعمال</div>
                         </div>
+                        <!-- Card 5 -->
                         <div class="gallery-preview-card">
                             <div class="gallery-card-img bg-gradient-orange">
                                 <i class="fas fa-camera"></i>
                             </div>
-                            <div class="card-name">تصميم مصور</div>
+                            <div class="card-name">تصميم فوتوغرافي مميز</div>
                         </div>
+                        <!-- Card 6 -->
                         <div class="gallery-preview-card">
                             <div class="gallery-card-img bg-gradient-purple">
-                                <i class="fas fa-code"></i>
+                                <i class="fas fa-gem"></i>
                             </div>
-                            <div class="card-name">تصميم مطور</div>
+                            <div class="card-name">تصميم فاخر للمجوهرات</div>
                         </div>
                     </div>
                 </div>
@@ -809,7 +850,7 @@
                 <div class="slider-dots" id="slider-dots"></div>
 
                 <div style="text-align: center; margin-top: 2rem;">
-                    <a href="/nfc/gallery.html" class="btn btn-primary">شاهد المعرض الكامل</a>
+                    <a href="gallery.html" class="btn btn-primary">شاهد المعرض الكامل</a>
                 </div>
             </div>
         </section>
@@ -836,7 +877,7 @@
                 </div>
 
                 <div class="generator-preview-container reveal">
-                    <a href="/nfc/editor.html" title="الانتقال إلى محرر تصميم البطاقات" class="editor-preview-link">
+                    <a href="editor.html" title="الانتقال إلى محرر تصميم البطاقات" class="editor-preview-link">
                         <div class="editor-preview-card">
                             <div class="editor-preview-mockup">
                                 <div class="mockup-toolbar">
@@ -913,7 +954,7 @@
                                     <span class="persona-social-icon"><i class="fab fa-twitter"></i></span>
                                     <span class="persona-social-icon"><i class="fab fa-github"></i></span>
                                 </div>
-                                <a href="/nfc/nfc-for-freelancers.html" class="persona-cta-btn">اعرف المزيد</a>
+                                <a href="nfc-for-freelancers.html" class="persona-cta-btn">اعرف المزيد</a>
                             </div>
                         </div>
                     </div>
@@ -941,7 +982,7 @@
                                     <span class="persona-social-icon"><i class="fab fa-twitter"></i></span>
                                     <span class="persona-social-icon"><i class="fas fa-globe"></i></span>
                                 </div>
-                                <a href="/nfc/nfc-for-companies.html" class="persona-cta-btn">اعرف المزيد</a>
+                                <a href="nfc-for-companies.html" class="persona-cta-btn">اعرف المزيد</a>
                             </div>
                         </div>
                     </div>
@@ -969,7 +1010,7 @@
                                     <span class="persona-social-icon"><i class="fab fa-facebook-f"></i></span>
                                     <span class="persona-social-icon"><i class="fab fa-whatsapp"></i></span>
                                 </div>
-                                <a href="/nfc/nfc-for-restaurants.html" class="persona-cta-btn">اعرف المزيد</a>
+                                <a href="nfc-for-restaurants.html" class="persona-cta-btn">اعرف المزيد</a>
                             </div>
                         </div>
                     </div>
@@ -997,7 +1038,7 @@
                                     <span class="persona-social-icon"><i class="fab fa-behance"></i></span>
                                     <span class="persona-social-icon"><i class="fab fa-pinterest-p"></i></span>
                                 </div>
-                                <a href="/nfc/editor.html" class="persona-cta-btn">ابدأ الآن</a>
+                                <a href="editor.html" class="persona-cta-btn">ابدأ الآن</a>
                             </div>
                         </div>
                     </div>
@@ -1012,7 +1053,7 @@
                         <h2 id="recent-blog-title">أحدث المقالات المضافة</h2>
                         <div class="blog-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
                             <!-- Blog Card 1 -->
-                            <a href="/nfc/blog-nfc-at-events.html" style="text-decoration: none; color: inherit;">
+                            <a href="blog-nfc-at-events.html" style="text-decoration: none; color: inherit;">
                                 <article class="blog-card blog-card-styled reveal">
                                     <div style="height: 180px; background: #1a2a3a; display: flex; align-items: center; justify-content: center;">
                                         <i class="fas fa-calendar-alt" style="font-size: 3rem; color: var(--primary-color);"></i>
@@ -1024,7 +1065,7 @@
                                 </article>
                             </a>
                             <!-- Blog Card 2 -->
-                            <a href="/nfc/blog-digital-menus-for-restaurants.html" style="text-decoration: none; color: inherit;">
+                            <a href="blog-digital-menus-for-restaurants.html" style="text-decoration: none; color: inherit;">
                                 <article class="blog-card blog-card-styled reveal">
                                     <div style="height: 180px; background: #1a2a3a; display: flex; align-items: center; justify-content: center;">
                                         <i class="fas fa-utensils" style="font-size: 3rem; color: var(--primary-color);"></i>
@@ -1036,7 +1077,7 @@
                                 </article>
                             </a>
                             <!-- Blog Card 3 -->
-                            <a href="/nfc/blog-business-card-mistakes.html" style="text-decoration: none; color: inherit;">
+                            <a href="blog-business-card-mistakes.html" style="text-decoration: none; color: inherit;">
                                 <article class="blog-card blog-card-styled reveal">
                                     <div style="height: 180px; background: #1a2a3a; display: flex; align-items: center; justify-content: center;">
                                         <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--primary-color);"></i>
@@ -1049,7 +1090,7 @@
                             </a>
                         </div>
                         <div style="text-align: center; margin-top: 2rem;">
-                            <a href="/nfc/blog.html" class="btn btn-secondary">تصفح جميع المقالات</a>
+                            <a href="blog.html" class="btn btn-secondary">تصفح جميع المقالات</a>
                         </div>
                     </div>
                 </section>
@@ -1099,7 +1140,7 @@
                                 <h3>كيف أطلب بطاقة NFC فعلية؟</h3>
                             </summary>
                             <div class="faq-answer">
-                                <p>بعد تصميم بطاقتك وحفظها، يمكنك التواصل معنا عبر صفحة "اتصل بنا" لطلب بطاقة NFC فعلية.
+                                <p>بعد تصميم بطاقتك وحفظها، يمكنك التواصل معنا عبر صفحة اتصل بنا لطلب بطاقة NFC فعلية.
                                     سنقوم ببرمجة البطاقة برابط بطاقتك الرقمية وشحنها إليك.</p>
                             </div>
                         </details>
