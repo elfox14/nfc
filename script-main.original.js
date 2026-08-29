@@ -440,47 +440,54 @@ const ExportManager = {
         return vCard;
     },
     downloadVcf() { const vcfData = this.getVCardString(); const blob = new Blob([vcfData], { type: 'text/vcard' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'contact.vcf'; link.click(); URL.revokeObjectURL(url); },
-    async downloadQrCode() {
+        async downloadQrCode() {
         try {
             await Utils.loadScript(Config.SCRIPT_URLS.qrcode);
-            const designId = await ShareManager.saveDesign();
-            if (!designId) {
-                throw new Error('فشل حفظ التصميم اللازم لإنشاء الرابط.');
+            const isLoggedIn = (typeof Auth !== 'undefined' && Auth.isLoggedIn()) || !!localStorage.getItem('authUser');
+            let designId = Config.currentDesignId || localStorage.getItem('nfc:editingDesignId');
+
+            if (!designId && isLoggedIn) {
+                try {
+                    designId = await ShareManager.saveDesign();
+                } catch (e) {
+                    console.warn('[QR] saveDesign error:', e);
+                }
             }
 
-            const viewerPage = _isEnglishPage ? 'viewer-en.html' : 'viewer.html';
-            const viewerUrl = new URL(viewerPage, window.location.href);
-            viewerUrl.searchParams.set('id', designId);
-            const finalUrl = viewerUrl.href;
+            let qrText = '';
+            if (designId) {
+                const viewerPage = _isEnglishPage ? 'viewer-en.html' : 'viewer.html';
+                const viewerUrl = new URL(viewerPage, window.location.href);
+                viewerUrl.searchParams.set('id', designId);
+                qrText = viewerUrl.href;
+            } else {
+                qrText = this.getVCardString();
+            }
 
             const container = DOMElements.qrCodeContainer;
             container.innerHTML = '';
-            new QRCode(container, { text: finalUrl, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.H });
+            new QRCode(container, { text: qrText, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.H });
 
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     const canvas = container.querySelector('canvas');
                     if (canvas) {
                         const link = document.createElement('a');
-                        link.download = `qrcode-card-link-${designId}.png`;
+                        link.download = `qrcode-card-${designId || 'contact'}.png`;
                         link.href = canvas.toDataURL('image/png');
                         link.click();
                         resolve();
                     } else {
-                        reject(new Error("حدث خطأ أثناء إنشاء QR Code. حاول مرة أخرى."));
+                        reject(new Error(_isEnglishPage ? "Error generating QR Code. Please try again." : "حدث خطأ أثناء إنشاء QR Code. حاول مرة أخرى."));
                     }
                 }, 100);
             });
 
         } catch (error) {
             console.error("Error generating shareable QR code:", error);
-            let msg = "حدث خطأ. لم نتمكن من إنشاء رابط QR Code.";
-            if (document.documentElement.lang === 'en') {
-                msg = "An error occurred. We could not generate the QR Code link.";
-            }
-            if (error && error.message && error.message.trim() !== "") {
-                msg += "\n\nError: " + error.message;
-            }
+            let msg = _isEnglishPage 
+                ? "An error occurred. We could not generate the QR Code."
+                : "حدث خطأ. لم نتمكن من إنشاء رمز QR Code.";
             alert(msg);
             throw error;
         }
