@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معاينة المقترحات التصميمية للصفحة الرئيسية | MC PRIME</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            --bg-deep: #080b0f;
+            --bg-surface: #0d1117;
+            --bg-elevated: #161b22;
+            --border-glass: rgba(240, 246, 252, 0.08);
+            --gold-primary: #c5a059;
+            --gold-hover: #d4af37;
+            --gold-glow: rgba(197, 160, 89, 0.25);
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Tajawal', sans-serif;
+            line-height: 1.6;
+            padding: 30px 20px;
+        }
+
+        .preview-header {
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto 35px;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(197, 160, 89, 0.12);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 50px;
+            color: var(--gold-primary);
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .preview-header h1 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ffffff 40%, var(--gold-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .preview-header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        /* Tabs Nav */
+        .proposal-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-glass);
+            color: var(--text-secondary);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--gold-hover), var(--gold-primary));
+            color: #080b0f;
+            border-color: var(--gold-hover);
+            box-shadow: 0 4px 20px var(--gold-glow);
+        }
+
+        .tab-btn:hover:not(.active) {
+            border-color: var(--gold-primary);
+            color: var(--text-primary);
+        }
+
+        /* Proposal Frame */
+        .proposal-view {
+            display: none;
+            max-width: 1240px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.7);
+        }
+
+        .proposal-view.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Browser Window Chrome */
+        .mockup-topbar {
+            background: #11161d;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 7px;
+        }
+
+        .window-dots span {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .mockup-url {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px 20px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            direction: ltr;
+        }
+
+        /* Mockup Interior */
+        .mockup-body {
+            padding: 40px;
+        }
+
+        /* Proposal 1: Executive Obsidian Hero Layout */
+        .hero-split-mockup {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 40px;
+            align-items: center;
+            padding: 30px 0 60px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .hero-text-col h2 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 1.25;
+            margin-bottom: 18px;
+        }
+
+        .hero-text-col h2 .gold-text {
+            color: var(--gold-primary);
+            text-shadow: 0 0 25px rgba(197, 160, 89, 0.3);
+        }
+
+        .hero-text-col p.lead-text {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            margin-bottom: 25px;
+            max-width: 520px;
+        }
+
+        .hero-interactive-try {
+            background: rgba(22, 27, 34, 0.7);
+            border: 1px solid rgba(197, 160, 89, 0.25);
+            border-radius: 16px;
+            padding: 16px 20px;
+            display: flex;
+            gap: 12px;
+            max-width: 520px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+
+        .hero-interactive-try input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            flex: 1;
+            outline: none;
+        }
+
+        .hero-interactive-try button {
+            background: linear-gradient(135deg, var(--gold-hover), var(--gold-primary));
+            border: none;
+            color: #080b0f;
+            font-weight: 800;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            white-space: nowrap;
+        }
+
+        /* 3D Physical Card Render */
+        .card-stage-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .lux-card-3d {
+            width: 330px;
+            height: 200px;
+            background: linear-gradient(145deg, #181d24 0%, #0d1117 100%);
+            border-radius: 18px;
+            border: 1px solid rgba(197, 160, 89, 0.4);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 50px rgba(197, 160, 89, 0.15);
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            transform: rotate(-4deg) rotateY(10deg);
+            transition: transform 0.4s ease;
+        }
+
+        .lux-card-3d:hover {
+            transform: rotate(0deg) scale(1.03);
+        }
+
+        .lux-card-chip {
+            width: 44px;
+            height: 32px;
+            background: linear-gradient(135deg, #d4af37, #aa8238);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #111;
+            font-weight: 900;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .lux-card-logo {
+            font-family: 'Cairo', sans-serif;
+            font-weight: 900;
+            color: var(--gold-primary);
+            letter-spacing: 2px;
+            font-size: 1.1rem;
+        }
+
+        .lux-card-person {
+            margin-top: auto;
+        }
+
+        .lux-card-person h4 {
+            font-size: 1.15rem;
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .lux-card-person p {
+            color: var(--gold-primary);
+            font-size: 0.82rem;
+        }
+
+        /* Trust Stats Bar */
+        .trust-stats-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-box .stat-num {
+            font-family: 'Cairo', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--gold-primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-box .stat-lbl {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Bento Grid */
+        .bento-section {
+            padding: 50px 0 20px;
+        }
+
+        .section-tag {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-tag h3 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .bento-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 30px;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(197, 160, 89, 0.4);
+        }
+
+        .bento-card.span-2 {
+            grid-column: span 2;
+        }
+
+        .bento-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(197, 160, 89, 0.12);
+            color: var(--gold-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 18px;
+        }
+
+        .bento-card h4 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .bento-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Materials Studio */
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 25px;
+        }
+
+        .mat-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .mat-swatch {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .swatch-matte { background: #161a20; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        .swatch-gold { background: linear-gradient(135deg, #d4af37, #855e1a); box-shadow: 0 4px 15px rgba(212,175,55,0.3); }
+        .swatch-wood { background: linear-gradient(135deg, #8a5a36, #5c3a21); }
+        .swatch-frosted { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
+
+        /* Proposal 2 Layout */
+        .tech-customizer-preview {
+            background: #111720;
+            border-radius: 16px;
+            border: 1px solid var(--border-glass);
+            padding: 25px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .theme-pills-row {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .theme-pill {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .theme-pill.active {
+            border-color: var(--gold-primary);
+            color: var(--gold-primary);
+            background: rgba(197, 160, 89, 0.1);
+        }
+
+        /* Proposal 3 Layout */
+        .story-steps-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .story-step-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: rgba(197, 160, 89, 0.2);
+        }
+
+        .roi-calc-box {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.08), rgba(22, 27, 34, 0.9));
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 20px;
+            padding: 35px;
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        @media (max-width: 900px) {
+            .hero-split-mockup { grid-template-columns: 1fr; }
+            .trust-stats-strip { grid-template-columns: repeat(2, 1fr); }
+            .bento-grid { grid-template-columns: 1fr; }
+            .bento-card.span-2 { grid-column: span 1; }
+            .materials-grid { grid-template-columns: repeat(2, 1fr); }
+            .tech-customizer-preview { grid-template-columns: 1fr; }
+            .story-steps-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="preview-header">
+        <div class="badge-pill">
+            <i class="fas fa-sparkles"></i> خيارات التصميم المعماري للصفحة الرئيسية
+        </div>
+        <h1>اختر التصميم الأنسب لـ MC PRIME</h1>
+        <p>استعراض حي وشامل لمحتوى وشكل الصفحة الرئيسية في كل مقترح بدقة وتفاصيل متكاملة</p>
+    </div>
+
+    <!-- Switcher Tabs -->
+    <div class="proposal-tabs">
+        <button class="tab-btn active" onclick="switchProposal(1)">
+            <i class="fas fa-crown"></i> المقترح 1: Executive Obsidian (موصى به)
+        </button>
+        <button class="tab-btn" onclick="switchProposal(2)">
+            <i class="fas fa-sliders-h"></i> المقترح 2: Dynamic Tech & Customizer
+        </button>
+        <button class="tab-btn" onclick="switchProposal(3)">
+            <i class="fas fa-book-open"></i> المقترح 3: Story-Driven Journey
+        </button>
+    </div>
+
+    <!-- PROPOSAL 1: EXECUTIVE OBSIDIAN -->
+    <div id="proposal-1" class="proposal-view active">
+        <div class="mockup-topbar">
+            <div class="window-dots">
+                <span class="dot-red"></span>
+                <span class="dot-yellow"></span>
+                <span class="dot-green"></span>
+            </div>
+            <div class="mockup-url">https://mcprim.com/nfc/ — Executive Obsidian & 3D Studio</div>
+            <div style="color:var(--gold-primary); font-size:0.8rem; font-weight:700;">المقترح الأول</div>
+        </div>
+        <div class="mockup-body">
+            
+            <!-- Hero Split Section -->
+            <div class="hero-split-mockup">
+                <div class="hero-text-col">
+                    <div class="badge-pill">
+                        <i class="fas fa-wifi"></i> الجيل الجديد من بطاقات الأعمال الذكية
+                    </div>
+                    <h2>انطباعك الأول.. لا يُنسى.<br><span class="gold-text">بطاقة أعمال تفوق التوقعات</span></h2>
+                    <p class="lead-text">استبدل مئات الكروت الورقية ببطاقة واحدة فاخرة تدعم NFC و QR Code، تتيح لك مشاركة كافة بياناتك وحساباتك بلمسة واحدة على أي هاتف.</p>
+                    
+                    <div class="hero-interactive-try">
+                        <input type="text" id="p1-input-name" placeholder="اكتب اسمك للمعاينة الحية..." value="المهندس / فيصل الشمري" oninput="updateP1Card(this.value)">
+                        <button onclick="window.location.href='editor.html'">صمم الآن مجاناً</button>
+                    </div>
+
+                    <div style="display:flex; gap:18px; align-items:center; font-size:0.85rem; color:var(--text-secondary);">
+                        <span><i class="fas fa-check-circle" style="color:var(--gold-primary);"></i> مجاني 100% للتصميم</span>
+                        <span><i class="fas fa-check-circle" style="color:var(--gold-primary);"></i> لا يلزم تحميل تطبيق</span>
+                    </div>
+                </div>
+
+                <!-- 3D Physical Card Simulation -->
+                <div class="card-stage-container">
+                    <div class="lux-card-3d" id="p1-card-preview">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div class="lux-card-chip"><i class="fas fa-microchip"></i></div>
+                            <div class="lux-card-logo">MC PRIME</div>
+                        </div>
+                        <div class="lux-card-person">
+                            <h4 id="p1-card-name">المهندس / فيصل الشمري</h4>
+                            <p>رئيس مجلس الإدارة &amp; مستثمر</p>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px; font-size:0.75rem; color:var(--text-muted);">
+                            <span><i class="fas fa-wifi"></i> Touch &amp; Connect</span>
+                            <span>#MC-99482</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="trust-stats-strip">
+                <div class="stat-box">
+                    <div class="stat-num">+50,000</div>
+                    <div class="stat-lbl">بطاقة رقمية مفعلة</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num">0.1s</div>
+                    <div class="stat-lbl">سرعة نقل البيانات عبر NFC</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num">100%</div>
+                    <div class="stat-lbl">متوافق مع iPhone &amp; Android</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num">98%</div>
+                    <div class="stat-lbl">توفير في تكاليف الطباعة السنوية</div>
+                </div>
+            </div>
+
+            <!-- Luxury Bento Grid Features -->
+            <div class="bento-section">
+                <div class="section-tag">
+                    <div class="badge-pill">المميزات الاستثنائية</div>
+                    <h3>كل ما تحتاجه للارتقاء بتواصلك المهني</h3>
+                </div>
+
+                <div class="bento-grid">
+                    <div class="bento-card span-2">
+                        <div class="bento-icon"><i class="fas fa-address-card"></i></div>
+                        <h4>حفظ جهة الاتصال الفوري (vCard Direct)</h4>
+                        <p>بمجرد ملامسة بطاقتك لهاتف العميل، يظهر زر "حفظ جهة الاتصال" مباشرة ليحفظ اسمك ورقمك وبريدك ورابط موقعك في جهات اتصاله بنقرة واحدة ودون الحاجة لتسجيل أي بيانات يدوياً.</p>
+                    </div>
+
+                    <div class="bento-card">
+                        <div class="bento-icon"><i class="fas fa-qrcode"></i></div>
+                        <h4>رمز QR ذكي ودائم</h4>
+                        <p>رمز QR ديناميكي عالي الدقة يعمل مع الهواتف التي لا تدعم NFC، مع إمكانية طباعته أو إدراجه في توقيع إيميلك.</p>
+                    </div>
+
+                    <div class="bento-card">
+                        <div class="bento-icon"><i class="fas fa-sync-alt"></i></div>
+                        <h4>تحديث بياناتك في أي وقت</h4>
+                        <p>غيرت رقم هاتفك أو مسماك الوظيفي؟ عدل بياناتك في ثوانٍ وستتحدث تلقائياً على نفس البطاقة دون الحاجة لإعادة طباعتها.</p>
+                    </div>
+
+                    <div class="bento-card span-2">
+                        <div class="bento-icon"><i class="fas fa-chart-line"></i></div>
+                        <h4>لوحة تحليلات وإحصائيات الزيارات</h4>
+                        <p>تابع عدد الأشخاص الذين شاهدوا بطاقتك وتفاعلوا مع روابطك من خلال لوحة تحكم دقيقة تقدم لك بيانات ورؤى تسويقية متقدمة.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Studio -->
+            <div class="bento-section" style="border-top:1px solid var(--border-glass); margin-top:30px;">
+                <div class="section-tag">
+                    <div class="badge-pill">الخامات الفاخرة</div>
+                    <h3>تشطيبات مصممة لتدوم وتلفت الأنظار</h3>
+                </div>
+
+                <div class="materials-grid">
+                    <div class="mat-item">
+                        <div class="mat-swatch swatch-matte"></div>
+                        <h4>معدن أسود مات</h4>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">فخامة راقية بملمس مصنفر غير لامع</p>
+                    </div>
+                    <div class="mat-item">
+                        <div class="mat-swatch swatch-gold"></div>
+                        <h4>ذهب شامباني 24K</h4>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">طلاء ذهبي فاخر لكبار التنفيذيين</p>
+                    </div>
+                    <div class="mat-item">
+                        <div class="mat-swatch swatch-wood"></div>
+                        <h4>خشب بامبو طبيعي</h4>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">صديق للبيئة مع نقش ليزر دقيق</p>
+                    </div>
+                    <div class="mat-item">
+                        <div class="mat-swatch swatch-frosted"></div>
+                        <h4>أكريليك مصنفر شفاف</h4>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">تصميم عصري مستقبلي شبه شفاف</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PROPOSAL 2: DYNAMIC TECH & CUSTOMIZER -->
+    <div id="proposal-2" class="proposal-view">
+        <div class="mockup-topbar">
+            <div class="window-dots">
+                <span class="dot-red"></span>
+                <span class="dot-yellow"></span>
+                <span class="dot-green"></span>
+            </div>
+            <div class="mockup-url">https://mcprim.com/nfc/ — Dynamic Tech &amp; Live Customizer</div>
+            <div style="color:var(--gold-primary); font-size:0.8rem; font-weight:700;">المقترح الثاني</div>
+        </div>
+        <div class="mockup-body">
+            <div class="section-tag" style="text-align:right; margin-bottom:30px;">
+                <div class="badge-pill"><i class="fas fa-bolt"></i> مخصص للشركات ورواد الأعمال</div>
+                <h2>أداة التخصيص الفوري للبطاقات الذكية</h2>
+                <p style="color:var(--text-secondary);">اختبر قوة وسرعة تخصيص بطاقتك مباشرة من الواجهة الرئيسية</p>
+            </div>
+
+            <!-- Live Customizer Showcase -->
+            <div class="tech-customizer-preview">
+                <div>
+                    <h3 style="font-family:'Cairo'; margin-bottom:12px;">خصص مظهر بطاقتك في ثوانٍ</h3>
+                    <p style="color:var(--text-secondary); font-size:0.95rem; margin-bottom:20px;">اختر القالب اللوني الذي يعبر عن علامتك التجارية:</p>
+                    
+                    <div class="theme-pills-row">
+                        <button class="theme-pill active">Executive Gold</button>
+                        <button class="theme-pill">Cyber Dark</button>
+                        <button class="theme-pill">Clean Slate</button>
+                    </div>
+
+                    <div style="margin-top:25px;">
+                        <a href="editor.html" class="tab-btn active" style="display:inline-flex; text-decoration:none;">
+                            فتح المحرر المتقدم بالكامل <i class="fas fa-arrow-left"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div style="background:#080b0f; border:1px solid var(--border-glass); border-radius:16px; padding:25px; text-align:center;">
+                    <div style="width:240px; height:150px; background:linear-gradient(135deg, #161b22, #0d1117); border:1px solid var(--gold-primary); border-radius:14px; margin:0 auto 15px; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff;">
+                        <i class="fas fa-user-tie" style="font-size:2rem; color:var(--gold-primary); margin-bottom:8px;"></i>
+                        <strong>شركة القمة القابضة</strong>
+                        <span style="font-size:0.75rem; color:var(--gold-primary);">كارت الفريق التنفيذي</span>
+                    </div>
+                    <span style="color:var(--text-muted); font-size:0.8rem;">معاينة فورية لتصميم الشركات</span>
+                </div>
+            </div>
+
+            <!-- Team Features -->
+            <div class="bento-grid" style="margin-top:30px;">
+                <div class="bento-card">
+                    <div class="bento-icon"><i class="fas fa-users-cog"></i></div>
+                    <h4>إدارة بطاقات فرق العمل</h4>
+                    <p>لوحة تحكم مركزية لإنشاء وتحديث بطاقات موظفي شركتك بضغطة زر واحدة.</p>
+                </div>
+                <div class="bento-card">
+                    <div class="bento-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h4>أمان وخصوصية بمستوى البنوك</h4>
+                    <p>تشفير كامل لكافة البيانات مع إمكانية تفعيل القفل برمز PIN لبيانات معينة.</p>
+                </div>
+                <div class="bento-card">
+                    <div class="bento-icon"><i class="fas fa-file-export"></i></div>
+                    <h4>تكامل مع أنظمة CRM</h4>
+                    <p>تصدير جهات الاتصال الملتقطة مباشرة إلى أنظمة Salesforce و HubSpot.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROPOSAL 3: STORY-DRIVEN JOURNEY -->
+    <div id="proposal-3" class="proposal-view">
+        <div class="mockup-topbar">
+            <div class="window-dots">
+                <span class="dot-red"></span>
+                <span class="dot-yellow"></span>
+                <span class="dot-green"></span>
+            </div>
+            <div class="mockup-url">https://mcprim.com/nfc/ — Story-Driven Visual Journey</div>
+            <div style="color:var(--gold-primary); font-size:0.8rem; font-weight:700;">المقترح الثالث</div>
+        </div>
+        <div class="mockup-body">
+            <div class="section-tag" style="margin-bottom:30px;">
+                <div class="badge-pill"><i class="fas fa-route"></i> قصة نجاح تواصلك المهني</div>
+                <h2>كيف تُحدث بطاقة NFC الفارق في كل لقاء عمل؟</h2>
+                <p style="color:var(--text-secondary); max-width:600px; margin:0 auto;">3 لحظات بسيطة ترفع من احترافيتك وتضمن عدم ضياع أي فرصة عمل</p>
+            </div>
+
+            <!-- Story Steps -->
+            <div class="story-steps-container">
+                <div class="story-step-card">
+                    <span class="step-number">01</span>
+                    <div class="bento-icon"><i class="fas fa-handshake"></i></div>
+                    <h4>لحظة اللقاء الأولى</h4>
+                    <p>في المؤتمر أو الاجتماع، أخرج بطاقتك الأنيقة والمس بها هاتف عميلك أو شريكك الجديد، دون الحاجة لتبادل أوراق قد تُفقد.</p>
+                </div>
+
+                <div class="story-step-card">
+                    <span class="step-number">02</span>
+                    <div class="bento-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <h4>التفاعل الفوري السلس</h4>
+                    <p>تفتح صفحة بطاقتك فوراً في متصفح الهاتف بكامل روابطك وموقعك ومعرض أعمالك وبدون تثبيت أي برامج.</p>
+                </div>
+
+                <div class="story-step-card">
+                    <span class="step-number">03</span>
+                    <div class="bento-icon"><i class="fas fa-user-check"></i></div>
+                    <h4>بقاء جهة الاتصال للأبد</h4>
+                    <p>يحفظ العميل رقمك في جهات اتصاله مباشرة، ويتلقى إشعارات بتحديثاتك القادمة كلما قمت بتعديل بطاقتك.</p>
+                </div>
+            </div>
+
+            <!-- ROI Box -->
+            <div class="roi-calc-box">
+                <div>
+                    <h3 style="font-family:'Cairo'; font-size:1.6rem; margin-bottom:8px;">وفر أكثر من 90% من ميزانية الطباعة سنوياً</h3>
+                    <p style="color:var(--text-secondary); font-size:0.95rem;">بطاقة واحدة ذكية قابلة لإعادة الاستخدام مدى الحياة بدلاً من طباعة آلاف الكروت الورقية المهملة.</p>
+                </div>
+                <div>
+                    <a href="editor.html" class="tab-btn active" style="text-decoration:none; white-space:nowrap; padding:14px 28px;">
+                        ابدأ التوفير الآن <i class="fas fa-arrow-left"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function switchProposal(num) {
+            document.querySelectorAll('.proposal-view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('proposal-' + num).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function updateP1Card(val) {
+            document.getElementById('p1-card-name').textContent = val || 'اسمك الكامل';
+        }
+    </script>
+</body>
+</html>
