@@ -241,7 +241,7 @@
                     </a>
                     <div class="tb-dropdown-divider"></div>
                     <button id="show-gallery-btn" class="tb-dropdown-item" role="menuitem">
-                        <i class="fas fa-images" style="color:#4da6ff;"></i> المعرض
+                        <i class="fas fa-images" style="color:#c5a059;"></i> المعرض
                         <kbd>Ctrl+G</kbd>
                     </button>
                     <button id="save-to-gallery-btn" class="tb-dropdown-item" role="menuitem">
@@ -800,7 +800,7 @@
                             <img id="photo-preview" src="" alt="" class="lp-preview-img"
                                 style="display:none; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: none; padding: 0;">
                             <div id="photo-placeholder"
-                                style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(77,166,255,0.1); border-radius: 50%; border: 1px dashed rgba(77,166,255,0.4);">
+                                style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(197, 160, 89, 0.1); border-radius: 50%; border: 1px dashed rgba(197, 160, 89, 0.4);">
                                 <i class="fas fa-user" style="font-size: 24px; color: var(--accent-primary);"></i>
                             </div>
                             <div class="lp-spinner-wrap">
@@ -915,8 +915,8 @@
                                 style="background:#ffffff;" onclick="lpSetBorderColor(this, '#ffffff')"></button>
                             <button type="button" class="lp-swatch" data-bg="#f1c40f" title="ذهبي"
                                 style="background:#f1c40f;" onclick="lpSetBorderColor(this, '#f1c40f')"></button>
-                            <button type="button" class="lp-swatch" data-bg="#4da6ff" title="أزرق"
-                                style="background:#4da6ff;" onclick="lpSetBorderColor(this, '#4da6ff')"></button>
+                            <button type="button" class="lp-swatch" data-bg="#c5a059" title="أزرق"
+                                style="background:#c5a059;" onclick="lpSetBorderColor(this, '#c5a059')"></button>
                             <button type="button" class="lp-swatch" data-bg="#a855f7" title="بنفسجي"
                                 style="background:#a855f7;" onclick="lpSetBorderColor(this, '#a855f7')"></button>
                             <button type="button" class="lp-swatch" data-bg="#000000" title="أسود"
@@ -1133,7 +1133,7 @@
                         <div style="display:flex; flex-direction:column; align-items:flex-end;">
                             <label class="lp-label"><i class="fas fa-palette"></i> اللون</label>
                             <div class="lp-color-pick-wrap" style="margin-top:2px;">
-                                <input type="color" id="tagline-color" value="#4da6ff" class="lp-color-pick"
+                                <input type="color" id="tagline-color" value="#c5a059" class="lp-color-pick"
                                     data-update-target="card-tagline" data-update-property="style.color">
                             </div>
                         </div>
@@ -1322,7 +1322,7 @@
                                     <div>
                                         <label class="lp-label">لون الزر</label>
                                         <div class="lp-color-pick-wrap" style="margin-top:2px;">
-                                            <input type="color" id="phone-btn-bg-color" value="#4da6ff"
+                                            <input type="color" id="phone-btn-bg-color" value="#c5a059"
                                                 class="lp-color-pick">
                                         </div>
                                     </div>
@@ -1395,7 +1395,7 @@
                         <!-- Segment control for QR source -->
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px;">
                             <label class="lp-qr-src-btn lp-qr-active" data-val="auto-card"
-                                style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(77,166,255,0.45);background:rgba(77,166,255,0.15);color:var(--accent-primary);font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;">
+                                style="display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:9px;border:1.5px solid rgba(197, 160, 89, 0.45);background:rgba(197, 160, 89, 0.15);color:var(--accent-primary);font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;">
                                 <input type="radio" name="qr-source" value="auto-card" checked style="display:none;">
                                 <i class="fas fa-id-card"></i> رابط البطاقة
                             </label>
@@ -1419,7 +1419,7 @@
                         <!-- Auto Card Button -->
                         <div id="qr-auto-card-group" style="display:block;">
                             <button id="generate-auto-qr-btn" class="lp-upload-btn"
-                                style="width:100%;justify-content:center;background:linear-gradient(135deg,rgba(77,166,255,0.25),rgba(77,166,255,0.1));border-color:rgba(77,166,255,0.5);">
+                                style="width:100%;justify-content:center;background:linear-gradient(135deg,rgba(197, 160, 89, 0.25),rgba(197, 160, 89, 0.1));border-color:rgba(197, 160, 89, 0.5);">
                                 <i class="fas fa-qrcode"></i> إنشاء / تحديث QR
                             </button>
                             <p
@@ -1610,7 +1610,7 @@
                                     <div>
                                         <label class="lp-label"><i class="fas fa-circle"></i> لون الزر</label>
                                         <div class="lp-color-pick-wrap"><input type="color" id="back-buttons-bg-color"
-                                                value="#364f6b" class="lp-color-pick"></div>
+                                                value="#21262d" class="lp-color-pick"></div>
                                     </div>
                                     <div style="display:flex;flex-direction:column;align-items:flex-end;">
                                         <label class="lp-label"><i class="fas fa-font"></i> لون النص</label>
@@ -1742,7 +1742,7 @@
 
                             <!-- Website -->
                             <div class="lp-section" id="form-group-static-website">
-                                <label class="lp-label"><i class="fas fa-globe" style="color:#4da6ff;"></i> الموقع
+                                <label class="lp-label"><i class="fas fa-globe" style="color:#c5a059;"></i> الموقع
                                     الإلكتروني</label>
                                 <input type="url" id="input-website" value="" class="lp-input" placeholder="https://..."
                                     style="margin-bottom:8px;">
@@ -2125,7 +2125,7 @@
 
         <aside class="pro-sidebar pro-sidebar-right" id="panel-share" style="display: none;">
             <fieldset class="fieldset">
-                <legend><i class="fas fa-cloud-upload-alt" style="color:#4da6ff;"></i> الحفظ والمشاركة</legend>
+                <legend><i class="fas fa-cloud-upload-alt" style="color:#c5a059;"></i> الحفظ والمشاركة</legend>
                 <div class="control-grid">
                     <button class="btn btn-primary mobile-action-btn" data-trigger-id="save-to-cloud-btn"
                         style="background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; font-weight: 600;">
@@ -2140,7 +2140,7 @@
                         <i class="fas fa-bookmark" style="color:#f1c40f;"></i> <span>حفظ بالمعرض</span>
                     </button>
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="show-gallery-btn">
-                        <i class="fas fa-images" style="color:#4da6ff;"></i> <span>عرض المعرض</span>
+                        <i class="fas fa-images" style="color:#c5a059;"></i> <span>عرض المعرض</span>
                     </button>
                 </div>
                 <div class="control-grid" style="margin-top: 10px;">
@@ -2157,7 +2157,7 @@
                 <legend><i class="fas fa-download" style="color:#2ecc71;"></i> خيارات التنزيل والتصدير</legend>
                 <div class="control-grid">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-front">
-                        <i class="fas fa-image" style="color:#4da6ff;"></i> <span>واجهة (PNG)</span>
+                        <i class="fas fa-image" style="color:#c5a059;"></i> <span>واجهة (PNG)</span>
                     </button>
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="download-png-back">
                         <i class="fas fa-image" style="color:#38bdf8;"></i> <span>خلفية (PNG)</span>
@@ -2208,7 +2208,7 @@
                 </div>
                 <div class="form-group" style="margin-top: 10px;">
                     <button class="btn btn-secondary mobile-action-btn" data-trigger-id="ep2-help-btn" style="width: 100%;">
-                        <i class="fas fa-keyboard" style="color:#4da6ff;"></i> <span>اختصارات لوحة المفاتيح</span>
+                        <i class="fas fa-keyboard" style="color:#c5a059;"></i> <span>اختصارات لوحة المفاتيح</span>
                     </button>
                 </div>
             </fieldset>
@@ -2255,46 +2255,59 @@
     </div>
 
     <!-- Footer moved outside the entire layout -->
-    <footer class="site-footer" role="contentinfo" style="margin-top: 0; width: 100%;">
+        <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>MC PRIME</h3>
-                    <p>نقدم حلول بطاقات العمل الذكية NFC للأفراد والشركات.</p>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <img src="mc-prime-nfc.png" alt="MC PRIME Logo" style="height: 40px; width: auto;">
+                        <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.3rem; color: var(--text-primary-color, #f0f6fc);">MC PRIME</span>
+                    </div>
+                    <p>نقدم أرقى حلول بطاقات العمل الذكية NFC و QR Code بتصميم تنفيذي فاخر وتكنولوجيا متطورة تليق بعلامتك التجارية.</p>
                 </div>
                 <div class="footer-section">
                     <h3>روابط سريعة</h3>
                     <ul role="list">
-                        <li><a href="index.html#features">المميزات</a></li>
-                        <li><a href="gallery.html">المعرض</a></li>
-                        <li><a href="blog.html">المدونة</a></li>
-                        <li><a href="editor.html">محرر التصميم</a></li>
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="gallery.html">معرض القوالب</a></li>
+                        <li><a href="blog.html">المدونة والمقالات</a></li>
+                        <li><a href="dashboard.html">لوحة التحكم</a></li>
+                        <li><a href="editor.html">محرر البطاقات</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>الدعم</h3>
+                    <h3>الحلول والخدمات</h3>
                     <ul role="list">
-                        <li><a href="index.html#faq">الأسئلة الشائعة</a></li>
+                        <li><a href="nfc-for-companies.html">بطاقات الشركات</a></li>
+                        <li><a href="nfc-for-freelancers.html">بطاقات المستقلين</a></li>
+                        <li><a href="nfc-for-restaurants.html">قوائم المطاعم الذكية</a></li>
+                        <li><a href="how-to-use-editor.html">دليل استخدام المحرر</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الدعم والقانونية</h3>
+                    <ul role="list">
                         <li><a href="contact.html">اتصل بنا</a></li>
                         <li><a href="privacy.html">سياسة الخصوصية</a></li>
+                        <li><a href="terms.html">شروط الاستخدام</a></li>
+                        <li><a href="about.html">من نحن</a></li>
                     </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>تابعنا</h3>
-                    <div class="social-links" style="display: flex; gap: 10px;">
-                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="فيسبوك">
-                            <i class="fab fa-facebook-f"></i>
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="فيسبوك" title="فيسبوك">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
                         </a>
-                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="إنستغرام">
-                            <i class="fab fa-instagram"></i>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="إنستغرام" title="إنستغرام">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="لينكد إن" title="لينكد إن">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
                         </a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; <span id="current-year-footer">2026</span> جميع الحقوق محفوظة لـ MC PRIME.</p>
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. جميع الحقوق محفوظة.</p>
             </div>
         </div>
     </footer>

@@ -143,16 +143,42 @@
 }
     </script>
     <script src="lang-switcher.js" defer></script>
+    <link rel="stylesheet" href="homepage.css">
 </head>
 
 <body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="index-en.html" class="nav-logo" aria-label="Home - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - Smart Business Cards" loading="eager" width="60" height="60" style="height: 48px; width: auto;">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index-en.html#features">Features</a></li>
+                <li><a href="index-en.html#how-it-works">How It Works</a></li>
+                <li><a href="gallery-en.html">Gallery</a></li>
+                <li><a href="blog-en.html">Blog</a></li>
+                <li><a href="dashboard-en.html">Dashboard</a></li>
+                <li><a href="contact-en.html">Contact</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button onclick="switchLanguage('ar')" class="lang-btn" aria-label="التبديل إلى العربية">عربي</button>
+                <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle" aria-label="Open menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
   <div style="max-width: 800px; margin: 20px auto 0; display: flex; justify-content: space-between; align-items: center; padding: 0 15px;">
     <a href="index-en.html" style="color: #6ec1ff; text-decoration: none; font-weight: bold;"><i class="fas fa-arrow-left"></i> Home</a>
-    <button onclick="switchLanguage('ar')" class="lang-btn" style="background: rgba(77, 166, 255, 0.2); border: 1px solid #4da6ff; color: #4da6ff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">عربي</button>
+    <button onclick="switchLanguage('ar')" class="lang-btn" style="background: rgba(197, 160, 89, 0.2); border: 1px solid #c5a059; color: #c5a059; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">عربي</button>
   </div>
 
     <h1 style="text-align:center; color:#6ec1ff; font-weight:700; margin-bottom: 32px;">
@@ -220,15 +246,60 @@
       </p>
     </section>
 
-    <footer style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);">
-        <h3 style="color: white; font-size: 1.4rem; margin-bottom: 15px;">Conclusion</h3>
-        <p style="font-size: 1.1rem; color: var(--text-secondary-color); margin-bottom: 20px;">
-            In a fast-paced, innovation-driven market like the UAE, sticking to paper business cards is a competitive disadvantage. Adopting corporate NFC solutions enhances your brand's prestige, streamlines networking at mega-events, and firmly aligns your business with the nation's smart, sustainable future.
-        </p>
-        <div style="background: rgba(77, 166, 255, 0.1); padding: 25px; border-radius: 12px; text-align: center; border: 1px solid rgba(77, 166, 255, 0.2);">
-            <h4 style="color: white; font-size: 1.2rem; margin-bottom: 10px;">Lead the Digital Transformation</h4>
-            <p style="color: var(--text-secondary-color); margin-bottom: 20px;">Equip your UAE-based team with smart networking technology today.</p>
-            <a href="editor-en.html" class="btn btn-primary" style="padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Get Your Corporate Cards</a>
+        <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <img src="mc-prime-nfc.png" alt="MC PRIME Logo" style="height: 40px; width: auto;">
+                        <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.3rem; color: var(--text-primary-color, #f0f6fc);">MC PRIME</span>
+                    </div>
+                    <p>Elevate your professional identity with luxury executive NFC & QR digital smart business cards.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul role="list">
+                        <li><a href="index-en.html">Home</a></li>
+                        <li><a href="gallery-en.html">Template Gallery</a></li>
+                        <li><a href="blog-en.html">Blog & Insights</a></li>
+                        <li><a href="dashboard-en.html">Dashboard</a></li>
+                        <li><a href="editor-en.html">Card Editor</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Solutions</h3>
+                    <ul role="list">
+                        <li><a href="nfc-for-companies-en.html">For Companies</a></li>
+                        <li><a href="nfc-for-freelancers-en.html">For Freelancers</a></li>
+                        <li><a href="nfc-for-restaurants-en.html">For Restaurants</a></li>
+                        <li><a href="how-to-use-editor-en.html">Editor Guide</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Support & Legal</h3>
+                    <ul role="list">
+                        <li><a href="contact-en.html">Contact Us</a></li>
+                        <li><a href="privacy-en.html">Privacy Policy</a></li>
+                        <li><a href="terms-en.html">Terms of Service</a></li>
+                        <li><a href="about-en.html">About Us</a></li>
+                    </ul>
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. All rights reserved.</p>
+            </div>
         </div>
     </footer>
   </article>

@@ -188,9 +188,9 @@
     <!-- Critical CSS Fixes -->
     <style>
         :root {
-            --primary-color: #4da6ff;
-            --background-color: #0b131e;
-            --surface-color: rgba(36, 52, 71, 0.4);
+            --primary-color: #c5a059;
+            --background-color: #0d1117;
+            --surface-color: rgba(22, 27, 34, 0.4);
             --text-primary-color: #ffffff;
             --text-secondary-color: #a0aec0;
             --font-main: 'Tajawal', sans-serif;
@@ -298,7 +298,7 @@
         .loading-spinner {
             width: 50px;
             height: 50px;
-            border: 4px solid rgba(77, 166, 255, 0.3);
+            border: 4px solid rgba(197, 160, 89, 0.3);
             border-top-color: var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -309,8 +309,8 @@
         }
 
         .lang-btn {
-            background: rgba(77, 166, 255, 0.15);
-            border: 1px solid rgba(77, 166, 255, 0.4);
+            background: rgba(197, 160, 89, 0.15);
+            border: 1px solid rgba(197, 160, 89, 0.4);
             color: #ffffff;
             padding: 0.45rem 0.9rem;
             border-radius: 8px;
@@ -326,7 +326,7 @@
 
         .lang-btn:hover {
             background: var(--primary-color);
-            color: #0b131e;
+            color: #0d1117;
         }
     </style>
 
@@ -373,12 +373,12 @@
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(77,166,255,0.12);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(197, 160, 89, 0.12);
         }
         /* --- FRONT --- */
         .flip-card-front {
             background: linear-gradient(135deg, #0f2744 0%, #1a3a60 50%, #1e4a7a 100%);
-            border: 1px solid rgba(77,166,255,0.35);
+            border: 1px solid rgba(197, 160, 89, 0.35);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -387,26 +387,26 @@
         .fc-top { display: flex; align-items: center; gap: 0.7rem; }
         .fc-avatar {
             width: 42px; height: 42px; border-radius: 50%;
-            background: linear-gradient(135deg, #4da6ff, #a78bfa);
+            background: linear-gradient(135deg, #c5a059, #a78bfa);
             display: flex; align-items: center; justify-content: center;
             color: white; font-size: 1rem; font-weight: 700;
-            box-shadow: 0 4px 14px rgba(77,166,255,0.45);
+            box-shadow: 0 4px 14px rgba(197, 160, 89, 0.45);
             flex-shrink: 0;
         }
         .fc-name { color: #e8f4ff; font-size: 0.88rem; font-weight: 700; line-height: 1.2; }
         .fc-title { color: #7db8e8; font-size: 0.7rem; margin-top: 2px; }
-        .fc-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(77,166,255,0.4), transparent); margin: 0.2rem 0; }
+        .fc-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.4), transparent); margin: 0.2rem 0; }
         .fc-links { display: flex; flex-direction: column; gap: 0.3rem; }
         .fc-link { display: flex; align-items: center; gap: 0.4rem; color: #bdd8f0; font-size: 0.7rem; }
-        .fc-link i { color: #4da6ff; width: 12px; font-size: 0.65rem; }
+        .fc-link i { color: #c5a059; width: 12px; font-size: 0.65rem; }
         .fc-bottom { display: flex; align-items: center; justify-content: space-between; }
-        .fc-brand { color: #4da6ff; font-size: 0.62rem; font-weight: 800; letter-spacing: 1px; opacity: 0.8; }
+        .fc-brand { color: #c5a059; font-size: 0.62rem; font-weight: 800; letter-spacing: 1px; opacity: 0.8; }
         .fc-nfc-pill {
             display: flex; align-items: center; gap: 0.25rem;
-            background: rgba(77,166,255,0.15);
-            border: 1px solid rgba(77,166,255,0.4);
+            background: rgba(197, 160, 89, 0.15);
+            border: 1px solid rgba(197, 160, 89, 0.4);
             border-radius: 20px; padding: 0.15rem 0.5rem;
-            color: #4da6ff; font-size: 0.6rem; font-weight: 700;
+            color: #c5a059; font-size: 0.6rem; font-weight: 700;
         }
         /* --- BACK --- */
         .flip-card-back {
@@ -480,21 +480,22 @@
     </button>
 
     <!-- Navbar -->
+        <!-- Navbar -->
     <nav class="navbar" id="navbar">
         <div class="container nav-content">
-            <a href="index.html" class="nav-logo">
-                <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" fetchpriority="high" width="60" height="60" style="height: 60px; width: auto;">
+            <a href="index.html" class="nav-logo" aria-label="الرئيسية - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" width="60" height="60" style="height: 48px; width: auto;">
             </a>
             <ul class="nav-links" id="nav-links">
-                <li><a href="#features">المميزات</a></li>
-                <li><a href="#how-it-works">كيف يعمل</a></li>
+                <li><a href="index.html#features">المميزات</a></li>
+                <li><a href="index.html#how-it-works">كيف يعمل</a></li>
                 <li><a href="gallery.html">المعرض</a></li>
                 <li><a href="blog.html">المدونة</a></li>
                 <li><a href="dashboard.html">لوحة التحكم</a></li>
-                <li><a href="#faq">الأسئلة الشائعة</a></li>
+                <li><a href="contact.html">اتصل بنا</a></li>
             </ul>
-            <div style="display: flex; align-items: center;">
-                <button onclick="switchLanguage('en')" class="lang-btn">EN</button>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button onclick="switchLanguage('en')" class="lang-btn" aria-label="Switch to English">EN</button>
                 <a href="editor.html" class="btn btn-primary nav-cta">ابدأ الآن</a>
             </div>
             <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
@@ -965,7 +966,7 @@
                     <div class="persona-card-wrapper" data-persona="company">
                         <div class="persona-card">
                             <div class="persona-card-header">
-                                <div class="persona-avatar" style="background: linear-gradient(135deg, #4da6ff, #2d86ff);">ش</div>
+                                <div class="persona-avatar" style="background: linear-gradient(135deg, #c5a059, #2d86ff);">ش</div>
                                 <div>
                                     <h3 class="persona-name">شركة التقنية المتقدمة</h3>
                                     <p class="persona-title">حلول برمجية متكاملة</p>
@@ -1196,52 +1197,59 @@
     </main>
 
     <!-- Footer -->
+        <!-- Footer -->
     <footer class="site-footer" role="contentinfo">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>MC PRIME</h3>
-                    <p>نقدم حلول بطاقات العمل الذكية NFC للأفراد والشركات.</p>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <img src="mc-prime-nfc.png" alt="MC PRIME Logo" style="height: 40px; width: auto;">
+                        <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.3rem; color: var(--text-primary-color, #f0f6fc);">MC PRIME</span>
+                    </div>
+                    <p>نقدم أرقى حلول بطاقات العمل الذكية NFC و QR Code بتصميم تنفيذي فاخر وتكنولوجيا متطورة تليق بعلامتك التجارية.</p>
                 </div>
                 <div class="footer-section">
                     <h3>روابط سريعة</h3>
                     <ul role="list">
-                        <li><a href="#features">المميزات</a></li>
-                        <li><a href="gallery.html">المعرض</a></li>
-                        <li><a href="blog.html">المدونة</a></li>
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="gallery.html">معرض القوالب</a></li>
+                        <li><a href="blog.html">المدونة والمقالات</a></li>
                         <li><a href="dashboard.html">لوحة التحكم</a></li>
-                        <li><a href="editor.html">محرر التصميم</a></li>
+                        <li><a href="editor.html">محرر البطاقات</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>الدعم</h3>
+                    <h3>الحلول والخدمات</h3>
                     <ul role="list">
-                        <li><a href="#faq">الأسئلة الشائعة</a></li>
+                        <li><a href="nfc-for-companies.html">بطاقات الشركات</a></li>
+                        <li><a href="nfc-for-freelancers.html">بطاقات المستقلين</a></li>
+                        <li><a href="nfc-for-restaurants.html">قوائم المطاعم الذكية</a></li>
+                        <li><a href="how-to-use-editor.html">دليل استخدام المحرر</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الدعم والقانونية</h3>
+                    <ul role="list">
                         <li><a href="contact.html">اتصل بنا</a></li>
                         <li><a href="privacy.html">سياسة الخصوصية</a></li>
                         <li><a href="terms.html">شروط الاستخدام</a></li>
+                        <li><a href="about.html">من نحن</a></li>
                     </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>تابعنا</h3>
-                    <div class="social-links">
-                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="فيسبوك" title="زر صفحتنا على فيسبوك">
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="فيسبوك" title="فيسبوك">
                             <i class="fab fa-facebook-f" aria-hidden="true"></i>
                         </a>
-                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="إنستغرام" title="تابعنا على إنستغرام">
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="إنستغرام" title="إنستغرام">
                             <i class="fab fa-instagram" aria-hidden="true"></i>
                         </a>
-                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer"
-                            aria-label="لينكد إن" title="تواصل معنا على لينكد إن">
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="لينكد إن" title="لينكد إن">
                             <i class="fab fa-linkedin-in" aria-hidden="true"></i>
                         </a>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; <span id="footer-year"></span> MC PRIME. جميع الحقوق محفوظة.</p>
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. جميع الحقوق محفوظة.</p>
             </div>
         </div>
     </footer>

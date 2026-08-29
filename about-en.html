@@ -124,7 +124,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: radial-gradient(ellipse at top, rgba(77, 166, 255, 0.12) 0%, transparent 70%);
+      background: radial-gradient(ellipse at top, rgba(197, 160, 89, 0.12) 0%, transparent 70%);
       pointer-events: none;
     }
 
@@ -174,7 +174,7 @@
 
     .about-card:hover {
       transform: translateY(-8px);
-      border-color: rgba(77, 166, 255, 0.3);
+      border-color: rgba(197, 160, 89, 0.3);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
 
@@ -250,14 +250,14 @@
     .stat-card {
       text-align: center;
       padding: 30px 20px;
-      background: linear-gradient(135deg, rgba(77, 166, 255, 0.08), rgba(77, 166, 255, 0.02));
-      border: 1px solid rgba(77, 166, 255, 0.15);
+      background: linear-gradient(135deg, rgba(197, 160, 89, 0.08), rgba(197, 160, 89, 0.02));
+      border: 1px solid rgba(197, 160, 89, 0.15);
       border-radius: 20px;
       transition: all 0.3s ease;
     }
 
     .stat-card:hover {
-      border-color: rgba(77, 166, 255, 0.4);
+      border-color: rgba(197, 160, 89, 0.4);
       transform: scale(1.03);
     }
 
@@ -301,9 +301,9 @@
     }
 
     .lang-btn {
-      background: rgba(77, 166, 255, 0.2);
-      border: 1px solid #4da6ff;
-      color: #4da6ff;
+      background: rgba(197, 160, 89, 0.2);
+      border: 1px solid #c5a059;
+      color: #c5a059;
       padding: 0.4rem 0.8rem;
       border-radius: 6px;
       cursor: pointer;
@@ -314,7 +314,7 @@
     }
 
     .lang-btn:hover {
-      background: #4da6ff;
+      background: #c5a059;
       color: white;
     }
 
@@ -343,30 +343,31 @@
   <!-- End Google Tag Manager (noscript) -->
 
   <!-- Navbar -->
-  <nav class="navbar" id="navbar">
-    <div class="container nav-content">
-      <a href="index-en.html" class="nav-logo">
-        <img src="mc-prime-nfc.png" alt="MC PRIME - Smart Business Cards" loading="eager">
-      </a>
-      <ul class="nav-links" id="nav-links">
-        <li><a href="index-en.html">Home</a></li>
-        <li><a href="index-en.html#features">Features</a></li>
-        <li><a href="gallery-en.html">Gallery</a></li>
-        <li><a href="blog-en.html">Blog</a></li>
-        <li><a href="dashboard-en.html">Dashboard</a></li>
-        <li><a href="index-en.html#faq">FAQ</a></li>
-      </ul>
-      <div style="display: flex; align-items: center;">
-        <button onclick="switchLanguage('ar')" class="lang-btn">عربي</button>
-        <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started</a>
-      </div>
-      <div class="nav-toggle" id="nav-toggle" aria-label="Open menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
-  </nav>
+      <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="index-en.html" class="nav-logo" aria-label="Home - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - Smart Business Cards" loading="eager" width="60" height="60" style="height: 48px; width: auto;">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index-en.html#features">Features</a></li>
+                <li><a href="index-en.html#how-it-works">How It Works</a></li>
+                <li><a href="gallery-en.html">Gallery</a></li>
+                <li><a href="blog-en.html">Blog</a></li>
+                <li><a href="dashboard-en.html">Dashboard</a></li>
+                <li><a href="contact-en.html">Contact</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button onclick="switchLanguage('ar')" class="lang-btn" aria-label="التبديل إلى العربية">عربي</button>
+                <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle" aria-label="Open menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
 
   <main>
     <!-- Hero Section -->
@@ -406,7 +407,7 @@
 
         <div class="about-grid">
           <article class="about-card">
-            <div class="about-card-icon" style="background: rgba(77, 166, 255, 0.1); color: #4da6ff;">
+            <div class="about-card-icon" style="background: rgba(197, 160, 89, 0.1); color: #c5a059;">
               <i class="fas fa-gift"></i>
             </div>
             <h3>Free for Everyone</h3>
@@ -519,52 +520,62 @@
   </main>
 
   <!-- Footer -->
-  <footer class="site-footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>MC PRIME</h3>
-        <p>We provide smart NFC business card solutions for individuals and businesses.</p>
-      </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><a href="index-en.html">Home</a></li>
-          <li><a href="gallery-en.html">Gallery</a></li>
-          <li><a href="blog-en.html">Blog</a></li>
-          <li><a href="editor-en.html">Design Editor</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h3>Support</h3>
-        <ul>
-          <li><a href="index-en.html#faq">FAQ</a></li>
-          <li><a href="contact-en.html">Contact Us</a></li>
-          <li><a href="privacy-en.html">Privacy Policy</a></li>
-          <li><a href="terms-en.html">Terms of Service</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h3>Follow Us</h3>
-        <div class="social-links">
-          <a href="https://facebook.com/mcprime" target="_blank" rel="noopener" aria-label="Facebook">
-            <i class="fab fa-facebook-f"></i>
-          </a>
-          <a href="https://instagram.com/mcprime" target="_blank" rel="noopener" aria-label="Instagram">
-            <i class="fab fa-instagram"></i>
-          </a>
-          <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener" aria-label="LinkedIn">
-            <i class="fab fa-linkedin-in"></i>
-          </a>
-          <a href="https://wa.me/201XXXXXXXXX" target="_blank" rel="noopener" aria-label="WhatsApp">
-            <i class="fab fa-whatsapp"></i>
-          </a>
+      <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <img src="mc-prime-nfc.png" alt="MC PRIME Logo" style="height: 40px; width: auto;">
+                        <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.3rem; color: var(--text-primary-color, #f0f6fc);">MC PRIME</span>
+                    </div>
+                    <p>Elevate your professional identity with luxury executive NFC & QR digital smart business cards.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul role="list">
+                        <li><a href="index-en.html">Home</a></li>
+                        <li><a href="gallery-en.html">Template Gallery</a></li>
+                        <li><a href="blog-en.html">Blog & Insights</a></li>
+                        <li><a href="dashboard-en.html">Dashboard</a></li>
+                        <li><a href="editor-en.html">Card Editor</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Solutions</h3>
+                    <ul role="list">
+                        <li><a href="nfc-for-companies-en.html">For Companies</a></li>
+                        <li><a href="nfc-for-freelancers-en.html">For Freelancers</a></li>
+                        <li><a href="nfc-for-restaurants-en.html">For Restaurants</a></li>
+                        <li><a href="how-to-use-editor-en.html">Editor Guide</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Support & Legal</h3>
+                    <ul role="list">
+                        <li><a href="contact-en.html">Contact Us</a></li>
+                        <li><a href="privacy-en.html">Privacy Policy</a></li>
+                        <li><a href="terms-en.html">Terms of Service</a></li>
+                        <li><a href="about-en.html">About Us</a></li>
+                    </ul>
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. All rights reserved.</p>
+            </div>
         </div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2025 MC PRIME. All rights reserved.</p>
-    </div>
-  </footer>
+    </footer>
 
   <script src="cookie-consent.js" defer></script>
   <script src="error-reporter.js" defer></script>

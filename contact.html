@@ -34,9 +34,9 @@
   
   <style>
     .lang-btn {
-      background: rgba(77, 166, 255, 0.2);
-      border: 1px solid #4da6ff;
-      color: #4da6ff;
+      background: rgba(197, 160, 89, 0.2);
+      border: 1px solid #c5a059;
+      color: #c5a059;
       padding: 0.4rem 0.8rem;
       border-radius: 6px;
       cursor: pointer;
@@ -45,11 +45,13 @@
       transition: all 0.3s ease;
     }
     .lang-btn:hover {
-      background: #4da6ff;
+      background: #c5a059;
       color: white;
     }
   </style>
   <script src="lang-switcher.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="homepage.css">
 </head>
 
 <body>
@@ -57,50 +59,125 @@
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
       style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
-  <main style="max-width:700px;margin:auto;padding:2rem">
+      <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="index.html" class="nav-logo" aria-label="الرئيسية - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" width="60" height="60" style="height: 48px; width: auto;">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html#features">المميزات</a></li>
+                <li><a href="index.html#how-it-works">كيف يعمل</a></li>
+                <li><a href="gallery.html">المعرض</a></li>
+                <li><a href="blog.html">المدونة</a></li>
+                <li><a href="dashboard.html">لوحة التحكم</a></li>
+                <li><a href="contact.html">اتصل بنا</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button onclick="switchLanguage('en')" class="lang-btn" aria-label="Switch to English">EN</button>
+                <a href="editor.html" class="btn btn-primary nav-cta">ابدأ الآن</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+    <main style="max-width:700px;margin:auto;padding:2rem">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
       <h1>اتصل بنا</h1>
       <button onclick="switchLanguage('en')" class="lang-btn">EN</button>
     </div>
     <p>لأي استفسار أو دعم فني، يسعدنا التواصل معك. يمكنك ملء النموذج أدناه أو مراسلتنا مباشرة.</p>
     
-    <div style="background: rgba(36, 52, 71, 0.4); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem;">
+    <div style="background: rgba(22, 27, 34, 0.4); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem;">
       <form id="contact-form" action="mailto:support@mcprim.com" method="POST" enctype="text/plain" style="display: flex; flex-direction: column; gap: 1rem;">
         <div>
           <label for="name" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">الاسم الكامل *</label>
-          <input type="text" id="name" name="name" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #364f6b; background: #1c2a3b; color: #fff;">
+          <input type="text" id="name" name="name" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #21262d; background: #0d1117; color: #fff;">
         </div>
         <div>
           <label for="email" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">البريد الإلكتروني *</label>
-          <input type="email" id="email" name="email" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #364f6b; background: #1c2a3b; color: #fff;">
+          <input type="email" id="email" name="email" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #21262d; background: #0d1117; color: #fff;">
         </div>
         <div>
           <label for="subject" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">الموضوع</label>
-          <input type="text" id="subject" name="subject" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #364f6b; background: #1c2a3b; color: #fff;">
+          <input type="text" id="subject" name="subject" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #21262d; background: #0d1117; color: #fff;">
         </div>
         <div>
           <label for="message" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">الرسالة *</label>
-          <textarea id="message" name="message" rows="5" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #364f6b; background: #1c2a3b; color: #fff; resize: vertical;"></textarea>
+          <textarea id="message" name="message" rows="5" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #21262d; background: #0d1117; color: #fff; resize: vertical;"></textarea>
         </div>
-        <button type="submit" style="background: #4da6ff; color: #fff; border: none; padding: 1rem; border-radius: 6px; font-weight: bold; font-family: 'Tajawal', sans-serif; cursor: pointer; font-size: 1rem; margin-top: 1rem;">إرسال الرسالة</button>
+        <button type="submit" style="background: #c5a059; color: #fff; border: none; padding: 1rem; border-radius: 6px; font-weight: bold; font-family: 'Tajawal', sans-serif; cursor: pointer; font-size: 1rem; margin-top: 1rem;">إرسال الرسالة</button>
       </form>
     </div>
 
     <div style="margin-bottom: 2rem;">
       <h3>طرق تواصل أخرى:</h3>
       <ul>
-        <li>البريد الإلكتروني المباشر: <a href="mailto:support@mcprim.com" style="color: #4da6ff;">support@mcprim.com</a></li>
+        <li>البريد الإلكتروني المباشر: <a href="mailto:support@mcprim.com" style="color: #c5a059;">support@mcprim.com</a></li>
       </ul>
     </div>
 
-    <a href="index.html" style="color: #4da6ff;">&larr; العودة للصفحة الرئيسية</a>
+    <a href="index.html" style="color: #c5a059;">&larr; العودة للصفحة الرئيسية</a>
   </main>
-  <footer style="text-align:center;margin-top:3rem;padding:2rem 0;background:var(--accent-secondary);color:#fff">
-    &copy; 2025 جميع الحقوق محفوظة. |
-    <a href="about.html" style="color:#53ecfc">من نحن</a> |
-    <a href="privacy.html" style="color:#53ecfc">سياسة الخصوصية</a> |
-    <a href="terms.html" style="color:#53ecfc">شروط الاستخدام</a>
-  </footer>
+      <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <img src="mc-prime-nfc.png" alt="MC PRIME Logo" style="height: 40px; width: auto;">
+                        <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.3rem; color: var(--text-primary-color, #f0f6fc);">MC PRIME</span>
+                    </div>
+                    <p>نقدم أرقى حلول بطاقات العمل الذكية NFC و QR Code بتصميم تنفيذي فاخر وتكنولوجيا متطورة تليق بعلامتك التجارية.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <ul role="list">
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="gallery.html">معرض القوالب</a></li>
+                        <li><a href="blog.html">المدونة والمقالات</a></li>
+                        <li><a href="dashboard.html">لوحة التحكم</a></li>
+                        <li><a href="editor.html">محرر البطاقات</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الحلول والخدمات</h3>
+                    <ul role="list">
+                        <li><a href="nfc-for-companies.html">بطاقات الشركات</a></li>
+                        <li><a href="nfc-for-freelancers.html">بطاقات المستقلين</a></li>
+                        <li><a href="nfc-for-restaurants.html">قوائم المطاعم الذكية</a></li>
+                        <li><a href="how-to-use-editor.html">دليل استخدام المحرر</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الدعم والقانونية</h3>
+                    <ul role="list">
+                        <li><a href="contact.html">اتصل بنا</a></li>
+                        <li><a href="privacy.html">سياسة الخصوصية</a></li>
+                        <li><a href="terms.html">شروط الاستخدام</a></li>
+                        <li><a href="about.html">من نحن</a></li>
+                    </ul>
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="فيسبوك" title="فيسبوك">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="إنستغرام" title="إنستغرام">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="لينكد إن" title="لينكد إن">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
   <script src="cookie-consent.js" defer></script>
   <script src="error-reporter.js" defer></script>
   <script src="js/sw-register.js"></script>

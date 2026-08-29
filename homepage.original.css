@@ -879,7 +879,8 @@ details[open] .faq-question::after {
    =========================================== */
 .cta-section {
     text-align: center;
-    background: linear-gradient(135deg, rgba(77, 166, 255, 0.15), rgba(45, 134, 255, 0.05));
+    background: linear-gradient(180deg, rgba(22, 27, 34, 0.8), rgba(13, 17, 23, 0.95));
+    border-top: 1px solid rgba(197, 160, 89, 0.15);
 }
 
 .cta-section p {
@@ -892,9 +893,9 @@ details[open] .faq-question::after {
    FOOTER
    =========================================== */
 .site-footer {
-    background: var(--surface-color);
-    padding: 50px 0 30px;
-    border-top: 1px solid rgba(77, 166, 255, 0.1);
+    background: #0d1117;
+    padding: 60px 0 30px;
+    border-top: 1px solid rgba(197, 160, 89, 0.15);
 }
 
 .footer-content {
@@ -904,17 +905,21 @@ details[open] .faq-question::after {
 }
 
 .footer-section h3 {
-    color: var(--primary-color);
+    color: var(--primary-light);
     margin-bottom: 1rem;
     font-family: var(--font-headings);
+    font-size: 1.1rem;
+    font-weight: 700;
 }
 
 .footer-section ul {
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .footer-section li {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
 }
 
 .footer-section a {
@@ -933,20 +938,23 @@ details[open] .faq-question::after {
 }
 
 .social-links a {
-    width: 45px;
-    height: 45px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(77, 166, 255, 0.1);
+    background: rgba(22, 27, 34, 0.8);
+    border: 1px solid rgba(240, 246, 252, 0.08);
+    color: var(--text-secondary-color);
     border-radius: 50%;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     transition: all var(--transition-fast);
 }
 
 .social-links a:hover {
     background: var(--primary-color);
-    color: white;
+    border-color: var(--primary-color);
+    color: #0d1117;
     transform: translateY(-3px);
 }
 
@@ -1013,33 +1021,34 @@ details[open] .faq-question::after {
         grid-template-columns: repeat(4, 1fr);
     }
 
-    /* Compact Footer */
+    /* Desktop Footer */
     .site-footer {
-        padding: 20px 0;
+        padding: 60px 0 30px;
     }
 
     .footer-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        padding-bottom: 0;
+        display: grid;
+        grid-template-columns: 1.8fr 1fr 1.2fr 1.2fr;
+        gap: 3rem;
+        padding-bottom: 2rem;
     }
 
     .footer-section {
-        flex: 0 1 auto;
         margin: 0;
     }
 
-    /* Hide Headers */
     .footer-section h3 {
-        display: none;
+        display: block;
+        color: var(--primary-light);
+        margin-bottom: 1.2rem;
+        font-size: 1.05rem;
+        font-weight: 700;
     }
 
-    /* Inline Links */
     .footer-section ul {
         display: flex;
-        gap: 20px;
+        flex-direction: column;
+        gap: 0.75rem;
         margin: 0;
         padding: 0;
     }
@@ -1049,62 +1058,39 @@ details[open] .faq-question::after {
     }
 
     .footer-section a {
+        font-size: 0.95rem;
+        color: var(--text-secondary-color);
+        transition: color var(--transition-fast), transform var(--transition-fast);
+        display: inline-block;
+    }
+
+    .footer-section a:hover {
+        color: var(--primary-color);
+        transform: translateX(-3px);
+    }
+
+    html[dir="ltr"] .footer-section a:hover {
+        transform: translateX(3px);
+    }
+
+    .footer-bottom {
+        border-top: 1px solid rgba(240, 246, 252, 0.08);
+        padding-top: 25px;
+        margin-top: 20px;
+        text-align: center;
+        color: var(--text-muted-color);
         font-size: 0.9rem;
     }
 
     /* Social Icons */
     .social-links {
-        gap: 10px;
+        display: flex;
+        gap: 12px;
     }
 
     .social-links a {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
-    }
-
-    /* Compact Copyright */
-    .footer-bottom {
-        border-top: none;
-        margin-top: 10px;
-        padding-top: 0;
-        text-align: center;
-        width: 100%;
-        font-size: 0.8rem;
-    }
-
-    /* Adjust order: Logo - Links - Social */
-    .footer-section:first-child {
-        order: 1;
-        flex: 0 0 auto;
-    }
-
-    .footer-section:first-child p {
-        display: none;
-        /* Hide description */
-    }
-
-    .footer-section:nth-child(2) {
-        order: 2;
-        flex: 1;
-        display: flex;
-        justify-content: center;
-    }
-
-    .footer-section:nth-child(3) {
-        order: 3;
-        flex: 0 0 auto;
-    }
-
-    /* Merge Support links into Main links visually or hide support section container if needed */
-    /* Let's keep them separate but inline */
-    .footer-section:nth-child(3) ul {
-        display: flex;
-        gap: 20px;
-    }
-
-    .footer-section:last-child {
-        order: 4;
+        width: 40px;
+        height: 40px;
     }
 }
 

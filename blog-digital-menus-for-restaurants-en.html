@@ -150,15 +150,15 @@
 
     <style>
         :root {
-            --primary: #4da6ff;
-            --primary-glow: rgba(77, 166, 255, 0.35);
+            --primary: #c5a059;
+            --primary-glow: rgba(197, 160, 89, 0.35);
             --primary-dark: #1e70bf;
             --accent: #00d2ff;
-            --bg-main: #0b131e;
+            --bg-main: #0d1117;
             --bg-surface: rgba(22, 34, 50, 0.7);
             --bg-elevated: #162436;
             --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(77, 166, 255, 0.4);
+            --surface-border-hover: rgba(197, 160, 89, 0.4);
             --text-main: #ffffff;
             --text-muted: #94a3b8;
             --text-sub: #cbd5e1;
@@ -180,7 +180,7 @@
         body {
             background-color: var(--bg-main);
             background-image: 
-                radial-gradient(circle at 10% 10%, rgba(77, 166, 255, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 10% 10%, rgba(197, 160, 89, 0.06) 0%, transparent 40%),
                 radial-gradient(circle at 90% 90%, rgba(0, 210, 255, 0.05) 0%, transparent 45%);
             color: var(--text-main);
             font-family: var(--font-body);
@@ -263,8 +263,8 @@
         }
 
         .lang-btn {
-            background: rgba(77, 166, 255, 0.12);
-            border: 1px solid rgba(77, 166, 255, 0.25);
+            background: rgba(197, 160, 89, 0.12);
+            border: 1px solid rgba(197, 160, 89, 0.25);
             color: var(--primary);
             padding: 6px 14px;
             border-radius: var(--radius-md);
@@ -293,7 +293,7 @@
 
         .nav-cta:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(77, 166, 255, 0.4);
+            box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
         }
 
         .mobile-toggle {
@@ -342,8 +342,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(77, 166, 255, 0.15);
-            border: 1px solid rgba(77, 166, 255, 0.3);
+            background: rgba(197, 160, 89, 0.15);
+            border: 1px solid rgba(197, 160, 89, 0.3);
             color: var(--primary);
             padding: 5px 14px;
             border-radius: var(--radius-pill);
@@ -476,7 +476,7 @@
 
         .toc-box {
             background: rgba(15, 23, 36, 0.7);
-            border: 1px solid rgba(77, 166, 255, 0.25);
+            border: 1px solid rgba(197, 160, 89, 0.25);
             border-left: 4px solid var(--primary);
             border-radius: var(--radius-md);
             padding: 24px;
@@ -690,7 +690,7 @@
 
         .author-card {
             background: rgba(15, 23, 36, 0.9);
-            border: 1px solid rgba(77, 166, 255, 0.25);
+            border: 1px solid rgba(197, 160, 89, 0.25);
             border-radius: var(--radius-md);
             padding: 26px;
             margin: 40px 0;
@@ -727,7 +727,7 @@
 
         .article-cta {
             background: linear-gradient(135deg, rgba(30, 47, 70, 0.9), rgba(15, 23, 36, 0.95));
-            border: 1px solid rgba(77, 166, 255, 0.3);
+            border: 1px solid rgba(197, 160, 89, 0.3);
             border-radius: var(--radius-md);
             padding: 35px;
             text-align: center;
@@ -758,13 +758,13 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 4px 15px rgba(77, 166, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
             transition: var(--transition);
         }
 
         .article-cta .btn-cta:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(77, 166, 255, 0.4);
+            box-shadow: 0 8px 25px rgba(197, 160, 89, 0.4);
         }
 
         .sidebar-wrapper {
@@ -1041,6 +1041,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="homepage.css">
 </head>
 
 <body>
@@ -1075,15 +1076,31 @@
 
     <main class="container">
         <!-- Breadcrumbs -->
-        <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
-            <ol class="breadcrumb-list">
-                <li><a href="index-en.html"><i class="fas fa-home"></i> Home</a></li>
-                <li><i class="fas fa-chevron-right"></i></li>
+            <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="index-en.html" class="nav-logo" aria-label="Home - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - Smart Business Cards" loading="eager" width="60" height="60" style="height: 48px; width: auto;">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index-en.html#features">Features</a></li>
+                <li><a href="index-en.html#how-it-works">How It Works</a></li>
+                <li><a href="gallery-en.html">Gallery</a></li>
                 <li><a href="blog-en.html">Blog</a></li>
-                <li><i class="fas fa-chevron-right"></i></li>
-                <li aria-current="page">Digital Menus for Restaurants</li>
-            </ol>
-        </nav>
+                <li><a href="dashboard-en.html">Dashboard</a></li>
+                <li><a href="contact-en.html">Contact</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button onclick="switchLanguage('ar')" class="lang-btn" aria-label="التبديل إلى العربية">عربي</button>
+                <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle" aria-label="Open menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
 
         <!-- Article Header -->
         <header class="article-header">
@@ -1342,50 +1359,59 @@
     </main>
 
     <!-- Footer -->
+        <!-- Footer -->
     <footer class="site-footer" role="contentinfo">
         <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h4>MC PRIME</h4>
-                    <p>
-                        Digital networking solutions, smart NFC cards, and interactive dining menus for businesses and hospitality brands.
-                    </p>
-                    <div class="social-row">
-                        <a href="https://facebook.com/mcprime" class="social-btn" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://instagram.com/mcprime" class="social-btn" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://linkedin.com/company/mcprime" class="social-btn" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <img src="mc-prime-nfc.png" alt="MC PRIME Logo" style="height: 40px; width: auto;">
+                        <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.3rem; color: var(--text-primary-color, #f0f6fc);">MC PRIME</span>
                     </div>
+                    <p>Elevate your professional identity with luxury executive NFC & QR digital smart business cards.</p>
                 </div>
-                <div class="footer-col">
-                    <h4>Quick Links</h4>
-                    <ul>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul role="list">
                         <li><a href="index-en.html">Home</a></li>
-                        <li><a href="gallery-en.html">Templates</a></li>
-                        <li><a href="blog-en.html">Tech Blog</a></li>
-                        <li><a href="how-to-use-editor-en.html">Editor Guide</a></li>
-                        <li><a href="editor-en.html">Card Designer</a></li>
+                        <li><a href="gallery-en.html">Template Gallery</a></li>
+                        <li><a href="blog-en.html">Blog & Insights</a></li>
+                        <li><a href="dashboard-en.html">Dashboard</a></li>
+                        <li><a href="editor-en.html">Card Editor</a></li>
                     </ul>
                 </div>
-                <div class="footer-col">
-                    <h4>Solutions</h4>
-                    <ul>
-                        <li><a href="nfc-for-restaurants-en.html">For Restaurants</a></li>
-                        <li><a href="nfc-for-companies-en.html">For Enterprise</a></li>
+                <div class="footer-section">
+                    <h3>Solutions</h3>
+                    <ul role="list">
+                        <li><a href="nfc-for-companies-en.html">For Companies</a></li>
                         <li><a href="nfc-for-freelancers-en.html">For Freelancers</a></li>
-                        <li><a href="blog-nfc-at-events-en.html">For Conferences</a></li>
+                        <li><a href="nfc-for-restaurants-en.html">For Restaurants</a></li>
+                        <li><a href="how-to-use-editor-en.html">Editor Guide</a></li>
                     </ul>
                 </div>
-                <div class="footer-col">
-                    <h4>Support & Legal</h4>
-                    <ul>
+                <div class="footer-section">
+                    <h3>Support & Legal</h3>
+                    <ul role="list">
                         <li><a href="contact-en.html">Contact Us</a></li>
                         <li><a href="privacy-en.html">Privacy Policy</a></li>
                         <li><a href="terms-en.html">Terms of Service</a></li>
+                        <li><a href="about-en.html">About Us</a></li>
                     </ul>
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 MC PRIME. All rights reserved.</p>
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. All rights reserved.</p>
             </div>
         </div>
     </footer>

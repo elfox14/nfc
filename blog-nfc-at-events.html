@@ -150,15 +150,15 @@
 
     <style>
         :root {
-            --primary: #4da6ff;
-            --primary-glow: rgba(77, 166, 255, 0.35);
+            --primary: #c5a059;
+            --primary-glow: rgba(197, 160, 89, 0.35);
             --primary-dark: #1e70bf;
             --accent: #00d2ff;
-            --bg-main: #0b131e;
+            --bg-main: #0d1117;
             --bg-surface: rgba(22, 34, 50, 0.7);
             --bg-elevated: #162436;
             --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-border-hover: rgba(77, 166, 255, 0.4);
+            --surface-border-hover: rgba(197, 160, 89, 0.4);
             --text-main: #ffffff;
             --text-muted: #94a3b8;
             --text-sub: #cbd5e1;
@@ -180,7 +180,7 @@
         body {
             background-color: var(--bg-main);
             background-image: 
-                radial-gradient(circle at 10% 10%, rgba(77, 166, 255, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 10% 10%, rgba(197, 160, 89, 0.06) 0%, transparent 40%),
                 radial-gradient(circle at 90% 90%, rgba(0, 210, 255, 0.05) 0%, transparent 45%);
             color: var(--text-main);
             font-family: var(--font-body);
@@ -265,8 +265,8 @@
         }
 
         .lang-btn {
-            background: rgba(77, 166, 255, 0.12);
-            border: 1px solid rgba(77, 166, 255, 0.25);
+            background: rgba(197, 160, 89, 0.12);
+            border: 1px solid rgba(197, 160, 89, 0.25);
             color: var(--primary);
             padding: 6px 14px;
             border-radius: var(--radius-md);
@@ -295,7 +295,7 @@
 
         .nav-cta:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(77, 166, 255, 0.4);
+            box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
         }
 
         .mobile-toggle {
@@ -346,8 +346,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(77, 166, 255, 0.15);
-            border: 1px solid rgba(77, 166, 255, 0.3);
+            background: rgba(197, 160, 89, 0.15);
+            border: 1px solid rgba(197, 160, 89, 0.3);
             color: var(--primary);
             padding: 5px 14px;
             border-radius: var(--radius-pill);
@@ -482,7 +482,7 @@
         /* Table of Contents */
         .toc-box {
             background: rgba(15, 23, 36, 0.7);
-            border: 1px solid rgba(77, 166, 255, 0.25);
+            border: 1px solid rgba(197, 160, 89, 0.25);
             border-right: 4px solid var(--primary);
             border-radius: var(--radius-md);
             padding: 24px;
@@ -702,7 +702,7 @@
         /* Author Bio Card */
         .author-card {
             background: rgba(15, 23, 36, 0.9);
-            border: 1px solid rgba(77, 166, 255, 0.25);
+            border: 1px solid rgba(197, 160, 89, 0.25);
             border-radius: var(--radius-md);
             padding: 26px;
             margin: 40px 0;
@@ -740,7 +740,7 @@
         /* Action CTA Box */
         .article-cta {
             background: linear-gradient(135deg, rgba(30, 47, 70, 0.9), rgba(15, 23, 36, 0.95));
-            border: 1px solid rgba(77, 166, 255, 0.3);
+            border: 1px solid rgba(197, 160, 89, 0.3);
             border-radius: var(--radius-md);
             padding: 35px;
             text-align: center;
@@ -771,13 +771,13 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 4px 15px rgba(77, 166, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
             transition: var(--transition);
         }
 
         .article-cta .btn-cta:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(77, 166, 255, 0.4);
+            box-shadow: 0 8px 25px rgba(197, 160, 89, 0.4);
         }
 
         /* --- Sticky Sidebar --- */
@@ -1059,6 +1059,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="homepage.css">
 </head>
 
 <body>
@@ -1093,15 +1094,31 @@
 
     <main class="container">
         <!-- Breadcrumbs -->
-        <nav class="breadcrumb-nav" aria-label="مسار التنقل">
-            <ol class="breadcrumb-list">
-                <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
-                <li><i class="fas fa-chevron-left"></i></li>
+            <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="index.html" class="nav-logo" aria-label="الرئيسية - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" width="60" height="60" style="height: 48px; width: auto;">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html#features">المميزات</a></li>
+                <li><a href="index.html#how-it-works">كيف يعمل</a></li>
+                <li><a href="gallery.html">المعرض</a></li>
                 <li><a href="blog.html">المدونة</a></li>
-                <li><i class="fas fa-chevron-left"></i></li>
-                <li aria-current="page">5 طرق مبتكرة لاستخدام كارت NFC في المعارض</li>
-            </ol>
-        </nav>
+                <li><a href="dashboard.html">لوحة التحكم</a></li>
+                <li><a href="contact.html">اتصل بنا</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button onclick="switchLanguage('en')" class="lang-btn" aria-label="Switch to English">EN</button>
+                <a href="editor.html" class="btn btn-primary nav-cta">ابدأ الآن</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
 
         <!-- Article Header -->
         <header class="article-header">
@@ -1369,50 +1386,59 @@
     </main>
 
     <!-- Footer -->
+        <!-- Footer -->
     <footer class="site-footer" role="contentinfo">
         <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h4>MC PRIME</h4>
-                    <p>
-                        حلول بطاقات العمل الذكية NFC وإدارة الهويات الرقمية للأفراد والمؤسسات.
-                    </p>
-                    <div class="social-row">
-                        <a href="https://facebook.com/mcprime" class="social-btn" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://instagram.com/mcprime" class="social-btn" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://linkedin.com/company/mcprime" class="social-btn" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <img src="mc-prime-nfc.png" alt="MC PRIME Logo" style="height: 40px; width: auto;">
+                        <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.3rem; color: var(--text-primary-color, #f0f6fc);">MC PRIME</span>
                     </div>
+                    <p>نقدم أرقى حلول بطاقات العمل الذكية NFC و QR Code بتصميم تنفيذي فاخر وتكنولوجيا متطورة تليق بعلامتك التجارية.</p>
                 </div>
-                <div class="footer-col">
-                    <h4>روابط سريعة</h4>
-                    <ul>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <ul role="list">
                         <li><a href="index.html">الرئيسية</a></li>
-                        <li><a href="gallery.html">المعرض</a></li>
-                        <li><a href="blog.html">المدونة</a></li>
-                        <li><a href="how-to-use-editor.html">دليل المحرر</a></li>
-                        <li><a href="editor.html">مصمم البطاقات</a></li>
+                        <li><a href="gallery.html">معرض القوالب</a></li>
+                        <li><a href="blog.html">المدونة والمقالات</a></li>
+                        <li><a href="dashboard.html">لوحة التحكم</a></li>
+                        <li><a href="editor.html">محرر البطاقات</a></li>
                     </ul>
                 </div>
-                <div class="footer-col">
-                    <h4>حلول الشركات</h4>
-                    <ul>
-                        <li><a href="nfc-for-freelancers.html">للمستقلين</a></li>
-                        <li><a href="nfc-for-companies.html">للشركات</a></li>
-                        <li><a href="nfc-for-restaurants.html">للمطاعم</a></li>
-                        <li><a href="blog-nfc-at-events.html">للمعارض والمؤتمرات</a></li>
+                <div class="footer-section">
+                    <h3>الحلول والخدمات</h3>
+                    <ul role="list">
+                        <li><a href="nfc-for-companies.html">بطاقات الشركات</a></li>
+                        <li><a href="nfc-for-freelancers.html">بطاقات المستقلين</a></li>
+                        <li><a href="nfc-for-restaurants.html">قوائم المطاعم الذكية</a></li>
+                        <li><a href="how-to-use-editor.html">دليل استخدام المحرر</a></li>
                     </ul>
                 </div>
-                <div class="footer-col">
-                    <h4>الدعم والمساعدة</h4>
-                    <ul>
+                <div class="footer-section">
+                    <h3>الدعم والقانونية</h3>
+                    <ul role="list">
                         <li><a href="contact.html">اتصل بنا</a></li>
                         <li><a href="privacy.html">سياسة الخصوصية</a></li>
                         <li><a href="terms.html">شروط الاستخدام</a></li>
+                        <li><a href="about.html">من نحن</a></li>
                     </ul>
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="فيسبوك" title="فيسبوك">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="إنستغرام" title="إنستغرام">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="لينكد إن" title="لينكد إن">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 MC PRIME. جميع الحقوق محفوظة.</p>
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. جميع الحقوق محفوظة.</p>
             </div>
         </div>
     </footer>

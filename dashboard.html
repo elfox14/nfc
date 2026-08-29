@@ -88,10 +88,10 @@
         }
 
         .sidebar-item.active {
-            background: linear-gradient(135deg, rgba(77, 166, 255, 0.2), rgba(77, 166, 255, 0.05));
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.2), rgba(197, 160, 89, 0.05));
             color: var(--primary-color);
-            border-color: rgba(77, 166, 255, 0.3);
-            box-shadow: 0 4px 15px rgba(77, 166, 255, 0.1);
+            border-color: rgba(197, 160, 89, 0.3);
+            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.1);
         }
 
         .sidebar-item i {
@@ -162,7 +162,7 @@
 
         .design-card:hover {
             transform: translateY(-12px) scale(1.02);
-            border-color: rgba(77, 166, 255, 0.5);
+            border-color: rgba(197, 160, 89, 0.5);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
@@ -179,7 +179,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at center, rgba(77, 166, 255, 0.1) 0%, transparent 70%);
+            background: radial-gradient(circle at center, rgba(197, 160, 89, 0.1) 0%, transparent 70%);
         }
 
         .card-thumb img {
@@ -238,7 +238,7 @@
         .btn-view:hover { background: rgba(255,255,255,0.1); }
 
         .btn-edit { background: var(--primary-color); color: white; }
-        .btn-edit:hover { background: #60b5ff; box-shadow: 0 0 20px rgba(77, 166, 255, 0.4); }
+        .btn-edit:hover { background: #60b5ff; box-shadow: 0 0 20px rgba(197, 160, 89, 0.4); }
 
         .btn-signature { background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2); }
         .btn-signature:hover { background: #a855f7; color: white; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
@@ -296,13 +296,13 @@
 
         .privacy-option:hover {
             background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(77, 166, 255, 0.2);
+            border-color: rgba(197, 160, 89, 0.2);
         }
 
         .privacy-option.selected {
             border-color: var(--primary-color);
-            background: rgba(77, 166, 255, 0.08);
-            box-shadow: 0 0 25px rgba(77, 166, 255, 0.1);
+            background: rgba(197, 160, 89, 0.08);
+            box-shadow: 0 0 25px rgba(197, 160, 89, 0.1);
         }
 
         /* Sections Transitions */
@@ -436,15 +436,28 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    <nav class="navbar" style="background: rgba(28, 42, 59, 1);">
+        <!-- Navbar -->
+    <nav class="navbar" id="navbar">
         <div class="container nav-content">
-            <a href="index.html" class="nav-logo">
-                <img src="mc-prime-nfc.png" alt="MC PRIME">
+            <a href="index.html" class="nav-logo" aria-label="الرئيسية - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" width="60" height="60" style="height: 48px; width: auto;">
             </a>
-            <div class="dashboard-nav-actions">
-                <button onclick="switchLanguage('en')" class="lang-btn" style="padding: 5px 10px;">English</button>
-                <span id="user-display-name" class="user-display-name"></span>
-                <button onclick="Auth.logout()" class="btn btn-secondary logout-top-btn">تسجيل خروج</button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html#features">المميزات</a></li>
+                <li><a href="index.html#how-it-works">كيف يعمل</a></li>
+                <li><a href="gallery.html">المعرض</a></li>
+                <li><a href="blog.html">المدونة</a></li>
+                <li><a href="dashboard.html">لوحة التحكم</a></li>
+                <li><a href="contact.html">اتصل بنا</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button onclick="switchLanguage('en')" class="lang-btn" aria-label="Switch to English">EN</button>
+                <a href="editor.html" class="btn btn-primary nav-cta">ابدأ الآن</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
     </nav>
@@ -637,6 +650,62 @@
     <script src="error-reporter.js" defer></script>
     <script src="js/sw-register.js"></script>
     <script src="premium-ui.js" defer></script>
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <img src="mc-prime-nfc.png" alt="MC PRIME Logo" style="height: 40px; width: auto;">
+                        <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.3rem; color: var(--text-primary-color, #f0f6fc);">MC PRIME</span>
+                    </div>
+                    <p>نقدم أرقى حلول بطاقات العمل الذكية NFC و QR Code بتصميم تنفيذي فاخر وتكنولوجيا متطورة تليق بعلامتك التجارية.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <ul role="list">
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="gallery.html">معرض القوالب</a></li>
+                        <li><a href="blog.html">المدونة والمقالات</a></li>
+                        <li><a href="dashboard.html">لوحة التحكم</a></li>
+                        <li><a href="editor.html">محرر البطاقات</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الحلول والخدمات</h3>
+                    <ul role="list">
+                        <li><a href="nfc-for-companies.html">بطاقات الشركات</a></li>
+                        <li><a href="nfc-for-freelancers.html">بطاقات المستقلين</a></li>
+                        <li><a href="nfc-for-restaurants.html">قوائم المطاعم الذكية</a></li>
+                        <li><a href="how-to-use-editor.html">دليل استخدام المحرر</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الدعم والقانونية</h3>
+                    <ul role="list">
+                        <li><a href="contact.html">اتصل بنا</a></li>
+                        <li><a href="privacy.html">سياسة الخصوصية</a></li>
+                        <li><a href="terms.html">شروط الاستخدام</a></li>
+                        <li><a href="about.html">من نحن</a></li>
+                    </ul>
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="فيسبوك" title="فيسبوك">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="إنستغرام" title="إنستغرام">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="لينكد إن" title="لينكد إن">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>

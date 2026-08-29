@@ -20,9 +20,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
     :root {
-      --primary-color: #4da6ff;
-      --background-color: #1c2a3b;
-      --surface-color: #243447;
+      --primary-color: #c5a059;
+      --background-color: #0d1117;
+      --surface-color: #161b22;
       --text-primary: #e6f0f7;
       --text-secondary: #bcc9d4;
     }
@@ -57,7 +57,7 @@
       color: var(--primary-color);
       line-height: 1;
       margin-bottom: 1rem;
-      text-shadow: 0 0 40px rgba(77, 166, 255, 0.3);
+      text-shadow: 0 0 40px rgba(197, 160, 89, 0.3);
       animation: pulse 2s ease-in-out infinite;
     }
 
@@ -116,12 +116,12 @@
     .btn-primary {
       background: linear-gradient(135deg, var(--primary-color), #2d86ff);
       color: white;
-      box-shadow: 0 4px 15px rgba(77, 166, 255, 0.3);
+      box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
     }
 
     .btn-primary:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(77, 166, 255, 0.4);
+      box-shadow: 0 8px 25px rgba(197, 160, 89, 0.4);
     }
 
     .btn-secondary {
@@ -138,7 +138,7 @@
     .suggestions {
       margin-top: 3rem;
       padding-top: 2rem;
-      border-top: 1px solid rgba(77, 166, 255, 0.2);
+      border-top: 1px solid rgba(197, 160, 89, 0.2);
     }
 
     .suggestions h3 {
@@ -197,9 +197,35 @@
     <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/" />
     <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/" />
     <script src="lang-switcher.js" defer></script>
+    <link rel="stylesheet" href="homepage.css">
 </head>
 
 <body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="index.html" class="nav-logo" aria-label="الرئيسية - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" width="60" height="60" style="height: 48px; width: auto;">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html#features">المميزات</a></li>
+                <li><a href="index.html#how-it-works">كيف يعمل</a></li>
+                <li><a href="gallery.html">المعرض</a></li>
+                <li><a href="blog.html">المدونة</a></li>
+                <li><a href="dashboard.html">لوحة التحكم</a></li>
+                <li><a href="contact.html">اتصل بنا</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button onclick="switchLanguage('en')" class="lang-btn" aria-label="Switch to English">EN</button>
+                <a href="editor.html" class="btn btn-primary nav-cta">ابدأ الآن</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
   <!-- Google Tag Manager (noscript) -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
       style="display:none;visibility:hidden"></iframe></noscript>
@@ -239,6 +265,62 @@
     <script src="error-reporter.js" defer></script>
     <script src="js/sw-register.js"></script>
     <script src="premium-ui.js" defer></script>
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <img src="mc-prime-nfc.png" alt="MC PRIME Logo" style="height: 40px; width: auto;">
+                        <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.3rem; color: var(--text-primary-color, #f0f6fc);">MC PRIME</span>
+                    </div>
+                    <p>نقدم أرقى حلول بطاقات العمل الذكية NFC و QR Code بتصميم تنفيذي فاخر وتكنولوجيا متطورة تليق بعلامتك التجارية.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <ul role="list">
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="gallery.html">معرض القوالب</a></li>
+                        <li><a href="blog.html">المدونة والمقالات</a></li>
+                        <li><a href="dashboard.html">لوحة التحكم</a></li>
+                        <li><a href="editor.html">محرر البطاقات</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الحلول والخدمات</h3>
+                    <ul role="list">
+                        <li><a href="nfc-for-companies.html">بطاقات الشركات</a></li>
+                        <li><a href="nfc-for-freelancers.html">بطاقات المستقلين</a></li>
+                        <li><a href="nfc-for-restaurants.html">قوائم المطاعم الذكية</a></li>
+                        <li><a href="how-to-use-editor.html">دليل استخدام المحرر</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الدعم والقانونية</h3>
+                    <ul role="list">
+                        <li><a href="contact.html">اتصل بنا</a></li>
+                        <li><a href="privacy.html">سياسة الخصوصية</a></li>
+                        <li><a href="terms.html">شروط الاستخدام</a></li>
+                        <li><a href="about.html">من نحن</a></li>
+                    </ul>
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="فيسبوك" title="فيسبوك">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="إنستغرام" title="إنستغرام">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="لينكد إن" title="لينكد إن">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>

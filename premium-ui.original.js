@@ -9,8 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 2. Setup Glass Navbar effect on scroll
     setupGlassNavbar();
+
+    // 3. Setup Mobile Navbar toggle
+    setupMobileNavbar();
+
+    // 4. Setup Dynamic Footer Year
+    setupFooterYear();
     
-    // 3. Apply Micro-animations to buttons and cards
+    // 5. Apply Micro-animations to buttons and cards
     setupMicroAnimations();
 });
 
@@ -85,6 +91,31 @@ function setupGlassNavbar() {
             navbar.style.boxShadow = 'none';
         }
     });
+}
+
+function setupMobileNavbar() {
+    const toggle = document.getElementById('nav-toggle');
+    const links = document.getElementById('nav-links');
+    if (toggle && links) {
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            links.classList.toggle('active');
+            toggle.classList.toggle('active');
+        });
+        document.addEventListener('click', (e) => {
+            if (!toggle.contains(e.target) && !links.contains(e.target)) {
+                links.classList.remove('active');
+                toggle.classList.remove('active');
+            }
+        });
+    }
+}
+
+function setupFooterYear() {
+    const yearEl = document.getElementById('footer-year');
+    if (yearEl) {
+        yearEl.textContent = new Date().getFullYear();
+    }
 }
 
 function setupMicroAnimations() {

@@ -143,16 +143,42 @@
 }
     </script>
     <script src="lang-switcher.js" defer></script>
+    <link rel="stylesheet" href="homepage.css">
 </head>
 
 <body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="index.html" class="nav-logo" aria-label="الرئيسية - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" width="60" height="60" style="height: 48px; width: auto;">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html#features">المميزات</a></li>
+                <li><a href="index.html#how-it-works">كيف يعمل</a></li>
+                <li><a href="gallery.html">المعرض</a></li>
+                <li><a href="blog.html">المدونة</a></li>
+                <li><a href="dashboard.html">لوحة التحكم</a></li>
+                <li><a href="contact.html">اتصل بنا</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button onclick="switchLanguage('en')" class="lang-btn" aria-label="Switch to English">EN</button>
+                <a href="editor.html" class="btn btn-primary nav-cta">ابدأ الآن</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
   <!-- Google Tag Manager (noscript) -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
       style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
   <div style="max-width: 800px; margin: 20px auto 0; display: flex; justify-content: space-between; align-items: center; padding: 0 15px;">
     <a href="index.html" style="color: #6ec1ff; text-decoration: none; font-weight: bold;"><i class="fas fa-arrow-right"></i> الرئيسية</a>
-    <button onclick="switchLanguage('en')" class="lang-btn" style="background: rgba(77, 166, 255, 0.2); border: 1px solid #4da6ff; color: #4da6ff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">EN</button>
+    <button onclick="switchLanguage('en')" class="lang-btn" style="background: rgba(197, 160, 89, 0.2); border: 1px solid #c5a059; color: #c5a059; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">EN</button>
   </div>
 
   <h1 style="text-align:center; color:#6ec1ff; font-weight:700; margin-bottom: 32px;">
@@ -220,15 +246,60 @@
       </p>
     </section>
 
-    <footer style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);">
-        <h3 style="color: white; font-size: 1.4rem; margin-bottom: 15px; font-family: 'Cairo', sans-serif;">خاتمة</h3>
-        <p style="font-size: 1.1rem; color: var(--text-secondary-color); margin-bottom: 20px;">
-            بالنسبة للشركات السعودية التي تتطلع إلى تجسيد روح رؤية 2030، فإن الانتقال إلى بطاقات العمل الرقمية NFC أمر ضروري. إنها توفر أداة تواصل راقية وفعالة وقابلة للتتبع بدقة تتناسب مع التقدم التكنولوجي السريع في المملكة.
-        </p>
-        <div style="background: rgba(77, 166, 255, 0.1); padding: 25px; border-radius: 12px; text-align: center; border: 1px solid rgba(77, 166, 255, 0.2);">
-            <h4 style="color: white; font-size: 1.2rem; margin-bottom: 10px; font-family: 'Cairo', sans-serif;">مكّن أعمالك في السوق السعودي</h4>
-            <p style="color: var(--text-secondary-color); margin-bottom: 20px;">غيّر طريقة تواصل فريقك باستخدام حلولنا المؤسسية الفاخرة.</p>
-            <a href="editor.html" class="btn btn-primary" style="padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">ابدأ التحول الرقمي لفريقك</a>
+        <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <img src="mc-prime-nfc.png" alt="MC PRIME Logo" style="height: 40px; width: auto;">
+                        <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.3rem; color: var(--text-primary-color, #f0f6fc);">MC PRIME</span>
+                    </div>
+                    <p>نقدم أرقى حلول بطاقات العمل الذكية NFC و QR Code بتصميم تنفيذي فاخر وتكنولوجيا متطورة تليق بعلامتك التجارية.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <ul role="list">
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="gallery.html">معرض القوالب</a></li>
+                        <li><a href="blog.html">المدونة والمقالات</a></li>
+                        <li><a href="dashboard.html">لوحة التحكم</a></li>
+                        <li><a href="editor.html">محرر البطاقات</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الحلول والخدمات</h3>
+                    <ul role="list">
+                        <li><a href="nfc-for-companies.html">بطاقات الشركات</a></li>
+                        <li><a href="nfc-for-freelancers.html">بطاقات المستقلين</a></li>
+                        <li><a href="nfc-for-restaurants.html">قوائم المطاعم الذكية</a></li>
+                        <li><a href="how-to-use-editor.html">دليل استخدام المحرر</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>الدعم والقانونية</h3>
+                    <ul role="list">
+                        <li><a href="contact.html">اتصل بنا</a></li>
+                        <li><a href="privacy.html">سياسة الخصوصية</a></li>
+                        <li><a href="terms.html">شروط الاستخدام</a></li>
+                        <li><a href="about.html">من نحن</a></li>
+                    </ul>
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="فيسبوك" title="فيسبوك">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="إنستغرام" title="إنستغرام">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="لينكد إن" title="لينكد إن">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. جميع الحقوق محفوظة.</p>
+            </div>
         </div>
     </footer>
   </article>

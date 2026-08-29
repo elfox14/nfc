@@ -428,18 +428,18 @@ body {
 
 /* Footer (Matching Premium Theme) */
 .site-footer {
-  background: rgba(15, 23, 42, 0.9);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid var(--glass-border);
-  padding: 60px 0 20px;
+  background: #0d1117;
+  border-top: 1px solid rgba(197, 160, 89, 0.15);
+  padding: 60px 0 30px;
 }
 
-.site-footer h3 { color: white; font-family: var(--headings); margin-bottom: 1.5rem; }
-.site-footer a { color: var(--text-secondary); transition: color 0.3s; }
+.site-footer h3 { color: var(--primary-light, #e6ca85); font-family: var(--font-headings); margin-bottom: 1.2rem; font-size: 1.1rem; }
+.site-footer a { color: var(--text-secondary); transition: color 0.3s, transform 0.3s; }
 .site-footer a:hover { color: var(--primary-color); }
 .social-links a {
-  background: rgba(77, 166, 255, 0.1);
-  color: var(--primary-color);
+  background: rgba(22, 27, 34, 0.8);
+  border: 1px solid rgba(240, 246, 252, 0.08);
+  color: var(--text-secondary);
   width: 44px;
   height: 44px;
   display: flex;
@@ -450,6 +450,7 @@ body {
 }
 .social-links a:hover {
   background: var(--primary-color);
-  color: white;
-  transform: translateY(-5px);
+  border-color: var(--primary-color);
+  color: #0d1117;
+  transform: translateY(-3px);
 }
