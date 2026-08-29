@@ -7,8 +7,8 @@
 .ai-inspiration-panel {
     margin-top: 16px;
     padding: 16px;
-    background: linear-gradient(135deg, rgba(77,166,255,0.06) 0%, rgba(139,92,246,0.06) 100%);
-    border: 1px solid rgba(77,166,255,0.15);
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.06) 0%, rgba(139,92,246,0.06) 100%);
+    border: 1px solid rgba(197, 160, 89, 0.15);
     border-radius: 14px;
     position: relative;
     overflow: hidden;
@@ -21,7 +21,7 @@
     right: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle at 30% 20%, rgba(77,166,255,0.04) 0%, transparent 50%);
+    background: radial-gradient(circle at 30% 20%, rgba(197, 160, 89, 0.04) 0%, transparent 50%);
     pointer-events: none;
 }
 
@@ -40,12 +40,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #4da6ff 0%, #8B5CF6 100%);
+    background: linear-gradient(135deg, #c5a059 0%, #8B5CF6 100%);
     border-radius: 12px;
     font-size: 1.1rem;
     color: #fff;
     flex-shrink: 0;
-    box-shadow: 0 4px 15px rgba(77,166,255,0.3);
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
 }
 
 .ai-sparkle {
@@ -96,7 +96,7 @@
 
 .ai-field-label i {
     font-size: 0.68rem;
-    color: #4da6ff;
+    color: #c5a059;
 }
 
 /* ── Select Dropdown ─────────────────────────────────────── */
@@ -122,8 +122,8 @@
 
 .ai-select:focus {
     outline: none;
-    border-color: #4da6ff;
-    box-shadow: 0 0 0 3px rgba(77,166,255,0.15);
+    border-color: #c5a059;
+    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
 }
 
 .ai-select option {
@@ -168,26 +168,26 @@
 }
 
 .ai-mood-pill:hover {
-    border-color: rgba(77,166,255,0.3);
-    background: rgba(77,166,255,0.06);
+    border-color: rgba(197, 160, 89, 0.3);
+    background: rgba(197, 160, 89, 0.06);
 }
 
 .ai-mood-pill:hover i { transform: scale(1.15); }
 
 .ai-mood-active {
-    border-color: rgba(77,166,255,0.5) !important;
-    background: rgba(77,166,255,0.12) !important;
-    box-shadow: 0 2px 10px rgba(77,166,255,0.15);
+    border-color: rgba(197, 160, 89, 0.5) !important;
+    background: rgba(197, 160, 89, 0.12) !important;
+    box-shadow: 0 2px 10px rgba(197, 160, 89, 0.15);
 }
 
-.ai-mood-active i { color: #4da6ff !important; }
-.ai-mood-active span { color: #4da6ff !important; }
+.ai-mood-active i { color: #c5a059 !important; }
+.ai-mood-active span { color: #c5a059 !important; }
 
 /* ── Preview Card ────────────────────────────────────────── */
 .ai-preview-card {
     margin-top: 12px;
     border-radius: 12px;
-    border: 1px solid rgba(77,166,255,0.2);
+    border: 1px solid rgba(197, 160, 89, 0.2);
     background: rgba(0,0,0,0.25);
     overflow: hidden;
     animation: ai-preview-slide-in 0.5s cubic-bezier(0.22,1,0.36,1);
@@ -210,7 +210,7 @@
 .ai-preview-badge {
     font-size: 0.65rem;
     font-weight: 700;
-    color: #4da6ff;
+    color: #c5a059;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -268,9 +268,9 @@
 }
 
 .ai-btn-shuffle:hover {
-    background: rgba(77,166,255,0.12);
-    color: #4da6ff;
-    border-color: rgba(77,166,255,0.3);
+    background: rgba(197, 160, 89, 0.12);
+    color: #c5a059;
+    border-color: rgba(197, 160, 89, 0.3);
     transform: rotate(180deg);
 }
 
@@ -280,7 +280,7 @@
     height: 38px;
     border-radius: 9px;
     border: none;
-    background: linear-gradient(135deg, #4da6ff 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, #c5a059 0%, #3b82f6 100%);
     color: #fff;
     font-size: 0.78rem;
     font-weight: 700;
@@ -291,12 +291,12 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    box-shadow: 0 4px 14px rgba(77,166,255,0.25);
+    box-shadow: 0 4px 14px rgba(197, 160, 89, 0.25);
 }
 
 .ai-btn-apply:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(77,166,255,0.35);
+    box-shadow: 0 6px 20px rgba(197, 160, 89, 0.35);
 }
 
 .ai-btn-apply:active {
@@ -309,7 +309,7 @@
     padding: 12px 20px;
     border-radius: 11px;
     border: none;
-    background: linear-gradient(135deg, #4da6ff 0%, #8B5CF6 50%, #4da6ff 100%);
+    background: linear-gradient(135deg, #c5a059 0%, #8B5CF6 50%, #c5a059 100%);
     background-size: 200% 200%;
     color: #fff;
     font-size: 0.85rem;
@@ -321,7 +321,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 4px 20px rgba(77,166,255,0.3);
+    box-shadow: 0 4px 20px rgba(197, 160, 89, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -340,7 +340,7 @@
 
 .ai-btn-generate:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(77,166,255,0.4);
+    box-shadow: 0 8px 28px rgba(197, 160, 89, 0.4);
     background-position: 100% 100%;
 }
 
@@ -437,9 +437,9 @@
 }
 
 .aibg-modal-content {
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.9) 0%, rgba(13, 17, 23, 0.95) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(77, 166, 255, 0.1) inset;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(197, 160, 89, 0.1) inset;
     border-radius: 20px;
     width: 100%;
     max-width: 800px;
@@ -473,8 +473,8 @@
 }
 
 .aibg-title i {
-    color: #4da6ff;
-    filter: drop-shadow(0 0 5px rgba(77, 166, 255, 0.6));
+    color: #c5a059;
+    filter: drop-shadow(0 0 5px rgba(197, 160, 89, 0.6));
 }
 
 .aibg-close {
@@ -547,18 +547,18 @@ html[dir="ltr"] .aibg-controls {
 }
 
 .ai-vibe-chip:hover {
-    background: rgba(77, 166, 255, 0.05);
-    border-color: rgba(77, 166, 255, 0.3);
+    background: rgba(197, 160, 89, 0.05);
+    border-color: rgba(197, 160, 89, 0.3);
 }
 
 .ai-vibe-chip.active {
-    background: linear-gradient(90deg, rgba(77, 166, 255, 0.15), rgba(139, 92, 246, 0.15));
-    border-color: #4da6ff;
-    box-shadow: 0 4px 15px rgba(77, 166, 255, 0.15);
+    background: linear-gradient(90deg, rgba(197, 160, 89, 0.15), rgba(139, 92, 246, 0.15));
+    border-color: #c5a059;
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.15);
 }
 
 .ai-vibe-chip.active i {
-    color: #4da6ff;
+    color: #c5a059;
 }
 
 /* Preview Area */
@@ -614,7 +614,7 @@ html[dir="ltr"] .aibg-controls {
     height: 48px;
     border-radius: 50%;
     background: #fff;
-    color: #1e293b;
+    color: #161b22;
     border: none;
     box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     cursor: pointer;

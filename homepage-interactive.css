@@ -90,19 +90,19 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4da6ff, #a78bfa);
+    background: linear-gradient(135deg, #d4af37, #c5a059);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: #0d1117;
     font-weight: 800;
     font-size: 0.95rem;
-    box-shadow: 0 4px 14px rgba(77, 166, 255, 0.45);
+    box-shadow: 0 4px 14px rgba(197, 160, 89, 0.4);
     flex-shrink: 0;
 }
 
 .nfc-card-info h3 {
-    color: #e8f4ff;
+    color: #f0f6fc;
     font-size: 0.95rem;
     font-weight: 700;
     line-height: 1.2;
@@ -110,13 +110,13 @@
 }
 
 .nfc-card-info span {
-    color: #7db8e8;
+    color: #e6ca85;
     font-size: 0.72rem;
 }
 
 .nfc-card-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(77, 166, 255, 0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.4), transparent);
 }
 
 .nfc-card-contacts {
@@ -129,7 +129,7 @@
     display: flex;
     align-items: center;
     gap: 0.45rem;
-    color: #bdd8f0;
+    color: #8b949e;
     font-size: 0.72rem;
     opacity: 0;
     transform: translateX(20px);
@@ -150,7 +150,7 @@
 .nfc-card-3d.tapped .contact-row:nth-child(3) { transition-delay: 0.35s; }
 
 .nfc-card-contacts .contact-row i {
-    color: #4da6ff;
+    color: #c5a059;
     width: 14px;
     font-size: 0.68rem;
     text-align: center;
@@ -163,22 +163,22 @@
 }
 
 .nfc-card-brand {
-    color: #4da6ff;
+    color: #c5a059;
     font-size: 0.6rem;
     font-weight: 800;
     letter-spacing: 1px;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
 .nfc-card-chip {
     display: flex;
     align-items: center;
     gap: 0.3rem;
-    background: rgba(77, 166, 255, 0.15);
-    border: 1px solid rgba(77, 166, 255, 0.4);
+    background: rgba(197, 160, 89, 0.15);
+    border: 1px solid rgba(197, 160, 89, 0.4);
     border-radius: 20px;
     padding: 0.15rem 0.55rem;
-    color: #4da6ff;
+    color: #c5a059;
     font-size: 0.6rem;
     font-weight: 700;
 }
@@ -205,7 +205,7 @@
 .nfc-phone-body {
     width: 100%;
     height: 100%;
-    background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+    background: linear-gradient(145deg, #1c2128, #161b22);
     border-radius: 14px;
     border: 2px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -233,7 +233,7 @@
 .nfc-phone-screen {
     width: 54px;
     height: 80px;
-    background: linear-gradient(180deg, #0d1b2a, #1b2838);
+    background: linear-gradient(180deg, #0d1117, #161b22);
     border-radius: 6px;
     display: flex;
     align-items: center;
@@ -242,7 +242,7 @@
 }
 
 .nfc-phone-screen i {
-    color: #4da6ff;
+    color: #c5a059;
     font-size: 1.6rem;
     animation: nfcPulse 2s ease-in-out infinite;
 }
@@ -447,12 +447,12 @@
 }
 
 .journey-step.active .journey-step-icon {
-    box-shadow: 0 0 30px rgba(77, 166, 255, 0.4);
+    box-shadow: 0 0 30px rgba(197, 160, 89, 0.4);
 }
 
 .journey-step:nth-child(1) .journey-step-icon {
-    background: linear-gradient(135deg, #4da6ff, #2d86ff);
-    color: #fff;
+    background: linear-gradient(135deg, #d4af37, #c5a059);
+    color: #0d1117;
 }
 
 .journey-step:nth-child(3) .journey-step-icon {
@@ -1023,13 +1023,13 @@
 }
 
 .physical-nfc-icon {
-    color: #4da6ff;
+    color: #c5a059;
     font-size: 1.5rem;
     opacity: 0.7;
 }
 
 .physical-brand {
-    color: #4da6ff;
+    color: #c5a059;
     font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 1.5px;

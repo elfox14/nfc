@@ -147,7 +147,7 @@ window.MobileUtils = {
         toast.id = 'mobile-toast-notification';
         const bgColor = type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)'
             : type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)'
-                : 'linear-gradient(135deg, #4da6ff, #3b82f6)';
+                : 'linear-gradient(135deg, #d4af37, #c5a059)';
         const icon = type === 'success' ? 'fa-check-circle'
             : type === 'error' ? 'fa-exclamation-circle'
                 : 'fa-info-circle';

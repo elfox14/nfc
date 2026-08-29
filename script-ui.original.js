@@ -554,7 +554,7 @@ const SuggestionEngine = {
     // ── Industry → Palette Map ──────────────────────────────
     industryPalettes: {
         technology: [
-            { name: 'Cyber Blue', bgStart: '#0a192f', bgEnd: '#020c1b', text: '#64ffda', tagline: '#4da6ff', accent: '#64ffda', btnBg: '#172a45', btnText: '#8892b0' },
+            { name: 'Executive Obsidian', bgStart: '#0d1117', bgEnd: '#161b22', text: '#f0f6fc', tagline: '#c5a059', accent: '#d4af37', btnBg: '#21262d', btnText: '#8b949e' },
             { name: 'Night Terminal', bgStart: '#1a1a2e', bgEnd: '#16213e', text: '#e94560', tagline: '#0f3460', accent: '#e94560', btnBg: '#0f3460', btnText: '#e94560' },
             { name: 'Matrix Green', bgStart: '#0D0D0D', bgEnd: '#1A1A1A', text: '#00ff41', tagline: '#008f11', accent: '#00ff41', btnBg: '#003B00', btnText: '#00ff41' },
         ],
@@ -564,7 +564,7 @@ const SuggestionEngine = {
             { name: 'Soft Care', bgStart: '#e0f2f1', bgEnd: '#b2dfdb', text: '#004d40', tagline: '#00897b', accent: '#26a69a', btnBg: '#00695c', btnText: '#ffffff' },
         ],
         business: [
-            { name: 'Navy Executive', bgStart: '#141d2b', bgEnd: '#0d1321', text: '#f0f0f0', tagline: '#4da6ff', accent: '#4da6ff', btnBg: '#1e2d40', btnText: '#aab8c2' },
+            { name: 'Champagne Gold', bgStart: '#0d1117', bgEnd: '#161b22', text: '#f0f6fc', tagline: '#c5a059', accent: '#c5a059', btnBg: '#21262d', btnText: '#8b949e' },
             { name: 'Charcoal Pro', bgStart: '#2d3436', bgEnd: '#1e272e', text: '#dfe6e9', tagline: '#74b9ff', accent: '#0984e3', btnBg: '#353b48', btnText: '#dfe6e9' },
             { name: 'Slate Authority', bgStart: '#1e3a5f', bgEnd: '#0b1d33', text: '#f8f9fa', tagline: '#a8d8ea', accent: '#3d5a80', btnBg: '#293241', btnText: '#e0fbfc' },
         ],
@@ -585,7 +585,7 @@ const SuggestionEngine = {
         ],
         realestate: [
             { name: 'Luxury Concrete', bgStart: '#434343', bgEnd: '#000000', text: '#ffffff', tagline: '#d4af37', accent: '#b8860b', btnBg: '#2c2c2c', btnText: '#d4af37' },
-            { name: 'Blueprint', bgStart: '#1a3a5c', bgEnd: '#0f2439', text: '#f8f9fa', tagline: '#74bde0', accent: '#4da6ff', btnBg: '#0f2439', btnText: '#74bde0' },
+            { name: 'Blueprint', bgStart: '#161b22', bgEnd: '#0d1117', text: '#f0f6fc', tagline: '#e6ca85', accent: '#c5a059', btnBg: '#21262d', btnText: '#8b949e' },
             { name: 'Warm Stone', bgStart: '#d4a373', bgEnd: '#a47148', text: '#ffffff', tagline: '#faedcd', accent: '#fefae0', btnBg: '#bc6c25', btnText: '#fefae0' },
         ],
         food: [
