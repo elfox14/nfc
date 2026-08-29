@@ -2,61 +2,61 @@
 
 /* 1. المتغيرات والألوان (Theming) */
 :root {
-    --page-bg: #dde3ea;
-    --card-bg: rgba(255, 255, 255, 0.75);
-    --glass-bg: rgba(255, 255, 255, 0.55);
-    --glass-border: rgba(255, 255, 255, 0.4);
-    --nav-bg: rgba(255, 255, 255, 0.88);
-    --text-primary: #1e2d40;
-    --text-primary-inverted: #e6f0f7;
-    --text-secondary: #5a6a7a;
-    --border-color: rgba(180, 200, 220, 0.6);
-    --border-color-light: #e2eaf2;
-    --card-shadow: 0 20px 40px rgba(30, 60, 100, 0.12), 0 4px 12px rgba(30, 60, 100, 0.08);
-    --glow-color: rgba(77, 166, 255, 0.35);
+    --page-bg: #e8ebef;
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(197, 160, 89, 0.25);
+    --nav-bg: rgba(255, 255, 255, 0.92);
+    --text-primary: #0d1117;
+    --text-primary-inverted: #f0f6fc;
+    --text-secondary: #57606a;
+    --border-color: rgba(197, 160, 89, 0.2);
+    --border-color-light: #e1e4e8;
+    --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+    --glow-color: rgba(197, 160, 89, 0.25);
 
     /* أزرار */
-    --button-secondary-bg: rgba(240, 245, 255, 0.8);
-    --button-secondary-hover: rgba(220, 235, 255, 0.9);
+    --button-secondary-bg: rgba(235, 238, 242, 0.9);
+    --button-secondary-hover: rgba(220, 225, 232, 1);
 
     /* ألوان العلامة التجارية */
-    --accent-color: #007bff;
-    --accent-hover-color: #0056b3;
-    --accent-primary: #4da6ff;
-    --accent-primary-glow: rgba(77, 166, 255, 0.4);
+    --accent-color: #c5a059;
+    --accent-hover-color: #d4af37;
+    --accent-primary: #c5a059;
+    --accent-primary-glow: rgba(197, 160, 89, 0.3);
 
-    --accent-secondary: #364f6b;
-    --accent-secondary-hover: #4a6a8a;
+    --accent-secondary: #21262d;
+    --accent-secondary-hover: #30363d;
 
-    --success-color: #2ecc71;
-    --success-hover-color: #27ae60;
+    --success-color: #2ea043;
+    --success-hover-color: #238636;
 
     /* لون زر التوقيع */
-    --purple-color: #8e44ad;
-    --purple-hover: #9b59b6;
+    --purple-color: #8957e5;
+    --purple-hover: #a371f7;
 
     /* ألوان الأيقونات */
-    --c-green: #28a745;
-    --c-blue: #007bff;
-    --c-yellow: #f1c40f;
+    --c-green: #2ea043;
+    --c-blue: #c5a059;
+    --c-yellow: #d4af37;
 }
 
 
 html.dark-mode {
-    --page-bg: #111a26;
-    --card-bg: rgba(28, 44, 62, 0.8);
-    --glass-bg: rgba(28, 44, 62, 0.55);
-    --glass-border: rgba(77, 166, 255, 0.15);
-    --nav-bg: rgba(15, 25, 38, 0.92);
-    --text-primary: #e6f0f7;
-    --text-primary-inverted: #1e2d40;
-    --text-secondary: #8ba4bc;
-    --border-color: rgba(77, 166, 255, 0.15);
-    --border-color-light: rgba(77, 166, 255, 0.08);
-    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(77, 166, 255, 0.08);
-    --glow-color: rgba(77, 166, 255, 0.25);
-    --button-secondary-bg: rgba(54, 79, 107, 0.7);
-    --button-secondary-hover: rgba(74, 106, 138, 0.8);
+    --page-bg: #0d1117;
+    --card-bg: rgba(22, 27, 34, 0.85);
+    --glass-bg: rgba(22, 27, 34, 0.65);
+    --glass-border: rgba(197, 160, 89, 0.2);
+    --nav-bg: rgba(13, 17, 23, 0.95);
+    --text-primary: #f0f6fc;
+    --text-primary-inverted: #0d1117;
+    --text-secondary: #8b949e;
+    --border-color: rgba(240, 246, 252, 0.08);
+    --border-color-light: rgba(197, 160, 89, 0.12);
+    --card-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(197, 160, 89, 0.2);
+    --glow-color: rgba(197, 160, 89, 0.2);
+    --button-secondary-bg: rgba(33, 38, 45, 0.8);
+    --button-secondary-hover: rgba(48, 54, 61, 0.9);
 }
 
 /* 2. التنسيقات العامة */

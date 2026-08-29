@@ -1,26 +1,31 @@
 /* ===========================================
    MC PRIME NFC - Homepage Styles
+   Executive Obsidian & Champagne Gold
    =========================================== */
 
 /* CSS Variables */
 :root {
-    --primary-color: #4da6ff;
-    --primary-hover: #00e5ff;
-    --secondary-color: #364f6b;
-    --background-color: #0b131e;
-    /* Darker, more premium background */
-    --surface-color: rgba(36, 52, 71, 0.4);
-    /* Glassmorphism base */
-    --text-primary-color: #ffffff;
-    --text-secondary-color: #a0aec0;
+    --primary-color: #c5a059;
+    --primary-hover: #d4af37;
+    --primary-light: #e6ca85;
+    --secondary-color: #21262d;
+    --secondary-hover: #30363d;
+    --background-color: #0d1117;
+    --background-elevated: #161b22;
+    --surface-color: rgba(22, 27, 34, 0.75);
+    --surface-solid: #161b22;
+    --text-primary-color: #f0f6fc;
+    --text-secondary-color: #8b949e;
+    --text-muted-color: #6e7681;
     --font-main: 'Tajawal', sans-serif;
     --font-headings: 'Cairo', sans-serif;
-    --shadow-lg: 0 15px 30px rgba(0, 0, 0, 0.5);
-    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.6);
-    --shadow-glow: 0 0 20px rgba(77, 166, 255, 0.4);
+    --shadow-lg: 0 15px 30px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.7);
+    --shadow-glow: 0 0 25px rgba(197, 160, 89, 0.2);
     --transition-fast: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     --transition-medium: 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+    --glass-border: 1px solid rgba(240, 246, 252, 0.08);
+    --gold-border: 1px solid rgba(197, 160, 89, 0.25);
 }
 
 /* Global Reset & Box Sizing */
@@ -74,9 +79,11 @@ img {
 }
 
 .navbar.scrolled {
-    background: rgba(28, 42, 59, 0.95);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+    background: rgba(13, 17, 23, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(197, 160, 89, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     padding: 10px 0;
 }
 
@@ -153,7 +160,7 @@ img {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(28, 42, 59, 0.98);
+    background: rgba(13, 17, 23, 0.98);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -171,7 +178,7 @@ img {
 .loading-spinner {
     width: 50px;
     height: 50px;
-    border: 4px solid rgba(77, 166, 255, 0.3);
+    border: 4px solid rgba(197, 160, 89, 0.2);
     border-top-color: var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -204,26 +211,31 @@ img {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-    color: #0b131e;
-    box-shadow: var(--shadow-glow);
+    background: linear-gradient(135deg, #d4af37, #c5a059);
+    color: #0d1117;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.25);
+    border: 1px solid rgba(230, 202, 133, 0.4);
     text-shadow: none;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--primary-hover), #7b2cbf);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(0, 229, 255, 0.5);
-    color: white;
+    background: linear-gradient(135deg, #e6ca85, #d4af37);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(197, 160, 89, 0.4);
+    color: #0d1117;
 }
 
 .btn-secondary {
     background-color: var(--secondary-color);
     color: var(--text-primary-color);
+    border: 1px solid rgba(240, 246, 252, 0.12);
 }
 
 .btn-secondary:hover {
-    background-color: #4a6a8a;
+    background-color: #30363d;
+    border-color: rgba(197, 160, 89, 0.3);
+    color: #f0f6fc;
     transform: translateY(-2px);
 }
 
@@ -233,7 +245,7 @@ img {
 }
 
 /* ===========================================
-   HERO SECTION - Animated Gradient Background
+   HERO SECTION - Obsidian & Gold Ambient Atmosphere
    =========================================== */
 .hero-section {
     padding: 140px 0 100px 0;
@@ -253,9 +265,9 @@ img {
     right: 0;
     bottom: 0;
     background:
-        radial-gradient(circle at 15% 50%, rgba(77, 166, 255, 0.15), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(123, 44, 191, 0.15), transparent 25%),
-        radial-gradient(circle at 50% 80%, rgba(0, 229, 255, 0.1), transparent 40%);
+        radial-gradient(circle at 50% 20%, rgba(197, 160, 89, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 15% 70%, rgba(33, 38, 45, 0.5) 0%, transparent 50%),
+        radial-gradient(circle at 85% 60%, rgba(197, 160, 89, 0.05) 0%, transparent 50%);
     background-color: var(--background-color);
     z-index: -2;
 }
@@ -268,8 +280,7 @@ img {
     right: 0;
     bottom: 0;
     background:
-        radial-gradient(circle at 20% 80%, rgba(77, 166, 255, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(77, 166, 255, 0.1) 0%, transparent 50%);
+        radial-gradient(circle at 50% 100%, rgba(197, 160, 89, 0.06) 0%, transparent 50%);
     z-index: -1;
 }
 
@@ -335,20 +346,19 @@ img {
     width: 320px;
     height: 190px;
     margin: 0 auto;
-    background: rgba(45, 74, 106, 0.3);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 20px;
-    box-shadow: var(--shadow-xl), inset 0 0 20px rgba(255, 255, 255, 0.05);
+    background: linear-gradient(145deg, #1c2128, #161b22);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 0 0 1px rgba(197, 160, 89, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 2rem;
+    color: var(--primary-light);
+    font-size: 1.8rem;
     font-weight: 800;
     letter-spacing: 2px;
     animation: floatCard 8s ease-in-out infinite;
-    border: 1px solid rgba(255, 255, 255, 0.15);
     position: relative;
     overflow: hidden;
 }
@@ -360,9 +370,9 @@ img {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    background: linear-gradient(45deg, transparent, rgba(197, 160, 89, 0.12), transparent);
     transform: rotate(45deg);
-    animation: shine 4s infinite;
+    animation: shine 5s infinite;
 }
 
 @keyframes shine {
@@ -380,11 +390,11 @@ img {
 
     0%,
     100% {
-        transform: translateY(0) rotateX(5deg) rotateY(-5deg);
+        transform: translateY(0) rotateX(4deg) rotateY(-4deg);
     }
 
     50% {
-        transform: translateY(-15px) rotateX(-5deg) rotateY(5deg);
+        transform: translateY(-12px) rotateX(-4deg) rotateY(4deg);
     }
 }
 
@@ -405,7 +415,9 @@ img {
    =========================================== */
 .stats-section {
     padding: 60px 0;
-    background: linear-gradient(135deg, rgba(77, 166, 255, 0.1), rgba(45, 134, 255, 0.05));
+    background: linear-gradient(180deg, rgba(22, 27, 34, 0.8), rgba(13, 17, 23, 0.95));
+    border-top: 1px solid rgba(197, 160, 89, 0.15);
+    border-bottom: 1px solid rgba(197, 160, 89, 0.15);
     display: flex;
     justify-content: center;
     gap: 4rem;
@@ -421,7 +433,7 @@ img {
     font-size: 3rem;
     font-weight: 700;
     font-family: var(--font-headings);
-    color: var(--primary-color);
+    color: var(--primary-light);
     display: block;
 }
 
@@ -449,7 +461,7 @@ section h2 {
     font-size: 2.5rem;
     font-weight: 800;
     margin-bottom: 3.5rem;
-    color: white;
+    color: var(--text-primary-color);
     letter-spacing: -0.5px;
 }
 
@@ -503,13 +515,13 @@ section h2 {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     padding: 2.5rem 2rem;
-    border-radius: 20px;
+    border-radius: 16px;
     text-align: center;
-    border: var(--glass-border);
+    border: 1px solid rgba(240, 246, 252, 0.08);
     transition: all var(--transition-medium);
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .feature-card::before {
@@ -518,18 +530,18 @@ section h2 {
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
     transform: scaleX(0);
     transition: transform var(--transition-fast);
     transform-origin: left;
 }
 
 .feature-card:hover {
-    transform: translateY(-12px);
-    box-shadow: var(--shadow-xl), 0 0 20px rgba(77, 166, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.2);
-    background: rgba(36, 52, 71, 0.6);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(197, 160, 89, 0.15);
+    border-color: rgba(197, 160, 89, 0.3);
+    background: rgba(22, 27, 34, 0.9);
 }
 
 .feature-card:hover::before {

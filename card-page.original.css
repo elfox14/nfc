@@ -1,10 +1,10 @@
 :root {
-    --bg-color: #f4f7f6;
-    --card-bg-color: #ffffff;
-    --primary-text-color: #333;
-    --secondary-text-color: #777;
-    --accent-color: #007bff;
-    --accent-hover-color: #0056b3;
+    --bg-color: #0d1117;
+    --card-bg-color: #161b22;
+    --primary-text-color: #f0f6fc;
+    --secondary-text-color: #8b949e;
+    --accent-color: #c5a059;
+    --accent-hover-color: #d4af37;
 }
 
 body {
@@ -22,7 +22,7 @@ body {
 .card-container {
     background-color: var(--card-bg-color);
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(197, 160, 89, 0.2);
     max-width: 400px;
     width: 100%;
     overflow: hidden;
@@ -31,8 +31,8 @@ body {
 
 .card-header {
     padding: 40px 20px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #e9ecef;
+    background-color: #1c2128;
+    border-bottom: 1px solid rgba(240, 246, 252, 0.08);
 }
 
 .profile-picture {
@@ -41,8 +41,8 @@ body {
     border-radius: 50%;
     overflow: hidden;
     margin: 0 auto 20px auto;
-    border: 4px solid var(--accent-color);
-    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 4px 20px rgba(197, 160, 89, 0.3);
 }
 
 .profile-picture img {

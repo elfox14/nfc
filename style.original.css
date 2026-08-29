@@ -1,26 +1,36 @@
 :root {
-    --text-primary: #e6f0f7;
-    --text-secondary: #bcc9d4;
-    --accent-primary: #4da6ff;
-    --accent-secondary: #364f6b;
-    --button-text: #ffffff;
-    --page-bg: #1c2a3b;
-    --form-bg: #243447;
-    --danger-color: #e74c3c;
-    --success-color: #2ecc71;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --accent-primary: #c5a059;
+    --accent-primary-hover: #d4af37;
+    --accent-primary-light: #e6ca85;
+    --accent-secondary: #21262d;
+    --accent-secondary-hover: #30363d;
+    --button-text: #0d1117;
+    --page-bg: #0d1117;
+    --form-bg: #161b22;
+    --border-subtle: rgba(240, 246, 252, 0.08);
+    --border-accent: rgba(197, 160, 89, 0.25);
+    --danger-color: #f85149;
+    --success-color: #2ea043;
     --toolbar-height: 60px;
 }
 
 [data-theme="light"] {
-    --text-primary: #2c3e50;
-    --text-secondary: #5a6b7c;
-    --accent-primary: #2980b9;
-    --accent-secondary: #dcdde1;
+    --text-primary: #1f2328;
+    --text-secondary: #656d76;
+    --accent-primary: #9e7a2f;
+    --accent-primary-hover: #856322;
+    --accent-primary-light: #b38e3e;
+    --accent-secondary: #d0d7de;
+    --accent-secondary-hover: #afb8c1;
     --button-text: #ffffff;
-    --page-bg: #f5f6fa;
+    --page-bg: #f6f8fa;
     --form-bg: #ffffff;
-    --danger-color: #e74c3c;
-    --success-color: #27ae60;
+    --border-subtle: rgba(31, 35, 40, 0.12);
+    --border-accent: rgba(158, 122, 47, 0.3);
+    --danger-color: #cf222e;
+    --success-color: #1a7f37;
 }
 
 html {

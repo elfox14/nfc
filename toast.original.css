@@ -77,8 +77,10 @@
 
 /* Dark mode support */
 html.dark-mode .toast {
-    background: #2c3e50;
-    color: #ecf0f1;
+    background: #161b22;
+    color: #f0f6fc;
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
 /* Mobile adjustments */
