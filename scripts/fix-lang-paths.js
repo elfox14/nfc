@@ -23,7 +23,7 @@ files.forEach(file => {
     content = content.replace(/href=["']\/nfc\/#([^"']*)["']/g, (m, hash) => isEn ? `href="index-en.html#${hash}"` : `href="index.html#${hash}"`);
 
     // 3. Fix /nfc/*.html links
-    content = content.replace(/href=["']\/nfc\/([a-zA-Z0-9_\-]+\.html(?:#[^"']*)?)["']/g, 'href="$1"');
+    content = content.replace(/href=["']\/nfc\/([a-zA-Z0-9_-]+\.html(?:#[^"']*)?)["']/g, 'href="$1"');
 
     // 4. Standardize onclick="switchLang('...')" to switchLanguage('...')
     content = content.replace(/switchLang\(/g, 'switchLanguage(');

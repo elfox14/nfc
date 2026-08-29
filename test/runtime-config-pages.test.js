@@ -15,8 +15,8 @@ const apiPages = [
 describe('Public API runtime configuration', () => {
   test.each(apiPages)('%s loads runtime config before API/auth code', (file) => {
     const html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
-    const runtimeIndex = html.indexOf('/nfc/runtime-config.js?v=1.0');
-    const authIndex = html.indexOf('/nfc/auth.js');
+    const runtimeIndex = html.search(/(?:\/nfc\/)?runtime-config\.js\?v=1\.0/);
+    const authIndex = html.search(/(?:\/nfc\/)?auth\.js/);
     const firstApiIndex = html.search(/Auth\.|\/api\//);
 
     expect(runtimeIndex).toBeGreaterThan(-1);

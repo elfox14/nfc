@@ -19,7 +19,7 @@ function analyze(fileName) {
     const source = fs.readFileSync(filePath, 'utf8');
     const ids = new Map();
 
-    for (const match of source.matchAll(/\bid\s*=\s*["']([^"']+)["']/gi)) {
+    for (const match of source.matchAll(/(?<![\w-])id\s*=\s*["']([^"']+)["']/gi)) {
         const id = match[1].trim();
         ids.set(id, (ids.get(id) || 0) + 1);
     }
