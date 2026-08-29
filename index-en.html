@@ -90,7 +90,7 @@
                 <li><a href="contact-en.html">Contact</a></li>
             </ul>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <a href="index.html" class="lang-btn" aria-label="التبديل إلى العربية" onclick="if(window.switchLanguage){switchLanguage('ar');return false;}">عربي</a>
+                <a href="index.html" class="lang-btn" aria-label="التبديل إلى العربية">عربي</a>
                 <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started Free</a>
             </div>
             <div class="nav-toggle" id="nav-toggle" aria-label="Open Menu">
@@ -120,10 +120,10 @@
                             Replace hundreds of discarded paper cards with one executive NFC smart card. Share your contact details, website, and portfolio with a single tap on any smartphone.
                         </p>
 
-                        <!-- Live Name Input -->
+                        <!-- Live Name Input + Design Free Button -->
                         <div class="hero-live-try-box">
                             <input type="text" id="live-card-input" placeholder="Type your name to preview live..." value="" oninput="updateLiveCardName(this.value)">
-                            <button onclick="window.location.href='editor-en.html'">Design Free</button>
+                            <a href="editor-en.html" class="hero-try-btn" id="hero-cta-btn" onclick="onDesignNowClick(this)">Design Free</a>
                         </div>
 
                         <!-- Trust Bullets -->
@@ -180,7 +180,7 @@
 
                         <!-- Card Action Controls -->
                         <div class="card-flip-action-bar">
-                            <button type="button" class="card-flip-btn" id="flip-btn-action" onclick="toggleCardFlip(); return false;">
+                            <button type="button" class="card-flip-btn" id="flip-btn-action" onclick="toggleCardFlip(event)">
                                 <i class="fas fa-sync-alt"></i> Flip Card (Front / Back)
                             </button>
                             <a href="editor-en.html" class="card-flip-btn" style="background:linear-gradient(135deg, #d4af37, #c5a059); color:#0d1117; border:none;">
@@ -380,11 +380,15 @@
     <!-- Interactive Scripts for Hero 3D Card -->
     <script>
         function toggleCardFlip(e) {
-            if (e && e.stopPropagation) e.stopPropagation();
+            if (e) {
+                if (e.preventDefault) e.preventDefault();
+                if (e.stopPropagation) e.stopPropagation();
+            }
             var flipper = document.getElementById('live-flipper-card');
             if (flipper) {
                 flipper.classList.toggle('flipped');
             }
+            return false;
         }
 
         function updateLiveCardName(val) {
@@ -394,23 +398,12 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            var flipper = document.getElementById('live-flipper-card');
-            if (flipper) {
-                flipper.addEventListener('click', function(e) {
-                    if (e.target.closest('.card-flip-btn')) return;
-                    toggleCardFlip();
-                });
+        function onDesignNowClick(anchor) {
+            var nameInput = document.getElementById('live-card-input');
+            if (nameInput && nameInput.value && nameInput.value.trim()) {
+                anchor.href = 'editor-en.html?name=' + encodeURIComponent(nameInput.value.trim());
             }
-            var flipBtn = document.getElementById('flip-btn-action');
-            if (flipBtn) {
-                flipBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleCardFlip();
-                });
-            }
-        });
+        }
     </script>
 </body>
 </html>
