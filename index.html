@@ -77,18 +77,13 @@
     <link rel="stylesheet" href="cookie-consent.css">
     <link rel="stylesheet" href="premium-ui.css">
 
-    <!-- Language Switcher & Auth -->
+    <!-- Scripts -->
     <script src="lang-switcher.js" defer></script>
     <script src="auth.js?v=3.5" defer></script>
     <script src="premium-ui.js" defer></script>
 </head>
 
 <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
-            style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-
     <!-- Reading Progress Bar -->
     <div class="reading-progress" id="reading-progress"></div>
 
@@ -113,13 +108,12 @@
                 <li><a href="index.html#how-it-works">كيف يعمل</a></li>
                 <li><a href="index.html#comparison">المقارنة والتوفير</a></li>
                 <li><a href="index.html#features">المميزات</a></li>
-                <li><a href="index.html#materials">الخامات</a></li>
                 <li><a href="gallery.html">المعرض</a></li>
                 <li><a href="blog.html">المدونة</a></li>
                 <li><a href="contact.html">اتصل بنا</a></li>
             </ul>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <button onclick="switchLanguage('en')" class="lang-btn" aria-label="Switch to English">EN</button>
+                <a href="index-en.html" class="lang-btn" aria-label="Switch to English" onclick="if(window.switchLanguage){switchLanguage('en');return false;}">EN</a>
                 <a href="editor.html" class="btn btn-primary nav-cta">ابدأ مجاناً</a>
             </div>
             <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
@@ -153,7 +147,7 @@
 
                         <!-- Live Interactive Name Input -->
                         <div class="hero-live-try-box">
-                            <input type="text" id="live-card-input" placeholder="اكتب اسمك لمعاينة البطاقة فوراً..." value="المهندس / فيصل الشمري" oninput="updateLiveCardName(this.value)">
+                            <input type="text" id="live-card-input" placeholder="اكتب اسمك هنا لتجربة البطاقة فوراً..." value="" oninput="updateLiveCardName(this.value)">
                             <button onclick="window.location.href='editor.html'">صمم الآن مجاناً</button>
                         </div>
 
@@ -161,7 +155,7 @@
                         <div class="hero-trust-bullets">
                             <span><i class="fas fa-check-circle"></i> تصميم فوري 100% مجاناً</span>
                             <span><i class="fas fa-check-circle"></i> يعمل بدون أي تطبيق</span>
-                            <span><i class="fas fa-check-circle"></i> متوافق مع Apple & Android</span>
+                            <span><i class="fas fa-check-circle"></i> متوافق مع Apple &amp; Android</span>
                         </div>
                     </div>
 
@@ -179,8 +173,8 @@
                                     </div>
                                 </div>
                                 <div class="card-center-info">
-                                    <div class="card-person-name" id="card-front-name">المهندس / فيصل الشمري</div>
-                                    <div class="card-person-title" id="card-front-title">رئيس مجلس الإدارة &amp; مستثمر</div>
+                                    <div class="card-person-name" id="card-front-name">اسمك الكامل هنا</div>
+                                    <div class="card-person-title" id="card-front-title">المسمى الوظيفي / الشركة</div>
                                 </div>
                                 <div class="card-bottom-row">
                                     <span class="card-website-tag">www.mcprim.com</span>
@@ -211,7 +205,7 @@
 
                         <!-- Card Action Controls -->
                         <div class="card-flip-action-bar">
-                            <button class="card-flip-btn" onclick="toggleCardFlip()">
+                            <button type="button" class="card-flip-btn" id="flip-btn-action" onclick="toggleCardFlip(); return false;">
                                 <i class="fas fa-sync-alt"></i> اقلب البطاقة (الوجه الخلفي / الأمامي)
                             </button>
                             <a href="editor.html" class="card-flip-btn" style="background:linear-gradient(135deg, #d4af37, #c5a059); color:#0d1117; border:none;">
@@ -220,30 +214,6 @@
                         </div>
                     </div>
 
-                </div>
-            </div>
-        </section>
-
-        <!-- ===========================================
-             TRUST STATS STRIP
-             =========================================== -->
-        <section class="trust-stats-strip" style="background:rgba(22, 27, 34, 0.4); border-top:1px solid rgba(240, 246, 252, 0.06); border-bottom:1px solid rgba(240, 246, 252, 0.06); padding:35px 0;">
-            <div class="container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; text-align:center;">
-                <div>
-                    <div style="font-family:'Cairo'; font-size:2.2rem; font-weight:900; color:var(--primary-color);">+50,000</div>
-                    <div style="color:#8b949e; font-size:0.9rem;">بطاقة رقمية تم إنشاؤها</div>
-                </div>
-                <div>
-                    <div style="font-family:'Cairo'; font-size:2.2rem; font-weight:900; color:var(--primary-color);">0.1s</div>
-                    <div style="color:#8b949e; font-size:0.9rem;">سرعة نقل البيانات عبر NFC</div>
-                </div>
-                <div>
-                    <div style="font-family:'Cairo'; font-size:2.2rem; font-weight:900; color:var(--primary-color);">100%</div>
-                    <div style="color:#8b949e; font-size:0.9rem;">متوافق مع Apple &amp; Android</div>
-                </div>
-                <div>
-                    <div style="font-family:'Cairo'; font-size:2.2rem; font-weight:900; color:var(--primary-color);">98%</div>
-                    <div style="color:#8b949e; font-size:0.9rem;">توفير في ميزانية الطباعة</div>
                 </div>
             </div>
         </section>
@@ -368,44 +338,6 @@
         </section>
 
         <!-- ===========================================
-             MATERIALS STUDIO
-             =========================================== -->
-        <section id="materials" style="padding:70px 0; border-top:1px solid rgba(240, 246, 252, 0.08);" aria-labelledby="materials-title">
-            <div class="container">
-                <div style="text-align:center; max-width:700px; margin:0 auto 35px;">
-                    <div class="hero-story-badge"><i class="fas fa-gem"></i> الخامات الفعلية</div>
-                    <h2 id="materials-title" style="font-family:'Cairo'; font-size:2.4rem; font-weight:800; color:#fff;">
-                        تشطيبات فاخرة مصممة لتدوم وتلفت الأنظار
-                    </h2>
-                    <p style="color:#8b949e;">اختر الخامة التي تناسب مكانتك عند طلب بطاقتك المطبوعة</p>
-                </div>
-
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:20px;">
-                    <div class="story-step-card" style="text-align:center;">
-                        <div style="width:60px; height:60px; border-radius:50%; margin:0 auto 15px; background:#161a20; border:2px solid rgba(255,255,255,0.15); box-shadow:0 6px 20px rgba(0,0,0,0.8);"></div>
-                        <h3>معدن أسود مات</h3>
-                        <p style="font-size:0.85rem;">معدن فاخر غير لامع بنقش ليزري دقيق لكبار التنفيذيين.</p>
-                    </div>
-                    <div class="story-step-card" style="text-align:center;">
-                        <div style="width:60px; height:60px; border-radius:50%; margin:0 auto 15px; background:linear-gradient(135deg, #d4af37, #855e1a); border:2px solid rgba(212,175,55,0.4); box-shadow:0 6px 20px rgba(212,175,55,0.3);"></div>
-                        <h3>ذهب شامباني 24K</h3>
-                        <p style="font-size:0.85rem;">طلاء ذهبي براق ولمسات كلاسيكية لأصحاب الأعمال.</p>
-                    </div>
-                    <div class="story-step-card" style="text-align:center;">
-                        <div style="width:60px; height:60px; border-radius:50%; margin:0 auto 15px; background:linear-gradient(135deg, #8a5a36, #5c3a21); border:2px solid rgba(138,90,54,0.4);"></div>
-                        <h3>خشب بامبو طبيعي</h3>
-                        <p style="font-size:0.85rem;">خامة بيئية مستدامة ونقش دافئ يعكس حب الطبيعة.</p>
-                    </div>
-                    <div class="story-step-card" style="text-align:center;">
-                        <div style="width:60px; height:60px; border-radius:50%; margin:0 auto 15px; background:rgba(255,255,255,0.2); backdrop-filter:blur(8px); border:2px solid rgba(255,255,255,0.25);"></div>
-                        <h3>أكريليك مصنفر شفاف</h3>
-                        <p style="font-size:0.85rem;">تصميم عصري مستقبلي شبه شفاف يواكب التكنولوجيا.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===========================================
              FAQ SECTION (ACCORDION)
              =========================================== -->
         <section id="faq" style="padding:70px 0; border-top:1px solid rgba(240, 246, 252, 0.08);" aria-labelledby="faq-title">
@@ -430,7 +362,7 @@
 
                     <details class="story-step-card" style="padding:20px 25px; cursor:pointer;">
                         <summary style="font-weight:700; font-size:1.1rem; color:#fff; list-style:none; display:flex; justify-content:space-between; align-items:center;">
-                            <span>هل يمكنني تعديل بياناتي بعد طباعة البطاقة الفعلية؟</span>
+                            <span>هل يمكنني تعديل بياناتي بعد حفظ البطاقة؟</span>
                             <i class="fas fa-chevron-down" style="color:var(--primary-color); font-size:0.9rem;"></i>
                         </summary>
                         <p style="margin-top:12px; color:#8b949e; font-size:0.95rem; line-height:1.6;">
@@ -444,7 +376,7 @@
                             <i class="fas fa-chevron-down" style="color:var(--primary-color); font-size:0.9rem;"></i>
                         </summary>
                         <p style="margin-top:12px; color:#8b949e; font-size:0.95rem; line-height:1.6;">
-                            بعد تصميم بطاقتك وحفظ رابطك، يمكنك الانتقال إلى صفحة <a href="contact.html" style="color:var(--primary-color); text-decoration:none; font-weight:700;">اتصل بنا</a> وتحديد الخامة المطلوبة وسنقوم ببرمجة وشحن بطاقتك إلى باب منزلك مع ضمان استبدال مجاني.
+                            بعد تصميم بطاقتك وحفظ رابطك، يمكنك الانتقال إلى صفحة <a href="contact.html" style="color:var(--primary-color); text-decoration:none; font-weight:700;">اتصل بنا</a> وتحديد الكمية وسنقوم ببرمجة وشحن بطاقتك إلى باب منزلك مع ضمان استبدال مجاني.
                         </p>
                     </details>
                 </div>
@@ -526,7 +458,8 @@
 
     <!-- Interactive Scripts for Hero 3D Card -->
     <script>
-        function toggleCardFlip() {
+        function toggleCardFlip(e) {
+            if (e && e.stopPropagation) e.stopPropagation();
             var flipper = document.getElementById('live-flipper-card');
             if (flipper) {
                 flipper.classList.toggle('flipped');
@@ -539,6 +472,25 @@
                 nameElem.textContent = val.trim() || 'اسمك الكامل هنا';
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var flipper = document.getElementById('live-flipper-card');
+            if (flipper) {
+                flipper.addEventListener('click', function(e) {
+                    // Avoid double flipping when clicking button inside
+                    if (e.target.closest('.card-flip-btn')) return;
+                    toggleCardFlip();
+                });
+            }
+            var flipBtn = document.getElementById('flip-btn-action');
+            if (flipBtn) {
+                flipBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleCardFlip();
+                });
+            }
+        });
     </script>
 </body>
 </html>

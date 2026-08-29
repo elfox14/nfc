@@ -54,7 +54,7 @@
     <link rel="stylesheet" href="cookie-consent.css">
     <link rel="stylesheet" href="premium-ui.css">
 
-    <!-- Language Switcher & Auth -->
+    <!-- Scripts -->
     <script src="lang-switcher.js" defer></script>
     <script src="auth.js?v=3.5" defer></script>
     <script src="premium-ui.js" defer></script>
@@ -85,13 +85,12 @@
                 <li><a href="index-en.html#how-it-works">How It Works</a></li>
                 <li><a href="index-en.html#comparison">Comparison</a></li>
                 <li><a href="index-en.html#features">Features</a></li>
-                <li><a href="index-en.html#materials">Materials</a></li>
                 <li><a href="gallery-en.html">Gallery</a></li>
                 <li><a href="blog-en.html">Blog</a></li>
                 <li><a href="contact-en.html">Contact</a></li>
             </ul>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <button onclick="switchLanguage('ar')" class="lang-btn" aria-label="التبديل إلى العربية">عربي</button>
+                <a href="index.html" class="lang-btn" aria-label="التبديل إلى العربية" onclick="if(window.switchLanguage){switchLanguage('ar');return false;}">عربي</a>
                 <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started Free</a>
             </div>
             <div class="nav-toggle" id="nav-toggle" aria-label="Open Menu">
@@ -123,7 +122,7 @@
 
                         <!-- Live Name Input -->
                         <div class="hero-live-try-box">
-                            <input type="text" id="live-card-input" placeholder="Type your name to preview live..." value="Faisal Al-Shammari, P.E." oninput="updateLiveCardName(this.value)">
+                            <input type="text" id="live-card-input" placeholder="Type your name to preview live..." value="" oninput="updateLiveCardName(this.value)">
                             <button onclick="window.location.href='editor-en.html'">Design Free</button>
                         </div>
 
@@ -149,8 +148,8 @@
                                     </div>
                                 </div>
                                 <div class="card-center-info">
-                                    <div class="card-person-name" id="card-front-name">Faisal Al-Shammari, P.E.</div>
-                                    <div class="card-person-title" id="card-front-title">Chairman &amp; Managing Director</div>
+                                    <div class="card-person-name" id="card-front-name">Your Full Name Here</div>
+                                    <div class="card-person-title" id="card-front-title">Job Title / Company</div>
                                 </div>
                                 <div class="card-bottom-row">
                                     <span class="card-website-tag">www.mcprim.com</span>
@@ -181,7 +180,7 @@
 
                         <!-- Card Action Controls -->
                         <div class="card-flip-action-bar">
-                            <button class="card-flip-btn" onclick="toggleCardFlip()">
+                            <button type="button" class="card-flip-btn" id="flip-btn-action" onclick="toggleCardFlip(); return false;">
                                 <i class="fas fa-sync-alt"></i> Flip Card (Front / Back)
                             </button>
                             <a href="editor-en.html" class="card-flip-btn" style="background:linear-gradient(135deg, #d4af37, #c5a059); color:#0d1117; border:none;">
@@ -190,28 +189,6 @@
                         </div>
                     </div>
 
-                </div>
-            </div>
-        </section>
-
-        <!-- TRUST STATS -->
-        <section class="trust-stats-strip" style="background:rgba(22, 27, 34, 0.4); border-top:1px solid rgba(240, 246, 252, 0.06); border-bottom:1px solid rgba(240, 246, 252, 0.06); padding:35px 0;">
-            <div class="container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; text-align:center;">
-                <div>
-                    <div style="font-family:'Cairo'; font-size:2.2rem; font-weight:900; color:var(--primary-color);">+50,000</div>
-                    <div style="color:#8b949e; font-size:0.9rem;">Digital Cards Created</div>
-                </div>
-                <div>
-                    <div style="font-family:'Cairo'; font-size:2.2rem; font-weight:900; color:var(--primary-color);">0.1s</div>
-                    <div style="color:#8b949e; font-size:0.9rem;">Instant NFC Transfer Speed</div>
-                </div>
-                <div>
-                    <div style="font-family:'Cairo'; font-size:2.2rem; font-weight:900; color:var(--primary-color);">100%</div>
-                    <div style="color:#8b949e; font-size:0.9rem;">iOS &amp; Android Compatible</div>
-                </div>
-                <div>
-                    <div style="font-family:'Cairo'; font-size:2.2rem; font-weight:900; color:var(--primary-color);">98%</div>
-                    <div style="color:#8b949e; font-size:0.9rem;">Print Budget Savings</div>
                 </div>
             </div>
         </section>
@@ -329,42 +306,6 @@
             </div>
         </section>
 
-        <!-- MATERIALS STUDIO -->
-        <section id="materials" style="padding:70px 0; border-top:1px solid rgba(240, 246, 252, 0.08);" aria-labelledby="materials-title">
-            <div class="container">
-                <div style="text-align:center; max-width:700px; margin:0 auto 35px;">
-                    <div class="hero-story-badge"><i class="fas fa-gem"></i> Physical Finishes</div>
-                    <h2 id="materials-title" style="font-family:'Cairo'; font-size:2.4rem; font-weight:800; color:#fff;">
-                        Bespoke Materials Crafted to Impress
-                    </h2>
-                    <p style="color:#8b949e;">Select your favorite physical card finish when ordering your custom NFC card</p>
-                </div>
-
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:20px;">
-                    <div class="story-step-card" style="text-align:center;">
-                        <div style="width:60px; height:60px; border-radius:50%; margin:0 auto 15px; background:#161a20; border:2px solid rgba(255,255,255,0.15); box-shadow:0 6px 20px rgba(0,0,0,0.8);"></div>
-                        <h3>Matte Black Metal</h3>
-                        <p style="font-size:0.85rem;">Brushed obsidian metallic finish with precision laser engraving.</p>
-                    </div>
-                    <div class="story-step-card" style="text-align:center;">
-                        <div style="width:60px; height:60px; border-radius:50%; margin:0 auto 15px; background:linear-gradient(135deg, #d4af37, #855e1a); border:2px solid rgba(212,175,55,0.4); box-shadow:0 6px 20px rgba(212,175,55,0.3);"></div>
-                        <h3>24K Champagne Gold</h3>
-                        <p style="font-size:0.85rem;">Luxury gold plating for board members and executive leaders.</p>
-                    </div>
-                    <div class="story-step-card" style="text-align:center;">
-                        <div style="width:60px; height:60px; border-radius:50%; margin:0 auto 15px; background:linear-gradient(135deg, #8a5a36, #5c3a21); border:2px solid rgba(138,90,54,0.4);"></div>
-                        <h3>Natural Bamboo Wood</h3>
-                        <p style="font-size:0.85rem;">Sustainable organic finish with distinct tactile warmth.</p>
-                    </div>
-                    <div class="story-step-card" style="text-align:center;">
-                        <div style="width:60px; height:60px; border-radius:50%; margin:0 auto 15px; background:rgba(255,255,255,0.2); backdrop-filter:blur(8px); border:2px solid rgba(255,255,255,0.25);"></div>
-                        <h3>Frosted Acrylic</h3>
-                        <p style="font-size:0.85rem;">Futuristic translucent finish with minimalist elegance.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- FINAL CTA -->
         <section style="padding:80px 0; background:linear-gradient(135deg, rgba(197, 160, 89, 0.12) 0%, rgba(13, 17, 23, 0.95) 100%); border-top:1px solid rgba(197, 160, 89, 0.25); text-align:center;">
             <div class="container" style="max-width:750px;">
@@ -438,7 +379,8 @@
 
     <!-- Interactive Scripts for Hero 3D Card -->
     <script>
-        function toggleCardFlip() {
+        function toggleCardFlip(e) {
+            if (e && e.stopPropagation) e.stopPropagation();
             var flipper = document.getElementById('live-flipper-card');
             if (flipper) {
                 flipper.classList.toggle('flipped');
@@ -448,9 +390,27 @@
         function updateLiveCardName(val) {
             var nameElem = document.getElementById('card-front-name');
             if (nameElem) {
-                nameElem.textContent = val.trim() || 'Your Full Name';
+                nameElem.textContent = val.trim() || 'Your Full Name Here';
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var flipper = document.getElementById('live-flipper-card');
+            if (flipper) {
+                flipper.addEventListener('click', function(e) {
+                    if (e.target.closest('.card-flip-btn')) return;
+                    toggleCardFlip();
+                });
+            }
+            var flipBtn = document.getElementById('flip-btn-action');
+            if (flipBtn) {
+                flipBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleCardFlip();
+                });
+            }
+        });
     </script>
 </body>
 </html>
