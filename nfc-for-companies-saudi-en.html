@@ -12,6 +12,10 @@
     <!-- End Google Tag Manager -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap"></noscript>
     <title>NFC Cards for Saudi Companies - MC PRIME</title>
     <meta name="description"
         content="Present your brand in an innovative way with NFC cards for Saudi companies. Instant updates, cost savings, and unified identity aligned with Vision 2030." />
@@ -32,9 +36,8 @@
   <meta property="twitter:description" content="Present your brand in an innovative way with NFC cards for Saudi companies. Instant updates, cost savings, and unified identity aligned with Vision 2030." />
   <meta property="twitter:image" content="https://www.mcprim.com/nfc/og-image.png" />
 
-  <link rel="icon" id="favicon" href="/nfc/mc-prime-nfc.png" type="image/png" />
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Tajawal:wght@400;700&display=swap"
-        rel="stylesheet" />
+  <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png" />
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <style>
         body {
@@ -122,8 +125,8 @@
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
         crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="/nfc/cookie-consent.css">
-    <link rel="stylesheet" href="/nfc/premium-ui.css">
+    <link rel="stylesheet" href="cookie-consent.css">
+    <link rel="stylesheet" href="premium-ui.css">
 
     <script type="application/ld+json">
     {
@@ -139,6 +142,7 @@
   "areaServed": "SA"
 }
     </script>
+    <script src="lang-switcher.js" defer></script>
 </head>
 
 <body>
@@ -146,6 +150,11 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLL5SLNM" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
+  <div style="max-width: 800px; margin: 20px auto 0; display: flex; justify-content: space-between; align-items: center; padding: 0 15px;">
+    <a href="index-en.html" style="color: #6ec1ff; text-decoration: none; font-weight: bold;"><i class="fas fa-arrow-left"></i> Home</a>
+    <button onclick="switchLanguage('ar')" class="lang-btn" style="background: rgba(77, 166, 255, 0.2); border: 1px solid #4da6ff; color: #4da6ff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">عربي</button>
+  </div>
+
     <h1 style="text-align:center; color:#6ec1ff; font-weight:700; margin-bottom: 32px;">
         Grow Your Business in Saudi Arabia with Smart NFC Cards
     </h1>
@@ -223,7 +232,7 @@
         <div style="background: rgba(77, 166, 255, 0.1); padding: 25px; border-radius: 12px; text-align: center; border: 1px solid rgba(77, 166, 255, 0.2);">
             <h4 style="color: white; font-size: 1.2rem; margin-bottom: 10px;">Empower Your Saudi Business</h4>
             <p style="color: var(--text-secondary-color); margin-bottom: 20px;">Transform how your team networks with our premium corporate NFC solutions.</p>
-            <a href="/nfc/editor-en.html" class="btn btn-primary" style="padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Start Your Digital Transformation</a>
+            <a href="editor-en.html" class="btn btn-primary" style="padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Start Your Digital Transformation</a>
         </div>
     </footer>
   </article>
@@ -235,10 +244,10 @@
         <a href="contact-en.html">Contact Us</a> |
         <a href="privacy-en.html">Privacy Policy</a>
     </footer>
-    <script src="/nfc/cookie-consent.js" defer></script>
-    <script src="/nfc/error-reporter.js" defer></script>
+    <script src="cookie-consent.js" defer></script>
+    <script src="error-reporter.js" defer></script>
     <script src="js/sw-register.js"></script>
-    <script src="/nfc/premium-ui.js" defer></script>
+    <script src="premium-ui.js" defer></script>
 </body>
 
 </html>

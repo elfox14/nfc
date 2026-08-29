@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const STATIC_CACHE = `mcprime-static-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
@@ -13,6 +13,9 @@ const PRECACHE_ASSETS = [
   '/nfc/logo.svg',
   '/nfc/mc-prime-nfc.png',
   '/nfc/mcprime-logo-optimized.webp',
+  '/nfc/js/gtm-bootstrap.js',
+  '/nfc/js/sw-register.js',
+  '/nfc/js/gtag-config.js',
 ];
 
 const OFFLINE_PAGE = '/nfc/offline.html';

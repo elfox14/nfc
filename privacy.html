@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 
 <head>
+  <script src="runtime-config.js?v=1.0"></script>
   <!-- SEO: Canonical + Hreflang -->
   <link rel="canonical" href="https://www.mcprim.com/nfc/privacy.html" />
   <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/privacy.html" />
@@ -18,18 +19,37 @@
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
     crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="/nfc/cookie-consent.css">
-    <link rel="stylesheet" href="/nfc/premium-ui.css">
-  <link rel="icon" href="/nfc/mc-prime-nfc.png" type="image/png">
+  <link rel="stylesheet" href="cookie-consent.css">
+  <link rel="stylesheet" href="premium-ui.css">
+  <link rel="icon" href="mc-prime-nfc.png" type="image/png">
 
-    <script type="application/ld+json">
-    {
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "سياسة الخصوصية - MC PRIME",
-  "url": "https://www.mcprim.com/nfc/privacy.html"
-}
-    </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "سياسة الخصوصية - MC PRIME",
+    "url": "https://www.mcprim.com/nfc/privacy.html"
+  }
+  </script>
+  
+  <style>
+    .lang-btn {
+      background: rgba(77, 166, 255, 0.2);
+      border: 1px solid #4da6ff;
+      color: #4da6ff;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+    .lang-btn:hover {
+      background: #4da6ff;
+      color: white;
+    }
+  </style>
+  <script src="lang-switcher.js" defer></script>
 </head>
 
 <body>
@@ -38,7 +58,10 @@
       style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
   <main style="max-width:700px;margin:auto;padding:2rem">
-    <h1>سياسة الخصوصية</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h1>سياسة الخصوصية</h1>
+      <button onclick="switchLanguage('en')" class="lang-btn">EN</button>
+    </div>
     <p>
       تحترم منصتنا خصوصية المستخدمين. نحتفظ ببيانات الحساب والتصاميم والبطاقات المحفوظة والطلبات المرتبطة بالحساب
       لتقديم الخدمة، إلى أن يحذفها المستخدم أو يحذف حسابه.
@@ -81,14 +104,14 @@
     </p>
 
     <h3>الإعلانات وملفات تعريف الارتباط (Cookies & Ads)</h3>
-<p>
-  نستخدم <strong>Google AdSense</strong> لعرض إعلانات على موقعنا. قد تستخدم Google 
-  ملفات تعريف الارتباط (Cookies) لعرض إعلانات مبنية على زياراتك السابقة لهذا الموقع 
-  أو لمواقع أخرى. يمكنك إلغاء الاشتراك في الإعلانات المخصصة عبر 
-  <a href="https://www.google.com/settings/ads" target="_blank">إعدادات إعلانات Google</a>، 
-  أو زيارة <a href="https://www.aboutads.info" target="_blank">aboutads.info</a>.
-  كما نستخدم <strong>Google Analytics</strong> لتحليل حركة الزوار بشكل مجهول الهوية.
-</p>
+    <p>
+      نستخدم <strong>Google AdSense</strong> لعرض إعلانات على موقعنا. قد تستخدم Google 
+      ملفات تعريف الارتباط (Cookies) لعرض إعلانات مبنية على زياراتك السابقة لهذا الموقع 
+      أو لمواقع أخرى. يمكنك إلغاء الاشتراك في الإعلانات المخصصة عبر 
+      <a href="https://www.google.com/settings/ads" target="_blank">إعدادات إعلانات Google</a>، 
+      أو زيارة <a href="https://www.aboutads.info" target="_blank">aboutads.info</a>.
+      كما نستخدم <strong>Google Analytics</strong> لتحليل حركة الزوار بشكل مجهول الهوية.
+    </p>
 
     <a href="index.html">&larr; العودة للصفحة الرئيسية</a>
   </main>
@@ -98,10 +121,10 @@
     <a href="privacy.html" style="color:#4da6ff;text-decoration:none;">سياسة الخصوصية</a> |
     <a href="terms.html" style="color:#4da6ff;text-decoration:none;">شروط الاستخدام</a>
   </footer>
-    <script src="/nfc/cookie-consent.js" defer></script>
-    <script src="/nfc/error-reporter.js" defer></script>
-    <script src="js/sw-register.js"></script>
-    <script src="/nfc/premium-ui.js" defer></script>
+  <script src="cookie-consent.js" defer></script>
+  <script src="error-reporter.js" defer></script>
+  <script src="js/sw-register.js"></script>
+  <script src="premium-ui.js" defer></script>
 </body>
 
 </html>

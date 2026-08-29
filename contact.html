@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 
 <head>
+  <script src="runtime-config.js?v=1.0"></script>
   <!-- SEO: Canonical + Hreflang -->
   <link rel="canonical" href="https://www.mcprim.com/nfc/contact.html" />
   <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/contact.html" />
@@ -18,18 +19,37 @@
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
     crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="/nfc/cookie-consent.css">
-    <link rel="stylesheet" href="/nfc/premium-ui.css">
-  <link rel="icon" href="/nfc/mc-prime-nfc.png" type="image/png">
+  <link rel="stylesheet" href="cookie-consent.css">
+  <link rel="stylesheet" href="premium-ui.css">
+  <link rel="icon" href="mc-prime-nfc.png" type="image/png">
 
-    <script type="application/ld+json">
-    {
-  "@context": "https://schema.org",
-  "@type": "ContactPage",
-  "name": "تواصل معنا - MC PRIME",
-  "url": "https://www.mcprim.com/nfc/contact.html"
-}
-    </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "تواصل معنا - MC PRIME",
+    "url": "https://www.mcprim.com/nfc/contact.html"
+  }
+  </script>
+  
+  <style>
+    .lang-btn {
+      background: rgba(77, 166, 255, 0.2);
+      border: 1px solid #4da6ff;
+      color: #4da6ff;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+    .lang-btn:hover {
+      background: #4da6ff;
+      color: white;
+    }
+  </style>
+  <script src="lang-switcher.js" defer></script>
 </head>
 
 <body>
@@ -38,7 +58,10 @@
       style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
   <main style="max-width:700px;margin:auto;padding:2rem">
-    <h1>اتصل بنا</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h1>اتصل بنا</h1>
+      <button onclick="switchLanguage('en')" class="lang-btn">EN</button>
+    </div>
     <p>لأي استفسار أو دعم فني، يسعدنا التواصل معك. يمكنك ملء النموذج أدناه أو مراسلتنا مباشرة.</p>
     
     <div style="background: rgba(36, 52, 71, 0.4); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem;">
@@ -78,10 +101,10 @@
     <a href="privacy.html" style="color:#53ecfc">سياسة الخصوصية</a> |
     <a href="terms.html" style="color:#53ecfc">شروط الاستخدام</a>
   </footer>
-    <script src="/nfc/cookie-consent.js" defer></script>
-    <script src="/nfc/error-reporter.js" defer></script>
-    <script src="js/sw-register.js"></script>
-    <script src="/nfc/premium-ui.js" defer></script>
+  <script src="cookie-consent.js" defer></script>
+  <script src="error-reporter.js" defer></script>
+  <script src="js/sw-register.js"></script>
+  <script src="premium-ui.js" defer></script>
 </body>
 
 </html>
