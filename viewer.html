@@ -106,8 +106,7 @@
         </div>
 
         <div class="nav-actions">
-            <button id="lang-toggle-btn" class="btn" onclick="switchLanguage('en')"
-                style="padding: 6px 12px; font-size: 0.85rem; margin-left: 10px;" title="Switch to English">EN</button>
+            <a href="viewer-en.html" class="lang-btn" aria-label="Switch to English" onclick="if(window.switchLanguage){switchLanguage('en');return false;}">EN</a>
             <div class="theme-switch-wrapper">
                 <label class="theme-switch" for="theme-toggle">
                     <input type="checkbox" id="theme-toggle" />

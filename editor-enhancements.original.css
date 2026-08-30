@@ -1535,3 +1535,203 @@ html {
    DO NOT add mobile @media rules here — edit mobile.css instead.
    =========================================================================== */
 
+
+
+/* ============================================================
+   STREAMLINED OBSIDIAN ACCORDION STYLING (PROPOSAL 2)
+   ============================================================ */
+.streamlined-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+}
+
+.accordion-card {
+    background: rgba(22, 27, 34, 0.75) !important;
+    border: 1px solid rgba(197, 160, 89, 0.22) !important;
+    border-radius: 18px !important;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    margin-bottom: 0 !important;
+}
+
+.accordion-card:hover {
+    border-color: rgba(197, 160, 89, 0.45) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.accordion-card[open] {
+    background: rgba(22, 27, 34, 0.95) !important;
+    border-color: rgba(197, 160, 89, 0.5) !important;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(197, 160, 89, 0.12);
+}
+
+.accordion-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 16px 18px !important;
+    cursor: pointer !important;
+    user-select: none;
+    list-style: none !important;
+    background: transparent;
+    transition: background 0.25s ease;
+}
+
+.accordion-header::-webkit-details-marker {
+    display: none !important;
+}
+
+.accordion-header:hover {
+    background: rgba(197, 160, 89, 0.06);
+}
+
+.accordion-card[open] .accordion-header {
+    border-bottom: 1px solid rgba(197, 160, 89, 0.18);
+    background: rgba(197, 160, 89, 0.08);
+}
+
+.accordion-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.accordion-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: rgba(197, 160, 89, 0.15);
+    border: 1px solid rgba(197, 160, 89, 0.35);
+    color: #c5a059;
+    font-size: 0.75rem;
+    font-weight: 800;
+    font-family: 'Cairo', sans-serif;
+}
+
+.accordion-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(197, 160, 89, 0.12);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    color: #c5a059;
+    font-size: 1.1rem;
+    transition: transform 0.3s, background 0.3s;
+}
+
+.accordion-card[open] .accordion-icon {
+    transform: scale(1.06);
+    background: linear-gradient(135deg, #d4af37, #c5a059);
+    color: #0d1117;
+    border-color: #d4af37;
+    box-shadow: 0 3px 12px rgba(197, 160, 89, 0.35);
+}
+
+.accordion-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.accordion-title {
+    font-size: 0.96rem;
+    font-weight: 700;
+    color: #ffffff;
+    font-family: 'Cairo', sans-serif;
+}
+
+.accordion-subtitle {
+    font-size: 0.72rem;
+    color: #8b949e;
+    margin-top: 1px;
+}
+
+.accordion-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.accordion-arrow {
+    font-size: 0.85rem;
+    color: #8b949e;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s;
+}
+
+.accordion-card[open] .accordion-arrow {
+    transform: rotate(180deg);
+    color: #c5a059;
+}
+
+[dir="rtl"] .accordion-card[open] .accordion-arrow {
+    transform: rotate(-180deg);
+}
+
+.accordion-body {
+    padding: 18px;
+    animation: accordionFadeIn 0.3s ease;
+}
+
+@keyframes accordionFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Quick Action Stage Pill */
+.stage-quick-pill {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(22, 27, 34, 0.92);
+    border: 1px solid rgba(197, 160, 89, 0.35);
+    border-radius: 50px;
+    padding: 8px 18px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(197, 160, 89, 0.15);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+}
+
+.stage-pill-btn {
+    background: transparent;
+    border: none;
+    color: #8b949e;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 30px;
+    transition: all 0.25s;
+    font-family: inherit;
+}
+
+.stage-pill-btn:hover, .stage-pill-btn.active {
+    color: #c5a059;
+    background: rgba(197, 160, 89, 0.12);
+}
+
+.stage-pill-btn.primary-flip {
+    background: linear-gradient(135deg, #d4af37, #c5a059);
+    color: #0d1117;
+}
+
+.stage-pill-btn.primary-flip:hover {
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4);
+    transform: translateY(-1px);
+}

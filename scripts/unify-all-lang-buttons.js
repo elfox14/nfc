@@ -1,4 +1,12 @@
-/**
+const fs = require('fs');
+const path = require('path');
+
+const rootDir = path.resolve(__dirname, '..');
+
+// 1. UPDATE lang-switcher.original.js
+const langSwitcherPath = path.join(rootDir, 'lang-switcher.original.js');
+
+const newLangSwitcherContent = `/**
  * MC PRIME Language Switcher
  * Handles automatic language detection and manual language switching across all pages
  */
@@ -299,3 +307,75 @@
         setupLangButtons();
     }
 })();
+`;
+
+fs.writeFileSync(langSwitcherPath, newLangSwitcherContent, 'utf8');
+console.log('Updated lang-switcher.original.js with robust routing.');
+
+// 2. AUDIT & UPDATE ALL HTML FILES
+const allHtmlFiles = fs.readdirSync(rootDir).filter(f => f.endsWith('.html'));
+
+allHtmlFiles.forEach(file => {
+    const filePath = path.join(rootDir, file);
+    let content = fs.readFileSync(filePath, 'utf8');
+    const isEn = file.includes('-en.html') || file.includes('-en');
+    
+    // Determine target counterpart file
+    let counterpart = '';
+    if (isEn) {
+        counterpart = file.replace('-en.html', '.html').replace('-en', '');
+        if (!fs.existsSync(path.join(rootDir, counterpart))) {
+            counterpart = 'index.html';
+        }
+    } else {
+        counterpart = file.replace('.html', '-en.html');
+        if (!fs.existsSync(path.join(rootDir, counterpart))) {
+            counterpart = 'index-en.html';
+        }
+    }
+
+    // Skip editor files from navbar replacement (they have special toolbar)
+    if (file === 'editor.html' || file === 'editor-en.html') {
+        // Ensure script is loaded
+        if (!content.includes('lang-switcher.js')) {
+            content = content.replace('</head>', '    <script src="lang-switcher.js"></script>\n</head>');
+            fs.writeFileSync(filePath, content, 'utf8');
+        }
+        return;
+    }
+
+    const targetLang = isEn ? 'ar' : 'en';
+    const label = isEn ? 'عربي' : 'EN';
+    const ariaLabel = isEn ? 'التبديل إلى العربية' : 'Switch to English';
+
+    // Standard replacement for language button in navbar
+    const standardAnchor = `<a href="${counterpart}" class="lang-btn" aria-label="${ariaLabel}" onclick="if(window.switchLanguage){switchLanguage('${targetLang}');return false;}">${label}</a>`;
+
+    // Replace any old button or anchor in navbar
+    let updated = false;
+
+    // Pattern 1: <button onclick="switchLanguage('...')" class="lang-btn"...>...</button>
+    const buttonRegex = /<button[^>]*?(?:switchLanguage|lang-btn)[^>]*?>[\s\S]*?<\/button>/gi;
+    if (buttonRegex.test(content)) {
+        content = content.replace(buttonRegex, standardAnchor);
+        updated = true;
+    }
+
+    // Pattern 2: <a href="..." class="lang-btn"...>...</a>
+    const anchorRegex = /<a[^>]*?class=["'][^"']*lang-btn[^"']*["'][^>]*?>[\s\S]*?<\/a>/gi;
+    if (anchorRegex.test(content)) {
+        content = content.replace(anchorRegex, standardAnchor);
+        updated = true;
+    }
+
+    // Ensure lang-switcher.js is in head
+    if (!content.includes('lang-switcher.js') && file !== 'admin.html') {
+        content = content.replace('</head>', '    <script src="lang-switcher.js" defer></script>\n</head>');
+        updated = true;
+    }
+
+    if (updated) {
+        fs.writeFileSync(filePath, content, 'utf8');
+        console.log(`Updated language button in ${file} -> ${counterpart} (${label})`);
+    }
+});

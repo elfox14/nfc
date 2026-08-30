@@ -598,17 +598,26 @@
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
 
             <!-- ═══ LOGO PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open>
-                <summary class="lp-summary">
-                    <span class="lp-step-badge">01</span>
-                    <span class="lp-summary-icon"><i class="fas fa-image"></i></span>
-                    <span>الشعار</span>
+            <details class="accordion-card lp-accordion" id="accordion-section-logo" open>
+        <summary class="accordion-header">
+            <div class="accordion-title-wrap">
+                <span class="accordion-step-num">01</span>
+                <span class="accordion-icon"><i class="fas fa-image"></i></span>
+                <div class="accordion-text">
+                    <span class="accordion-title">شعار العلامة التجارية</span>
+                    <span class="accordion-subtitle">رفع وضبط حجم وموضع الشعار</span>
+                </div>
+            </div>
+            <div class="accordion-header-actions">
                     <!-- Toggle Switch -->
                     <label class="lp-toggle" title="إظهار / إخفاء الشعار" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-logo" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
                     </label>
-                </summary>
+                
+                <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+        </summary>
 
                 <div class="fieldset-content lp-body" id="logo-drop-zone">
                     <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
@@ -780,17 +789,26 @@
 
 
             <!-- ═══ PROFILE PHOTO PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open>
-                <summary class="lp-summary">
-                    <span class="lp-step-badge">02</span>
-                    <span class="lp-summary-icon"><i class="fas fa-user-circle"></i></span>
-                    <span>الصورة الشخصية</span>
+            <details class="accordion-card lp-accordion" id="accordion-section-photo">
+        <summary class="accordion-header">
+            <div class="accordion-title-wrap">
+                <span class="accordion-step-num">02</span>
+                <span class="accordion-icon"><i class="fas fa-user-circle"></i></span>
+                <div class="accordion-text">
+                    <span class="accordion-title">الصورة الشخصية</span>
+                    <span class="accordion-subtitle">رفع وقص وتخصيص إطار الصورة</span>
+                </div>
+            </div>
+            <div class="accordion-header-actions">
                     <!-- Toggle Switch -->
                     <label class="lp-toggle" title="إظهار / إخفاء الصورة" onclick="event.stopPropagation()">
                         <input type="checkbox" id="visibility-photo" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
                     </label>
-                </summary>
+                
+                <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+        </summary>
 
                 <div class="fieldset-content lp-body" id="photo-controls-fieldset">
                     <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>أفلت الصورة
@@ -1572,15 +1590,25 @@
 
 
             <!-- ═══ SOCIAL / CONTACT PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" id="contact-info-accordion">
-                <summary class="lp-summary">
-                    <span class="lp-summary-icon"><i class="fas fa-share-alt"></i></span>
-                    <span>بيانات التواصل</span>
+            <details class="accordion-card lp-accordion" id="contact-info-accordion">
+        <summary class="accordion-header">
+            <div class="accordion-title-wrap">
+                <span class="accordion-step-num">05</span>
+                <span class="accordion-icon"><i class="fas fa-share-alt"></i></span>
+                <div class="accordion-text">
+                    <span class="accordion-title">الاتصال والتواصل الاجتماعي</span>
+                    <span class="accordion-subtitle">الهواتف، واتساب، الروابط والحسابات</span>
+                </div>
+            </div>
+            <div class="accordion-header-actions">
                     <label class="lp-toggle" title="إظهار / إخفاء" onclick="event.stopPropagation()">
                         <input type="checkbox" id="toggle-master-social" checked>
                         <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
                     </label>
-                </summary>
+                
+                <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+        </summary>
 
                 <div class="fieldset-content lp-body">
                     <div id="social-controls-wrapper" style="display:block;">

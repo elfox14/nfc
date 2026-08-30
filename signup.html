@@ -123,7 +123,7 @@
                 <li><a href="contact.html">اتصل بنا</a></li>
             </ul>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <button onclick="switchLanguage('en')" class="lang-btn" aria-label="Switch to English">EN</button>
+                <a href="signup-en.html" class="lang-btn" aria-label="Switch to English" onclick="if(window.switchLanguage){switchLanguage('en');return false;}">EN</a>
                 <a href="editor.html" class="btn btn-primary nav-cta">ابدأ الآن</a>
             </div>
             <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">

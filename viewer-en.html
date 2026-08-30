@@ -77,9 +77,7 @@
         </div>
 
         <div class="nav-actions">
-            <button id="lang-toggle-btn" class="btn" onclick="switchLanguage('ar')"
-                style="padding: 6px 12px; font-size: 0.85rem; margin-right: 10px;"
-                title="التبديل إلى العربية">عربي</button>
+            <a href="viewer.html" class="lang-btn" aria-label="التبديل إلى العربية" onclick="if(window.switchLanguage){switchLanguage('ar');return false;}">عربي</a>
             <div class="theme-switch-wrapper">
                 <label class="theme-switch" for="theme-toggle">
                     <input type="checkbox" id="theme-toggle" />

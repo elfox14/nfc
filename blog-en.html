@@ -890,7 +890,7 @@
                 <li><a href="dashboard-en.html">Dashboard</a></li>
             </ul>
             <div class="nav-actions">
-                <button onclick="switchLanguage('ar')" class="lang-btn" aria-label="التبديل إلى العربية">عربي</button>
+                <a href="blog.html" class="lang-btn" aria-label="التبديل إلى العربية" onclick="if(window.switchLanguage){switchLanguage('ar');return false;}">عربي</a>
                 <a href="editor-en.html" class="nav-cta"><i class="fas fa-magic"></i> Get Started</a>
                 <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle navigation"><i class="fas fa-bars"></i></button>
             </div>
@@ -912,7 +912,7 @@
                 <li><a href="contact-en.html">Contact</a></li>
             </ul>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <button onclick="switchLanguage('ar')" class="lang-btn" aria-label="التبديل إلى العربية">عربي</button>
+                <a href="blog.html" class="lang-btn" aria-label="التبديل إلى العربية" onclick="if(window.switchLanguage){switchLanguage('ar');return false;}">عربي</a>
                 <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started</a>
             </div>
             <div class="nav-toggle" id="nav-toggle" aria-label="Open menu">
