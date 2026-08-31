@@ -95,7 +95,18 @@ function getLocalSavedDesigns() {
         const galleryRaw = localStorage.getItem('nfc_gallery_designs');
         if (galleryRaw) {
             const parsed = JSON.parse(galleryRaw);
-            if (Array.isArray(parsed)) list.push(...parsed);
+            if (Array.isArray(parsed)) {
+                parsed.forEach((d, idx) => {
+                    const id = d.shortId || d.id || ('local_gallery_' + idx);
+                    list.push({
+                        shortId: id,
+                        title: d.title || d.name || d.data?.inputs?.['input-name'] || d.data?.inputs?.['input-name_en'] || 'Saved Card',
+                        createdAt: d.createdAt || d.timestamp || Date.now(),
+                        views: d.views || 0,
+                        data: d.data || d
+                    });
+                });
+            }
         }
 
         const autosaveRaw = localStorage.getItem('nfc_autosave_state');
@@ -131,6 +142,29 @@ function getLocalSavedDesigns() {
     return list;
 }
 
+function removeDesignFromLocalStorage(id) {
+    if (!id) return;
+    try {
+        const galleryRaw = localStorage.getItem('nfc_gallery_designs');
+        if (galleryRaw) {
+            let parsed = JSON.parse(galleryRaw);
+            if (Array.isArray(parsed)) {
+                parsed = parsed.filter(d => d.shortId !== id && d.id !== id && d._id !== id);
+                localStorage.setItem('nfc_gallery_designs', JSON.stringify(parsed));
+            }
+        }
+        if (id === 'local_autosave' || id === 'local_current' || id.startsWith('local_')) {
+            localStorage.removeItem('nfc_autosave_state');
+            localStorage.removeItem('businessCardState');
+        }
+        if (localStorage.getItem('nfc:editingDesignId') === id) {
+            localStorage.removeItem('nfc:editingDesignId');
+        }
+    } catch(e) {
+        console.warn('[Dashboard EN] Error removing design from localStorage:', e);
+    }
+}
+
 async function loadMyDesigns() {
     const grid = document.getElementById('designs-grid');
     if (!grid) return;
@@ -163,7 +197,8 @@ async function loadMyDesigns() {
 
     if (designs.length > 0) {
         window.myLoadedDesigns = designs;
-        designs.forEach(design => {
+        designs.forEach((design, index) => {
+            const designId = design.shortId || design.id || design._id || ('local_' + index);
             const inputs = design.data?.inputs || {};
             const name = design.title || inputs['input-name_en'] || inputs['input-name_ar'] || inputs['input-name'] || 'Smart Card';
             const tagline = inputs['input-tagline_en'] || inputs['input-tagline_ar'] || inputs['input-tagline'] || '';
@@ -176,8 +211,9 @@ async function loadMyDesigns() {
                 imgTag = `<img src="${thumb}" alt="${escapeHTML(name)}" loading="lazy" style="max-height: 160px; object-fit: contain;">`;
             }
 
-            const viewUrl = design.shortId && !design.shortId.startsWith('local_') ? `viewer-en.html?id=${design.shortId}` : 'editor-en.html';
-            const editUrl = design.shortId && !design.shortId.startsWith('local_') ? `editor-en.html?id=${design.shortId}` : 'editor-en.html';
+            const isLocal = !design.shortId || design.shortId.startsWith('local_');
+            const viewUrl = !isLocal ? `viewer-en.html?id=${encodeURIComponent(design.shortId)}` : 'editor-en.html';
+            const editUrl = !isLocal ? `editor-en.html?id=${encodeURIComponent(design.shortId)}` : 'editor-en.html';
 
             const card = document.createElement('div');
             card.className = 'design-card hover-lift animate-on-scroll';
@@ -193,8 +229,8 @@ async function loadMyDesigns() {
                     <div class="card-actions">
                         <a href="${viewUrl}" class="action-btn btn-view" target="_blank">View</a>
                         <a href="${editUrl}" class="action-btn btn-edit">Edit</a>
-                        <button class="action-btn btn-signature" onclick="generateSignatureFromDashboard('${design.shortId}')" title="Email Signature"><i class="fas fa-signature"></i></button>
-                        <button class="action-btn btn-remove" onclick="deleteDesign('${design.shortId}')">Delete</button>
+                        <button type="button" class="action-btn btn-signature" onclick="generateSignatureFromDashboard('${escapeHTML(designId)}')" title="Email Signature"><i class="fas fa-signature"></i></button>
+                        <button type="button" class="action-btn btn-remove" onclick="deleteDesign('${escapeHTML(designId)}')" title="Delete Card"><i class="fas fa-trash-alt"></i> Delete</button>
                     </div>
                 </div>`;
             grid.appendChild(card);
@@ -213,33 +249,53 @@ async function loadMyDesigns() {
 }
 
 async function deleteDesign(shortId) {
-    if (!confirm('Are you sure you want to delete this design?')) return;
+    if (!shortId || shortId === 'undefined') {
+        alert('Card ID is missing.');
+        return;
+    }
+
+    if (!confirm('Are you sure you want to permanently delete this design?')) return;
     
-    if (shortId && shortId.startsWith('local_')) {
-        localStorage.removeItem('nfc_autosave_state');
-        localStorage.removeItem('businessCardState');
+    let isDeleted = false;
+
+    if (shortId.startsWith('local_')) {
+        removeDesignFromLocalStorage(shortId);
         loadMyDesigns();
         return;
     }
 
     try {
         if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-            const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
+            const endpoint = `${baseUrl}/api/user/designs/${encodeURIComponent(shortId)}`;
+            const res = await Auth.apiFetchWithRefresh(endpoint, {
                 method: 'DELETE',
                 headers: Auth.getHeader()
             });
-            const data = await res.json();
-            if (data.success) {
-                loadMyDesigns();
+
+            if (res.ok) {
+                const data = await res.json().catch(() => ({ success: true }));
+                if (data.success) {
+                    isDeleted = true;
+                } else {
+                    alert(data.error || 'Failed to delete design');
+                }
+            } else if (res.status === 404) {
+                isDeleted = true;
             } else {
-                alert(data.error || 'Failed to delete design');
+                const data = await res.json().catch(() => ({}));
+                alert(data.error || 'Server error occurred while deleting design');
             }
         } else {
-            loadMyDesigns();
+            isDeleted = true;
         }
     } catch (err) {
-        console.error(err);
-        alert('Error deleting design');
+        console.error('[Dashboard EN Delete Error]', err);
+        isDeleted = true;
+    }
+
+    if (isDeleted) {
+        removeDesignFromLocalStorage(shortId);
+        loadMyDesigns();
     }
 }
 
@@ -285,7 +341,7 @@ async function loadSavedCards() {
         savedCards.forEach(card => {
             const thumb = card.cardThumb || '';
             let imgTag = '<i class="fas fa-id-card" style="font-size: 3.5rem; color: #c5a059;"></i>';
-            if (thumb) imgTag = `<img src="${thumb}" alt="${card.ownerName || 'Card'}" loading="lazy">`;
+            if (thumb) imgTag = `<img src="${thumb}" alt="${escapeHTML(card.ownerName || 'Card')}" loading="lazy">`;
             const date = card.savedAt ? new Date(card.savedAt).toLocaleDateString('en-US') : 'Unknown';
             const el = document.createElement('div');
             el.className = 'design-card hover-lift animate-on-scroll';
@@ -295,8 +351,8 @@ async function loadSavedCards() {
                     <h3 class="card-title">${escapeHTML(card.ownerName || 'Unknown')}</h3>
                     <div class="card-meta"><span><i class="far fa-calendar"></i> ${date}</span></div>
                     <div class="card-actions">
-                        <a href="viewer-en.html?id=${card.designShortId}" class="action-btn btn-view" target="_blank">View</a>
-                        <button class="action-btn btn-remove" onclick="removeSavedCard('${card.designShortId}')">Remove</button>
+                        <a href="viewer-en.html?id=${encodeURIComponent(card.designShortId)}" class="action-btn btn-view" target="_blank">View</a>
+                        <button type="button" class="action-btn btn-remove" onclick="removeSavedCard('${escapeHTML(card.designShortId)}')"><i class="fas fa-trash-alt"></i> Remove</button>
                     </div>
                 </div>`;
             grid.appendChild(el);
@@ -315,16 +371,20 @@ async function loadSavedCards() {
 }
 
 async function removeSavedCard(designId) {
+    if (!designId) return;
     if (!confirm('Are you sure you want to remove this card?')) return;
     try {
         if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-            await Auth.apiFetchWithRefresh(`${baseUrl}/api/saved-cards/${designId}`, {
+            await Auth.apiFetchWithRefresh(`${baseUrl}/api/saved-cards/${encodeURIComponent(designId)}`, {
                 method: 'DELETE',
                 headers: Auth.getHeader()
             });
         }
         loadSavedCards();
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error(err);
+        loadSavedCards();
+    }
 }
 
 async function loadCardRequests() {
@@ -433,10 +493,81 @@ document.getElementById('save-privacy-btn')?.addEventListener('click', async () 
     }
 });
 
+// Delete Account Button Handler
+document.getElementById('delete-account-btn')?.addEventListener('click', async () => {
+    const confirmation = prompt('WARNING: Your account and all associated cards will be permanently deleted.\nTo confirm, type DELETE in the box below:');
+    if (confirmation !== 'DELETE') {
+        if (confirmation !== null) {
+            alert('Account deletion was not confirmed. You must type DELETE in all capitals.');
+        }
+        return;
+    }
+
+    try {
+        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+            const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/auth/account`, {
+                method: 'DELETE',
+                headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ confirmation: 'DELETE' })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.success) {
+                alert('Your account and all associated data have been permanently deleted.');
+                localStorage.clear();
+                window.location.href = 'index-en.html';
+            } else {
+                alert(data.error || 'Failed to delete account. Please try again later.');
+            }
+        } else {
+            localStorage.clear();
+            window.location.href = 'index-en.html';
+        }
+    } catch (err) {
+        console.error('[Dashboard EN Delete Account Error]', err);
+        alert('Error occurred while deleting account.');
+    }
+});
+
+// Export Account Data Handler
+document.getElementById('export-account-data-btn')?.addEventListener('click', async () => {
+    try {
+        const exportData = {
+            platform: 'MC PRIME NFC',
+            exportedAt: new Date().toISOString(),
+            user: (typeof Auth !== 'undefined' && Auth.user) ? Auth.user : null,
+            designs: window.myLoadedDesigns || getLocalSavedDesigns()
+        };
+
+        const jsonStr = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mcprime-account-data-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('[Dashboard EN Export Error]', err);
+        alert('Error occurred while exporting data.');
+    }
+});
+
 function generateSignatureFromDashboard(shortId) {
     if (!shortId) {
         window.location.href = 'editor-en.html';
         return;
     }
-    window.open(`viewer-en.html?id=${shortId}#signature`, '_blank');
+    window.open(`viewer-en.html?id=${encodeURIComponent(shortId)}#signature`, '_blank');
 }
+
+// Global Window Bindings for inline onclick attributes
+window.deleteDesign = deleteDesign;
+window.removeSavedCard = removeSavedCard;
+window.handleRequest = handleRequest;
+window.loadMyDesigns = loadMyDesigns;
+window.loadSavedCards = loadSavedCards;
+window.loadCardRequests = loadCardRequests;
+window.loadPrivacySettings = loadPrivacySettings;
+window.generateSignatureFromDashboard = generateSignatureFromDashboard;
