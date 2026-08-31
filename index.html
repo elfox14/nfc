@@ -98,31 +98,49 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Navbar -->
-    <nav class="navbar" id="navbar">
-        <div class="container nav-content">
-            <a href="index.html" class="nav-logo" aria-label="الرئيسية - MC PRIME">
-                <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" width="60" height="60" style="height: 44px; width: auto;">
-            </a>
-            <ul class="nav-links" id="nav-links">
-                <li><a href="index.html#how-it-works">كيف يعمل</a></li>
-                <li><a href="index.html#comparison">المقارنة والتوفير</a></li>
-                <li><a href="index.html#features">المميزات</a></li>
-                <li><a href="gallery.html">المعرض</a></li>
-                <li><a href="blog.html">المدونة</a></li>
-                <li><a href="contact.html">اتصل بنا</a></li>
-            </ul>
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <a href="index-en.html" class="lang-btn" aria-label="Switch to English" onclick="if(window.switchLanguage){switchLanguage('en');return false;}">EN</a>
-                <a href="editor.html" class="btn btn-primary nav-cta">ابدأ مجاناً</a>
-            </div>
-            <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
-                <span></span>
-                <span></span>
-                <span></span>
+    <!-- Site Header: Announcement Bar + Navigation -->
+    <header class="site-header" id="site-header">
+        <!-- Top Smart Editor Announcement Bar -->
+        <div class="top-announcement-bar" id="top-announcement-bar" role="region" aria-label="تنويه المحرر الذكي">
+            <div class="container announcement-content">
+                <span class="announcement-badge"><i class="fas fa-sparkles"></i> جديد 2026</span>
+                <p class="announcement-text">
+                    <strong>المحرر الذكي لبطاقات NFC متاح الآن مجاناً!</strong> صمم كارتك التفاعلي بدون كود خلال دقيقتين وشارك بياناتك بلمسة واحدة.
+                </p>
+                <a href="editor.html" class="announcement-link">
+                    <span>جرّب المحرر الآن مجاناً</span>
+                    <i class="fas fa-arrow-left"></i>
+                </a>
             </div>
         </div>
-    </nav>
+
+        <!-- Navbar -->
+        <nav class="navbar" id="navbar">
+            <div class="container nav-content">
+                <a href="index.html" class="nav-logo" aria-label="الرئيسية - MC PRIME">
+                    <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" width="60" height="60" style="height: 44px; width: auto;">
+                </a>
+                <ul class="nav-links" id="nav-links">
+                    <li><a href="index.html#editor-services">المحرر وخدماته</a></li>
+                    <li><a href="index.html#how-it-works">كيف يعمل</a></li>
+                    <li><a href="index.html#comparison">المقارنة والتوفير</a></li>
+                    <li><a href="index.html#nfc-articles">المقالات والأدلة</a></li>
+                    <li><a href="gallery.html">المعرض</a></li>
+                    <li><a href="blog.html">المدونة</a></li>
+                    <li><a href="contact.html">اتصل بنا</a></li>
+                </ul>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <a href="index-en.html" class="lang-btn" aria-label="Switch to English" onclick="if(window.switchLanguage){switchLanguage('en');return false;}">EN</a>
+                    <a href="editor.html" class="btn btn-primary nav-cta">ابدأ مجاناً</a>
+                </div>
+                <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
 
     <main id="main-content" role="main">
 
@@ -212,6 +230,100 @@
                         </div>
                     </div>
 
+                </div>
+            </div>
+        </section>
+
+        <!-- SMART EDITOR SHOWCASE & SERVICES -->
+        <section id="editor-services" class="editor-showcase-section" aria-labelledby="editor-showcase-title">
+            <div class="container">
+                <div style="text-align:center; max-width:760px; margin:0 auto 20px;">
+                    <div class="hero-story-badge"><i class="fas fa-wand-magic-sparkles"></i> استوديو MC PRIME الذكي</div>
+                    <h2 id="editor-showcase-title" style="font-family:'Cairo'; font-size:2.4rem; font-weight:800; color:#fff; margin-bottom:12px;">
+                        محرر بطاقات ذكي متكامل.. صمم هويتك باحترافية وبدون كود
+                    </h2>
+                    <p style="color:#8b949e; font-size:1.05rem; line-height:1.7;">
+                        كل ما يلزمك لبناء بروفايل رقمي فاخر، توليد رموز QR ديناميكية، وتحديث بياناتك سحابياً في أي وقت دون الحاجة لإعادة طباعة الكارت.
+                    </p>
+                </div>
+
+                <!-- 8-Feature Bento Grid -->
+                <div class="editor-feature-grid">
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-cube"></i></div>
+                        <h3>معاينة 3D بصرية حية</h3>
+                        <p>شاهد بطاقتك وتفاعل مع وجهيها الأمامي والخلفي مباشرة أثناء إدخال الاسم، المسمى الوظيفي، وتعديل التفاصيل لحظة بلحظة.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-layer-group"></i></div>
+                        <h3>قوالب وتخطيطات متعددة</h3>
+                        <p>اختر من بين التخطيط الكلاسيكي، العصري، البطاقات الأفقية والرأسية، وتصاميم الزجاج المصقول (Glassmorphism) الفاخرة.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-palette"></i></div>
+                        <h3>تخصيص الهوية بالذكاء الاصطناعي</h3>
+                        <p>ارفع شعارك وصورتك الشخصية، نسّق لوحات الألوان والتدرجات المتناغمة، واستفد من خلفيات الذكاء الاصطناعي الحصرية.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-address-book"></i></div>
+                        <h3>حفظ جهة الاتصال الفوري (vCard)</h3>
+                        <p>تنزيل مباشر لملف vCard بكافة أرقام الهواتف، البريد، الروابط، والموقع الجغرافي في سجل هاتف العميل بضغطة زر واحدة.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-qrcode"></i></div>
+                        <h3>رموز QR ديناميكية ذكية</h3>
+                        <p>توليد تلقائي لكود QR عالي الدقة يوجه العميل فوراً إلى ملفك الشخصي حتى للأجهزة التي لا تدعم خاصية NFC.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+                        <h3>مزامنة وتحديث سحابي فوري</h3>
+                        <p>عدّل رقم هاتفك، وظيفتك، أو روابطك في أي وقت لتتحدث البطاقة فوراً لدى جميع عملائك دون أي تكلفة إعادة طباعة.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3>إحصائيات وتحليلات الزيارات</h3>
+                        <p>لوحة تحكم دقيقة تمكنك من معرفة عدد مرات مسح بطاقتك وتفاعل الزوار مع روابط التواصل وموقعك الإلكتروني.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-users-gear"></i></div>
+                        <h3>حلول فرق العمل والشركات</h3>
+                        <p>لوحة مركزية لإدارة وتوحيد بطاقات موظفي الشركات والتحكم بالهوية المؤسسية والصلاحيات بكل سهولة.</p>
+                    </div>
+                </div>
+
+                <!-- Interactive Workflow Banner -->
+                <div class="editor-flow-banner">
+                    <div style="flex:1; min-width:280px;">
+                        <h3 style="font-family:'Cairo'; font-size:1.4rem; font-weight:800; color:#fff; margin-bottom:12px;">
+                            <i class="fas fa-bolt" style="color:var(--primary-color);"></i> كيف تبدأ في 3 خطوات سهلة؟
+                        </h3>
+                        <div class="editor-flow-steps">
+                            <div class="editor-flow-step">
+                                <span class="editor-flow-step-num">1</span>
+                                <span>اختر القالب والتخطيط</span>
+                            </div>
+                            <div class="editor-flow-step">
+                                <span class="editor-flow-step-num">2</span>
+                                <span>أدخل بياناتك وروابطك</span>
+                            </div>
+                            <div class="editor-flow-step">
+                                <span class="editor-flow-step-num">3</span>
+                                <span>احفظ وشارك بطاقتك فوراً</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="editor.html" class="btn btn-primary btn-lg" style="white-space:nowrap; padding:14px 32px; font-size:1.05rem;">
+                            <i class="fas fa-magic"></i> افتح المحرر وابدأ الآن مجاناً
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -325,6 +437,147 @@
                         <h3>لوحة تحليلات وإحصائيات</h3>
                         <p>راقب أداء بطاقتك وتعرف على عدد الأشخاص الذين تصفحوا كارتك وتفاعلوا مع حساباتك الاجتماعية وموقعك.</p>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NFC ARTICLES & KNOWLEDGE HUB -->
+        <section id="nfc-articles" class="nfc-articles-section" aria-labelledby="articles-title">
+            <div class="container">
+                <div style="text-align:center; max-width:760px; margin:0 auto 25px;">
+                    <div class="hero-story-badge"><i class="fas fa-book-open"></i> مركز المعرفة والمقالات</div>
+                    <h2 id="articles-title" style="font-family:'Cairo'; font-size:2.4rem; font-weight:800; color:#fff; margin-bottom:12px;">
+                        استكشف أسرار واستخدامات كروت الـ NFC في مختلف القطاعات
+                    </h2>
+                    <p style="color:#8b949e; font-size:1.05rem; line-height:1.7;">
+                        أدلة عملية واستراتيجيات تسويقية حصرية تشرح كيف تستفيد الشركات والمحترفون من تقنية NFC لمضاعفة المبيعات وتطوير التواصل المهني.
+                    </p>
+                </div>
+
+                <!-- Category Filter Buttons -->
+                <div class="article-category-filters">
+                    <button type="button" class="article-filter-btn active" onclick="filterHomeArticles('all', this)">جميع المقالات</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('guides', this)">أدلة شاملة</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('real-estate', this)">عقارات</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('medical', this)">طب وعيادات</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('events', this)">معارض ومؤتمرات</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('restaurants', this)">مطاعم وكافيهات</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('companies', this)">حلول الشركات</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('freelancers', this)">للمستقلين</button>
+                </div>
+
+                <!-- Articles Grid -->
+                <div class="home-article-grid" id="home-articles-container">
+                    
+                    <!-- Article 1: Ultimate Guide -->
+                    <a href="blog-nfc-ultimate-guide.html" class="home-article-card" data-cat="guides">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-events-ar.svg" alt="الدليل الشامل لكروت NFC الذكية 2026" loading="lazy">
+                            <span class="home-article-tag" style="background:linear-gradient(135deg,#d4af37,#c5a059); color:#0d1117; font-weight:800;">دليل شامل</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> 10 يناير 2026</span>
+                                <span><i class="far fa-clock"></i> 7 دقائق</span>
+                            </div>
+                            <h3>الدليل الشامل لكروت NFC الذكية (2026): ما هي، كيف تعمل، وأبرز 10 استخدامات ثورية</h3>
+                            <p>تعرف على كل ما يخص تقنية NFC، طريقة عمل شرائح NTAG، وأهم 10 تطبيقات عملية لتطوير أعمالك وتوفير ميزانية الطباعة.</p>
+                            <span class="home-article-readmore">اقرأ الدليل الكامل <i class="fas fa-arrow-left"></i></span>
+                        </div>
+                    </a>
+
+                    <!-- Article 2: Real Estate -->
+                    <a href="blog-nfc-real-estate.html" class="home-article-card" data-cat="real-estate">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-companies-ar.svg" alt="كروت NFC للقطاع والوسطاء العقاريين" loading="lazy">
+                            <span class="home-article-tag">عقارات واستثمار</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> 20 يناير 2026</span>
+                                <span><i class="far fa-clock"></i> 6 دقائق</span>
+                            </div>
+                            <h3>كروت NFC للقطاع العقاري: كيف تضاعف مبيعاتك بالمعاينات الذكية والعروض التفاعلية؟</h3>
+                            <p>شارك كتالوجات المشاريع، جولات 360 الافتراضية، ومواقع العقارات على خرائط جوجل مع المشترين بلمسة واحدة على الهاتف.</p>
+                            <span class="home-article-readmore">اقرأ المقال <i class="fas fa-arrow-left"></i></span>
+                        </div>
+                    </a>
+
+                    <!-- Article 3: Medical Clinics -->
+                    <a href="blog-nfc-medical-clinics.html" class="home-article-card" data-cat="medical">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-design-ar.svg" alt="بطاقات NFC للأطباء والعيادات والمراكز الطبية" loading="lazy">
+                            <span class="home-article-tag">طب ورعاية صحية</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> 1 فبراير 2026</span>
+                                <span><i class="far fa-clock"></i> 6 دقائق</span>
+                            </div>
+                            <h3>بطاقات NFC للأطباء والعيادات: تجربة مريض متطورة وحجز مواعيد فوري بلمسة واحدة</h3>
+                            <p>ارتقِ بتجربة مرضاك وسهّل حجز الكشوفات ومشاركة موقع العيادة وأرقام الطوارئ الطبية على الهاتف مباشرة بلمسة كارت.</p>
+                            <span class="home-article-readmore">اقرأ المقال <i class="fas fa-arrow-left"></i></span>
+                        </div>
+                    </a>
+
+                    <!-- Article 4: Events & Exhibitions -->
+                    <a href="blog-nfc-at-events.html" class="home-article-card" data-cat="events">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-events-ar.svg" alt="5 طرق لاستخدام NFC في المعارض والمؤتمرات" loading="lazy">
+                            <span class="home-article-tag">معارض ومؤتمرات</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> 24 سبتمبر 2025</span>
+                                <span><i class="far fa-clock"></i> 5 دقائق</span>
+                            </div>
+                            <h3>5 طرق مبتكرة لاستخدام كارت NFC في المعارض والمؤتمرات لجمع بيانات العملاء</h3>
+                            <p>حوّل بطاقتك الذكية إلى منصة تسويق متكاملة لجمع بيانات العملاء المؤهلين في ثوانٍ معدودة ومشاركة محفظة أعمالك باحترافية.</p>
+                            <span class="home-article-readmore">اقرأ المقال <i class="fas fa-arrow-left"></i></span>
+                        </div>
+                    </a>
+
+                    <!-- Article 5: Digital Menus -->
+                    <a href="blog-digital-menus-for-restaurants.html" class="home-article-card" data-cat="restaurants">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-restaurants-ar.svg" alt="المنيو الرقمي للمطاعم عبر QR Code و NFC" loading="lazy">
+                            <span class="home-article-tag">مطاعم وكافيهات</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> 5 أكتوبر 2025</span>
+                                <span><i class="far fa-clock"></i> 6 دقائق</span>
+                            </div>
+                            <h3>المنيو الرقمي للمطاعم: لماذا هو ضرورة حتمية في 2025 وكيف يضاعف المبيعات؟</h3>
+                            <p>اكتشف كيف تزيد القوائم الرقمية التفاعلية من متوسط فاتورة الزبون بنسبة 20% وتوفر آلاف الدولارات من تكاليف الطباعة الدورية.</p>
+                            <span class="home-article-readmore">اقرأ المقال <i class="fas fa-arrow-left"></i></span>
+                        </div>
+                    </a>
+
+                    <!-- Article 6: Freelancers -->
+                    <a href="nfc-for-freelancers.html" class="home-article-card" data-cat="freelancers">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-freelancers-ar.svg" alt="دليل بطاقات NFC للمستقلين والفريلانسرز" loading="lazy">
+                            <span class="home-article-tag">للمستقلين</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> 18 أكتوبر 2025</span>
+                                <span><i class="far fa-clock"></i> 6 دقائق</span>
+                            </div>
+                            <h3>دليل المستقلين: كيف تستخدم كارت NFC لجذب عملاء ذوي قيمة وبناء شبكة علاقات؟</h3>
+                            <p>شارك معرض أعمالك على Behance أو GitHub وروابط حجز الاستشارات الفورية بلمسة واحدة على هاتف العميل وأبرز تميزك.</p>
+                            <span class="home-article-readmore">اقرأ المقال <i class="fas fa-arrow-left"></i></span>
+                        </div>
+                    </a>
+
+                </div>
+
+                <!-- View All Articles CTA -->
+                <div style="text-align:center; margin-top:40px;">
+                    <a href="blog.html" class="btn btn-secondary btn-lg" style="padding:14px 35px; font-size:1rem; border-color:rgba(197,160,89,0.4);">
+                        <i class="fas fa-newspaper" style="color:var(--primary-color);"></i> تصفح جميع المقالات في المدونة
+                    </a>
                 </div>
             </div>
         </section>
@@ -471,6 +724,46 @@
                 anchor.href = 'editor.html?name=' + encodeURIComponent(nameInput.value.trim());
             }
         }
+
+        function filterHomeArticles(category, btn) {
+            var buttons = document.querySelectorAll('.article-filter-btn');
+            buttons.forEach(function(b) { b.classList.remove('active'); });
+            if (btn) btn.classList.add('active');
+
+            var cards = document.querySelectorAll('.home-article-card');
+            cards.forEach(function(card) {
+                if (category === 'all' || card.getAttribute('data-cat') === category) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Mobile Nav Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggle = document.getElementById('nav-toggle');
+            var navLinks = document.getElementById('nav-links');
+            if (toggle && navLinks) {
+                toggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+                });
+            }
+
+            var backToTop = document.getElementById('back-to-top');
+            if (backToTop) {
+                window.addEventListener('scroll', function() {
+                    if (window.pageYOffset > 400) {
+                        backToTop.classList.add('visible');
+                    } else {
+                        backToTop.classList.remove('visible');
+                    }
+                });
+                backToTop.addEventListener('click', function() {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+        });
     </script>
 </body>
 </html>

@@ -75,31 +75,49 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Navbar -->
-    <nav class="navbar" id="navbar">
-        <div class="container nav-content">
-            <a href="index-en.html" class="nav-logo" aria-label="Home - MC PRIME">
-                <img src="mc-prime-nfc.png" alt="MC PRIME - Smart Business Cards" loading="eager" width="60" height="60" style="height: 44px; width: auto;">
-            </a>
-            <ul class="nav-links" id="nav-links">
-                <li><a href="index-en.html#how-it-works">How It Works</a></li>
-                <li><a href="index-en.html#comparison">Comparison</a></li>
-                <li><a href="index-en.html#features">Features</a></li>
-                <li><a href="gallery-en.html">Gallery</a></li>
-                <li><a href="blog-en.html">Blog</a></li>
-                <li><a href="contact-en.html">Contact</a></li>
-            </ul>
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <a href="index.html" class="lang-btn" aria-label="التبديل إلى العربية" onclick="if(window.switchLanguage){switchLanguage('ar');return false;}">عربي</a>
-                <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started Free</a>
-            </div>
-            <div class="nav-toggle" id="nav-toggle" aria-label="Open Menu">
-                <span></span>
-                <span></span>
-                <span></span>
+    <!-- Site Header: Announcement Bar + Navigation -->
+    <header class="site-header" id="site-header">
+        <!-- Top Smart Editor Announcement Bar -->
+        <div class="top-announcement-bar" id="top-announcement-bar" role="region" aria-label="Smart Editor Announcement">
+            <div class="container announcement-content">
+                <span class="announcement-badge"><i class="fas fa-sparkles"></i> NEW 2026</span>
+                <p class="announcement-text">
+                    <strong>Smart NFC Card Editor is now free!</strong> Design your interactive digital card without code in 2 minutes.
+                </p>
+                <a href="editor-en.html" class="announcement-link">
+                    <span>Try Free Editor</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
         </div>
-    </nav>
+
+        <!-- Navbar -->
+        <nav class="navbar" id="navbar">
+            <div class="container nav-content">
+                <a href="index-en.html" class="nav-logo" aria-label="Home - MC PRIME">
+                    <img src="mc-prime-nfc.png" alt="MC PRIME - Smart Business Cards" loading="eager" width="60" height="60" style="height: 44px; width: auto;">
+                </a>
+                <ul class="nav-links" id="nav-links">
+                    <li><a href="index-en.html#editor-services">Smart Editor</a></li>
+                    <li><a href="index-en.html#how-it-works">How It Works</a></li>
+                    <li><a href="index-en.html#comparison">Comparison</a></li>
+                    <li><a href="index-en.html#nfc-articles">Articles &amp; Guides</a></li>
+                    <li><a href="gallery-en.html">Gallery</a></li>
+                    <li><a href="blog-en.html">Blog</a></li>
+                    <li><a href="contact-en.html">Contact</a></li>
+                </ul>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <a href="index.html" class="lang-btn" aria-label="التبديل إلى العربية" onclick="if(window.switchLanguage){switchLanguage('ar');return false;}">عربي</a>
+                    <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started Free</a>
+                </div>
+                <div class="nav-toggle" id="nav-toggle" aria-label="Open Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
 
     <main id="main-content" role="main">
 
@@ -164,9 +182,9 @@
                                     <span style="color:var(--primary-color); font-weight:700;">#MC-88290</span>
                                 </div>
                                 <div class="card-back-qr-box">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=https://www.mcprim.com/nfc/editor-en.html" alt="Scan QR Code" loading="eager">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=https://www.mcprim.com/nfc/editor-en.html" alt="Scan QR Code to Open Editor" loading="eager">
                                 </div>
-                                <span style="font-size:0.75rem; color:#8b949e; margin-bottom:2px;">Scan to open live editor</span>
+                                <span style="font-size:0.75rem; color:#8b949e; margin-bottom:2px;">Scan code to try editor</span>
                                 <span class="card-website-tag" style="font-size:0.8rem;">www.mcprim.com</span>
                                 <div class="card-back-socials">
                                     <div class="card-back-social-icon"><i class="fab fa-whatsapp"></i></div>
@@ -189,6 +207,100 @@
                         </div>
                     </div>
 
+                </div>
+            </div>
+        </section>
+
+        <!-- SMART EDITOR SHOWCASE & SERVICES -->
+        <section id="editor-services" class="editor-showcase-section" aria-labelledby="editor-showcase-title">
+            <div class="container">
+                <div style="text-align:center; max-width:760px; margin:0 auto 20px;">
+                    <div class="hero-story-badge"><i class="fas fa-wand-magic-sparkles"></i> MC PRIME Smart Studio</div>
+                    <h2 id="editor-showcase-title" style="font-family:'Cairo'; font-size:2.4rem; font-weight:800; color:#fff; margin-bottom:12px;">
+                        All-in-One Smart Card Editor: Design Your Identity Without Code
+                    </h2>
+                    <p style="color:#8b949e; font-size:1.05rem; line-height:1.7;">
+                        Everything you need to craft an executive digital profile, generate dynamic QR codes, and update your details on the cloud anytime.
+                    </p>
+                </div>
+
+                <!-- 8-Feature Bento Grid -->
+                <div class="editor-feature-grid">
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-cube"></i></div>
+                        <h3>Interactive 3D Preview</h3>
+                        <p>Interact with both front and back faces in real-time as you enter your details, title, and customize branding.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-layer-group"></i></div>
+                        <h3>Multiple Layouts &amp; Themes</h3>
+                        <p>Choose from classic, modern, horizontal, vertical, and luxury frosted glassmorphism templates.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-palette"></i></div>
+                        <h3>AI Brand Customization</h3>
+                        <p>Upload your logo, harmonize color gradients effortlessly, and access exclusive AI-generated backgrounds.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-address-book"></i></div>
+                        <h3>1-Click vCard Contact Save</h3>
+                        <p>Clients save your phone, email, website, and GPS location directly into their mobile address book with one tap.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-qrcode"></i></div>
+                        <h3>Dynamic Smart QR Codes</h3>
+                        <p>Instant high-res QR code generated automatically for devices without NFC compatibility.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+                        <h3>Instant Cloud Sync</h3>
+                        <p>Update your phone, bio, or links anytime, updating automatically on the same card without reprinting.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3>Analytics &amp; Engagement Stats</h3>
+                        <p>Track views, taps, and social interactions with a precise real-time dashboard.</p>
+                    </div>
+
+                    <div class="editor-bento-card">
+                        <div class="editor-bento-icon"><i class="fas fa-users-gear"></i></div>
+                        <h3>Enterprise &amp; Team Management</h3>
+                        <p>Centralized portal to deploy, manage, and brand digital cards across your entire organization.</p>
+                    </div>
+                </div>
+
+                <!-- Interactive Workflow Banner -->
+                <div class="editor-flow-banner">
+                    <div style="flex:1; min-width:280px;">
+                        <h3 style="font-family:'Cairo'; font-size:1.4rem; font-weight:800; color:#fff; margin-bottom:12px;">
+                            <i class="fas fa-bolt" style="color:var(--primary-color);"></i> Get Started in 3 Simple Steps
+                        </h3>
+                        <div class="editor-flow-steps">
+                            <div class="editor-flow-step">
+                                <span class="editor-flow-step-num">1</span>
+                                <span>Choose layout &amp; template</span>
+                            </div>
+                            <div class="editor-flow-step">
+                                <span class="editor-flow-step-num">2</span>
+                                <span>Add your info &amp; links</span>
+                            </div>
+                            <div class="editor-flow-step">
+                                <span class="editor-flow-step-num">3</span>
+                                <span>Save &amp; share instantly</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="editor-en.html" class="btn btn-primary btn-lg" style="white-space:nowrap; padding:14px 32px; font-size:1.05rem;">
+                            <i class="fas fa-magic"></i> Launch Editor Free
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -306,6 +418,148 @@
             </div>
         </section>
 
+        <!-- NFC ARTICLES & KNOWLEDGE HUB -->
+        <section id="nfc-articles" class="nfc-articles-section" aria-labelledby="articles-title">
+            <div class="container">
+                <div style="text-align:center; max-width:760px; margin:0 auto 25px;">
+                    <div class="hero-story-badge"><i class="fas fa-book-open"></i> Knowledge Hub &amp; Articles</div>
+                    <h2 id="articles-title" style="font-family:'Cairo'; font-size:2.4rem; font-weight:800; color:#fff; margin-bottom:12px;">
+                        Explore Smart NFC Card Applications Across Industries
+                    </h2>
+                    <p style="color:#8b949e; font-size:1.05rem; line-height:1.7;">
+                        Practical guides, ROI blueprints, and growth strategies explaining how businesses use NFC to maximize conversions and elevate networking.
+                    </p>
+                </div>
+
+                <!-- Category Filter Buttons -->
+                <div class="article-category-filters">
+                    <button type="button" class="article-filter-btn active" onclick="filterHomeArticles('all', this)">All Articles</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('guides', this)">Guides</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('real-estate', this)">Real Estate</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('medical', this)">Medical</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('events', this)">Events</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('restaurants', this)">Restaurants</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('companies', this)">Corporate</button>
+                    <button type="button" class="article-filter-btn" onclick="filterHomeArticles('freelancers', this)">Freelancers</button>
+                </div>
+
+                <!-- Articles Grid -->
+                <div class="home-article-grid" id="home-articles-container">
+                    
+                    <!-- Article 1: Ultimate Guide -->
+                    <a href="blog-nfc-ultimate-guide-en.html" class="home-article-card" data-cat="guides">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-events-en.svg" alt="The Ultimate Guide to Smart NFC Cards 2026" loading="lazy">
+                            <span class="home-article-tag" style="background:linear-gradient(135deg,#d4af37,#c5a059); color:#0d1117; font-weight:800;">Ultimate Guide</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> Jan 10, 2026</span>
+                                <span><i class="far fa-clock"></i> 7 min read</span>
+                            </div>
+                            <h3>The Ultimate Guide to Smart NFC Business Cards (2026): How They Work &amp; 10 Revolutionary Uses</h3>
+                            <p>Everything you need to know about NFC chips, NTAG specifications, and top practical applications to cut printing costs.</p>
+                            <span class="home-article-readmore">Read Full Guide <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </a>
+
+                    <!-- Article 2: Real Estate -->
+                    <a href="blog-nfc-real-estate-en.html" class="home-article-card" data-cat="real-estate">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-companies-en.svg" alt="NFC Cards for Real Estate Agents" loading="lazy">
+                            <span class="home-article-tag">Real Estate</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> Jan 20, 2026</span>
+                                <span><i class="far fa-clock"></i> 6 min read</span>
+                            </div>
+                            <h3>NFC Cards for Real Estate: Boost Property Sales with 360 Virtual Tours &amp; Interactive Portfolios</h3>
+                            <p>Share project brochures, 3D virtual walkthroughs, and Google Maps pin locations with buyers in a single phone tap.</p>
+                            <span class="home-article-readmore">Read Article <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </a>
+
+                    <!-- Article 3: Medical Clinics -->
+                    <a href="blog-nfc-medical-clinics-en.html" class="home-article-card" data-cat="medical">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-design-en.svg" alt="NFC Cards for Doctors and Medical Clinics" loading="lazy">
+                            <span class="home-article-tag">Healthcare</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> Feb 1, 2026</span>
+                                <span><i class="far fa-clock"></i> 6 min read</span>
+                            </div>
+                            <h3>NFC Cards for Doctors &amp; Medical Clinics: Seamless Patient Experience &amp; 1-Tap Booking</h3>
+                            <p>Elevate patient care by providing 1-tap instant appointment booking, clinic directions, and emergency contacts on mobile.</p>
+                            <span class="home-article-readmore">Read Article <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </a>
+
+                    <!-- Article 4: Events & Exhibitions -->
+                    <a href="blog-nfc-at-events-en.html" class="home-article-card" data-cat="events">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-events-en.svg" alt="5 Ways to Use NFC at Events" loading="lazy">
+                            <span class="home-article-tag">Events &amp; Expos</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> Sep 24, 2025</span>
+                                <span><i class="far fa-clock"></i> 5 min read</span>
+                            </div>
+                            <h3>5 Innovative Ways to Use NFC Business Cards at Events &amp; Expos for Lead Capture</h3>
+                            <p>Turn your smart card into an inbound marketing tool to capture high-value qualified leads in seconds during conferences.</p>
+                            <span class="home-article-readmore">Read Article <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </a>
+
+                    <!-- Article 5: Digital Menus -->
+                    <a href="blog-digital-menus-for-restaurants-en.html" class="home-article-card" data-cat="restaurants">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-restaurants-en.svg" alt="Digital Menus for Restaurants" loading="lazy">
+                            <span class="home-article-tag">Restaurants &amp; Cafes</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> Oct 5, 2025</span>
+                                <span><i class="far fa-clock"></i> 6 min read</span>
+                            </div>
+                            <h3>Digital Menus for Restaurants: Why They Are Essential in 2025 and Boost Sales</h3>
+                            <p>Discover how contactless digital menus increase average ticket size by 20% while saving thousands on print menus.</p>
+                            <span class="home-article-readmore">Read Article <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </a>
+
+                    <!-- Article 6: Freelancers -->
+                    <a href="nfc-for-freelancers-en.html" class="home-article-card" data-cat="freelancers">
+                        <div class="home-article-thumb-wrap">
+                            <img src="images/blog-freelancers-en.svg" alt="NFC Cards for Freelancers" loading="lazy">
+                            <span class="home-article-tag">Freelancers</span>
+                        </div>
+                        <div class="home-article-body">
+                            <div class="home-article-meta">
+                                <span><i class="far fa-calendar-alt"></i> Oct 18, 2025</span>
+                                <span><i class="far fa-clock"></i> 6 min read</span>
+                            </div>
+                            <h3>Freelancer's Blueprint: How to Win High-Value Clients with Smart NFC Cards</h3>
+                            <p>Instantly showcase your Behance, GitHub, or meeting schedule on a client's device with a single tap.</p>
+                            <span class="home-article-readmore">Read Article <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </a>
+
+                </div>
+
+                <!-- View All Link -->
+                <div style="text-align:center; margin-top:35px;">
+                    <a href="blog-en.html" class="btn btn-secondary" style="padding:12px 28px; font-size:1rem; border-radius:50px;">
+                        <span>View All Articles in Blog</span>
+                        <i class="fas fa-arrow-right" style="margin-left:8px;"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
         <!-- FINAL CTA -->
         <section style="padding:80px 0; background:linear-gradient(135deg, rgba(197, 160, 89, 0.12) 0%, rgba(13, 17, 23, 0.95) 100%); border-top:1px solid rgba(197, 160, 89, 0.25); text-align:center;">
             <div class="container" style="max-width:750px;">
@@ -404,6 +658,46 @@
                 anchor.href = 'editor-en.html?name=' + encodeURIComponent(nameInput.value.trim());
             }
         }
+
+        function filterHomeArticles(cat, btn) {
+            var buttons = document.querySelectorAll('.article-filter-btn');
+            buttons.forEach(function(b) { b.classList.remove('active'); });
+            if (btn) btn.classList.add('active');
+
+            var cards = document.querySelectorAll('#home-articles-container .home-article-card');
+            cards.forEach(function(card) {
+                if (cat === 'all' || card.getAttribute('data-cat') === cat) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Mobile Nav Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggle = document.getElementById('nav-toggle');
+            var navLinks = document.getElementById('nav-links');
+            if (toggle && navLinks) {
+                toggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+                });
+            }
+
+            var backToTop = document.getElementById('back-to-top');
+            if (backToTop) {
+                window.addEventListener('scroll', function() {
+                    if (window.pageYOffset > 400) {
+                        backToTop.classList.add('visible');
+                    } else {
+                        backToTop.classList.remove('visible');
+                    }
+                });
+                backToTop.addEventListener('click', function() {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+        });
     </script>
 </body>
 </html>
