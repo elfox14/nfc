@@ -603,16 +603,24 @@
         <aside class="pro-sidebar pro-sidebar-right" id="panel-elements">
 
             <!-- ═══ LOGO PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open>
-                <summary class="lp-summary">
-                    <span class="lp-summary-icon"><i class="fas fa-image"></i></span>
-                    <span class="lp-summary-label">Logo</span>
-                    <!-- Toggle Switch -->
-                    <label class="lp-toggle" title="Show / Hide Logo" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="visibility-logo" checked>
-                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
-                    </label>
-                </summary>
+            <details class="accordion-card lp-accordion" id="accordion-section-logo" open>
+        <summary class="accordion-header">
+            <div class="accordion-title-wrap">
+                <span class="accordion-step-num">01</span>
+                <span class="accordion-icon"><i class="fas fa-image"></i></span>
+                <div class="accordion-text">
+                    <span class="accordion-title">Brand Logo</span>
+                    <span class="accordion-subtitle">Upload, resize & position logo</span>
+                </div>
+            </div>
+            <div class="accordion-header-actions">
+                <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="visibility-logo" checked>
+                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                </label>
+                <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+        </summary>
 
                 <div class="fieldset-content lp-body" id="logo-drop-zone">
                     <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
@@ -782,16 +790,24 @@
             <!-- Panel JS moved to editor-panels.js -->
 
             <!-- ═══ PHOTO PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open>
-                <summary class="lp-summary">
-                    <span class="lp-summary-icon"><i class="fas fa-user-circle"></i></span>
-                    <span class="lp-summary-label">Personal Photo</span>
-                    <!-- Toggle Switch -->
-                    <label class="lp-toggle" title="Show / Hide Photo" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="visibility-photo" checked>
-                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
-                    </label>
-                </summary>
+            <details class="accordion-card lp-accordion" id="accordion-section-photo" open>
+        <summary class="accordion-header">
+            <div class="accordion-title-wrap">
+                <span class="accordion-step-num">02</span>
+                <span class="accordion-icon"><i class="fas fa-user-circle"></i></span>
+                <div class="accordion-text">
+                    <span class="accordion-title">Profile Photo</span>
+                    <span class="accordion-subtitle">Upload & style portrait frame</span>
+                </div>
+            </div>
+            <div class="accordion-header-actions">
+                <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="visibility-photo" checked>
+                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                </label>
+                <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+        </summary>
 
                 <div class="fieldset-content lp-body" id="photo-controls-fieldset">
                     <div class="drop-zone-overlay"><i class="fas fa-upload" aria-hidden="true"></i><span>Drop image
@@ -1002,15 +1018,24 @@
 
 
             <!-- ═══ NAME PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open id="name-accordion">
-                <summary class="lp-summary">
-                    <span class="lp-summary-icon"><i class="fas fa-user-tag"></i></span>
-                    <span class="lp-summary-label">Full Name</span>
-                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="visibility-name" checked>
-                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
-                    </label>
-                </summary>
+            <details class="accordion-card lp-accordion" open id="name-accordion">
+        <summary class="accordion-header">
+            <div class="accordion-title-wrap">
+                <span class="accordion-step-num">03</span>
+                <span class="accordion-icon"><i class="fas fa-user-tag"></i></span>
+                <div class="accordion-text">
+                    <span class="accordion-title">Full Name</span>
+                    <span class="accordion-subtitle">Customize name, fonts & colors</span>
+                </div>
+            </div>
+            <div class="accordion-header-actions">
+                <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="visibility-name" checked>
+                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                </label>
+                <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+        </summary>
 
                 <div class="fieldset-content lp-body" id="name-controls-fieldset">
                     <div class="lp-section" style="padding-top:0;">
@@ -1095,15 +1120,24 @@
             </details>
 
             <!-- ═══ TAGLINE PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open id="tagline-accordion">
-                <summary class="lp-summary">
-                    <span class="lp-summary-icon"><i class="fas fa-briefcase"></i></span>
-                    <span class="lp-summary-label">Job Title</span>
-                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="visibility-tagline" checked>
-                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
-                    </label>
-                </summary>
+            <details class="accordion-card lp-accordion" open id="tagline-accordion">
+        <summary class="accordion-header">
+            <div class="accordion-title-wrap">
+                <span class="accordion-step-num">04</span>
+                <span class="accordion-icon"><i class="fas fa-briefcase"></i></span>
+                <div class="accordion-text">
+                    <span class="accordion-title">Job Title</span>
+                    <span class="accordion-subtitle">Professional role or business name</span>
+                </div>
+            </div>
+            <div class="accordion-header-actions">
+                <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="visibility-tagline" checked>
+                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                </label>
+                <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+        </summary>
 
                 <div class="fieldset-content lp-body" id="tagline-controls-fieldset">
                     <div class="lp-section" style="padding-top:0;">
@@ -1188,15 +1222,24 @@
             </details>
 
             <!-- ═══ BIO / ABOUT PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open id="bio-accordion">
-                <summary class="lp-summary">
-                    <span class="lp-summary-icon"><i class="fas fa-align-right"></i></span>
-                    <span class="lp-summary-label">About Me (Bio)</span>
-                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="visibility-bio" checked>
-                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
-                    </label>
-                </summary>
+            <details class="accordion-card lp-accordion" open id="bio-accordion">
+        <summary class="accordion-header">
+            <div class="accordion-title-wrap">
+                <span class="accordion-step-num">05</span>
+                <span class="accordion-icon"><i class="fas fa-align-right"></i></span>
+                <div class="accordion-text">
+                    <span class="accordion-title">About Me (Bio)</span>
+                    <span class="accordion-subtitle">Short description & availability</span>
+                </div>
+            </div>
+            <div class="accordion-header-actions">
+                <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="visibility-bio" checked>
+                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                </label>
+                <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+        </summary>
 
                 <div class="fieldset-content lp-body" id="bio-controls-fieldset">
                     <div class="lp-section" style="padding-top:0;">
@@ -1219,15 +1262,24 @@
             </details>
 
             <!-- ═══ PHONE NUMBERS PANEL — Premium v2 ═══ -->
-            <details class="lp-details-final lp-accordion" id="phones-accordion">
-                <summary class="lp-summary">
-                    <span class="lp-summary-icon"><i class="fas fa-phone-alt"></i></span>
-                    <span class="lp-summary-label">Phone Numbers</span>
-                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="visibility-phones" checked>
-                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
-                    </label>
-                </summary>
+            <details class="accordion-card lp-accordion" id="phones-accordion">
+        <summary class="accordion-header">
+            <div class="accordion-title-wrap">
+                <span class="accordion-step-num">06</span>
+                <span class="accordion-icon"><i class="fas fa-phone-alt"></i></span>
+                <div class="accordion-text">
+                    <span class="accordion-title">Phone Numbers</span>
+                    <span class="accordion-subtitle">Manage numbers & button styles</span>
+                </div>
+            </div>
+            <div class="accordion-header-actions">
+                <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="visibility-phones" checked>
+                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                </label>
+                <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+        </summary>
 
                 <div class="fieldset-content lp-body">
 
@@ -1402,15 +1454,24 @@
 
 
             <!-- ═══ QR CODE PANEL — Premium v2 ═══ -->
-            <details class="fieldset-accordion lp-accordion" open id="qr-code-accordion">
-                <summary class="lp-summary">
-                    <span class="lp-summary-icon"><i class="fas fa-qrcode"></i></span>
-                    <span class="lp-summary-label">QR Code</span>
-                    <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="visibility-qr" checked>
-                        <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
-                    </label>
-                </summary>
+            <details class="accordion-card lp-accordion" id="qr-code-accordion">
+        <summary class="accordion-header">
+            <div class="accordion-title-wrap">
+                <span class="accordion-step-num">07</span>
+                <span class="accordion-icon"><i class="fas fa-qrcode"></i></span>
+                <div class="accordion-text">
+                    <span class="accordion-title">QR Code</span>
+                    <span class="accordion-subtitle">Generate & style dynamic QR link</span>
+                </div>
+            </div>
+            <div class="accordion-header-actions">
+                <label class="lp-toggle" title="Show / Hide" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="visibility-qr" checked>
+                    <span class="lp-toggle-track"><span class="lp-toggle-thumb"></span></span>
+                </label>
+                <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+        </summary>
 
                 <div class="fieldset-content lp-body">
 
