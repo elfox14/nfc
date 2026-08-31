@@ -1,26 +1,37 @@
 :root {
-    --text-primary: #e6f0f7;
-    --text-secondary: #bcc9d4;
-    --accent-primary: #4da6ff;
-    --accent-secondary: #364f6b;
-    --button-text: #ffffff;
-    --page-bg: #1c2a3b;
-    --form-bg: #243447;
-    --danger-color: #e74c3c;
-    --success-color: #2ecc71;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --accent-primary: #c5a059;
+    --accent-primary-hover: #d4af37;
+    --accent-primary-light: #e6ca85;
+    --accent-secondary: #21262d;
+    --accent-secondary-hover: #30363d;
+    --button-text: #0d1117;
+    --page-bg: #0d1117;
+    --form-bg: #161b22;
+    --border-subtle: rgba(240, 246, 252, 0.08);
+    --border-accent: rgba(197, 160, 89, 0.25);
+    --danger-color: #f85149;
+    --success-color: #2ea043;
     --toolbar-height: 60px;
 }
 
 [data-theme="light"] {
-    --text-primary: #2c3e50;
-    --text-secondary: #5a6b7c;
-    --accent-primary: #2980b9;
-    --accent-secondary: #dcdde1;
+    --text-primary: #1f2328;
+    --text-secondary: #656d76;
+    --accent-primary: #9e7a2f;
+    --accent-primary-hover: #856322;
+    --accent-primary-light: #b38e3e;
+    --accent-secondary: #d0d7de;
+    --accent-secondary-hover: #afb8c1;
     --button-text: #ffffff;
-    --page-bg: #f5f6fa;
+    --page-bg: #f6f8fa;
     --form-bg: #ffffff;
-    --danger-color: #e74c3c;
-    --success-color: #27ae60;
+    --border-subtle: rgba(31, 35, 40, 0.12);
+    --border-accent: rgba(158, 122, 47, 0.3);
+    --danger-color: #cf222e;
+    --success-color: #1a7f37;
+    --toolbar-height: 60px;
 }
 
 html {
@@ -224,8 +235,8 @@ html[dir="ltr"] .pro-sidebar-right {
 
 .layout-option input:checked+.layout-preview-box {
     border-color: var(--accent-primary);
-    background-color: rgba(77, 166, 255, 0.1);
-    box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.2);
+    background-color: rgba(197, 160, 89, 0.1);
+    box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.2);
 }
 
 .layout-option input:checked+.layout-preview-box i,
@@ -403,7 +414,7 @@ html[dir="ltr"] .pro-sidebar-right {
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background-color: #4a6a8a;
+    background-color: #30363d;
 }
 
 #direction-toggle-btn.btn-secondary {
@@ -468,7 +479,7 @@ html[dir="ltr"] .pro-sidebar-right {
 .form-group select:focus,
 .form-group textarea:focus {
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.2);
+    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2);
     outline: none;
 }
 
@@ -939,7 +950,7 @@ html[dir="ltr"] .dynamic-social-link span {
 
 
 .card-content-layer.drop-target-active {
-    background-color: rgba(77, 166, 255, 0.2);
+    background-color: rgba(197, 160, 89, 0.2);
     outline: 2px dashed var(--accent-primary);
 }
 
@@ -1271,7 +1282,7 @@ html[dir="ltr"] .cards-wrapper[data-layout="modern"] #card-tagline {
     }
 
     50% {
-        box-shadow: 0 0 10px 3px rgba(77, 166, 255, 0.6);
+        box-shadow: 0 0 10px 3px rgba(197, 160, 89, 0.6);
     }
 
     100% {
@@ -1348,7 +1359,7 @@ html[dir="ltr"] .cards-wrapper[data-layout="modern"] #card-tagline {
 .drop-zone-overlay {
     position: absolute;
     inset: 0;
-    background-color: rgba(77, 166, 255, 0.2);
+    background-color: rgba(197, 160, 89, 0.2);
     border: 2px dashed var(--accent-primary);
     border-radius: 8px;
     display: flex;
@@ -2019,7 +2030,7 @@ html[dir="ltr"] .testimonial-card {
 }
 
 #owner-analytics {
-    background: rgba(77, 166, 255, 0.1);
+    background: rgba(197, 160, 89, 0.1);
     border-color: var(--accent-primary);
 }
 
@@ -2196,7 +2207,7 @@ body.collaboration-active #start-collab-btn:hover {
 .site-footer {
     background: var(--surface-color);
     padding: 20px 0;
-    border-top: 1px solid rgba(77, 166, 255, 0.1);
+    border-top: 1px solid rgba(197, 160, 89, 0.1);
     margin-top: auto;
     /* Push to bottom if flex container */
     width: 100%;
@@ -2255,7 +2266,7 @@ body.collaboration-active #start-collab-btn:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(77, 166, 255, 0.1);
+    background: rgba(197, 160, 89, 0.1);
     border-radius: 50%;
     font-size: 1rem;
     transition: all 0.3s ease;

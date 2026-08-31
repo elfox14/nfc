@@ -119,9 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cardElement = document.createElement('div');
                 cardElement.className = 'gallery-card';
 
-                const viewUrl = isDemo ? '#' : `/nfc/viewer.html?id=${design.shortId}`;
-                const editUrl = isDemo ? '/nfc/editor.html' : `/nfc/editor.html?id=${design.shortId}`;
-                const shareUrl = isDemo ? '' : `${window.location.origin}/nfc/viewer.html?id=${design.shortId}`;
+                const viewUrl = isDemo ? '#' : `viewer.html?id=${design.shortId}`;
+                const editUrl = isDemo ? 'editor.html' : `editor.html?id=${design.shortId}`;
+                const shareUrl = isDemo ? '' : `${window.location.origin}viewer.html?id=${design.shortId}`;
 
                 // Get name (support bilingual)
                 const name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || 'اسم غير محدد';
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             function showDemoCards() {
                 grid.innerHTML = '';
                 usingFallback = true;
-                demoNotice.style.display = 'flex';
+                if (demoNotice) demoNotice.style.display = 'flex';
                 errorContainer.style.display = 'none';
                 emptyState.style.display = 'none';
                 loadMoreContainer.style.display = 'none';
@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isLoading) return;
                 isLoading = true;
                 usingFallback = false;
-                demoNotice.style.display = 'none';
+                if (demoNotice) demoNotice.style.display = 'none';
 
                 if (!append) {
                     showSkeletons(8);
@@ -410,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     "@type": "CreativeWork",
                                     "name": design.data.inputs['input-name'] || 'تصميم بطاقة عمل',
                                     "description": design.data.inputs['input-tagline'] || '',
-                                    "url": `/nfc/viewer.html?id=${design.shortId}`
+                                    "url": `viewer.html?id=${design.shortId}`
                                 }
                             });
                         });

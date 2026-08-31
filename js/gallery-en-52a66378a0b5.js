@@ -115,9 +115,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cardElement = document.createElement('div');
                 cardElement.className = 'gallery-card';
 
-                const viewUrl = isDemo ? '#' : `/nfc/viewer-en.html?id=${design.shortId}`;
-                const editUrl = isDemo ? '/nfc/editor-en.html' : `/nfc/editor-en.html?id=${design.shortId}`;
-                const shareUrl = isDemo ? '' : `${window.location.origin}/nfc/viewer-en.html?id=${design.shortId}`;
+                const viewUrl = isDemo ? '#' : `viewer-en.html?id=${design.shortId}`;
+                const editUrl = isDemo ? 'editor-en.html' : `editor-en.html?id=${design.shortId}`;
+                const shareUrl = isDemo ? '' : `${window.location.origin}viewer-en.html?id=${design.shortId}`;
 
                 const name = inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || 'Unnamed';
                 const tagline = inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || 'No description';
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             function showDemoCards() {
                 grid.innerHTML = '';
                 usingFallback = true;
-                demoNotice.style.display = 'flex';
+                if (demoNotice) demoNotice.style.display = 'flex';
                 errorContainer.style.display = 'none';
                 emptyState.style.display = 'none';
                 loadMoreContainer.style.display = 'none';
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isLoading) return;
                 isLoading = true;
                 usingFallback = false;
-                demoNotice.style.display = 'none';
+                if (demoNotice) demoNotice.style.display = 'none';
 
                 if (!append) {
                     showSkeletons(8);
@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     "@type": "CreativeWork",
                                     "name": design.data.inputs['input-name'] || 'Business Card Design',
                                     "description": design.data.inputs['input-tagline'] || '',
-                                    "url": `/nfc/viewer-en.html?id=${design.shortId}`
+                                    "url": `viewer-en.html?id=${design.shortId}`
                                 }
                             });
                         });
