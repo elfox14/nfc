@@ -86,7 +86,7 @@
         padding: 0 10px !important;
         margin: 0 !important;
         border-radius: 0 !important;
-        background: rgba(13, 17, 23, 0.95) !important;
+        background: rgba(15, 23, 42, 0.95) !important;
         backdrop-filter: blur(20px) saturate(180%) !important;
         -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -131,10 +131,10 @@
         padding: 4px 8px !important;
         font-size: 11px !important;
         font-weight: 700 !important;
-        background: rgba(197, 160, 89, 0.12) !important;
+        background: rgba(77, 166, 255, 0.12) !important;
         border-radius: 12px !important;
-        border: 1px solid rgba(197, 160, 89, 0.25) !important;
-        color: #c5a059 !important;
+        border: 1px solid rgba(77, 166, 255, 0.25) !important;
+        color: #4da6ff !important;
         height: 32px !important;
         align-items: center !important;
         gap: 3px !important;
@@ -276,8 +276,8 @@
         min-height: 240px !important; /* Ensure it doesn't collapse too much */
         max-height: 35vh !important;
         z-index: 100 !important;
-        background: radial-gradient(ellipse at center, #0d1117 0%, #0d1117 100%) !important;
-        border-bottom: 1px solid rgba(197, 160, 89, 0.15) !important;
+        background: radial-gradient(ellipse at center, #1a2a3b 0%, #0f172a 100%) !important;
+        border-bottom: 1px solid rgba(77, 166, 255, 0.15) !important;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
         padding: 0 !important;
         margin: 0 !important;
@@ -376,9 +376,9 @@
         margin-top: 4px;
         padding: 5px 16px !important;
         font-size: 0.72rem !important;
-        background: rgba(197, 160, 89, 0.12) !important;
-        border: 1px solid rgba(197, 160, 89, 0.25) !important;
-        color: #c5a059 !important;
+        background: rgba(77, 166, 255, 0.12) !important;
+        border: 1px solid rgba(77, 166, 255, 0.25) !important;
+        color: #4da6ff !important;
         backdrop-filter: blur(10px) !important;
         border-radius: 20px !important;
         z-index: 110 !important;
@@ -389,7 +389,7 @@
 
     #flip-card-btn-mobile:active {
         transform: scale(0.95) !important;
-        background: rgba(197, 160, 89, 0.25) !important;
+        background: rgba(77, 166, 255, 0.25) !important;
     }
 
 
@@ -408,7 +408,7 @@
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
         padding: 16px 14px 200px 14px !important;
-        background: rgba(13, 17, 23, 0.98) !important;
+        background: rgba(15, 23, 42, 0.98) !important;
         backdrop-filter: blur(12px) !important;
         border-radius: 0 !important;
         border: none !important;
@@ -450,7 +450,7 @@
 
     .pro-sidebar .fieldset-accordion summary:active,
     .pro-sidebar .lp-summary:active {
-        background: rgba(197, 160, 89, 0.08) !important;
+        background: rgba(77, 166, 255, 0.08) !important;
     }
 
     /* Form inputs — larger touch targets, prevent iOS zoom */
@@ -472,8 +472,8 @@
     .pro-sidebar input:focus,
     .pro-sidebar select:focus,
     .pro-sidebar textarea:focus {
-        border-color: rgba(197, 160, 89, 0.4) !important;
-        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.1) !important;
+        border-color: rgba(77, 166, 255, 0.4) !important;
+        box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.1) !important;
         outline: none !important;
     }
 
@@ -515,7 +515,7 @@
     }
 
     .pro-sidebar::-webkit-scrollbar-thumb {
-        background: rgba(197, 160, 89, 0.2) !important;
+        background: rgba(77, 166, 255, 0.2) !important;
         border-radius: 3px !important;
     }
 
@@ -546,7 +546,7 @@
         right: 0 !important;
         height: 64px !important;
         z-index: 2200 !important;
-        background: rgba(13, 17, 23, 0.92) !important;
+        background: rgba(15, 23, 42, 0.92) !important;
         backdrop-filter: blur(20px) saturate(180%) !important;
         -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -591,12 +591,12 @@
 
     /* Active state — glow effect */
     .mobile-nav-item.active {
-        color: #c5a059 !important;
+        color: #4da6ff !important;
     }
 
     .mobile-nav-item.active i {
         transform: translateY(-2px) scale(1.1) !important;
-        filter: drop-shadow(0 0 8px rgba(197, 160, 89, 0.4)) !important;
+        filter: drop-shadow(0 0 8px rgba(77, 166, 255, 0.4)) !important;
     }
 
     .mobile-nav-item.active::after {
@@ -607,7 +607,7 @@
         transform: translateX(-50%) !important;
         width: 28px !important;
         height: 3px !important;
-        background: linear-gradient(90deg, #c5a059, #d4af37) !important;
+        background: linear-gradient(90deg, #4da6ff, #2d86ff) !important;
         border-radius: 0 0 4px 4px !important;
     }
 
@@ -648,7 +648,7 @@
     .click-to-edit-highlight {
         animation: highlightPulse 1s ease;
         border: 1px solid var(--accent-primary) !important;
-        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.3) !important;
+        box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.3) !important;
         border-radius: 6px;
     }
 
@@ -703,7 +703,7 @@
         right: 10px !important;
         z-index: 2300 !important;
         min-width: 200px !important;
-        background: rgba(13, 17, 23, 0.96) !important;
+        background: rgba(15, 23, 42, 0.96) !important;
         backdrop-filter: blur(20px) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 14px !important;
@@ -762,12 +762,12 @@
 
 @keyframes highlightPulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.7);
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.7);
     }
     70% {
-        box-shadow: 0 0 0 10px rgba(197, 160, 89, 0);
+        box-shadow: 0 0 0 10px rgba(77, 166, 255, 0);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(197, 160, 89, 0);
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0);
     }
 }
