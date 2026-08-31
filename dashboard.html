@@ -277,6 +277,7 @@
         .status-approved { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2); }
         .status-rejected { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.2); }
 
+
         /* Privacy Options Refined */
         .privacy-options {
             display: grid;
@@ -302,75 +303,6 @@
             border-color: var(--primary-color);
             background: rgba(197, 160, 89, 0.08);
             box-shadow: 0 0 25px rgba(197, 160, 89, 0.1);
-        }
-
-        /* Signature Generator Modal & Quota Banner */
-        .sig-modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.82);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            padding: 20px;
-        }
-        .sig-modal-card {
-            background: #0f172a;
-            border: 1px solid rgba(197, 160, 89, 0.35);
-            border-radius: 24px;
-            max-width: 620px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(197, 160, 89, 0.15);
-            padding: 24px;
-            position: relative;
-        }
-        .sig-modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 16px;
-        }
-        .sig-close-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: none;
-            color: #94a3b8;
-            font-size: 1.5rem;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-        .sig-close-btn:hover {
-            background: rgba(231, 76, 60, 0.2);
-            color: #e74c3c;
-        }
-        .sig-actions-row {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .single-card-banner {
-            background: rgba(197, 160, 89, 0.12);
-            border: 1px solid rgba(197, 160, 89, 0.3);
-            border-radius: 16px;
-            padding: 14px 20px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
         }
 
         /* Sections Transitions */
@@ -490,7 +422,7 @@
     </style>
     <link rel="stylesheet" href="cookie-consent.css">
     <link rel="stylesheet" href="premium-ui.css">
-    <link rel="icon" href="mc-prime-nfc.png" type="image/png">
+  <link rel="icon" href="mc-prime-nfc.png" type="image/png">
 
     <link rel="canonical" href="https://www.mcprim.com/nfc/dashboard.html" />
 
@@ -757,12 +689,24 @@
                         <li><a href="terms.html">شروط الاستخدام</a></li>
                         <li><a href="about.html">من نحن</a></li>
                     </ul>
+                    <div class="social-links" style="margin-top: 1.2rem;">
+                        <a href="https://facebook.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="فيسبوك" title="فيسبوك">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://instagram.com/mcprime" target="_blank" rel="noopener noreferrer" aria-label="إنستغرام" title="إنستغرام">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://linkedin.com/company/mcprime" target="_blank" rel="noopener noreferrer" aria-label="لينكد إن" title="لينكد إن">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 MC PRIME NFC. جميع الحقوق محفوظة.</p>
+                <p>&copy; <span id="footer-year">2026</span> MC PRIME. جميع الحقوق محفوظة.</p>
             </div>
         </div>
     </footer>
 </body>
+
 </html>
