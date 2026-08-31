@@ -434,9 +434,106 @@ document.getElementById('save-privacy-btn')?.addEventListener('click', async () 
 });
 
 function generateSignatureFromDashboard(shortId) {
-    if (!shortId) {
-        window.location.href = 'editor-en.html';
+    if (!shortId || shortId.startsWith('local_')) {
+        alert('The card must be saved to the server first to generate an email signature. Go to the editor and press "Publish".');
         return;
     }
-    window.open(`viewer-en.html?id=${shortId}#signature`, '_blank');
+    showSignatureModal(shortId);
 }
+
+function showSignatureModal(shortId) {
+    const existingModal = document.getElementById('signature-modal');
+    if (existingModal) existingModal.remove();
+
+    const viewerUrl = `${window.location.origin}${window.location.pathname.replace('dashboard-en.html', '')}viewer-en.html?id=${shortId}`;
+    const cardData = (window.myLoadedDesigns || []).find(d => d.shortId === shortId);
+    const name = cardData?.title || cardData?.data?.inputs?.['input-name_en'] || cardData?.data?.inputs?.['input-name'] || 'Full Name';
+    const tagline = cardData?.data?.inputs?.['input-tagline_en'] || cardData?.data?.inputs?.['input-tagline'] || 'Job Title';
+    const phone = cardData?.data?.inputs?.['input-phone'] || '';
+    const email = cardData?.data?.inputs?.['input-email'] || '';
+
+    const htmlSig = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:14px;color:#333;">
+  <tr>
+    <td style="padding-left:12px;border-left:3px solid #c5a059;">
+      <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${name}</div>
+      <div style="color:#666;font-size:13px;margin-top:2px;">${tagline}</div>
+      ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${phone}</div>` : ''}
+      ${email ? `<div style="color:#555;">✉️ ${email}</div>` : ''}
+      <div style="margin-top:6px;">
+        <a href="${viewerUrl}" style="color:#c5a059;text-decoration:none;font-size:12px;border:1px solid #c5a059;padding:3px 10px;border-radius:20px;">🪪 My Digital Card</a>
+      </div>
+    </td>
+  </tr>
+</table>`;
+
+    const modal = document.createElement('div');
+    modal.id = 'signature-modal';
+    modal.innerHTML = `
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+            <div style="background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid rgba(197,160,89,0.3);border-radius:24px;padding:36px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;position:relative;">
+                <button onclick="document.getElementById('signature-modal').remove()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;">✕</button>
+                
+                <h2 style="color:#c5a059;font-family:'Poppins',sans-serif;margin-bottom:8px;font-size:1.5rem;"><i class="fas fa-signature" style="margin-right:8px;"></i>Professional Email Signature</h2>
+                <p style="color:#94a3b8;margin-bottom:28px;font-size:0.9rem;">Copy the code below and paste it in your email signature settings (Gmail, Outlook, etc.).</p>
+
+                <div style="margin-bottom:20px;">
+                    <h4 style="color:white;margin-bottom:12px;font-size:0.95rem;"><i class="fas fa-eye" style="color:#a855f7;margin-right:6px;"></i>Signature Preview</h4>
+                    <div style="background:white;border-radius:12px;padding:20px;">
+                        <table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:14px;color:#333;">
+                          <tr>
+                            <td style="padding-left:12px;border-left:3px solid #c5a059;">
+                              <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${name}</div>
+                              <div style="color:#666;font-size:13px;margin-top:2px;">${tagline}</div>
+                              ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${phone}</div>` : ''}
+                              ${email ? `<div style="color:#555;">✉️ ${email}</div>` : ''}
+                              <div style="margin-top:6px;">
+                                <a href="${viewerUrl}" style="color:#c5a059;text-decoration:none;font-size:12px;border:1px solid #c5a059;padding:3px 10px;border-radius:20px;">🪪 My Digital Card</a>
+                              </div>
+                            </td>
+                          </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <h4 style="color:white;font-size:0.95rem;"><i class="fas fa-code" style="color:#3b82f6;margin-right:6px;"></i>HTML Signature Code</h4>
+                        <button id="copy-sig-btn" onclick="
+                            navigator.clipboard.writeText(document.getElementById('sig-code-area').value).then(()=>{
+                                const btn = document.getElementById('copy-sig-btn');
+                                btn.innerHTML='<i class=\\'fas fa-check\\'></i> Copied!';
+                                btn.style.background='#22c55e';
+                                setTimeout(()=>{btn.innerHTML='<i class=\\'fas fa-copy\\'></i> Copy Code';btn.style.background='';},2000);
+                            });
+                        " style="background:rgba(197,160,89,0.2);color:#c5a059;border:1px solid rgba(197,160,89,0.4);border-radius:10px;padding:8px 16px;cursor:pointer;font-size:0.85rem;"><i class="fas fa-copy"></i> Copy Code</button>
+                    </div>
+                    <textarea id="sig-code-area" readonly style="width:100%;height:150px;background:rgba(0,0,0,0.4);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;font-family:monospace;font-size:0.8rem;resize:none;box-sizing:border-box;direction:ltr;">${htmlSig}</textarea>
+                </div>
+
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:14px;padding:16px;margin-bottom:24px;">
+                    <h4 style="color:#a855f7;margin-bottom:10px;font-size:0.9rem;"><i class="fas fa-info-circle" style="margin-right:6px;"></i>How to Add in Gmail</h4>
+                    <ol style="color:#94a3b8;font-size:0.85rem;padding-left:20px;margin:0;line-height:1.8;">
+                        <li>Open <strong style="color:white;">Gmail</strong> → click ⚙️ Settings → "See all settings"</li>
+                        <li>Go to <strong style="color:white;">"General"</strong> tab and find the "Signature" section</li>
+                        <li>Click <strong style="color:white;">"Create new signature"</strong> and give it a name</li>
+                        <li>In the signature area, press <strong style="color:white;">Ctrl+Shift+V</strong> (Windows) or <strong style="color:white;">Cmd+Shift+V</strong> (Mac) to paste as HTML</li>
+                        <li>Save settings</li>
+                    </ol>
+                </div>
+
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <a href="${viewerUrl}" target="_blank" style="flex:1;min-width:140px;background:rgba(197,160,89,0.15);color:#c5a059;border:1px solid rgba(197,160,89,0.3);border-radius:12px;padding:12px 20px;text-decoration:none;text-align:center;font-weight:600;"><i class="fas fa-external-link-alt" style="margin-right:6px;"></i>Open Card Page</a>
+                    <button onclick="document.getElementById('signature-modal').remove()" style="flex:1;min-width:140px;background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 20px;cursor:pointer;font-weight:600;">Close</button>
+                </div>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector('div').addEventListener('click', (e) => {
+        if (e.target === modal.querySelector('div')) modal.remove();
+    });
+}
+
+// Expose to global scope for inline onclick handlers
+window.deleteDesign = deleteDesign;
+window.generateSignatureFromDashboard = generateSignatureFromDashboard;
+window.showSignatureModal = showSignatureModal;

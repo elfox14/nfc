@@ -92,6 +92,39 @@ function escapeHTML(str) {
     );
 }
 
+function showToast(message, type = 'success') {
+    const existing = document.getElementById('dashboard-toast');
+    if (existing) existing.remove();
+
+    const colors = {
+        success: { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.4)', text: '#22c55e', icon: 'fa-check-circle' },
+        error: { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.4)', text: '#ef4444', icon: 'fa-times-circle' },
+        info: { bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.4)', text: '#60b5ff', icon: 'fa-info-circle' }
+    };
+    const c = colors[type] || colors.info;
+
+    const toast = document.createElement('div');
+    toast.id = 'dashboard-toast';
+    toast.style.cssText = `position:fixed;bottom:30px;right:30px;z-index:10000;background:${c.bg};border:1px solid ${c.border};border-radius:14px;padding:16px 24px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:slideInRight 0.4s ease-out;font-family:'Cairo',sans-serif;max-width:320px;`;
+    toast.innerHTML = `<i class="fas ${c.icon}" style="color:${c.text};font-size:1.3rem;flex-shrink:0;"></i><span style="color:white;font-size:0.95rem;line-height:1.4;">${message}</span>`;
+    
+    if (!document.getElementById('toast-keyframes')) {
+        const style = document.createElement('style');
+        style.id = 'toast-keyframes';
+        style.textContent = `@keyframes slideInRight{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}`;
+        document.head.appendChild(style);
+    }
+
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'none';
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+
 function getLocalSavedDesigns() {
     const list = [];
     try {
@@ -227,6 +260,7 @@ async function deleteDesign(shortId) {
         localStorage.removeItem('nfc_autosave_state');
         localStorage.removeItem('businessCardState');
         loadMyDesigns();
+        showToast('تم حذف التصميم المحلي بنجاح', 'success');
         return;
     }
 
@@ -238,18 +272,21 @@ async function deleteDesign(shortId) {
             });
             const data = await res.json();
             if (data.success) {
+                showToast('تم حذف التصميم بنجاح', 'success');
                 loadMyDesigns();
             } else {
-                alert(data.error || 'فشل حذف التصميم');
+                showToast(data.error || 'فشل حذف التصميم', 'error');
             }
         } else {
+            showToast('يجب تسجيل الدخول لحذف التصاميم من الخادم', 'info');
             loadMyDesigns();
         }
     } catch (err) {
         console.error(err);
-        alert('حدث خطأ أثناء حذف التصميم');
+        showToast('حدث خطأ أثناء حذف التصميم', 'error');
     }
 }
+
 
 async function loadRequestCount() {
     try {
@@ -442,9 +479,115 @@ document.getElementById('save-privacy-btn')?.addEventListener('click', async () 
 });
 
 function generateSignatureFromDashboard(shortId) {
-    if (!shortId) {
-        window.location.href = 'editor.html';
+    if (!shortId || shortId.startsWith('local_')) {
+        alert('يجب حفظ البطاقة على الخادم أولاً لإنشاء توقيع إيميل. انتقل إلى المحرر واضغط "نشر".');
         return;
     }
-    window.open(`viewer.html?id=${shortId}#signature`, '_blank');
+    showSignatureModal(shortId);
 }
+
+function showSignatureModal(shortId) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('signature-modal');
+    if (existingModal) existingModal.remove();
+
+    const viewerUrl = `${window.location.origin}${window.location.pathname.replace('dashboard.html', '')}viewer.html?id=${shortId}`;
+    const cardData = (window.myLoadedDesigns || []).find(d => d.shortId === shortId);
+    const name = cardData?.title || cardData?.data?.inputs?.['input-name_ar'] || cardData?.data?.inputs?.['input-name'] || 'الاسم الكامل';
+    const tagline = cardData?.data?.inputs?.['input-tagline_ar'] || cardData?.data?.inputs?.['input-tagline'] || 'المسمى الوظيفي';
+    const phone = cardData?.data?.inputs?.['input-phone'] || '';
+    const email = cardData?.data?.inputs?.['input-email'] || '';
+    const thumb = cardData?.data?.imageUrls?.capturedFront || cardData?.data?.imageUrls?.front || '';
+
+    const imgHtml = thumb
+        ? `<img src="${thumb}" alt="Card Preview" style="max-width:100px;max-height:60px;object-fit:contain;border-radius:8px;border:1px solid rgba(255,255,255,0.1);">`
+        : `<div style="width:80px;height:50px;background:linear-gradient(135deg,#c5a059,#a07040);border-radius:8px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-id-card" style="color:white;font-size:1.5rem;"></i></div>`;
+
+    const htmlSig = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:14px;color:#333;">
+  <tr>
+    <td style="padding-left:12px;border-left:3px solid #c5a059;">
+      <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${name}</div>
+      <div style="color:#666;font-size:13px;margin-top:2px;">${tagline}</div>
+      ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${phone}</div>` : ''}
+      ${email ? `<div style="color:#555;">✉️ ${email}</div>` : ''}
+      <div style="margin-top:6px;">
+        <a href="${viewerUrl}" style="color:#c5a059;text-decoration:none;font-size:12px;border:1px solid #c5a059;padding:3px 10px;border-radius:20px;">🪪 بطاقتي الرقمية</a>
+      </div>
+    </td>
+  </tr>
+</table>`;
+
+    const modal = document.createElement('div');
+    modal.id = 'signature-modal';
+    modal.innerHTML = `
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+            <div style="background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid rgba(197,160,89,0.3);border-radius:24px;padding:36px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;position:relative;">
+                <button onclick="document.getElementById('signature-modal').remove()" style="position:absolute;top:16px;left:16px;background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>
+                
+                <h2 style="color:#c5a059;font-family:'Cairo',sans-serif;margin-bottom:8px;font-size:1.5rem;"><i class="fas fa-signature" style="margin-left:8px;"></i>توقيع الإيميل الاحترافي</h2>
+                <p style="color:#94a3b8;margin-bottom:28px;font-size:0.9rem;">انسخ الكود أدناه والصقه في إعدادات التوقيع في بريدك الإلكتروني (Gmail, Outlook, إلخ).</p>
+                
+                <div style="margin-bottom:20px;">
+                    <h4 style="color:white;margin-bottom:12px;font-size:0.95rem;"><i class="fas fa-eye" style="color:#a855f7;margin-left:6px;"></i>معاينة التوقيع</h4>
+                    <div style="background:white;border-radius:12px;padding:20px;direction:rtl;">
+                        <div style="font-family:Arial,sans-serif;font-size:14px;color:#333;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:14px;color:#333;">
+                              <tr>
+                                <td style="padding-left:12px;border-left:3px solid #c5a059;">
+                                  <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${name}</div>
+                                  <div style="color:#666;font-size:13px;margin-top:2px;">${tagline}</div>
+                                  ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${phone}</div>` : ''}
+                                  ${email ? `<div style="color:#555;">✉️ ${email}</div>` : ''}
+                                  <div style="margin-top:6px;">
+                                    <a href="${viewerUrl}" style="color:#c5a059;text-decoration:none;font-size:12px;border:1px solid #c5a059;padding:3px 10px;border-radius:20px;">🪪 بطاقتي الرقمية</a>
+                                  </div>
+                                </td>
+                              </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <h4 style="color:white;font-size:0.95rem;"><i class="fas fa-code" style="color:#3b82f6;margin-left:6px;"></i>كود HTML للتوقيع</h4>
+                        <button id="copy-sig-btn" onclick="
+                            navigator.clipboard.writeText(document.getElementById('sig-code-area').value).then(()=>{
+                                const btn = document.getElementById('copy-sig-btn');
+                                btn.innerHTML='<i class=\\'fas fa-check\\'></i> تم النسخ!';
+                                btn.style.background='#22c55e';
+                                setTimeout(()=>{btn.innerHTML='<i class=\\'fas fa-copy\\'></i> نسخ الكود';btn.style.background='';},2000);
+                            });
+                        " style="background:rgba(197,160,89,0.2);color:#c5a059;border:1px solid rgba(197,160,89,0.4);border-radius:10px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:0.85rem;transition:all 0.3s;"><i class="fas fa-copy"></i> نسخ الكود</button>
+                    </div>
+                    <textarea id="sig-code-area" readonly style="width:100%;height:150px;background:rgba(0,0,0,0.4);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;font-family:monospace;font-size:0.8rem;resize:none;box-sizing:border-box;direction:ltr;">${htmlSig}</textarea>
+                </div>
+
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:14px;padding:16px;margin-bottom:24px;">
+                    <h4 style="color:#a855f7;margin-bottom:10px;font-size:0.9rem;"><i class="fas fa-info-circle" style="margin-left:6px;"></i>كيفية الإضافة في Gmail</h4>
+                    <ol style="color:#94a3b8;font-size:0.85rem;padding-right:20px;margin:0;line-height:1.8;">
+                        <li>افتح <strong style="color:white;">Gmail</strong> → اضغط ⚙️ الإعدادات → "عرض كل الإعدادات"</li>
+                        <li>انتقل إلى تبويب <strong style="color:white;">"عام"</strong> وابحث عن قسم "التوقيع"</li>
+                        <li>اضغط <strong style="color:white;">"إنشاء توقيع جديد"</strong> وأعطه اسماً</li>
+                        <li>في منطقة التوقيع، اضغط <strong style="color:white;">Ctrl+Shift+V</strong> (Windows) أو <strong style="color:white;">Cmd+Shift+V</strong> (Mac) للصق بتنسيق HTML</li>
+                        <li>احفظ الإعدادات</li>
+                    </ol>
+                </div>
+
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <a href="${viewerUrl}" target="_blank" style="flex:1;min-width:140px;background:rgba(197,160,89,0.15);color:#c5a059;border:1px solid rgba(197,160,89,0.3);border-radius:12px;padding:12px 20px;text-decoration:none;text-align:center;font-family:'Cairo',sans-serif;font-weight:600;"><i class="fas fa-external-link-alt" style="margin-left:6px;"></i>فتح صفحة البطاقة</a>
+                    <button onclick="document.getElementById('signature-modal').remove()" style="flex:1;min-width:140px;background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 20px;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:600;">إغلاق</button>
+                </div>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+    // Close on backdrop click
+    modal.querySelector('div').addEventListener('click', (e) => {
+        if (e.target === modal.querySelector('div')) modal.remove();
+    });
+}
+
+// Expose to global scope for inline onclick handlers
+window.deleteDesign = deleteDesign;
+window.generateSignatureFromDashboard = generateSignatureFromDashboard;
+window.showSignatureModal = showSignatureModal;
