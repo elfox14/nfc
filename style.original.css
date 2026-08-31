@@ -1278,7 +1278,7 @@ html[dir="ltr"] .cards-wrapper[data-layout="modern"] #card-tagline {
 
 @keyframes pulsate {
     0% {
-        box-shadow: 0 0 10px 3px rgba(77, 166, 255, 0);
+        box-shadow: 0 0 10px 3px rgba(197, 160, 89, 0);
     }
 
     50% {
@@ -1286,7 +1286,7 @@ html[dir="ltr"] .cards-wrapper[data-layout="modern"] #card-tagline {
     }
 
     100% {
-        box-shadow: 0 0 10px 3px rgba(77, 166, 255, 0);
+        box-shadow: 0 0 10px 3px rgba(197, 160, 89, 0);
     }
 }
 

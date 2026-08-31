@@ -669,7 +669,7 @@ body.has-progress-bar .pro-layout {
     }
 
     50% {
-        box-shadow: 0 0 0 10px rgba(77, 166, 255, 0);
+        box-shadow: 0 0 0 10px rgba(197, 160, 89, 0);
     }
 }
 
@@ -1315,10 +1315,10 @@ html[dir="rtl"] .fieldset-accordion summary::after {
         box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.7);
     }
     70% {
-        box-shadow: 0 0 0 10px rgba(77, 166, 255, 0);
+        box-shadow: 0 0 0 10px rgba(197, 160, 89, 0);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0);
+        box-shadow: 0 0 0 0 rgba(197, 160, 89, 0);
     }
 }
 

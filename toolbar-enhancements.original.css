@@ -854,8 +854,8 @@
     flex-shrink: 0;
 }
 .tb-icon-btn:hover {
-    background: rgba(77,166,255,.1);
-    border-color: rgba(77,166,255,.25);
+    background: rgba(197, 160, 89, .1);
+    border-color: rgba(197, 160, 89, .25);
     color: var(--text-primary);
     transform: translateY(-1px);
 }
@@ -870,7 +870,7 @@
     height: 34px;
     padding: 0 12px;
     border-radius: 8px;
-    border: 1px solid rgba(77,166,255,.18);
+    border: 1px solid rgba(197, 160, 89, .18);
     background: rgba(255,255,255,.04);
     color: var(--text-secondary, #8899aa);
     font-size: 0.8rem;
@@ -883,8 +883,8 @@
 }
 .tb-action-btn i { font-size: 13px; }
 .tb-action-btn:hover {
-    background: rgba(77,166,255,.12);
-    border-color: rgba(77,166,255,.35);
+    background: rgba(197, 160, 89, .12);
+    border-color: rgba(197, 160, 89, .35);
     color: var(--text-primary);
     transform: translateY(-1px);
 }
@@ -910,7 +910,7 @@
     right: 0;
     min-width: 220px;
     background: var(--form-bg, #161b22);
-    border: 1px solid rgba(77,166,255,.2);
+    border: 1px solid rgba(197, 160, 89, .2);
     border-radius: 14px;
     padding: 8px;
     box-shadow: 0 16px 48px rgba(0,0,0,.5);
@@ -954,7 +954,7 @@
     font-family: inherit;
 }
 .tb-dropdown-item:hover {
-    background: rgba(77,166,255,.1);
+    background: rgba(197, 160, 89, .1);
     transform: translateX(-3px);
 }
 [dir="ltr"] .tb-dropdown-item:hover { transform: translateX(3px); }
@@ -1035,8 +1035,8 @@
     border-radius: 50px;
     font-size: 0.72rem;
     font-weight: 600;
-    background: rgba(77,166,255,.12);
-    border: 1px solid rgba(77,166,255,.25);
+    background: rgba(197, 160, 89, .12);
+    border: 1px solid rgba(197, 160, 89, .25);
     color: var(--accent-primary, #c5a059);
     cursor: pointer;
     text-decoration: none;
@@ -1044,7 +1044,7 @@
     font-family: inherit;
     white-space: nowrap;
 }
-.tb-pill-btn:hover { background: rgba(77,166,255,.22); border-color: rgba(77,166,255,.4); }
+.tb-pill-btn:hover { background: rgba(197, 160, 89, .22); border-color: rgba(197, 160, 89, .4); }
 
 /* ── Mobile Quick Actions (Save & Share next to logo) ─────── */
 .tb-mobile-quick-actions { display: none; } /* Hidden on desktop */

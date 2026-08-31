@@ -86,12 +86,12 @@ body {
     left: 0;
     height: 3px;
     width: 0%;
-    background: linear-gradient(90deg, #4da6ff, #6f42c1, #4da6ff);
+    background: linear-gradient(90deg, #c5a059, #6f42c1, #c5a059);
     background-size: 200% 100%;
     z-index: 9998;
     transition: width 0.4s ease;
     animation: progressShimmer 1.5s linear infinite;
-    box-shadow: 0 0 10px rgba(77, 166, 255, 0.6);
+    box-shadow: 0 0 10px rgba(197, 160, 89, 0.6);
 }
 
 @keyframes progressShimmer {
@@ -713,7 +713,7 @@ summary.secondary-actions-summary {
     .mobile-tab-btn.active {
         color: var(--accent-primary);
         border-bottom-color: var(--accent-primary);
-        background-color: rgba(77, 166, 255, 0.05);
+        background-color: rgba(197, 160, 89, 0.05);
     }
 
     /* الأعمدة الجانبية في الموبايل */
@@ -903,8 +903,8 @@ summary.secondary-actions-summary {
     background: rgba(30, 45, 64, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(77, 166, 255, 0.3);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(77, 166, 255, 0.15);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(197, 160, 89, 0.15);
     opacity: 0;
     transform: translateY(20px) scale(0.95);
     transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -920,7 +920,7 @@ summary.secondary-actions-summary {
 
 .toast.toast-success { border-color: rgba(46, 204, 113, 0.4); }
 .toast.toast-error   { border-color: rgba(231, 76, 60, 0.4); }
-.toast.toast-info    { border-color: rgba(77, 166, 255, 0.4); }
+.toast.toast-info    { border-color: rgba(197, 160, 89, 0.4); }
 
 .toast i {
     font-size: 1rem;
@@ -959,7 +959,7 @@ summary.secondary-actions-summary {
     border: 1px solid var(--glass-border);
     border-radius: 20px;
     padding: 35px;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(77, 166, 255, 0.12);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(197, 160, 89, 0.12);
     max-width: 320px;
     width: 90%;
     text-align: center;
@@ -1014,7 +1014,7 @@ summary.secondary-actions-summary {
 .qr-spinner {
     width: 36px;
     height: 36px;
-    border: 3px solid rgba(77, 166, 255, 0.2);
+    border: 3px solid rgba(197, 160, 89, 0.2);
     border-top-color: var(--accent-primary);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -1376,7 +1376,7 @@ kbd {
     }
 
     .mobile-tab-btn.active {
-        background-color: rgba(77, 166, 255, 0.08) !important;
+        background-color: rgba(197, 160, 89, 0.08) !important;
     }
 
     .mobile-tab-btn i {
@@ -1521,11 +1521,11 @@ kbd {
 
 html.dark-mode .sticky-footer {
     background: rgba(15, 25, 38, 0.9);
-    border-top-color: rgba(77, 166, 255, 0.1);
+    border-top-color: rgba(197, 160, 89, 0.1);
 }
 
 .save-contact-btn {
-    background: linear-gradient(135deg, #4da6ff, #0077ff);
+    background: linear-gradient(135deg, #c5a059, #d4af37);
     color: #fff;
     border: none;
     width: 100%;
