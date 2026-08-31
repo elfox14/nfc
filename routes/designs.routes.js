@@ -343,11 +343,18 @@ router.post('/save-design', verifyToken, async (req, res) => {
       const existingDesign = await getDb().collection(designsCollectionName).findOne({ shortId: existingId });
       if (existingDesign) {
         if (existingDesign.ownerId !== ownerId) {
-          // Never let a save implicitly claim someone else's design or an
-          // unmigrated ownerless record. A copy receives a fresh public ID.
-          shortId = nanoid(8);
-          isUpdate = false;
-          console.log(`[SaveDesign] Forking inaccessible design ${existingId} as new ${shortId}`);
+          // If the user already owns another design, update their existing design to keep 1 design per user
+          const userExistingDesign = await getDb().collection(designsCollectionName).findOne({ ownerId });
+          if (userExistingDesign) {
+            shortId = userExistingDesign.shortId;
+            isUpdate = true;
+            ownedExistingDesign = userExistingDesign;
+            console.log(`[SaveDesign] 1-card limit: Updating user's existing design ${shortId}`);
+          } else {
+            shortId = nanoid(8);
+            isUpdate = false;
+            console.log(`[SaveDesign] Forking inaccessible design ${existingId} as new ${shortId}`);
+          }
         } else {
           // Same owner — update in place
           isUpdate = true;
@@ -356,11 +363,25 @@ router.post('/save-design', verifyToken, async (req, res) => {
         }
       } else {
         // existingId was provided but design not found in DB.
-        // This can happen if the design was deleted or DB was reset.
-        // Use the existingId as the shortId for the new insert so the URL stays consistent.
-        shortId = existingId;
-        isUpdate = false;
-        console.log(`[SaveDesign] Design ${existingId} not found in DB, creating with same shortId`);
+        const userExistingDesign = await getDb().collection(designsCollectionName).findOne({ ownerId });
+        if (userExistingDesign) {
+          shortId = userExistingDesign.shortId;
+          isUpdate = true;
+          ownedExistingDesign = userExistingDesign;
+        } else {
+          shortId = existingId;
+          isUpdate = false;
+        }
+        console.log(`[SaveDesign] Design ${existingId} not found in DB, using shortId ${shortId}`);
+      }
+    } else {
+      // No existingId provided: check if user already owns a design to enforce 1 card per member
+      const userExistingDesign = await getDb().collection(designsCollectionName).findOne({ ownerId });
+      if (userExistingDesign) {
+        shortId = userExistingDesign.shortId;
+        isUpdate = true;
+        ownedExistingDesign = userExistingDesign;
+        console.log(`[SaveDesign] 1-card limit: User already owns design ${shortId}, updating in place`);
       }
     }
 
@@ -498,7 +519,7 @@ router.patch('/design/:id/element/:elementId', verifyToken, async (req, res) => 
 });
 
 
-// Get User Profile/Designs
+// Get User Profile/Designs (strictly 1 design per member)
 router.get('/user/designs', verifyToken, async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
@@ -506,16 +527,16 @@ router.get('/user/designs', verifyToken, async (req, res) => {
     const designs = await getDb().collection(designsCollectionName)
       .find({ ownerId: req.user.userId })
       .project({
-        'data.inputs.input-name_ar': 1,
-        'data.inputs.input-name_en': 1,
-        'data.inputs.input-name': 1,
+        'data.inputs': 1,
+        'data.dynamic': 1,
+        'data.imageUrls': 1,
         'shortId': 1,
         'createdAt': 1,
-        'views': 1,
-        'data.imageUrls.front': 1,
-        'data.imageUrls.capturedFront': 1
+        'lastModified': 1,
+        'views': 1
       })
-      .sort({ createdAt: -1 })
+      .sort({ lastModified: -1, createdAt: -1 })
+      .limit(1)
       .toArray();
 
     res.json({ success: true, designs });
@@ -717,11 +738,23 @@ router.get('/saved-cards', verifyToken, async (req, res) => {
 router.delete('/saved-cards/:designId', verifyToken, async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
-    await getDb().collection(savedCardsCollectionName).deleteOne({
+    const targetId = String(req.params.designId);
+    
+    const orConditions = [
+      { designShortId: targetId },
+      { shortId: targetId },
+      { designId: targetId }
+    ];
+    if (ObjectId.isValid(targetId)) {
+      orConditions.push({ _id: new ObjectId(targetId) });
+    }
+
+    const result = await getDb().collection(savedCardsCollectionName).deleteMany({
       userId: req.user.userId,
-      designShortId: String(req.params.designId)
+      $or: orConditions
     });
-    res.json({ success: true });
+
+    res.json({ success: true, deletedCount: result.deletedCount });
   } catch (err) {
     console.error('Delete saved card error:', err);
     res.status(500).json({ error: 'Failed to remove saved card' });
