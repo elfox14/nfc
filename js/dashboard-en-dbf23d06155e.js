@@ -38,15 +38,12 @@ const baseUrl = Auth.getBaseUrl();
             }
 
             if (!Auth.isLoggedIn()) {
-                window.location.href = 'login-en.html?error=AuthNotLoggedIn&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                window.location.href = '/nfc/login-en.html?error=AuthNotLoggedIn';
                 return;
             }
 
 
-            const userDisplay = document.getElementById('user-display-name');
-            if (userDisplay) {
-                userDisplay.textContent = Auth.user?.name || 'User';
-            }
+            document.getElementById('user-display-name').textContent = Auth.user?.name || 'User';
 
             // Check URL params for tab
             const tabParams = new URLSearchParams(window.location.search);
@@ -284,7 +281,7 @@ const baseUrl = Auth.getBaseUrl();
             });
         });
 
-        const savePrivacyBtn = document.getElementById('save-privacy-btn'); if (savePrivacyBtn) savePrivacyBtn.addEventListener('click', async () => {
+        document.getElementById('save-privacy-btn').addEventListener('click', async () => {
             const selected = document.querySelector('input[name="cardPrivacy"]:checked')?.value;
             if (!selected) return;
             const btn = document.getElementById('save-privacy-btn');
@@ -302,7 +299,7 @@ const baseUrl = Auth.getBaseUrl();
             } catch (err) { console.error(err); btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error'; btn.disabled = false; }
         });
 
-        const exportBtn = document.getElementById('export-account-data-btn'); if (exportBtn) exportBtn.addEventListener('click', async () => {
+        document.getElementById('export-account-data-btn').addEventListener('click', async () => {
             const response = await Auth.apiFetchWithRefresh(`${baseUrl}/api/auth/export-data`, {
                 headers: Auth.getHeader()
             });
@@ -318,7 +315,7 @@ const baseUrl = Auth.getBaseUrl();
             URL.revokeObjectURL(link.href);
         });
 
-        const deleteBtn = document.getElementById('delete-account-btn'); if (deleteBtn) deleteBtn.addEventListener('click', async () => {
+        document.getElementById('delete-account-btn').addEventListener('click', async () => {
             const confirmation = prompt('This action is permanent. Type DELETE to remove your account and all its data:');
             if (confirmation !== 'DELETE') return;
             if (!confirm('Are you sure you want to permanently delete this account?')) return;
