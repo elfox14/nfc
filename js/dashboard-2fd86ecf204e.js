@@ -203,24 +203,27 @@ async function loadMyDesigns() {
 
     if (designs.length > 0) {
         window.myLoadedDesigns = designs;
-        designs.forEach(design => {
-            const inputs = design.data?.inputs || {};
+        designs.forEach((design, idx) => {
+            const designId = String(design.shortId || design.id || design._id || `local_${idx}`);
+            const inputs = design.data?.inputs || design.inputs || {};
             const name = design.title || inputs['input-name_ar'] || inputs['input-name_en'] || inputs['input-name'] || 'بطاقة رقمية';
             const tagline = inputs['input-tagline_ar'] || inputs['input-tagline_en'] || inputs['input-tagline'] || '';
             const views = design.views || 0;
             const date = design.createdAt ? new Date(design.createdAt).toLocaleDateString('ar-EG') : 'الآن';
-            const thumb = design.data?.imageUrls?.capturedFront || design.data?.imageUrls?.front || '';
+            const thumb = design.data?.imageUrls?.capturedFront || design.data?.imageUrls?.front || design.imageUrls?.front || '';
             
             let imgTag = '<i class="fas fa-id-card" style="font-size: 3.5rem; color: #c5a059; opacity: 0.9;"></i>';
             if (thumb) {
                 imgTag = `<img src="${thumb}" alt="${escapeHTML(name)}" loading="lazy" style="max-height: 160px; object-fit: contain;">`;
             }
 
-            const viewUrl = design.shortId && !design.shortId.startsWith('local_') ? `viewer.html?id=${design.shortId}` : 'editor.html';
-            const editUrl = design.shortId && !design.shortId.startsWith('local_') ? `editor.html?id=${design.shortId}` : 'editor.html';
+            const isRealId = designId && !designId.startsWith('local_') && !designId.startsWith('card_');
+            const viewUrl = isRealId ? `viewer.html?id=${encodeURIComponent(designId)}` : 'editor.html';
+            const editUrl = isRealId ? `editor.html?id=${encodeURIComponent(designId)}` : 'editor.html';
 
             const card = document.createElement('div');
             card.className = 'design-card hover-lift animate-on-scroll';
+            card.dataset.id = designId;
             card.innerHTML = `
                 <div class="card-thumb">${imgTag}</div>
                 <div class="card-details">
@@ -233,10 +236,27 @@ async function loadMyDesigns() {
                     <div class="card-actions">
                         <a href="${viewUrl}" class="action-btn btn-view" target="_blank">عرض</a>
                         <a href="${editUrl}" class="action-btn btn-edit">تعديل</a>
-                        <button class="action-btn btn-signature" onclick="generateSignatureFromDashboard('${design.shortId}')" title="توقيع الإيميل"><i class="fas fa-signature"></i></button>
-                        <button class="action-btn btn-remove" onclick="deleteDesign('${design.shortId}')">حذف</button>
+                        <button type="button" class="action-btn btn-signature" data-id="${escapeHTML(designId)}" onclick="generateSignatureFromDashboard('${escapeHTML(designId)}')" title="توقيع الإيميل"><i class="fas fa-signature"></i></button>
+                        <button type="button" class="action-btn btn-remove" data-id="${escapeHTML(designId)}" onclick="deleteDesign('${escapeHTML(designId)}')">حذف</button>
                     </div>
                 </div>`;
+
+            // Explicit direct event listener attachments
+            const sigBtn = card.querySelector('.btn-signature');
+            if (sigBtn) {
+                sigBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    generateSignatureFromDashboard(designId);
+                });
+            }
+            const delBtn = card.querySelector('.btn-remove');
+            if (delBtn) {
+                delBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    deleteDesign(designId);
+                });
+            }
+
             grid.appendChild(card);
         });
     } else {
@@ -514,7 +534,11 @@ function showSignatureModal(shortId) {
         ? `${window.location.origin}${basePath}editor.html`
         : `${window.location.origin}${basePath}viewer.html?id=${shortId}`;
 
-    const cardData = (window.myLoadedDesigns || []).find(d => d.shortId === shortId) || {};
+    const cardData = (window.myLoadedDesigns || []).find(d => 
+        String(d.shortId) === String(shortId) || 
+        String(d.id) === String(shortId) || 
+        String(d._id) === String(shortId)
+    ) || {};
     const inputs = cardData.data?.inputs || cardData.inputs || {};
     const name = cardData.title || inputs['input-name_ar'] || inputs['input-name_en'] || inputs['input-name'] || 'الاسم الكامل';
     const tagline = inputs['input-tagline_ar'] || inputs['input-tagline_en'] || inputs['input-tagline'] || 'المسمى الوظيفي';
@@ -542,8 +566,9 @@ function showSignatureModal(shortId) {
 
     const modal = document.createElement('div');
     modal.id = 'signature-modal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;';
     modal.innerHTML = `
-        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;">
             <div style="background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid rgba(197,160,89,0.3);border-radius:24px;padding:36px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;position:relative;">
                 <button onclick="document.getElementById('signature-modal').remove()" style="position:absolute;top:16px;left:16px;background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>
                 

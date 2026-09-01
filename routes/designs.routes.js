@@ -507,12 +507,7 @@ router.get('/user/designs', verifyToken, async (req, res) => {
       .find({ ownerId: req.user.userId })
       .project({
         'title': 1,
-        'data.inputs.input-name_ar': 1,
-        'data.inputs.input-name_en': 1,
-        'data.inputs.input-name': 1,
-        'data.inputs.input-tagline_ar': 1,
-        'data.inputs.input-tagline_en': 1,
-        'data.inputs.input-tagline': 1,
+        'data.inputs': 1,
         'shortId': 1,
         'createdAt': 1,
         'views': 1,
@@ -534,8 +529,15 @@ router.delete('/user/designs/:id', verifyToken, async (req, res) => {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
 
-    const shortId = String(req.params.id);
-    const design = await getDb().collection(designsCollectionName).findOne({ shortId });
+    const id = String(req.params.id);
+    const query = {
+      $or: [
+        { shortId: id },
+        ...(ObjectId.isValid(id) ? [{ _id: new ObjectId(id) }] : [])
+      ]
+    };
+
+    const design = await getDb().collection(designsCollectionName).findOne(query);
 
     if (!design) {
       return res.status(404).json({ error: 'التصميم غير موجود / Design not found' });
@@ -545,7 +547,7 @@ router.delete('/user/designs/:id', verifyToken, async (req, res) => {
       return res.status(403).json({ error: 'لا يمكنك حذف هذا التصميم / You cannot delete this design' });
     }
 
-    await getDb().collection(designsCollectionName).deleteOne({ shortId });
+    await getDb().collection(designsCollectionName).deleteOne({ _id: design._id });
 
     res.json({ success: true, message: 'تم حذف التصميم بنجاح / Design deleted successfully' });
   } catch (err) {
