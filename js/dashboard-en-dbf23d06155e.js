@@ -535,5 +535,7 @@ function showSignatureModal(shortId) {
 
 // Expose to global scope for inline onclick handlers
 window.deleteDesign = deleteDesign;
+window.removeSavedCard = removeSavedCard;
+window.handleRequest = handleRequest;
 window.generateSignatureFromDashboard = generateSignatureFromDashboard;
 window.showSignatureModal = showSignatureModal;

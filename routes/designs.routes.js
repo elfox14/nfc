@@ -506,9 +506,13 @@ router.get('/user/designs', verifyToken, async (req, res) => {
     const designs = await getDb().collection(designsCollectionName)
       .find({ ownerId: req.user.userId })
       .project({
+        'title': 1,
         'data.inputs.input-name_ar': 1,
         'data.inputs.input-name_en': 1,
         'data.inputs.input-name': 1,
+        'data.inputs.input-tagline_ar': 1,
+        'data.inputs.input-tagline_en': 1,
+        'data.inputs.input-tagline': 1,
         'shortId': 1,
         'createdAt': 1,
         'views': 1,
@@ -552,8 +556,8 @@ router.delete('/user/designs/:id', verifyToken, async (req, res) => {
 
 // ===== CARD SAVE WITH CONSENT FEATURE =====
 
-// Get card privacy setting
-router.get('/card-privacy', verifyToken, async (req, res) => {
+// Privacy settings handler (shared logic)
+async function handleGetPrivacySettings(req, res, getDb, usersCollectionName) {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
     const user = await getDb().collection(usersCollectionName).findOne(
@@ -565,10 +569,9 @@ router.get('/card-privacy', verifyToken, async (req, res) => {
     console.error('Get card privacy error:', err);
     res.status(500).json({ error: 'Failed to get privacy setting' });
   }
-});
+}
 
-// Update card privacy setting
-router.put('/card-privacy', verifyToken, async (req, res) => {
+async function handlePutPrivacySettings(req, res, getDb, usersCollectionName) {
   try {
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
     const { cardPrivacy } = req.body;
@@ -579,12 +582,27 @@ router.put('/card-privacy', verifyToken, async (req, res) => {
       { userId: req.user.userId },
       { $set: { cardPrivacy } }
     );
-    res.json({ success: true });
+    res.json({ success: true, message: 'تم حفظ إعدادات الخصوصية بنجاح' });
   } catch (err) {
     console.error('Update card privacy error:', err);
     res.status(500).json({ error: 'Failed to update privacy setting' });
   }
-});
+}
+
+// Get card privacy setting — original route
+router.get('/card-privacy', verifyToken, (req, res) =>
+  handleGetPrivacySettings(req, res, getDb, usersCollectionName));
+
+// Update card privacy setting — original route
+router.put('/card-privacy', verifyToken, (req, res) =>
+  handlePutPrivacySettings(req, res, getDb, usersCollectionName));
+
+// Aliases used by dashboard.html frontend (/api/privacy-settings)
+router.get('/privacy-settings', verifyToken, (req, res) =>
+  handleGetPrivacySettings(req, res, getDb, usersCollectionName));
+
+router.put('/privacy-settings', verifyToken, (req, res) =>
+  handlePutPrivacySettings(req, res, getDb, usersCollectionName));
 
 // Request to save someone's card
 const saveCardLimiter = rateLimit({

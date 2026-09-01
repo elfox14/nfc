@@ -254,7 +254,7 @@ async function loadMyDesigns() {
 
 async function deleteDesign(shortId) {
     if (!confirm('هل أنت متأكد أنك تريد حذف هذا التصميم؟')) return;
-    
+
     // If local
     if (shortId && shortId.startsWith('local_')) {
         localStorage.removeItem('nfc_autosave_state');
@@ -264,26 +264,51 @@ async function deleteDesign(shortId) {
         return;
     }
 
+    // Check login state first
+    if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) {
+        showToast('يجب تسجيل الدخول أولاً لحذف التصاميم', 'error');
+        return;
+    }
+
+    // Find & disable the clicked button to prevent double-click
+    const allBtns = document.querySelectorAll('.btn-remove');
+    let clickedBtn = null;
+    allBtns.forEach(btn => {
+        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(shortId)) {
+            clickedBtn = btn;
+        }
+    });
+    if (clickedBtn) {
+        clickedBtn.disabled = true;
+        clickedBtn.textContent = '...جارٍ الحذف';
+    }
+
     try {
-        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-            const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
-                method: 'DELETE',
-                headers: Auth.getHeader()
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast('تم حذف التصميم بنجاح', 'success');
-                loadMyDesigns();
-            } else {
-                showToast(data.error || 'فشل حذف التصميم', 'error');
-            }
-        } else {
-            showToast('يجب تسجيل الدخول لحذف التصاميم من الخادم', 'info');
+        const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
+            method: 'DELETE',
+            headers: Auth.getHeader()
+        });
+
+        let data = {};
+        try { data = await res.json(); } catch (_) { /* empty response */ }
+
+        if (res.ok && data.success) {
+            showToast('تم حذف التصميم بنجاح', 'success');
             loadMyDesigns();
+        } else if (res.status === 403) {
+            showToast('ليس لديك صلاحية حذف هذا التصميم', 'error');
+            if (clickedBtn) { clickedBtn.disabled = false; clickedBtn.textContent = 'حذف'; }
+        } else if (res.status === 404) {
+            showToast('التصميم غير موجود أو تم حذفه مسبقاً', 'info');
+            loadMyDesigns();
+        } else {
+            showToast(data.error || 'فشل حذف التصميم', 'error');
+            if (clickedBtn) { clickedBtn.disabled = false; clickedBtn.textContent = 'حذف'; }
         }
     } catch (err) {
-        console.error(err);
-        showToast('حدث خطأ أثناء حذف التصميم', 'error');
+        console.error('[deleteDesign]', err);
+        showToast('حدث خطأ في الاتصال. تحقق من الإنترنت وأعد المحاولة.', 'error');
+        if (clickedBtn) { clickedBtn.disabled = false; clickedBtn.textContent = 'حذف'; }
     }
 }
 
@@ -589,5 +614,7 @@ function showSignatureModal(shortId) {
 
 // Expose to global scope for inline onclick handlers
 window.deleteDesign = deleteDesign;
+window.removeSavedCard = removeSavedCard;
+window.handleRequest = handleRequest;
 window.generateSignatureFromDashboard = generateSignatureFromDashboard;
 window.showSignatureModal = showSignatureModal;
