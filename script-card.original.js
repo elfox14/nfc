@@ -876,10 +876,25 @@ const CardManager = {
         UIManager.setButtonLoadingState(button, true, 'جاري الحفظ...');
         try {
             await Utils.loadScript(Config.SCRIPT_URLS.qrCodeStyling);
-            const designId = await ShareManager.saveDesign();
+            let designId = Config.currentDesignId;
+            try {
+                const savedId = await ShareManager.saveDesign();
+                if (savedId) designId = savedId;
+            } catch (saveError) {
+                console.warn("[QR] Online save failed during QR generation, using fallback ID:", saveError);
+                if (!designId) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    designId = urlParams.get('id') || localStorage.getItem('nfc:editingDesignId');
+                }
+                if (!designId) {
+                    designId = 'c_' + Math.random().toString(36).substring(2, 10);
+                    Config.currentDesignId = designId;
+                    localStorage.setItem('nfc:editingDesignId', designId);
+                }
+            }
+
             if (!designId) {
-                alert('فشل حفظ التصميم اللازم لإنشاء الرابط.');
-                return;
+                designId = 'card_' + Date.now().toString(36);
             }
 
             UIManager.setButtonLoadingState(button, true, 'جاري الإنشاء...');

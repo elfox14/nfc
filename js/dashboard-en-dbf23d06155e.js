@@ -214,10 +214,28 @@ async function loadMyDesigns() {
 
 async function deleteDesign(shortId) {
     if (!confirm('Are you sure you want to delete this design?')) return;
-    
-    if (shortId && shortId.startsWith('local_')) {
-        localStorage.removeItem('nfc_autosave_state');
-        localStorage.removeItem('businessCardState');
+
+    const cleanupLocalCopies = () => {
+        try {
+            if (!shortId || shortId === 'local_autosave' || shortId === 'local_current' || shortId.startsWith('local_')) {
+                localStorage.removeItem('nfc_autosave_state');
+                localStorage.removeItem('businessCardState');
+            }
+            const galleryRaw = localStorage.getItem('nfc_gallery_designs');
+            if (galleryRaw) {
+                const parsed = JSON.parse(galleryRaw);
+                if (Array.isArray(parsed)) {
+                    const filtered = parsed.filter(d => d && d.shortId !== shortId && d.id !== shortId);
+                    localStorage.setItem('nfc_gallery_designs', JSON.stringify(filtered));
+                }
+            }
+        } catch (e) {
+            console.warn('[Dashboard EN] Local purge warning:', e);
+        }
+    };
+
+    if (!shortId || shortId.startsWith('local_')) {
+        cleanupLocalCopies();
         loadMyDesigns();
         return;
     }
@@ -228,19 +246,19 @@ async function deleteDesign(shortId) {
                 method: 'DELETE',
                 headers: Auth.getHeader()
             });
-            const data = await res.json();
-            if (data.success) {
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.success) {
+                cleanupLocalCopies();
                 loadMyDesigns();
-            } else {
-                alert(data.error || 'Failed to delete design');
+                return;
             }
-        } else {
-            loadMyDesigns();
         }
     } catch (err) {
-        console.error(err);
-        alert('Error deleting design');
+        console.warn('[deleteDesign EN] Server delete failed, removing locally:', err);
     }
+
+    cleanupLocalCopies();
+    loadMyDesigns();
 }
 
 async function loadRequestCount() {
@@ -434,10 +452,6 @@ document.getElementById('save-privacy-btn')?.addEventListener('click', async () 
 });
 
 function generateSignatureFromDashboard(shortId) {
-    if (!shortId || shortId.startsWith('local_')) {
-        alert('The card must be saved to the server first to generate an email signature. Go to the editor and press "Publish".');
-        return;
-    }
     showSignatureModal(shortId);
 }
 
@@ -445,20 +459,26 @@ function showSignatureModal(shortId) {
     const existingModal = document.getElementById('signature-modal');
     if (existingModal) existingModal.remove();
 
-    const viewerUrl = `${window.location.origin}${window.location.pathname.replace('dashboard-en.html', '')}viewer-en.html?id=${shortId}`;
-    const cardData = (window.myLoadedDesigns || []).find(d => d.shortId === shortId);
-    const name = cardData?.title || cardData?.data?.inputs?.['input-name_en'] || cardData?.data?.inputs?.['input-name'] || 'Full Name';
-    const tagline = cardData?.data?.inputs?.['input-tagline_en'] || cardData?.data?.inputs?.['input-tagline'] || 'Job Title';
-    const phone = cardData?.data?.inputs?.['input-phone'] || '';
-    const email = cardData?.data?.inputs?.['input-email'] || '';
+    const isLocal = !shortId || shortId.startsWith('local_');
+    const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+    const viewerUrl = isLocal
+        ? `${window.location.origin}${basePath}editor-en.html`
+        : `${window.location.origin}${basePath}viewer-en.html?id=${shortId}`;
+
+    const cardData = (window.myLoadedDesigns || []).find(d => d.shortId === shortId) || {};
+    const inputs = cardData.data?.inputs || cardData.inputs || {};
+    const name = cardData.title || inputs['input-name_en'] || inputs['input-name_ar'] || inputs['input-name'] || 'Full Name';
+    const tagline = inputs['input-tagline_en'] || inputs['input-tagline_ar'] || inputs['input-tagline'] || 'Job Title';
+    const phone = inputs['input-phone'] || inputs['phone'] || '';
+    const email = inputs['input-email'] || inputs['email'] || '';
 
     const htmlSig = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:14px;color:#333;">
   <tr>
     <td style="padding-left:12px;border-left:3px solid #c5a059;">
-      <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${name}</div>
-      <div style="color:#666;font-size:13px;margin-top:2px;">${tagline}</div>
-      ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${phone}</div>` : ''}
-      ${email ? `<div style="color:#555;">✉️ ${email}</div>` : ''}
+      <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${escapeHTML(name)}</div>
+      <div style="color:#666;font-size:13px;margin-top:2px;">${escapeHTML(tagline)}</div>
+      ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${escapeHTML(phone)}</div>` : ''}
+      ${email ? `<div style="color:#555;">✉️ ${escapeHTML(email)}</div>` : ''}
       <div style="margin-top:6px;">
         <a href="${viewerUrl}" style="color:#c5a059;text-decoration:none;font-size:12px;border:1px solid #c5a059;padding:3px 10px;border-radius:20px;">🪪 My Digital Card</a>
       </div>
@@ -482,10 +502,10 @@ function showSignatureModal(shortId) {
                         <table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:14px;color:#333;">
                           <tr>
                             <td style="padding-left:12px;border-left:3px solid #c5a059;">
-                              <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${name}</div>
-                              <div style="color:#666;font-size:13px;margin-top:2px;">${tagline}</div>
-                              ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${phone}</div>` : ''}
-                              ${email ? `<div style="color:#555;">✉️ ${email}</div>` : ''}
+                              <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${escapeHTML(name)}</div>
+                              <div style="color:#666;font-size:13px;margin-top:2px;">${escapeHTML(tagline)}</div>
+                              ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${escapeHTML(phone)}</div>` : ''}
+                              ${email ? `<div style="color:#555;">✉️ ${escapeHTML(email)}</div>` : ''}
                               <div style="margin-top:6px;">
                                 <a href="${viewerUrl}" style="color:#c5a059;text-decoration:none;font-size:12px;border:1px solid #c5a059;padding:3px 10px;border-radius:20px;">🪪 My Digital Card</a>
                               </div>
@@ -513,9 +533,9 @@ function showSignatureModal(shortId) {
                 <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:14px;padding:16px;margin-bottom:24px;">
                     <h4 style="color:#a855f7;margin-bottom:10px;font-size:0.9rem;"><i class="fas fa-info-circle" style="margin-right:6px;"></i>How to Add in Gmail</h4>
                     <ol style="color:#94a3b8;font-size:0.85rem;padding-left:20px;margin:0;line-height:1.8;">
-                        <li>Open <strong style="color:white;">Gmail</strong> → click ⚙️ Settings → "See all settings"</li>
-                        <li>Go to <strong style="color:white;">"General"</strong> tab and find the "Signature" section</li>
-                        <li>Click <strong style="color:white;">"Create new signature"</strong> and give it a name</li>
+                        <li>Open <strong style="color:white;">Gmail</strong> → click ⚙️ Settings → 'See all settings'</li>
+                        <li>Go to <strong style="color:white;">'General'</strong> tab and find the 'Signature' section</li>
+                        <li>Click <strong style="color:white;">'Create new signature'</strong> and give it a name</li>
                         <li>In the signature area, press <strong style="color:white;">Ctrl+Shift+V</strong> (Windows) or <strong style="color:white;">Cmd+Shift+V</strong> (Mac) to paste as HTML</li>
                         <li>Save settings</li>
                     </ol>

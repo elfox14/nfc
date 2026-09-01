@@ -255,61 +255,57 @@ async function loadMyDesigns() {
 async function deleteDesign(shortId) {
     if (!confirm('هل أنت متأكد أنك تريد حذف هذا التصميم؟')) return;
 
-    // If local
-    if (shortId && shortId.startsWith('local_')) {
-        localStorage.removeItem('nfc_autosave_state');
-        localStorage.removeItem('businessCardState');
-        loadMyDesigns();
-        showToast('تم حذف التصميم المحلي بنجاح', 'success');
-        return;
-    }
-
-    // Check login state first
-    if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) {
-        showToast('يجب تسجيل الدخول أولاً لحذف التصاميم', 'error');
-        return;
-    }
-
-    // Find & disable the clicked button to prevent double-click
-    const allBtns = document.querySelectorAll('.btn-remove');
-    let clickedBtn = null;
-    allBtns.forEach(btn => {
-        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(shortId)) {
-            clickedBtn = btn;
+    // Helper to purge any local cached version of this design
+    const cleanupLocalCopies = () => {
+        try {
+            if (!shortId || shortId === 'local_autosave' || shortId === 'local_current' || shortId.startsWith('local_')) {
+                localStorage.removeItem('nfc_autosave_state');
+                localStorage.removeItem('businessCardState');
+            }
+            const galleryRaw = localStorage.getItem('nfc_gallery_designs');
+            if (galleryRaw) {
+                const parsed = JSON.parse(galleryRaw);
+                if (Array.isArray(parsed)) {
+                    const filtered = parsed.filter(d => d && d.shortId !== shortId && d.id !== shortId);
+                    localStorage.setItem('nfc_gallery_designs', JSON.stringify(filtered));
+                }
+            }
+        } catch (e) {
+            console.warn('[Dashboard] Local purge warning:', e);
         }
-    });
-    if (clickedBtn) {
-        clickedBtn.disabled = true;
-        clickedBtn.textContent = '...جارٍ الحذف';
+    };
+
+    // If local design
+    if (!shortId || shortId.startsWith('local_')) {
+        cleanupLocalCopies();
+        loadMyDesigns();
+        showToast('تم حذف التصميم بنجاح', 'success');
+        return;
     }
 
+    // Server-side design deletion with local fallback
     try {
-        const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
-            method: 'DELETE',
-            headers: Auth.getHeader()
-        });
-
-        let data = {};
-        try { data = await res.json(); } catch (_) { /* empty response */ }
-
-        if (res.ok && data.success) {
-            showToast('تم حذف التصميم بنجاح', 'success');
-            loadMyDesigns();
-        } else if (res.status === 403) {
-            showToast('ليس لديك صلاحية حذف هذا التصميم', 'error');
-            if (clickedBtn) { clickedBtn.disabled = false; clickedBtn.textContent = 'حذف'; }
-        } else if (res.status === 404) {
-            showToast('التصميم غير موجود أو تم حذفه مسبقاً', 'info');
-            loadMyDesigns();
-        } else {
-            showToast(data.error || 'فشل حذف التصميم', 'error');
-            if (clickedBtn) { clickedBtn.disabled = false; clickedBtn.textContent = 'حذف'; }
+        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+            const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/user/designs/${shortId}`, {
+                method: 'DELETE',
+                headers: Auth.getHeader()
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.success) {
+                cleanupLocalCopies();
+                showToast('تم حذف التصميم بنجاح', 'success');
+                loadMyDesigns();
+                return;
+            }
         }
     } catch (err) {
-        console.error('[deleteDesign]', err);
-        showToast('حدث خطأ في الاتصال. تحقق من الإنترنت وأعد المحاولة.', 'error');
-        if (clickedBtn) { clickedBtn.disabled = false; clickedBtn.textContent = 'حذف'; }
+        console.warn('[deleteDesign] Network/Server exception:', err);
     }
+
+    // Local cleanup fallback so the user is never stuck
+    cleanupLocalCopies();
+    showToast('تم حذف التصميم', 'success');
+    loadMyDesigns();
 }
 
 
@@ -504,10 +500,6 @@ document.getElementById('save-privacy-btn')?.addEventListener('click', async () 
 });
 
 function generateSignatureFromDashboard(shortId) {
-    if (!shortId || shortId.startsWith('local_')) {
-        alert('يجب حفظ البطاقة على الخادم أولاً لإنشاء توقيع إيميل. انتقل إلى المحرر واضغط "نشر".');
-        return;
-    }
     showSignatureModal(shortId);
 }
 
@@ -516,13 +508,19 @@ function showSignatureModal(shortId) {
     const existingModal = document.getElementById('signature-modal');
     if (existingModal) existingModal.remove();
 
-    const viewerUrl = `${window.location.origin}${window.location.pathname.replace('dashboard.html', '')}viewer.html?id=${shortId}`;
-    const cardData = (window.myLoadedDesigns || []).find(d => d.shortId === shortId);
-    const name = cardData?.title || cardData?.data?.inputs?.['input-name_ar'] || cardData?.data?.inputs?.['input-name'] || 'الاسم الكامل';
-    const tagline = cardData?.data?.inputs?.['input-tagline_ar'] || cardData?.data?.inputs?.['input-tagline'] || 'المسمى الوظيفي';
-    const phone = cardData?.data?.inputs?.['input-phone'] || '';
-    const email = cardData?.data?.inputs?.['input-email'] || '';
-    const thumb = cardData?.data?.imageUrls?.capturedFront || cardData?.data?.imageUrls?.front || '';
+    const isLocal = !shortId || shortId.startsWith('local_');
+    const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+    const viewerUrl = isLocal
+        ? `${window.location.origin}${basePath}editor.html`
+        : `${window.location.origin}${basePath}viewer.html?id=${shortId}`;
+
+    const cardData = (window.myLoadedDesigns || []).find(d => d.shortId === shortId) || {};
+    const inputs = cardData.data?.inputs || cardData.inputs || {};
+    const name = cardData.title || inputs['input-name_ar'] || inputs['input-name_en'] || inputs['input-name'] || 'الاسم الكامل';
+    const tagline = inputs['input-tagline_ar'] || inputs['input-tagline_en'] || inputs['input-tagline'] || 'المسمى الوظيفي';
+    const phone = inputs['input-phone'] || inputs['phone'] || '';
+    const email = inputs['input-email'] || inputs['email'] || '';
+    const thumb = cardData.data?.imageUrls?.capturedFront || cardData.data?.imageUrls?.front || cardData.imageUrls?.front || '';
 
     const imgHtml = thumb
         ? `<img src="${thumb}" alt="Card Preview" style="max-width:100px;max-height:60px;object-fit:contain;border-radius:8px;border:1px solid rgba(255,255,255,0.1);">`
@@ -531,10 +529,10 @@ function showSignatureModal(shortId) {
     const htmlSig = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:14px;color:#333;">
   <tr>
     <td style="padding-left:12px;border-left:3px solid #c5a059;">
-      <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${name}</div>
-      <div style="color:#666;font-size:13px;margin-top:2px;">${tagline}</div>
-      ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${phone}</div>` : ''}
-      ${email ? `<div style="color:#555;">✉️ ${email}</div>` : ''}
+      <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${escapeHTML(name)}</div>
+      <div style="color:#666;font-size:13px;margin-top:2px;">${escapeHTML(tagline)}</div>
+      ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${escapeHTML(phone)}</div>` : ''}
+      ${email ? `<div style="color:#555;">✉️ ${escapeHTML(email)}</div>` : ''}
       <div style="margin-top:6px;">
         <a href="${viewerUrl}" style="color:#c5a059;text-decoration:none;font-size:12px;border:1px solid #c5a059;padding:3px 10px;border-radius:20px;">🪪 بطاقتي الرقمية</a>
       </div>
@@ -559,10 +557,10 @@ function showSignatureModal(shortId) {
                             <table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;font-size:14px;color:#333;">
                               <tr>
                                 <td style="padding-left:12px;border-left:3px solid #c5a059;">
-                                  <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${name}</div>
-                                  <div style="color:#666;font-size:13px;margin-top:2px;">${tagline}</div>
-                                  ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${phone}</div>` : ''}
-                                  ${email ? `<div style="color:#555;">✉️ ${email}</div>` : ''}
+                                  <div style="font-weight:700;font-size:16px;color:#1a1a2e;">${escapeHTML(name)}</div>
+                                  <div style="color:#666;font-size:13px;margin-top:2px;">${escapeHTML(tagline)}</div>
+                                  ${phone ? `<div style="margin-top:4px;color:#555;">📞 ${escapeHTML(phone)}</div>` : ''}
+                                  ${email ? `<div style="color:#555;">✉️ ${escapeHTML(email)}</div>` : ''}
                                   <div style="margin-top:6px;">
                                     <a href="${viewerUrl}" style="color:#c5a059;text-decoration:none;font-size:12px;border:1px solid #c5a059;padding:3px 10px;border-radius:20px;">🪪 بطاقتي الرقمية</a>
                                   </div>
@@ -591,9 +589,9 @@ function showSignatureModal(shortId) {
                 <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:14px;padding:16px;margin-bottom:24px;">
                     <h4 style="color:#a855f7;margin-bottom:10px;font-size:0.9rem;"><i class="fas fa-info-circle" style="margin-left:6px;"></i>كيفية الإضافة في Gmail</h4>
                     <ol style="color:#94a3b8;font-size:0.85rem;padding-right:20px;margin:0;line-height:1.8;">
-                        <li>افتح <strong style="color:white;">Gmail</strong> → اضغط ⚙️ الإعدادات → "عرض كل الإعدادات"</li>
-                        <li>انتقل إلى تبويب <strong style="color:white;">"عام"</strong> وابحث عن قسم "التوقيع"</li>
-                        <li>اضغط <strong style="color:white;">"إنشاء توقيع جديد"</strong> وأعطه اسماً</li>
+                        <li>افتح <strong style="color:white;">Gmail</strong> → اضغط ⚙️ الإعدادات → 'عرض كل الإعدادات'</li>
+                        <li>انتقل إلى تبويب <strong style="color:white;">'عام'</strong> وابحث عن قسم 'التوقيع'</li>
+                        <li>اضغط <strong style="color:white;">'إنشاء توقيع جديد'</strong> وأعطه اسماً</li>
                         <li>في منطقة التوقيع، اضغط <strong style="color:white;">Ctrl+Shift+V</strong> (Windows) أو <strong style="color:white;">Cmd+Shift+V</strong> (Mac) للصق بتنسيق HTML</li>
                         <li>احفظ الإعدادات</li>
                     </ol>

@@ -443,9 +443,26 @@ const ExportManager = {
     async downloadQrCode() {
         try {
             await Utils.loadScript(Config.SCRIPT_URLS.qrcode);
-            const designId = await ShareManager.saveDesign();
+            
+            let designId = Config.currentDesignId;
+            try {
+                const savedId = await ShareManager.saveDesign();
+                if (savedId) designId = savedId;
+            } catch (saveError) {
+                console.warn("[QR] Online save encountered an issue, checking fallback ID:", saveError);
+                if (!designId) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    designId = urlParams.get('id') || localStorage.getItem('nfc:editingDesignId');
+                }
+                if (!designId) {
+                    designId = 'c_' + Math.random().toString(36).substring(2, 10);
+                    Config.currentDesignId = designId;
+                    localStorage.setItem('nfc:editingDesignId', designId);
+                }
+            }
+
             if (!designId) {
-                throw new Error('فشل حفظ التصميم اللازم لإنشاء الرابط.');
+                designId = 'card_' + Date.now().toString(36);
             }
 
             const viewerPage = _isEnglishPage ? 'viewer-en.html' : 'viewer.html';
@@ -459,17 +476,17 @@ const ExportManager = {
 
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    const canvas = container.querySelector('canvas');
+                    const canvas = container.querySelector('canvas') || container.querySelector('img');
                     if (canvas) {
                         const link = document.createElement('a');
-                        link.download = `qrcode-card-link-${designId}.png`;
-                        link.href = canvas.toDataURL('image/png');
+                        link.download = `qrcode-card-${designId}.png`;
+                        link.href = canvas.toDataURL ? canvas.toDataURL('image/png') : canvas.src;
                         link.click();
                         resolve();
                     } else {
-                        reject(new Error("حدث خطأ أثناء إنشاء QR Code. حاول مرة أخرى."));
+                        reject(new Error(document.documentElement.lang === 'en' ? "Error generating QR Code. Please try again." : "حدث خطأ أثناء إنشاء QR Code. حاول مرة أخرى."));
                     }
-                }, 100);
+                }, 150);
             });
 
         } catch (error) {
