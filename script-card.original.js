@@ -224,6 +224,7 @@ const CardManager = {
 
         logoWrapper.style.width = `${size}%`;
         logoWrapper.style.opacity = opacity;
+        logoImg.crossOrigin = 'anonymous';
         
         this.updateLogoAlignment();
         this.updateLogoShadow();
@@ -320,9 +321,24 @@ const CardManager = {
         wrapper.style.borderRadius = selectedShape.borderRadius;
         wrapper.style.clipPath = selectedShape.clipPath;
         wrapper.style.border = `${borderWidth}px solid ${borderColor}`;
-        wrapper.style.backgroundImage = safeUrl ? `url(${safeUrl})` : 'none';
+        wrapper.style.backgroundImage = safeUrl ? `url("${safeUrl}")` : 'none';
         wrapper.style.display = safeUrl ? 'block' : 'none';
         wrapper.style.opacity = opacity;
+
+        let photoImg = wrapper.querySelector('img');
+        if (safeUrl) {
+            if (!photoImg) {
+                photoImg = document.createElement('img');
+                photoImg.id = 'card-personal-photo-img';
+                photoImg.alt = 'Personal Photo';
+                wrapper.appendChild(photoImg);
+            }
+            photoImg.src = safeUrl;
+            photoImg.crossOrigin = 'anonymous';
+            photoImg.style.cssText = `width: 100% !important; height: 100% !important; position: absolute !important; top: 0 !important; left: 0 !important; object-fit: cover !important; display: block !important; border-radius: ${selectedShape.borderRadius} !important; clip-path: ${selectedShape.clipPath} !important;`;
+        } else if (photoImg) {
+            photoImg.remove();
+        }
 
         if (preview) {
             preview.style.display = safeUrl ? 'block' : 'none';

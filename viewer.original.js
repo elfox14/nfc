@@ -626,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const logoHTML = `
                 <div id="card-logo" style="width: ${logoSize}%; opacity: ${logoOpacity} !important; position: relative !important; margin: 5px 0 !important; ${logoPos}">
-                    <img src="${inputs['input-logo']}" alt="Logo" id="card-logo-img" style="max-width: 100% !important; max-height: ${logoSize * 1.5}% !important; object-fit: contain; ${logoFilterStyle}">
+                    <img src="${inputs['input-logo']}" alt="Logo" id="card-logo-img" style="max-width: 100% !important; height: auto !important; object-fit: contain; ${logoFilterStyle}">
                 </div>`;
             renderElement(logoHTML, logoPlacement, containers);
         }
@@ -651,7 +651,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const photoGlassStyle = inputs['photo-glass-effect'] ? `mix-blend-mode: screen; opacity: 0.9;` : '';
 
             const photoHTML = `
-                <div id="card-personal-photo-wrapper" style="width: ${photoSize}% !important; padding-bottom: ${photoSize}%; height: 0; background-image: url(${inputs['input-photo-url']}) !important; background-size: cover !important; background-position: center !important; border-radius: ${photoShape} !important; border: ${photoBorder} !important; position: relative !important; margin: 5px 0 !important; overflow: hidden; ${photoFilterStyle} ${photoGlassStyle} ${photoPos}"></div>`;
+                <div id="card-personal-photo-wrapper" style="width: ${photoSize}% !important; aspect-ratio: 1/1 !important; border-radius: ${photoShape} !important; border: ${photoBorder} !important; position: relative !important; margin: 5px 0 !important; overflow: hidden; ${photoFilterStyle} ${photoGlassStyle} ${photoPos}">
+                    <img src="${inputs['input-photo-url']}" alt="Personal Photo" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; border-radius: inherit !important;">
+                </div>`;
             renderElement(photoHTML, photoPlacement, containers);
         }
 
