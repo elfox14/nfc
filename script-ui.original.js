@@ -403,13 +403,18 @@ const UIManager = {
             const fileNameClean = file.name.replace(/(\.[\w\d_-]+)$/i, cropOptions.skipCrop ? '$1' : '_cropped.png');
             const fileToUpload = dataURLtoFile(finalDataUrl, fileNameClean);
 
-            const imageUrl = await this.uploadImageToServer(fileToUpload, purpose);
+            let imageUrl = finalDataUrl;
+            try {
+                imageUrl = await this.uploadImageToServer(fileToUpload, purpose);
+            } catch (uploadErr) {
+                console.warn("[Upload] Server upload failed or offline, falling back to local data URL:", uploadErr);
+            }
 
             if (spinnerEl) spinnerEl.style.display = "none";
 
             Utils.playSound("success");
             onSuccess(imageUrl);
-            this.announce("تم رفع الصورة ومعالجتها بنجاح.");
+            this.announce(typeof _isEnglishPage !== 'undefined' && _isEnglishPage ? "Image processed and applied successfully." : "تمت معالجة الصورة وتطبيقها بنجاح.");
         } catch (error) {
             console.error("Image processing/upload error:", error);
             if (errorEl) {

@@ -1182,8 +1182,17 @@ const EventManager = {
             spinnerEl: DOMElements.spinners.photo,
             onSuccess: imageUrl => {
                 CardManager.personalPhotoUrl = imageUrl;
-                DOMElements.photoControls.url.value = imageUrl;
-                DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
+                if (DOMElements.photoControls && DOMElements.photoControls.url) {
+                    DOMElements.photoControls.url.value = imageUrl;
+                    DOMElements.photoControls.url.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                if (DOMElements.previews && DOMElements.previews.photo) {
+                    DOMElements.previews.photo.src = imageUrl;
+                    DOMElements.previews.photo.style.display = 'block';
+                }
+                const photoPlaceholder = document.getElementById('photo-placeholder');
+                if (photoPlaceholder) photoPlaceholder.style.display = 'none';
+                CardManager.updatePersonalPhotoStyles();
             },
             cropOptions: { aspectRatio: 1 / 1 }, // Square crop for personal photos
             purpose: 'photo'

@@ -1418,8 +1418,18 @@ const StateManager = {
             CardManager.frontBgImageUrl = state.imageUrls.front;
             CardManager.backBgImageUrl = state.imageUrls.back;
             CardManager.qrCodeImageUrl = state.imageUrls.qrCode;
-            CardManager.personalPhotoUrl = state.imageUrls.photo;
-            if (DOMElements.photoControls.url) DOMElements.photoControls.url.value = state.imageUrls.photo || '';
+            CardManager.personalPhotoUrl = state.imageUrls.photo || (state.inputs && state.inputs['input-photo-url']) || '';
+            if (DOMElements.photoControls && DOMElements.photoControls.url) {
+                DOMElements.photoControls.url.value = CardManager.personalPhotoUrl;
+            }
+            if (DOMElements.previews && DOMElements.previews.photo) {
+                if (CardManager.personalPhotoUrl) {
+                    DOMElements.previews.photo.src = CardManager.personalPhotoUrl;
+                    DOMElements.previews.photo.style.display = 'block';
+                    const photoPlaceholder = document.getElementById('photo-placeholder');
+                    if (photoPlaceholder) photoPlaceholder.style.display = 'none';
+                }
+            }
 
             DOMElements.buttons.removeFrontBg.style.display = state.imageUrls.front ? 'block' : 'none';
             DOMElements.buttons.removeBackBg.style.display = state.imageUrls.back ? 'block' : 'none';
