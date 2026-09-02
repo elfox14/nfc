@@ -543,7 +543,7 @@ const CardManager = {
 
     renderCardContent(passedState = null) {
         const state = passedState || StateManager.getStateObject();
-        if (!state || !state.placements) return;
+        if (!state) return;
 
         const containers = { front: DOMElements.cardFrontContent, back: DOMElements.cardBackContent };
         const elements = {
@@ -554,10 +554,14 @@ const CardManager = {
             qr: DOMElements.draggable.qr
         };
 
-        Object.values(elements).forEach(el => el.parentNode?.removeChild(el));
+        Object.values(elements).forEach(el => {
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+        });
 
-        for (const [key, side] of Object.entries(state.placements)) {
-            const isVisible = state.visibilities ? state.visibilities[key] : true;
+        const defaultPlacements = { logo: 'front', photo: 'front', name: 'front', tagline: 'front', qr: 'back' };
+        for (const key of ['logo', 'photo', 'name', 'tagline', 'qr']) {
+            const side = (state.placements && state.placements[key]) || defaultPlacements[key] || 'front';
+            const isVisible = state.visibilities ? (state.visibilities[key] !== false) : true;
             if (isVisible && elements[key] && containers[side]) {
                 containers[side].appendChild(elements[key]);
             }
