@@ -412,7 +412,6 @@ router.post('/save-design', verifyToken, async (req, res) => {
       }
     };
 
-    // Anti-Impersonation: Prevent different accounts from saving a card with the same name
     const normalizeName = (n) => (n || '').trim().replace(/\s+/g, ' ');
     const checkNames = [
       normalizeName(data.inputs?.['input-name_ar']),
@@ -421,36 +420,20 @@ router.post('/save-design', verifyToken, async (req, res) => {
       normalizeName(data.title)
     ].filter(n => n && n.length >= 2 && n !== 'اسمك هنا' && n !== 'Your Name Here' && n !== 'بطاقة رقمية' && n !== 'Digital Card');
 
-    if (checkNames.length > 0 && ownerId) {
-      const nameQueries = checkNames.map(name => {
-        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`^${escaped}$`, 'i');
-        return {
-          $or: [
-            { 'data.inputs.input-name_ar': regex },
-            { 'data.inputs.input-name_en': regex },
-            { 'data.inputs.input-name': regex },
-            { 'title': regex }
-          ]
-        };
-      });
-
-      const duplicateNameDesign = await getDb().collection(designsCollectionName).findOne({
-        ownerId: { $ne: ownerId },
-        $or: nameQueries
-      });
-
-      if (duplicateNameDesign && duplicateNameDesign.ownerId && duplicateNameDesign.ownerId !== ownerId) {
-        return res.status(409).json({
-          error: 'هذا الاسم مسجل بالفعل لبطاقة عضو آخر. يرجى استخدام اسمك الشخصي الفريد لمنع تكرار أو انتحال الهوية.',
-          code: 'DUPLICATE_CARD_NAME'
-        });
-      }
-    }
-
     const nameCandidate = checkNames[0] || '';
     let slug = slugifyName(nameCandidate);
-    if (!slug) slug = shortId;
+    if (!slug) {
+      slug = shortId;
+    } else if (ownerId) {
+      // If another card already uses this exact slug, append shortId suffix without blocking the save
+      const existingSlugDoc = await getDb().collection(designsCollectionName).findOne({
+        slug,
+        ownerId: { $ne: ownerId }
+      });
+      if (existingSlugDoc) {
+        slug = `${slug}-${shortId.slice(0, 4)}`;
+      }
+    }
 
     const updateDoc = {
       data,
