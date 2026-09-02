@@ -362,6 +362,15 @@ router.post('/save-design', verifyToken, async (req, res) => {
         isUpdate = false;
         console.log(`[SaveDesign] Design ${existingId} not found in DB, creating with same shortId`);
       }
+    } else if (ownerId) {
+      // 1-Card Per Member: If no explicit existingId in query, reuse/update the member's existing card
+      const existingMemberDesign = await getDb().collection(designsCollectionName).findOne({ ownerId });
+      if (existingMemberDesign) {
+        shortId = existingMemberDesign.shortId;
+        isUpdate = true;
+        ownedExistingDesign = existingMemberDesign;
+        console.log(`[SaveDesign] Single card per member: Reusing member card ${shortId}`);
+      }
     }
 
     // Preserve the complete published revision during draft-only saves. The

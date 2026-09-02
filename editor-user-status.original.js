@@ -38,18 +38,35 @@ const EditorUserStatus = {
         // إذا كان Config.currentDesignId موجوداً بالفعل فلا داعي للجلب
         if (typeof Config !== 'undefined' && Config.currentDesignId) return;
 
-        // Try to recover from localStorage (set during previous editing session)
-        const savedId = localStorage.getItem('nfc:editingDesignId');
-        if (savedId && typeof Config !== 'undefined') {
-            Config.currentDesignId = savedId;
-            console.log('[EditorUserStatus] Recovered design ID from localStorage:', savedId);
-            return;
-        }
+        // 1-Card Per Member: Automatically load user's single card from server if no ID in URL
+        try {
+            if (typeof Auth !== 'undefined' && Auth.apiFetchWithRefresh) {
+                const response = await Auth.apiFetchWithRefresh('/api/user/designs', { headers: Auth.getHeader() });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && Array.isArray(data.designs) && data.designs.length > 0) {
+                        const userCard = data.designs[0];
+                        const userCardId = userCard.shortId;
+                        if (userCardId) {
+                            console.log('[EditorUserStatus] Single card mode: auto-loading member card', userCardId);
+                            if (typeof Config !== 'undefined') Config.currentDesignId = userCardId;
+                            localStorage.setItem('nfc:editingDesignId', userCardId);
 
-        // NOTE: We intentionally do NOT fetch the user's design list and pick designs[0].
-        // That approach is dangerous when users have multiple designs — editing card A
-        // could accidentally overwrite card B if card B happened to be first in the list.
-        // The user must explicitly open a design via ?id= or save a new one first.
+                            if (typeof ShareManager !== 'undefined' && typeof ShareManager.loadFromUrl === 'function') {
+                                const currentParams = new URLSearchParams(window.location.search);
+                                if (!currentParams.has('id')) {
+                                    currentParams.set('id', userCardId);
+                                    window.history.replaceState({}, '', `${window.location.pathname}?${currentParams.toString()}`);
+                                    await ShareManager.loadFromUrl();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn('[EditorUserStatus] Failed to auto-load member card:', err);
+        }
     },
 
     updateUserStatus() {
