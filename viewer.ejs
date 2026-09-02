@@ -4,18 +4,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <%= name %> - بطاقة عمل رقمية
-    </title>
+    <title><%= name %><%= tagline ? ' | ' + tagline : '' %> - بطاقة عمل رقمية | MC PRIME</title>
 
     <!-- Meta Tags for SEO & Sharing -->
-    <meta name="description" content="<%= tagline || 'بطاقة عمل رقمية ذكية' %>">
-    <meta property="og:title" content="<%= name %>">
-    <meta property="og:description" content="<%= tagline %>">
+    <meta name="description" content="<%= name %><%= tagline ? ' - ' + tagline : '' %> | بطاقة عمل رقمية ذكية بتقنية NFC ومشاركة جهات الاتصال">
+    <meta name="keywords" content="<%= keywords %>">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="<%= canonical || pageUrl %>">
+
+    <!-- Open Graph (Facebook / WhatsApp / LinkedIn) -->
+    <meta property="og:title" content="<%= name %><%= tagline ? ' | ' + tagline : '' %> - بطاقة عمل ذكية">
+    <meta property="og:description" content="<%= name %><%= tagline ? ' - ' + tagline : '' %> | بطاقة عمل رقمية ذكية بتقنية NFC">
     <meta property="og:image" content="<%= ogImage %>">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="<%= pageUrl %>">
+    <meta property="og:type" content="profile">
+    <meta property="og:url" content="<%= canonical || pageUrl %>">
+    <meta property="og:site_name" content="MC PRIME Digital Cards">
+
+    <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= name %><%= tagline ? ' | ' + tagline : '' %>">
+    <meta name="twitter:description" content="<%= name %><%= tagline ? ' - ' + tagline : '' %> | بطاقة عمل رقمية ذكية">
+    <meta name="twitter:image" content="<%= ogImage %>">
+
+    <!-- Google Search Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": <%- JSON.stringify(name) %>,
+      "jobTitle": <%- JSON.stringify(tagline || 'بطاقة عمل رقمية') %>,
+      "image": <%- JSON.stringify(ogImage) %>,
+      "url": <%- JSON.stringify(canonical || pageUrl) %>
+    }
+    </script>
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

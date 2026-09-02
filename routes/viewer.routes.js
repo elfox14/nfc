@@ -19,7 +19,7 @@ const PLATFORMS = {
 };
 
 function isSafeViewerId(id) {
-  return typeof id === 'string' && /^[a-zA-Z0-9_-]{4,30}$/.test(id);
+  return typeof id === 'string' && /^[\p{L}\p{N}_-]{4,30}$/u.test(id);
 }
 
 function socialUrl(platformKey, rawValue) {
@@ -106,6 +106,23 @@ function buildContactLinksHtml(dynamicData = {}) {
     });
   }
 
+  if (dynamicData.links) {
+    dynamicData.links.forEach(link => {
+      if (link && link.url) {
+        const sanitizedUrl = sanitizeUrl(link.url, { allowRelative: false, allowDataImage: false });
+        if (sanitizedUrl) {
+          const title = sanitizeText(link.title || link.url);
+          linksHTML.push(contactLinkHtml({
+            icon: 'fas fa-link',
+            href: sanitizedUrl,
+            copyValue: sanitizedUrl,
+            label: title
+          }));
+        }
+      }
+    });
+  }
+
   if (linksHTML.length > 0) return `<div class="links-group">${linksHTML.join('')}</div>`;
   return `
           <div class="no-links-message">
@@ -123,7 +140,7 @@ function injectCspNonceIntoRenderedHtml(html, nonce) {
 module.exports = function createViewerRouter({ getDb, designsCollectionName, rootDir, absoluteBaseUrl }) {
   const router = express.Router();
 
-  router.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
+  const handleViewerRender = async (req, res, idOrSlug) => {
     try {
       const db = getDb();
       if (!db) {
@@ -131,7 +148,7 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
         return res.status(500).send('DB not connected');
       }
 
-      const id = String(req.query.id);
+      const id = String(idOrSlug || '').trim();
       if (!id || id === 'undefined') {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
         return res.status(400).send('Card ID is missing. Please provide an ?id= parameter.');
@@ -141,7 +158,11 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
         return res.status(400).send('Invalid card ID format.');
       }
 
-      const doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+      let doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+      if (!doc) {
+        doc = await db.collection(designsCollectionName).findOne({ slug: id });
+      }
+
       const publishedRevision = selectPublishedDesignData(doc?.data);
       if (!doc || !publishedRevision) {
         res.setHeader('X-Robots-Tag', 'noindex, noarchive');
@@ -149,14 +170,17 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
       }
       const publishedDesign = sanitizeDesignState(publishedRevision);
 
-      db.collection(designsCollectionName).updateOne({ shortId: id }, { $inc: { views: 1 } }).catch(err => console.error(`Failed to increment view count for ${id}:`, err));
+      db.collection(designsCollectionName).updateOne({ _id: doc._id }, { $inc: { views: 1 } }).catch(err => console.error(`Failed to increment view count:`, err));
 
       res.setHeader('X-Robots-Tag', 'index, follow');
       const base = absoluteBaseUrl(req);
-      const pageUrl = `${base}/nfc/viewer.html?id=${id}`;
+      const docSlug = doc.slug || doc.shortId;
+      const canonical = `${base}/nfc/c/${encodeURIComponent(docSlug)}`;
+      const pageUrl = req.originalUrl.startsWith('/nfc/c/') ? `${base}${req.originalUrl}` : `${base}/nfc/viewer.html?id=${encodeURIComponent(id)}`;
+
       const inputs = publishedDesign.inputs || {};
-      const name = sanitizeText(inputs['input-name'] || 'بطاقة عمل رقمية');
-      const tagline = sanitizeText(inputs['input-tagline'] || '');
+      const name = sanitizeText(inputs['input-name_ar'] || inputs['input-name_en'] || inputs['input-name'] || 'بطاقة عمل رقمية');
+      const tagline = sanitizeText(inputs['input-tagline_ar'] || inputs['input-tagline_en'] || inputs['input-tagline'] || '');
       const dynamicData = publishedDesign.dynamic || {};
       const imageUrls = publishedDesign.imageUrls || {};
 
@@ -174,24 +198,32 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
         ogImage,
         keywords,
         design: publishedDesign,
-        canonical: pageUrl,
+        canonical,
         contactLinksHtml: buildContactLinksHtml(dynamicData)
       }, (renderError, html) => {
         if (renderError) throw renderError;
         res.type('html').send(injectCspNonceIntoRenderedHtml(html, res.locals.cspNonce));
       });
     } catch (e) {
-      console.error('Error in /nfc/viewer route:', e);
+      console.error('Error in viewer route:', e);
       res.setHeader('X-Robots-Tag', 'noindex, noarchive');
       res.status(500).send('View failed due to an internal server error.');
     }
+  };
+
+  router.get(['/nfc/viewer', '/nfc/viewer.html'], async (req, res) => {
+    return handleViewerRender(req, res, req.query.id);
+  });
+
+  router.get(['/nfc/c/:slug', '/nfc/card/:slug'], async (req, res) => {
+    return handleViewerRender(req, res, req.params.slug);
   });
 
   router.get('/nfc/view/:id', async (req, res) => {
     try {
       const id = String(req.params.id);
       if (!id) return res.status(404).send('Not found');
-      res.redirect(301, `/nfc/viewer.html?id=${id}`);
+      res.redirect(301, `/nfc/c/${encodeURIComponent(id)}`);
     } catch (e) {
       console.error('Error in /nfc/view/:id redirect route:', e);
       res.status(500).send('Redirect failed.');

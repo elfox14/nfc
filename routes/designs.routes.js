@@ -9,11 +9,12 @@ const verifyToken = require('../auth-middleware');
 const rateLimit = require('express-rate-limit');
 const { ObjectId } = require('mongodb');
 const { selectPublishedDesignData } = require('../utils/published-design');
+const { slugifyName } = require('../utils/slugify');
 
 const uploadDir = path.join(__dirname, '..', 'uploads');
 
 function isSafePublicId(id) {
-  return typeof id === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(id);
+  return typeof id === 'string' && id.length >= 2 && id.length <= 100 && !/[/\\?#%&<>"']/.test(id);
 }
 
 module.exports = function createDesignsRouter({ 
@@ -447,8 +448,13 @@ router.post('/save-design', verifyToken, async (req, res) => {
       }
     }
 
+    const nameCandidate = checkNames[0] || '';
+    let slug = slugifyName(nameCandidate);
+    if (!slug) slug = shortId;
+
     const updateDoc = {
       data,
+      slug,
       ownerId,
       lastModified: new Date()
     };
@@ -883,10 +889,16 @@ router.get('/design-owner/:designId', async (req, res) => {
     if (!isSafePublicId(designId)) {
       return res.status(404).json({ error: 'Design not found' });
     }
-    const design = await getDb().collection(designsCollectionName).findOne(
+    let design = await getDb().collection(designsCollectionName).findOne(
       { shortId: designId },
-      { projection: { ownerId: 1 } }
+      { projection: { ownerId: 1, shortId: 1, slug: 1 } }
     );
+    if (!design && !/^[0-9a-fA-F]{24}$/.test(designId)) {
+      design = await getDb().collection(designsCollectionName).findOne(
+        { slug: designId },
+        { projection: { ownerId: 1, shortId: 1, slug: 1 } }
+      );
+    }
     if (!design) return res.status(404).json({ error: 'Design not found' });
 
     let cardPrivacy = 'require_approval';
@@ -917,7 +929,10 @@ router.get('/get-design/:id/draft', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Design not found or data missing' });
     }
 
-    const doc = await getDb().collection(designsCollectionName).findOne({ shortId: id });
+    let doc = await getDb().collection(designsCollectionName).findOne({ shortId: id });
+    if (!doc && !/^[0-9a-fA-F]{24}$/.test(id)) {
+      doc = await getDb().collection(designsCollectionName).findOne({ slug: id });
+    }
     if (!doc || !doc.data || doc.ownerId !== req.user.userId) {
       return res.status(404).json({ error: 'Design not found or data missing' });
     }
@@ -941,7 +956,10 @@ router.get('/get-design/:id', async (req, res) => {
       return res.status(404).json({ error: 'Design not found or data missing' });
     }
     
-    const doc = await getDb().collection(designsCollectionName).findOne({ shortId: id });
+    let doc = await getDb().collection(designsCollectionName).findOne({ shortId: id });
+    if (!doc && !/^[0-9a-fA-F]{24}$/.test(id)) {
+      doc = await getDb().collection(designsCollectionName).findOne({ slug: id });
+    }
 
     const publishedRevision = selectPublishedDesignData(doc?.data);
     if (!doc || !publishedRevision) {

@@ -7,6 +7,7 @@ async function createIndexes(db, collectionNames) {
   } = collectionNames;
 
   await db.collection(designsCollectionName).createIndex({ shortId: 1 }, { unique: true });
+  await db.collection(designsCollectionName).createIndex({ slug: 1 }, { sparse: true });
   await db.collection(designsCollectionName).createIndex({ ownerId: 1 });
   await db.collection(designsCollectionName).createIndex({ createdAt: -1 });
 

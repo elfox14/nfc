@@ -20,6 +20,7 @@ describe('Database indexes', () => {
     });
 
     expect(collections.get('designs').createIndex).toHaveBeenCalledWith({ shortId: 1 }, { unique: true });
+    expect(collections.get('designs').createIndex).toHaveBeenCalledWith({ slug: 1 }, { sparse: true });
     expect(collections.get('users').createIndex).toHaveBeenCalledWith({ refreshTokenHash: 1 }, { sparse: true });
     expect(collections.get('users').createIndex).toHaveBeenCalledWith({ resetTokenHash: 1 }, { sparse: true });
     expect(collections.get('users').createIndex).toHaveBeenCalledWith({ verificationTokenHash: 1 }, { sparse: true });
