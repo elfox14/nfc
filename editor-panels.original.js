@@ -87,8 +87,16 @@
         syncRadioGroup('#photo-align-group', 'photo-align', 'lp-align-active');
         syncRadioGroup('', 'placement-photo', 'lp-place-active');
 
-        // Photo upload preview toggle
+        // Photo upload preview toggle & zone click
         var photoUpload = document.getElementById('input-photo-upload');
+        var photoZone = document.getElementById('lp-photo-upload-zone-click') || document.getElementById('lp-upload-zone-photo');
+        if (photoZone && photoUpload) {
+            photoZone.addEventListener('click', function (e) {
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL' && !e.target.closest('label')) {
+                    photoUpload.click();
+                }
+            });
+        }
         if (photoUpload) {
             photoUpload.addEventListener('change', function () {
                 var img = document.getElementById('photo-preview');
