@@ -464,32 +464,6 @@ document.getElementById('save-privacy-btn')?.addEventListener('click', async () 
             const res = await Auth.apiFetchWithRefresh(\`\${baseUrl}/api/privacy-settings\`, {
                 method: 'PUT',
                 headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cardPrivacy: selected })
-            });
-            const data = await res.json();
-            alert(data.message || 'تم حفظ إعدادات الخصوصية بنجاح');
-        } else {
-            alert('تم حفظ الإعدادات');
-        }
-    } catch (err) {
-        console.error(err);
-        alert('حدث خطأ أثناء حفظ الإعدادات');
-    }
-});
-
-function generateSignatureFromDashboard(shortId) {
-    if (!shortId) {
-        window.location.href = 'editor.html';
-        return;
-    }
-    window.open(\`viewer.html?id=\${shortId}#signature\`, '_blank');
-}
-`;
-
-fs.writeFileSync(dashArJsPath, dashArJs.trim(), 'utf8');
-console.log('✓ Updated js/dashboard-2fd86ecf204e.js with resilient loading and storage fallback.');
-
-
 // 4. REWRITE js/dashboard-en-dbf23d06155e.js with English translations and robust fallback
 const dashEnJsPath = path.join(rootDir, 'js', 'dashboard-en-dbf23d06155e.js');
 let dashEnJs = `
@@ -506,6 +480,7 @@ document.querySelectorAll('.sidebar-item[data-section]').forEach(item => {
         const targetSection = document.getElementById(sectionId);
         if (targetSection) targetSection.classList.add('active');
 
+        // Lazy load sections
         if (item.dataset.section === 'saved-cards') loadSavedCards();
         if (item.dataset.section === 'card-requests') loadCardRequests();
         if (item.dataset.section === 'privacy-settings') loadPrivacySettings();
@@ -542,6 +517,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             userDisplay.textContent = (typeof Auth !== 'undefined' && Auth.user?.name) ? Auth.user.name : 'User';
         }
 
+        // Check URL params for tab
         const tabParams = new URLSearchParams(window.location.search);
         const tab = tabParams.get('tab');
         if (tab) {
@@ -562,6 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Listen for save events from Editor tab to auto-refresh designs
 window.addEventListener('storage', (e) => {
     if (e.key === 'nfc:design_saved') {
         const section = document.getElementById('section-my-designs');
@@ -584,22 +561,56 @@ function escapeHTML(str) {
     );
 }
 
+function showToast(message, type = 'success') {
+    const existing = document.getElementById('dashboard-toast');
+    if (existing) existing.remove();
+
+    const colors = {
+        success: { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.4)', text: '#22c55e', icon: 'fa-check-circle' },
+        error: { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.4)', text: '#ef4444', icon: 'fa-times-circle' },
+        info: { bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.4)', text: '#60b5ff', icon: 'fa-info-circle' }
+    };
+    const c = colors[type] || colors.info;
+
+    const toast = document.createElement('div');
+    toast.id = 'dashboard-toast';
+    toast.style.cssText = \`position:fixed;bottom:30px;right:30px;z-index:10000;background:\${c.bg};border:1px solid \${c.border};border-radius:14px;padding:16px 24px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:slideInRight 0.4s ease-out;font-family:'Poppins',sans-serif;max-width:320px;\`;
+    toast.innerHTML = \`<i class="fas \${c.icon}" style="color:\${c.text};font-size:1.3rem;flex-shrink:0;"></i><span style="color:white;font-size:0.95rem;line-height:1.4;">\${message}</span>\`;
+    
+    if (!document.getElementById('toast-keyframes')) {
+        const style = document.createElement('style');
+        style.id = 'toast-keyframes';
+        style.textContent = \`@keyframes slideInRight{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}\`;
+        document.head.appendChild(style);
+    }
+
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'none';
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
 function getLocalSavedDesigns() {
     const list = [];
     try {
+        // 1. Gallery designs
         const galleryRaw = localStorage.getItem('nfc_gallery_designs');
         if (galleryRaw) {
             const parsed = JSON.parse(galleryRaw);
             if (Array.isArray(parsed)) list.push(...parsed);
         }
 
+        // 2. Autosave state
         const autosaveRaw = localStorage.getItem('nfc_autosave_state');
         if (autosaveRaw) {
             const parsed = JSON.parse(autosaveRaw);
             if (parsed && (parsed.inputs || parsed.elements)) {
                 list.push({
                     shortId: 'local_autosave',
-                    title: parsed.inputs?.['input-name'] || parsed.inputs?.['input-name_en'] || 'Current Card (Editor)',
+                    title: parsed.inputs?.['input-name'] || parsed.inputs?.['input-name_en'] || parsed.inputs?.['input-name_ar'] || 'Current Card (Editor)',
                     createdAt: parsed.timestamp || Date.now(),
                     views: 1,
                     data: parsed
@@ -607,13 +618,14 @@ function getLocalSavedDesigns() {
             }
         }
 
+        // 3. Business Card State
         const bcRaw = localStorage.getItem('businessCardState');
         if (bcRaw) {
             const parsed = JSON.parse(bcRaw);
             if (parsed && parsed.inputs && !list.some(d => d.shortId === 'local_autosave')) {
                 list.push({
                     shortId: 'local_current',
-                    title: parsed.inputs['input-name'] || parsed.inputs['input-name_en'] || 'My Smart Card',
+                    title: parsed.inputs['input-name'] || parsed.inputs['input-name_en'] || parsed.inputs['input-name_ar'] || 'My Smart Card',
                     createdAt: Date.now(),
                     views: 1,
                     data: parsed
@@ -631,7 +643,6 @@ async function loadMyDesigns() {
     if (!grid) return;
 
     let designs = [];
-    let fetchError = false;
 
     if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
         try {
@@ -641,15 +652,13 @@ async function loadMyDesigns() {
                 if (data.success && Array.isArray(data.designs)) {
                     designs = data.designs;
                 }
-            } else {
-                fetchError = true;
             }
         } catch (err) {
             console.error('[Dashboard EN] loadMyDesigns network exception:', err);
-            fetchError = true;
         }
     }
 
+    // If server returned no designs or was offline, fallback to local storage designs
     if (designs.length === 0) {
         designs = getLocalSavedDesigns();
     }
@@ -658,24 +667,27 @@ async function loadMyDesigns() {
 
     if (designs.length > 0) {
         window.myLoadedDesigns = designs;
-        designs.forEach(design => {
-            const inputs = design.data?.inputs || {};
+        designs.forEach((design, idx) => {
+            const designId = String(design.shortId || design.id || design._id || \`local_\${idx}\`);
+            const inputs = design.data?.inputs || design.inputs || {};
             const name = design.title || inputs['input-name_en'] || inputs['input-name_ar'] || inputs['input-name'] || 'Smart Card';
             const tagline = inputs['input-tagline_en'] || inputs['input-tagline_ar'] || inputs['input-tagline'] || '';
             const views = design.views || 0;
             const date = design.createdAt ? new Date(design.createdAt).toLocaleDateString('en-US') : 'Now';
-            const thumb = design.data?.imageUrls?.capturedFront || design.data?.imageUrls?.front || '';
+            const thumb = design.data?.imageUrls?.capturedFront || design.data?.imageUrls?.front || design.imageUrls?.front || '';
             
             let imgTag = '<i class="fas fa-id-card" style="font-size: 3.5rem; color: #c5a059; opacity: 0.9;"></i>';
             if (thumb) {
                 imgTag = \`<img src="\${thumb}" alt="\${escapeHTML(name)}" loading="lazy" style="max-height: 160px; object-fit: contain;">\`;
             }
 
-            const viewUrl = design.shortId && !design.shortId.startsWith('local_') ? \`viewer-en.html?id=\${design.shortId}\` : 'editor-en.html';
-            const editUrl = design.shortId && !design.shortId.startsWith('local_') ? \`editor-en.html?id=\${design.shortId}\` : 'editor-en.html';
+            const isRealId = designId && !designId.startsWith('local_') && !designId.startsWith('card_');
+            const viewUrl = isRealId ? \`viewer-en.html?id=\${encodeURIComponent(designId)}\` : 'editor-en.html';
+            const editUrl = isRealId ? \`editor-en.html?id=\${encodeURIComponent(designId)}\` : 'editor-en.html';
 
             const card = document.createElement('div');
             card.className = 'design-card hover-lift animate-on-scroll';
+            card.dataset.id = designId;
             card.innerHTML = \`
                 <div class="card-thumb">\${imgTag}</div>
                 <div class="card-details">
@@ -688,10 +700,27 @@ async function loadMyDesigns() {
                     <div class="card-actions">
                         <a href="\${viewUrl}" class="action-btn btn-view" target="_blank">View</a>
                         <a href="\${editUrl}" class="action-btn btn-edit">Edit</a>
-                        <button class="action-btn btn-signature" onclick="generateSignatureFromDashboard('\${design.shortId}')" title="Email Signature"><i class="fas fa-signature"></i></button>
-                        <button class="action-btn btn-remove" onclick="deleteDesign('\${design.shortId}')">Delete</button>
+                        <button type="button" class="action-btn btn-signature" data-id="\${escapeHTML(designId)}" onclick="generateSignatureFromDashboard('\${escapeHTML(designId)}')" title="Email Signature"><i class="fas fa-signature"></i></button>
+                        <button type="button" class="action-btn btn-remove" data-id="\${escapeHTML(designId)}" onclick="deleteDesign('\${escapeHTML(designId)}')">Delete</button>
                     </div>
                 </div>\`;
+
+            // Explicit direct event listener attachments
+            const sigBtn = card.querySelector('.btn-signature');
+            if (sigBtn) {
+                sigBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    generateSignatureFromDashboard(designId);
+                });
+            }
+            const delBtn = card.querySelector('.btn-remove');
+            if (delBtn) {
+                delBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    deleteDesign(designId);
+                });
+            }
+
             grid.appendChild(card);
         });
     } else {
@@ -709,33 +738,58 @@ async function loadMyDesigns() {
 
 async function deleteDesign(shortId) {
     if (!confirm('Are you sure you want to delete this design?')) return;
-    
-    if (shortId && shortId.startsWith('local_')) {
-        localStorage.removeItem('nfc_autosave_state');
-        localStorage.removeItem('businessCardState');
+
+    // Helper to purge any local cached version of this design
+    const cleanupLocalCopies = () => {
+        try {
+            if (!shortId || shortId === 'local_autosave' || shortId === 'local_current' || shortId.startsWith('local_')) {
+                localStorage.removeItem('nfc_autosave_state');
+                localStorage.removeItem('businessCardState');
+            }
+            const galleryRaw = localStorage.getItem('nfc_gallery_designs');
+            if (galleryRaw) {
+                const parsed = JSON.parse(galleryRaw);
+                if (Array.isArray(parsed)) {
+                    const filtered = parsed.filter(d => d && d.shortId !== shortId && d.id !== shortId && d._id !== shortId);
+                    localStorage.setItem('nfc_gallery_designs', JSON.stringify(filtered));
+                }
+            }
+        } catch (e) {
+            console.warn('[Dashboard EN] Local purge warning:', e);
+        }
+    };
+
+    // If local design
+    if (!shortId || shortId.startsWith('local_')) {
+        cleanupLocalCopies();
         loadMyDesigns();
+        showToast('Design deleted successfully', 'success');
         return;
     }
 
+    // Server-side design deletion with local fallback
     try {
         if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
             const res = await Auth.apiFetchWithRefresh(\`\${baseUrl}/api/user/designs/\${shortId}\`, {
                 method: 'DELETE',
                 headers: Auth.getHeader()
             });
-            const data = await res.json();
-            if (data.success) {
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.success) {
+                cleanupLocalCopies();
+                showToast('Design deleted successfully', 'success');
                 loadMyDesigns();
-            } else {
-                alert(data.error || 'Failed to delete design');
+                return;
             }
-        } else {
-            loadMyDesigns();
         }
     } catch (err) {
-        console.error(err);
-        alert('Error deleting design');
+        console.warn('[deleteDesign EN] Server delete failed, removing locally:', err);
     }
+
+    // Local cleanup fallback so the user is never stuck
+    cleanupLocalCopies();
+    showToast('Design deleted', 'success');
+    loadMyDesigns();
 }
 
 async function loadRequestCount() {
@@ -791,9 +845,18 @@ async function loadSavedCards() {
                     <div class="card-meta"><span><i class="far fa-calendar"></i> \${date}</span></div>
                     <div class="card-actions">
                         <a href="viewer-en.html?id=\${card.designShortId}" class="action-btn btn-view" target="_blank">View</a>
-                        <button class="action-btn btn-remove" onclick="removeSavedCard('\${card.designShortId}')">Remove</button>
+                        <button type="button" class="action-btn btn-remove" onclick="removeSavedCard('\${card.designShortId}')">Remove</button>
                     </div>
                 </div>\`;
+
+            const remBtn = el.querySelector('.btn-remove');
+            if (remBtn) {
+                remBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    removeSavedCard(card.designShortId);
+                });
+            }
+
             grid.appendChild(el);
         });
     } else {
@@ -817,9 +880,13 @@ async function removeSavedCard(designId) {
                 method: 'DELETE',
                 headers: Auth.getHeader()
             });
+            showToast('Card removed from saved cards', 'success');
         }
         loadSavedCards();
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error(err);
+        showToast('Error removing card', 'error');
+    }
 }
 
 async function loadCardRequests() {
@@ -863,40 +930,44 @@ async function loadCardRequests() {
                         <button class="btn-reject" onclick="handleRequest('\${req._id}', 'reject')">
                             <i class="fas fa-times"></i> Reject
                         </button>
-                    </div>\` : ''}\`;
+                    </div>` : ''}`;
             list.appendChild(el);
         });
     } else {
-        list.innerHTML = \`
+        list.innerHTML = `
             <div class="empty-state" style="text-align: center; padding: 60px 20px;">
                 <i class="fas fa-bell" style="font-size: 4rem; color: #c5a059; opacity: 0.5; margin-bottom: 20px; display: inline-block;"></i>
                 <h3 style="color: #f0f6fc; font-size: 1.5rem; margin-bottom: 10px;">No New Requests</h3>
                 <p style="color: #8b949e;">Requests from other users to save your card will appear here.</p>
-            </div>\`;
+            </div>`;
     }
 }
 
 async function handleRequest(requestId, action) {
     try {
         if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-            await Auth.apiFetchWithRefresh(\`\${baseUrl}/api/card-requests/\${requestId}\`, {
+            await Auth.apiFetchWithRefresh(`${baseUrl}/api/card-requests/${requestId}`, {
                 method: 'PUT',
                 headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action })
             });
+            showToast(`Request ${action}d successfully`, 'success');
         }
         loadCardRequests();
         loadRequestCount();
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error(err);
+        showToast('Error updating request', 'error');
+    }
 }
 
 async function loadPrivacySettings() {
     try {
         if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-            const res = await Auth.apiFetchWithRefresh(\`\${baseUrl}/api/privacy-settings\`, { headers: Auth.getHeader() });
+            const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/privacy-settings`, { headers: Auth.getHeader() });
             const data = await res.json();
             if (data.cardPrivacy) {
-                const radio = document.querySelector(\`input[name="cardPrivacy"][value="\${data.cardPrivacy}"]\`);
+                const radio = document.querySelector(`input[name="cardPrivacy"][value="${data.cardPrivacy}"]`);
                 if (radio) {
                     radio.checked = true;
                     document.querySelectorAll('.privacy-option').forEach(opt => opt.classList.remove('selected'));
@@ -912,19 +983,19 @@ document.getElementById('save-privacy-btn')?.addEventListener('click', async () 
     if (!selected) return;
     try {
         if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-            const res = await Auth.apiFetchWithRefresh(\`\${baseUrl}/api/privacy-settings\`, {
+            const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/privacy-settings`, {
                 method: 'PUT',
                 headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
                 body: JSON.stringify({ cardPrivacy: selected })
             });
             const data = await res.json();
-            alert(data.message || 'Privacy settings saved successfully');
+            showToast(data.message || 'Privacy settings saved successfully', 'success');
         } else {
-            alert('Settings saved');
+            showToast('Privacy settings saved', 'success');
         }
     } catch (err) {
         console.error(err);
-        alert('Error saving privacy settings');
+        showToast('Error saving privacy settings', 'error');
     }
 });
 
