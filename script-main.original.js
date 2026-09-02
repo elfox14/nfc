@@ -724,7 +724,9 @@ const ShareManager = {
             }
         } catch (error) {
             console.error("Failed to save design:", error);
-            UIManager.announce(i18nMain.saveFailed || 'فشل حفظ التصميم. حاول مرة أخرى.');
+            const msg = error.message || (i18nMain.saveFailed || 'فشل حفظ التصميم. حاول مرة أخرى.');
+            alert(msg);
+            UIManager.announce(msg);
             return null;
         }
     },
