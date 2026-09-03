@@ -519,31 +519,56 @@ const Auth = {
                     }
                 });
 
-                if (ctaBtn) ctaBtn.style.display = 'none';
+                if (ctaBtn) {
+                    ctaBtn.style.setProperty('display', 'none', 'important');
+                }
 
-                if (!document.getElementById('nav-user-info')) {
-                    const wrap = document.createElement('div');
+                const isDashboard = window.location.pathname.includes('dashboard');
+                const userDisplay = document.getElementById('user-display-name');
+                if (userDisplay && this.user?.name) {
+                    userDisplay.textContent = this.user.name;
+                }
+
+                let wrap = document.getElementById('nav-user-info');
+                if (!wrap) {
+                    wrap = document.createElement('div');
                     wrap.id = 'nav-user-info';
-                    wrap.style.cssText = 'display:flex;gap:12px;align-items:center;margin-inline-start:15px';
+                    wrap.style.cssText = isDashboard
+                        ? 'display:flex;gap:10px;align-items:center;'
+                        : 'display:flex;gap:12px;align-items:center;margin-inline-start:15px';
 
-                    const name = document.createElement('span');
-                    name.textContent = this.user?.name || (en ? 'User' : 'مستخدم');
-                    name.style.cssText = 'color:var(--text-primary-color);font-weight:bold;font-size:.9rem';
+                    // Only add username if not already displayed by #user-display-name
+                    if (!userDisplay) {
+                        const name = document.createElement('span');
+                        name.className = 'nav-user-name';
+                        name.textContent = this.user?.name || (en ? 'User' : 'مستخدم');
+                        name.style.cssText = 'color:var(--text-primary-color);font-weight:bold;font-size:.9rem';
+                        wrap.appendChild(name);
+                    }
 
-                    const dash = document.createElement('a');
-                    dash.href = dashboardUrl;
-                    dash.className = 'btn';
-                    dash.style.cssText = 'padding:8px 15px;background:var(--primary-color);color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;font-size:.9rem';
-                    dash.textContent = dashTxt;
+                    // Only add dashboard link if not already on the dashboard
+                    if (!isDashboard) {
+                        const dash = document.createElement('a');
+                        dash.href = dashboardUrl;
+                        dash.className = 'btn';
+                        dash.style.cssText = 'padding:8px 15px;background:var(--primary-color);color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;font-size:.9rem';
+                        dash.textContent = dashTxt;
+                        wrap.appendChild(dash);
+                    }
 
                     const out = document.createElement('button');
                     out.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
                     out.title = logoutTxt;
                     out.onclick = () => this.logout();
                     out.style.cssText = 'background:transparent;border:none;color:var(--text-secondary-color);cursor:pointer;font-size:1.1rem';
+                    wrap.appendChild(out);
 
-                    wrap.append(name, dash, out);
                     (ctaBtn?.parentNode || navContent)?.insertBefore(wrap, ctaBtn || null);
+                } else {
+                    const name = wrap.querySelector('.nav-user-name');
+                    if (name && this.user?.name) {
+                        name.textContent = this.user.name;
+                    }
                 }
             } else {
                 document.querySelectorAll('a').forEach(a => {
@@ -552,7 +577,11 @@ const Auth = {
                     }
                 });
                 document.getElementById('nav-user-info')?.remove();
-                if (ctaBtn) ctaBtn.style.display = '';
+                const userDisplay = document.getElementById('user-display-name');
+                if (userDisplay) userDisplay.textContent = '';
+                if (ctaBtn) {
+                    ctaBtn.style.removeProperty('display');
+                }
             }
         }
 
