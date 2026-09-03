@@ -64,60 +64,38 @@
     <!-- Reading Progress Bar -->
     <div class="reading-progress" id="reading-progress"></div>
 
-    <!-- Floating CTA Button -->
-    <a href="editor-en.html" class="floating-cta" id="floating-cta">
-        <i class="fas fa-rocket"></i>
-        <span>Try Free Now</span>
-    </a>
 
     <!-- Back to Top Button -->
     <button class="back-to-top" id="back-to-top" aria-label="Back to Top">
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Site Header: Announcement Bar + Navigation -->
-    <header class="site-header" id="site-header">
-        <!-- Top Smart Editor Announcement Bar -->
-        <div class="top-announcement-bar" id="top-announcement-bar" role="region" aria-label="Smart Editor Announcement">
-            <div class="container announcement-content">
-                <span class="announcement-badge"><i class="fas fa-sparkles"></i> NEW 2026</span>
-                <p class="announcement-text">
-                    <strong>Smart NFC Card Editor is now free!</strong> Design your interactive digital card without code in 2 minutes.
-                </p>
-                <a href="editor-en.html" class="announcement-link">
-                    <span>Try Free Editor</span>
-                    <i class="fas fa-arrow-right"></i>
-                </a>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="index-en.html" class="nav-logo" aria-label="Home - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - Smart Business Cards" loading="eager" width="60" height="60" style="height: 44px; width: auto;">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index-en.html#editor-services">Smart Editor</a></li>
+                <li><a href="index-en.html#how-it-works">How It Works</a></li>
+                <li><a href="index-en.html#comparison">Comparison</a></li>
+                <li><a href="index-en.html#nfc-articles">Articles &amp; Guides</a></li>
+                <li><a href="gallery-en.html">Gallery</a></li>
+                <li><a href="blog-en.html">Blog</a></li>
+                <li><a href="contact-en.html">Contact</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <a href="index.html" class="lang-btn" aria-label="التبديل إلى العربية" onclick="if(window.switchLanguage){switchLanguage('ar');return false;}">عربي</a>
+                <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started Free</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle" aria-label="Open Menu">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
-
-        <!-- Navbar -->
-        <nav class="navbar" id="navbar">
-            <div class="container nav-content">
-                <a href="index-en.html" class="nav-logo" aria-label="Home - MC PRIME">
-                    <img src="mc-prime-nfc.png" alt="MC PRIME - Smart Business Cards" loading="eager" width="60" height="60" style="height: 44px; width: auto;">
-                </a>
-                <ul class="nav-links" id="nav-links">
-                    <li><a href="index-en.html#editor-services">Smart Editor</a></li>
-                    <li><a href="index-en.html#how-it-works">How It Works</a></li>
-                    <li><a href="index-en.html#comparison">Comparison</a></li>
-                    <li><a href="index-en.html#nfc-articles">Articles &amp; Guides</a></li>
-                    <li><a href="gallery-en.html">Gallery</a></li>
-                    <li><a href="blog-en.html">Blog</a></li>
-                    <li><a href="contact-en.html">Contact</a></li>
-                </ul>
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <a href="index.html" class="lang-btn" aria-label="التبديل إلى العربية" onclick="if(window.switchLanguage){switchLanguage('ar');return false;}">عربي</a>
-                    <a href="editor-en.html" class="btn btn-primary nav-cta">Get Started Free</a>
-                </div>
-                <div class="nav-toggle" id="nav-toggle" aria-label="Open Menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    </nav>
 
     <main id="main-content" role="main">
 

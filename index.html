@@ -87,60 +87,38 @@
     <!-- Reading Progress Bar -->
     <div class="reading-progress" id="reading-progress"></div>
 
-    <!-- Floating CTA Button -->
-    <a href="editor.html" class="floating-cta" id="floating-cta">
-        <i class="fas fa-rocket"></i>
-        <span>جرّب مجاناً الآن</span>
-    </a>
 
     <!-- Back to Top Button -->
     <button class="back-to-top" id="back-to-top" aria-label="العودة للأعلى">
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Site Header: Announcement Bar + Navigation -->
-    <header class="site-header" id="site-header">
-        <!-- Top Smart Editor Announcement Bar -->
-        <div class="top-announcement-bar" id="top-announcement-bar" role="region" aria-label="تنويه المحرر الذكي">
-            <div class="container announcement-content">
-                <span class="announcement-badge"><i class="fas fa-sparkles"></i> جديد 2026</span>
-                <p class="announcement-text">
-                    <strong>المحرر الذكي لبطاقات NFC متاح الآن مجاناً!</strong> صمم كارتك التفاعلي بدون كود خلال دقيقتين وشارك بياناتك بلمسة واحدة.
-                </p>
-                <a href="editor.html" class="announcement-link">
-                    <span>جرّب المحرر الآن مجاناً</span>
-                    <i class="fas fa-arrow-left"></i>
-                </a>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="index.html" class="nav-logo" aria-label="الرئيسية - MC PRIME">
+                <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" width="60" height="60" style="height: 44px; width: auto;">
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html#editor-services">المحرر وخدماته</a></li>
+                <li><a href="index.html#how-it-works">كيف يعمل</a></li>
+                <li><a href="index.html#comparison">المقارنة والتوفير</a></li>
+                <li><a href="index.html#nfc-articles">المقالات والأدلة</a></li>
+                <li><a href="gallery.html">المعرض</a></li>
+                <li><a href="blog.html">المدونة</a></li>
+                <li><a href="contact.html">اتصل بنا</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <a href="index-en.html" class="lang-btn" aria-label="Switch to English" onclick="if(window.switchLanguage){switchLanguage('en');return false;}">EN</a>
+                <a href="editor.html" class="btn btn-primary nav-cta">ابدأ مجاناً</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
-
-        <!-- Navbar -->
-        <nav class="navbar" id="navbar">
-            <div class="container nav-content">
-                <a href="index.html" class="nav-logo" aria-label="الرئيسية - MC PRIME">
-                    <img src="mc-prime-nfc.png" alt="MC PRIME - بطاقات العمل الذكية" loading="eager" width="60" height="60" style="height: 44px; width: auto;">
-                </a>
-                <ul class="nav-links" id="nav-links">
-                    <li><a href="index.html#editor-services">المحرر وخدماته</a></li>
-                    <li><a href="index.html#how-it-works">كيف يعمل</a></li>
-                    <li><a href="index.html#comparison">المقارنة والتوفير</a></li>
-                    <li><a href="index.html#nfc-articles">المقالات والأدلة</a></li>
-                    <li><a href="gallery.html">المعرض</a></li>
-                    <li><a href="blog.html">المدونة</a></li>
-                    <li><a href="contact.html">اتصل بنا</a></li>
-                </ul>
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <a href="index-en.html" class="lang-btn" aria-label="Switch to English" onclick="if(window.switchLanguage){switchLanguage('en');return false;}">EN</a>
-                    <a href="editor.html" class="btn btn-primary nav-cta">ابدأ مجاناً</a>
-                </div>
-                <div class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    </nav>
 
     <main id="main-content" role="main">
 
