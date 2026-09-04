@@ -4,6 +4,12 @@ process.env.TOKEN_HASH_SECRET = process.env.TOKEN_HASH_SECRET || 'test_hash_secr
 process.env.MONGO_URI = process.env.MONGO_URI || 'mongodb://fake-uri';
 process.env.PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || 'http://localhost:3000';
 
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+}
+
 // Keep tests isolated from local .env credentials and third-party services.
 process.env.EMAIL_PROVIDER = 'console';
 process.env.EMAIL_API_KEY = '';

@@ -867,13 +867,13 @@ router.delete('/account', verifyToken, authLimiter, async (req, res) => {
 // and returns user data so the frontend can initialize its session state.
 router.post('/session-init', async (req, res) => {
   try {
-    const { initToken } = req.body;
-    if (!initToken) return res.status(400).json({ error: 'Token required' });
+    const { initToken } = req.body || {};
+    if (!initToken || typeof initToken !== 'string') return res.status(400).json({ error: 'Token required' });
     if (!getDb()) return res.status(500).json({ error: 'DB not connected' });
 
-    const decoded = jwt.verify(initToken, process.env.JWT_SECRET);
+    const decoded = jwt.verify(initToken, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
-    if (decoded.type !== 'session-init') {
+    if (decoded.type !== 'session-init' || !decoded.userId) {
       return res.status(401).json({ error: 'Invalid token type' });
     }
 

@@ -10,7 +10,7 @@ function assertLongSecret(name, minLength = 32) {
 }
 
 function assertEnv() {
-  const required = ['MONGO_URI', 'JWT_SECRET'];
+  const required = ['MONGO_URI', 'JWT_SECRET', 'TOKEN_HASH_SECRET'];
   const missing = required.filter(name => !process.env[name]);
   if (missing.length > 0) {
     throw new Error(`Missing required env vars: ${missing.join(', ')}`);

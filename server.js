@@ -139,7 +139,7 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// Stricter rate limiting for auth endpoints (5 attempts per 15 minutes)
+// Stricter rate limiting for auth endpoints (5 attempts per 15 minutes per IP)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'test' ? 100 : 5,
@@ -153,6 +153,22 @@ app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/forgot-password', authLimiter);
 app.use('/api/auth/reset-password', authLimiter);
 app.use('/api/auth/verify-email', authLimiter);
+
+// Account-aware rate limiting to prevent distributed brute-force attacks against specific accounts
+const accountLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 100 : 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  keyGenerator: (req) => {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    return email ? `acct_${email}` : (req.ip || 'unknown');
+  },
+  message: { error: 'محاولات دخول كثيرة جداً لهذا الحساب. حاول مرة أخرى بعد 15 دقيقة.' }
+});
+app.use('/api/auth/login', accountLimiter);
+app.use('/api/auth/forgot-password', accountLimiter);
 
 // --- DESIGNS & UPLOADS ROUTES (MODULAR) ---
 const createDesignsRouter = require('./routes/designs.routes');
@@ -260,7 +276,8 @@ process.on('uncaughtException', (error) => {
 const server = http.createServer(app);
 registerRealtimeCollaboration(server, {
   getDb: () => db,
-  designsCollectionName
+  designsCollectionName,
+  allowedOrigins
 });
 
 

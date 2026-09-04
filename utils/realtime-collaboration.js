@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const { WebSocketServer } = require('ws');
 const url = require('url');
 const { sanitizeDesignState } = require('./sanitize');
+const { isAllowedOrigin } = require('./cors-config');
 const {
   WS_LIMITS,
   getClientIP,
@@ -11,13 +12,27 @@ const {
   parseWsJsonMessage
 } = require('./websocket-security');
 
-function registerRealtimeCollaboration(server) {
-  const wss = new WebSocketServer({ server });
+function registerRealtimeCollaboration(server, options = {}) {
+  const { allowedOrigins = [] } = options;
+  const wss = new WebSocketServer({
+    server,
+    maxPayload: WS_LIMITS.MAX_MESSAGE_SIZE
+  });
   const rooms = new Map();
   const wsConnectionsPerIP = new Map();
   const trustProxy = process.env.TRUST_PROXY === 'true';
 
   wss.on('connection', (ws, req) => {
+    // 1. Validate Origin header to mitigate Cross-Site WebSocket Hijacking (CSWSH)
+    const origin = req.headers.origin;
+    if (origin && Array.isArray(allowedOrigins) && allowedOrigins.length > 0) {
+      if (!isAllowedOrigin(origin, allowedOrigins)) {
+        console.warn(`[WebSocket] Connection rejected: unauthorized origin '${origin}'`);
+        ws.close(1008, 'Origin not allowed');
+        return;
+      }
+    }
+
     const clientIP = getClientIP(req, trustProxy);
     const currentCount = wsConnectionsPerIP.get(clientIP) || 0;
 
@@ -87,14 +102,22 @@ function registerRealtimeCollaboration(server) {
         }
 
         let messageTimestamps = [];
+        let rateLimitViolations = 0;
         ws.on('message', (msg) => {
           try {
             const now = Date.now();
             messageTimestamps = messageTimestamps.filter(timestamp => now - timestamp < WS_LIMITS.RATE_WINDOW_MS);
             if (messageTimestamps.length >= WS_LIMITS.MAX_MESSAGES_PER_SEC) {
+              rateLimitViolations++;
+              if (rateLimitViolations >= 3) {
+                console.warn(`[WebSocket] Client exceeded rate limit repeatedly. Terminating connection.`);
+                ws.close(1008, 'Rate limit exceeded repeatedly');
+                return;
+              }
               ws.send(JSON.stringify({ type: 'error', code: 'RATE_LIMITED' }));
               return;
             }
+            if (rateLimitViolations > 0) rateLimitViolations = Math.max(0, rateLimitViolations - 0.5);
             messageTimestamps.push(now);
 
             const collaborationMessage = parseCollaborationMessage(msg);

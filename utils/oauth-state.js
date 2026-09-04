@@ -5,8 +5,8 @@ const OAUTH_STATE_COOKIE = 'oauthStateNonce';
 const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 
 function getSigningSecret() {
-  const secret = process.env.TOKEN_HASH_SECRET || process.env.JWT_SECRET;
-  if (!secret) throw new Error('OAuth state signing secret is not configured.');
+  const secret = process.env.TOKEN_HASH_SECRET;
+  if (!secret) throw new Error('TOKEN_HASH_SECRET must be configured for OAuth state signing.');
   return secret;
 }
 
