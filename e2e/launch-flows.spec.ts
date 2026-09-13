@@ -1,7 +1,7 @@
 import { expect, request as playwrightRequest, test } from '@playwright/test';
 import sharp = require('sharp');
 
-const password = 'Launch!2026Password';
+const password = 'K9#xV!7mQ2$zL4wP';
 const publishedName = 'Published Launch Card';
 const privateDraftName = 'Private Autosave Name';
 const publishedPhone = '+201000000000';
