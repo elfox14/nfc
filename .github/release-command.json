@@ -1,6 +1,6 @@
 {
-  "requestId": "deploy-admin-system-2026-09-14",
-  "ref": "90220351941d62bdc392c4d37a507802e98e2d66",
+  "requestId": "deploy-admin-system-2026-09-14-v2",
+  "ref": "09f01b8c69a4e6770ec1ffd02ef7ff3654368a55",
   "releaseTag": "",
   "reason": "Deploy updated modern admin system to live website"
 }
