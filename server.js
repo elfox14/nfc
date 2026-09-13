@@ -209,24 +209,23 @@ registerNfcStaticFiles(app, rootDir);
 // --- ADMIN ROUTES (must be BEFORE general error handler) ---
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 admin attempts per window
-  message: { error: 'تم تجاوز الحد المسموح لمحاولات تسجيل الدخول للإدارة، يرجى المحاولة لاحقاً.' },
+  max: process.env.NODE_ENV === 'test' ? 1000 : 300, // Allow sufficient quota for dashboard navigation
+  message: { error: 'تم تجاوز الحد المسموح لطلبات لوحة التحكم، يرجى المحاولة لاحقاً.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Protect admin.html page itself from automated enumeration.
-// This rate limiter fires BEFORE the HTML page is served, limiting recon attempts.
+// Protect admin.html page itself from automated enumeration
 const adminPageLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'test' ? 1000 : 5,
+  max: process.env.NODE_ENV === 'test' ? 1000 : 120,
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Too many requests. Please try again later.',
   skipSuccessfulRequests: false,
 });
 
-app.get(['/nfc/admin', '/nfc/admin.html'], adminPageLimiter, (req, res) => {
+app.get(['/admin', '/admin.html', '/nfc/admin', '/nfc/admin.html'], adminPageLimiter, (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   res.sendFile(path.join(rootDir, 'admin.html'));
@@ -235,6 +234,10 @@ app.get(['/nfc/admin', '/nfc/admin.html'], adminPageLimiter, (req, res) => {
 const createAdminRouter = require('./routes/admin.routes');
 app.use('/api/admin', adminLimiter, createAdminRouter({ 
   getDb: () => db, 
+  usersCollectionName,
+  designsCollectionName,
+  cardRequestsCollectionName,
+  savedCardsCollectionName,
   errorBuffer, 
   MAX_ERROR_BUFFER 
 }));

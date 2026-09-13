@@ -5,363 +5,1493 @@
     <meta charset="UTF-8">
     <meta name="robots" content="noindex, nofollow" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap"></noscript>
-    <title>لوحة الإدارة - MC PRIME</title>
-    <meta name="description" content="لوحة الإدارة - MC PRIME" />
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>لوحة التحكم الإدارية - MC PRIME NFC</title>
+    <meta name="description" content="لوحة التحكم الإدارية المتطورة لمنصة MC PRIME NFC" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="icon" href="mc-prime-nfc.png" type="image/png">
+    <link rel="canonical" href="https://www.mcprim.com/nfc/admin.html" />
+
     <style>
         :root {
-            --bg-base: #0f172a;
-            --bg-panel: #1e293b;
-            --bg-elevated: #334155;
+            --bg-body: #090d16;
+            --bg-sidebar: #0f172a;
+            --bg-card: #131d31;
+            --bg-card-hover: #19263f;
+            --bg-input: #0b111e;
+            --accent: #c5a059;
+            --accent-glow: rgba(197, 160, 89, 0.25);
+            --accent-hover: #e0b769;
+            --border-color: rgba(197, 160, 89, 0.15);
+            --border-subtle: rgba(255, 255, 255, 0.07);
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
-            --accent: #c5a059;
-            --accent-hover: #d4af37;
+            --text-muted: #64748b;
             --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.2);
             --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.2);
             --warning: #f59e0b;
-            --border: #334155;
-            --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --info: #3b82f6;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', 'Cairo', sans-serif;
+        }
 
         body {
-            font-family: 'Tajawal', 'Inter', sans-serif;
-            background-color: var(--bg-base);
+            background-color: var(--bg-body);
             color: var(--text-primary);
-            line-height: 1.5;
+            min-height: 100vh;
             overflow-x: hidden;
-        }
-
-        /* --- Auth Overlay --- */
-        #auth-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        .auth-box {
-            background: var(--bg-panel);
-            padding: 40px;
-            border-radius: var(--radius);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
-        .auth-box h2 { margin-bottom: 24px; color: var(--accent); }
-        .input-group { margin-bottom: 20px; text-align: right; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 0.9rem; }
-        .input-group input {
-            width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-base);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-family: monospace;
-            direction: ltr;
-        }
-        .input-group input:focus { outline: none; border-color: var(--accent); }
-        .btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s;
-        }
-        .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
-
-        /* --- Dashboard Layout --- */
-        #app { display: none; min-height: 100vh; }
-        .sidebar {
-            width: 260px;
-            background: var(--bg-panel);
-            border-left: 1px solid var(--border);
-            position: fixed;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            padding: 24px 0;
             display: flex;
             flex-direction: column;
         }
-        .logo { padding: 0 24px 32px; font-size: 1.5rem; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 12px; }
-        .logo i { color: var(--accent); }
-        .nav-items { flex: 1; }
+
+        /* ===== AUTH OVERLAY ===== */
+        #auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #131d31 0%, #060910 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: rgba(19, 29, 49, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 440px;
+            padding: 40px 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 40px var(--accent-glow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .auth-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--accent);
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .auth-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .auth-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            margin-bottom: 24px;
+            gap: 4px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-tab.active {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 2px 8px var(--accent-glow);
+        }
+
+        .auth-form-group {
+            text-align: right;
+            margin-bottom: 18px;
+        }
+
+        .auth-form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .auth-input-wrap {
+            position: relative;
+        }
+
+        .auth-input-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            direction: ltr;
+            text-align: right;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+            color: #0a0e17;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            margin-top: 10px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
+        }
+
+        .auth-error {
+            display: none;
+            margin-top: 16px;
+            padding: 10px 14px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: var(--radius-sm);
+            color: #fca5a5;
+            font-size: 0.88rem;
+        }
+
+        /* ===== MAIN DASHBOARD LAYOUT ===== */
+        #app {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 270px;
+            background: var(--bg-sidebar);
+            border-left: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .sidebar-brand {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .sidebar-brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            background: rgba(197, 160, 89, 0.15);
+            border: 1px solid var(--border-color);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-brand-text h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-brand-text span {
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 20px 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .menu-header {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            padding: 12px 16px 6px;
+            font-weight: 700;
+        }
+
         .nav-item {
-            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-item i {
+            font-size: 1.15rem;
+            width: 22px;
+            text-align: center;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .nav-item:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .nav-item:hover i {
+            color: var(--accent);
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+            background: rgba(197, 160, 89, 0.12);
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-item.active i {
+            color: var(--accent);
+        }
+
+        .nav-badge {
+            margin-right: auto;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba(197, 160, 89, 0.2);
+            color: var(--accent);
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .admin-profile-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 12px;
+        }
+
+        .admin-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .admin-details {
+            flex: 1;
+            overflow: hidden;
+            text-align: right;
+        }
+
+        .admin-name {
+            font-size: 0.88rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .admin-role {
+            font-size: 0.72rem;
+            color: var(--accent);
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* Main Content */
+        .main-wrapper {
+            margin-right: 270px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .top-nav {
+            height: 72px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .nav-title h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .nav-actions {
             display: flex;
             align-items: center;
             gap: 16px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        .btn-refresh {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
             color: var(--text-secondary);
-            text-decoration: none;
-            transition: all 0.2s;
+            font-size: 0.88rem;
+            font-weight: 600;
             cursor: pointer;
-            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .nav-item:hover, .nav-item.active {
+
+        .btn-refresh:hover {
             color: var(--accent);
-            background: rgba(197, 160, 89, 0.1);
-            border-right: 4px solid var(--accent);
-        }
-        .nav-item i { width: 20px; font-size: 1.1rem; }
-
-        .main-content {
-            margin-right: 260px;
-            padding: 40px;
+            border-color: var(--border-color);
         }
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .header h1 { font-size: 1.8rem; font-weight: 700; }
-        .header .user-info { color: var(--text-secondary); font-size: 0.9rem; }
+        .content-area {
+            padding: 32px;
+            flex: 1;
+        }
 
-        /* --- Views --- */
-        .view { display: none; animation: fadeIn 0.3s ease; }
-        .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* View Switching */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 40px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
         .stat-card {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
             padding: 24px;
             display: flex;
             align-items: center;
             gap: 20px;
-        }
-        .stat-icon { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .stat-info h3 { color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; margin-bottom: 4px; }
-        .stat-info p { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); }
-        
-        .icon-blue { background: rgba(197, 160, 89, 0.1); color: var(--accent); }
-        .icon-green { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .icon-purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
-        .icon-red { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-
-        /* Tables */
-        .table-container {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            transition: var(--transition);
+            position: relative;
             overflow: hidden;
         }
-        .table-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-color);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         }
-        .table-header h2 { font-size: 1.2rem; }
-        .search-box {
+
+        .stat-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-info h3 {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .stat-info .stat-value {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .stat-info .stat-hint {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .theme-gold { background: rgba(197, 160, 89, 0.12); color: var(--accent); }
+        .theme-green { background: rgba(16, 185, 129, 0.12); color: var(--success); }
+        .theme-blue { background: rgba(59, 130, 246, 0.12); color: var(--info); }
+        .theme-purple { background: rgba(168, 85, 247, 0.12); color: #c084fc; }
+        .theme-orange { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
+        .theme-red { background: rgba(239, 68, 68, 0.12); color: var(--danger); }
+
+        /* Tables & Containers */
+        .card-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .panel-title i {
+            color: var(--accent);
+        }
+
+        .panel-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrap {
             position: relative;
         }
-        .search-box input {
-            background: var(--bg-base);
-            border: 1px solid var(--border);
-            padding: 8px 16px 8px 36px;
-            border-radius: 6px;
+
+        .search-input-wrap input {
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px 8px 36px;
             color: var(--text-primary);
-            outline: none;
+            font-size: 0.9rem;
             width: 250px;
+            transition: var(--transition);
         }
-        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
-        
-        table { width: 100%; border-collapse: collapse; text-align: right; }
-        th, td { padding: 16px 24px; border-bottom: 1px solid var(--border); }
-        th { color: var(--text-secondary); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
-        td { font-size: 0.95rem; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.01); }
-        
+
+        .search-input-wrap input:focus {
+            outline: none;
+            border-color: var(--accent);
+            width: 300px;
+        }
+
+        .search-input-wrap i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 6px;
+            background: var(--bg-input);
+            padding: 4px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .filter-pill {
+            padding: 5px 12px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-pill.active {
+            background: var(--accent);
+            color: #000;
+        }
+
+        /* Table Design */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 14px 24px;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-subtle);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 0.92rem;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        /* Badges */
         .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             padding: 4px 10px;
             border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.78rem;
+            font-weight: 700;
         }
-        .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .badge.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-        .badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 
-        .pagination { padding: 16px 24px; display: flex; justify-content: center; gap: 8px; border-top: 1px solid var(--border); }
-        .page-btn {
-            background: var(--bg-elevated);
-            border: none;
-            color: var(--text-primary);
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .badge-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .badge-info { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+        .badge-gold { background: rgba(197, 160, 89, 0.15); color: var(--accent); }
+
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
             width: 32px;
             height: 32px;
-            border-radius: 6px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: 0.2s;
+            transition: var(--transition);
+            font-size: 0.85rem;
+            text-decoration: none;
         }
-        .page-btn:hover { background: var(--accent); }
-        .page-btn.active { background: var(--accent); }
 
-        /* Error Log specific */
-        .error-item { padding: 16px 24px; border-bottom: 1px solid var(--border); }
-        .error-item:last-child { border-bottom: none; }
-        .error-meta { display: flex; gap: 16px; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-secondary); }
-        .error-msg { font-family: monospace; color: #fca5a5; background: rgba(239, 68, 68, 0.05); padding: 12px; border-radius: 6px; border-left: 3px solid var(--danger); direction: ltr; text-align: left; }
+        .btn-action:hover {
+            color: var(--accent);
+            border-color: var(--border-color);
+        }
 
-        .loader {
+        .btn-action.btn-danger:hover {
+            color: var(--danger);
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .btn-action.btn-success:hover {
+            color: var(--success);
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        /* Pagination */
+        .pagination-container {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pagination-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .pagination-pages {
+            display: flex;
+            gap: 6px;
+        }
+
+        .page-btn {
+            min-width: 34px;
+            height: 34px;
+            padding: 0 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .page-btn:hover, .page-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        /* Error Log List */
+        .error-log-card {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: var(--transition);
+        }
+
+        .error-log-card:last-child {
+            border-bottom: none;
+        }
+
+        .error-log-card:hover {
+            background: rgba(239, 68, 68, 0.02);
+        }
+
+        .error-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .error-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .error-message-box {
+            font-family: 'JetBrains Mono', monospace;
+            direction: ltr;
+            text-align: left;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            border-right: 4px solid var(--danger);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            color: #fca5a5;
+            font-size: 0.88rem;
+            overflow-x: auto;
+        }
+
+        /* System Grid */
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .system-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+
+        .system-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .system-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 0.9rem;
+        }
+
+        .system-item:last-child {
+            border-bottom: none;
+        }
+
+        .system-item span:first-child {
+            color: var(--text-secondary);
+        }
+
+        .system-item span:last-child {
+            font-weight: 700;
+            direction: ltr;
+        }
+
+        /* Modal Dialog */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 480px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-modal {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+        }
+
+        .btn-modal-cancel {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-modal-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn-modal-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        /* Toast Container */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 11000;
+        }
+
+        .toast {
+            min-width: 280px;
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        .toast-success { border-color: var(--success); }
+        .toast-error { border-color: var(--danger); }
+        .toast-info { border-color: var(--info); }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .spinner {
             display: inline-block;
-            width: 24px; height: 24px;
-            border: 3px solid rgba(255,255,255,0.1);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.2);
             border-radius: 50%;
             border-top-color: var(--accent);
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 0.8s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-state { padding: 40px; text-align: center; color: var(--text-secondary); }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-wrapper {
+                margin-right: 0;
+            }
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.4rem;
+            cursor: pointer;
+            margin-left: 16px;
+        }
     </style>
-    <link rel="stylesheet" href="premium-ui.css">
-  <link rel="icon" href="mc-prime-nfc.png" type="image/png">
-
-    <link rel="canonical" href="https://www.mcprim.com/nfc/admin.html" />
-
-    <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/admin.html" />
-    <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/admin.html" />
-    <script src="lang-switcher.js" defer></script>
 </head>
 <body>
 
-    <!-- Auth Overlay -->
+    <!-- AUTH OVERLAY -->
     <div id="auth-overlay">
-        <div class="auth-box">
-            <h2><i class="fas fa-shield-alt"></i> وصول إداري</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.9rem;">يرجى إدخال رمز الوصول الإداري (Admin Token) للمتابعة.</p>
-            <form id="auth-form" onsubmit="event.preventDefault(); login();">
-                <div class="input-group">
-                    <input type="password" id="admin-token" placeholder="أدخل الرمز السري هنا..." required autocomplete="off">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <i class="fas fa-shield-halved"></i>
+            </div>
+            <h2 class="auth-title">لوحة الإدارة المركزية</h2>
+            <p class="auth-subtitle">MC PRIME NFC Management Portal</p>
+
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="tab-token-btn" onclick="setAuthMode('token')">رمز الإدارة الرئيسي</button>
+                <button type="button" class="auth-tab" id="tab-login-btn" onclick="setAuthMode('login')">حساب المشرف</button>
+            </div>
+
+            <!-- Token Form -->
+            <form id="token-form" onsubmit="event.preventDefault(); submitTokenLogin();">
+                <div class="auth-form-group">
+                    <label for="admin-token">رمز الوصول السري (Master Token)</label>
+                    <div class="auth-input-wrap">
+                        <input type="password" id="admin-token" class="auth-input" placeholder="أدخل الرمز السري للإدارة..." required autocomplete="off">
+                        <i class="fas fa-key"></i>
+                    </div>
                 </div>
-                <button type="submit" class="btn" id="login-btn">دخول</button>
-                <div id="login-error" style="color: var(--danger); margin-top: 16px; font-size: 0.9rem; display: none;">الرمز غير صحيح</div>
+                <button type="submit" class="auth-btn" id="token-submit-btn">
+                    <span>دخول إلى لوحة التحكم</span>
+                    <i class="fas fa-arrow-left"></i>
+                </button>
             </form>
+
+            <!-- Credentials Form -->
+            <form id="creds-form" style="display: none;" onsubmit="event.preventDefault(); submitCredsLogin();">
+                <div class="auth-form-group">
+                    <label for="admin-email">البريد الإلكتروني للمشرف</label>
+                    <div class="auth-input-wrap">
+                        <input type="email" id="admin-email" class="auth-input" placeholder="admin@mcprim.com" autocomplete="username">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                </div>
+                <div class="auth-form-group">
+                    <label for="admin-password">كلمة المرور</label>
+                    <div class="auth-input-wrap">
+                        <input type="password" id="admin-password" class="auth-input" placeholder="••••••••" autocomplete="current-password">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                </div>
+                <button type="submit" class="auth-btn" id="creds-submit-btn">
+                    <span>تسجيل الدخول</span>
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </form>
+
+            <div class="auth-error" id="auth-error-msg"></div>
         </div>
     </div>
 
-    <!-- Main App -->
+    <!-- MAIN APP -->
     <div id="app">
-        <aside class="sidebar">
-            <div class="logo">
-                <i class="fas fa-bolt"></i>
-                MC PRIME
-            </div>
-            <div class="nav-items">
-                <a class="nav-item active" onclick="switchView('dashboard')">
-                    <i class="fas fa-chart-pie"></i> نظرة عامة
-                </a>
-                <a class="nav-item" onclick="switchView('users'); loadUsers();">
-                    <i class="fas fa-users"></i> المستخدمين
-                </a>
-                <a class="nav-item" onclick="switchView('errors'); loadErrors();">
-                    <i class="fas fa-exclamation-triangle"></i> سجل الأخطاء
-                </a>
-            </div>
-            <div style="padding: 24px; margin-top: auto;">
-                <button class="btn" style="background: var(--bg-elevated); color: var(--text-secondary);" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
-                </button>
-            </div>
-        </aside>
-
-        <main class="main-content">
-            <div class="header">
-                <h1 id="page-title">نظرة عامة</h1>
-                <div class="user-info" id="last-update">آخر تحديث: الآن</div>
-            </div>
-
-            <!-- View: Dashboard -->
-            <div id="view-dashboard" class="view active">
-                <div class="stats-grid" id="stats-container">
-                    <!-- Loaded via JS -->
-                </div>
-
-                <div class="table-container">
-                    <div class="table-header">
-                        <h2>أحدث التصاميم</h2>
+        <div class="app-layout">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-brand">
+                    <div class="sidebar-brand-icon">
+                        <i class="fas fa-bolt"></i>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>المعرف</th>
-                                <th>اسم التصميم</th>
-                                <th>المشاهدات</th>
-                                <th>تاريخ الإنشاء</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recent-designs-tbody">
-                            <!-- Loaded via JS -->
-                        </tbody>
-                    </table>
+                    <div class="sidebar-brand-text">
+                        <h2>MC PRIME</h2>
+                        <span>Admin Console</span>
+                    </div>
                 </div>
-            </div>
 
-            <!-- View: Users -->
-            <div id="view-users" class="view">
-                <div class="table-container">
-                    <div class="table-header">
-                        <h2>إدارة المستخدمين</h2>
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="user-search" placeholder="بحث بالاسم أو الإيميل..." onkeyup="debounceSearch()">
+                <nav class="sidebar-menu">
+                    <div class="menu-header">الرئيسية</div>
+                    <a class="nav-item active" onclick="switchNav('dashboard')">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>لوحة المؤشرات</span>
+                    </a>
+
+                    <div class="menu-header">إدارة المنصة</div>
+                    <a class="nav-item" onclick="switchNav('users')">
+                        <i class="fas fa-users"></i>
+                        <span>المستخدمين</span>
+                        <span class="nav-badge" id="badge-users-count">0</span>
+                    </a>
+                    <a class="nav-item" onclick="switchNav('designs')">
+                        <i class="fas fa-id-card"></i>
+                        <span>البطاقات والتصاميم</span>
+                        <span class="nav-badge" id="badge-designs-count">0</span>
+                    </a>
+                    <a class="nav-item" onclick="switchNav('card-requests')">
+                        <i class="fas fa-box-open"></i>
+                        <span>طلبات البطاقات المطبوعة</span>
+                        <span class="nav-badge" id="badge-orders-count">0</span>
+                    </a>
+
+                    <div class="menu-header">النظام والمراقبة</div>
+                    <a class="nav-item" onclick="switchNav('errors')">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <span>سجل الأخطاء</span>
+                    </a>
+                    <a class="nav-item" onclick="switchNav('system')">
+                        <i class="fas fa-server"></i>
+                        <span>صحة النظام</span>
+                    </a>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="admin-profile-pill">
+                        <div class="admin-avatar" id="admin-avatar-icon">A</div>
+                        <div class="admin-details">
+                            <div class="admin-name" id="admin-display-name">المسؤول</div>
+                            <div class="admin-role" id="admin-display-role">مشرف النظام</div>
                         </div>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>الاسم</th>
-                                <th>البريد الإلكتروني</th>
-                                <th>الحالة</th>
-                                <th>تاريخ التسجيل</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-tbody">
-                            <!-- Loaded via JS -->
-                        </tbody>
-                    </table>
-                    <div class="pagination" id="users-pagination"></div>
+                    <button class="btn-logout" onclick="logoutAdmin()">
+                        <i class="fas fa-arrow-right-from-bracket"></i>
+                        <span>تسجيل الخروج</span>
+                    </button>
                 </div>
-            </div>
+            </aside>
 
-            <!-- View: Errors -->
-            <div id="view-errors" class="view">
-                <div class="table-container">
-                    <div class="table-header">
-                        <h2>سجل الأخطاء (آخر 50)</h2>
-                        <button class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" onclick="loadErrors()"><i class="fas fa-sync-alt"></i> تحديث</button>
+            <!-- Main Content Area -->
+            <div class="main-wrapper">
+                <header class="top-nav">
+                    <div style="display: flex; align-items: center;">
+                        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div class="nav-title">
+                            <h1 id="top-nav-title">نظرة عامة</h1>
+                        </div>
                     </div>
-                    <div id="errors-container">
-                        <!-- Loaded via JS -->
+
+                    <div class="nav-actions">
+                        <div class="status-indicator">
+                            <div class="status-dot"></div>
+                            <span>النظام يعمل</span>
+                        </div>
+                        <button class="btn-refresh" onclick="refreshCurrentView()">
+                            <i class="fas fa-rotate"></i>
+                            <span>تحديث</span>
+                        </button>
                     </div>
-                </div>
+                </header>
+
+                <main class="content-area">
+                    <!-- 1. VIEW: DASHBOARD -->
+                    <section class="view-section active" id="view-dashboard">
+                        <div class="stats-grid" id="dashboard-stats-grid">
+                            <!-- Loaded via JS -->
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
+                            <!-- Latest Users Card -->
+                            <div class="card-panel">
+                                <div class="panel-header">
+                                    <div class="panel-title">
+                                        <i class="fas fa-user-plus"></i>
+                                        <span>أحدث المستخدمين المسجلين</span>
+                                    </div>
+                                    <button class="filter-pill" onclick="switchNav('users')">عرض الكل</button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>الاسم</th>
+                                                <th>البريد</th>
+                                                <th>الحالة</th>
+                                                <th>التاريخ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-recent-users-tbody">
+                                            <tr><td colspan="4" style="text-align:center;padding:30px;"><div class="spinner"></div></td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Latest Designs Card -->
+                            <div class="card-panel">
+                                <div class="panel-header">
+                                    <div class="panel-title">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>أحدث البطاقات المنشورة</span>
+                                    </div>
+                                    <button class="filter-pill" onclick="switchNav('designs')">عرض الكل</button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>المعرف</th>
+                                                <th>الاسم / العنوان</th>
+                                                <th>المشاهدات</th>
+                                                <th>معاينة</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-recent-designs-tbody">
+                                            <tr><td colspan="4" style="text-align:center;padding:30px;"><div class="spinner"></div></td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 2. VIEW: USERS -->
+                    <section class="view-section" id="view-users">
+                        <div class="card-panel">
+                            <div class="panel-header">
+                                <div class="panel-title">
+                                    <i class="fas fa-users-gear"></i>
+                                    <span>إدارة المستخدمين</span>
+                                </div>
+                                <div class="panel-controls">
+                                    <div class="filter-pills" id="user-filter-pills">
+                                        <button class="filter-pill active" onclick="setUserFilter('all')">الكل</button>
+                                        <button class="filter-pill" onclick="setUserFilter('verified')">مؤكد</button>
+                                        <button class="filter-pill" onclick="setUserFilter('unverified')">غير مؤكد</button>
+                                        <button class="filter-pill" onclick="setUserFilter('admin')">المشرفين</button>
+                                    </div>
+                                    <div class="search-input-wrap">
+                                        <input type="text" id="user-search-input" placeholder="بحث بالاسم أو البريد..." onkeyup="onUserSearch()">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>الاسم</th>
+                                            <th>البريد الإلكتروني</th>
+                                            <th>الدور</th>
+                                            <th>حالة الحساب</th>
+                                            <th>تاريخ الانضمام</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-tbody">
+                                        <tr><td colspan="6" style="text-align:center;padding:40px;"><div class="spinner"></div></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pagination-container">
+                                <div class="pagination-info" id="users-pagination-info">عرض 0 من 0</div>
+                                <div class="pagination-pages" id="users-pagination-pages"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 3. VIEW: DESIGNS -->
+                    <section class="view-section" id="view-designs">
+                        <div class="card-panel">
+                            <div class="panel-header">
+                                <div class="panel-title">
+                                    <i class="fas fa-id-card-clip"></i>
+                                    <span>إدارة البطاقات الرقمية والتصاميم</span>
+                                </div>
+                                <div class="panel-controls">
+                                    <div class="search-input-wrap">
+                                        <input type="text" id="design-search-input" placeholder="بحث بالمعرف أو الاسم..." onkeyup="onDesignSearch()">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>المعرف</th>
+                                            <th>اسم البطاقة</th>
+                                            <th>المسمى والشركة</th>
+                                            <th>المشاهدات</th>
+                                            <th>تاريخ الإنشاء</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="designs-tbody">
+                                        <tr><td colspan="6" style="text-align:center;padding:40px;"><div class="spinner"></div></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pagination-container">
+                                <div class="pagination-info" id="designs-pagination-info">عرض 0 من 0</div>
+                                <div class="pagination-pages" id="designs-pagination-pages"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 4. VIEW: CARD REQUESTS -->
+                    <section class="view-section" id="view-card-requests">
+                        <div class="card-panel">
+                            <div class="panel-header">
+                                <div class="panel-title">
+                                    <i class="fas fa-boxes-packing"></i>
+                                    <span>طلبات طباعة بطاقات NFC الذكية</span>
+                                </div>
+                                <div class="panel-controls">
+                                    <div class="filter-pills" id="order-filter-pills">
+                                        <button class="filter-pill active" onclick="setOrderFilter('all')">الكل</button>
+                                        <button class="filter-pill" onclick="setOrderFilter('pending')">قيد الانتظار</button>
+                                        <button class="filter-pill" onclick="setOrderFilter('processing')">جاري المعالجة</button>
+                                        <button class="filter-pill" onclick="setOrderFilter('completed')">مكتمل</button>
+                                        <button class="filter-pill" onclick="setOrderFilter('cancelled')">ملغي</button>
+                                    </div>
+                                    <div class="search-input-wrap">
+                                        <input type="text" id="order-search-input" placeholder="بحث بالعميل أو الهاتف..." onkeyup="onOrderSearch()">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>العميل</th>
+                                            <th>رقم الهاتف</th>
+                                            <th>البريد</th>
+                                            <th>البطاقة</th>
+                                            <th>الحالة</th>
+                                            <th>التاريخ</th>
+                                            <th>إجراء</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="orders-tbody">
+                                        <tr><td colspan="7" style="text-align:center;padding:40px;"><div class="spinner"></div></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pagination-container">
+                                <div class="pagination-info" id="orders-pagination-info">عرض 0 من 0</div>
+                                <div class="pagination-pages" id="orders-pagination-pages"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 5. VIEW: ERRORS -->
+                    <section class="view-section" id="view-errors">
+                        <div class="card-panel">
+                            <div class="panel-header">
+                                <div class="panel-title">
+                                    <i class="fas fa-triangle-exclamation"></i>
+                                    <span>سجل أخطاء النظام</span>
+                                </div>
+                                <div class="panel-controls">
+                                    <button class="filter-pill" style="background: rgba(239, 68, 68, 0.15); color: #f87171;" onclick="confirmClearErrors()">
+                                        <i class="fas fa-trash-can"></i>
+                                        <span>مسح سجل الأخطاء</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="errors-container">
+                                <!-- Loaded via JS -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 6. VIEW: SYSTEM -->
+                    <section class="view-section" id="view-system">
+                        <div class="system-grid" id="system-metrics-grid">
+                            <!-- Loaded via JS -->
+                        </div>
+                    </section>
+                </main>
             </div>
-        </main>
+        </div>
     </div>
 
+    <!-- GENERIC CONFIRMATION MODAL -->
+    <div class="modal-backdrop" id="action-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">تأكيد الإجراء</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                هل أنت متأكد من تنفيذ هذا الإجراء؟
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-modal-cancel" onclick="closeModal()">إلغاء</button>
+                <button class="btn-modal btn-modal-danger" id="modal-confirm-btn">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPDATE ORDER STATUS MODAL -->
+    <div class="modal-backdrop" id="order-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">تحديث حالة الطلب</h3>
+                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-form-group">
+                    <label>الحالة الجديدة</label>
+                    <select id="modal-order-status" class="auth-input" style="direction: rtl;">
+                        <option value="pending">قيد الانتظار (Pending)</option>
+                        <option value="processing">جاري المعالجة والطباعة (Processing)</option>
+                        <option value="completed">تم التوصيل والتسليم (Completed)</option>
+                        <option value="cancelled">ملغي (Cancelled)</option>
+                    </select>
+                </div>
+                <div class="auth-form-group">
+                    <label>ملاحظات إدارية (اختياري)</label>
+                    <textarea id="modal-order-notes" class="auth-input" rows="3" style="resize: vertical; direction: rtl;" placeholder="أضف ملاحظات التنفيذ أو رقم الشحنة..."></textarea>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-modal-cancel" onclick="closeOrderModal()">إلغاء</button>
+                <button class="btn-modal btn-modal-primary" id="order-save-btn" onclick="saveOrderStatus()">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container"></div>
+
     <script src="js/admin-7b531addae5f.js" defer></script>
-    <script src="premium-ui.js" defer></script>
 </body>
 </html>
