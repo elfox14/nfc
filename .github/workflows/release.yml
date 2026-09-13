@@ -47,7 +47,6 @@ jobs:
       MONGO_DB: mcnfc_release
       JWT_SECRET: release-test-jwt-secret-which-is-longer-than-32-characters
       TOKEN_HASH_SECRET: release-test-hash-secret-which-is-different-and-long
-      GOOGLE_CLIENT_ID: release-test-client-id
       PUBLIC_BASE_URL: http://127.0.0.1:3000/nfc
       SITE_BASE_URL: http://127.0.0.1:3000
       ALLOWED_ORIGINS: http://127.0.0.1:3000,http://localhost:3000

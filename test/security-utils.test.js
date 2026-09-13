@@ -22,6 +22,11 @@ describe('Sensitive data redaction', () => {
 describe('Production environment validation', () => {
   const originalEnv = { ...process.env };
 
+  beforeEach(() => {
+    delete process.env.GOOGLE_CLIENT_ID;
+    delete process.env.GOOGLE_CLIENT_SECRET;
+  });
+
   afterEach(() => {
     process.env = { ...originalEnv };
   });
