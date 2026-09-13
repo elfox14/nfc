@@ -90,7 +90,7 @@ module.exports = function createAdminRouter({
       const { token, email, password, tokenOrPassword } = req.body || {};
 
       // 1. Check direct token / master secret
-      const candidateToken = (token || tokenOrPassword || '').trim();
+      const candidateToken = (token || tokenOrPassword || (!email ? password : '') || '').trim();
       if (candidateToken && validateMasterToken(candidateToken)) {
         const sessionToken = jwt.sign(
           { role: 'admin', type: 'master', name: 'المسؤول الرئيسي' },

@@ -15,7 +15,7 @@ const express = require('express');
 const compression = require('compression');
 const path = require('path');
 const fs = require('fs');
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const { sanitizeDesignState } = require('./utils/sanitize');
 const useragent = require('express-useragent');
@@ -163,8 +163,9 @@ const accountLimiter = rateLimit({
   skipSuccessfulRequests: true,
   keyGenerator: (req) => {
     const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
-    return email ? `acct_${email}` : (req.ip || 'unknown');
+    return email ? `acct_${email}` : ipKeyGenerator(req.ip || '127.0.0.1');
   },
+  validate: { keyGeneratorIpFallback: false },
   message: { error: 'محاولات دخول كثيرة جداً لهذا الحساب. حاول مرة أخرى بعد 15 دقيقة.' }
 });
 app.use('/api/auth/login', accountLimiter);
