@@ -50,13 +50,25 @@ module.exports = function createAdminRouter({
 
     const expectedHash = (process.env.ADMIN_TOKEN_SHA256 || '').trim().toLowerCase();
     const legacyExpected = (process.env.ADMIN_TOKENH || '').trim();
+    const directPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TOKEN || '').trim();
 
+    // 1. Direct password match (from ADMIN_PASSWORD in .env)
+    if (directPassword && safeCompare(token, directPassword)) {
+      return true;
+    }
+
+    // 2. Exact match of 64-char hex hash itself (in case user entered the hash from .env)
     if (expectedHash && /^[a-f0-9]{64}$/.test(expectedHash)) {
+      if (safeCompare(token.toLowerCase(), expectedHash)) {
+        return true;
+      }
+      // 3. SHA-256 hash match of entered plaintext against expectedHash
       if (safeCompare(sha256Hex(token), expectedHash)) {
         return true;
       }
     }
 
+    // 4. Legacy token fallback
     if (legacyExpected && safeCompare(token, legacyExpected)) {
       return true;
     }

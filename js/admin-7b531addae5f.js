@@ -76,27 +76,31 @@ function setAuthMode(mode) {
     if (errorMsg) errorMsg.style.display = 'none';
 
     if (mode === 'token') {
-        tokenForm.style.display = 'block';
-        credsForm.style.display = 'none';
-        tabTokenBtn.classList.add('active');
-        tabLoginBtn.classList.remove('active');
+        if (tokenForm) tokenForm.style.display = 'block';
+        if (credsForm) credsForm.style.display = 'none';
+        if (tabTokenBtn) tabTokenBtn.classList.add('active');
+        if (tabLoginBtn) tabLoginBtn.classList.remove('active');
     } else {
-        tokenForm.style.display = 'none';
-        credsForm.style.display = 'block';
-        tabTokenBtn.classList.remove('active');
-        tabLoginBtn.classList.add('active');
+        if (tokenForm) tokenForm.style.display = 'none';
+        if (credsForm) credsForm.style.display = 'block';
+        if (tabTokenBtn) tabTokenBtn.classList.remove('active');
+        if (tabLoginBtn) tabLoginBtn.classList.add('active');
     }
 }
 
-async function submitTokenLogin() {
-    const input = (document.getElementById('admin-token').value || '').trim();
+async function submitTokenLogin(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const inputEl = document.getElementById('admin-token');
+    const input = (inputEl ? inputEl.value : '').trim();
     const btn = document.getElementById('token-submit-btn');
     const errorEl = document.getElementById('auth-error-msg');
     if (!input) return;
 
-    btn.innerHTML = '<div class="spinner"></div>';
-    btn.disabled = true;
-    errorEl.style.display = 'none';
+    if (btn) {
+        btn.innerHTML = '<div class="spinner"></div>';
+        btn.disabled = true;
+    }
+    if (errorEl) errorEl.style.display = 'none';
 
     try {
         const res = await fetch(getApiUrl('/api/admin/login'), {
@@ -112,28 +116,39 @@ async function submitTokenLogin() {
             setAdminProfile(data.admin);
             enterDashboard();
         } else {
-            errorEl.textContent = data.error || 'رمز الإدارة السري غير صحيح، يرجى المحاولة مجدداً.';
-            errorEl.style.display = 'block';
+            if (errorEl) {
+                errorEl.textContent = data.error || 'رمز الإدارة السري غير صحيح، يرجى المحاولة مجدداً.';
+                errorEl.style.display = 'block';
+            }
         }
     } catch (err) {
-        errorEl.textContent = 'تعذر الاتصال بالخادم، يرجى التأكد من اتصال الإنترنت.';
-        errorEl.style.display = 'block';
+        if (errorEl) {
+            errorEl.textContent = 'تعذر الاتصال بالخادم، يرجى التأكد من اتصال الإنترنت.';
+            errorEl.style.display = 'block';
+        }
     } finally {
-        btn.innerHTML = '<span>دخول إلى لوحة التحكم</span> <i class="fas fa-arrow-left"></i>';
-        btn.disabled = false;
+        if (btn) {
+            btn.innerHTML = '<span>دخول إلى لوحة التحكم</span> <i class="fas fa-arrow-left"></i>';
+            btn.disabled = false;
+        }
     }
 }
 
-async function submitCredsLogin() {
-    const email = (document.getElementById('admin-email').value || '').trim();
-    const password = (document.getElementById('admin-password').value || '');
+async function submitCredsLogin(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const emailEl = document.getElementById('admin-email');
+    const passwordEl = document.getElementById('admin-password');
+    const email = (emailEl ? emailEl.value : '').trim();
+    const password = (passwordEl ? passwordEl.value : '');
     const btn = document.getElementById('creds-submit-btn');
     const errorEl = document.getElementById('auth-error-msg');
     if (!email || !password) return;
 
-    btn.innerHTML = '<div class="spinner"></div>';
-    btn.disabled = true;
-    errorEl.style.display = 'none';
+    if (btn) {
+        btn.innerHTML = '<div class="spinner"></div>';
+        btn.disabled = true;
+    }
+    if (errorEl) errorEl.style.display = 'none';
 
     try {
         const res = await fetch(getApiUrl('/api/admin/login'), {
@@ -149,15 +164,21 @@ async function submitCredsLogin() {
             setAdminProfile(data.admin);
             enterDashboard();
         } else {
-            errorEl.textContent = data.error || 'بيانات المشرف غير صحيحة، أو الحساب لا يملك صلاحية إدارة.';
-            errorEl.style.display = 'block';
+            if (errorEl) {
+                errorEl.textContent = data.error || 'بيانات المشرف غير صحيحة، أو الحساب لا يملك صلاحية إدارة.';
+                errorEl.style.display = 'block';
+            }
         }
     } catch (err) {
-        errorEl.textContent = 'تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً.';
-        errorEl.style.display = 'block';
+        if (errorEl) {
+            errorEl.textContent = 'تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً.';
+            errorEl.style.display = 'block';
+        }
     } finally {
-        btn.innerHTML = '<span>تسجيل الدخول</span> <i class="fas fa-arrow-left"></i>';
-        btn.disabled = false;
+        if (btn) {
+            btn.innerHTML = '<span>تسجيل الدخول</span> <i class="fas fa-arrow-left"></i>';
+            btn.disabled = false;
+        }
     }
 }
 
@@ -174,16 +195,20 @@ function setAdminProfile(admin) {
 }
 
 function enterDashboard() {
-    document.getElementById('auth-overlay').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+    const overlay = document.getElementById('auth-overlay');
+    const app = document.getElementById('app');
+    if (overlay) overlay.style.display = 'none';
+    if (app) app.style.display = 'block';
     switchNav('dashboard');
 }
 
 function logoutAdmin() {
     token = '';
     sessionStorage.removeItem('adminToken');
-    document.getElementById('auth-overlay').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
+    const overlay = document.getElementById('auth-overlay');
+    const app = document.getElementById('app');
+    if (overlay) overlay.style.display = 'flex';
+    if (app) app.style.display = 'none';
     const input = document.getElementById('admin-token');
     if (input) input.value = '';
     showToast('تم تسجيل الخروج بنجاح', 'info');
@@ -225,13 +250,10 @@ function switchNav(viewName) {
     currentView = viewName;
 
     // Update nav classes
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.toggle('active', el.getAttribute('data-view') === viewName);
+    });
     document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-
-    const navLink = Array.from(document.querySelectorAll('.nav-item')).find(el => 
-        el.getAttribute('onclick') && el.getAttribute('onclick').includes(viewName)
-    );
-    if (navLink) navLink.classList.add('active');
 
     const viewSec = document.getElementById(`view-${viewName}`);
     if (viewSec) viewSec.classList.add('active');
@@ -275,9 +297,12 @@ async function loadDashboard() {
         const data = await res.json();
 
         // Update sidebar badges
-        document.getElementById('badge-users-count').textContent = data.totalUsers || 0;
-        document.getElementById('badge-designs-count').textContent = data.totalDesigns || 0;
-        document.getElementById('badge-orders-count').textContent = data.pendingCardRequests || 0;
+        const bUsers = document.getElementById('badge-users-count');
+        const bDesigns = document.getElementById('badge-designs-count');
+        const bOrders = document.getElementById('badge-orders-count');
+        if (bUsers) bUsers.textContent = data.totalUsers || 0;
+        if (bDesigns) bDesigns.textContent = data.totalDesigns || 0;
+        if (bOrders) bOrders.textContent = data.pendingCardRequests || 0;
 
         // Render Stats Grid
         const statsGrid = document.getElementById('dashboard-stats-grid');
@@ -364,18 +389,19 @@ async function loadDashboard() {
 // ==========================================
 // 2. USERS MANAGEMENT
 // ==========================================
-function setUserFilter(filter) {
+function setUserFilter(filter, clickedBtn) {
     usersState.filter = filter;
     usersState.page = 1;
     document.querySelectorAll('#user-filter-pills .filter-pill').forEach(btn => btn.classList.remove('active'));
-    if (window.event && window.event.target) window.event.target.classList.add('active');
+    if (clickedBtn) clickedBtn.classList.add('active');
     loadUsers();
 }
 
 function onUserSearch() {
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => {
-        usersState.search = (document.getElementById('user-search-input').value || '').trim();
+        const input = document.getElementById('user-search-input');
+        usersState.search = (input ? input.value : '').trim();
         usersState.page = 1;
         loadUsers();
     }, 400);
@@ -426,13 +452,13 @@ async function loadUsers(page = usersState.page) {
                         <td>${new Date(u.createdAt).toLocaleDateString('ar-EG')}</td>
                         <td>
                             <div class="action-btns">
-                                <button class="btn-action ${u.isVerified ? '' : 'btn-success'}" title="${u.isVerified ? 'إلغاء التأكيد' : 'تأكيد الحساب'}" onclick="toggleUserVerify('${escapeHTML(u.userId)}', ${!u.isVerified})">
+                                <button class="btn-action ${u.isVerified ? '' : 'btn-success'}" title="${u.isVerified ? 'إلغاء التأكيد' : 'تأكيد الحساب'}" data-action="verify-user" data-user-id="${escapeHTML(u.userId)}" data-verified="${!u.isVerified}">
                                     <i class="fas ${u.isVerified ? 'fa-user-xmark' : 'fa-user-check'}"></i>
                                 </button>
-                                <button class="btn-action" title="${isAdmin ? 'إلغاء صلاحية المشرف' : 'ترقية إلى مشرف'}" onclick="toggleUserRole('${escapeHTML(u.userId)}', '${isAdmin ? 'user' : 'admin'}')">
+                                <button class="btn-action" title="${isAdmin ? 'إلغاء صلاحية المشرف' : 'ترقية إلى مشرف'}" data-action="role-user" data-user-id="${escapeHTML(u.userId)}" data-role="${isAdmin ? 'user' : 'admin'}">
                                     <i class="fas ${isAdmin ? 'fa-shield-slash' : 'fa-shield'}"></i>
                                 </button>
-                                <button class="btn-action btn-danger" title="حذف المستخدم" onclick="confirmDeleteUser('${escapeHTML(u.userId)}', '${escapeHTML(u.name || u.email)}')">
+                                <button class="btn-action btn-danger" title="حذف المستخدم" data-action="delete-user" data-user-id="${escapeHTML(u.userId)}" data-user-name="${escapeHTML(u.name || u.email)}">
                                     <i class="fas fa-trash-can"></i>
                                 </button>
                             </div>
@@ -444,7 +470,6 @@ async function loadUsers(page = usersState.page) {
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">لا توجد نتائج مطابقة</td></tr>';
         }
 
-        // Pagination
         renderPagination('users', data.total, usersState.page, usersState.pages);
 
     } catch (err) {
@@ -518,7 +543,8 @@ function confirmDeleteUser(userId, userName) {
 function onDesignSearch() {
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => {
-        designsState.search = (document.getElementById('design-search-input').value || '').trim();
+        const input = document.getElementById('design-search-input');
+        designsState.search = (input ? input.value : '').trim();
         designsState.page = 1;
         loadDesigns();
     }, 400);
@@ -569,7 +595,7 @@ async function loadDesigns(page = designsState.page) {
                             <a href="/card/${escapeHTML(d.shortId)}" target="_blank" class="btn-action" title="معاينة حية">
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
-                            <button class="btn-action btn-danger" title="حذف البطاقة" onclick="confirmDeleteDesign('${escapeHTML(d.shortId)}')">
+                            <button class="btn-action btn-danger" title="حذف البطاقة" data-action="delete-design" data-design-id="${escapeHTML(d.shortId)}">
                                 <i class="fas fa-trash-can"></i>
                             </button>
                         </div>
@@ -614,18 +640,19 @@ function confirmDeleteDesign(shortId) {
 // ==========================================
 // 4. CARD REQUESTS (ORDERS)
 // ==========================================
-function setOrderFilter(status) {
+function setOrderFilter(status, clickedBtn) {
     ordersState.status = status;
     ordersState.page = 1;
     document.querySelectorAll('#order-filter-pills .filter-pill').forEach(btn => btn.classList.remove('active'));
-    if (window.event && window.event.target) window.event.target.classList.add('active');
+    if (clickedBtn) clickedBtn.classList.add('active');
     loadCardRequests();
 }
 
 function onOrderSearch() {
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => {
-        ordersState.search = (document.getElementById('order-search-input').value || '').trim();
+        const input = document.getElementById('order-search-input');
+        ordersState.search = (input ? input.value : '').trim();
         ordersState.page = 1;
         loadCardRequests();
     }, 400);
@@ -681,7 +708,7 @@ async function loadCardRequests(page = ordersState.page) {
                     <td>${statusBadges[r.status] || r.status}</td>
                     <td>${new Date(r.createdAt || r._id).toLocaleDateString('ar-EG')}</td>
                     <td>
-                        <button class="btn-action" title="تحديث حالة الطلب" onclick="openOrderModal('${escapeHTML(r._id)}', '${escapeHTML(r.status)}', '${escapeHTML(r.adminNotes || '')}')">
+                        <button class="btn-action" title="تحديث حالة الطلب" data-action="edit-order" data-order-id="${escapeHTML(r._id)}" data-status="${escapeHTML(r.status)}" data-notes="${escapeHTML(r.adminNotes || '')}">
                             <i class="fas fa-pen-to-square"></i>
                         </button>
                     </td>
@@ -704,22 +731,28 @@ function openOrderModal(id, currentStatus, currentNotes) {
     const notesText = document.getElementById('modal-order-notes');
     if (statusSelect) statusSelect.value = currentStatus || 'pending';
     if (notesText) notesText.value = currentNotes || '';
-    document.getElementById('order-modal').style.display = 'flex';
+    const modal = document.getElementById('order-modal');
+    if (modal) modal.style.display = 'flex';
 }
 
 function closeOrderModal() {
     selectedOrderId = null;
-    document.getElementById('order-modal').style.display = 'none';
+    const modal = document.getElementById('order-modal');
+    if (modal) modal.style.display = 'none';
 }
 
 async function saveOrderStatus() {
     if (!selectedOrderId) return;
-    const status = document.getElementById('modal-order-status').value;
-    const adminNotes = document.getElementById('modal-order-notes').value;
+    const statusEl = document.getElementById('modal-order-status');
+    const notesEl = document.getElementById('modal-order-notes');
+    const status = statusEl ? statusEl.value : 'pending';
+    const adminNotes = notesEl ? notesEl.value : '';
     const saveBtn = document.getElementById('order-save-btn');
 
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'جاري الحفظ...';
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'جاري الحفظ...';
+    }
 
     try {
         const res = await fetch(getApiUrl(`/api/admin/card-requests/${selectedOrderId}`), {
@@ -738,8 +771,10 @@ async function saveOrderStatus() {
     } catch (err) {
         showToast('خطأ في الاتصال بالخادم', 'error');
     } finally {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'حفظ التغييرات';
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'حفظ التغييرات';
+        }
     }
 }
 
@@ -904,17 +939,17 @@ function renderPagination(type, total, currentPage, totalPages) {
     const endPage = Math.min(totalPages, currentPage + 2);
 
     if (currentPage > 1) {
-        pagesEl.innerHTML += `<button class="page-btn" onclick="goToPage('${type}', ${currentPage - 1})"><i class="fas fa-chevron-right"></i></button>`;
+        pagesEl.innerHTML += `<button class="page-btn" data-page-type="${type}" data-page-num="${currentPage - 1}"><i class="fas fa-chevron-right"></i></button>`;
     }
 
     for (let i = startPage; i <= endPage; i++) {
         pagesEl.innerHTML += `
-            <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage('${type}', ${i})">${i}</button>
+            <button class="page-btn ${i === currentPage ? 'active' : ''}" data-page-type="${type}" data-page-num="${i}">${i}</button>
         `;
     }
 
     if (currentPage < totalPages) {
-        pagesEl.innerHTML += `<button class="page-btn" onclick="goToPage('${type}', ${currentPage + 1})"><i class="fas fa-chevron-left"></i></button>`;
+        pagesEl.innerHTML += `<button class="page-btn" data-page-type="${type}" data-page-num="${currentPage + 1}"><i class="fas fa-chevron-left"></i></button>`;
     }
 }
 
@@ -928,27 +963,173 @@ function goToPage(type, page) {
 // MODAL CONTROLS
 // ==========================================
 function openModal({ title, body, onConfirm }) {
-    document.getElementById('modal-title').textContent = title || 'تأكيد';
-    document.getElementById('modal-body').innerHTML = body || '';
+    const titleEl = document.getElementById('modal-title');
+    const bodyEl = document.getElementById('modal-body');
+    const modalEl = document.getElementById('action-modal');
+    if (titleEl) titleEl.textContent = title || 'تأكيد';
+    if (bodyEl) bodyEl.innerHTML = body || '';
     currentModalConfirmAction = onConfirm;
-    document.getElementById('action-modal').style.display = 'flex';
+    if (modalEl) modalEl.style.display = 'flex';
 }
 
 function closeModal() {
     currentModalConfirmAction = null;
-    document.getElementById('action-modal').style.display = 'none';
+    const modalEl = document.getElementById('action-modal');
+    if (modalEl) modalEl.style.display = 'none';
 }
 
-const confirmBtn = document.getElementById('modal-confirm-btn');
-if (confirmBtn) {
-    confirmBtn.onclick = () => {
-        if (typeof currentModalConfirmAction === 'function') {
-            currentModalConfirmAction();
-        }
-    };
+// ==========================================
+// EVENT LISTENERS BINDING (100% CSP COMPLIANT)
+// ==========================================
+function setupEventListeners() {
+    // 1. Auth Tabs & Forms
+    const tabTokenBtn = document.getElementById('tab-token-btn');
+    if (tabTokenBtn) tabTokenBtn.addEventListener('click', () => setAuthMode('token'));
+
+    const tabLoginBtn = document.getElementById('tab-login-btn');
+    if (tabLoginBtn) tabLoginBtn.addEventListener('click', () => setAuthMode('login'));
+
+    const tokenForm = document.getElementById('token-form');
+    if (tokenForm) tokenForm.addEventListener('submit', submitTokenLogin);
+
+    const credsForm = document.getElementById('creds-form');
+    if (credsForm) credsForm.addEventListener('submit', submitCredsLogin);
+
+    // 2. Navigation Items
+    document.querySelectorAll('[data-view]').forEach(item => {
+        item.addEventListener('click', () => {
+            const view = item.getAttribute('data-view');
+            if (view) switchNav(view);
+        });
+    });
+
+    const refreshBtn = document.getElementById('btn-refresh-view');
+    if (refreshBtn) refreshBtn.addEventListener('click', refreshCurrentView);
+
+    const logoutBtn = document.getElementById('btn-logout-sidebar');
+    if (logoutBtn) logoutBtn.addEventListener('click', logoutAdmin);
+
+    const mobileMenuBtn = document.getElementById('btn-mobile-menu');
+    if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleSidebar);
+
+    const gotoUsersBtn = document.getElementById('btn-goto-users');
+    if (gotoUsersBtn) gotoUsersBtn.addEventListener('click', () => switchNav('users'));
+
+    const gotoDesignsBtn = document.getElementById('btn-goto-designs');
+    if (gotoDesignsBtn) gotoDesignsBtn.addEventListener('click', () => switchNav('designs'));
+
+    const clearErrorsBtn = document.getElementById('btn-clear-errors');
+    if (clearErrorsBtn) clearErrorsBtn.addEventListener('click', confirmClearErrors);
+
+    // 3. Search Inputs
+    const userSearchInput = document.getElementById('user-search-input');
+    if (userSearchInput) userSearchInput.addEventListener('input', onUserSearch);
+
+    const designSearchInput = document.getElementById('design-search-input');
+    if (designSearchInput) designSearchInput.addEventListener('input', onDesignSearch);
+
+    const orderSearchInput = document.getElementById('order-search-input');
+    if (orderSearchInput) orderSearchInput.addEventListener('input', onOrderSearch);
+
+    // 4. Filter Pills
+    document.querySelectorAll('#user-filter-pills [data-filter]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const filter = btn.getAttribute('data-filter');
+            setUserFilter(filter, btn);
+        });
+    });
+
+    document.querySelectorAll('#order-filter-pills [data-order-status]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const status = btn.getAttribute('data-order-status');
+            setOrderFilter(status, btn);
+        });
+    });
+
+    // 5. Modals Actions
+    document.querySelectorAll('[data-close-modal="action"]').forEach(btn => {
+        btn.addEventListener('click', closeModal);
+    });
+
+    document.querySelectorAll('[data-close-modal="order"]').forEach(btn => {
+        btn.addEventListener('click', closeOrderModal);
+    });
+
+    const confirmModalBtn = document.getElementById('modal-confirm-btn');
+    if (confirmModalBtn) {
+        confirmModalBtn.addEventListener('click', () => {
+            if (typeof currentModalConfirmAction === 'function') {
+                currentModalConfirmAction();
+            }
+        });
+    }
+
+    const orderSaveBtn = document.getElementById('order-save-btn');
+    if (orderSaveBtn) orderSaveBtn.addEventListener('click', saveOrderStatus);
+
+    // 6. Delegated actions on Users table
+    const usersTbody = document.getElementById('users-tbody');
+    if (usersTbody) {
+        usersTbody.addEventListener('click', (e) => {
+            const targetBtn = e.target.closest('button[data-action]');
+            if (!targetBtn) return;
+            const action = targetBtn.getAttribute('data-action');
+            const userId = targetBtn.getAttribute('data-user-id');
+
+            if (action === 'verify-user') {
+                const isVerified = targetBtn.getAttribute('data-verified') === 'true';
+                toggleUserVerify(userId, isVerified);
+            } else if (action === 'role-user') {
+                const role = targetBtn.getAttribute('data-role');
+                toggleUserRole(userId, role);
+            } else if (action === 'delete-user') {
+                const userName = targetBtn.getAttribute('data-user-name');
+                confirmDeleteUser(userId, userName);
+            }
+        });
+    }
+
+    // 7. Delegated actions on Designs table
+    const designsTbody = document.getElementById('designs-tbody');
+    if (designsTbody) {
+        designsTbody.addEventListener('click', (e) => {
+            const targetBtn = e.target.closest('button[data-action="delete-design"]');
+            if (!targetBtn) return;
+            const designId = targetBtn.getAttribute('data-design-id');
+            if (designId) confirmDeleteDesign(designId);
+        });
+    }
+
+    // 8. Delegated actions on Orders table
+    const ordersTbody = document.getElementById('orders-tbody');
+    if (ordersTbody) {
+        ordersTbody.addEventListener('click', (e) => {
+            const targetBtn = e.target.closest('button[data-action="edit-order"]');
+            if (!targetBtn) return;
+            const id = targetBtn.getAttribute('data-order-id');
+            const status = targetBtn.getAttribute('data-status');
+            const notes = targetBtn.getAttribute('data-notes');
+            openOrderModal(id, status, notes);
+        });
+    }
+
+    // 9. Delegated actions on Pagination buttons
+    document.addEventListener('click', (e) => {
+        const pageBtn = e.target.closest('button[data-page-type]');
+        if (!pageBtn) return;
+        const type = pageBtn.getAttribute('data-page-type');
+        const num = parseInt(pageBtn.getAttribute('data-page-num'), 10);
+        if (type && !isNaN(num)) goToPage(type, num);
+    });
 }
 
-// Initialize session check on boot
-if (token) {
-    verifyActiveSession();
+// Attach event listeners when DOM is loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setupEventListeners();
+        if (token) verifyActiveSession();
+    });
+} else {
+    setupEventListeners();
+    if (token) verifyActiveSession();
 }

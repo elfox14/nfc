@@ -1084,12 +1084,12 @@
             <p class="auth-subtitle">MC PRIME NFC Management Portal</p>
 
             <div class="auth-tabs">
-                <button type="button" class="auth-tab active" id="tab-token-btn" onclick="setAuthMode('token')">رمز الإدارة الرئيسي</button>
-                <button type="button" class="auth-tab" id="tab-login-btn" onclick="setAuthMode('login')">حساب المشرف</button>
+                <button type="button" class="auth-tab active" id="tab-token-btn">رمز الإدارة الرئيسي</button>
+                <button type="button" class="auth-tab" id="tab-login-btn">حساب المشرف</button>
             </div>
 
             <!-- Token Form -->
-            <form id="token-form" onsubmit="event.preventDefault(); submitTokenLogin();">
+            <form id="token-form">
                 <div class="auth-form-group">
                     <label for="admin-token">رمز الوصول السري (Master Token)</label>
                     <div class="auth-input-wrap">
@@ -1104,7 +1104,7 @@
             </form>
 
             <!-- Credentials Form -->
-            <form id="creds-form" style="display: none;" onsubmit="event.preventDefault(); submitCredsLogin();">
+            <form id="creds-form" style="display: none;">
                 <div class="auth-form-group">
                     <label for="admin-email">البريد الإلكتروني للمشرف</label>
                     <div class="auth-input-wrap">
@@ -1146,34 +1146,34 @@
 
                 <nav class="sidebar-menu">
                     <div class="menu-header">الرئيسية</div>
-                    <a class="nav-item active" onclick="switchNav('dashboard')">
+                    <a class="nav-item active" data-view="dashboard">
                         <i class="fas fa-chart-pie"></i>
                         <span>لوحة المؤشرات</span>
                     </a>
 
                     <div class="menu-header">إدارة المنصة</div>
-                    <a class="nav-item" onclick="switchNav('users')">
+                    <a class="nav-item" data-view="users">
                         <i class="fas fa-users"></i>
                         <span>المستخدمين</span>
                         <span class="nav-badge" id="badge-users-count">0</span>
                     </a>
-                    <a class="nav-item" onclick="switchNav('designs')">
+                    <a class="nav-item" data-view="designs">
                         <i class="fas fa-id-card"></i>
                         <span>البطاقات والتصاميم</span>
                         <span class="nav-badge" id="badge-designs-count">0</span>
                     </a>
-                    <a class="nav-item" onclick="switchNav('card-requests')">
+                    <a class="nav-item" data-view="card-requests">
                         <i class="fas fa-box-open"></i>
                         <span>طلبات البطاقات المطبوعة</span>
                         <span class="nav-badge" id="badge-orders-count">0</span>
                     </a>
 
                     <div class="menu-header">النظام والمراقبة</div>
-                    <a class="nav-item" onclick="switchNav('errors')">
+                    <a class="nav-item" data-view="errors">
                         <i class="fas fa-triangle-exclamation"></i>
                         <span>سجل الأخطاء</span>
                     </a>
-                    <a class="nav-item" onclick="switchNav('system')">
+                    <a class="nav-item" data-view="system">
                         <i class="fas fa-server"></i>
                         <span>صحة النظام</span>
                     </a>
@@ -1187,7 +1187,7 @@
                             <div class="admin-role" id="admin-display-role">مشرف النظام</div>
                         </div>
                     </div>
-                    <button class="btn-logout" onclick="logoutAdmin()">
+                    <button class="btn-logout" id="btn-logout-sidebar">
                         <i class="fas fa-arrow-right-from-bracket"></i>
                         <span>تسجيل الخروج</span>
                     </button>
@@ -1198,7 +1198,7 @@
             <div class="main-wrapper">
                 <header class="top-nav">
                     <div style="display: flex; align-items: center;">
-                        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <button class="mobile-menu-btn" id="btn-mobile-menu">
                             <i class="fas fa-bars"></i>
                         </button>
                         <div class="nav-title">
@@ -1211,7 +1211,7 @@
                             <div class="status-dot"></div>
                             <span>النظام يعمل</span>
                         </div>
-                        <button class="btn-refresh" onclick="refreshCurrentView()">
+                        <button class="btn-refresh" id="btn-refresh-view">
                             <i class="fas fa-rotate"></i>
                             <span>تحديث</span>
                         </button>
@@ -1233,7 +1233,7 @@
                                         <i class="fas fa-user-plus"></i>
                                         <span>أحدث المستخدمين المسجلين</span>
                                     </div>
-                                    <button class="filter-pill" onclick="switchNav('users')">عرض الكل</button>
+                                    <button class="filter-pill" id="btn-goto-users">عرض الكل</button>
                                 </div>
                                 <div class="table-responsive">
                                     <table>
@@ -1259,7 +1259,7 @@
                                         <i class="fas fa-credit-card"></i>
                                         <span>أحدث البطاقات المنشورة</span>
                                     </div>
-                                    <button class="filter-pill" onclick="switchNav('designs')">عرض الكل</button>
+                                    <button class="filter-pill" id="btn-goto-designs">عرض الكل</button>
                                 </div>
                                 <div class="table-responsive">
                                     <table>
@@ -1290,13 +1290,13 @@
                                 </div>
                                 <div class="panel-controls">
                                     <div class="filter-pills" id="user-filter-pills">
-                                        <button class="filter-pill active" onclick="setUserFilter('all')">الكل</button>
-                                        <button class="filter-pill" onclick="setUserFilter('verified')">مؤكد</button>
-                                        <button class="filter-pill" onclick="setUserFilter('unverified')">غير مؤكد</button>
-                                        <button class="filter-pill" onclick="setUserFilter('admin')">المشرفين</button>
+                                        <button class="filter-pill active" data-filter="all">الكل</button>
+                                        <button class="filter-pill" data-filter="verified">مؤكد</button>
+                                        <button class="filter-pill" data-filter="unverified">غير مؤكد</button>
+                                        <button class="filter-pill" data-filter="admin">المشرفين</button>
                                     </div>
                                     <div class="search-input-wrap">
-                                        <input type="text" id="user-search-input" placeholder="بحث بالاسم أو البريد..." onkeyup="onUserSearch()">
+                                        <input type="text" id="user-search-input" placeholder="بحث بالاسم أو البريد...">
                                         <i class="fas fa-search"></i>
                                     </div>
                                 </div>
@@ -1335,7 +1335,7 @@
                                 </div>
                                 <div class="panel-controls">
                                     <div class="search-input-wrap">
-                                        <input type="text" id="design-search-input" placeholder="بحث بالمعرف أو الاسم..." onkeyup="onDesignSearch()">
+                                        <input type="text" id="design-search-input" placeholder="بحث بالمعرف أو الاسم...">
                                         <i class="fas fa-search"></i>
                                     </div>
                                 </div>
@@ -1374,14 +1374,14 @@
                                 </div>
                                 <div class="panel-controls">
                                     <div class="filter-pills" id="order-filter-pills">
-                                        <button class="filter-pill active" onclick="setOrderFilter('all')">الكل</button>
-                                        <button class="filter-pill" onclick="setOrderFilter('pending')">قيد الانتظار</button>
-                                        <button class="filter-pill" onclick="setOrderFilter('processing')">جاري المعالجة</button>
-                                        <button class="filter-pill" onclick="setOrderFilter('completed')">مكتمل</button>
-                                        <button class="filter-pill" onclick="setOrderFilter('cancelled')">ملغي</button>
+                                        <button class="filter-pill active" data-order-status="all">الكل</button>
+                                        <button class="filter-pill" data-order-status="pending">قيد الانتظار</button>
+                                        <button class="filter-pill" data-order-status="processing">جاري المعالجة</button>
+                                        <button class="filter-pill" data-order-status="completed">مكتمل</button>
+                                        <button class="filter-pill" data-order-status="cancelled">ملغي</button>
                                     </div>
                                     <div class="search-input-wrap">
-                                        <input type="text" id="order-search-input" placeholder="بحث بالعميل أو الهاتف..." onkeyup="onOrderSearch()">
+                                        <input type="text" id="order-search-input" placeholder="بحث بالعميل أو الهاتف...">
                                         <i class="fas fa-search"></i>
                                     </div>
                                 </div>
@@ -1420,7 +1420,7 @@
                                     <span>سجل أخطاء النظام</span>
                                 </div>
                                 <div class="panel-controls">
-                                    <button class="filter-pill" style="background: rgba(239, 68, 68, 0.15); color: #f87171;" onclick="confirmClearErrors()">
+                                    <button class="filter-pill" id="btn-clear-errors" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">
                                         <i class="fas fa-trash-can"></i>
                                         <span>مسح سجل الأخطاء</span>
                                     </button>
@@ -1448,13 +1448,13 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3 class="modal-title" id="modal-title">تأكيد الإجراء</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <button class="modal-close" data-close-modal="action">&times;</button>
             </div>
             <div class="modal-body" id="modal-body">
                 هل أنت متأكد من تنفيذ هذا الإجراء؟
             </div>
             <div class="modal-actions">
-                <button class="btn-modal btn-modal-cancel" onclick="closeModal()">إلغاء</button>
+                <button class="btn-modal btn-modal-cancel" data-close-modal="action">إلغاء</button>
                 <button class="btn-modal btn-modal-danger" id="modal-confirm-btn">تأكيد</button>
             </div>
         </div>
@@ -1465,7 +1465,7 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3 class="modal-title">تحديث حالة الطلب</h3>
-                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+                <button class="modal-close" data-close-modal="order">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="auth-form-group">
@@ -1483,8 +1483,8 @@
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn-modal btn-modal-cancel" onclick="closeOrderModal()">إلغاء</button>
-                <button class="btn-modal btn-modal-primary" id="order-save-btn" onclick="saveOrderStatus()">حفظ التغييرات</button>
+                <button class="btn-modal btn-modal-cancel" data-close-modal="order">إلغاء</button>
+                <button class="btn-modal btn-modal-primary" id="order-save-btn">حفظ التغييرات</button>
             </div>
         </div>
     </div>
