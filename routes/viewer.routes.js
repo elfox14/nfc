@@ -181,6 +181,8 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
       const inputs = publishedDesign.inputs || {};
       const name = sanitizeText(inputs['input-name_ar'] || inputs['input-name_en'] || inputs['input-name'] || 'بطاقة عمل رقمية');
       const tagline = sanitizeText(inputs['input-tagline_ar'] || inputs['input-tagline_en'] || inputs['input-tagline'] || '');
+      const company = sanitizeText(inputs['input-company_ar'] || inputs['input-company_en'] || inputs['input-company'] || '');
+      const bio = sanitizeText(inputs['input-bio_ar'] || inputs['input-bio_en'] || inputs['input-bio'] || '');
       const dynamicData = publishedDesign.dynamic || {};
       const imageUrls = publishedDesign.imageUrls || {};
 
@@ -191,14 +193,101 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
 
       const keywords = ['NFC', 'بطاقة عمل ذكية', 'كارت شخصي', name, ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])].filter(Boolean).join(', ');
 
+      const phones = [];
+      if (Array.isArray(dynamicData.phones)) {
+        dynamicData.phones.forEach(p => {
+          if (p && p.value) {
+            const clean = sanitizeText(p.value, 50).trim();
+            if (clean && !phones.includes(clean)) phones.push(clean);
+          }
+        });
+      }
+
+      const emails = [];
+      if (dynamicData.staticSocial?.email?.value) {
+        const em = sanitizeText(dynamicData.staticSocial.email.value, 100).trim();
+        if (em && !emails.includes(em)) emails.push(em);
+      }
+      if (Array.isArray(dynamicData.social)) {
+        dynamicData.social.forEach(s => {
+          if (s?.platform === 'email' && s?.value) {
+            const em = sanitizeText(s.value, 100).trim();
+            if (em && !emails.includes(em)) emails.push(em);
+          }
+        });
+      }
+
+      const sameAsUrls = [];
+      if (dynamicData.staticSocial) {
+        Object.entries(dynamicData.staticSocial).forEach(([k, item]) => {
+          if (item && item.value && k !== 'email' && k !== 'phone') {
+            const url = safeContactUrl(k, sanitizeText(item.value));
+            if (url && !sameAsUrls.includes(url)) sameAsUrls.push(url);
+          }
+        });
+      }
+      if (Array.isArray(dynamicData.social)) {
+        dynamicData.social.forEach(s => {
+          if (s && s.value && s.platform && s.platform !== 'email' && s.platform !== 'phone') {
+            const url = safeContactUrl(s.platform, sanitizeText(s.value));
+            if (url && !sameAsUrls.includes(url)) sameAsUrls.push(url);
+          }
+        });
+      }
+
+      const schemaGraph = [
+        {
+          "@type": "Person",
+          "@id": `${canonical}#person`,
+          "name": name,
+          "jobTitle": tagline || undefined,
+          "worksFor": company ? { "@type": "Organization", "name": company } : undefined,
+          "description": bio || (tagline ? `${name} - ${tagline}` : 'بطاقة عمل رقمية ذكية'),
+          "image": ogImage,
+          "url": canonical,
+          "telephone": phones.length > 0 ? (phones.length === 1 ? phones[0] : phones) : undefined,
+          "email": emails.length > 0 ? (emails.length === 1 ? emails[0] : emails) : undefined,
+          "sameAs": sameAsUrls.length > 0 ? sameAsUrls : undefined
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": `${canonical}#breadcrumb`,
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "الرئيسية",
+              "item": `${base}/nfc/`
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": name,
+              "item": canonical
+            }
+          ]
+        }
+      ];
+
+      const structuredDataJson = JSON.stringify({
+        "@context": "https://schema.org",
+        "@graph": schemaGraph
+      });
+
       return res.render(path.join(rootDir, 'viewer.ejs'), {
         pageUrl,
         name,
         tagline,
+        company,
+        bio,
+        phones,
+        emails,
+        sameAsUrls,
         ogImage,
         keywords,
         design: publishedDesign,
         canonical,
+        structuredDataJson,
         contactLinksHtml: buildContactLinksHtml(dynamicData)
       }, (renderError, html) => {
         if (renderError) throw renderError;

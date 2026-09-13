@@ -7,15 +7,19 @@
     <title><%= name %><%= tagline ? ' | ' + tagline : '' %> - بطاقة عمل رقمية | MC PRIME</title>
 
     <!-- Meta Tags for SEO & Sharing -->
-    <meta name="description" content="<%= name %><%= tagline ? ' - ' + tagline : '' %> | بطاقة عمل رقمية ذكية بتقنية NFC ومشاركة جهات الاتصال">
+    <% const pageDesc = (typeof bio !== 'undefined' && bio) ? bio.substring(0, 160) : (name + (tagline ? ' - ' + tagline : '') + ' | بطاقة عمل رقمية ذكية بتقنية NFC ومشاركة جهات الاتصال'); %>
+    <meta name="description" content="<%= pageDesc %>">
     <meta name="keywords" content="<%= keywords %>">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <link rel="canonical" href="<%= canonical || pageUrl %>">
 
     <!-- Open Graph (Facebook / WhatsApp / LinkedIn) -->
-    <meta property="og:title" content="<%= name %><%= tagline ? ' | ' + tagline : '' %> - بطاقة عمل ذكية">
-    <meta property="og:description" content="<%= name %><%= tagline ? ' - ' + tagline : '' %> | بطاقة عمل رقمية ذكية بتقنية NFC">
+    <meta property="og:title" content="<%= name %><%= tagline ? ' | ' + tagline : '' %>">
+    <meta property="og:description" content="<%= pageDesc %>">
     <meta property="og:image" content="<%= ogImage %>">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="<%= name %> - بطاقة عمل رقمية">
     <meta property="og:type" content="profile">
     <meta property="og:url" content="<%= canonical || pageUrl %>">
     <meta property="og:site_name" content="MC PRIME Digital Cards">
@@ -23,19 +27,19 @@
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<%= name %><%= tagline ? ' | ' + tagline : '' %>">
-    <meta name="twitter:description" content="<%= name %><%= tagline ? ' - ' + tagline : '' %> | بطاقة عمل رقمية ذكية">
+    <meta name="twitter:description" content="<%= pageDesc %>">
     <meta name="twitter:image" content="<%= ogImage %>">
 
     <!-- Google Search Structured Data (JSON-LD) -->
     <script type="application/ld+json">
-    {
+    <%- (typeof structuredDataJson !== 'undefined' && structuredDataJson) ? structuredDataJson : JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Person",
-      "name": <%- JSON.stringify(name) %>,
-      "jobTitle": <%- JSON.stringify(tagline || 'بطاقة عمل رقمية') %>,
-      "image": <%- JSON.stringify(ogImage) %>,
-      "url": <%- JSON.stringify(canonical || pageUrl) %>
-    }
+      "name": name,
+      "jobTitle": tagline || 'بطاقة عمل رقمية',
+      "image": ogImage,
+      "url": canonical || pageUrl
+    }) %>
     </script>
 
     <!-- Fonts & Icons -->
@@ -365,6 +369,201 @@
             0% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.5); opacity: 0.5; }
             100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- QUICK ACTIONS ROW --- */
+        .quick-actions-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px auto 25px auto;
+            flex-wrap: wrap;
+            max-width: 510px;
+        }
+
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: #cbd5e1;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 56px;
+            padding: 4px;
+        }
+
+        .quick-action-btn:hover {
+            color: #fff;
+            transform: translateY(-3px);
+        }
+
+        .quick-action-btn:active {
+            transform: scale(0.94);
+        }
+
+        .quick-action-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+            transition: all 0.25s;
+        }
+
+        .quick-action-btn:hover .quick-action-icon {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border-color: rgba(197, 160, 89, 0.35);
+        }
+
+        /* --- BENTO GRID LAYOUT --- */
+        .bento-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: right;
+            padding: 0 4px;
+            margin-bottom: 25px;
+        }
+
+        .bento-card {
+            background: rgba(18, 26, 43, 0.7);
+            border: 1px solid rgba(197, 160, 89, 0.18);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .bento-card:hover {
+            border-color: rgba(197, 160, 89, 0.35);
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.65), 0 0 20px rgba(197, 160, 89, 0.08);
+        }
+
+        .bento-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .bento-name {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #f8fafc;
+            margin: 0 0 4px 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .bento-tagline {
+            color: #c5a059;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 0 0 6px 0;
+        }
+
+        .bento-company {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .bento-bio-text {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .bento-section-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: right;
+        }
+
+        .contact-type-label {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .follow-external-icon {
+            margin-right: auto;
+            font-size: 0.75rem;
+            opacity: 0.5;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .follow-pill:hover .follow-external-icon {
+            transform: translate(-2px, -2px);
+            opacity: 1;
+        }
+
+        /* --- QR MODAL ENHANCEMENT --- */
+        .qr-modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .btn-qr-action {
+            background: var(--accent-color, #c5a059);
+            color: #0b0f19;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-qr-action:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .btn-qr-action.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-qr-action.secondary:hover {
+            background: rgba(255, 255, 255, 0.18);
         }
 
         .secondary-actions {
@@ -902,138 +1101,217 @@
 
             </div>
 
-        <!-- === PROFILE & LINKS SECTION (MOBILE OPTIMIZED) === -->
-        <div class="profile-structured-section fade-in-up" style="animation-delay: 0.2s;">
+        <!-- === EXECUTIVE BENTO GRID SECTION (MOBILE & DESKTOP OPTIMIZED) === -->
+        <main class="profile-structured-section fade-in-up" id="main-content" style="animation-delay: 0.2s;">
             
-            <% const bio = inputs['input-bio_ar'] || inputs['input-bio_en'] || inputs['input-bio']; %>
-            <% if (bio) { %>
-            <div class="profile-bio">
-                <%= bio %>
-            </div>
-            <% } %>
-
-            <% const avail = inputs['input-availability']; %>
-            <% if (avail) { 
-                let badgeClass = 'badge-freelance'; let text = 'متاح لمشاريع مستقلة';
-                if (avail === 'available') { badgeClass = 'badge-available'; text = 'متاح للعمل'; }
-                if (avail === 'busy') { badgeClass = 'badge-busy'; text = 'مشغول حالياً'; }
-            %>
-            <div class="availability-badge <%= badgeClass %>">
-                <span class="pulse-dot"></span> <%= text %>
-            </div>
-            <% } %>
-
-            <!-- Contact Actions Row (Share / Call) replacing old actions bar -->
-            <div class="secondary-actions">
-                <button class="sec-action-btn story-gen-btn" id="ejs-story-open-btn">
-                    <i class="fab fa-instagram"></i> ستوري
-                </button>
-                <a href="tel:<%= (dynamic.phones && dynamic.phones[0]) ? dynamic.phones[0].value.replace(/\D/g,'') : '' %>"
-                    class="sec-action-btn">
-                    <i class="fas fa-phone"></i> اتصال
+            <!-- Quick Actions Icon Row -->
+            <div class="quick-actions-row">
+                <% 
+                   const mainPhone = (dynamic.phones && dynamic.phones[0]) ? String(dynamic.phones[0].value).replace(/\D/g,'') : '';
+                   const mainEmail = (dynamic.staticSocial && dynamic.staticSocial.email) ? dynamic.staticSocial.email.value : ((allSocials.find(s => s.type === 'email')) ? allSocials.find(s => s.type === 'email').value : '');
+                   const mainWhatsapp = (dynamic.staticSocial && dynamic.staticSocial.whatsapp) ? dynamic.staticSocial.whatsapp.value : ((allSocials.find(s => s.type === 'whatsapp')) ? allSocials.find(s => s.type === 'whatsapp').value : '');
+                   const cleanWa = mainWhatsapp ? String(mainWhatsapp).replace(/\D/g, '') : mainPhone;
+                   const waGreeting = encodeURIComponent('مرحباً ' + name + '، تشرفت بالاطلاع على بطاقة عملك الرقمية.');
+                %>
+                <% if (mainPhone) { %>
+                <a href="tel:<%= mainPhone %>" class="quick-action-btn" aria-label="اتصال هاتفي" title="اتصال">
+                    <div class="quick-action-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <span>اتصال</span>
                 </a>
-                <button class="sec-action-btn" id="ejs-share-btn">
-                    <i class="fas fa-share-alt"></i> مشاركة
+                <% } %>
+                
+                <% if (cleanWa) { %>
+                <a href="https://wa.me/<%= cleanWa %>?text=<%= waGreeting %>" target="_blank" rel="noopener noreferrer" class="quick-action-btn" aria-label="محادثة واتساب" title="واتساب">
+                    <div class="quick-action-icon" style="background: rgba(37, 211, 102, 0.15); color: #25D366;">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <span>واتساب</span>
+                </a>
+                <% } %>
+
+                <% if (mainEmail) { %>
+                <a href="mailto:<%= mainEmail %>" class="quick-action-btn" aria-label="إرسال بريد" title="بريد">
+                    <div class="quick-action-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <span>بريد</span>
+                </a>
+                <% } %>
+
+                <button type="button" class="quick-action-btn" id="ejs-share-btn" aria-label="مشاركة البطاقة" title="مشاركة">
+                    <div class="quick-action-icon" style="background: rgba(197, 160, 89, 0.15); color: #c5a059;">
+                        <i class="fas fa-share-nodes"></i>
+                    </div>
+                    <span>مشاركة</span>
                 </button>
-                <button class="sec-action-btn" id="ejs-qr-open-btn">
-                    <i class="fas fa-qrcode"></i> QR
+
+                <button type="button" class="quick-action-btn" id="ejs-qr-open-btn" aria-label="عرض رمز QR" title="رمز QR">
+                    <div class="quick-action-icon" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <span>رمز QR</span>
+                </button>
+
+                <button type="button" class="quick-action-btn story-gen-btn" id="ejs-story-open-btn" aria-label="إنشاء ستوري" title="ستوري">
+                    <div class="quick-action-icon" style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff;">
+                        <i class="fab fa-instagram"></i>
+                    </div>
+                    <span>ستوري</span>
                 </button>
             </div>
 
-            <!-- Dynamic Contact/Social Sections underneath -->
-            <div class="dynamic-links-container">
-                <!-- Group 1: Contact Methods (Phones / Email / Whatsapp) -->
+            <!-- Bento Container -->
+            <div class="bento-container">
+                <!-- Bento Item 1: Executive Profile Statement -->
+                <% 
+                   const cardBio = (typeof bio !== 'undefined' && bio) ? bio : (inputs['input-bio_ar'] || inputs['input-bio_en'] || inputs['input-bio']);
+                   const cardComp = (typeof company !== 'undefined' && company) ? company : (inputs['input-company_ar'] || inputs['input-company_en'] || inputs['input-company']);
+                   const avail = inputs['input-availability'];
+                %>
+                <% if (cardBio || cardComp || avail) { %>
+                <article class="bento-card bento-bio-card">
+                    <div class="bento-header">
+                        <div class="bento-title-group">
+                            <h2 class="bento-name"><%= name %></h2>
+                            <% if (tagline) { %>
+                            <p class="bento-tagline"><%= tagline %></p>
+                            <% } %>
+                            <% if (cardComp) { %>
+                            <div class="bento-company">
+                                <i class="fas fa-building"></i> <span><%= cardComp %></span>
+                            </div>
+                            <% } %>
+                        </div>
+                        <% if (avail) { 
+                            let badgeClass = 'badge-freelance'; let text = 'متاح لمشاريع مستقلة';
+                            if (avail === 'available') { badgeClass = 'badge-available'; text = 'متاح للعمل'; }
+                            if (avail === 'busy') { badgeClass = 'badge-busy'; text = 'مشغول حالياً'; }
+                        %>
+                        <div class="availability-badge <%= badgeClass %>">
+                            <span class="pulse-dot"></span> <%= text %>
+                        </div>
+                        <% } %>
+                    </div>
+                    <% if (cardBio) { %>
+                    <p class="bento-bio-text"><%= cardBio %></p>
+                    <% } %>
+                </article>
+                <% } %>
+
+                <!-- Bento Item 2: Direct Contact Methods -->
                 <% 
                 const contactMethods = allSocials.filter(s => ['whatsapp', 'email'].includes(s.type));
                 if (dynamic.phones) {
                     dynamic.phones.forEach(p => {
-                        if (p.value) contactMethods.unshift({ type: 'phone', value: p.value });
+                        if (p && p.value) contactMethods.unshift({ type: 'phone', value: p.value });
                     });
                 }
                 const followMethods = allSocials.filter(s => !['whatsapp', 'email', 'phone'].includes(s.type));
                 %>
 
                 <% if (contactMethods.length > 0) { %>
-                <div class="link-group">
-                    <h3 class="group-title">تواصل معي</h3>
-                    <% contactMethods.forEach(item => { 
-                        let url = item.value;
-                        let display = item.value;
-                        let icon = 'fas fa-phone'; let color = '#4da6ff';
-                        if (item.type === 'email') {
-                            if (!url.startsWith('mailto:')) url = 'mailto:' + url;
-                            icon = 'fas fa-envelope'; color = '#ff4d4d';
-                        } else if (item.type === 'whatsapp') {
-                            url = 'https://wa.me/' + url.replace(/\D/g,'');
-                            icon = 'fab fa-whatsapp'; color = '#25D366';
-                        } else {
-                            url = 'tel:' + url.replace(/\D/g,'');
-                        }
-                    %>
-                    <div class="contact-card">
-                        <a href="<%= url %>" class="contact-card-main">
-                            <div class="contact-icon" style="background: <%= color %>20; color: <%= color %>;">
-                                <i class="<%= icon %>"></i>
-                            </div>
-                            <span class="contact-text" dir="ltr"><%= display %></span>
-                        </a>
-                        <button class="copy-btn" aria-label="نسخ">
-                            <i class="fas fa-copy"></i>
-                        </button>
+                <section class="bento-card bento-contact-card" aria-labelledby="contact-heading">
+                    <h3 class="bento-section-title" id="contact-heading">
+                        <i class="fas fa-address-book" style="color: #c5a059;"></i> وسائل الاتصال المباشرة
+                    </h3>
+                    <div class="contact-list">
+                        <% contactMethods.forEach(item => { 
+                            let url = item.value;
+                            let display = item.value;
+                            let icon = 'fas fa-phone-alt'; let color = '#3b82f6'; let copyLabel = 'نسخ الرقم';
+                            if (item.type === 'email') {
+                                if (!url.startsWith('mailto:')) url = 'mailto:' + url;
+                                icon = 'fas fa-envelope'; color = '#ef4444'; copyLabel = 'نسخ البريد';
+                            } else if (item.type === 'whatsapp') {
+                                const cleanNum = String(url).replace(/\D/g,'');
+                                url = 'https://wa.me/' + cleanNum + '?text=' + waGreeting;
+                                icon = 'fab fa-whatsapp'; color = '#25D366'; copyLabel = 'نسخ الرقم';
+                            } else {
+                                url = 'tel:' + String(url).replace(/\D/g,'');
+                            }
+                        %>
+                        <div class="contact-card">
+                            <a href="<%= url %>" class="contact-card-main" <%= item.type === 'whatsapp' ? 'target="_blank" rel="noopener noreferrer"' : '' %>>
+                                <div class="contact-icon" style="background: <%= color %>22; color: <%= color %>;">
+                                    <i class="<%= icon %>"></i>
+                                </div>
+                                <div class="contact-info">
+                                    <span class="contact-type-label"><%= item.type === 'email' ? 'البريد الإلكتروني' : (item.type === 'whatsapp' ? 'واتساب مباشر' : 'الهاتف') %></span>
+                                    <span class="contact-text" dir="ltr"><%= display %></span>
+                                </div>
+                            </a>
+                            <button type="button" class="copy-btn" aria-label="<%= copyLabel %>" title="<%= copyLabel %>" data-copy-text="<%= display %>">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <% }); %>
                     </div>
-                    <% }); %>
-                </div>
+                </section>
                 <% } %>
 
+                <!-- Bento Item 3: Social & Digital Presence -->
                 <% if (followMethods.length > 0) { %>
-                <div class="link-group">
-                    <h3 class="group-title">تابعني</h3>
+                <section class="bento-card bento-social-card" aria-labelledby="social-heading">
+                    <h3 class="bento-section-title" id="social-heading">
+                        <i class="fas fa-globe" style="color: #c5a059;"></i> الحسابات والشبكات المهنية
+                    </h3>
                     <div class="follow-grid">
-                    <% followMethods.forEach(item => { 
-                        let url = item.value;
-                        if (!url.startsWith('http')) url = 'https://' + url;
-                        const platform = platforms[item.type] || { icon: 'fas fa-link' };
-                        let color = '#aab8c2';
-                        const brandColors = {
-                            facebook: '#1877F2', linkedin: '#0A66C2', instagram: '#E4405F',
-                            x: '#ffffff', twitter: '#ffffff', tiktok: '#ff0050', youtube: '#FF0000', snapchat: '#FFFC00', telegram: '#229ED9'
-                        };
-                        if (brandColors[item.type]) color = brandColors[item.type];
-                    %>
-                        <a href="<%= url %>" target="_blank" class="follow-pill" style="--brand: <%= color %>;">
-                            <i class="<%= platform.icon %>"></i>
-                            <span><%= item.type.charAt(0).toUpperCase() + item.type.slice(1) %></span>
-                        </a>
-                    <% }); %>
+                        <% followMethods.forEach(item => { 
+                            let url = item.value;
+                            if (!url.startsWith('http')) url = 'https://' + url;
+                            const platform = platforms[item.type] || { icon: 'fas fa-link' };
+                            let color = '#aab8c2';
+                            const brandColors = {
+                                facebook: '#1877F2', linkedin: '#0A66C2', instagram: '#E4405F',
+                                x: '#ffffff', twitter: '#ffffff', tiktok: '#ff0050', youtube: '#FF0000', snapchat: '#FFFC00', telegram: '#229ED9', github: '#ffffff'
+                            };
+                            if (brandColors[item.type]) color = brandColors[item.type];
+                        %>
+                            <a href="<%= url %>" target="_blank" rel="noopener noreferrer" class="follow-pill" style="--brand: <%= color %>;">
+                                <i class="<%= platform.icon %>"></i>
+                                <span><%= item.type.charAt(0).toUpperCase() + item.type.slice(1) %></span>
+                                <i class="fas fa-arrow-up-right-from-square follow-external-icon"></i>
+                            </a>
+                        <% }); %>
                     </div>
-                </div>
+                </section>
                 <% } %>
             </div>
             
-            <div style="height: 100px;"></div> <!-- Spacing for sticky footer -->
-        </div>
+            <div style="height: 110px;"></div> <!-- Spacing for floating action bar -->
+        </main>
 
-        <!-- STICKY FOOTER -->
-        <div class="sticky-footer fade-in-up" style="animation-delay: 0.4s;">
-            <button class="save-contact-btn" id="ejs-save-btn">
+        <!-- LUXURY FLOATING ACTION BAR -->
+        <nav class="sticky-footer fade-in-up" style="animation-delay: 0.35s;" aria-label="شريط الإجراءات الرئيسي">
+            <button type="button" class="save-contact-btn" id="ejs-save-btn">
                 <i class="fas fa-user-plus"></i> <span style="font-weight:700">حفظ كجهة اتصال</span>
             </button>
             <div class="footer-powered">
-                Powered by MC PRIME
+                <i class="fas fa-shield-alt" style="color: var(--accent-color, #c5a059);"></i> MC PRIME Digital NFC
             </div>
-        </div>
+        </nav>
 
         <!-- QR Modal -->
         <div id="qrModal" class="qr-modal-overlay">
             <div class="qr-modal-box">
                 <div class="qr-modal-header">
                     <h4>كود المشاركة السريع</h4>
-                    <button class="close-btn" id="ejs-qr-close-btn">&times;</button>
+                    <button type="button" class="close-btn" id="ejs-qr-close-btn">&times;</button>
                 </div>
                 <div class="qr-code-display">
-                    <img src="<%= images.qrCode || 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' + encodeURIComponent(pageUrl) %>" alt="QR Code">
+                    <img id="ejs-qr-img" src="<%= images.qrCode || 'https://chart.googleapis.com/chart?cht=qr&chs=250x250&chl=' + encodeURIComponent(canonical || pageUrl) %>" alt="QR Code">
                 </div>
                 <p>امسح الكود بالكاميرا لفتح البطاقة بشكل مباشر</p>
+                <div class="qr-modal-actions">
+                    <button type="button" class="btn-qr-action" id="ejs-qr-download-btn">
+                        <i class="fas fa-download"></i> تحميل كود QR
+                    </button>
+                    <button type="button" class="btn-qr-action secondary" id="ejs-qr-copy-link-btn">
+                        <i class="fas fa-link"></i> نسخ الرابط
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1108,31 +1386,95 @@
                 }
             }
 
-            // VCF Generation Logic
+            // VCF Generation Logic (Rich Executive vCard)
             function saveContact() {
-                const vcard = `BEGIN:VCARD
-VERSION:3.0
-FN:<%= inputs['input-name'] %>
-TITLE:<%= inputs['input-tagline'] %>
-<% if (dynamic.phones) { dynamic.phones.forEach(p => { %>TEL;TYPE=CELL:<%= p.value %>
-<% }) } %>
-<% if (dynamic.staticSocial && dynamic.staticSocial.email) { %>EMAIL:<%= dynamic.staticSocial.email.value %>
-<% } %>
-<% if (dynamic.staticSocial && dynamic.staticSocial.website) { %>URL:<%= dynamic.staticSocial.website.value %>
-<% } %>
-END:VCARD`;
+                const cardName = <%- JSON.stringify(inputs['input-name'] || name || '') %>;
+                const cardTitle = <%- JSON.stringify(inputs['input-tagline'] || '') %>;
+                const cardCompany = <%- JSON.stringify(inputs['input-company'] || (typeof company !== 'undefined' ? company : '') || '') %>;
+                const cardBio = <%- JSON.stringify(typeof cardBio !== 'undefined' ? cardBio : '') %>;
+                const pageUrl = window.location.href;
 
-                const blob = new Blob([vcard], { type: 'text/vcard' });
+                let lines = [
+                    'BEGIN:VCARD',
+                    'VERSION:3.0',
+                    'FN;CHARSET=UTF-8:' + cardName.replace(/\n/g, ' '),
+                    'N;CHARSET=UTF-8:;' + cardName.replace(/\n/g, ' ') + ';;;'
+                ];
+
+                if (cardTitle) {
+                    lines.push('TITLE;CHARSET=UTF-8:' + cardTitle.replace(/\n/g, ' '));
+                }
+                if (cardCompany) {
+                    lines.push('ORG;CHARSET=UTF-8:' + cardCompany.replace(/\n/g, ' '));
+                }
+
+                // Add Phones
+                <% if (typeof phones !== 'undefined' && Array.isArray(phones) && phones.length > 0) { %>
+                    <% phones.forEach(function(phone, idx) { %>
+                        lines.push('<%= idx === 0 ? "TEL;TYPE=CELL;PREF:" : "TEL;TYPE=CELL:" %>' + <%- JSON.stringify(phone.value) %>);
+                    <% }); %>
+                <% } else if (dynamic.phones) { %>
+                    <% dynamic.phones.forEach(function(phone, idx) { %>
+                        lines.push('<%= idx === 0 ? "TEL;TYPE=CELL;PREF:" : "TEL;TYPE=CELL:" %>' + <%- JSON.stringify(phone.value) %>);
+                    <% }); %>
+                <% } %>
+
+                // Add Emails
+                <% if (typeof emails !== 'undefined' && Array.isArray(emails) && emails.length > 0) { %>
+                    <% emails.forEach(function(em, idx) { %>
+                        lines.push('<%= idx === 0 ? "EMAIL;TYPE=INTERNET;PREF:" : "EMAIL;TYPE=INTERNET:" %>' + <%- JSON.stringify(em.value) %>);
+                    <% }); %>
+                <% } else if (dynamic.staticSocial && dynamic.staticSocial.email) { %>
+                    lines.push('EMAIL;TYPE=INTERNET;PREF:' + <%- JSON.stringify(dynamic.staticSocial.email.value) %>);
+                <% } %>
+
+                // Add Website & Page URL
+                <% if (dynamic.staticSocial && dynamic.staticSocial.website) { %>
+                    lines.push('URL;TYPE=WORK:' + <%- JSON.stringify(dynamic.staticSocial.website.value) %>);
+                <% } %>
+                lines.push('URL;TYPE=DigitalCard:' + pageUrl);
+
+                // Add Social Profiles
+                <% if (typeof socialLinks !== 'undefined' && Array.isArray(socialLinks)) { %>
+                    <% socialLinks.forEach(function(soc) { %>
+                        lines.push('X-SOCIALPROFILE;TYPE=<%= soc.platform %>:' + <%- JSON.stringify(soc.url) %>);
+                    <% }); %>
+                <% } %>
+
+                if (cardBio) {
+                    lines.push('NOTE;CHARSET=UTF-8:' + cardBio.replace(/\n/g, '\\n'));
+                }
+
+                lines.push('REV:' + new Date().toISOString());
+                lines.push('END:VCARD');
+
+                const vcard = lines.join('\r\n');
+                const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'contact.vcf';
+                a.download = (cardName.replace(/[\\/:*?"<>|]/g, '_') || 'contact') + '.vcf';
+                document.body.appendChild(a);
                 a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 400);
+            }
+
+            // Haptic feedback helper
+            function triggerHaptic(duration = 25) {
+                if ('vibrate' in navigator) {
+                    try {
+                        navigator.vibrate(duration);
+                    } catch (e) {}
+                }
             }
 
             // Enhanced save with success animation
             function saveContactEnhanced() {
                 saveContact();
+                triggerHaptic(40);
                 const btn = document.getElementById('ejs-save-btn');
                 if (btn) {
                     btn.classList.add('saved');
@@ -1141,7 +1483,6 @@ END:VCARD`;
                     if (icon) icon.className = 'fas fa-check-circle';
                     if (text) text.textContent = 'تم الحفظ ✅';
                     showToast('تم حفظ جهة الاتصال بنجاح ✅', 'success');
-                    if ('vibrate' in navigator) navigator.vibrate(40);
                     setTimeout(() => {
                         btn.classList.remove('saved');
                         if (icon) icon.className = 'fas fa-user-plus';
@@ -1161,10 +1502,10 @@ END:VCARD`;
 
             // Enhanced copy with button feedback
             document.querySelectorAll('.copy-btn').forEach(btn => {
-                const origClick = btn.getAttribute('onclick');
                 btn.removeAttribute('onclick');
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
+                    triggerHaptic(20);
                     const text = this.closest('.contact-card')?.querySelector('.contact-text')?.textContent?.trim();
                     if (text) {
                         copyToClipboard(text);
@@ -1182,6 +1523,7 @@ END:VCARD`;
             });
 
             async function shareCard() {
+                triggerHaptic(20);
                 if (navigator.share) {
                     try {
                         await navigator.share({
@@ -1193,7 +1535,6 @@ END:VCARD`;
                         console.log('Share failed', err);
                     }
                 } else {
-                    // Fallback: Copy to clipboard
                     navigator.clipboard.writeText(window.location.href).then(() => {
                         showToast('تم نسخ رابط البطاقة 🔗', 'info', 2500);
                     });
@@ -1541,16 +1882,86 @@ END:VCARD`;
                 }
             }
 
-            document.getElementById('card')?.addEventListener('click', function() {
-                this.classList.toggle('is-flipped');
-                if ('vibrate' in navigator) navigator.vibrate(25);
-            });
+            // --- Card Flip & Touch Swipe Gestures ---
+            const cardEl = document.getElementById('card');
+            if (cardEl) {
+                cardEl.addEventListener('click', function(e) {
+                    // Prevent flip if clicked on actionable sub-element
+                    if (e.target.closest('a, button, input')) return;
+                    this.classList.toggle('is-flipped');
+                    triggerHaptic(30);
+                });
+
+                // Mobile Horizontal Swipe gesture (Flip card)
+                let touchStartX = 0;
+                let touchStartY = 0;
+                cardEl.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                    touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+
+                cardEl.addEventListener('touchend', function(e) {
+                    const touchEndX = e.changedTouches[0].screenX;
+                    const touchEndY = e.changedTouches[0].screenY;
+                    const deltaX = touchEndX - touchStartX;
+                    const deltaY = touchEndY - touchStartY;
+
+                    // Trigger flip on meaningful horizontal swipe
+                    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+                        cardEl.classList.toggle('is-flipped');
+                        triggerHaptic(35);
+                    }
+                }, { passive: true });
+            }
+
+            // Quick Actions & Modal Triggers
             document.getElementById('ejs-story-open-btn')?.addEventListener('click', openStoryGenerator);
             document.getElementById('ejs-share-btn')?.addEventListener('click', shareCard);
             document.getElementById('ejs-qr-open-btn')?.addEventListener('click', openQrModal);
             document.getElementById('ejs-save-btn')?.addEventListener('click', saveContactEnhanced);
             document.getElementById('ejs-qr-close-btn')?.addEventListener('click', () => closeQrModal());
             document.getElementById('qrModal')?.addEventListener('click', closeQrModal);
+
+            // QR Download Button Handler (Converts QR image to PNG download)
+            document.getElementById('ejs-qr-download-btn')?.addEventListener('click', function() {
+                triggerHaptic(20);
+                const qrImg = document.getElementById('ejs-qr-img');
+                if (!qrImg) return;
+                
+                // Draw to canvas to ensure CORS / clean PNG download
+                const canvas = document.createElement('canvas');
+                canvas.width = 500;
+                canvas.height = 500;
+                const ctx = canvas.getContext('2d');
+                
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, 500, 500);
+                    ctx.drawImage(img, 25, 25, 450, 450);
+                    const link = document.createElement('a');
+                    link.download = 'business_card_qr.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    showToast('تم تحميل رمز الـ QR بنجاح 📥', 'success');
+                };
+                img.onerror = function() {
+                    // Fallback direct download
+                    const link = document.createElement('a');
+                    link.download = 'business_card_qr.png';
+                    link.href = qrImg.src;
+                    link.target = '_blank';
+                    link.click();
+                };
+                img.src = qrImg.src;
+            });
+
+            // QR Copy Link Handler
+            document.getElementById('ejs-qr-copy-link-btn')?.addEventListener('click', function() {
+                triggerHaptic(20);
+                copyToClipboard(window.location.href);
+            });
         </script>
     <script src="/nfc/premium-ui.js" defer></script>
 </body>
