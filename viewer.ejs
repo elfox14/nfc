@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="<%= typeof initialLang !== 'undefined' ? initialLang : 'ar' %>" dir="<%= typeof initialDir !== 'undefined' ? initialDir : 'rtl' %>">
 
 <head>
     <meta charset="UTF-8">
@@ -814,11 +814,182 @@
         .ejs-toast.toast-error i { color: #e74c3c; }
         .ejs-toast.toast-info { border-color: rgba(77, 166, 255, 0.4); }
         .ejs-toast.toast-info i { color: #4da6ff; }
+
+        /* --- VIEWER TOP BAR & CONTROLS --- */
+        .viewer-top-bar {
+            width: 100%;
+            max-width: 510px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+            padding: 0 4px;
+            z-index: 20;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: all 0.25s;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px 12px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .brand-badge:hover {
+            color: #fff;
+            border-color: rgba(197, 160, 89, 0.4);
+            background: rgba(197, 160, 89, 0.12);
+        }
+
+        .brand-logo {
+            height: 20px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .top-bar-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ctrl-pill-btn {
+            background: rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .ctrl-pill-btn:hover {
+            background: rgba(197, 160, 89, 0.2);
+            border-color: rgba(197, 160, 89, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .ctrl-pill-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- EXCHANGE LEAD CAPTURE MODAL & STICKY ACTIONS --- */
+        .exchange-modal-box {
+            max-width: 440px;
+        }
+
+        .form-group-viewer {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .lead-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .lead-input {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.92rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+            width: 100%;
+        }
+
+        .lead-input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        .sticky-footer-actions {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .sticky-footer-actions .save-contact-btn {
+            flex: 1.2;
+            width: auto;
+        }
+
+        .exchange-contact-btn {
+            flex: 0.9;
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            padding: 14px 16px;
+            border-radius: 50px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(12px);
+        }
+
+        .exchange-contact-btn:hover {
+            background: #10b981;
+            color: #0b0f19;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+        }
+
+        .exchange-contact-btn:active {
+            transform: scale(0.96);
+        }
     </style>
     <link rel="stylesheet" href="/nfc/premium-ui.css">
 </head>
 
 <body>
+
+    <!-- Top Bar Controls -->
+    <header class="viewer-top-bar fade-in-up" aria-label="رأس صفحة الكارت">
+        <a href="/nfc/" class="brand-badge" title="MC PRIME NFC">
+            <img src="/nfc/mc-prime-nfc.png" alt="MC PRIME" class="brand-logo" onerror="this.style.display='none'">
+            <span>MC PRIME</span>
+        </a>
+        <div class="top-bar-controls">
+            <button type="button" class="ctrl-pill-btn" id="view-mode-toggle" aria-label="تبديل وضع العرض">
+                <i class="fas fa-cube"></i>
+                <span id="view-mode-label"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Hide Card' : 'إخفاء الكارت' %></span>
+            </button>
+            <button type="button" class="ctrl-pill-btn lang-toggle-btn" id="ejs-lang-toggle" aria-label="Switch language">
+                <i class="fas fa-globe"></i>
+                <span id="lang-btn-text"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'عربي' : 'EN' %></span>
+            </button>
+        </div>
+    </header>
 
     <!-- استخراج البيانات من كائن design -->
     <% const inputs=design.inputs || {}; const dynamic=design.dynamic || {}; const images=design.imageUrls || {}; const
@@ -1140,11 +1311,18 @@
                 </a>
                 <% } %>
 
+                <button type="button" class="quick-action-btn" id="ejs-exchange-open-btn" aria-label="تبادل جهات الاتصال" title="تبادل البيانات">
+                    <div class="quick-action-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <span class="i18n-exchange">تبادل البيانات</span>
+                </button>
+
                 <button type="button" class="quick-action-btn" id="ejs-share-btn" aria-label="مشاركة البطاقة" title="مشاركة">
                     <div class="quick-action-icon" style="background: rgba(197, 160, 89, 0.15); color: #c5a059;">
                         <i class="fas fa-share-nodes"></i>
                     </div>
-                    <span>مشاركة</span>
+                    <span class="i18n-share">مشاركة</span>
                 </button>
 
                 <button type="button" class="quick-action-btn" id="ejs-qr-open-btn" aria-label="عرض رمز QR" title="رمز QR">
@@ -1285,36 +1463,80 @@
 
         <!-- LUXURY FLOATING ACTION BAR -->
         <nav class="sticky-footer fade-in-up" style="animation-delay: 0.35s;" aria-label="شريط الإجراءات الرئيسي">
-            <button type="button" class="save-contact-btn" id="ejs-save-btn">
-                <i class="fas fa-user-plus"></i> <span style="font-weight:700">حفظ كجهة اتصال</span>
-            </button>
+            <div class="sticky-footer-actions">
+                <button type="button" class="save-contact-btn" id="ejs-save-btn">
+                    <i class="fas fa-user-plus"></i> <span class="i18n-save-btn" style="font-weight:700"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Save Contact' : 'حفظ كجهة اتصال' %></span>
+                </button>
+                <button type="button" class="exchange-contact-btn" id="ejs-footer-exchange-btn" aria-label="تبادل جهات الاتصال">
+                    <i class="fas fa-handshake"></i> <span class="i18n-exchange-short"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Exchange' : 'تبادل البيانات' %></span>
+                </button>
+            </div>
             <div class="footer-powered">
                 <i class="fas fa-shield-alt" style="color: var(--accent-color, #c5a059);"></i> MC PRIME Digital NFC
             </div>
         </nav>
 
+        <!-- Exchange Contact Modal (Two-Way Lead Capture) -->
+        <div id="exchangeModal" class="qr-modal-overlay">
+            <div class="qr-modal-box exchange-modal-box">
+                <div class="qr-modal-header">
+                    <h4 id="exchange-modal-title"><i class="fas fa-handshake" style="color:#10b981;margin-inline-end:8px;"></i> <span class="i18n-exchange-title">تبادل جهات الاتصال</span></h4>
+                    <button type="button" class="close-btn" id="ejs-exchange-close-btn">&times;</button>
+                </div>
+                <p id="exchange-modal-desc" style="color:#94a3b8;font-size:0.88rem;margin:0 0 16px 0;text-align:center;">
+                    أرسل بياناتك مباشرة للبقاء على تواصل مستمر
+                </p>
+                <form id="exchange-lead-form" style="display:flex;flex-direction:column;gap:12px;text-align:start;">
+                    <div class="form-group-viewer">
+                        <label for="lead-name" class="lead-label i18n-lead-name">الاسم الكامل *</label>
+                        <input type="text" id="lead-name" required placeholder="اسمك الكريم" class="lead-input" />
+                    </div>
+                    <div class="form-group-viewer">
+                        <label for="lead-phone" class="lead-label i18n-lead-phone">رقم الهاتف / واتساب *</label>
+                        <input type="tel" id="lead-phone" required placeholder="+966 ... / +20 ..." dir="ltr" class="lead-input" />
+                    </div>
+                    <div class="form-group-viewer">
+                        <label for="lead-email" class="lead-label i18n-lead-email">البريد الإلكتروني (اختياري)</label>
+                        <input type="email" id="lead-email" placeholder="example@email.com" dir="ltr" class="lead-input" />
+                    </div>
+                    <div class="form-group-viewer">
+                        <label for="lead-note" class="lead-label i18n-lead-note">ملاحظة أو رسالة (اختياري)</label>
+                        <textarea id="lead-note" rows="2" placeholder="سبب التواصل أو ملاحظة سريعة..." class="lead-input"></textarea>
+                    </div>
+                    <div class="qr-modal-actions" style="margin-top:8px;">
+                        <button type="submit" class="btn-qr-action" id="lead-submit-btn" style="background:#10b981;color:#fff;width:100%;justify-content:center;">
+                            <i class="fas fa-paper-plane"></i> <span class="i18n-send-now">إرسال بياناتي الآن</span>
+                        </button>
+                    </div>
+                    <% if (cleanWa) { %>
+                    <button type="button" class="btn-qr-action secondary" id="lead-wa-direct-btn" style="width:100%;justify-content:center;margin-top:4px;">
+                        <i class="fab fa-whatsapp" style="color:#25D366;"></i> <span class="i18n-send-wa">إرسال ومحادثة عبر واتساب</span>
+                    </button>
+                    <% } %>
+                </form>
+            </div>
+        </div>
+
         <!-- QR Modal -->
         <div id="qrModal" class="qr-modal-overlay">
             <div class="qr-modal-box">
                 <div class="qr-modal-header">
-                    <h4>كود المشاركة السريع</h4>
+                    <h4 class="i18n-qr-title">كود المشاركة السريع</h4>
                     <button type="button" class="close-btn" id="ejs-qr-close-btn">&times;</button>
                 </div>
                 <div class="qr-code-display">
                     <img id="ejs-qr-img" src="<%= images.qrCode || 'https://chart.googleapis.com/chart?cht=qr&chs=250x250&chl=' + encodeURIComponent(canonical || pageUrl) %>" alt="QR Code">
                 </div>
-                <p>امسح الكود بالكاميرا لفتح البطاقة بشكل مباشر</p>
+                <p class="i18n-qr-desc">امسح الكود بالكاميرا لفتح البطاقة بشكل مباشر</p>
                 <div class="qr-modal-actions">
                     <button type="button" class="btn-qr-action" id="ejs-qr-download-btn">
-                        <i class="fas fa-download"></i> تحميل كود QR
+                        <i class="fas fa-download"></i> <span class="i18n-qr-download">تحميل كود QR</span>
                     </button>
                     <button type="button" class="btn-qr-action secondary" id="ejs-qr-copy-link-btn">
-                        <i class="fas fa-link"></i> نسخ الرابط
+                        <i class="fas fa-link"></i> <span class="i18n-qr-copylink">نسخ الرابط</span>
                     </button>
                 </div>
             </div>
-        </div>
-
         </div>
 
         <div class="seo-links">
@@ -1386,12 +1608,13 @@
                 }
             }
 
-            // VCF Generation Logic (Rich Executive vCard)
-            function saveContact() {
+            // VCF Generation Logic (Rich Executive vCard 3.0 / 4.0 with Embedded Photo)
+            async function saveContact() {
                 const cardName = <%- JSON.stringify(inputs['input-name'] || name || '') %>;
                 const cardTitle = <%- JSON.stringify(inputs['input-tagline'] || '') %>;
                 const cardCompany = <%- JSON.stringify(inputs['input-company'] || (typeof company !== 'undefined' ? company : '') || '') %>;
                 const cardBio = <%- JSON.stringify(typeof cardBio !== 'undefined' ? cardBio : '') %>;
+                const photoSrc = <%- JSON.stringify(images.photo || inputs['input-photo'] || inputs['input-logo'] || '') %>;
                 const pageUrl = window.location.href;
 
                 let lines = [
@@ -1408,10 +1631,51 @@
                     lines.push('ORG;CHARSET=UTF-8:' + cardCompany.replace(/\n/g, ' '));
                 }
 
+                // Add embedded photo if available (Base64)
+                if (photoSrc) {
+                    try {
+                        const base64Data = await new Promise((resolve) => {
+                            const img = new Image();
+                            img.crossOrigin = 'anonymous';
+                            img.onload = function() {
+                                try {
+                                    const canvas = document.createElement('canvas');
+                                    const maxDim = 320;
+                                    let w = img.naturalWidth || maxDim;
+                                    let h = img.naturalHeight || maxDim;
+                                    if (w > maxDim || h > maxDim) {
+                                        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                                    }
+                                    canvas.width = w;
+                                    canvas.height = h;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx.drawImage(img, 0, 0, w, h);
+                                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                                    resolve(dataUrl.split(',')[1]);
+                                } catch (err) {
+                                    resolve(null);
+                                }
+                            };
+                            img.onerror = () => resolve(null);
+                            img.src = photoSrc;
+                        });
+                        if (base64Data) {
+                            lines.push('PHOTO;ENCODING=b;TYPE=JPEG:' + base64Data);
+                        }
+                    } catch (e) {
+                        console.warn('Could not embed photo in vCard', e);
+                    }
+                }
+
                 // Add Phones
                 <% if (typeof phones !== 'undefined' && Array.isArray(phones) && phones.length > 0) { %>
-                    <% phones.forEach(function(phone, idx) { %>
-                        lines.push('<%= idx === 0 ? "TEL;TYPE=CELL;PREF:" : "TEL;TYPE=CELL:" %>' + <%- JSON.stringify(phone.value) %>);
+                    <% phones.forEach(function(phone, idx) { 
+                        const phoneVal = (typeof phone === 'string') ? phone : (phone && phone.value ? phone.value : '');
+                    %>
+                        if (<%- JSON.stringify(phoneVal) %>) {
+                            lines.push('<%= idx === 0 ? "TEL;TYPE=CELL;PREF:" : "TEL;TYPE=CELL:" %>' + <%- JSON.stringify(phoneVal) %>);
+                        }
                     <% }); %>
                 <% } else if (dynamic.phones) { %>
                     <% dynamic.phones.forEach(function(phone, idx) { %>
@@ -1421,8 +1685,12 @@
 
                 // Add Emails
                 <% if (typeof emails !== 'undefined' && Array.isArray(emails) && emails.length > 0) { %>
-                    <% emails.forEach(function(em, idx) { %>
-                        lines.push('<%= idx === 0 ? "EMAIL;TYPE=INTERNET;PREF:" : "EMAIL;TYPE=INTERNET:" %>' + <%- JSON.stringify(em.value) %>);
+                    <% emails.forEach(function(em, idx) { 
+                        const emVal = (typeof em === 'string') ? em : (em && em.value ? em.value : '');
+                    %>
+                        if (<%- JSON.stringify(emVal) %>) {
+                            lines.push('<%= idx === 0 ? "EMAIL;TYPE=INTERNET;PREF:" : "EMAIL;TYPE=INTERNET:" %>' + <%- JSON.stringify(emVal) %>);
+                        }
                     <% }); %>
                 <% } else if (dynamic.staticSocial && dynamic.staticSocial.email) { %>
                     lines.push('EMAIL;TYPE=INTERNET;PREF:' + <%- JSON.stringify(dynamic.staticSocial.email.value) %>);
@@ -1914,6 +2182,176 @@
                 }, { passive: true });
             }
 
+            // --- Exchange Contact Modal (Two-Way Lead Capture) ---
+            function openExchangeModal() {
+                const modal = document.getElementById('exchangeModal');
+                if (modal) {
+                    modal.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                    setTimeout(() => document.getElementById('lead-name')?.focus(), 150);
+                }
+            }
+
+            function closeExchangeModal(e) {
+                if (e && e.target !== document.getElementById('exchangeModal') && e.target.closest('.close-btn') === null) return;
+                const modal = document.getElementById('exchangeModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            // Lead Form Submission
+            document.getElementById('exchange-lead-form')?.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                triggerHaptic(25);
+                const submitBtn = document.getElementById('lead-submit-btn');
+                const originalContent = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>جاري الإرسال...</span>';
+                }
+
+                const nameVal = document.getElementById('lead-name')?.value?.trim() || '';
+                const phoneVal = document.getElementById('lead-phone')?.value?.trim() || '';
+                const emailVal = document.getElementById('lead-email')?.value?.trim() || '';
+                const noteVal = document.getElementById('lead-note')?.value?.trim() || '';
+                const cardId = <%- JSON.stringify(typeof cardShortId !== 'undefined' ? cardShortId : '') %>;
+
+                try {
+                    const response = await fetch(`/nfc/api/leads/${encodeURIComponent(cardId)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: nameVal, phone: phoneVal, email: emailVal, note: noteVal })
+                    });
+                    if (response.ok) {
+                        showToast('تم إرسال بياناتك بنجاح ✅', 'success', 3500);
+                        closeExchangeModal();
+                        document.getElementById('exchange-lead-form')?.reset();
+                    } else {
+                        throw new Error('Submission returned status ' + response.status);
+                    }
+                } catch (err) {
+                    console.warn('Lead endpoint failed, offering WhatsApp/local fallback:', err);
+                    // Fallback to WhatsApp if owner phone exists
+                    const waNum = <%- JSON.stringify(cleanWa || '') %>;
+                    if (waNum) {
+                        const msg = encodeURIComponent(`مرحباً، أنا ${nameVal}\nرقمي: ${phoneVal}${emailVal ? '\nإيميلي: ' + emailVal : ''}${noteVal ? '\nملاحظة: ' + noteVal : ''}`);
+                        window.open(`https://wa.me/${waNum}?text=${msg}`, '_blank');
+                    }
+                    showToast('تم استلام بياناتك بنجاح ✅', 'success', 3000);
+                    closeExchangeModal();
+                    document.getElementById('exchange-lead-form')?.reset();
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalContent;
+                    }
+                }
+            });
+
+            // WhatsApp Direct Lead button
+            document.getElementById('lead-wa-direct-btn')?.addEventListener('click', function() {
+                triggerHaptic(20);
+                const nameVal = document.getElementById('lead-name')?.value?.trim() || 'صديق جديد';
+                const phoneVal = document.getElementById('lead-phone')?.value?.trim() || '';
+                const emailVal = document.getElementById('lead-email')?.value?.trim() || '';
+                const noteVal = document.getElementById('lead-note')?.value?.trim() || '';
+                const waNum = <%- JSON.stringify(cleanWa || '') %>;
+                if (waNum) {
+                    const msg = encodeURIComponent(`مرحباً، تفضل بياناتي للتواصل:\nالاسم: ${nameVal}\nالهاتف: ${phoneVal}${emailVal ? '\nالبريد: ' + emailVal : ''}${noteVal ? '\n' + noteVal : ''}`);
+                    window.open(`https://wa.me/${waNum}?text=${msg}`, '_blank');
+                    closeExchangeModal();
+                }
+            });
+
+            // --- Multi-Language Switcher (AR / EN) ---
+            const i18nDictionary = {
+                ar: {
+                    langBtn: 'EN',
+                    viewModeHide: 'إخفاء الكارت',
+                    viewModeShow: 'عرض الكارت',
+                    saveBtn: 'حفظ كجهة اتصال',
+                    exchangeShort: 'تبادل البيانات',
+                    exchange: 'تبادل البيانات',
+                    share: 'مشاركة',
+                    exchangeTitle: 'تبادل جهات الاتصال',
+                    leadName: 'الاسم الكامل *',
+                    leadPhone: 'رقم الهاتف / واتساب *',
+                    leadEmail: 'البريد الإلكتروني (اختياري)',
+                    leadNote: 'ملاحظة أو رسالة (اختياري)',
+                    sendNow: 'إرسال بياناتي الآن',
+                    sendWa: 'إرسال ومحادثة عبر واتساب'
+                },
+                en: {
+                    langBtn: 'عربي',
+                    viewModeHide: 'Hide Card',
+                    viewModeShow: 'Show 3D Card',
+                    saveBtn: 'Save Contact',
+                    exchangeShort: 'Exchange',
+                    exchange: 'Connect',
+                    share: 'Share',
+                    exchangeTitle: 'Exchange Contact Info',
+                    leadName: 'Full Name *',
+                    leadPhone: 'Phone / WhatsApp *',
+                    leadEmail: 'Email Address (Optional)',
+                    leadNote: 'Note or Message (Optional)',
+                    sendNow: 'Send My Contact Info',
+                    sendWa: 'Send & Chat via WhatsApp'
+                }
+            };
+
+            let currentLang = document.documentElement.lang || 'ar';
+            function toggleLanguage() {
+                triggerHaptic(20);
+                currentLang = currentLang === 'ar' ? 'en' : 'ar';
+                document.documentElement.lang = currentLang;
+                document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+
+                const dict = i18nDictionary[currentLang];
+                const langBtn = document.getElementById('lang-btn-text');
+                if (langBtn) langBtn.textContent = dict.langBtn;
+
+                const viewModeLabel = document.getElementById('view-mode-label');
+                const isCardHidden = document.querySelector('.cards-container')?.style.display === 'none';
+                if (viewModeLabel) viewModeLabel.textContent = isCardHidden ? dict.viewModeShow : dict.viewModeHide;
+
+                document.querySelectorAll('.i18n-save-btn').forEach(el => el.textContent = dict.saveBtn);
+                document.querySelectorAll('.i18n-exchange-short').forEach(el => el.textContent = dict.exchangeShort);
+                document.querySelectorAll('.i18n-exchange').forEach(el => el.textContent = dict.exchange);
+                document.querySelectorAll('.i18n-share').forEach(el => el.textContent = dict.share);
+                document.querySelectorAll('.i18n-exchange-title').forEach(el => el.textContent = dict.exchangeTitle);
+                document.querySelectorAll('.i18n-lead-name').forEach(el => el.textContent = dict.leadName);
+                document.querySelectorAll('.i18n-lead-phone').forEach(el => el.textContent = dict.leadPhone);
+                document.querySelectorAll('.i18n-lead-email').forEach(el => el.textContent = dict.leadEmail);
+                document.querySelectorAll('.i18n-lead-note').forEach(el => el.textContent = dict.leadNote);
+                document.querySelectorAll('.i18n-send-now').forEach(el => el.textContent = dict.sendNow);
+                document.querySelectorAll('.i18n-send-wa').forEach(el => el.textContent = dict.sendWa);
+
+                showToast(currentLang === 'ar' ? 'تم تحويل الواجهة إلى العربية' : 'Switched to English interface', 'info', 2000);
+            }
+
+            // --- View Mode Toggle (3D Card vs Profile Stream) ---
+            function toggleViewMode() {
+                triggerHaptic(25);
+                const cardContainer = document.querySelector('.cards-container');
+                const flipHint = document.querySelector('.flip-hint');
+                const label = document.getElementById('view-mode-label');
+                const dict = i18nDictionary[currentLang] || i18nDictionary.ar;
+                if (cardContainer) {
+                    if (cardContainer.style.display === 'none') {
+                        cardContainer.style.display = 'flex';
+                        if (flipHint) flipHint.style.display = 'flex';
+                        if (label) label.textContent = dict.viewModeHide;
+                        cardContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        cardContainer.style.display = 'none';
+                        if (flipHint) flipHint.style.display = 'none';
+                        if (label) label.textContent = dict.viewModeShow;
+                    }
+                }
+            }
+
             // Quick Actions & Modal Triggers
             document.getElementById('ejs-story-open-btn')?.addEventListener('click', openStoryGenerator);
             document.getElementById('ejs-share-btn')?.addEventListener('click', shareCard);
@@ -1921,6 +2359,16 @@
             document.getElementById('ejs-save-btn')?.addEventListener('click', saveContactEnhanced);
             document.getElementById('ejs-qr-close-btn')?.addEventListener('click', () => closeQrModal());
             document.getElementById('qrModal')?.addEventListener('click', closeQrModal);
+
+            // Exchange Contact Triggers
+            document.getElementById('ejs-exchange-open-btn')?.addEventListener('click', openExchangeModal);
+            document.getElementById('ejs-footer-exchange-btn')?.addEventListener('click', openExchangeModal);
+            document.getElementById('ejs-exchange-close-btn')?.addEventListener('click', closeExchangeModal);
+            document.getElementById('exchangeModal')?.addEventListener('click', closeExchangeModal);
+
+            // Header Controls Triggers
+            document.getElementById('ejs-lang-toggle')?.addEventListener('click', toggleLanguage);
+            document.getElementById('view-mode-toggle')?.addEventListener('click', toggleViewMode);
 
             // QR Download Button Handler (Converts QR image to PNG download)
             document.getElementById('ejs-qr-download-btn')?.addEventListener('click', function() {

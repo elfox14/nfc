@@ -52,6 +52,8 @@ module.exports = function createSeoRouter({ getDb, designsCollectionName, absolu
     const txt = [
       'User-agent: *',
       'Allow: /nfc/',
+      'Allow: /nfc/c/',
+      'Allow: /nfc/card/',
       'Allow: /nfc/viewer.html',
       'Disallow: /nfc/view/',
       'Disallow: /nfc/editor',
@@ -71,12 +73,12 @@ module.exports = function createSeoRouter({ getDb, designsCollectionName, absolu
       if (db) {
         const docs = await db.collection(designsCollectionName)
           .find({ 'data.sharedToGallery': true })
-          .project({ shortId: 1, createdAt: 1 })
+          .project({ shortId: 1, slug: 1, createdAt: 1 })
           .sort({ createdAt: -1 })
           .limit(5000)
           .toArray();
         designUrls = docs.map(d => ({
-          loc: `${base}/nfc/viewer.html?id=${d.shortId}`,
+          loc: `${base}/nfc/c/${encodeURIComponent(d.slug || d.shortId)}`,
           lastmod: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : undefined,
           changefreq: 'monthly',
           priority: '0.8'

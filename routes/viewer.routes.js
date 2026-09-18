@@ -235,20 +235,43 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
         });
       }
 
+      // Check language: detect Arabic or English predominance
+      const hasArabicChars = /[\u0600-\u06FF]/.test(name + tagline + bio + company);
+      const initialLang = hasArabicChars ? 'ar' : 'en';
+      const initialDir = hasArabicChars ? 'rtl' : 'ltr';
+
+      const personEntity = {
+        "@type": "Person",
+        "@id": `${canonical}#person`,
+        "name": name,
+        "jobTitle": tagline || undefined,
+        "worksFor": company ? { "@type": "Organization", "name": company } : undefined,
+        "description": bio || (tagline ? `${name} - ${tagline}` : 'بطاقة عمل رقمية ذكية'),
+        "image": ogImage,
+        "url": canonical,
+        "telephone": phones.length > 0 ? (phones.length === 1 ? phones[0] : phones) : undefined,
+        "email": emails.length > 0 ? (emails.length === 1 ? emails[0] : emails) : undefined,
+        "sameAs": sameAsUrls.length > 0 ? sameAsUrls : undefined
+      };
+
+      if (phones.length > 0 || emails.length > 0) {
+        personEntity.contactPoint = {
+          "@type": "ContactPoint",
+          "telephone": phones[0] || undefined,
+          "email": emails[0] || undefined,
+          "contactType": "Personal & Business Inquiries"
+        };
+      }
+
       const schemaGraph = [
         {
-          "@type": "Person",
-          "@id": `${canonical}#person`,
-          "name": name,
-          "jobTitle": tagline || undefined,
-          "worksFor": company ? { "@type": "Organization", "name": company } : undefined,
-          "description": bio || (tagline ? `${name} - ${tagline}` : 'بطاقة عمل رقمية ذكية'),
-          "image": ogImage,
+          "@type": "ProfilePage",
+          "@id": `${canonical}#profile`,
           "url": canonical,
-          "telephone": phones.length > 0 ? (phones.length === 1 ? phones[0] : phones) : undefined,
-          "email": emails.length > 0 ? (emails.length === 1 ? emails[0] : emails) : undefined,
-          "sameAs": sameAsUrls.length > 0 ? sameAsUrls : undefined
+          "name": `${name}${tagline ? ' - ' + tagline : ''}`,
+          "mainEntity": personEntity
         },
+        personEntity,
         {
           "@type": "BreadcrumbList",
           "@id": `${canonical}#breadcrumb`,
@@ -256,7 +279,7 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
             {
               "@type": "ListItem",
               "position": 1,
-              "name": "الرئيسية",
+              "name": initialLang === 'ar' ? 'الرئيسية' : 'Home',
               "item": `${base}/nfc/`
             },
             {
@@ -288,7 +311,11 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
         design: publishedDesign,
         canonical,
         structuredDataJson,
-        contactLinksHtml: buildContactLinksHtml(dynamicData)
+        contactLinksHtml: buildContactLinksHtml(dynamicData),
+        initialLang,
+        initialDir,
+        cardShortId: doc.shortId || id,
+        docSlug
       }, (renderError, html) => {
         if (renderError) throw renderError;
         res.type('html').send(injectCspNonceIntoRenderedHtml(html, res.locals.cspNonce));
@@ -316,6 +343,44 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
     } catch (e) {
       console.error('Error in /nfc/view/:id redirect route:', e);
       res.status(500).send('Redirect failed.');
+    }
+  });
+
+  // Lead Capture API Endpoint for "Exchange Contact" (تبادل جهات الاتصال)
+  router.post('/nfc/api/leads/:idOrSlug', async (req, res) => {
+    try {
+      const db = getDb();
+      if (!db) return res.status(503).json({ error: 'Service unavailable' });
+
+      const id = String(req.params.idOrSlug || '').trim();
+      if (!isSafeViewerId(id)) return res.status(400).json({ error: 'Invalid card ID' });
+
+      const { name, phone, email, note } = req.body || {};
+      const cleanName = sanitizeText(name, 100).trim();
+      const cleanPhone = sanitizeText(phone, 30).trim();
+      const cleanEmail = sanitizeText(email, 120).trim();
+      const cleanNote = sanitizeText(note, 500).trim();
+
+      if (!cleanName && !cleanPhone && !cleanEmail) {
+        return res.status(400).json({ error: 'Please provide at least a name and contact info' });
+      }
+
+      const leadDoc = {
+        cardId: id,
+        visitorName: cleanName,
+        visitorPhone: cleanPhone,
+        visitorEmail: cleanEmail,
+        visitorNote: cleanNote,
+        createdAt: new Date(),
+        ip: req.ip || req.headers['x-forwarded-for'] || ''
+      };
+
+      await db.collection('leads').insertOne(leadDoc).catch(err => console.error('Failed to insert lead:', err));
+
+      return res.json({ success: true, message: 'Lead received successfully' });
+    } catch (err) {
+      console.error('Error saving lead:', err);
+      return res.status(500).json({ error: 'Failed to submit contact information' });
     }
   });
 

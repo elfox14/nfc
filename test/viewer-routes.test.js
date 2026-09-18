@@ -122,5 +122,53 @@ describe('Viewer route helpers', () => {
     expect(html).toContain('Legacy card');
     expect(html).toContain('transform: translate(0px, 0px);');
     expect(html).not.toMatch(/\sonclick=/i);
+    expect(html).toContain('exchangeModal');
+    expect(html).toContain('viewer-top-bar');
+    expect(html).toContain('ejs-lang-toggle');
+  });
+
+  it('renders modern ProfilePage structured data when provided', () => {
+    const template = fs.readFileSync(path.join(__dirname, '..', 'viewer.ejs'), 'utf8');
+    const mockSchema = JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "ProfilePage",
+          "@id": "https://example.test/nfc/c/john#profile",
+          "name": "John Doe",
+          "mainEntity": {
+            "@type": "Person",
+            "name": "John Doe"
+          }
+        }
+      ]
+    });
+
+    const html = ejs.render(template, {
+      pageUrl: 'https://example.test/nfc/c/john',
+      name: 'John Doe',
+      tagline: 'CEO',
+      ogImage: 'https://example.test/card.png',
+      keywords: 'ceo, nfc',
+      canonical: 'https://example.test/nfc/c/john',
+      structuredDataJson: mockSchema,
+      initialLang: 'en',
+      initialDir: 'ltr',
+      cardShortId: 'john',
+      contactLinksHtml: '',
+      design: {
+        inputs: {
+          'input-name': 'John Doe',
+          'input-tagline': 'CEO',
+          'qr-source': 'none'
+        },
+        dynamic: {}
+      }
+    });
+
+    expect(html).toContain('ProfilePage');
+    expect(html).toContain('John Doe');
+    expect(html).toContain('lang="en"');
+    expect(html).toContain('dir="ltr"');
   });
 });
