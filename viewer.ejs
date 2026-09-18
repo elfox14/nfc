@@ -52,8 +52,13 @@
 
     <style>
         :root {
-            --bg-color: #121212;
-            --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            --bg-base: #060913;
+            --bg-surface: rgba(15, 23, 42, 0.72);
+            --card-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.9), 0 0 35px -5px rgba(197, 160, 89, 0.22);
+            --gold-primary: #c5a059;
+            --gold-bright: #e6ca85;
+            --gold-gradient: linear-gradient(135deg, #d4af37 0%, #c5a059 50%, #b89047 100%);
+            --glass-border: rgba(255, 255, 255, 0.09);
         }
 
         * {
@@ -63,7 +68,14 @@
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(circle at 50% -15%, rgba(197, 160, 89, 0.16) 0%, transparent 60%),
+                radial-gradient(circle at 10% 25%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 90% 75%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px;
+            background-attachment: fixed;
             font-family: 'Tajawal', sans-serif;
             min-height: 100vh;
             display: flex;
@@ -71,65 +83,283 @@
             align-items: center;
             justify-content: flex-start;
             overflow-x: hidden;
-            padding: 20px 20px 120px 20px;
-            color: #fff;
+            padding: 16px 16px 150px 16px;
+            color: #f8fafc;
+            position: relative;
         }
 
-        /* --- حاوية الكارت (الأساسية) --- */
+        /* --- AMBIENT AURORA MESH --- */
+        .ambient-aurora-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .aurora-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(85px);
+            opacity: 0.38;
+            pointer-events: none;
+        }
+
+        .aurora-gold {
+            width: 520px;
+            height: 520px;
+            top: -140px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: radial-gradient(circle, rgba(197, 160, 89, 0.35) 0%, rgba(197, 160, 89, 0) 70%);
+            animation: orbFloatGold 12s ease-in-out infinite alternate;
+        }
+
+        .aurora-blue {
+            width: 440px;
+            height: 440px;
+            top: 35%;
+            right: -140px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(56, 189, 248, 0) 70%);
+            animation: orbFloatBlue 16s ease-in-out infinite alternate;
+        }
+
+        @keyframes orbFloatGold {
+            0% { transform: translate(-50%, 0) scale(1); }
+            100% { transform: translate(-46%, 35px) scale(1.1); }
+        }
+
+        @keyframes orbFloatBlue {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-45px) scale(1.12); }
+        }
+
+        /* --- EXECUTIVE PROFILE HERO HEADER --- */
+        .executive-hero-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            max-width: 510px;
+            margin-bottom: 22px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-avatar-container {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .hero-avatar-ring {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            padding: 3px;
+            background: linear-gradient(135deg, #c5a059 0%, #ffffff 50%, #38bdf8 100%);
+            box-shadow: 0 0 25px rgba(197, 160, 89, 0.4), 0 0 50px rgba(56, 189, 248, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .hero-avatar-ring:hover {
+            transform: scale(1.06);
+        }
+
+        .hero-avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-color: #1a2234;
+            border: 2px solid #060913;
+        }
+
+        .verified-badge-pill {
+            position: absolute;
+            bottom: -3px;
+            right: -3px;
+            background: #0b1120;
+            border: 1.5px solid #38bdf8;
+            color: #38bdf8;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        html[dir="ltr"] .verified-badge-pill {
+            right: auto;
+            left: -3px;
+        }
+
+        .hero-display-name {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin: 0 0 5px 0;
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #ffffff 30%, #f1f5f9 65%, #c5a059 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.3px;
+            line-height: 1.3;
+        }
+
+        .hero-display-tagline {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin: 0 0 10px 0;
+            line-height: 1.5;
+            max-width: 90%;
+        }
+
+        .hero-status-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .hero-meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: #94a3b8;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* --- 3D CARD STAGE & PEDESTAL --- */
         .cards-container {
-            perspective: 1000px;
+            perspective: 1200px;
             width: 100%;
             display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .card-stage {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            perspective: 1200px;
+        }
+
+        .card-pedestal-shadow {
+            position: absolute;
+            bottom: -22px;
+            width: 78%;
+            max-width: 440px;
+            height: 35px;
+            background: radial-gradient(ellipse, rgba(197, 160, 89, 0.28) 0%, rgba(0, 0, 0, 0.65) 50%, transparent 75%);
+            filter: blur(14px);
+            border-radius: 50%;
+            pointer-events: none;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 1;
         }
 
         .cards-wrapper {
             position: relative;
             width: 100%;
-            /* الأبعاد الافتراضية (كلاسيك / عرضي) */
             max-width: 510px;
             aspect-ratio: 51 / 33;
             transform-style: preserve-3d;
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             cursor: pointer;
+            z-index: 2;
         }
 
-        /* --- التعديل الخاص بالوضع الطولي (Vertical) --- */
         .cards-wrapper[data-layout="vertical"] {
             max-width: 330px;
-            /* عرض أقل للهاتف */
             aspect-ratio: 33 / 51;
-            /* عكس النسبة لتصبح طولية */
         }
 
         .cards-wrapper.is-flipped {
             transform: rotateY(180deg);
         }
 
-        /* --- وجه الكارت (عام) --- */
+        /* --- BUSINESS CARD FACES --- */
         .business-card {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border-radius: 15px;
+            border-radius: 18px;
             overflow: hidden;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             box-shadow: var(--card-shadow);
-            background-color: #000;
-            /* Fallback */
+            background-color: #060913;
+            border: 1px solid rgba(255, 255, 255, 0.14);
         }
 
-        /* iOS Safari requires explicit transform on BOTH faces for backface-visibility to work */
         .card-front {
             transform: rotateY(0deg);
         }
 
         .card-back {
             transform: rotateY(180deg);
+        }
+
+        /* Holographic Sheen Layer across the card */
+        .card-hologram-sheen {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.12) 40%, rgba(197, 160, 89, 0.18) 50%, rgba(56, 189, 248, 0.12) 60%, transparent 80%);
+            background-size: 200% 200%;
+            pointer-events: none;
+            z-index: 10;
+            mix-blend-mode: screen;
+            opacity: 0.55;
+            transition: background-position 0.2s ease, opacity 0.3s ease;
+        }
+
+        .nfc-chip-indicator {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            z-index: 12;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 50px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(197, 160, 89, 0.35);
+            backdrop-filter: blur(8px);
+            color: #e6ca85;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            pointer-events: none;
+        }
+
+        html[dir="ltr"] .nfc-chip-indicator {
+            right: auto;
+            left: 16px;
         }
 
         /* --- الطبقات الداخلية --- */
@@ -157,8 +387,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* هام: لضمان عمل الإحداثيات المطلقة */
-            /* لكن العناصر المحفوظة تستخدم translate، لذا لا نحتاج position:relative للعناصر الأبناء بالضرورة */
         }
 
         /* --- العناصر المتحركة (المحفوظة بالإحداثيات) --- */
@@ -166,12 +394,9 @@
             position: absolute;
             top: 0;
             left: 0;
-            /* يتم تطبيق translate عبر inline-style */
             touch-action: none;
-            /* لمنع التفاعل الخاطئ */
         }
 
-        /* تنسيقات خاصة للعناصر */
         #card-logo {
             object-fit: contain;
         }
@@ -236,84 +461,34 @@
             padding: 2px;
         }
 
-        /* --- أزرار التحكم أسفل الكارت --- */
-        .actions-bar {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .action-btn {
-            background: #243447;
-            color: #fff;
-            border: 1px solid #364f6b;
-            padding: 12px 24px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-family: 'Tajawal', sans-serif;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .action-btn:hover {
-            background: #4da6ff;
-            border-color: #4da6ff;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(77, 166, 255, 0.3);
-        }
-
-        .action-btn.primary {
-            background: #4da6ff;
-            border-color: #4da6ff;
-        }
-
-        .action-btn.primary:hover {
-            background: #3a8ecc;
-        }
-
         /* تلميح للتقليب */
         .flip-hint {
-            margin-top: 15px;
-            color: #888;
-            font-size: 0.9rem;
-            animation: bounce 2s infinite;
+            margin-top: 14px;
+            color: #94a3b8;
+            font-size: 0.88rem;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 6px 16px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            animation: bounce 2.4s infinite;
         }
 
         @keyframes bounce {
-
-            0%,
-            20%,
-            50%,
-            80%,
-            100% {
-                transform: translateY(0);
-            }
-
-            40% {
-                transform: translateY(-5px);
-            }
-
-            60% {
-                transform: translateY(-3px);
-            }
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-4px); }
+            60% { transform: translateY(-2px); }
         }
 
-        /* إخفاء الروابط المباشرة لمحركات البحث في العرض البصري (موجودة في السيرفر للـ SEO) */
+        /* إخفاء الروابط المباشرة لمحركات البحث في العرض البصري */
         .seo-links {
             display: none;
         }
 
-        /* --- PROFILE & NEW LAYOUT STYLES --- */
+        /* --- PROFILE & ANIMATION STYLES --- */
         .fade-in-up {
             opacity: 0;
             transform: translateY(20px);
@@ -329,15 +504,8 @@
             max-width: 510px;
             margin: 0 auto;
             text-align: center;
-        }
-
-        .profile-bio {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            color: #d1d5db;
-            margin: 15px 0;
-            padding: 0 15px;
-            white-space: pre-wrap;
+            position: relative;
+            z-index: 10;
         }
 
         .availability-badge {
@@ -346,10 +514,8 @@
             gap: 8px;
             padding: 6px 14px;
             border-radius: 50px;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             font-weight: 600;
-            margin-bottom: 20px;
-            background: rgba(255, 255, 255, 0.1);
         }
 
         .badge-available { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
@@ -371,57 +537,71 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* --- QUICK ACTIONS ROW --- */
+        /* --- TACTILE EXECUTIVE ACTION DECK --- */
         .quick-actions-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin: 15px auto 25px auto;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin: 10px auto 25px auto;
+            width: 100%;
             max-width: 510px;
+            padding: 0 4px;
+        }
+
+        @media (max-width: 480px) {
+            .quick-actions-row {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
         }
 
         .quick-action-btn {
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             text-decoration: none;
-            color: #cbd5e1;
-            font-size: 0.78rem;
-            font-weight: 600;
-            background: none;
-            border: none;
+            color: #e2e8f0;
+            font-size: 0.76rem;
+            font-weight: 700;
+            background: rgba(18, 26, 43, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 12px 6px;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            min-width: 56px;
-            padding: 4px;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
 
         .quick-action-btn:hover {
-            color: #fff;
-            transform: translateY(-3px);
+            color: #ffffff;
+            border-color: rgba(197, 160, 89, 0.4);
+            background: rgba(30, 41, 59, 0.8);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         }
 
         .quick-action-btn:active {
-            transform: scale(0.94);
+            transform: scale(0.95);
         }
 
         .quick-action-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 16px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
-            transition: all 0.25s;
+            transition: transform 0.25s;
         }
 
         .quick-action-btn:hover .quick-action-icon {
+            transform: scale(1.08);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
             border-color: rgba(197, 160, 89, 0.35);
         }
