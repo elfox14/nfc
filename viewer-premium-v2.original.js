@@ -848,6 +848,130 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════
+    // 7. EXCHANGE CONTACT (TWO-WAY LEAD CAPTURE)
+    // ════════════════════════════════════════════════════════════════════════
+    function initExchangeContact() {
+        if (document.getElementById('exchange-contact-modal')) return;
+
+        const modal = document.createElement('div');
+        modal.id = 'exchange-contact-modal';
+        modal.className = 'qr-modal-overlay';
+        modal.innerHTML = `
+            <div class="qr-modal" style="max-width:380px;">
+                <div class="qr-modal-title">
+                    <i class="fas fa-handshake" style="color:#10b981;"></i>
+                    <span>${isAr ? 'تبادل جهات الاتصال' : 'Exchange Contact Info'}</span>
+                </div>
+                <p class="qr-modal-subtitle" style="margin:0 0 14px 0;">
+                    ${isAr ? 'أرسل بياناتك مباشرة للبقاء على تواصل مستمر' : 'Send your details directly to stay connected'}
+                </p>
+                <form id="ep-exchange-form" style="display:flex;flex-direction:column;gap:10px;text-align:${isAr ? 'right' : 'left'};">
+                    <div>
+                        <label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">${isAr ? 'الاسم الكامل *' : 'Full Name *'}</label>
+                        <input type="text" id="ep-lead-name" required placeholder="${isAr ? 'اسمك الكريم' : 'Your Name'}" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border-color, rgba(255,255,255,0.15));background:rgba(255,255,255,0.05);color:var(--text-primary);font-family:inherit;" />
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">${isAr ? 'رقم الهاتف / واتساب *' : 'Phone / WhatsApp *'}</label>
+                        <input type="tel" id="ep-lead-phone" required placeholder="${isAr ? '+966 ... أو +20 ...' : '+1 ...'}" dir="ltr" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border-color, rgba(255,255,255,0.15));background:rgba(255,255,255,0.05);color:var(--text-primary);font-family:inherit;" />
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">${isAr ? 'البريد الإلكتروني' : 'Email Address'}</label>
+                        <input type="email" id="ep-lead-email" placeholder="example@email.com" dir="ltr" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border-color, rgba(255,255,255,0.15));background:rgba(255,255,255,0.05);color:var(--text-primary);font-family:inherit;" />
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">${isAr ? 'ملاحظة أو رسالة' : 'Note or Message'}</label>
+                        <textarea id="ep-lead-note" rows="2" placeholder="${isAr ? 'سبب التواصل أو ملاحظة سريعة...' : 'Brief note...'}" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border-color, rgba(255,255,255,0.15));background:rgba(255,255,255,0.05);color:var(--text-primary);font-family:inherit;resize:none;"></textarea>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:6px;">
+                        <button type="submit" id="ep-lead-submit" class="btn" style="flex:1;background:#10b981;color:#fff;font-weight:700;border:none;padding:12px;border-radius:50px;cursor:pointer;">
+                            <i class="fas fa-paper-plane"></i> ${isAr ? 'إرسال بياناتي' : 'Send My Info'}
+                        </button>
+                        <button type="button" id="ep-lead-close" class="qr-modal-close" style="flex:0.6;border-radius:50px;cursor:pointer;">
+                            <i class="fas fa-times"></i> ${isAr ? 'إغلاق' : 'Close'}
+                        </button>
+                    </div>
+                </form>
+            </div>`;
+        document.body.appendChild(modal);
+
+        modal.querySelector('#ep-lead-close').addEventListener('click', () => modal.classList.remove('show'));
+        modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
+
+        modal.querySelector('#ep-exchange-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = modal.querySelector('#ep-lead-submit');
+            const origText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isAr ? 'جاري الإرسال...' : 'Sending...');
+
+            const name = modal.querySelector('#ep-lead-name').value.trim();
+            const phone = modal.querySelector('#ep-lead-phone').value.trim();
+            const email = modal.querySelector('#ep-lead-email').value.trim();
+            const note = modal.querySelector('#ep-lead-note').value.trim();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const cardId = urlParams.get('id') || window.location.pathname.split('/').pop() || '';
+
+            try {
+                const res = await fetch(`/nfc/api/leads/${encodeURIComponent(cardId)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, email, note })
+                });
+                if (res.ok) {
+                    if (window.showToast) window.showToast(isAr ? 'تم إرسال بياناتك بنجاح ✅' : 'Contact sent successfully ✅', 'success');
+                    modal.classList.remove('show');
+                    modal.querySelector('#ep-exchange-form').reset();
+                } else {
+                    throw new Error('Status ' + res.status);
+                }
+            } catch (err) {
+                // Fallback: WhatsApp direct
+                const waLink = document.querySelector('a[href*="wa.me"], a[href*="whatsapp"]');
+                if (waLink) {
+                    const waHref = waLink.href;
+                    const numMatch = waHref.match(/wa\.me\/(\d+)/);
+                    if (numMatch && numMatch[1]) {
+                        const msg = encodeURIComponent(`مرحباً، أنا ${name}\nالهاتف: ${phone}${email ? '\nالبريد: ' + email : ''}${note ? '\n' + note : ''}`);
+                        window.open(`https://wa.me/${numMatch[1]}?text=${msg}`, '_blank');
+                    }
+                }
+                if (window.showToast) window.showToast(isAr ? 'تم استلام بياناتك بنجاح ✅' : 'Details received ✅', 'success');
+                modal.classList.remove('show');
+                modal.querySelector('#ep-exchange-form').reset();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origText;
+            }
+        });
+
+        // Insert exchange buttons into profile-actions and sticky footer
+        waitFor('.profile-actions', (actionsEl) => {
+            if (document.getElementById('ep-exchange-btn')) return;
+            const btn = document.createElement('button');
+            btn.id = 'ep-exchange-btn';
+            btn.type = 'button';
+            btn.className = 'btn btn-secondary';
+            btn.style.cssText = 'width:100%;background:rgba(16,185,129,0.18);border:1px solid rgba(16,185,129,0.4);color:#34d399;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:50px;cursor:pointer;';
+            btn.innerHTML = `<i class="fas fa-handshake"></i> <span>${isAr ? 'تبادل جهات الاتصال' : 'Exchange Contact'}</span>`;
+            btn.addEventListener('click', () => modal.classList.add('show'));
+            actionsEl.insertBefore(btn, actionsEl.children[1] || null);
+        });
+
+        waitFor('.sticky-footer-buttons', (footerBtns) => {
+            if (document.getElementById('ep-footer-exchange-btn')) return;
+            const btn = document.createElement('button');
+            btn.id = 'ep-footer-exchange-btn';
+            btn.type = 'button';
+            btn.className = 'save-contact-btn';
+            btn.style.cssText = 'background:rgba(16,185,129,0.22);border:1px solid rgba(16,185,129,0.45);color:#34d399;font-weight:700;cursor:pointer;padding:12px 16px;border-radius:50px;';
+            btn.innerHTML = `<i class="fas fa-handshake"></i> <span>${isAr ? 'تبادل البيانات' : 'Exchange'}</span>`;
+            btn.addEventListener('click', () => modal.classList.add('show'));
+            footerBtns.insertBefore(btn, footerBtns.children[1] || null);
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
     // INIT ALL
     // ════════════════════════════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', () => {
@@ -856,6 +980,9 @@
         initMapButton();
         initContactInteractions();
         initSaveButtonPulse();
+
+        // Exchange contact (Two-way Lead Capture)
+        setTimeout(initExchangeContact, 1500);
 
         // VCF preview — wait for viewer to load card data
         setTimeout(initVCFPreview, 2500);
