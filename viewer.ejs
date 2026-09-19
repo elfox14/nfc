@@ -1106,24 +1106,88 @@
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
         }
 
+        /* --- FLOATING LUXURY ACTION DOCK --- */
+        .sticky-footer {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 480px;
+            background: rgba(10, 15, 26, 0.88);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 40px;
+            padding: 10px 14px 12px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2000;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 35px rgba(197, 160, 89, 0.2);
+        }
+
         .sticky-footer-actions {
             display: flex;
             gap: 10px;
             width: 100%;
-            max-width: 440px;
         }
 
         .sticky-footer-actions .save-contact-btn {
-            flex: 1.2;
-            width: auto;
+            flex: 1.3;
+            background: linear-gradient(135deg, #d4af37 0%, #c5a059 50%, #b89047 100%);
+            color: #0b0f19;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 50px;
+            font-family: inherit;
+            font-size: 0.98rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 8px 25px rgba(197, 160, 89, 0.35);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sticky-footer-actions .save-contact-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            transform: rotate(30deg);
+            animation: shimmerSweep 3.5s infinite;
+        }
+
+        @keyframes shimmerSweep {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            40% { transform: translateX(100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+
+        .sticky-footer-actions .save-contact-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(197, 160, 89, 0.5);
+            filter: brightness(1.08);
+        }
+
+        .sticky-footer-actions .save-contact-btn:active {
+            transform: scale(0.96);
         }
 
         .exchange-contact-btn {
             flex: 0.9;
-            background: rgba(16, 185, 129, 0.18);
-            border: 1px solid rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.16);
+            border: 1px solid rgba(16, 185, 129, 0.45);
             color: #34d399;
-            padding: 14px 16px;
+            padding: 14px 14px;
             border-radius: 50px;
             font-family: inherit;
             font-weight: 700;
@@ -1133,25 +1197,42 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             backdrop-filter: blur(12px);
         }
 
         .exchange-contact-btn:hover {
             background: #10b981;
-            color: #0b0f19;
+            color: #060913;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
         }
 
         .exchange-contact-btn:active {
             transform: scale(0.96);
+        }
+
+        .footer-powered {
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
         }
     </style>
     <link rel="stylesheet" href="/nfc/premium-ui.css">
 </head>
 
 <body>
+
+    <!-- Ambient Aurora Glow Orbs -->
+    <div class="ambient-aurora-container" aria-hidden="true">
+        <div class="aurora-orb aurora-gold"></div>
+        <div class="aurora-orb aurora-blue"></div>
+    </div>
 
     <!-- Top Bar Controls -->
     <header class="viewer-top-bar fade-in-up" aria-label="رأس صفحة الكارت">
@@ -1174,7 +1255,12 @@
     <!-- استخراج البيانات من كائن design -->
     <% const inputs=design.inputs || {}; const dynamic=design.dynamic || {}; const images=design.imageUrls || {}; const
         positions=design.positions || {}; const placements=design.placements || {}; const
-        layout=inputs['layout-select-visual'] || inputs['layout-select'] || 'classic' ; function getStyle(id) { const
+        layout=inputs['layout-select-visual'] || inputs['layout-select'] || 'classic';
+        const cardBio = (typeof bio !== 'undefined' && bio) ? bio : (inputs['input-bio_ar'] || inputs['input-bio_en'] || inputs['input-bio']);
+        const cardComp = (typeof company !== 'undefined' && company) ? company : (inputs['input-company_ar'] || inputs['input-company_en'] || inputs['input-company']);
+        const avail = inputs['input-availability'];
+        const heroPhoto = images.photo || inputs['input-photo'] || inputs['input-logo'] || '';
+        function getStyle(id) { const
         pos=positions[id] || {x:0, y:0}; return `transform: translate(${pos.x}px, ${pos.y}px);`; } function
         isFront(elementName) { const place=placements[elementName]; if (!place) { if (elementName==='logo' ) return
         true; if (elementName==='photo' ) return true; if (elementName==='name' ) return true; if
@@ -1232,13 +1318,60 @@
         }
         %>
 
-        <div class="cards-container">
+    <!-- Executive Profile Hero Header -->
+    <section class="executive-hero-header fade-in-up" aria-label="الملف الشخصي">
+        <div class="hero-avatar-container">
+            <div class="hero-avatar-ring">
+                <% if (heroPhoto) { %>
+                    <div class="hero-avatar-img" style="background-image: url('<%= heroPhoto %>');"></div>
+                <% } else { %>
+                    <div class="hero-avatar-img" style="display:flex;align-items:center;justify-content:center;color:#c5a059;font-size:1.9rem;font-weight:800;">
+                        <%= (name || 'MC').charAt(0) %>
+                    </div>
+                <% } %>
+            </div>
+            <span class="verified-badge-pill" title="حساب موثق">
+                <i class="fas fa-check-circle"></i>
+                <span class="i18n-verified"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Verified' : 'موثّق' %></span>
+            </span>
+        </div>
+        <h1 class="hero-display-name"><%= name %></h1>
+        <% if (tagline) { %>
+            <p class="hero-display-tagline"><%= tagline %></p>
+        <% } %>
+        <div class="hero-status-row">
+            <% if (cardComp) { %>
+                <div class="hero-meta-pill">
+                    <i class="fas fa-building" style="color:var(--gold-primary);"></i>
+                    <span><%= cardComp %></span>
+                </div>
+            <% } %>
+            <div class="availability-badge badge-available">
+                <span class="pulse-dot"></span>
+                <span class="i18n-status-text"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Available for Business' : 'متاح للأعمال والاستشارات' %></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3D Card Stage with Pedestal & Hologram -->
+    <div class="cards-container">
+        <div class="card-stage" id="card-stage">
+            <!-- Pedestal Reflection Shadow -->
+            <div class="card-pedestal-shadow" id="card-shadow-reflect"></div>
+
             <!-- تطبيق data-layout لتفعيل CSS الوضع الطولي -->
             <div class="cards-wrapper" id="card"
                 data-layout="<%= layout %>">
 
                 <!-- === الوجه الأمامي === -->
                 <div class="business-card card-front">
+                    <!-- Holographic Light Sheen -->
+                    <div class="card-hologram-sheen"></div>
+                    <div class="nfc-chip-indicator">
+                        <i class="fas fa-wifi"></i>
+                        <span>NFC SMART CARD</span>
+                    </div>
+
                     <!-- الخلفية -->
                     <div class="card-background-layer"
                         style="background-image: url('<%= images.front || '' %>'); display: <%= images.front ? 'block' : 'none' %>;">
@@ -1308,6 +1441,9 @@
 
                 <!-- === الوجه الخلفي === -->
                 <div class="business-card card-back">
+                    <!-- Holographic Light Sheen -->
+                    <div class="card-hologram-sheen"></div>
+
                     <!-- الخلفية -->
                     <div class="card-background-layer"
                         style="background-image: url('<%= images.back || '' %>'); display: <%= images.back ? 'block' : 'none' %>;">
@@ -1443,14 +1579,14 @@
                                                                                 <% } }); %>
 
                     </div>
-                </div>
-            </div>
+            </div><!-- /cards-wrapper -->
+        </div><!-- /card-stage -->
 
-            <div class="flip-hint">
-                <i class="fas fa-hand-pointer"></i> اضغط على البطاقة لقلبها
-            </div>
+        <div class="flip-hint">
+            <i class="fas fa-hand-pointer"></i> <span class="i18n-flip-hint"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Tap card to flip' : 'اضغط على البطاقة لقلبها' %></span>
+        </div>
 
-            </div>
+    </div><!-- /cards-container -->
 
         <!-- === EXECUTIVE BENTO GRID SECTION (MOBILE & DESKTOP OPTIMIZED) === -->
         <main class="profile-structured-section fade-in-up" id="main-content" style="animation-delay: 0.2s;">
@@ -1523,11 +1659,6 @@
             <!-- Bento Container -->
             <div class="bento-container">
                 <!-- Bento Item 1: Executive Profile Statement -->
-                <% 
-                   const cardBio = (typeof bio !== 'undefined' && bio) ? bio : (inputs['input-bio_ar'] || inputs['input-bio_en'] || inputs['input-bio']);
-                   const cardComp = (typeof company !== 'undefined' && company) ? company : (inputs['input-company_ar'] || inputs['input-company_en'] || inputs['input-company']);
-                   const avail = inputs['input-availability'];
-                %>
                 <% if (cardBio || cardComp || avail) { %>
                 <article class="bento-card bento-bio-card">
                     <div class="bento-header">
@@ -2362,6 +2493,56 @@
                 }, { passive: true });
             }
 
+            // --- Interactive 3D Tilt & Holographic Specular Reflection ---
+            const cardStage = document.getElementById('card-stage');
+            const shadowReflect = document.getElementById('card-shadow-reflect');
+            const sheens = document.querySelectorAll('.card-hologram-sheen');
+
+            if (cardStage && cardEl) {
+                let isFlipped = false;
+                const flipObserver = new MutationObserver(() => {
+                    isFlipped = cardEl.classList.contains('is-flipped');
+                });
+                flipObserver.observe(cardEl, { attributes: true, attributeFilter: ['class'] });
+
+                cardStage.addEventListener('mousemove', function(e) {
+                    const rect = cardStage.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const cx = rect.width / 2;
+                    const cy = rect.height / 2;
+
+                    const rotX = ((y - cy) / cy) * -11;
+                    const rotY = ((x - cx) / cx) * 13;
+                    const baseRotateY = isFlipped ? 180 : 0;
+
+                    cardEl.style.transform = `rotateX(${rotX.toFixed(2)}deg) rotateY(${(baseRotateY + rotY).toFixed(2)}deg)`;
+
+                    if (shadowReflect) {
+                        shadowReflect.style.transform = `translateX(${(-rotY * 1.5).toFixed(1)}px) scale(${(1 - Math.abs(rotX)/35).toFixed(2)})`;
+                    }
+
+                    const posX = ((x / rect.width) * 100).toFixed(1);
+                    const posY = ((y / rect.height) * 100).toFixed(1);
+                    sheens.forEach(s => {
+                        s.style.backgroundPosition = `${posX}% ${posY}%`;
+                        s.style.opacity = '0.8';
+                    });
+                });
+
+                cardStage.addEventListener('mouseleave', function() {
+                    const baseRotateY = isFlipped ? 180 : 0;
+                    cardEl.style.transform = `rotateX(0deg) rotateY(${baseRotateY}deg)`;
+                    if (shadowReflect) {
+                        shadowReflect.style.transform = 'translateX(0) scale(1)';
+                    }
+                    sheens.forEach(s => {
+                        s.style.backgroundPosition = '50% 50%';
+                        s.style.opacity = '0.55';
+                    });
+                });
+            }
+
             // --- Exchange Contact Modal (Two-Way Lead Capture) ---
             function openExchangeModal() {
                 const modal = document.getElementById('exchangeModal');
@@ -2461,7 +2642,10 @@
                     leadEmail: 'البريد الإلكتروني (اختياري)',
                     leadNote: 'ملاحظة أو رسالة (اختياري)',
                     sendNow: 'إرسال بياناتي الآن',
-                    sendWa: 'إرسال ومحادثة عبر واتساب'
+                    sendWa: 'إرسال ومحادثة عبر واتساب',
+                    flipHint: 'اضغط على البطاقة لقلبها',
+                    verified: 'موثّق',
+                    statusText: 'متاح للأعمال والاستشارات'
                 },
                 en: {
                     langBtn: 'عربي',
@@ -2477,7 +2661,10 @@
                     leadEmail: 'Email Address (Optional)',
                     leadNote: 'Note or Message (Optional)',
                     sendNow: 'Send My Contact Info',
-                    sendWa: 'Send & Chat via WhatsApp'
+                    sendWa: 'Send & Chat via WhatsApp',
+                    flipHint: 'Tap card to flip',
+                    verified: 'Verified',
+                    statusText: 'Available for Business'
                 }
             };
 
@@ -2507,6 +2694,9 @@
                 document.querySelectorAll('.i18n-lead-note').forEach(el => el.textContent = dict.leadNote);
                 document.querySelectorAll('.i18n-send-now').forEach(el => el.textContent = dict.sendNow);
                 document.querySelectorAll('.i18n-send-wa').forEach(el => el.textContent = dict.sendWa);
+                document.querySelectorAll('.i18n-flip-hint').forEach(el => el.textContent = dict.flipHint);
+                document.querySelectorAll('.i18n-verified').forEach(el => el.textContent = dict.verified);
+                document.querySelectorAll('.i18n-status-text').forEach(el => el.textContent = dict.statusText);
 
                 showToast(currentLang === 'ar' ? 'تم تحويل الواجهة إلى العربية' : 'Switched to English interface', 'info', 2000);
             }
