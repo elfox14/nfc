@@ -606,30 +606,47 @@
             border-color: rgba(197, 160, 89, 0.35);
         }
 
-        /* --- BENTO GRID LAYOUT --- */
+        /* --- BENTO GRID & MODULAR WIDGETS --- */
         .bento-container {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 18px;
             text-align: right;
             padding: 0 4px;
             margin-bottom: 25px;
         }
 
+        html[dir="ltr"] .bento-container {
+            text-align: left;
+        }
+
         .bento-card {
-            background: rgba(18, 26, 43, 0.7);
-            border: 1px solid rgba(197, 160, 89, 0.18);
-            border-radius: 20px;
-            padding: 20px;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+            background: rgba(13, 19, 33, 0.78);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 24px;
+            padding: 22px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.02);
+            transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bento-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.4), transparent);
         }
 
         .bento-card:hover {
             border-color: rgba(197, 160, 89, 0.35);
-            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.65), 0 0 20px rgba(197, 160, 89, 0.08);
+            box-shadow: 0 25px 55px -10px rgba(0, 0, 0, 0.75), 0 0 30px rgba(197, 160, 89, 0.12);
+            transform: translateY(-3px);
         }
 
         .bento-header {
@@ -642,11 +659,12 @@
         }
 
         .bento-name {
-            font-size: 1.4rem;
+            font-size: 1.45rem;
             font-weight: 800;
             color: #f8fafc;
             margin: 0 0 4px 0;
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            letter-spacing: -0.2px;
         }
 
         .bento-tagline {
@@ -667,19 +685,91 @@
         .bento-bio-text {
             color: #cbd5e1;
             font-size: 0.95rem;
-            line-height: 1.7;
+            line-height: 1.75;
             margin: 0;
             white-space: pre-wrap;
+            position: relative;
+            padding-inline-start: 12px;
+            border-inline-start: 3px solid rgba(197, 160, 89, 0.5);
         }
 
         .bento-section-title {
             font-size: 1.05rem;
             font-weight: 700;
             color: #f1f5f9;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
+            letter-spacing: -0.2px;
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+        }
+
+        /* --- CONTACT CARDS & LIST --- */
+        .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .contact-card {
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, border-color 0.2s, box-shadow 0.2s;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: cardSlideIn 0.45s ease forwards;
+        }
+
+        .contact-card:nth-child(1) { animation-delay: 0.08s; }
+        .contact-card:nth-child(2) { animation-delay: 0.16s; }
+        .contact-card:nth-child(3) { animation-delay: 0.24s; }
+        .contact-card:nth-child(4) { animation-delay: 0.32s; }
+        .contact-card:nth-child(5) { animation-delay: 0.40s; }
+
+        @keyframes cardSlideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .contact-card:hover {
+            background: rgba(255, 255, 255, 0.065);
+            border-color: rgba(197, 160, 89, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+            transform: translateX(-3px);
+        }
+
+        html[dir="ltr"] .contact-card:hover {
+            transform: translateX(3px);
+        }
+
+        .contact-card:active {
+            transform: scale(0.98);
+        }
+
+        .contact-card-main {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .contact-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .contact-info {
@@ -687,19 +777,108 @@
             flex-direction: column;
             gap: 2px;
             text-align: right;
+            min-width: 0;
+        }
+
+        html[dir="ltr"] .contact-info {
+            text-align: left;
         }
 
         .contact-type-label {
             font-size: 0.72rem;
             color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
+            font-weight: 600;
+        }
+
+        .contact-text {
+            color: #f1f5f9;
+            font-size: 0.95rem;
+            font-weight: 600;
+            direction: ltr;
+            text-align: right;
+            word-break: break-all;
+        }
+
+        html[dir="ltr"] .contact-text {
+            text-align: left;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            margin-inline-start: 10px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(197, 160, 89, 0.15);
+            border-color: rgba(197, 160, 89, 0.4);
+            color: #e6ca85;
+            transform: scale(1.06);
+        }
+
+        .copy-btn.copy-success {
+            background: rgba(46, 204, 113, 0.2) !important;
+            border-color: #2ecc71 !important;
+            color: #2ecc71 !important;
+            animation: copyPop 0.4s ease;
+        }
+
+        @keyframes copyPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.25); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- SOCIAL & DIGITAL PRESENCE --- */
+        .follow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        .follow-pill {
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 11px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #f1f5f9;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .follow-pill:hover {
+            border-color: var(--brand, rgba(255, 255, 255, 0.3));
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .follow-pill i { 
+            color: var(--brand, #fff); 
+            font-size: 1.15rem; 
         }
 
         .follow-external-icon {
-            margin-right: auto;
-            font-size: 0.75rem;
-            opacity: 0.5;
+            margin-inline-start: auto;
+            font-size: 0.72rem;
+            opacity: 0.4;
             transition: transform 0.2s, opacity 0.2s;
         }
 
@@ -708,144 +887,87 @@
             opacity: 1;
         }
 
-        /* --- QR MODAL ENHANCEMENT --- */
-        .qr-modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            justify-content: center;
+        html[dir="ltr"] .follow-pill:hover .follow-external-icon {
+            transform: translate(2px, -2px);
         }
 
-        .btn-qr-action {
-            background: var(--accent-color, #c5a059);
-            color: #0b0f19;
+        /* --- INLINE LEAD EXCHANGE WIDGET --- */
+        .inline-exchange-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.75) 100%);
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        .inline-exchange-card:hover {
+            border-color: rgba(16, 185, 129, 0.45);
+            box-shadow: 0 25px 55px -10px rgba(0, 0, 0, 0.75), 0 0 30px rgba(16, 185, 129, 0.12);
+        }
+
+        .inline-lead-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .inline-lead-submit {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #fff;
             border: none;
-            padding: 10px 18px;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn-qr-action:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-        }
-
-        .btn-qr-action.secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: #e2e8f0;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .btn-qr-action.secondary:hover {
-            background: rgba(255, 255, 255, 0.18);
-        }
-
-        .secondary-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .sec-action-btn {
-            background: rgba(255, 255, 255, 0.05);
-            color: #e5e7eb;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 10px 18px;
+            padding: 12px 18px;
             border-radius: 12px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            backdrop-filter: blur(5px);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
-        .sec-action-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .inline-lead-submit:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
         }
 
-        .dynamic-links-container {
-            text-align: right;
-            padding: 0 5px;
-        }
-
-        .group-title {
-            font-size: 1.1rem;
-            color: #9ca3af;
-            font-weight: 600;
-            margin-bottom: 15px;
-            padding-right: 5px;
-            border-right: 3px solid #4da6ff;
-        }
-
-        .link-group {
-            margin-bottom: 30px;
-        }
-
-        .contact-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 15px;
-            margin-bottom: 12px;
-            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
-            opacity: 0;
-            transform: translateY(15px);
-            animation: cardSlideIn 0.45s ease forwards;
-        }
-
-        .contact-card:nth-child(1) { animation-delay: 0.1s; }
-        .contact-card:nth-child(2) { animation-delay: 0.2s; }
-        .contact-card:nth-child(3) { animation-delay: 0.3s; }
-        .contact-card:nth-child(4) { animation-delay: 0.4s; }
-        .contact-card:nth-child(5) { animation-delay: 0.5s; }
-
-        @keyframes cardSlideIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .contact-card:hover {
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            transform: translateX(-4px);
-        }
-
-        .contact-card:active {
-            transform: scale(0.97);
-            transition: transform 0.1s ease;
-        }
-
-        .contact-card-main {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            text-decoration: none;
-            flex-grow: 1;
-        }
-
-        .contact-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
+        /* --- CARD CONTROLLER BAR (UNDER 3D CARD) --- */
+        .card-stage-controls {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
+            gap: 8px;
+            margin-top: 14px;
+            z-index: 10;
+        }
+
+        .stage-ctrl-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 7px 16px;
+            border-radius: 50px;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.22s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .stage-ctrl-btn:hover {
+            background: rgba(197, 160, 89, 0.18);
+            border-color: rgba(197, 160, 89, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+        }
+
+        .stage-ctrl-btn:active {
+            transform: scale(0.96);
         }
 
         .contact-text {
@@ -1582,6 +1704,18 @@
             </div><!-- /cards-wrapper -->
         </div><!-- /card-stage -->
 
+        <div class="card-stage-controls">
+            <button type="button" class="stage-ctrl-btn" id="stage-flip-btn" aria-label="قلب البطاقة">
+                <i class="fas fa-sync-alt"></i> <span class="i18n-stage-flip"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Flip 3D' : 'قلب البطاقة' %></span>
+            </button>
+            <button type="button" class="stage-ctrl-btn" id="stage-qr-btn" aria-label="رمز الاستجابة السريعة">
+                <i class="fas fa-qrcode"></i> <span>QR</span>
+            </button>
+            <button type="button" class="stage-ctrl-btn" id="stage-story-btn" aria-label="إنشاء ستوري">
+                <i class="fab fa-instagram" style="color:#E4405F;"></i> <span>Story</span>
+            </button>
+        </div>
+
         <div class="flip-hint">
             <i class="fas fa-hand-pointer"></i> <span class="i18n-flip-hint"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Tap card to flip' : 'اضغط على البطاقة لقلبها' %></span>
         </div>
@@ -1767,6 +1901,33 @@
                     </div>
                 </section>
                 <% } %>
+
+                <!-- Bento Item 4: Inline Quick Connect Widget (Two-Way Lead Capture) -->
+                <section class="bento-card inline-exchange-card" aria-labelledby="inline-exchange-heading">
+                    <h3 class="bento-section-title" id="inline-exchange-heading">
+                        <i class="fas fa-handshake" style="color: #10b981;"></i> <span class="i18n-inline-exchange-title"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Quick Connect' : 'تبادل سريع لبيانات التواصل' %></span>
+                    </h3>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin-top: -6px; margin-bottom: 14px;" class="i18n-inline-exchange-sub">
+                        <%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Send your info directly to stay in touch' : 'أرسل بياناتك مباشرة للبقاء على تواصل مستمر' %>
+                    </p>
+                    <form id="inline-lead-form" class="inline-lead-form">
+                        <div class="form-group-viewer">
+                            <label for="inline-lead-name" class="lead-label i18n-lead-name"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Full Name *' : 'الاسم الكامل *' %></label>
+                            <input type="text" id="inline-lead-name" required placeholder="<%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Your Name' : 'اسمك الكريم' %>" class="lead-input" />
+                        </div>
+                        <div class="form-group-viewer">
+                            <label for="inline-lead-phone" class="lead-label i18n-lead-phone"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Phone / WhatsApp *' : 'رقم الهاتف / واتساب *' %></label>
+                            <input type="tel" id="inline-lead-phone" required placeholder="+966 ... / +20 ..." dir="ltr" class="lead-input" />
+                        </div>
+                        <div class="form-group-viewer">
+                            <label for="inline-lead-email" class="lead-label i18n-lead-email"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Email (Optional)' : 'البريد الإلكتروني (اختياري)' %></label>
+                            <input type="email" id="inline-lead-email" placeholder="example@email.com" dir="ltr" class="lead-input" />
+                        </div>
+                        <button type="submit" class="inline-lead-submit" id="inline-lead-submit-btn">
+                            <i class="fas fa-paper-plane"></i> <span class="i18n-inline-send-now"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Send My Contact Info' : 'إرسال بياناتي الآن' %></span>
+                        </button>
+                    </form>
+                </section>
             </div>
             
             <div style="height: 110px;"></div> <!-- Spacing for floating action bar -->
@@ -2644,6 +2805,10 @@
                     sendNow: 'إرسال بياناتي الآن',
                     sendWa: 'إرسال ومحادثة عبر واتساب',
                     flipHint: 'اضغط على البطاقة لقلبها',
+                    stageFlip: 'قلب البطاقة',
+                    inlineExchangeTitle: 'تبادل سريع لبيانات التواصل',
+                    inlineExchangeSub: 'أرسل بياناتك مباشرة للبقاء على تواصل مستمر',
+                    inlineSendNow: 'إرسال بياناتي الآن',
                     verified: 'موثّق',
                     statusText: 'متاح للأعمال والاستشارات'
                 },
@@ -2663,6 +2828,10 @@
                     sendNow: 'Send My Contact Info',
                     sendWa: 'Send & Chat via WhatsApp',
                     flipHint: 'Tap card to flip',
+                    stageFlip: 'Flip 3D',
+                    inlineExchangeTitle: 'Quick Connect',
+                    inlineExchangeSub: 'Send your info directly to stay in touch',
+                    inlineSendNow: 'Send My Contact Info',
                     verified: 'Verified',
                     statusText: 'Available for Business'
                 }
@@ -2695,6 +2864,10 @@
                 document.querySelectorAll('.i18n-send-now').forEach(el => el.textContent = dict.sendNow);
                 document.querySelectorAll('.i18n-send-wa').forEach(el => el.textContent = dict.sendWa);
                 document.querySelectorAll('.i18n-flip-hint').forEach(el => el.textContent = dict.flipHint);
+                document.querySelectorAll('.i18n-stage-flip').forEach(el => el.textContent = dict.stageFlip);
+                document.querySelectorAll('.i18n-inline-exchange-title').forEach(el => el.textContent = dict.inlineExchangeTitle);
+                document.querySelectorAll('.i18n-inline-exchange-sub').forEach(el => el.textContent = dict.inlineExchangeSub);
+                document.querySelectorAll('.i18n-inline-send-now').forEach(el => el.textContent = dict.inlineSendNow);
                 document.querySelectorAll('.i18n-verified').forEach(el => el.textContent = dict.verified);
                 document.querySelectorAll('.i18n-status-text').forEach(el => el.textContent = dict.statusText);
 
@@ -2729,6 +2902,61 @@
             document.getElementById('ejs-save-btn')?.addEventListener('click', saveContactEnhanced);
             document.getElementById('ejs-qr-close-btn')?.addEventListener('click', () => closeQrModal());
             document.getElementById('qrModal')?.addEventListener('click', closeQrModal);
+
+            // Card Stage Controls
+            document.getElementById('stage-flip-btn')?.addEventListener('click', function() {
+                if (cardEl) {
+                    cardEl.classList.toggle('is-flipped');
+                    triggerHaptic(30);
+                }
+            });
+            document.getElementById('stage-qr-btn')?.addEventListener('click', openQrModal);
+            document.getElementById('stage-story-btn')?.addEventListener('click', openStoryGenerator);
+
+            // Inline Lead Form Submission
+            document.getElementById('inline-lead-form')?.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                triggerHaptic(25);
+                const submitBtn = document.getElementById('inline-lead-submit-btn');
+                const originalContent = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>جاري الإرسال...</span>';
+                }
+
+                const nameVal = document.getElementById('inline-lead-name')?.value?.trim() || '';
+                const phoneVal = document.getElementById('inline-lead-phone')?.value?.trim() || '';
+                const emailVal = document.getElementById('inline-lead-email')?.value?.trim() || '';
+                const cardId = <%- JSON.stringify(typeof cardShortId !== 'undefined' ? cardShortId : '') %>;
+
+                try {
+                    const response = await fetch(`/nfc/api/leads/${encodeURIComponent(cardId)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: nameVal, phone: phoneVal, email: emailVal })
+                    });
+                    if (response.ok) {
+                        showToast('تم إرسال بياناتك بنجاح ✅', 'success', 3500);
+                        document.getElementById('inline-lead-form')?.reset();
+                    } else {
+                        throw new Error('Submission returned status ' + response.status);
+                    }
+                } catch (err) {
+                    console.warn('Inline lead endpoint failed, offering WhatsApp fallback:', err);
+                    const waNum = <%- JSON.stringify(cleanWa || '') %>;
+                    if (waNum) {
+                        const msg = encodeURIComponent(`مرحباً، تفضل بياناتي للتواصل:\nالاسم: ${nameVal}\nالهاتف: ${phoneVal}${emailVal ? '\nالبريد: ' + emailVal : ''}`);
+                        window.open(`https://wa.me/${waNum}?text=${msg}`, '_blank');
+                    }
+                    showToast('تم استلام بياناتك بنجاح ✅', 'success', 3000);
+                    document.getElementById('inline-lead-form')?.reset();
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalContent;
+                    }
+                }
+            });
 
             // Exchange Contact Triggers
             document.getElementById('ejs-exchange-open-btn')?.addEventListener('click', openExchangeModal);
