@@ -346,7 +346,7 @@ describe('Security Hardening Round 2 Tests', () => {
       expect(usersCollection.findOneAndUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           refreshTokenHash: expect.any(String),
-          $or: expect.any(Array)
+          refreshTokenExpiresAt: { $gt: expect.any(Date) }
         }),
         expect.objectContaining({
           $set: expect.objectContaining({

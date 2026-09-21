@@ -695,11 +695,7 @@ router.post('/refresh', async (req, res) => {
 
     const updateFilter = {
       refreshTokenHash: hashedToken,
-      $or: [
-        { refreshTokenExpiresAt: { $exists: false } },
-        { refreshTokenExpiresAt: null },
-        { refreshTokenExpiresAt: { $gt: new Date() } }
-      ]
+      refreshTokenExpiresAt: { $gt: new Date() }
     };
 
     const updateDoc = {
