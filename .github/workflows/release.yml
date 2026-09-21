@@ -54,7 +54,7 @@ jobs:
       PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
     steps:
       - name: Checkout release controller
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -68,7 +68,7 @@ jobs:
           node -e "const fs=require('fs');let request;if(process.env.EVENT_NAME==='workflow_dispatch'){request={ref:process.env.INPUT_REF,releaseTag:process.env.INPUT_RELEASE_TAG||''}}else{request=JSON.parse(fs.readFileSync('.github/release-command.json','utf8'))}if(!request||!request.ref||!/^[A-Za-z0-9._\/-]{1,160}$/.test(request.ref))throw new Error('Invalid release ref');if(request.releaseTag&&!/^v[0-9]+\.[0-9]+\.[0-9]+$/.test(request.releaseTag))throw new Error('Invalid release tag');fs.appendFileSync(process.env.GITHUB_OUTPUT,'ref='+request.ref+'\nrelease_tag='+(request.releaseTag||'')+'\n')"
 
       - name: Checkout deployment ref
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ steps.request.outputs.ref }}
           fetch-depth: 0
@@ -250,7 +250,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Create immutable GitHub release
