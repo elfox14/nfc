@@ -8,11 +8,10 @@
     <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap"></noscript>
-    <title>عرض البطاقة الرقمية | MC PRIME NFC</title>
-    <meta name="description"
-        content="اعرض بطاقة العمل الذكية NFC واحفظ جهة الاتصال مباشرة على هاتفك. شارك بياناتك بسهولة مع MC PRIME.">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap"></noscript>
+    <title>عرض البطاقة الرقمية الفاخرة | MC PRIME NFC</title>
+    <meta name="description" content="اعرض بطاقة العمل الذكية NFC واحفظ جهة الاتصال مباشرة على هاتفك. شارك بياناتك بسهولة مع MC PRIME.">
     <meta name="keywords" content="بطاقة عمل رقمية, NFC, QR Code, MC PRIME, عرض البطاقة, جهة اتصال">
     <meta name="robots" content="index, follow">
 
@@ -27,23 +26,25 @@
     <link rel="icon" id="favicon" href="mc-prime-nfc.png" type="image/png">
     <link rel="apple-touch-icon" href="mc-prime-nfc.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2a3d54">
+    <meta name="theme-color" content="#060913">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-    <link rel="stylesheet" href="viewer.css?v=3.3">
+    <link rel="stylesheet" href="viewer.css?v=4.0">
+    <link rel="stylesheet" href="cookie-consent.css">
+    <link rel="stylesheet" href="premium-ui.css">
     <script src="lang-switcher.js" defer></script>
 
-    <meta name="color-scheme" content="light dark">
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9147440531390790"
-        crossorigin="anonymous"></script>
+    <meta name="color-scheme" content="dark light">
     <link rel="canonical" href="https://www.mcprim.com/nfc/viewer.html" id="canonical-link" />
+
+    <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/viewer.html" />
+    <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/viewer-en.html" />
+    <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/viewer.html" />
 
     <!-- Schema.org Data -->
     <script type="application/ld+json">
@@ -54,31 +55,10 @@
         "@type": "Person",
         "name": "MC PRIME Digital Card",
         "description": "Smart NFC Business Card Hosted on MC PRIME"
-      },
-      "breadcrumb": {
-        "@type": "BreadcrumbList",
-        "itemListElement": [{
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://mcprim.com/nfc/"
-        }, {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Card Viewer",
-          "item": "https://mcprim.com/nfc/viewer.html"
-        }]
       }
     }
     </script>
-    <link rel="stylesheet" href="cookie-consent.css">
-    <link rel="stylesheet" href="premium-ui.css">
-
-    <link rel="alternate" hreflang="ar" href="https://www.mcprim.com/nfc/viewer.html" />
-    <link rel="alternate" hreflang="en" href="https://www.mcprim.com/nfc/viewer-en.html" />
-    <link rel="alternate" hreflang="x-default" href="https://www.mcprim.com/nfc/viewer.html" />
 </head>
-
 
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -86,43 +66,36 @@
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
-    <!-- [NEW] Top Progress Bar -->
+    <!-- Ambient Aurora Mesh Orbs -->
+    <div class="ambient-aurora-container">
+        <div class="aurora-orb aurora-gold"></div>
+        <div class="aurora-orb aurora-blue"></div>
+    </div>
+
+    <!-- Top Progress Bar -->
     <div id="page-progress-bar"></div>
 
-    <nav class="viewer-nav" aria-label="القائمة الرئيسية للعارض">
-        <a href="index.html" class="nav-logo" title="العودة إلى الرئيسية">
-            <img src="mc-prime-nfc.png" alt="MC PRIME Logo"
-                style="height: 32px; width: auto;">
+    <!-- Top Navigation Bar -->
+    <header class="viewer-top-bar" aria-label="شريط التحكم">
+        <a href="index.html" class="top-bar-brand" title="العودة إلى الرئيسية">
+            <img src="mc-prime-nfc.png" alt="MC PRIME">
+            <span>MC PRIME</span>
         </a>
-        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="تبديل القائمة">
-            <i class="fas fa-bars"></i>
-        </button>
-        <div class="nav-links">
-            <a href="index.html">الرئيسية</a>
-            <a href="gallery.html">المعرض</a>
-            <a href="blog.html">المدونة</a>
-            <a href="dashboard.html">لوحة التحكم</a>
-            <a href="editor.html">إنشاء بطاقة</a>
-        </div>
-
-        <div class="nav-actions">
-            <a href="viewer-en.html" class="lang-btn" aria-label="Switch to English" onclick="if(window.switchLanguage){switchLanguage('en');return false;}">EN</a>
-            <div class="theme-switch-wrapper">
-                <label class="theme-switch" for="theme-toggle">
-                    <input type="checkbox" id="theme-toggle" />
-                    <span class="slider round">
-                        <i class="fas fa-sun sun-icon"></i>
-                        <i class="fas fa-moon moon-icon"></i>
-                    </span>
-                </label>
+        <div class="top-bar-actions">
+            <a href="viewer-en.html" class="top-icon-btn lang-btn" aria-label="Switch to English">
+                <i class="fas fa-globe"></i>
+                <span>EN</span>
+            </a>
+            <div class="theme-switch-wrapper" style="display:none;">
+                <input type="checkbox" id="theme-toggle" checked />
             </div>
-            <a href="editor.html" class="btn nav-cta">اصنع بطاقتك مجانًا</a>
+            <a href="editor.html" class="top-cta-btn">اصنع بطاقتك</a>
         </div>
-    </nav>
+    </header>
 
+    <!-- Skeleton Loader -->
     <div id="loader" class="viewer-loader">
         <div class="skeleton-loader-wrapper">
-            <!-- Skeleton card shape -->
             <div class="skeleton-card-shape">
                 <div class="skeleton-shimmer"></div>
                 <div class="skeleton-card-inner">
@@ -131,261 +104,181 @@
                     <div class="skeleton-line skeleton-line-sm"></div>
                 </div>
             </div>
-            <p class="skeleton-text">جاري تحميل البطاقة...</p>
+            <p class="skeleton-text">جاري إعداد العرض الفاخر للبطاقة...</p>
             <div class="skeleton-dots">
                 <span></span><span></span><span></span>
             </div>
         </div>
-
-        <style>
-            .skeleton-loader-wrapper {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 20px;
-            }
-            .skeleton-card-shape {
-                width: 90%;
-                max-width: 380px;
-                aspect-ratio: 51 / 33;
-                border-radius: 16px;
-                background: var(--glass-bg, rgba(255,255,255,0.1));
-                border: 1px solid var(--glass-border, rgba(255,255,255,0.15));
-                position: relative;
-                overflow: hidden;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            }
-            .skeleton-shimmer {
-                position: absolute;
-                inset: 0;
-                background: linear-gradient(
-                    110deg,
-                    transparent 25%,
-                    rgba(255,255,255,0.08) 37%,
-                    transparent 63%
-                );
-                background-size: 200% 100%;
-                animation: skeletonShimmerAnim 1.8s infinite;
-            }
-            @keyframes skeletonShimmerAnim {
-                0% { background-position: 200% 0; }
-                100% { background-position: -200% 0; }
-            }
-            .skeleton-card-inner {
-                position: relative;
-                z-index: 1;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100%;
-                gap: 12px;
-                padding: 20px;
-            }
-            .skeleton-circle {
-                width: 56px;
-                height: 56px;
-                border-radius: 50%;
-                background: var(--border-color, rgba(200,200,200,0.3));
-            }
-            .skeleton-line {
-                height: 12px;
-                border-radius: 6px;
-                background: var(--border-color, rgba(200,200,200,0.3));
-            }
-            .skeleton-line-lg { width: 60%; }
-            .skeleton-line-sm { width: 40%; height: 10px; }
-            .skeleton-text {
-                color: var(--text-secondary, #888);
-                font-size: 0.95rem;
-                font-weight: 600;
-                margin: 0;
-            }
-            .skeleton-dots {
-                display: flex;
-                gap: 6px;
-            }
-            .skeleton-dots span {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                background: var(--accent-primary, #c5a059);
-                opacity: 0.3;
-                animation: dotPulse 1.2s infinite;
-            }
-            .skeleton-dots span:nth-child(2) { animation-delay: 0.2s; }
-            .skeleton-dots span:nth-child(3) { animation-delay: 0.4s; }
-            @keyframes dotPulse {
-                0%, 100% { opacity: 0.2; transform: scale(0.8); }
-                50% { opacity: 1; transform: scale(1.1); }
-            }
-        </style>
     </div>
 
+    <!-- Main Showcase Container -->
     <div class="viewer-container" style="display: none;">
 
-        <div class="viewer-layout">
-
-            <aside class="side-column active anim-entry" id="left-column">
-
-                <div class="profile-header" id="profile-header"
-                    style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; display: none;">
-                    <div id="profile-image-container" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
-                    <h1 id="profile-name" style="font-size: 1.5rem; margin: 0; color: var(--text-primary);"></h1>
-                    <p id="profile-tagline" style="font-size: 1rem; color: var(--text-secondary); margin: 5px 0 0 0;"></p>
-                    
-                    <div class="profile-actions" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
-                        <button id="save-vcf-btn" class="btn btn-primary" style="width: 100%;">
-                            <i class="fas fa-user-plus"></i> حفظ جهة الاتصال (VCF)
-                        </button>
-                        <button id="save-email-sig-btn" class="btn btn-secondary" style="width: 100%;">
-                            <i class="fas fa-signature"></i> نسخ توقيع الإيميل
-                        </button>
-                    </div>
+        <!-- Executive Persona Header -->
+        <section class="executive-hero-header" id="profile-header" aria-label="الملف الشخصي">
+            <div class="hero-avatar-container">
+                <div class="hero-avatar-ring">
+                    <div id="profile-image-container" class="hero-avatar-img"></div>
                 </div>
-
-                <h2><i class="fas fa-address-book"></i> معلومات الاتصال</h2>
-                <div id="contact-links-container">
+                <span class="verified-badge-pill" title="حساب موثق">
+                    <i class="fas fa-check-circle"></i>
+                    <span>موثّق</span>
+                </span>
+            </div>
+            <h1 id="profile-name" class="hero-display-name"></h1>
+            <p id="profile-tagline" class="hero-display-tagline"></p>
+            <div class="hero-status-row">
+                <div class="availability-badge">
+                    <span class="pulse-dot"></span>
+                    <span>متاح للأعمال والاستشارات</span>
                 </div>
-            </aside>
+            </div>
+        </section>
 
-            <main class="center-column center-fade">
+        <!-- 3D Centerpiece Showcase Stage -->
+        <div class="cards-container">
+            <div class="card-stage" id="card-stage">
+                <!-- Reflection Shadow Pedestal -->
+                <div class="card-pedestal-shadow" id="card-shadow-reflect"></div>
+
+                <!-- Dual-Sided 3D Card -->
                 <div class="cards-wrapper-viewer" id="cards-wrapper-viewer" title="انقر لتقليب البطاقة">
                     <div class="business-card-viewer" id="card-front-display">
+                        <div class="card-hologram-sheen"></div>
+                        <div class="nfc-chip-indicator">
+                            <i class="fas fa-wifi"></i>
+                            <span>NFC SMART CARD</span>
+                        </div>
                     </div>
                     <div class="business-card-viewer" id="card-back-display">
+                        <div class="card-hologram-sheen"></div>
                     </div>
                 </div>
-                <button id="viewer-flip-btn" class="btn" aria-label="تقليب البطاقة"
-                    style="display:none; position:relative; margin-top: 15px;">
-                    <i class="fas fa-sync-alt"></i> <span>تقليب البطاقة</span>
+            </div>
+
+            <!-- Showcase Floating Controls Under Card -->
+            <div class="showcase-controls-dock">
+                <button class="stage-pill-btn" id="viewer-flip-btn" aria-label="تقليب البطاقة">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>تقليب 3D</span>
                 </button>
-            </main>
+                <button class="stage-pill-btn" id="save-front-png-btn" aria-label="حفظ الواجهة">
+                    <i class="fas fa-image"></i>
+                    <span>الواجهة (PNG)</span>
+                </button>
+                <button class="stage-pill-btn" id="save-back-png-btn" aria-label="حفظ الخلفية">
+                    <i class="fas fa-image"></i>
+                    <span>الخلفية (PNG)</span>
+                </button>
+                <button class="stage-pill-btn" id="save-pdf-btn" aria-label="حفظ PDF">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>حفظ PDF</span>
+                </button>
+            </div>
+        </div>
 
-            <aside class="side-column save-options anim-entry" id="right-column">
-                <h2><i class="fas fa-download"></i> حفظ ومشاركة</h2>
-
-                <!-- Buttons moved to profile header -->
-
-                <!-- [NEW] Web Share + Copy Link -->
-                <div style="display:flex; gap: 8px; margin-bottom: 12px;">
-                    <button id="web-share-btn" class="btn" style="flex:1; background: linear-gradient(135deg, #c5a059, #6f42c1);">
-                        <i class="fas fa-share-alt"></i> مشاركة
-                    </button>
-                    <button id="copy-link-btn" class="btn btn-secondary" style="flex:1;" title="نسخ رابط البطاقة">
-                        <i class="fas fa-link"></i> نسخ الرابط
-                    </button>
+        <!-- Minimalist Luxury Action Hub (Pop-out Sheet Triggers) -->
+        <nav class="luxury-action-hub" aria-label="أزرار الوصول السريع">
+            <!-- Tile 1: Direct Contact Sheet Trigger -->
+            <button class="action-tile-btn" id="open-contact-sheet-btn" data-sheet-target="sheet-contact" aria-label="وسائل الاتصال المباشرة">
+                <div class="tile-icon-box tile-blue">
+                    <i class="fas fa-phone-alt"></i>
                 </div>
+                <div class="tile-info">
+                    <span class="tile-title">الاتصال والتواصل</span>
+                    <span class="tile-sub">قنوات الاتصال المباشرة</span>
+                </div>
+                <i class="fas fa-chevron-left tile-arrow"></i>
+            </button>
 
-                <button id="add-to-story-btn" class="btn" style="margin-bottom: 12px; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); width: 100%; border: none;">
-                    <i class="fab fa-instagram"></i> مشاركة في الستوري
-                </button>
-
-                <!-- [NEW] QR Code Share Button -->
-                <button id="show-qr-btn" class="btn">
+            <!-- Tile 2: QR Code Modal -->
+            <button class="action-tile-btn" id="show-qr-btn" aria-label="رمز QR الذكي">
+                <div class="tile-icon-box tile-gold">
                     <i class="fas fa-qrcode"></i>
-                    مشاركة رمز QR
-                </button>
+                </div>
+                <div class="tile-info">
+                    <span class="tile-title">رمز QR الذكي</span>
+                    <span class="tile-sub">امسح الرمز بهاتفك</span>
+                </div>
+                <i class="fas fa-chevron-left tile-arrow"></i>
+            </button>
 
-                <details class="fieldset-accordion">
-                    <summary class="secondary-actions-summary">
-                        <i class="fas fa-cog"></i> خيارات إضافية (PNG, PDF)
-                    </summary>
-                    <div class="fieldset-content secondary-actions-content">
-                        <button id="save-front-png-btn" class="btn btn-secondary">
-                            <i class="fas fa-image"></i>
-                            حفظ الواجهة (PNG)
-                        </button>
-                        <button id="save-back-png-btn" class="btn btn-secondary">
-                            <i class="fas fa-image"></i>
-                            حفظ الخلفية (PNG)
-                        </button>
-                        <button id="save-pdf-btn" class="btn btn-secondary">
-                            <i class="fas fa-file-pdf"></i>
-                            حفظ كـ PDF
-                        </button>
+            <!-- Tile 3: Story Creator -->
+            <button class="action-tile-btn" id="add-to-story-btn" aria-label="مشاركة في الستوري">
+                <div class="tile-icon-box tile-pink">
+                    <i class="fab fa-instagram"></i>
+                </div>
+                <div class="tile-info">
+                    <span class="tile-title">مشاركة في الستوري</span>
+                    <span class="tile-sub">تجهيز قصة انستجرام وسناب</span>
+                </div>
+                <i class="fas fa-chevron-left tile-arrow"></i>
+            </button>
+
+            <!-- Tile 4: Copy Link -->
+            <button class="action-tile-btn" id="copy-link-btn" aria-label="نسخ رابط البطاقة">
+                <div class="tile-icon-box tile-purple">
+                    <i class="fas fa-link"></i>
+                </div>
+                <div class="tile-info">
+                    <span class="tile-title">نسخ الرابط</span>
+                    <span class="tile-sub">رابط المشاركة السريعة</span>
+                </div>
+                <i class="fas fa-chevron-left tile-arrow"></i>
+            </button>
+
+            <!-- Tile 5: Email Signature -->
+            <button class="action-tile-btn" id="save-email-sig-btn" aria-label="توقيع الإيميل">
+                <div class="tile-icon-box tile-emerald">
+                    <i class="fas fa-signature"></i>
+                </div>
+                <div class="tile-info">
+                    <span class="tile-title">توقيع الإيميل</span>
+                    <span class="tile-sub">نسخ توقيع احترافي للبريد</span>
+                </div>
+                <i class="fas fa-chevron-left tile-arrow"></i>
+            </button>
+        </nav>
+
+        <!-- Pop-out Sheet: Direct Contact Sheet -->
+        <div class="luxury-sheet-backdrop" id="sheet-contact" aria-hidden="true">
+            <div class="luxury-sheet" role="dialog" aria-labelledby="sheet-contact-title">
+                <div class="sheet-handle"></div>
+                <div class="sheet-header">
+                    <div class="sheet-title-group">
+                        <i class="fas fa-phone-alt" style="color:#60a5fa;"></i>
+                        <h3 id="sheet-contact-title">معلومات ووسائل الاتصال</h3>
                     </div>
-                </details>
-
-                <!-- حفظ بطاقة شخص آخر -->
-                <div id="save-card-section" style="display: none; margin-top: 15px;">
-                    <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 15px;">
-                    <button id="save-card-btn" class="btn btn-secondary"
-                        style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
-                        <i class="fas fa-heart"></i>
-                        <span id="save-card-text">حفظ هذه البطاقة</span>
-                    </button>
-                    <p id="save-card-status"
-                        style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-top: 5px; display: none;">
-                    </p>
+                    <button class="sheet-close-btn" id="sheet-contact-close-btn" aria-label="إغلاق">&times;</button>
                 </div>
 
-                <div class="info-box">
-                    <h3 class="info-box-title">
-                        <i class="fas fa-info-circle"></i>
-                        دليل الزائر
-                    </h3>
-                    <p class="info-box-text">
-                        <strong>للحفظ:</strong> اضغط على <strong>"حفظ جهة الاتصال"</strong> لإضافة الملف لهاتفك.
-                    </p>
-                    <p class="info-box-text">
-                        <strong>للتوقيع:</strong> انسخ توقيع الإيميل والصقه في Outlook أو Gmail.
-                    </p>
-
-                    <h4 class="info-box-subtitle">
-                        <i class="fas fa-lightbulb"></i> ميزات البطاقة الرقمية
-                    </h4>
-                    <ul class="info-box-list">
-                        <li><i class="fas fa-check-circle c-green"></i> احفظ جهة الاتصال مباشرة</li>
-                        <li><i class="fas fa-leaf c-green"></i> تحد من استهلاك الورق</li>
-                        <li><i class="fas fa-edit c-blue"></i> يمكن تعديلها في أي وقت</li>
-                        <li><i class="fas fa-chart-line c-yellow"></i> تتبع زيارات بطاقتك</li>
-                    </ul>
-
-                </div>
-
-                <a href="editor.html" class="btn btn-secondary"
-                    style="margin-top: 25px; text-align: center; width: 100%;">
-                    <i class="fas fa-magic"></i> أنشئ بطاقتك المجانية
-                </a>
-            </aside>
-
-            <nav class="mobile-viewer-tabs">
-                <button class="mobile-tab-btn active" data-tab-target="#left-column">
-                    <i class="fas fa-address-book"></i> معلومات الاتصال
-                </button>
-                <button class="mobile-tab-btn" data-tab-target="#right-column">
-                    <i class="fas fa-download"></i> حفظ ومشاركة
-                </button>
-            </nav>
-
-            <div style="height: 120px; width: 100%;"></div> <!-- مساحة إضافية للفوتر المثبت -->
-        </div>
-
-        <!-- فوتر ثابت (Sticky Footer) -->
-        <div class="sticky-footer">
-            <div class="sticky-footer-buttons">
-                <button class="save-contact-btn" id="ar-save-btn" onclick="document.getElementById('save-vcf-btn').click()">
-                    <i class="fas fa-user-plus"></i> <span style="font-weight:700">حفظ كجهة اتصال</span>
-                </button>
-                <a href="editor.html" class="editor-redirect-btn" id="ar-edit-btn">
-                    <i class="fas fa-magic"></i> <span style="font-weight:700">أنشئ بطاقتك</span>
-                </a>
-            </div>
-            <div class="footer-powered">
-                Powered by MC PRIME
+                <!-- Container where viewer.js injects contact links -->
+                <div id="contact-links-container"></div>
             </div>
         </div>
-    </div>
 
-    <!-- [NEW] QR Modal -->
+        <!-- Floating Apple Capsule Dock -->
+        <footer class="sticky-footer" aria-label="إجراءات الحفظ والمشاركة">
+            <button class="footer-primary-btn" id="save-vcf-btn" aria-label="حفظ كجهة اتصال">
+                <i class="fas fa-user-plus"></i>
+                <span>حفظ كجهة اتصال (VCF)</span>
+            </button>
+
+            <button class="footer-icon-btn" id="web-share-btn" aria-label="مشاركة البطاقة">
+                <i class="fas fa-share-alt"></i>
+            </button>
+        </footer>
+
+    </div><!-- /viewer-container -->
+
+    <!-- QR Modal -->
     <div class="qr-modal-overlay" id="qr-modal-overlay">
         <div class="qr-modal">
             <div class="qr-modal-title">
                 <i class="fas fa-qrcode"></i>
-                <span>مشاركة البطاقة</span>
+                <span>رمز QR الذكي</span>
             </div>
-            <p class="qr-modal-subtitle">صوِّب هذا الرمز بهاتفك لعرض هذه البطاقة</p>
+            <p class="qr-modal-subtitle">صوِّب كاميرا الهاتف نحو الرمز لعرض هذه البطاقة فوراً</p>
             <div class="qr-modal-image-wrapper" id="qr-modal-image-wrapper">
                 <div class="qr-spinner" id="qr-spinner"></div>
             </div>
@@ -395,39 +288,71 @@
         </div>
     </div>
 
-    <!-- [NEW] Toast Container -->
-    <div id="toast-container"></div>
+    <!-- Toast Feedback Container -->
+    <div id="toast-container" role="status" aria-live="polite"></div>
 
+    <!-- Hidden Rendering Containers for Canvas Image Capture -->
     <div class="visually-hidden">
-        <div class="business-card-render-wrapper" id="front-card">
-        </div>
-        <div class="business-card-render-wrapper" id="back-card">
-        </div>
+        <div class="business-card-render-wrapper" id="front-card"></div>
+        <div class="business-card-render-wrapper" id="back-card"></div>
     </div>
 
-    <script src="js/viewer-52dd611ca779.js" defer></script>
+    <!-- Demo Card Fallback: If viewer.html is opened directly without ?id=..., provide instant preview -->
+    <script>
+        if (!new URLSearchParams(window.location.search).get('id')) {
+            window.cardData = {
+                inputs: {
+                    'input-name': 'م. أحمد محمود',
+                    'input-tagline': 'استشاري حلول التحول الرقمي وتطوير الأعمال',
+                    'front-bg-start': '#0b1329',
+                    'front-bg-end': '#1e293b',
+                    'back-bg-start': '#0b1329',
+                    'back-bg-end': '#1e293b',
+                    'name-color': '#ffffff',
+                    'tagline-color': '#c5a059',
+                    'logo-size': 20
+                },
+                imageUrls: {
+                    capturedFront: 'card-front.webp',
+                    capturedBack: 'card-front.webp'
+                },
+                dynamic: {
+                    phones: [{ value: '+20 100 123 4567' }],
+                    staticSocial: {
+                        email: { value: 'contact@mcprim.com' },
+                        whatsapp: { value: '+201001234567' },
+                        website: { value: 'https://mcprim.com' },
+                        linkedin: { value: 'mcprime' }
+                    }
+                }
+            };
+        }
+
+        // Sheet open/close bindings
+        document.addEventListener('DOMContentLoaded', () => {
+            const sheet = document.getElementById('sheet-contact');
+            const openBtn = document.getElementById('open-contact-sheet-btn');
+            const closeBtn = document.getElementById('sheet-contact-close-btn');
+
+            if (openBtn && sheet) {
+                openBtn.addEventListener('click', () => sheet.classList.add('active'));
+            }
+            if (closeBtn && sheet) {
+                closeBtn.addEventListener('click', () => sheet.classList.remove('active'));
+            }
+            if (sheet) {
+                sheet.addEventListener('click', (e) => {
+                    if (e.target === sheet) sheet.classList.remove('active');
+                });
+            }
+        });
+    </script>
 
     <script src="auth.js?v=3.5"></script>
-    <script src="viewer.js?v=2.3" defer></script>
-    <!-- [NEW v2.0] Premium Enhancements -->
-
-    <script src="js/viewer-dcfb7124038d.js" defer></script>
-
-    <!-- [NEW v2.0] Keyboard shortcut hint -->
-    <div id="shortcuts-hint" onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'?',bubbles:true}))">
-        <i class="fas fa-keyboard"></i> اختصارات <kbd>?</kbd>
-    </div>
-
-    <!-- [NEW v2.0] 3D Tilt + Haptic Feedback -->
-    <script src="js/viewer-ad489acca7f3.js" defer></script>
-
-    <!-- [NEW v2.0] Viewer Premium Features: VCF Preview, Map, Scroll Animations, Print -->
-    <script src="viewer-premium-v2.js" defer></script>
+    <script src="viewer.js?v=4.0" defer></script>
     <script src="cookie-consent.js" defer></script>
     <script src="error-reporter.js" defer></script>
     <script src="js/sw-register.js"></script>
     <script src="premium-ui.js" defer></script>
-
-    <script src="js/viewer-canonical.js"></script>
 </body>
 </html>
