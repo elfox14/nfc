@@ -137,7 +137,7 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
-app.use('/api/', apiLimiter);
+app.use(['/api/', '/nfc/api/'], apiLimiter);
 
 // Stricter rate limiting for auth endpoints (5 attempts per 15 minutes per IP)
 const authLimiter = rateLimit({

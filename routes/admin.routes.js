@@ -100,7 +100,7 @@ module.exports = function createAdminRouter({
         const sessionToken = jwt.sign(
           { role: 'admin', type: 'master', name: 'المسؤول الرئيسي' },
           getJwtSecret(),
-          { expiresIn: '24h' }
+          { expiresIn: '2h' }
         );
         return res.json({
           success: true,
@@ -124,7 +124,7 @@ module.exports = function createAdminRouter({
             const sessionToken = jwt.sign(
               { userId: user.userId, email: user.email, role: 'admin', name: user.name || 'مسؤول' },
               getJwtSecret(),
-              { expiresIn: '24h' }
+              { expiresIn: '2h' }
             );
             return res.json({
               success: true,
@@ -145,7 +145,7 @@ module.exports = function createAdminRouter({
   // ==========================================
   // 2. ADMIN AUTHENTICATION MIDDLEWARE
   // ==========================================
-  const adminAuthMiddleware = (req, res, next) => {
+  const adminAuthMiddleware = async (req, res, next) => {
     let rawToken = (req.headers['x-admin-token'] || '').trim();
     const authHeader = req.headers['authorization'];
     if (!rawToken && authHeader && authHeader.startsWith('Bearer ')) {
@@ -164,8 +164,21 @@ module.exports = function createAdminRouter({
 
     // B. Check JWT token
     try {
-      const decoded = jwt.verify(rawToken, getJwtSecret());
+      const decoded = jwt.verify(rawToken, getJwtSecret(), { algorithms: ['HS256'] });
       if (decoded && (decoded.role === 'admin' || decoded.isAdmin)) {
+        // If issued to a user account, verify user is still an active admin in DB
+        if (decoded.userId) {
+          const db = getDb();
+          if (db) {
+            const user = await db.collection(usersCollectionName).findOne(
+              { userId: decoded.userId },
+              { projection: { role: 1, isAdmin: 1 } }
+            );
+            if (!user || (user.role !== 'admin' && !user.isAdmin)) {
+              return res.status(403).json({ error: 'تم سحب صلاحيات المسؤول لهذا الحساب.' });
+            }
+          }
+        }
         req.admin = decoded;
         return next();
       }

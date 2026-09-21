@@ -21,7 +21,7 @@ const verifyToken = (req, res, next) => {
             return res.status(500).json({ error: 'Server misconfiguration' });
         }
         
-        const decoded = jwt.verify(token, secret);
+        const decoded = jwt.verify(token, secret, { algorithms: ['HS256'] });
         if (decoded.type !== 'access') {
             console.warn(`[AuthMiddleware] Invalid token type: ${decoded.type}`);
             return res.status(403).json({ error: 'Invalid token type.' });

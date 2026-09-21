@@ -55,7 +55,7 @@ function registerCsrfOriginGuard(app, allowedOrigins) {
   const unsafeMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
   app.use((req, res, next) => {
-    if (!unsafeMethods.has(req.method) || !req.path.startsWith('/api/')) {
+    if (!unsafeMethods.has(req.method) || (!req.path.startsWith('/api/') && !req.path.startsWith('/nfc/api/'))) {
       return next();
     }
 

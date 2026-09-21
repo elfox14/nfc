@@ -10,6 +10,7 @@ const jwt = require('jsonwebtoken');
 // Mock MongoDB
 const mockCollection = {
     findOne: jest.fn(),
+    findOneAndUpdate: jest.fn(),
     insertOne: jest.fn(),
     updateOne: jest.fn(),
     deleteOne: jest.fn(),

@@ -31,6 +31,7 @@ function verifyOAuthState(state, cookieNonce) {
   }
 
   const payload = jwt.verify(state, getSigningSecret(), {
+    algorithms: ['HS256'],
     issuer: 'mcprime-nfc',
     audience: 'google-oauth'
   });

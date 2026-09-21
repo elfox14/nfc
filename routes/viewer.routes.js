@@ -1,7 +1,16 @@
 const express = require('express');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 const { selectPublishedDesignData } = require('../utils/published-design');
 const { sanitizeDesignState, sanitizeText, sanitizeUrl } = require('../utils/sanitize');
+
+const leadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 100 : 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' }
+});
 
 const PLATFORMS = {
   whatsapp: { icon: 'fab fa-whatsapp', prefix: 'https://wa.me/' },
@@ -347,13 +356,23 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
   });
 
   // Lead Capture API Endpoint for "Exchange Contact" (تبادل جهات الاتصال)
-  router.post('/nfc/api/leads/:idOrSlug', async (req, res) => {
+  const handleLeadCapture = async (req, res) => {
     try {
       const db = getDb();
       if (!db) return res.status(503).json({ error: 'Service unavailable' });
 
       const id = String(req.params.idOrSlug || '').trim();
       if (!isSafeViewerId(id)) return res.status(400).json({ error: 'Invalid card ID' });
+
+      // Verify that the target card actually exists and is published
+      let doc = await db.collection(designsCollectionName).findOne({ shortId: id });
+      if (!doc) {
+        doc = await db.collection(designsCollectionName).findOne({ slug: id });
+      }
+      const publishedRevision = selectPublishedDesignData(doc?.data);
+      if (!doc || !publishedRevision) {
+        return res.status(404).json({ error: 'Card not found or inactive' });
+      }
 
       const { name, phone, email, note } = req.body || {};
       const cleanName = sanitizeText(name, 100).trim();
@@ -366,7 +385,7 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
       }
 
       const leadDoc = {
-        cardId: id,
+        cardId: doc.shortId || id,
         visitorName: cleanName,
         visitorPhone: cleanPhone,
         visitorEmail: cleanEmail,
@@ -382,7 +401,10 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
       console.error('Error saving lead:', err);
       return res.status(500).json({ error: 'Failed to submit contact information' });
     }
-  });
+  };
+
+  router.post('/nfc/api/leads/:idOrSlug', leadLimiter, handleLeadCapture);
+  router.post('/api/leads/:idOrSlug', leadLimiter, handleLeadCapture);
 
   return router;
 };

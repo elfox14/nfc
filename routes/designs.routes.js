@@ -1058,7 +1058,7 @@ router.get('/card-stats/:id', verifyToken, async (req, res) => {
     if (!doc) return res.status(404).json({ error: 'Design not found' });
 
     // Verify ownership — only the card owner can see detailed stats
-    if (doc.ownerId && doc.ownerId !== req.user.userId) {
+    if (!doc.ownerId || doc.ownerId !== req.user.userId) {
       return res.status(403).json({ error: 'Access denied: you do not own this design' });
     }
 

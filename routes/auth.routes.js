@@ -8,7 +8,7 @@ const { createAccessToken, createRefreshToken, hashToken, isOpaqueToken } = requ
 const verifyToken = require('../auth-middleware');
 const { passwordValidator } = require('../utils/password-policy');
 const { redactSensitiveData } = require('../utils/error-tracking');
-const { setAuthCookies, clearAuthCookies } = require('../utils/auth-cookies');
+const { setAuthCookies, clearAuthCookies, REFRESH_TOKEN_MAX_AGE_MS } = require('../utils/auth-cookies');
 const {
   OAUTH_STATE_COOKIE,
   createOAuthState,
@@ -107,11 +107,12 @@ router.post('/register', [
     const accessToken = createAccessToken({ userId, email });
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
+    const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
 
-    // Store hashed refresh token in DB
+    // Store hashed refresh token in DB with server-side expiry
     await getDb().collection(usersCollectionName).updateOne(
       { userId },
-      { $set: { refreshTokenHash: hashedRefresh } }
+      { $set: { refreshTokenHash: hashedRefresh, refreshTokenExpiresAt } }
     );
 
     setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
@@ -166,11 +167,12 @@ router.post('/login', [
     const accessToken = createAccessToken({ userId: user.userId, email: user.email });
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
+    const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
 
-    // Store hashed refresh token in DB
+    // Store hashed refresh token in DB with server-side expiry
     await getDb().collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { refreshTokenHash: hashedRefresh } }
+      { $set: { refreshTokenHash: hashedRefresh, refreshTokenExpiresAt } }
     );
 
     setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
@@ -318,10 +320,11 @@ router.get('/google/callback', async (req, res) => {
     const accessToken = createAccessToken({ userId: user.userId, email: user.email });
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
+    const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
 
     await getDb().collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { refreshTokenHash: hashedRefresh } }
+      { $set: { refreshTokenHash: hashedRefresh, refreshTokenExpiresAt } }
     );
 
     setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
@@ -548,14 +551,22 @@ router.post('/reset-password', authLimiter, [
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Update password and clear reset token
-    await getDb().collection(usersCollectionName).updateOne(
-      { userId: user.userId },
+    // Update password and clear reset token atomically to prevent race condition reuse
+    const updateResult = await getDb().collection(usersCollectionName).updateOne(
+      { 
+        userId: user.userId,
+        resetTokenHash: hashToken(token),
+        resetTokenExpiry: { $gt: new Date() }
+      },
       { 
         $set: { password: hashedPassword }, 
-        $unset: { resetTokenHash: '', resetTokenExpiry: '', refreshTokenHash: '' } 
+        $unset: { resetTokenHash: '', resetTokenExpiry: '', refreshTokenHash: '', refreshTokenExpiresAt: '' } 
       }
     );
+
+    if (updateResult.matchedCount === 0) {
+      return res.status(400).json({ error: 'رابط غير صالح أو منتهي الصلاحية' });
+    }
 
     console.log(`[ResetPassword] Password updated for userId: ${user.userId}`);
     res.json({ success: true });
@@ -594,11 +605,23 @@ router.post('/verify-email', authLimiter, async (req, res) => {
       return res.json({ success: true, message: 'البريد مُتحقق مسبقاً' });
     }
 
-    // Update user as verified
-    await getDb().collection(usersCollectionName).updateOne(
-      { userId: user.userId },
+    // Update user as verified atomically
+    const updateResult = await getDb().collection(usersCollectionName).updateOne(
+      { 
+        userId: user.userId,
+        verificationTokenHash: hashToken(token),
+        $or: [
+          { verificationTokenExpiry: { $exists: false } },
+          { verificationTokenExpiry: null },
+          { verificationTokenExpiry: { $gt: new Date() } }
+        ]
+      },
       { $set: { isVerified: true }, $unset: { verificationTokenHash: '', verificationTokenExpiry: '' } }
     );
+
+    if (updateResult.matchedCount === 0) {
+      return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
+    }
 
     console.log(`[VerifyEmail] Email verified for userId: ${user.userId}`);
     res.json({ success: true });
@@ -665,26 +688,54 @@ router.post('/refresh', async (req, res) => {
       return res.status(403).json({ error: 'Invalid refresh token' });
     }
 
-    // Find user by hashed refresh token
     const hashedToken = hashToken(tokenFromCookie);
-    const user = await getDb().collection(usersCollectionName).findOne({ refreshTokenHash: hashedToken });
-
-    if (!user) {
-      console.warn('[Refresh] Invalid refresh token: No user found for this hash');
-      return res.status(403).json({ error: 'Invalid refresh token' });
-    }
-    console.log(`[Refresh] Refreshing session for userId: ${user.userId}`);
-
-    // Rotate: generate new tokens
-    const newAccessToken = createAccessToken({ userId: user.userId, email: user.email });
     const newRefreshToken = createRefreshToken();
     const newHashedRefresh = hashToken(newRefreshToken);
+    const newExpiry = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
 
-    // Update DB with new hashed refresh token (invalidates old one)
-    await getDb().collection(usersCollectionName).updateOne(
-      { userId: user.userId },
-      { $set: { refreshTokenHash: newHashedRefresh } }
-    );
+    const updateFilter = {
+      refreshTokenHash: hashedToken,
+      $or: [
+        { refreshTokenExpiresAt: { $exists: false } },
+        { refreshTokenExpiresAt: null },
+        { refreshTokenExpiresAt: { $gt: new Date() } }
+      ]
+    };
+
+    const updateDoc = {
+      $set: {
+        refreshTokenHash: newHashedRefresh,
+        refreshTokenExpiresAt: newExpiry
+      }
+    };
+
+    let user;
+    const dbCollection = getDb().collection(usersCollectionName);
+    if (typeof dbCollection.findOneAndUpdate === 'function') {
+      const result = await dbCollection.findOneAndUpdate(
+        updateFilter,
+        updateDoc,
+        { returnDocument: 'after' }
+      );
+      user = result?.value || result;
+    } else {
+      // Fallback for mocked test environments
+      const found = await dbCollection.findOne(updateFilter);
+      if (found) {
+        await dbCollection.updateOne({ userId: found.userId }, updateDoc);
+        user = found;
+      }
+    }
+
+    if (!user || !user.userId) {
+      console.warn('[Refresh] Invalid or expired refresh token');
+      return res.status(403).json({ error: 'Invalid refresh token' });
+    }
+
+    console.log(`[Refresh] Refreshing session for userId: ${user.userId}`);
+
+    // Generate new access token
+    const newAccessToken = createAccessToken({ userId: user.userId, email: user.email });
 
     setAuthCookies(res, { accessToken: newAccessToken, refreshToken: newRefreshToken });
 
@@ -706,11 +757,11 @@ router.post('/logout', async (req, res) => {
     const tokenFromCookie = req.cookies?.refreshToken;
 
     if (tokenFromCookie && getDb()) {
-      // Remove refresh token from DB
+      // Remove refresh token and expiry from DB
       const hashedToken = hashToken(tokenFromCookie);
       await getDb().collection(usersCollectionName).updateOne(
         { refreshTokenHash: hashedToken },
-        { $unset: { refreshTokenHash: '' } }
+        { $unset: { refreshTokenHash: '', refreshTokenExpiresAt: '' } }
       );
     }
 
