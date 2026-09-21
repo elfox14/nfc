@@ -121,7 +121,7 @@ jobs:
           node -e "const fs=require('fs');const version=require('./package.json').version;fs.writeFileSync('dist/static/nfc/release.json',JSON.stringify({version,sha:process.env.DEPLOY_SHA},null,2)+'\n')"
 
       - name: Upload immutable static release artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nfc-static-${{ steps.release_ref.outputs.sha }}
           path: dist/static/nfc
