@@ -157,9 +157,9 @@ cssFiles.forEach(file => {
     if (!fs.existsSync(fPath)) return;
     let css = fs.readFileSync(fPath, 'utf8');
     css = css
-        .replace(/rgba\(77,\s*166,\s*255,\s*([\d\.]+)\)/gi, 'rgba(197, 160, 89, $1)')
-        .replace(/rgba\(59,\s*130,\s*246,\s*([\d\.]+)\)/gi, 'rgba(197, 160, 89, $1)')
-        .replace(/rgba\(37,\s*99,\s*235,\s*([\d\.]+)\)/gi, 'rgba(197, 160, 89, $1)')
+        .replace(/rgba\(77,\s*166,\s*255,\s*([\d.]+)\)/gi, 'rgba(197, 160, 89, $1)')
+        .replace(/rgba\(59,\s*130,\s*246,\s*([\d.]+)\)/gi, 'rgba(197, 160, 89, $1)')
+        .replace(/rgba\(37,\s*99,\s*235,\s*([\d.]+)\)/gi, 'rgba(197, 160, 89, $1)')
         .replace(/#4da6ff/gi, '#c5a059')
         .replace(/#60a5fa/gi, '#d4af37')
         .replace(/#93c5fd/gi, '#e6ca85')
@@ -195,9 +195,9 @@ htmlFiles.forEach(file => {
     if (!fs.existsSync(fPath)) return;
     let h = fs.readFileSync(fPath, 'utf8');
     h = h
-        .replace(/rgba\(77,\s*166,\s*255,\s*([\d\.]+)\)/gi, 'rgba(197, 160, 89, $1)')
-        .replace(/rgba\(59,\s*130,\s*246,\s*([\d\.]+)\)/gi, 'rgba(197, 160, 89, $1)')
-        .replace(/rgba\(37,\s*99,\s*235,\s*([\d\.]+)\)/gi, 'rgba(197, 160, 89, $1)')
+        .replace(/rgba\(77,\s*166,\s*255,\s*([\d.]+)\)/gi, 'rgba(197, 160, 89, $1)')
+        .replace(/rgba\(59,\s*130,\s*246,\s*([\d.]+)\)/gi, 'rgba(197, 160, 89, $1)')
+        .replace(/rgba\(37,\s*99,\s*235,\s*([\d.]+)\)/gi, 'rgba(197, 160, 89, $1)')
         .replace(/#4da6ff/gi, '#c5a059')
         .replace(/#60a5fa/gi, '#d4af37')
         .replace(/#93c5fd/gi, '#e6ca85')

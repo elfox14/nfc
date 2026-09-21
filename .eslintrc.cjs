@@ -21,7 +21,8 @@ module.exports = {
     'e2e/',
     '*.original.js',
     'script-*.js',
-    'sw.js'
+    'sw.js',
+    'scripts/fix-dashboard-loading.js'
   ],
   overrides: [
     {

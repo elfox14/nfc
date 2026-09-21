@@ -232,6 +232,24 @@ app.get(['/admin', '/admin.html', '/nfc/admin', '/nfc/admin.html'], adminPageLim
   res.sendFile(path.join(rootDir, 'admin.html'));
 });
 
+// Strict rate limiting for admin login (5 failed attempts per 15 minutes)
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 100 : 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  keyGenerator: (req) => {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const ip = ipKeyGenerator(req.ip || '127.0.0.1');
+    return email ? `admin_${email}_${ip}` : `admin_ip_${ip}`;
+  },
+  validate: { keyGeneratorIpFallback: false },
+  message: { error: 'محاولات دخول كثيرة جداً كمسؤول. حاول مرة أخرى بعد 15 دقيقة.' }
+});
+
+app.use('/api/admin/login', adminLoginLimiter);
+
 const createAdminRouter = require('./routes/admin.routes');
 app.use('/api/admin', adminLimiter, createAdminRouter({ 
   getDb: () => db, 

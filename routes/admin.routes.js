@@ -43,6 +43,14 @@ module.exports = function createAdminRouter({
     return Math.min(parsed, max);
   }
 
+  function getJwtSecret() {
+    const secret = process.env.JWT_SECRET;
+    if (!secret || typeof secret !== 'string' || secret.trim() === '') {
+      throw new Error('JWT_SECRET must be configured');
+    }
+    return secret;
+  }
+
   function validateMasterToken(provided) {
     if (!provided || typeof provided !== 'string') return false;
     const token = provided.trim();
@@ -57,18 +65,14 @@ module.exports = function createAdminRouter({
       return true;
     }
 
-    // 2. Exact match of 64-char hex hash itself (in case user entered the hash from .env)
-    if (expectedHash && /^[a-f0-9]{64}$/.test(expectedHash)) {
-      if (safeCompare(token.toLowerCase(), expectedHash)) {
-        return true;
-      }
-      // 3. SHA-256 hash match of entered plaintext against expectedHash
+    // 2. SHA-256 hash match of entered plaintext against expectedHash
+    if (expectedHash && /^[a-f0-9]{64}$/i.test(expectedHash)) {
       if (safeCompare(sha256Hex(token), expectedHash)) {
         return true;
       }
     }
 
-    // 4. Legacy token fallback
+    // 3. Legacy token fallback
     if (legacyExpected && safeCompare(token, legacyExpected)) {
       return true;
     }
@@ -94,7 +98,7 @@ module.exports = function createAdminRouter({
       if (candidateToken && validateMasterToken(candidateToken)) {
         const sessionToken = jwt.sign(
           { role: 'admin', type: 'master', name: 'المسؤول الرئيسي' },
-          process.env.JWT_SECRET || 'secret-admin-fallback-key',
+          getJwtSecret(),
           { expiresIn: '24h' }
         );
         return res.json({
@@ -118,7 +122,7 @@ module.exports = function createAdminRouter({
           if (isMatch) {
             const sessionToken = jwt.sign(
               { userId: user.userId, email: user.email, role: 'admin', name: user.name || 'مسؤول' },
-              process.env.JWT_SECRET || 'secret-admin-fallback-key',
+              getJwtSecret(),
               { expiresIn: '24h' }
             );
             return res.json({
@@ -159,7 +163,7 @@ module.exports = function createAdminRouter({
 
     // B. Check JWT token
     try {
-      const decoded = jwt.verify(rawToken, process.env.JWT_SECRET || 'secret-admin-fallback-key');
+      const decoded = jwt.verify(rawToken, getJwtSecret());
       if (decoded && (decoded.role === 'admin' || decoded.isAdmin)) {
         req.admin = decoded;
         return next();

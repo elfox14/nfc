@@ -2,6 +2,10 @@ async function verifyEmail() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
 
+            if (token && window.history && typeof window.history.replaceState === 'function') {
+                window.history.replaceState(null, '', window.location.pathname);
+            }
+
             const loadingState = document.getElementById('loading-state');
             const successState = document.getElementById('success-state');
             const errorState = document.getElementById('error-state');

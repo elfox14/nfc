@@ -464,6 +464,31 @@ document.getElementById('save-privacy-btn')?.addEventListener('click', async () 
             const res = await Auth.apiFetchWithRefresh(\`\${baseUrl}/api/privacy-settings\`, {
                 method: 'PUT',
                 headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cardPrivacy: selected })
+            });
+            const data = await res.json();
+            showToast(data.message || 'تم حفظ إعدادات الخصوصية بنجاح', 'success');
+        } else {
+            showToast('تم حفظ إعدادات الخصوصية', 'success');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('خطأ في حفظ إعدادات الخصوصية', 'error');
+    }
+});
+
+function generateSignatureFromDashboard(shortId) {
+    if (!shortId) {
+        window.location.href = 'editor.html';
+        return;
+    }
+    window.open(\`viewer.html?id=\${shortId}#signature\`, '_blank');
+}
+`;
+
+fs.writeFileSync(dashArJsPath, dashArJs.trim(), 'utf8');
+console.log('✓ Updated js/dashboard-2fd86ecf204e.js with resilient loading and storage fallback.');
+
 // 4. REWRITE js/dashboard-en-dbf23d06155e.js with English translations and robust fallback
 const dashEnJsPath = path.join(rootDir, 'js', 'dashboard-en-dbf23d06155e.js');
 let dashEnJs = `
@@ -983,7 +1008,7 @@ document.getElementById('save-privacy-btn')?.addEventListener('click', async () 
     if (!selected) return;
     try {
         if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-            const res = await Auth.apiFetchWithRefresh(`${baseUrl}/api/privacy-settings`, {
+            const res = await Auth.apiFetchWithRefresh(\`\${baseUrl}/api/privacy-settings\`, {
                 method: 'PUT',
                 headers: { ...Auth.getHeader(), 'Content-Type': 'application/json' },
                 body: JSON.stringify({ cardPrivacy: selected })

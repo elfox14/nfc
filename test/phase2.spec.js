@@ -242,17 +242,60 @@ describe('Admin Error Endpoint', () => {
 
   it('GET /api/admin/errors should accept hashed admin token configuration', async () => {
     delete process.env.ADMIN_TOKENH;
-    process.env.ADMIN_TOKEN_SHA256 = crypto
+    const plaintext = 'hashed-admin-token-123';
+    const rawHash = crypto
       .createHash('sha256')
-      .update('hashed-admin-token-123')
+      .update(plaintext)
       .digest('hex');
+    process.env.ADMIN_TOKEN_SHA256 = rawHash;
 
     const res = await request(app)
       .get('/api/admin/errors')
-      .set('x-admin-token', 'hashed-admin-token-123');
+      .set('x-admin-token', plaintext);
 
     expect(res.status).toBe(200);
     expect(res.headers['cache-control']).toBe('no-store');
+  });
+
+  it('GET /api/admin/errors should REJECT the raw SHA-256 hash itself as credential', async () => {
+    delete process.env.ADMIN_TOKENH;
+    const plaintext = 'my-secret-admin-passphrase';
+    const rawHash = crypto
+      .createHash('sha256')
+      .update(plaintext)
+      .digest('hex');
+    process.env.ADMIN_TOKEN_SHA256 = rawHash;
+
+    // Passing the raw hash as token should fail with 401
+    const res = await request(app)
+      .get('/api/admin/errors')
+      .set('x-admin-token', rawHash);
+
+    expect(res.status).toBe(401);
+  });
+
+  it('POST /api/admin/login should REJECT raw SHA-256 hash and accept plaintext', async () => {
+    delete process.env.ADMIN_TOKENH;
+    const plaintext = 'admin-login-passphrase-999';
+    const rawHash = crypto
+      .createHash('sha256')
+      .update(plaintext)
+      .digest('hex');
+    process.env.ADMIN_TOKEN_SHA256 = rawHash;
+
+    // Reject raw hash
+    const failRes = await request(app)
+      .post('/api/admin/login')
+      .send({ token: rawHash });
+    expect(failRes.status).toBe(401);
+
+    // Accept plaintext
+    const successRes = await request(app)
+      .post('/api/admin/login')
+      .send({ token: plaintext });
+    expect(successRes.status).toBe(200);
+    expect(successRes.body.success).toBe(true);
+    expect(successRes.body.token).toBeDefined();
   });
 });
 

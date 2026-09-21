@@ -1,6 +1,10 @@
-// Get token from URL
+// Get token from URL and immediately scrub it from browser address bar and history
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
+
+        if (token && window.history && typeof window.history.replaceState === 'function') {
+            window.history.replaceState(null, '', window.location.pathname);
+        }
 
         if (!token) {
             document.getElementById('error-box').textContent = 'رابط غير صالح أو منتهي الصلاحية.';
