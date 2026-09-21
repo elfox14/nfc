@@ -40,6 +40,15 @@ function assertEnv() {
     delete process.env.ADMIN_TOKENH;
   }
 
+  if (process.env.ADMIN_PASSWORD || process.env.ADMIN_TOKEN) {
+    console.warn(
+      '[Security Warning] Plaintext admin credentials (ADMIN_PASSWORD/ADMIN_TOKEN) found in production. ' +
+      'Removing from memory; only ADMIN_TOKEN_SHA256 is permitted.'
+    );
+    delete process.env.ADMIN_PASSWORD;
+    delete process.env.ADMIN_TOKEN;
+  }
+
   if (!process.env.ADMIN_TOKEN_SHA256) {
     throw new Error('ADMIN_TOKEN_SHA256 must be configured in production.');
   }

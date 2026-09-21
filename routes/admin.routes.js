@@ -59,9 +59,10 @@ module.exports = function createAdminRouter({
     const expectedHash = (process.env.ADMIN_TOKEN_SHA256 || '').trim().toLowerCase();
     const legacyExpected = (process.env.ADMIN_TOKENH || '').trim();
     const directPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_TOKEN || '').trim();
+    const isProd = process.env.NODE_ENV === 'production';
 
-    // 1. Direct password match (from ADMIN_PASSWORD in .env)
-    if (directPassword && safeCompare(token, directPassword)) {
+    // 1. Direct password match (from ADMIN_PASSWORD in .env - disabled in production)
+    if (!isProd && directPassword && safeCompare(token, directPassword)) {
       return true;
     }
 
@@ -72,8 +73,8 @@ module.exports = function createAdminRouter({
       }
     }
 
-    // 3. Legacy token fallback
-    if (legacyExpected && safeCompare(token, legacyExpected)) {
+    // 3. Legacy token fallback (disabled in production)
+    if (!isProd && legacyExpected && safeCompare(token, legacyExpected)) {
       return true;
     }
 
