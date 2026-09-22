@@ -389,3 +389,218 @@ describe('Security Hardening Round 2 Tests', () => {
     });
   });
 });
+
+describe('Security Hardening Round 3 - OAuth pre-hijacking and save-design id bypass', () => {
+  const jwtSecret = 'test-secret-key-round3-hardening-32bytes!';
+
+  beforeAll(() => {
+    process.env.JWT_SECRET = jwtSecret;
+  });
+
+  describe('OAuth account resolution', () => {
+    const { resolveGoogleAccount } = require('../routes/auth.routes')._private;
+
+    it('rejects a Google identity whose email is not verified', async () => {
+      const users = {
+        findOne: jest.fn(),
+        insertOne: jest.fn(),
+        updateOne: jest.fn()
+      };
+
+      await expect(resolveGoogleAccount(users, {
+        id: 'google-1',
+        email: 'victim@example.com',
+        verified_email: false
+      })).rejects.toMatchObject({ code: 'GOOGLE_EMAIL_NOT_VERIFIED' });
+
+      expect(users.findOne).not.toHaveBeenCalled();
+      expect(users.insertOne).not.toHaveBeenCalled();
+      expect(users.updateOne).not.toHaveBeenCalled();
+    });
+
+    it('claims an unverified password signup and removes attacker persistence', async () => {
+      const pendingUser = {
+        userId: 'pending-1',
+        email: 'victim@example.com',
+        name: 'Pending',
+        password: 'attacker-password-hash',
+        refreshTokenHash: 'old-refresh',
+        isVerified: false
+      };
+      const claimedUser = {
+        userId: 'pending-1',
+        email: 'victim@example.com',
+        name: 'Pending',
+        googleId: 'google-victim',
+        isVerified: true
+      };
+      const users = {
+        findOne: jest.fn()
+          .mockResolvedValueOnce(null)
+          .mockResolvedValueOnce(pendingUser)
+          .mockResolvedValueOnce(claimedUser),
+        insertOne: jest.fn(),
+        updateOne: jest.fn().mockResolvedValue({ matchedCount: 1 })
+      };
+
+      const user = await resolveGoogleAccount(users, {
+        id: 'google-victim',
+        email: 'Victim@Example.com',
+        verified_email: true,
+        name: 'Victim'
+      });
+
+      expect(user).toEqual(claimedUser);
+      expect(users.updateOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'pending-1',
+          email: 'victim@example.com'
+        }),
+        expect.objectContaining({
+          $set: expect.objectContaining({
+            googleId: 'google-victim',
+            isVerified: true
+          }),
+          $unset: expect.objectContaining({
+            password: '',
+            refreshTokenHash: '',
+            refreshTokenExpiresAt: ''
+          })
+        })
+      );
+    });
+
+    it('does not relink an email already bound to another Google identity', async () => {
+      const users = {
+        findOne: jest.fn()
+          .mockResolvedValueOnce(null)
+          .mockResolvedValueOnce({
+            userId: 'linked-1',
+            email: 'victim@example.com',
+            googleId: 'google-original',
+            isVerified: true
+          }),
+        insertOne: jest.fn(),
+        updateOne: jest.fn()
+      };
+
+      await expect(resolveGoogleAccount(users, {
+        id: 'google-attacker',
+        email: 'victim@example.com',
+        verified_email: true
+      })).rejects.toMatchObject({ code: 'GOOGLE_ACCOUNT_CONFLICT' });
+
+      expect(users.updateOne).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('save-design id handling', () => {
+    function buildApp({ user, findOneImpl, count = 0 } = {}) {
+      const designsCollection = {
+        findOne: jest.fn(findOneImpl || (() => null)),
+        countDocuments: jest.fn().mockResolvedValue(count),
+        insertOne: jest.fn().mockResolvedValue({ insertedId: 'db-id' }),
+        updateOne: jest.fn().mockResolvedValue({ matchedCount: 1 })
+      };
+      const usersCollection = {
+        findOne: jest.fn().mockResolvedValue(user || {
+          userId: 'user-1',
+          email: 'user@example.com',
+          isVerified: true
+        })
+      };
+      const mockDb = {
+        collection: jest.fn((name) => {
+          if (name === 'designs') return designsCollection;
+          if (name === 'users') return usersCollection;
+          return {};
+        })
+      };
+      const app = express();
+      app.use(express.json());
+      app.use('/api', createDesignsRouter({
+        getDb: () => mockDb,
+        designsCollectionName: 'designs',
+        usersCollectionName: 'users',
+        cardRequestsCollectionName: 'card_requests',
+        savedCardsCollectionName: 'saved_cards',
+        absoluteBaseUrl: () => 'https://mcprime.test',
+        sanitizeDesignState: (state) => state,
+        cloudinary: null
+      }));
+
+      return { app, designsCollection };
+    }
+
+    function tokenFor(userId = 'user-1') {
+      return jwt.sign(
+        { userId, email: 'user@example.com', type: 'access' },
+        jwtSecret
+      );
+    }
+
+    it('rejects unsafe client-supplied design ids', async () => {
+      const { app, designsCollection } = buildApp();
+      const res = await request(app)
+        .post('/api/save-design?id=bad%3Cscript%3E')
+        .set('Authorization', `Bearer ${tokenFor()}`)
+        .send({ inputs: { 'input-name': 'Safe Name' } });
+
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe('INVALID_DESIGN_ID');
+      expect(designsCollection.insertOne).not.toHaveBeenCalled();
+    });
+
+    it('cannot bypass the unverified-user creation limit with an unknown ?id=', async () => {
+      const { app, designsCollection } = buildApp({
+        user: {
+          userId: 'user-1',
+          email: 'user@example.com',
+          isVerified: false
+        },
+        findOneImpl: () => null,
+        count: 3
+      });
+
+      const res = await request(app)
+        .post('/api/save-design?id=attackerCard01')
+        .set('Authorization', `Bearer ${tokenFor()}`)
+        .send({ inputs: { 'input-name': 'Fourth Card' } });
+
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe('EMAIL_NOT_VERIFIED');
+      expect(designsCollection.insertOne).not.toHaveBeenCalled();
+    });
+
+    it('reuses the member card instead of creating another card for an unknown ?id=', async () => {
+      let call = 0;
+      const existingMemberDesign = {
+        shortId: 'ownedCard1',
+        ownerId: 'user-1',
+        data: {}
+      };
+      const { app, designsCollection } = buildApp({
+        findOneImpl: () => {
+          call += 1;
+          if (call === 1) return null;
+          if (call === 2) return existingMemberDesign;
+          return null;
+        }
+      });
+
+      const res = await request(app)
+        .post('/api/save-design?id=unknownCard1')
+        .set('Authorization', `Bearer ${tokenFor()}`)
+        .send({ inputs: { 'input-name': 'Updated Card' } });
+
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe('ownedCard1');
+      expect(designsCollection.insertOne).not.toHaveBeenCalled();
+      expect(designsCollection.updateOne).toHaveBeenCalledWith(
+        { shortId: 'ownedCard1', ownerId: 'user-1' },
+        expect.any(Object)
+      );
+    });
+  });
+});
+
