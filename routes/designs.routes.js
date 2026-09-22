@@ -17,6 +17,10 @@ function isSafePublicId(id) {
   return typeof id === 'string' && id.length >= 2 && id.length <= 100 && !/[/\\?#%&<>"']/.test(id);
 }
 
+function isSafeClientShortId(id) {
+  return typeof id === 'string' && /^[A-Za-z0-9_-]{4,30}$/.test(id);
+}
+
 module.exports = function createDesignsRouter({ 
   getDb, 
   designsCollectionName, 
@@ -386,9 +390,10 @@ router.post('/save-design', verifyToken, async (req, res) => {
     if (typeof rawData.publishedAt === 'string' && !Number.isNaN(Date.parse(rawData.publishedAt))) {
       data.publishedAt = new Date(rawData.publishedAt).toISOString();
     }
-    const existingId = req.query.id;
-    if (existingId && !isSafePublicId(existingId)) {
-      return res.status(400).json({ error: 'Invalid design ID' });
+    const rawExistingId = req.query.id;
+    const existingId = rawExistingId === undefined ? null : String(rawExistingId).trim();
+    if (rawExistingId !== undefined && (!existingId || !isSafeClientShortId(existingId))) {
+      return res.status(400).json({ error: 'Invalid design ID', code: 'INVALID_DESIGN_ID' });
     }
 
     let shortId = nanoid(8);
@@ -396,38 +401,29 @@ router.post('/save-design', verifyToken, async (req, res) => {
     let ownedExistingDesign = null;
 
     // Retrieve ownerId from authenticated session via verifyToken
-    let ownerId = req.user.userId;
+    const ownerId = req.user.userId;
 
     const UNVERIFIED_DESIGN_LIMIT = 3;
     const user = await getDb().collection(usersCollectionName).findOne({ userId: ownerId });
 
-    // Determine if this is an update or a new design
+    // A client-supplied id may only identify an existing owned card. It cannot
+    // create a second card or reserve an arbitrary public id.
     if (existingId) {
       const existingDesign = await getDb().collection(designsCollectionName).findOne({ shortId: existingId });
-      if (existingDesign) {
-        if (existingDesign.ownerId !== ownerId) {
-          // Never let a save implicitly claim someone else's design or an
-          // unmigrated ownerless record. A copy receives a fresh server-generated public ID.
-          shortId = nanoid(8);
-          isUpdate = false;
-          console.log(`[SaveDesign] Forking inaccessible design ${existingId} as new ${shortId}`);
-        } else {
-          // Same owner — update in place
-          shortId = existingId;
-          isUpdate = true;
-          ownedExistingDesign = existingDesign;
-          console.log(`[SaveDesign] Updating existing design: ${existingId}`);
-        }
+      if (existingDesign?.ownerId === ownerId) {
+        shortId = existingDesign.shortId || existingId;
+        isUpdate = true;
+        ownedExistingDesign = existingDesign;
+        console.log(`[SaveDesign] Updating existing design: ${existingId}`);
+      } else if (existingDesign) {
+        console.log(`[SaveDesign] Treating inaccessible design ${existingId} as a template copy`);
       } else {
-        // existingId was provided but design not found in DB.
-        // SECURITY FIX: Never accept client-supplied arbitrary shortId for non-existent designs!
-        // Generate a new secure shortId instead of reusing the client's arbitrary ID.
-        shortId = nanoid(8);
-        isUpdate = false;
-        console.log(`[SaveDesign] Design ${existingId} not found in DB, creating new with secure shortId ${shortId}`);
+        console.log(`[SaveDesign] Ignoring unknown client design id ${existingId}; server will choose the public id`);
       }
-    } else if (ownerId) {
-      // 1-Card Per Member: If no explicit existingId in query, reuse/update the member's existing card
+    }
+
+    // Enforce one-card-per-member regardless of whether ?id= was supplied.
+    if (!isUpdate && ownerId) {
       const existingMemberDesign = await getDb().collection(designsCollectionName).findOne({ ownerId });
       if (existingMemberDesign) {
         shortId = existingMemberDesign.shortId;
