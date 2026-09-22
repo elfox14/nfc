@@ -387,27 +387,19 @@ router.post('/save-design', verifyToken, async (req, res) => {
       data.publishedAt = new Date(rawData.publishedAt).toISOString();
     }
     const existingId = req.query.id;
-    let shortId = existingId || nanoid(8);
+    if (existingId && !isSafePublicId(existingId)) {
+      return res.status(400).json({ error: 'Invalid design ID' });
+    }
+
+    let shortId = nanoid(8);
     let isUpdate = false;
     let ownedExistingDesign = null;
 
     // Retrieve ownerId from authenticated session via verifyToken
     let ownerId = req.user.userId;
 
-    // Soft limit: unverified users can only save up to 3 designs
     const UNVERIFIED_DESIGN_LIMIT = 3;
     const user = await getDb().collection(usersCollectionName).findOne({ userId: ownerId });
-    if (user && !user.isVerified && !existingId) {
-      const designCount = await getDb().collection(designsCollectionName).countDocuments({ ownerId });
-      if (designCount >= UNVERIFIED_DESIGN_LIMIT) {
-        return res.status(403).json({ 
-          error: user.email ? 
-            'يرجى تأكيد بريدك الإلكتروني لحفظ المزيد من التصاميم' : 
-            'Please verify your email to save more designs',
-          code: 'EMAIL_NOT_VERIFIED'
-        });
-      }
-    }
 
     // Determine if this is an update or a new design
     if (existingId) {
@@ -415,23 +407,24 @@ router.post('/save-design', verifyToken, async (req, res) => {
       if (existingDesign) {
         if (existingDesign.ownerId !== ownerId) {
           // Never let a save implicitly claim someone else's design or an
-          // unmigrated ownerless record. A copy receives a fresh public ID.
+          // unmigrated ownerless record. A copy receives a fresh server-generated public ID.
           shortId = nanoid(8);
           isUpdate = false;
           console.log(`[SaveDesign] Forking inaccessible design ${existingId} as new ${shortId}`);
         } else {
           // Same owner — update in place
+          shortId = existingId;
           isUpdate = true;
           ownedExistingDesign = existingDesign;
           console.log(`[SaveDesign] Updating existing design: ${existingId}`);
         }
       } else {
         // existingId was provided but design not found in DB.
-        // This can happen if the design was deleted or DB was reset.
-        // Use the existingId as the shortId for the new insert so the URL stays consistent.
-        shortId = existingId;
+        // SECURITY FIX: Never accept client-supplied arbitrary shortId for non-existent designs!
+        // Generate a new secure shortId instead of reusing the client's arbitrary ID.
+        shortId = nanoid(8);
         isUpdate = false;
-        console.log(`[SaveDesign] Design ${existingId} not found in DB, creating with same shortId`);
+        console.log(`[SaveDesign] Design ${existingId} not found in DB, creating new with secure shortId ${shortId}`);
       }
     } else if (ownerId) {
       // 1-Card Per Member: If no explicit existingId in query, reuse/update the member's existing card
@@ -441,6 +434,19 @@ router.post('/save-design', verifyToken, async (req, res) => {
         isUpdate = true;
         ownedExistingDesign = existingMemberDesign;
         console.log(`[SaveDesign] Single card per member: Reusing member card ${shortId}`);
+      }
+    }
+
+    // Soft limit: unverified users can only save up to 3 designs when creating a new design
+    if (!isUpdate && user && !user.isVerified) {
+      const designCount = await getDb().collection(designsCollectionName).countDocuments({ ownerId });
+      if (designCount >= UNVERIFIED_DESIGN_LIMIT) {
+        return res.status(403).json({ 
+          error: user.email ? 
+            'يرجى تأكيد بريدك الإلكتروني لحفظ المزيد من التصاميم' : 
+            'Please verify your email to save more designs',
+          code: 'EMAIL_NOT_VERIFIED'
+        });
       }
     }
 
@@ -1142,6 +1148,7 @@ router.get('/gallery', async (req, res) => {
     const designs = await getDb().collection(designsCollectionName)
       .find(query)
       .project({
+        _id: 0,
         'data.publishedState': 1,
         'data.publishedAt': 1,
         'data.inputs.input-name_ar': 1,

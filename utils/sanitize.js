@@ -181,7 +181,8 @@ function sanitizeDesignState(designState) {
     positions: sanitizeKeyedObject(designState.positions, value => sanitizePoint(value)),
     anchors: sanitizeKeyedObject(designState.anchors, value => sanitizePoint(value, { normalized: true })),
     placements: sanitizeKeyedObject(designState.placements, value => value === 'back' ? 'back' : 'front'),
-    visibilities: sanitizeKeyedObject(designState.visibilities, value => value !== false)
+    visibilities: sanitizeKeyedObject(designState.visibilities, value => value !== false),
+    sharedToGallery: typeof designState.sharedToGallery === 'boolean' ? designState.sharedToGallery : undefined
   };
 
   for (const [key, value] of Object.entries(sanitized)) {

@@ -108,7 +108,7 @@ const rootDir = __dirname;
 
 // --- UTILITY FUNCTIONS ---
 function absoluteBaseUrl(req) {
-  const envBase = process.env.SITE_BASE_URL;
+  const envBase = process.env.SITE_BASE_URL || process.env.PUBLIC_BASE_URL;
   if (envBase) return envBase.replace(/\/+$/, '');
   const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'https');
   const host = req.get('host');

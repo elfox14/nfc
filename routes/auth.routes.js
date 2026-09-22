@@ -154,7 +154,7 @@ router.post('/login', [
     // Login attempt logged without PII
 
     const user = await getDb().collection(usersCollectionName).findOne({ email });
-    if (!user) {
+    if (!user || !user.password) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
@@ -290,8 +290,61 @@ router.get('/google/callback', async (req, res) => {
       throw new Error('No email returned from Google');
     }
 
-    // Find or create user
-    let user = await getDb().collection(usersCollectionName).findOne({ email: googleUser.email });
+    const isGoogleEmailVerified = Boolean(googleUser.verified_email || googleUser.email_verified);
+    if (!isGoogleEmailVerified) {
+      console.error('[Google OAuth] Unverified email from Google account:', redactSensitiveData(googleUser));
+      return res.redirect(`${frontendBase}/login.html?error=unverified_google_email`);
+    }
+
+    // Step 1: Find by googleId first
+    let user = await getDb().collection(usersCollectionName).findOne({ googleId: googleUser.id });
+
+    // Step 2: If not found by googleId, check by email
+    if (!user) {
+      user = await getDb().collection(usersCollectionName).findOne({ email: googleUser.email });
+
+      if (user) {
+        // Account Pre-Hijacking defense:
+        // If the existing account was never verified (attacker pre-registered with victim's email and chose a password),
+        // the attacker's unverified password MUST be erased, and the account claimed for the verified Google owner.
+        if (!user.isVerified) {
+          console.warn(`[Google OAuth] Pre-registered unverified account claimed by verified Google email: ${user.userId}`);
+          await getDb().collection(usersCollectionName).updateOne(
+            { userId: user.userId },
+            {
+              $set: {
+                googleId: googleUser.id,
+                isVerified: true,
+                name: user.name || googleUser.name || googleUser.email.split('@')[0]
+              },
+              $unset: {
+                password: '', // Wipe attacker-set password
+                verificationTokenHash: '',
+                verificationTokenExpiry: '',
+                resetTokenHash: '',
+                resetTokenExpiry: '',
+                refreshTokenHash: '',
+                refreshTokenExpiresAt: ''
+              }
+            }
+          );
+          user.googleId = googleUser.id;
+          user.isVerified = true;
+        } else {
+          // If already verified with a different googleId, prevent hijacking
+          if (user.googleId && user.googleId !== googleUser.id) {
+            console.error(`[Google OAuth] Conflict: user ${user.userId} has different googleId`);
+            return res.redirect(`${frontendBase}/login.html?error=oauth_conflict`);
+          }
+          // Link googleId to verified user
+          await getDb().collection(usersCollectionName).updateOne(
+            { userId: user.userId },
+            { $set: { googleId: googleUser.id } }
+          );
+          user.googleId = googleUser.id;
+        }
+      }
+    }
 
     if (!user) {
       const userId = nanoid(10);
