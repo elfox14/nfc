@@ -410,7 +410,7 @@ router.post('/save-design', verifyToken, async (req, res) => {
     if (existingId) {
       const existingDesign = await getDb().collection(designsCollectionName).findOne({ shortId: existingId });
       if (existingDesign?.ownerId === ownerId) {
-        shortId = existingDesign.shortId;
+        shortId = existingDesign.shortId || existingId;
         isUpdate = true;
         ownedExistingDesign = existingDesign;
         console.log(`[SaveDesign] Updating existing design: ${existingId}`);
