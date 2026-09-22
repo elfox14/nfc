@@ -22,6 +22,98 @@ function isSafeDesignId(value) {
   return typeof value === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(value);
 }
 
+function createOAuthAccountError(message, code) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+}
+
+async function resolveGoogleAccount(users, googleUser) {
+  const googleId = typeof googleUser?.id === 'string' ? googleUser.id.trim() : '';
+  const email = typeof googleUser?.email === 'string' ? googleUser.email.trim().toLowerCase() : '';
+
+  if (!googleId || !email || googleUser?.verified_email !== true) {
+    throw createOAuthAccountError('Google account email must be verified.', 'GOOGLE_EMAIL_NOT_VERIFIED');
+  }
+
+  // Stable provider identity wins over a mutable email address.
+  let user = await users.findOne({ googleId });
+  if (user) return user;
+
+  const emailUser = await users.findOne({ email });
+  if (!emailUser) {
+    const newUser = {
+      userId: nanoid(10),
+      email,
+      name: googleUser.name || email.split('@')[0],
+      googleId,
+      isVerified: true,
+      createdAt: new Date()
+    };
+    await users.insertOne(newUser);
+    return newUser;
+  }
+
+  // Never attach a second Google identity to an already-linked account.
+  if (emailUser.googleId && emailUser.googleId !== googleId) {
+    throw createOAuthAccountError(
+      'This email is already linked to another Google account.',
+      'GOOGLE_ACCOUNT_CONFLICT'
+    );
+  }
+
+  if (emailUser.googleId === googleId) return emailUser;
+
+  const setFields = {
+    googleId,
+    isVerified: true
+  };
+  if (!emailUser.name && googleUser.name) {
+    setFields.name = googleUser.name;
+  }
+
+  const update = { $set: setFields };
+
+  if (!emailUser.isVerified) {
+    // A pending password signup must not survive a later proof of email ownership
+    // through Google. Removing the password and long-lived tokens prevents a
+    // pre-registered attacker from retaining access after the legitimate owner
+    // claims the address with a verified Google identity.
+    update.$unset = {
+      password: '',
+      verificationTokenHash: '',
+      verificationTokenExpiry: '',
+      resetTokenHash: '',
+      resetTokenExpiry: '',
+      refreshTokenHash: '',
+      refreshTokenExpiresAt: ''
+    };
+  }
+
+  const linkResult = await users.updateOne(
+    {
+      userId: emailUser.userId,
+      email,
+      $or: [
+        { googleId: { $exists: false } },
+        { googleId: null },
+        { googleId }
+      ]
+    },
+    update
+  );
+
+  if (linkResult.matchedCount !== 1) {
+    throw createOAuthAccountError(
+      'Google account linking changed during sign-in. Please try again.',
+      'GOOGLE_ACCOUNT_CONFLICT'
+    );
+  }
+
+  const linkedUser = await users.findOne({ userId: emailUser.userId });
+  return linkedUser || { ...emailUser, ...setFields };
+}
+
 module.exports = function createAuthRouter({
   getDb,
   usersCollectionName,
@@ -154,7 +246,7 @@ router.post('/login', [
     // Login attempt logged without PII
 
     const user = await getDb().collection(usersCollectionName).findOne({ email });
-    if (!user) {
+    if (!user || typeof user.password !== 'string' || !user.password) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
@@ -285,36 +377,13 @@ router.get('/google/callback', async (req, res) => {
     });
     const googleUser = await userInfoResponse.json();
 
-    if (!googleUser.email) {
+    if (!userInfoResponse.ok) {
       console.error('Google UserInfo Error:', redactSensitiveData(googleUser));
-      throw new Error('No email returned from Google');
+      throw new Error('Failed to retrieve Google user profile');
     }
 
-    // Find or create user
-    let user = await getDb().collection(usersCollectionName).findOne({ email: googleUser.email });
-
-    if (!user) {
-      const userId = nanoid(10);
-      const newUser = {
-        userId,
-        email: googleUser.email,
-        name: googleUser.name || googleUser.email.split('@')[0],
-        googleId: googleUser.id,
-        isVerified: true,
-        createdAt: new Date()
-      };
-      await getDb().collection(usersCollectionName).insertOne(newUser);
-      user = newUser;
-    } else {
-      // If user exists but name is missing, update it from Google
-      if (!user.name && googleUser.name) {
-        await getDb().collection(usersCollectionName).updateOne(
-          { userId: user.userId },
-          { $set: { name: googleUser.name } }
-        );
-        user.name = googleUser.name;
-      }
-    }
+    const users = getDb().collection(usersCollectionName);
+    const user = await resolveGoogleAccount(users, googleUser);
 
     // Generate tokens
     const accessToken = createAccessToken({ userId: user.userId, email: user.email });
@@ -1046,4 +1115,8 @@ router.post('/ws-token', verifyToken, async (req, res) => {
 
 
   return router;
+};
+
+module.exports._private = {
+  resolveGoogleAccount
 };
