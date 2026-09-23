@@ -28,6 +28,8 @@ describe('Production environment validation', () => {
     delete process.env.GOOGLE_REDIRECT_URI;
     delete process.env.SITE_BASE_URL;
     delete process.env.RENDER_EXTERNAL_HOSTNAME;
+    delete process.env.EXTERNAL_UPLOAD_URL;
+    delete process.env.UPLOAD_SECRET;
   });
 
   afterEach(() => {
@@ -95,6 +97,33 @@ describe('Production environment validation', () => {
 
     expect(() => assertEnv()).toThrow('instead of ADMIN_TOKENH');
   });
+  it('rejects unsafe external upload endpoints in production', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.MONGO_URI = 'mongodb://example';
+    process.env.JWT_SECRET = 'a'.repeat(32);
+    process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
+    process.env.ADMIN_TOKEN_SHA256 = 'c'.repeat(64);
+    process.env.EMAIL_PROVIDER = 'resend';
+    process.env.EMAIL_API_KEY = 'email-key';
+    delete process.env.CLOUDINARY_CLOUD_NAME;
+    delete process.env.CLOUDINARY_API_KEY;
+    delete process.env.CLOUDINARY_API_SECRET;
+    process.env.UPLOAD_SECRET = 'upload-secret';
+
+    process.env.EXTERNAL_UPLOAD_URL = 'http://uploads.example.com/upload';
+    expect(() => assertEnv()).toThrow(/EXTERNAL_UPLOAD_URL.*HTTPS/i);
+
+    process.env.EXTERNAL_UPLOAD_URL = 'https://127.0.0.1/upload';
+    expect(() => assertEnv()).toThrow(/private|localhost|link-local/i);
+
+    process.env.EXTERNAL_UPLOAD_URL = 'https://user:pass@uploads.example.com/upload';
+    expect(() => assertEnv()).toThrow(/credentialed|HTTPS/i);
+
+    process.env.EXTERNAL_UPLOAD_URL = 'https://uploads.example.com/upload';
+    expect(() => assertEnv()).not.toThrow();
+  });
+
   it('requires a canonical HTTPS OAuth callback when Google OAuth is enabled', () => {
     process.env.NODE_ENV = 'production';
     process.env.MONGO_URI = 'mongodb://example';
