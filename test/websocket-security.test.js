@@ -49,13 +49,13 @@ describe('WebSocket security helpers', () => {
   });
 
   describe('getClientIP', () => {
-    it('uses the first forwarded address only behind a trusted proxy', () => {
+    it('uses the nearest forwarded address behind one trusted proxy hop', () => {
       const req = {
         headers: { 'x-forwarded-for': '203.0.113.10, 10.0.0.1' },
         socket: { remoteAddress: '127.0.0.1' }
       };
 
-      expect(getClientIP(req, true)).toBe('203.0.113.10');
+      expect(getClientIP(req, true)).toBe('10.0.0.1');
       expect(getClientIP(req)).toBe('127.0.0.1');
     });
 
