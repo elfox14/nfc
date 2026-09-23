@@ -746,19 +746,22 @@ router.post('/forgot-password', [
 
     const resetLink = buildFrontendActionUrl('reset-password.html', resetToken);
     
-    // Send email using EmailService
-    try {
-      const emailContent = EmailService.passwordResetEmail(user.name || 'مستخدم', resetLink);
-      await EmailService.send({ to: email, subject: emailContent.subject, html: emailContent.html });
-      console.log(`[ForgotPassword] Reset link sent for userId: ${user.userId}`);
-    } catch (emailErr) {
-      console.warn('[ForgotPassword] Email sending failed:', emailErr.message);
-      // Allow a prompt retry if the provider itself failed.
-      await getDb().collection(usersCollectionName).updateOne(
-        { userId: user.userId, resetTokenHash: hashToken(resetToken) },
-        { $unset: { passwordResetRequestedAt: '', resetTokenHash: '', resetTokenExpiry: '' } }
-      ).catch(() => {});
-    }
+    // Do not wait on the external email provider before returning. Waiting only
+    // for existing accounts creates a measurable account-enumeration timing signal.
+    const emailContent = EmailService.passwordResetEmail(user.name || 'مستخدم', resetLink);
+    Promise.resolve()
+      .then(() => EmailService.send({ to: email, subject: emailContent.subject, html: emailContent.html }))
+      .then(() => {
+        console.log(`[ForgotPassword] Reset link sent for userId: ${user.userId}`);
+      })
+      .catch(async (emailErr) => {
+        console.warn('[ForgotPassword] Email sending failed:', emailErr.message);
+        // Allow a prompt retry if the provider itself failed.
+        await getDb().collection(usersCollectionName).updateOne(
+          { userId: user.userId, resetTokenHash: hashToken(resetToken) },
+          { $unset: { passwordResetRequestedAt: '', resetTokenHash: '', resetTokenExpiry: '' } }
+        ).catch(() => {});
+      });
 
     res.json({ success: true });
 
