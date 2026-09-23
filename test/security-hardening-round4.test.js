@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 const express = require('express');
+const crypto = require('crypto');
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const createAuthRouter = require('../routes/auth.routes');
@@ -196,13 +197,23 @@ describe('Security Hardening Round 4 - data lifecycle and race protections', () 
     const saved = { deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }) };
     const requests = { deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }) };
     const leads = { deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }) };
+    let activeAdminSession = null;
     const adminSessions = {
-      findOne: jest.fn().mockResolvedValue({
-        jti: 'round4-admin-session',
-        type: 'admin-master',
-        expiresAt: new Date(Date.now() + 60_000)
+      insertOne: jest.fn(async (doc) => {
+        activeAdminSession = { ...doc };
+        return { insertedId: 'round4-admin-session-id' };
       }),
-      deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+      findOne: jest.fn(async (query) => {
+        if (!activeAdminSession || query?.jti !== activeAdminSession.jti) return null;
+        return { ...activeAdminSession };
+      }),
+      deleteOne: jest.fn(async (query) => {
+        if (activeAdminSession && query?.jti === activeAdminSession.jti) {
+          activeAdminSession = null;
+          return { deletedCount: 1 };
+        }
+        return { deletedCount: 0 };
+      }),
       deleteMany: jest.fn().mockResolvedValue({ deletedCount: 0 })
     };
     const mockDb = {
@@ -227,10 +238,21 @@ describe('Security Hardening Round 4 - data lifecycle and race protections', () 
       cardRequestsCollectionName: 'requests'
     }));
 
-    const adminToken = jwt.sign({ role: 'admin', type: 'admin-master', jti: 'round4-admin-session' }, jwtSecret, { expiresIn: '1h' });
+    const masterSecret = 'round4-master-secret';
+    const previousAdminHash = process.env.ADMIN_TOKEN_SHA256;
+    process.env.ADMIN_TOKEN_SHA256 = crypto.createHash('sha256').update(masterSecret).digest('hex');
+
+    const login = await request(app)
+      .post('/api/admin/login')
+      .send({ token: masterSecret });
+    expect(login.status).toBe(200);
+
     const res = await request(app)
       .delete('/api/admin/users/victim-1')
-      .set('Authorization', `Bearer ${adminToken}`);
+      .set('Authorization', `Bearer ${login.body.token}`);
+
+    if (previousAdminHash === undefined) delete process.env.ADMIN_TOKEN_SHA256;
+    else process.env.ADMIN_TOKEN_SHA256 = previousAdminHash;
 
     expect(res.status).toBe(200);
     expect(designs.deleteMany).toHaveBeenCalledWith({ ownerId: 'victim-1' });
