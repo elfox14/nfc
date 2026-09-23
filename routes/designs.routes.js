@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const multer = require('multer');
 const sharp = require('sharp');
 const fs = require('fs');
@@ -14,6 +15,8 @@ const { cleanupDesignReferences } = require('../utils/data-cleanup');
 const { assertSafeExternalUploadUrl } = require('../utils/env-validation');
 
 const uploadDir = path.join(__dirname, '..', 'uploads');
+const VIEW_EVENTS_COLLECTION = 'viewEvents';
+const VIEW_DEDUPE_WINDOW_MS = 30 * 60 * 1000;
 
 function isSafePublicId(id) {
   return typeof id === 'string' && id.length >= 2 && id.length <= 100 && !/[/\\?#%&<>"']/.test(id);
@@ -49,6 +52,15 @@ function normalizeExternalImageUrl(value) {
   } catch {
     return null;
   }
+}
+
+function createViewerFingerprint(req) {
+  const ip = String(req.ip || '').slice(0, 128);
+  const userAgent = String(req.get('user-agent') || '').slice(0, 256);
+  return crypto
+    .createHmac('sha256', process.env.TOKEN_HASH_SECRET)
+    .update(`${ip}\n${userAgent}`)
+    .digest('hex');
 }
 
 module.exports = function createDesignsRouter({ 
@@ -100,6 +112,15 @@ const uploadLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: req => req.user.userId,
   message: { error: 'محاولات رفع كثيرة. حاول مرة أخرى لاحقاً. / Too many uploads. Try again later.' }
+});
+
+const viewLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 1000 : 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: req => req.ip,
+  message: { error: 'Too many view events. Try again later.' }
 });
 
 const ALLOWED_IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
@@ -1089,6 +1110,70 @@ router.get('/get-design/:id', async (req, res) => {
     if (!res.headersSent) {
       res.status(500).json({ error: 'Fetch failed' });
     }
+  }
+});
+
+// Record a public view through a dedicated write endpoint. A viewer/card
+// pair is counted at most once per dedupe window, enforced by MongoDB.
+router.post('/track-view/:id', viewLimiter, async (req, res) => {
+  try {
+    if (!getDb()) return res.status(503).json({ error: 'DB not connected' });
+
+    const id = String(req.params.id || '').trim();
+    if (!isSafePublicId(id)) {
+      return res.status(404).json({ error: 'Design not found' });
+    }
+
+    let doc = await getDb().collection(designsCollectionName).findOne(
+      { shortId: id },
+      { projection: { _id: 1, shortId: 1, slug: 1, data: 1 } }
+    );
+    if (!doc && !/^[0-9a-fA-F]{24}$/.test(id)) {
+      doc = await getDb().collection(designsCollectionName).findOne(
+        { slug: id },
+        { projection: { _id: 1, shortId: 1, slug: 1, data: 1 } }
+      );
+    }
+
+    const publishedRevision = selectPublishedDesignData(doc?.data);
+    if (!doc || !publishedRevision) {
+      return res.status(404).json({ error: 'Design not found' });
+    }
+
+    const viewerHash = createViewerFingerprint(req);
+    const event = {
+      designShortId: doc.shortId,
+      viewerHash,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + VIEW_DEDUPE_WINDOW_MS)
+    };
+
+    try {
+      await getDb().collection(VIEW_EVENTS_COLLECTION).insertOne(event);
+    } catch (insertError) {
+      if (insertError?.code === 11000) {
+        return res.json({ success: true, counted: false });
+      }
+      throw insertError;
+    }
+
+    try {
+      await getDb().collection(designsCollectionName).updateOne(
+        { _id: doc._id },
+        { $inc: { views: 1 } }
+      );
+    } catch (updateError) {
+      await getDb().collection(VIEW_EVENTS_COLLECTION).deleteOne({
+        designShortId: doc.shortId,
+        viewerHash
+      }).catch(() => {});
+      throw updateError;
+    }
+
+    return res.json({ success: true, counted: true });
+  } catch (error) {
+    console.error('[TrackView] Failed to record view:', error.message);
+    return res.status(500).json({ error: 'Failed to record view' });
   }
 });
 
