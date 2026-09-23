@@ -29,8 +29,36 @@ const mockUsersCollection = {
   createIndex: jest.fn()
 };
 
+let mockAdminSessionDoc = null;
+const mockAdminSessionsCollection = {
+  createIndex: jest.fn(),
+  insertOne: jest.fn(async (doc) => {
+    mockAdminSessionDoc = { ...doc };
+    return { insertedId: 'admin-session-id' };
+  }),
+  findOne: jest.fn(async (query) => {
+    if (!mockAdminSessionDoc) return null;
+    if (query?.jti && query.jti !== mockAdminSessionDoc.jti) return null;
+    if (query?.type && query.type !== mockAdminSessionDoc.type) return null;
+    if (query?.userId && query.userId !== mockAdminSessionDoc.userId) return null;
+    return { ...mockAdminSessionDoc };
+  }),
+  deleteOne: jest.fn(async (query) => {
+    if (mockAdminSessionDoc && query?.jti === mockAdminSessionDoc.jti) {
+      mockAdminSessionDoc = null;
+      return { deletedCount: 1 };
+    }
+    return { deletedCount: 0 };
+  }),
+  deleteMany: jest.fn().mockResolvedValue({ deletedCount: 0 })
+};
+
 const mockDb = {
-  collection: jest.fn((name) => name === 'users' ? mockUsersCollection : mockCollection),
+  collection: jest.fn((name) => {
+    if (name === 'users') return mockUsersCollection;
+    if (name === 'adminSessions') return mockAdminSessionsCollection;
+    return mockCollection;
+  }),
   command: jest.fn(() => Promise.resolve({ ok: 1 }))
 };
 

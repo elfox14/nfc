@@ -61,6 +61,12 @@ async function createIndexes(db, collectionNames) {
 
   await db.collection('leads').createIndex({ cardId: 1 });
   await db.collection('leads').createIndex({ createdAt: -1 });
+
+  await db.collection('adminSessions').createIndex({ jti: 1 }, { unique: true });
+  await db.collection('adminSessions').createIndex(
+    { expiresAt: 1 },
+    { expireAfterSeconds: 0, name: 'admin_session_ttl' }
+  );
 }
 
 async function connectDatabase({

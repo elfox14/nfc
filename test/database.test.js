@@ -42,5 +42,10 @@ describe('Database indexes', () => {
       }
     );
     expect(collections.get('leads').createIndex).toHaveBeenCalledWith({ cardId: 1 });
+    expect(collections.get('adminSessions').createIndex).toHaveBeenCalledWith({ jti: 1 }, { unique: true });
+    expect(collections.get('adminSessions').createIndex).toHaveBeenCalledWith(
+      { expiresAt: 1 },
+      { expireAfterSeconds: 0, name: 'admin_session_ttl' }
+    );
   });
 });

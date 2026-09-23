@@ -209,9 +209,19 @@ describe('Security Hardening Round 2 Tests', () => {
       usersCollection = {
         findOne: jest.fn()
       };
+      const adminSessions = {
+        findOne: jest.fn(async (query) => ({
+          jti: query.jti,
+          type: query.type,
+          userId: query.userId || null,
+          expiresAt: new Date(Date.now() + 60_000)
+        })),
+        deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 })
+      };
       mockDb = {
         collection: jest.fn((name) => {
           if (name === 'users') return usersCollection;
+          if (name === 'adminSessions') return adminSessions;
           return { findOne: jest.fn() };
         })
       };
@@ -229,7 +239,7 @@ describe('Security Hardening Round 2 Tests', () => {
 
     it('rejects admin access if admin role has been revoked in DB', async () => {
       const adminToken = jwt.sign(
-        { userId: 'demoted-user-1', email: 'demoted@test.com', role: 'admin', type: 'admin' },
+        { userId: 'demoted-user-1', email: 'demoted@test.com', role: 'admin', type: 'admin', jti: 'demoted-session' },
         jwtSecret,
         { expiresIn: '2h' }
       );
@@ -251,7 +261,7 @@ describe('Security Hardening Round 2 Tests', () => {
 
     it('allows admin access if user remains active admin in DB', async () => {
       const adminToken = jwt.sign(
-        { userId: 'active-admin-1', email: 'admin@test.com', role: 'admin', type: 'admin' },
+        { userId: 'active-admin-1', email: 'admin@test.com', role: 'admin', type: 'admin', jti: 'active-session' },
         jwtSecret,
         { expiresIn: '2h' }
       );
