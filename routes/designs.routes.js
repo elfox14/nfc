@@ -119,7 +119,6 @@ const viewLimiter = rateLimit({
   max: process.env.NODE_ENV === 'test' ? 1000 : 60,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: req => req.ip,
   message: { error: 'Too many view events. Try again later.' }
 });
 
