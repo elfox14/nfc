@@ -392,6 +392,13 @@ describe('Static File Serving', () => {
     expect(res.headers['cache-control']).toContain('no-store');
   });
 
+  it('admin HTML is never stored', async () => {
+    const res = await request(app).get('/nfc/admin');
+    expect(res.status).toBe(200);
+    expect(res.headers['cache-control']).toContain('no-store');
+    expect(res.headers['x-robots-tag']).toContain('noindex');
+  });
+
   it('GET /nfc/sw.js should not be cached long-term', async () => {
     const res = await request(app).get('/nfc/sw.js');
     expect(res.status).toBe(200);
