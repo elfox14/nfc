@@ -284,7 +284,13 @@ router.post('/register', [
     // Store verification token hash
     await getDb().collection(usersCollectionName).updateOne(
       { userId },
-      { $set: { verificationTokenHash: hashToken(verificationToken), verificationTokenExpiry } }
+      {
+        $set: {
+          verificationTokenHash: hashToken(verificationToken),
+          verificationTokenExpiry,
+          verificationEmailRequestedAt: new Date()
+        }
+      }
     );
 
     // Send verification email (non-blocking)
@@ -869,7 +875,14 @@ router.post('/verify-email', authLimiter, async (req, res) => {
         verificationTokenHash: hashToken(token),
         verificationTokenExpiry: { $gt: new Date() }
       },
-      { $set: { isVerified: true }, $unset: { verificationTokenHash: '', verificationTokenExpiry: '' } }
+      {
+        $set: { isVerified: true },
+        $unset: {
+          verificationTokenHash: '',
+          verificationTokenExpiry: '',
+          verificationEmailRequestedAt: ''
+        }
+      }
     );
 
     if (updateResult.matchedCount === 0) {
@@ -899,13 +912,31 @@ router.post('/resend-verification', verifyToken, authLimiter, async (req, res) =
 
     // Generate new opaque verification token
     const verificationToken = createRefreshToken();
-    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const verificationTokenExpiry = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const cooldownCutoff = new Date(now.getTime() - RECOVERY_EMAIL_COOLDOWN_MS);
 
-    // Store new verification token hash
-    await getDb().collection(usersCollectionName).updateOne(
-      { userId: user.userId },
-      { $set: { verificationTokenHash: hashToken(verificationToken), verificationTokenExpiry } }
+    const reserveResult = await getDb().collection(usersCollectionName).updateOne(
+      {
+        userId: user.userId,
+        isVerified: { $ne: true },
+        $or: [
+          { verificationEmailRequestedAt: { $exists: false } },
+          { verificationEmailRequestedAt: { $lte: cooldownCutoff } }
+        ]
+      },
+      {
+        $set: {
+          verificationTokenHash: hashToken(verificationToken),
+          verificationTokenExpiry,
+          verificationEmailRequestedAt: now
+        }
+      }
     );
+
+    if (reserveResult.matchedCount !== 1) {
+      return res.json({ success: true, message: 'تم إرسال رسالة التحقق' });
+    }
 
     // Send verification email
     const verifyUrl = buildFrontendActionUrl('verify-email.html', verificationToken);
@@ -914,6 +945,10 @@ router.post('/resend-verification', verifyToken, authLimiter, async (req, res) =
       await EmailService.send({ to: user.email, ...emailTemplate });
     } catch (emailErr) {
       console.warn('[ResendVerification] Email sending failed:', emailErr.message);
+      await getDb().collection(usersCollectionName).updateOne(
+        { userId: user.userId, verificationTokenHash: hashToken(verificationToken) },
+        { $unset: { verificationEmailRequestedAt: '' } }
+      ).catch(() => {});
       return res.status(500).json({ error: 'فشل إرسال البريد. حاول لاحقاً.' });
     }
 
