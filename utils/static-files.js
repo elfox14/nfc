@@ -4,16 +4,28 @@ const fs = require('fs');
 
 function registerCacheAndRedirectMiddleware(app) {
   app.use((req, res, next) => {
-    if (req.path.startsWith('/api/')) {
+    const ext = path.extname(req.path).toLowerCase();
+    const isNfcDocumentRoute =
+      req.path.startsWith('/nfc/') &&
+      (!ext || ext === '.html');
+
+    if (req.path.startsWith('/api/') || req.path.startsWith('/nfc/api/')) {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
-    } else if (req.path.endsWith('.html') || req.path.endsWith('/') || req.path.startsWith('/nfc/view/')) {
+    } else if (
+      isNfcDocumentRoute ||
+      req.path.endsWith('.html') ||
+      req.path.endsWith('/') ||
+      req.path.startsWith('/nfc/view/')
+    ) {
+      // Pretty HTML routes such as /nfc/editor and /nfc/c/:slug must not be
+      // retained after logout, unpublish, or a security-sensitive deployment.
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
     } else {
-      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+      res.setHeader('Cache-Control', 'public, max-age=604800');
     }
     next();
   });
@@ -37,17 +49,25 @@ function setNfcStaticHeaders(res, filePath) {
   const basename = path.basename(filePath).toLowerCase();
   res.setHeader('Vary', 'Accept-Encoding');
 
+  const isFingerprintedAsset = /-[0-9a-f]{10,}\.(?:js|css)$/i.test(basename);
+
   if (basename === 'sw.js') {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Service-Worker-Allowed', '/nfc/');
-  } else if (['.css', '.js'].includes(ext)) {
-    res.setHeader('Cache-Control', 'public, max-age=2592000, stale-while-revalidate=86400');
+  } else if (['.js', '.css'].includes(ext)) {
+    if (isFingerprintedAsset) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else {
+      // Security-sensitive entrypoints (auth.js, security-utils.js, etc.) use
+      // stable filenames. Force revalidation so patched code takes effect fast.
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
   } else if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.woff2', '.woff', '.ttf'].includes(ext)) {
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   } else if (ext === '.html') {
-    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   } else if (ext === '.json') {
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
   }
 }
 
