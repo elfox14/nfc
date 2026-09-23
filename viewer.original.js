@@ -1430,11 +1430,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!cardId) throw new Error(i18n.cardIdNotFound);
 
-                const apiUrl = `${API_BASE_URL}/api/get-design/${cardId}?trackView=true`;
+                const apiUrl = `${API_BASE_URL}/api/get-design/${encodeURIComponent(cardId)}`;
                 const response = await fetch(apiUrl, { cache: 'no-store' });
 
                 if (!response.ok) throw new Error(i18n.failedLoadCardData);
                 data = await response.json();
+                fetch(`${API_BASE_URL}/api/track-view/${encodeURIComponent(cardId)}`, {
+                    method: 'POST'
+                }).catch(err => console.warn('View tracking failed', err));
             }
 
             data = selectPublishedCardData(data);
