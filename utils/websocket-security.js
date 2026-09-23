@@ -8,8 +8,16 @@ const WS_LIMITS = {
 
 function getClientIP(req, trustProxy = false) {
   if (trustProxy) {
-    const forwarded = req.headers['x-forwarded-for']?.split(',')[0]?.trim();
-    if (forwarded) return forwarded;
+    const forwardedChain = String(req.headers['x-forwarded-for'] || '')
+      .split(',')
+      .map(value => value.trim())
+      .filter(Boolean);
+
+    // TRUST_PROXY=true is configured as exactly one trusted proxy hop in server.js.
+    // Use the nearest forwarded address (right-most), not a client-controlled first
+    // entry that may have been preserved by an upstream proxy.
+    const nearestForwarded = forwardedChain[forwardedChain.length - 1];
+    if (nearestForwarded) return nearestForwarded;
   }
   return req.socket.remoteAddress || 'unknown';
 }
