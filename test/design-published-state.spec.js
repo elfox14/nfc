@@ -200,7 +200,7 @@ describe('Published card revision persistence', () => {
         });
         mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 });
 
-        const response = await request(app).get('/api/get-design/card-1?trackView=true');
+        const response = await request(app).get('/api/get-design/card-1');
 
         expect(response.status).toBe(200);
         expect(response.body.inputs['input-name_ar']).toBe('الاسم المنشور');
@@ -208,6 +208,7 @@ describe('Published card revision persistence', () => {
         expect(response.body.publishedState).toBeUndefined();
         expect(JSON.stringify(response.body)).not.toContain('اسم المسودة السري');
         expect(JSON.stringify(response.body)).not.toContain('01111111111');
+        expect(mockCollection.updateOne).not.toHaveBeenCalled();
     });
 
     test('public reads reject draft-only cards', async () => {
