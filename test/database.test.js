@@ -42,6 +42,14 @@ describe('Database indexes', () => {
       }
     );
     expect(collections.get('leads').createIndex).toHaveBeenCalledWith({ cardId: 1 });
+    expect(collections.get('viewEvents').createIndex).toHaveBeenCalledWith(
+      { designShortId: 1, viewerHash: 1 },
+      { unique: true, name: 'uniq_card_viewer_window' }
+    );
+    expect(collections.get('viewEvents').createIndex).toHaveBeenCalledWith(
+      { expiresAt: 1 },
+      { expireAfterSeconds: 0, name: 'view_event_ttl' }
+    );
     expect(collections.get('adminSessions').createIndex).toHaveBeenCalledWith({ jti: 1 }, { unique: true });
     expect(collections.get('adminSessions').createIndex).toHaveBeenCalledWith(
       { expiresAt: 1 },
