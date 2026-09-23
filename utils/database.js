@@ -25,6 +25,17 @@ async function createIndexes(db, collectionNames) {
 
   await db.collection(cardRequestsCollectionName).createIndex({ ownerUserId: 1, status: 1 });
   await db.collection(cardRequestsCollectionName).createIndex({ requesterId: 1, designShortId: 1 });
+  await db.collection(cardRequestsCollectionName).createIndex(
+    { requesterId: 1, designShortId: 1, status: 1 },
+    {
+      unique: true,
+      partialFilterExpression: { status: 'pending' },
+      name: 'uniq_pending_card_request'
+    }
+  );
+
+  await db.collection('leads').createIndex({ cardId: 1 });
+  await db.collection('leads').createIndex({ createdAt: -1 });
 }
 
 async function connectDatabase({
