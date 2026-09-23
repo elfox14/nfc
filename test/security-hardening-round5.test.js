@@ -112,8 +112,22 @@ describe('Security Hardening Round 5 - session, OAuth, and action-token protecti
     const plaintext = 'master-secret-for-round5';
     process.env.ADMIN_TOKEN_SHA256 = crypto.createHash('sha256').update(plaintext).digest('hex');
 
+    let adminSession = null;
+    const adminSessions = {
+      insertOne: jest.fn(async (doc) => {
+        adminSession = { ...doc };
+        return { insertedId: 'session-id' };
+      }),
+      findOne: jest.fn(async (query) => {
+        if (!adminSession || query?.jti !== adminSession.jti) return null;
+        return { ...adminSession };
+      }),
+      deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+      deleteMany: jest.fn().mockResolvedValue({ deletedCount: 0 })
+    };
+    const users = { findOne: jest.fn() };
     const mockDb = {
-      collection: jest.fn(() => ({ findOne: jest.fn() }))
+      collection: jest.fn((name) => name === 'adminSessions' ? adminSessions : users)
     };
     const app = express();
     app.use(express.json());
