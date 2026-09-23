@@ -16,8 +16,13 @@ const mockCollection = {
     countDocuments: jest.fn()
 };
 
+const mockUsersCollection = {
+    findOne: jest.fn().mockResolvedValue({ userId: 'owner-1', isVerified: true }),
+    createIndex: jest.fn()
+};
+
 const mockDb = {
-    collection: jest.fn(() => mockCollection),
+    collection: jest.fn((name) => name === 'users' ? mockUsersCollection : mockCollection),
     command: jest.fn(() => Promise.resolve({ ok: 1 }))
 };
 
@@ -42,6 +47,7 @@ describe('Published card revision persistence', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         Object.values(mockCollection).forEach(mockFn => mockFn.mockReset());
+        mockUsersCollection.findOne.mockReset().mockResolvedValue({ userId: 'owner-1', isVerified: true });
         token = jwt.sign({ userId: 'owner-1', type: 'access' }, process.env.JWT_SECRET);
     });
 
@@ -63,7 +69,6 @@ describe('Published card revision persistence', () => {
         };
 
         mockCollection.findOne
-            .mockResolvedValueOnce({ userId: 'owner-1', isVerified: true })
             .mockResolvedValueOnce(existingDoc)
             .mockResolvedValueOnce(existingDoc);
         mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 });
@@ -85,7 +90,6 @@ describe('Published card revision persistence', () => {
 
     test('fresh published snapshots are sanitized and cannot nest recursively', async () => {
         mockCollection.findOne
-            .mockResolvedValueOnce({ userId: 'owner-1', isVerified: true })
             .mockResolvedValueOnce(null);
         mockCollection.insertOne.mockResolvedValueOnce({ insertedId: 'db-id' });
 
@@ -124,7 +128,6 @@ describe('Published card revision persistence', () => {
         };
 
         mockCollection.findOne
-            .mockResolvedValueOnce({ userId: 'owner-1', isVerified: true })
             .mockResolvedValueOnce(existingDoc)
             .mockResolvedValueOnce(existingDoc);
         mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 });
@@ -148,7 +151,6 @@ describe('Published card revision persistence', () => {
 
     test('ownerless legacy cards are forked instead of being claimed', async () => {
         mockCollection.findOne
-            .mockResolvedValueOnce({ userId: 'owner-1', isVerified: true })
             .mockResolvedValueOnce({ shortId: 'legacy-ownerless', data: { inputs: { 'input-name': 'Legacy' } } });
         mockCollection.insertOne.mockResolvedValueOnce({ insertedId: 'new-design' });
 
@@ -166,7 +168,6 @@ describe('Published card revision persistence', () => {
     test('owned updates use an atomic owner filter', async () => {
         const existing = { shortId: 'card-1', ownerId: 'owner-1', data: { inputs: {} } };
         mockCollection.findOne
-            .mockResolvedValueOnce({ userId: 'owner-1', isVerified: true })
             .mockResolvedValueOnce(existing);
         mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 });
 
