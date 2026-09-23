@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v7';
+const CACHE_VERSION = 'v8';
 const STATIC_CACHE = `mcprime-static-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
@@ -7,15 +7,10 @@ const PRECACHE_ASSETS = [
   '/nfc/homepage.css',
   '/nfc/mobile.css',
   '/nfc/cookie-consent.css',
-  '/nfc/cookie-consent.js',
-  '/nfc/error-reporter.js',
   '/nfc/manifest.json',
   '/nfc/logo.svg',
   '/nfc/mc-prime-nfc.png',
   '/nfc/mcprime-logo-optimized.webp',
-  '/nfc/js/gtm-bootstrap.js',
-  '/nfc/js/sw-register.js',
-  '/nfc/js/gtag-config.js',
 ];
 
 const OFFLINE_PAGE = '/nfc/offline.html';
@@ -74,13 +69,20 @@ self.addEventListener('fetch', (event) => {
   if (url.protocol === 'chrome-extension:') return;
   if (url.pathname.startsWith('/api/')) return;
 
+  // Never serve executable code or runtime configuration from a stale SW cache.
+  // Security fixes to these files must take effect on the next navigation/request.
+  if (isExecutableOrConfigAsset(url.pathname)) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   if (isSensitiveRequest(request, url)) {
     event.respondWith(fetch(request));
     return;
   }
 
   if (isHtmlRequest(request, url)) {
-    event.respondWith(networkFirstWithFallback(request));
+    event.respondWith(networkOnlyHtmlWithOfflineFallback(request));
     return;
   }
 
@@ -89,18 +91,10 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-async function networkFirstWithFallback(request) {
+async function networkOnlyHtmlWithOfflineFallback(request) {
   try {
-    const networkResponse = await fetch(request);
-    if (canCacheResponse(request, networkResponse)) {
-      const cache = await caches.open(STATIC_CACHE);
-      await cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
+    return await fetch(request);
   } catch (error) {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-
     const offlineCached = await caches.match(OFFLINE_PAGE);
     return offlineCached || new Response('Offline', { status: 503, statusText: 'Offline' });
   }
@@ -131,8 +125,12 @@ function isHtmlRequest(request, url) {
     url.pathname.endsWith('/');
 }
 
+function isExecutableOrConfigAsset(pathname) {
+  return /\.(?:js|mjs|json|wasm)$/i.test(pathname);
+}
+
 function isStaticAsset(pathname) {
-  return /\.(css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot|json)$/i.test(pathname);
+  return /\.(css|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot)$/i.test(pathname);
 }
 
 function isSensitiveRequest(request, url) {
@@ -146,7 +144,7 @@ function canCacheResponse(request, response) {
   if (request.headers.has('authorization') || request.headers.has('cookie')) return false;
 
   const cacheControl = response.headers.get('cache-control') || '';
-  if (/\b(no-store|private)\b/i.test(cacheControl)) return false;
+  if (/\b(no-store|no-cache|private)\b/i.test(cacheControl)) return false;
   if (response.headers.has('set-cookie')) return false;
 
   return true;
