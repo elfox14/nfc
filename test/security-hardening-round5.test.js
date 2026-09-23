@@ -31,7 +31,7 @@ describe('Security Hardening Round 5 - session, OAuth, and action-token protecti
   it('uses the configured canonical OAuth callback instead of an attacker-controlled Host header', () => {
     const { getOAuthRedirectUri } = createAuthRouter._private;
     process.env.NODE_ENV = 'production';
-    process.env.SITE_BASE_URL = 'https://mcprim.com';
+    process.env.GOOGLE_REDIRECT_URI = 'https://nfc-vjy6.onrender.com/api/auth/google/callback';
 
     const req = {
       headers: { 'x-forwarded-proto': 'http' },
@@ -39,7 +39,7 @@ describe('Security Hardening Round 5 - session, OAuth, and action-token protecti
       get: jest.fn().mockReturnValue('attacker.example')
     };
 
-    expect(getOAuthRedirectUri(req)).toBe('https://mcprim.com/api/auth/google/callback');
+    expect(getOAuthRedirectUri(req)).toBe('https://nfc-vjy6.onrender.com/api/auth/google/callback');
     expect(req.get).not.toHaveBeenCalled();
   });
 
