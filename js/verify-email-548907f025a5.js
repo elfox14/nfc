@@ -1,6 +1,9 @@
 async function verifyEmail() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
+            // Fragment tokens are not sent in the initial HTTP request. Keep
+            // query-string fallback only for already-issued legacy emails.
+            const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+            const queryParams = new URLSearchParams(window.location.search);
+            const token = hashParams.get('token') || queryParams.get('token');
 
             if (token && window.history && typeof window.history.replaceState === 'function') {
                 window.history.replaceState(null, '', window.location.pathname);
