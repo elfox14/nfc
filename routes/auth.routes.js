@@ -779,6 +779,7 @@ router.post('/reset-password', authLimiter, [
     }
 
     console.log(`[ResetPassword] Password updated for userId: ${user.userId}`);
+    clearAuthCookies(res);
     res.json({ success: true });
 
   } catch (err) {
