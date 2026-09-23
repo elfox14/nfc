@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const { nanoid } = require('nanoid');
 const EmailService = require('../email-service');
 const { createAccessToken, createRefreshToken, hashToken, isOpaqueToken } = require('../utils/tokens');
-const verifyToken = require('../auth-middleware');
+const { createVerifyToken, normalizeSessionVersion } = require('../auth-middleware');
 const { passwordValidator } = require('../utils/password-policy');
 const { redactSensitiveData } = require('../utils/error-tracking');
 const { setAuthCookies, clearAuthCookies, REFRESH_TOKEN_MAX_AGE_MS } = require('../utils/auth-cookies');
@@ -108,6 +108,7 @@ async function resolveGoogleAccount(users, googleUser) {
       name: googleUser.name || email.split('@')[0],
       googleId,
       isVerified: true,
+      sessionVersion: 0,
       createdAt: new Date()
     };
     await users.insertOne(newUser);
@@ -135,8 +136,12 @@ async function resolveGoogleAccount(users, googleUser) {
       resetTokenHash: '',
       resetTokenExpiry: '',
       refreshTokenHash: '',
-      refreshTokenExpiresAt: ''
+      refreshTokenExpiresAt: '',
+      usedRefreshTokens: '',
+      sessionInitTokenHash: '',
+      sessionInitTokenExpiry: ''
     };
+    update.$inc = { sessionVersion: 1 };
   }
 
   const linkResult = await users.updateOne(
@@ -174,6 +179,7 @@ module.exports = function createAuthRouter({
   cloudinary
 }) {
   const router = express.Router();
+  const verifyToken = createVerifyToken({ getDb, usersCollectionName });
 
   router.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -221,6 +227,7 @@ router.post('/register', [
       password: hashedPassword,
       name,
       isVerified: false,
+      sessionVersion: 0,
       createdAt: new Date()
     });
 
@@ -244,7 +251,7 @@ router.post('/register', [
     }
 
     // Generate short-lived access token + HttpOnly refresh cookie
-    const accessToken = createAccessToken({ userId, email });
+    const accessToken = createAccessToken({ userId, email, sessionVersion: 0 });
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
@@ -304,7 +311,11 @@ router.post('/login', [
     }
 
     // Generate short-lived access token + HttpOnly refresh cookie
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    const accessToken = createAccessToken({
+      userId: user.userId,
+      email: user.email,
+      sessionVersion: normalizeSessionVersion(user.sessionVersion)
+    });
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
@@ -447,7 +458,11 @@ router.get('/google/callback', async (req, res) => {
     }
 
     // Generate tokens
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    const accessToken = createAccessToken({
+      userId: user.userId,
+      email: user.email,
+      sessionVersion: normalizeSessionVersion(user.sessionVersion)
+    });
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
@@ -470,7 +485,13 @@ router.get('/google/callback', async (req, res) => {
     // SECURITY: Generate a very short-lived (60s), one-time-use token to initialize the session
     // This allows the SPA to boot even if third-party cookies are blocked by the browser.
     const sessionInitToken = jwt.sign(
-      { userId: user.userId, email: user.email, type: 'session-init', jti: nanoid(16) },
+      {
+        userId: user.userId,
+        email: user.email,
+        type: 'session-init',
+        sessionVersion: normalizeSessionVersion(user.sessionVersion),
+        jti: nanoid(16)
+      },
       process.env.JWT_SECRET,
       { expiresIn: '60s' }
     );
@@ -688,8 +709,17 @@ router.post('/reset-password', authLimiter, [
         resetTokenExpiry: { $gt: new Date() }
       },
       { 
-        $set: { password: hashedPassword }, 
-        $unset: { resetTokenHash: '', resetTokenExpiry: '', refreshTokenHash: '', refreshTokenExpiresAt: '' } 
+        $set: { password: hashedPassword },
+        $inc: { sessionVersion: 1 },
+        $unset: {
+          resetTokenHash: '',
+          resetTokenExpiry: '',
+          refreshTokenHash: '',
+          refreshTokenExpiresAt: '',
+          usedRefreshTokens: '',
+          sessionInitTokenHash: '',
+          sessionInitTokenExpiry: ''
+        }
       }
     );
 
@@ -1058,14 +1088,18 @@ router.post('/session-init', async (req, res) => {
     // Fetch the full user from DB to ensure we have the name
     const user = await users.findOne(
       { userId: decoded.userId },
-      { projection: { name: 1, email: 1, userId: 1 } }
+      { projection: { name: 1, email: 1, userId: 1, sessionVersion: 1 } }
     );
 
     if (!user) {
       return res.status(401).json({ error: 'User not found during initialization' });
     }
 
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    const accessToken = createAccessToken({
+      userId: user.userId,
+      email: user.email,
+      sessionVersion: normalizeSessionVersion(user.sessionVersion)
+    });
 
     res.json({
       success: true,
