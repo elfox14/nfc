@@ -38,14 +38,20 @@ module.exports = function createSystemRouter({ getDb, rootDir }) {
   router.get('/api/health', healthCheck);
 
   router.get(['/nfc/editor', '/nfc/editor.html'], (req, res) => {
+    const noStoreHeaders = {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0'
+    };
+
     if (req.useragent.isMobile) {
       const mobilePath = path.join(rootDir, 'editor-mobile.html');
       if (fs.existsSync(mobilePath)) {
-        return res.sendFile(mobilePath);
+        return res.sendFile(mobilePath, { headers: noStoreHeaders });
       }
       console.log('[Editor] Mobile user detected, but editor-mobile.html not found. Serving editor.html.');
     }
-    res.sendFile(path.join(rootDir, 'editor.html'));
+    return res.sendFile(path.join(rootDir, 'editor.html'), { headers: noStoreHeaders });
   });
 
   return router;
