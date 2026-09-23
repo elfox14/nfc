@@ -106,7 +106,9 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.id = 'dashboard-toast';
     toast.style.cssText = `position:fixed;bottom:30px;right:30px;z-index:10000;background:${c.bg};border:1px solid ${c.border};border-radius:14px;padding:16px 24px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:slideInRight 0.4s ease-out;font-family:'Poppins',sans-serif;max-width:320px;`;
-    toast.innerHTML = `<i class="fas ${c.icon}" style="color:${c.text};font-size:1.3rem;flex-shrink:0;"></i><span style="color:white;font-size:0.95rem;line-height:1.4;">${message}</span>`;
+    toast.innerHTML = `<i class="fas ${c.icon}" style="color:${c.text};font-size:1.3rem;flex-shrink:0;"></i><span style="color:white;font-size:0.95rem;line-height:1.4;"></span>`;
+    const toastMessage = toast.querySelector('span');
+    if (toastMessage) toastMessage.textContent = String(message ?? '');
     
     if (!document.getElementById('toast-keyframes')) {
         const style = document.createElement('style');
@@ -367,9 +369,10 @@ async function loadSavedCards() {
     grid.innerHTML = '';
     if (savedCards.length > 0) {
         savedCards.forEach(card => {
-            const thumb = card.cardThumb || '';
+            const thumb = String(card.cardThumb || '');
+            const designId = String(card.designShortId || '');
             let imgTag = '<i class="fas fa-id-card" style="font-size: 3.5rem; color: #c5a059;"></i>';
-            if (thumb) imgTag = `<img src="${thumb}" alt="${card.ownerName || 'Card'}" loading="lazy">`;
+            if (thumb) imgTag = `<img src="${escapeHTML(thumb)}" alt="${escapeHTML(card.ownerName || 'Card')}" loading="lazy">`;
             const date = card.savedAt ? new Date(card.savedAt).toLocaleDateString('en-US') : 'Unknown';
             const el = document.createElement('div');
             el.className = 'design-card hover-lift animate-on-scroll';
@@ -379,8 +382,8 @@ async function loadSavedCards() {
                     <h3 class="card-title">${escapeHTML(card.ownerName || 'Unknown')}</h3>
                     <div class="card-meta"><span><i class="far fa-calendar"></i> ${date}</span></div>
                     <div class="card-actions">
-                        <a href="viewer-en.html?id=${card.designShortId}" class="action-btn btn-view" target="_blank">View</a>
-                        <button type="button" class="action-btn btn-remove" onclick="removeSavedCard('${card.designShortId}')">Remove</button>
+                        <a href="viewer-en.html?id=${encodeURIComponent(designId)}" class="action-btn btn-view" target="_blank">View</a>
+                        <button type="button" class="action-btn btn-remove">Remove</button>
                     </div>
                 </div>`;
 
@@ -388,7 +391,7 @@ async function loadSavedCards() {
             if (remBtn) {
                 remBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    removeSavedCard(card.designShortId);
+                    removeSavedCard(designId);
                 });
             }
 
