@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { nanoid } = require('nanoid');
 const EmailService = require('../email-service');
-const verifyToken = require('../auth-middleware');
+const { createVerifyToken } = require('../auth-middleware');
 const rateLimit = require('express-rate-limit');
 const { ObjectId } = require('mongodb');
 const { selectPublishedDesignData } = require('../utils/published-design');
@@ -32,6 +32,7 @@ module.exports = function createDesignsRouter({
   cloudinary
 }) {
   const router = express.Router();
+  const verifyToken = createVerifyToken({ getDb, usersCollectionName });
 
 const storage = multer.memoryStorage();
 const upload = multer({
