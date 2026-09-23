@@ -35,11 +35,14 @@ function createOAuthAccountError(message, code) {
 function getOAuthRedirectUri(req) {
   const explicitRedirect = (process.env.GOOGLE_REDIRECT_URI || '').trim();
   const siteBase = (process.env.SITE_BASE_URL || '').trim().replace(/\/+$/, '');
-  const candidate = explicitRedirect || (siteBase ? `${siteBase}/api/auth/google/callback` : '');
+  const candidate = explicitRedirect ||
+    (process.env.NODE_ENV !== 'production' && siteBase
+      ? `${siteBase}/api/auth/google/callback`
+      : '');
 
   if (!candidate) {
     if (process.env.NODE_ENV === 'production') {
-      throw new Error('SITE_BASE_URL or GOOGLE_REDIRECT_URI must be configured for Google OAuth.');
+      throw new Error('GOOGLE_REDIRECT_URI must be configured for Google OAuth in production.');
     }
     const protoHeader = req.headers['x-forwarded-proto'];
     const proto = protoHeader ? protoHeader.split(',')[0].trim() : req.protocol;
