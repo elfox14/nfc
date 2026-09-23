@@ -96,7 +96,7 @@ const EditorUserStatus = {
             statusBar.innerHTML = `
                 <a href="${dashboardUrl}" id="user-status-text" class="tb-user-pill" title="${isEnglish ? 'Dashboard' : 'لوحة التحكم'}">
                     <i class="fas fa-user-circle"></i>
-                    <span class="tb-user-name">${userName}</span>
+                    <span class="tb-user-name">${sanitizeHTML(userName)}</span>
                 </a>
                 <button id="user-logout-btn" class="tb-pill-btn">${logoutText}</button>
             `;
