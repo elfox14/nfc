@@ -24,8 +24,13 @@ const mockCollection = {
   countDocuments: jest.fn()
 };
 
+const mockUsersCollection = {
+  findOne: jest.fn().mockResolvedValue({ userId: 'authenticated-test-user', sessionVersion: 0 }),
+  createIndex: jest.fn()
+};
+
 const mockDb = {
-  collection: jest.fn(() => mockCollection),
+  collection: jest.fn((name) => name === 'users' ? mockUsersCollection : mockCollection),
   command: jest.fn(() => Promise.resolve({ ok: 1 }))
 };
 
