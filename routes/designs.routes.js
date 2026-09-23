@@ -10,6 +10,7 @@ const rateLimit = require('express-rate-limit');
 const { ObjectId } = require('mongodb');
 const { selectPublishedDesignData } = require('../utils/published-design');
 const { slugifyName } = require('../utils/slugify');
+const { cleanupDesignReferences } = require('../utils/data-cleanup');
 
 const uploadDir = path.join(__dirname, '..', 'uploads');
 
@@ -653,7 +654,16 @@ router.delete('/user/designs/:id', verifyToken, async (req, res) => {
       return res.status(403).json({ error: 'لا يمكنك حذف هذا التصميم / You cannot delete this design' });
     }
 
-    await getDb().collection(designsCollectionName).deleteOne({ _id: design._id });
+    await cleanupDesignReferences(getDb(), {
+      shortIds: [design.shortId],
+      savedCardsCollectionName,
+      cardRequestsCollectionName
+    });
+
+    const deletion = await getDb().collection(designsCollectionName).deleteOne({ _id: design._id });
+    if (deletion.deletedCount !== 1) {
+      return res.status(500).json({ error: 'فشل حذف التصميم بعد تنظيف البيانات المرتبطة / Failed to delete design' });
+    }
 
     res.json({ success: true, message: 'تم حذف التصميم بنجاح / Design deleted successfully' });
   } catch (err) {
@@ -777,28 +787,43 @@ router.post('/save-card/:designId', verifyToken, saveCardLimiter, async (req, re
 
     if (ownerPrivacy === 'allow_all' || !design.ownerId) {
       // Save directly
-      await getDb().collection(savedCardsCollectionName).insertOne({
-        userId: requesterId,
-        designShortId: designId,
-        ownerName: cardName,
-        cardThumb: publishedDesign.imageUrls?.capturedFront || publishedDesign.imageUrls?.front || null,
-        savedAt: new Date()
-      });
+      try {
+        await getDb().collection(savedCardsCollectionName).insertOne({
+          userId: requesterId,
+          designShortId: designId,
+          ownerName: cardName,
+          cardThumb: publishedDesign.imageUrls?.capturedFront || publishedDesign.imageUrls?.front || null,
+          savedAt: new Date()
+        });
+      } catch (insertError) {
+        if (insertError?.code === 11000) {
+          return res.json({ success: true, status: 'already_saved' });
+        }
+        throw insertError;
+      }
       return res.json({ success: true, status: 'saved' });
     }
 
-    // require_approval: create a request
-    await getDb().collection(cardRequestsCollectionName).insertOne({
-      requesterId,
-      requesterName: requester?.name || 'مستخدم',
-      requesterEmail: requester?.email || '',
-      designShortId: designId,
-      cardName,
-      cardThumb: publishedDesign.imageUrls?.capturedFront || publishedDesign.imageUrls?.front || null,
-      ownerUserId: design.ownerId,
-      status: 'pending',
-      createdAt: new Date()
-    });
+    // require_approval: create a request. The database enforces one pending
+    // request per requester/card, so concurrent requests cannot create duplicates.
+    try {
+      await getDb().collection(cardRequestsCollectionName).insertOne({
+        requesterId,
+        requesterName: requester?.name || 'مستخدم',
+        requesterEmail: requester?.email || '',
+        designShortId: designId,
+        cardName,
+        cardThumb: publishedDesign.imageUrls?.capturedFront || publishedDesign.imageUrls?.front || null,
+        ownerUserId: design.ownerId,
+        status: 'pending',
+        createdAt: new Date()
+      });
+    } catch (insertError) {
+      if (insertError?.code === 11000) {
+        return res.json({ success: true, status: 'already_requested' });
+      }
+      throw insertError;
+    }
 
     // Send email notification to owner
     if (owner && owner.email) {
