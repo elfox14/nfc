@@ -102,7 +102,7 @@ module.exports = function createAdminRouter({
       const candidateToken = (token || tokenOrPassword || (!email ? password : '') || '').trim();
       if (candidateToken && validateMasterToken(candidateToken)) {
         const sessionToken = jwt.sign(
-          { role: 'admin', type: 'master', name: 'المسؤول الرئيسي' },
+          { role: 'admin', type: 'admin-master', name: 'المسؤول الرئيسي' },
           getJwtSecret(),
           { expiresIn: '2h' }
         );
@@ -126,7 +126,7 @@ module.exports = function createAdminRouter({
           const isMatch = await bcrypt.compare(userPassword, user.password);
           if (isMatch) {
             const sessionToken = jwt.sign(
-              { userId: user.userId, email: user.email, role: 'admin', name: user.name || 'مسؤول' },
+              { userId: user.userId, email: user.email, role: 'admin', type: 'admin', name: user.name || 'مسؤول' },
               getJwtSecret(),
               { expiresIn: '2h' }
             );
@@ -160,16 +160,12 @@ module.exports = function createAdminRouter({
       return res.status(401).json({ error: 'يرجى تسجيل الدخول كمسؤول للمتابعة.' });
     }
 
-    // A. Check master token
-    if (validateMasterToken(rawToken)) {
-      req.admin = { role: 'admin', type: 'master', name: 'المسؤول الرئيسي' };
-      return next();
-    }
-
-    // B. Check JWT token
+    // Downstream admin routes accept only short-lived JWT sessions minted by /admin/login.
+    // The master secret itself is never accepted as a bearer credential.
     try {
       const decoded = jwt.verify(rawToken, getJwtSecret(), { algorithms: ['HS256'] });
-      if (decoded && (decoded.role === 'admin' || decoded.isAdmin)) {
+      const validAdminType = decoded?.type === 'admin' || decoded?.type === 'admin-master';
+      if (decoded && validAdminType && (decoded.role === 'admin' || decoded.isAdmin)) {
         // If issued to a user account, verify user is still an active admin in DB
         if (decoded.userId) {
           const db = getDb();
