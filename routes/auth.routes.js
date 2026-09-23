@@ -17,6 +17,10 @@ const {
   clearOAuthStateCookieOptions
 } = require('../utils/oauth-state');
 const { isSafeCollabId } = require('../utils/websocket-security');
+const {
+  LEADS_COLLECTION_NAME,
+  cleanupUserOwnedData
+} = require('../utils/data-cleanup');
 
 function isSafeDesignId(value) {
   return typeof value === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(value);
@@ -892,11 +896,17 @@ router.get('/export-data', verifyToken, async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    const ownedDesignIds = designs.map(design => design.shortId).filter(Boolean);
+    const leads = ownedDesignIds.length
+      ? await db.collection(LEADS_COLLECTION_NAME).find({ cardId: { $in: ownedDesignIds } }).toArray()
+      : [];
+
     const exportPayload = {
       exportedAt: new Date().toISOString(),
       account: user,
       designs,
       savedCards,
+      leads,
       cardRequests: {
         submitted: submittedRequests,
         received: receivedRequests
@@ -929,27 +939,12 @@ router.delete('/account', verifyToken, authLimiter, async (req, res) => {
     );
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const ownedDesigns = await db.collection(designsCollectionName)
-      .find({ ownerId: userId }, { projection: { shortId: 1, _id: 0 } })
-      .toArray();
-    const designIds = ownedDesigns.map((design) => design.shortId).filter(Boolean);
-
-    await Promise.all([
-      db.collection(designsCollectionName).deleteMany({ ownerId: userId }),
-      db.collection(savedCardsCollectionName).deleteMany({
-        $or: [
-          { userId },
-          ...(designIds.length ? [{ designShortId: { $in: designIds } }] : [])
-        ]
-      }),
-      db.collection(cardRequestsCollectionName).deleteMany({
-        $or: [
-          { ownerUserId: userId },
-          { requesterId: userId },
-          ...(designIds.length ? [{ designShortId: { $in: designIds } }] : [])
-        ]
-      })
-    ]);
+    await cleanupUserOwnedData(db, {
+      userId,
+      designsCollectionName,
+      savedCardsCollectionName,
+      cardRequestsCollectionName
+    });
 
     // Cloudinary cleanup is best-effort. MongoDB deletion remains authoritative,
     // and provider CDN caches may take time to expire.
