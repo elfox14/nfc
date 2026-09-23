@@ -11,6 +11,7 @@ const { ObjectId } = require('mongodb');
 const { selectPublishedDesignData } = require('../utils/published-design');
 const { slugifyName } = require('../utils/slugify');
 const { cleanupDesignReferences } = require('../utils/data-cleanup');
+const { assertSafeExternalUploadUrl } = require('../utils/env-validation');
 
 const uploadDir = path.join(__dirname, '..', 'uploads');
 
@@ -20,6 +21,34 @@ function isSafePublicId(id) {
 
 function isSafeClientShortId(id) {
   return typeof id === 'string' && /^[A-Za-z0-9_-]{4,30}$/.test(id);
+}
+
+function getSafeExternalUploadUrl() {
+  if (!process.env.EXTERNAL_UPLOAD_URL) return null;
+  try {
+    return assertSafeExternalUploadUrl(process.env.EXTERNAL_UPLOAD_URL);
+  } catch (error) {
+    console.warn('[Upload] Ignoring unsafe EXTERNAL_UPLOAD_URL:', error.message);
+    return null;
+  }
+}
+
+function normalizeExternalImageUrl(value) {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  try {
+    const parsed = new URL(value.trim());
+    if (
+      parsed.protocol !== 'https:' ||
+      parsed.username ||
+      parsed.password ||
+      parsed.hash
+    ) {
+      return null;
+    }
+    return parsed.href;
+  } catch {
+    return null;
+  }
 }
 
 module.exports = function createDesignsRouter({ 
@@ -165,7 +194,8 @@ router.post('/upload-image', verifyToken, uploadLimiter, upload.single('image'),
     }
 
     // Phase 1: Try External Upload (Priority 1)
-    if (process.env.EXTERNAL_UPLOAD_URL) {
+    const externalUploadUrl = getSafeExternalUploadUrl();
+    if (externalUploadUrl) {
       try {
         const formData = new FormData();
         const blob = new Blob([processedBuffer], { type: 'image/webp' });
@@ -178,17 +208,19 @@ router.post('/upload-image', verifyToken, uploadLimiter, upload.single('image'),
           formData.append('overwrite_id', `user_${userId}_${purpose}`);
         }
 
-        const externalResponse = await fetch(process.env.EXTERNAL_UPLOAD_URL, {
+        const externalResponse = await fetch(externalUploadUrl, {
           method: 'POST',
           body: formData,
+          redirect: 'error',
           signal: AbortSignal.timeout(12_000)
         });
 
         if (externalResponse.ok) {
           const result = await externalResponse.json();
-          if (result.success && result.url) {
+          const safeResultUrl = result.success ? normalizeExternalImageUrl(result.url) : null;
+          if (safeResultUrl) {
             // Append cache-bust for overwritten images
-            let finalUrl = result.url;
+            let finalUrl = safeResultUrl;
             if (deterministicId) {
               const separator = finalUrl.includes('?') ? '&' : '?';
               finalUrl = `${finalUrl}${separator}v=${Date.now()}`;
@@ -308,7 +340,8 @@ router.post('/upload-image-public', verifyToken, uploadLimiter, upload.single('i
 
     // No deterministic IDs for public uploads (no overwrite support)
     // Phase 1: Try External Upload
-    if (process.env.EXTERNAL_UPLOAD_URL) {
+    const externalUploadUrl = getSafeExternalUploadUrl();
+    if (externalUploadUrl) {
       try {
         const formData = new FormData();
         const blob = new Blob([processedBuffer], { type: 'image/webp' });
@@ -317,17 +350,19 @@ router.post('/upload-image-public', verifyToken, uploadLimiter, upload.single('i
           formData.append('secret', process.env.UPLOAD_SECRET);
         }
 
-        const externalResponse = await fetch(process.env.EXTERNAL_UPLOAD_URL, {
+        const externalResponse = await fetch(externalUploadUrl, {
           method: 'POST',
           body: formData,
+          redirect: 'error',
           signal: AbortSignal.timeout(12_000)
         });
 
         if (externalResponse.ok) {
           const result = await externalResponse.json();
-          if (result.success && result.url) {
-            console.log('[PublicUpload] Image uploaded to external server:', result.url);
-            return res.json({ success: true, url: result.url, external: true });
+          const safeResultUrl = result.success ? normalizeExternalImageUrl(result.url) : null;
+          if (safeResultUrl) {
+            console.log('[PublicUpload] Image uploaded to external server:', safeResultUrl);
+            return res.json({ success: true, url: safeResultUrl, external: true });
           }
         }
         console.warn('[PublicUpload] External upload returned error status:', externalResponse.status);
@@ -639,6 +674,7 @@ router.delete('/user/designs/:id', verifyToken, async (req, res) => {
 
     const id = String(req.params.id);
     const query = {
+      ownerId: req.user.userId,
       $or: [
         { shortId: id },
         ...(ObjectId.isValid(id) ? [{ _id: new ObjectId(id) }] : [])
@@ -651,17 +687,13 @@ router.delete('/user/designs/:id', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'التصميم غير موجود / Design not found' });
     }
 
-    if (design.ownerId !== req.user.userId) {
-      return res.status(403).json({ error: 'لا يمكنك حذف هذا التصميم / You cannot delete this design' });
-    }
-
     await cleanupDesignReferences(getDb(), {
       shortIds: [design.shortId],
       savedCardsCollectionName,
       cardRequestsCollectionName
     });
 
-    const deletion = await getDb().collection(designsCollectionName).deleteOne({ _id: design._id });
+    const deletion = await getDb().collection(designsCollectionName).deleteOne({ _id: design._id, ownerId: req.user.userId });
     if (deletion.deletedCount !== 1) {
       return res.status(500).json({ error: 'فشل حذف التصميم بعد تنظيف البيانات المرتبطة / Failed to delete design' });
     }
@@ -1046,18 +1078,6 @@ router.get('/get-design/:id', async (req, res) => {
     if (!doc || !publishedRevision) {
       console.warn(`[API] Design not found for ID: ${id}`);
       return res.status(404).json({ error: 'Design not found or data missing' });
-    }
-
-    // Track view if requested (only from viewer.html to count real views)
-    if (req.query.trackView === 'true') {
-      try {
-        await getDb().collection(designsCollectionName).updateOne(
-          { _id: doc._id },
-          { $inc: { views: 1 } }
-        );
-      } catch (err) {
-        console.error(`[API] Failed to increment views for design ${id}:`, err);
-      }
     }
 
     console.log(`[API] Design found for ID: ${id}. Returning data.`);
