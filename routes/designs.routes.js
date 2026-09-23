@@ -78,7 +78,14 @@ module.exports = function createDesignsRouter({
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 4, fieldArrayIndexLimit: 10 },
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    files: 1,
+    fields: 4,
+    fieldSize: 1024,
+    parts: 6,
+    fieldArrayIndexLimit: 10
+  },
   fileFilter: (req, file, cb) => {
     if (file.mimetype && file.mimetype.startsWith('image/')) {
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
