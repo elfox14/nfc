@@ -38,7 +38,7 @@
     "dompurify": "^3.4.13",
     "dotenv": "^17.2.2",
     "ejs": "^5.0.2",
-    "express": "^4.22.2",
+    "express": "^4.22.3",
     "express-rate-limit": "^8.6.1",
     "express-useragent": "^2.0.2",
     "express-validator": "^7.3.1",
