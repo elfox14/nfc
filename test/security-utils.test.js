@@ -25,6 +25,8 @@ describe('Production environment validation', () => {
   beforeEach(() => {
     delete process.env.GOOGLE_CLIENT_ID;
     delete process.env.GOOGLE_CLIENT_SECRET;
+    delete process.env.GOOGLE_REDIRECT_URI;
+    delete process.env.SITE_BASE_URL;
   });
 
   afterEach(() => {
@@ -92,6 +94,30 @@ describe('Production environment validation', () => {
 
     expect(() => assertEnv()).toThrow('instead of ADMIN_TOKENH');
   });
+  it('requires a canonical HTTPS OAuth callback when Google OAuth is enabled', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.MONGO_URI = 'mongodb://example';
+    process.env.JWT_SECRET = 'a'.repeat(32);
+    process.env.TOKEN_HASH_SECRET = 'b'.repeat(32);
+    process.env.ALLOWED_ORIGINS = 'https://www.mcprim.com';
+    process.env.ADMIN_TOKEN_SHA256 = 'c'.repeat(64);
+    process.env.EMAIL_PROVIDER = 'resend';
+    process.env.EMAIL_API_KEY = 'email-key';
+    process.env.CLOUDINARY_CLOUD_NAME = 'cloud';
+    process.env.CLOUDINARY_API_KEY = 'key';
+    process.env.CLOUDINARY_API_SECRET = 'secret';
+    process.env.GOOGLE_CLIENT_ID = 'client';
+    process.env.GOOGLE_CLIENT_SECRET = 'client-secret';
+
+    expect(() => assertEnv()).toThrow(/SITE_BASE_URL|redirect/i);
+
+    process.env.GOOGLE_REDIRECT_URI = 'http://evil.example/api/auth/google/callback';
+    expect(() => assertEnv()).toThrow(/HTTPS/i);
+
+    process.env.GOOGLE_REDIRECT_URI = 'https://www.mcprim.com/api/auth/google/callback';
+    expect(() => assertEnv()).not.toThrow();
+  });
+
   it('accepts Cloudinary and rejects a half-configured Google OAuth client', () => {
     process.env.NODE_ENV = 'production';
     process.env.MONGO_URI = 'mongodb://example';
@@ -110,6 +136,7 @@ describe('Production environment validation', () => {
     expect(() => assertEnv()).toThrow('must be configured together');
 
     process.env.GOOGLE_CLIENT_SECRET = 'client-secret';
+    process.env.SITE_BASE_URL = 'https://www.mcprim.com';
     expect(() => assertEnv()).not.toThrow();
   });
 });
