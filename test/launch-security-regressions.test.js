@@ -53,6 +53,46 @@ describe('public launch security regressions', () => {
     expect(server).toContain('const authLimiter = rateLimit');
   });
 
+  test('public design reads cannot mutate view counters', () => {
+    const routes = read('routes/designs.routes.js');
+    const viewer = read('viewer.original.js');
+    expect(routes).not.toContain("req.query.trackView === 'true'");
+    expect(routes).toContain("router.post('/track-view/:id'");
+    expect(routes).toContain("VIEW_DEDUPE_WINDOW_MS");
+    expect(viewer).not.toContain('?trackView=true');
+    expect(viewer).toContain('/api/track-view/');
+  });
+
+  test('saved-card rendering escapes attribute data and avoids inline removal handlers', () => {
+    const dashboards = [
+      read('js/dashboard-2fd86ecf204e.js'),
+      read('js/dashboard-en-dbf23d06155e.js')
+    ].join('\n');
+    expect(dashboards).toContain('alt="${escapeHTML(card.ownerName');
+    expect(dashboards).toContain('src="${escapeHTML(thumb)}"');
+    expect(dashboards).not.toContain("onclick=\"removeSavedCard('${card.designShortId}')");
+    expect(dashboards).toContain("toastMessage.textContent = String(message ?? '')");
+  });
+
+  test('external upload rejects redirects and uses validated HTTPS endpoints', () => {
+    const routes = read('routes/designs.routes.js');
+    const validation = read('utils/env-validation.js');
+    expect(routes).toContain("redirect: 'error'");
+    expect(routes).toContain('assertSafeExternalUploadUrl');
+    expect(validation).toContain("parsed.protocol !== 'https:'");
+    expect(validation).toContain('isPrivateOrLocalIp');
+  });
+
+  test('editor and OAuth display names are sanitized before HTML insertion', () => {
+    const authRoutes = read('routes/auth.routes.js');
+    const editorStatus = read('editor-user-status.original.js');
+    expect(authRoutes).toContain('function safePublicName');
+    expect(authRoutes).toContain('name: safePublicName(googleUser.name');
+    expect(authRoutes).toContain('user: toPublicUser(user');
+    expect(editorStatus).toContain('${sanitizeHTML(userName)}');
+    expect(editorStatus).not.toContain('<span class="tb-user-name">${userName}</span>');
+  });
+
 
   test('third-party Actions are immutable and secret scanning is not verified-only', () => {
     const workflows = [
