@@ -254,9 +254,14 @@ const adminPageLimiter = rateLimit({
 });
 
 app.get(['/admin', '/admin.html', '/nfc/admin', '/nfc/admin.html'], adminPageLimiter, (req, res) => {
-  res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  res.sendFile(path.join(rootDir, 'admin.html'));
+  return res.sendFile(path.join(rootDir, 'admin.html'), {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0'
+    }
+  });
 });
 
 // Strict rate limiting for admin login (5 failed attempts per 15 minutes)
