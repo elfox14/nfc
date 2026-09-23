@@ -1,3 +1,5 @@
+const net = require('net');
+
 function isProduction() {
   return process.env.NODE_ENV === 'production';
 }
@@ -7,6 +9,76 @@ function assertLongSecret(name, minLength = 32) {
   if (!value || value.length < minLength) {
     throw new Error(`${name} must be set to at least ${minLength} characters.`);
   }
+}
+
+function isPrivateOrLocalIp(hostname) {
+  const host = String(hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
+  const version = net.isIP(host);
+
+  if (version === 4) {
+    const [a, b] = host.split('.').map(Number);
+    return (
+      a === 0 ||
+      a === 10 ||
+      a === 127 ||
+      (a === 100 && b >= 64 && b <= 127) ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      (a === 198 && (b === 18 || b === 19)) ||
+      a >= 224
+    );
+  }
+
+  if (version === 6) {
+    if (host === '::' || host === '::1') return true;
+    if (host.startsWith('::ffff:')) {
+      const mapped = host.slice('::ffff:'.length);
+      if (net.isIP(mapped) === 4) return isPrivateOrLocalIp(mapped);
+    }
+    const firstHextet = Number.parseInt(host.split(':')[0] || '0', 16);
+    if ((firstHextet & 0xfe00) === 0xfc00) return true;
+    if ((firstHextet & 0xffc0) === 0xfe80) return true;
+  }
+
+  return false;
+}
+
+function assertSafeExternalUploadUrl(value) {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error('EXTERNAL_UPLOAD_URL must be a non-empty HTTPS URL.');
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(value.trim());
+  } catch {
+    throw new Error('EXTERNAL_UPLOAD_URL must be a valid HTTPS URL.');
+  }
+
+  const hostname = parsed.hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  const localHostname =
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname.endsWith('.local') ||
+    hostname.endsWith('.internal') ||
+    hostname.endsWith('.lan');
+
+  if (
+    parsed.protocol !== 'https:' ||
+    parsed.username ||
+    parsed.password ||
+    parsed.hash ||
+    !hostname ||
+    localHostname ||
+    isPrivateOrLocalIp(hostname)
+  ) {
+    throw new Error(
+      'EXTERNAL_UPLOAD_URL must use HTTPS and must not target localhost, private/link-local IPs, or credentialed URLs.'
+    );
+  }
+
+  return parsed.href;
 }
 
 function assertEnv() {
@@ -74,9 +146,17 @@ function assertEnv() {
     'CLOUDINARY_API_KEY',
     'CLOUDINARY_API_SECRET'
   ].every(name => Boolean(process.env[name]));
-  const hasExternalUpload = Boolean(
-    process.env.EXTERNAL_UPLOAD_URL && process.env.UPLOAD_SECRET
-  );
+
+  const externalUploadUrl = (process.env.EXTERNAL_UPLOAD_URL || '').trim();
+  const uploadSecret = (process.env.UPLOAD_SECRET || '').trim();
+  if (Boolean(externalUploadUrl) !== Boolean(uploadSecret)) {
+    throw new Error('EXTERNAL_UPLOAD_URL and UPLOAD_SECRET must be configured together.');
+  }
+  if (externalUploadUrl) {
+    assertSafeExternalUploadUrl(externalUploadUrl);
+  }
+
+  const hasExternalUpload = Boolean(externalUploadUrl && uploadSecret);
   if (!hasCloudinary && !hasExternalUpload) {
     throw new Error(
       'Production image storage must configure Cloudinary or EXTERNAL_UPLOAD_URL and UPLOAD_SECRET.'
@@ -121,3 +201,4 @@ function assertEnv() {
 }
 
 module.exports = assertEnv;
+module.exports.assertSafeExternalUploadUrl = assertSafeExternalUploadUrl;
