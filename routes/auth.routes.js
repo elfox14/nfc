@@ -8,6 +8,7 @@ const { createAccessToken, createRefreshToken, hashToken, isOpaqueToken } = requ
 const { createVerifyToken, normalizeSessionVersion } = require('../auth-middleware');
 const { passwordValidator } = require('../utils/password-policy');
 const { redactSensitiveData } = require('../utils/error-tracking');
+const { sanitizeText } = require('../utils/sanitize');
 const { setAuthCookies, clearAuthCookies, REFRESH_TOKEN_MAX_AGE_MS } = require('../utils/auth-cookies');
 const {
   OAUTH_STATE_COOKIE,
@@ -30,6 +31,21 @@ function createOAuthAccountError(message, code) {
   const error = new Error(message);
   error.code = code;
   return error;
+}
+
+function safePublicName(value, fallback = '') {
+  const sanitized = sanitizeText(value, 120).trim();
+  return sanitized || sanitizeText(fallback, 120).trim();
+}
+
+function toPublicUser(user, { includeVerified = false } = {}) {
+  const publicUser = {
+    userId: user.userId,
+    email: user.email,
+    name: safePublicName(user.name, String(user.email || '').split('@')[0])
+  };
+  if (includeVerified) publicUser.isVerified = Boolean(user.isVerified);
+  return publicUser;
 }
 
 function getOAuthRedirectUri(req) {
@@ -133,7 +149,7 @@ async function resolveGoogleAccount(users, googleUser) {
     const newUser = {
       userId: nanoid(10),
       email,
-      name: googleUser.name || email.split('@')[0],
+      name: safePublicName(googleUser.name, email.split('@')[0]),
       googleId,
       isVerified: true,
       sessionVersion: 0,
@@ -153,7 +169,7 @@ async function resolveGoogleAccount(users, googleUser) {
   if (emailUser.googleId === googleId) return emailUser;
 
   const setFields = { googleId, isVerified: true };
-  if (!emailUser.name && googleUser.name) setFields.name = googleUser.name;
+  if (!emailUser.name && googleUser.name) setFields.name = safePublicName(googleUser.name, email.split('@')[0]);
 
   const update = { $set: setFields };
   if (!emailUser.isVerified) {
@@ -378,7 +394,7 @@ router.post('/login', [
     const loginResponse = { 
       success: true, 
       accessToken,
-      user: { name: user.name, email: user.email, userId: user.userId, isVerified: !!user.isVerified } 
+      user: toPublicUser(user, { includeVerified: true }) 
     };
     if (!user.isVerified) {
       loginResponse.warning = 'email_not_verified';
@@ -575,7 +591,7 @@ router.get('/google/callback', async (req, res) => {
             type: 'google-auth',
             success: true,
             initToken: ${serializeForInlineScript(sessionInitToken)},
-            user: ${serializeForInlineScript({ userId: user.userId, email: user.email, name: user.name })}
+            user: ${serializeForInlineScript(toPublicUser(user))}
           });
           bc.close();
         } catch (e) { /* BroadcastChannel not supported */ }
@@ -587,7 +603,7 @@ router.get('/google/callback', async (req, res) => {
               type: 'google-auth',
               success: true,
               initToken: ${serializeForInlineScript(sessionInitToken)},
-              user: ${serializeForInlineScript({ userId: user.userId, email: user.email, name: user.name })}
+              user: ${serializeForInlineScript(toPublicUser(user))}
             };
             var origins = ${serializeForInlineScript(allowedOrigins)};
             origins.forEach(function(base) {
@@ -988,7 +1004,7 @@ router.post('/refresh', async (req, res) => {
     res.json({
       success: true,
       accessToken: newAccessToken,
-      user: { name: user.name, email: user.email, userId: user.userId }
+      user: toPublicUser(user)
     });
 
   } catch (err) {
@@ -1077,7 +1093,7 @@ router.get('/me', verifyToken, async (req, res) => {
       { projection: { name: 1, email: 1, userId: 1, isVerified: 1, _id: 0 } }
     );
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ success: true, user });
+    res.json({ success: true, user: toPublicUser(user, { includeVerified: true }) });
   } catch (err) {
     console.error('Get user info error:', err);
     res.status(500).json({ error: 'Failed to get user info' });
@@ -1248,7 +1264,7 @@ router.post('/session-init', async (req, res) => {
     res.json({
       success: true,
       accessToken,
-      user: { userId: user.userId, email: user.email, name: user.name }
+      user: toPublicUser(user)
     });
 
   } catch {
