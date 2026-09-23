@@ -94,12 +94,24 @@ describe('Security Hardening Audit Regressions (P0 & P1)', () => {
   });
 
   describe('4. Account-Aware Rate Limiting', () => {
-    test('server.js configures accountLimiter on login and forgot-password', () => {
+    test('login and account recovery use separate abuse budgets', () => {
       const serverCode = fs.readFileSync(path.join(__dirname, '../server.js'), 'utf8');
+      expect(serverCode).toContain('const loginLimiter = rateLimit');
       expect(serverCode).toContain('const accountLimiter = rateLimit');
+      expect(serverCode).toContain('const recoveryAccountLimiter = rateLimit');
       expect(serverCode).toContain('acct_${email}');
+      expect(serverCode).toContain('recovery_${email}');
       expect(serverCode).toContain("app.use('/api/auth/login', accountLimiter)");
-      expect(serverCode).toContain("app.use('/api/auth/forgot-password', accountLimiter)");
+      expect(serverCode).toContain("app.use('/api/auth/forgot-password', recoveryAccountLimiter)");
+      expect(serverCode).toMatch(/const recoveryAccountLimiter = rateLimit\(\{[\s\S]*?skipSuccessfulRequests: false/);
+    });
+
+    test('recovery email cooldown is persisted in MongoDB', () => {
+      const authCode = fs.readFileSync(path.join(__dirname, '../routes/auth.routes.js'), 'utf8');
+      expect(authCode).toContain('RECOVERY_EMAIL_COOLDOWN_MS');
+      expect(authCode).toContain('passwordResetRequestedAt');
+      expect(authCode).toContain('verificationEmailRequestedAt');
+      expect(authCode).toContain('reserveResult.matchedCount !== 1');
     });
   });
 });
