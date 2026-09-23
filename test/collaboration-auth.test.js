@@ -11,8 +11,12 @@ const mockCollection = {
   findOne: jest.fn(),
   createIndex: jest.fn()
 };
+const mockUsersCollection = {
+  findOne: jest.fn().mockResolvedValue({ userId: 'authenticated-collaborator', sessionVersion: 0 }),
+  createIndex: jest.fn()
+};
 const mockDb = {
-  collection: jest.fn(() => mockCollection),
+  collection: jest.fn((name) => name === 'users' ? mockUsersCollection : mockCollection),
   command: jest.fn(() => Promise.resolve({ ok: 1 }))
 };
 const mockClient = { db: jest.fn(() => mockDb) };
@@ -40,6 +44,7 @@ describe('secure collaboration invitation exchange', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCollection.findOne.mockReset();
+    mockUsersCollection.findOne.mockReset().mockResolvedValue({ userId: 'authenticated-collaborator', sessionVersion: 0 });
   });
 
   test('only the design owner can create a random room invitation', async () => {
