@@ -89,8 +89,10 @@ function assertEnv() {
   }
 
   if (googleOAuthValues.every(Boolean)) {
-    const redirectCandidate = (process.env.GOOGLE_REDIRECT_URI || '').trim() ||
-      ((process.env.SITE_BASE_URL || '').trim().replace(/\/+$/, '') + '/api/auth/google/callback');
+    const redirectCandidate = (process.env.GOOGLE_REDIRECT_URI || '').trim();
+    if (!redirectCandidate) {
+      throw new Error('GOOGLE_REDIRECT_URI must be configured when Google OAuth is enabled in production.');
+    }
 
     let parsedRedirect;
     try {
