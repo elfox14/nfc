@@ -3,6 +3,10 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { ObjectId } = require('mongodb');
+const {
+  cleanupDesignReferences,
+  cleanupUserOwnedData
+} = require('../utils/data-cleanup');
 
 /**
  * Admin Router
@@ -370,18 +374,27 @@ module.exports = function createAdminRouter({
 
       const { userId } = req.params;
 
-      // Delete user record
-      const result = await db.collection(usersCollectionName).deleteOne({ userId });
-      if (result.deletedCount === 0) {
+      const user = await db.collection(usersCollectionName).findOne(
+        { userId },
+        { projection: { userId: 1, _id: 0 } }
+      );
+      if (!user) {
         return res.status(404).json({ error: 'المستخدم غير موجود' });
       }
 
-      // Cleanup user designs and saved cards non-blockingly
-      await Promise.allSettled([
-        db.collection(designsCollectionName).deleteMany({ userId }),
-        db.collection(savedCardsCollectionName).deleteMany({ userId }),
-        db.collection(cardRequestsCollectionName).deleteMany({ $or: [{ requesterId: userId }, { ownerUserId: userId }] })
-      ]);
+      // Delete owned designs and every record that references them before
+      // removing the account record itself.
+      await cleanupUserOwnedData(db, {
+        userId,
+        designsCollectionName,
+        savedCardsCollectionName,
+        cardRequestsCollectionName
+      });
+
+      const result = await db.collection(usersCollectionName).deleteOne({ userId });
+      if (result.deletedCount !== 1) {
+        return res.status(500).json({ error: 'فشل حذف سجل المستخدم بعد تنظيف البيانات المرتبطة' });
+      }
 
       res.json({ success: true, message: 'تم حذف المستخدم وجميع بياناته بنجاح' });
     } catch (err) {
@@ -453,13 +466,24 @@ module.exports = function createAdminRouter({
       if (!db) return res.status(500).json({ error: 'DB not connected' });
 
       const { shortId } = req.params;
-      const result = await db.collection(designsCollectionName).deleteOne({ shortId });
-
-      if (result.deletedCount === 0) {
+      const design = await db.collection(designsCollectionName).findOne(
+        { shortId },
+        { projection: { shortId: 1, _id: 1 } }
+      );
+      if (!design) {
         return res.status(404).json({ error: 'التصميم غير موجود' });
       }
 
-      await db.collection(savedCardsCollectionName).deleteMany({ shortId }).catch(() => {});
+      await cleanupDesignReferences(db, {
+        shortIds: [shortId],
+        savedCardsCollectionName,
+        cardRequestsCollectionName
+      });
+
+      const result = await db.collection(designsCollectionName).deleteOne({ _id: design._id });
+      if (result.deletedCount !== 1) {
+        return res.status(500).json({ error: 'فشل حذف التصميم بعد تنظيف البيانات المرتبطة' });
+      }
 
       res.json({ success: true, message: 'تم حذف التصميم بنجاح' });
     } catch (err) {
