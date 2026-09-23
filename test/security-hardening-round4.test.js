@@ -196,6 +196,15 @@ describe('Security Hardening Round 4 - data lifecycle and race protections', () 
     const saved = { deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }) };
     const requests = { deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }) };
     const leads = { deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }) };
+    const adminSessions = {
+      findOne: jest.fn().mockResolvedValue({
+        jti: 'round4-admin-session',
+        type: 'admin-master',
+        expiresAt: new Date(Date.now() + 60_000)
+      }),
+      deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+      deleteMany: jest.fn().mockResolvedValue({ deletedCount: 0 })
+    };
     const mockDb = {
       collection: jest.fn((name) => {
         if (name === 'users') return users;
@@ -203,6 +212,7 @@ describe('Security Hardening Round 4 - data lifecycle and race protections', () 
         if (name === 'saved') return saved;
         if (name === 'requests') return requests;
         if (name === 'leads') return leads;
+        if (name === 'adminSessions') return adminSessions;
         throw new Error('Unexpected collection ' + name);
       })
     };
@@ -217,7 +227,7 @@ describe('Security Hardening Round 4 - data lifecycle and race protections', () 
       cardRequestsCollectionName: 'requests'
     }));
 
-    const adminToken = jwt.sign({ role: 'admin', type: 'admin', jti: 'round4-admin-session' }, jwtSecret, { expiresIn: '1h' });
+    const adminToken = jwt.sign({ role: 'admin', type: 'admin-master', jti: 'round4-admin-session' }, jwtSecret, { expiresIn: '1h' });
     const res = await request(app)
       .delete('/api/admin/users/victim-1')
       .set('Authorization', `Bearer ${adminToken}`);
