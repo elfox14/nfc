@@ -136,7 +136,7 @@ describe('Production environment validation', () => {
     expect(() => assertEnv()).toThrow('must be configured together');
 
     process.env.GOOGLE_CLIENT_SECRET = 'client-secret';
-    process.env.SITE_BASE_URL = 'https://www.mcprim.com';
+    process.env.GOOGLE_REDIRECT_URI = 'https://nfc-vjy6.onrender.com/api/auth/google/callback';
     expect(() => assertEnv()).not.toThrow();
   });
 });
