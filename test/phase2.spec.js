@@ -360,11 +360,18 @@ describe('Static File Serving', () => {
     expect(res.headers['content-type']).toMatch(/html/);
   });
 
-  it('GET /nfc/cookie-consent.js should have cache headers', async () => {
+  it('unversioned JavaScript must revalidate after security deployments', async () => {
     const res = await request(app).get('/nfc/cookie-consent.js');
     if (res.status === 200) {
-      expect(res.headers['cache-control']).toContain('max-age');
+      expect(res.headers['cache-control']).toContain('no-cache');
+      expect(res.headers['cache-control']).not.toContain('immutable');
     }
+  });
+
+  it('clean HTML routes are never stored', async () => {
+    const res = await request(app).get('/nfc/editor');
+    expect(res.status).toBe(200);
+    expect(res.headers['cache-control']).toContain('no-store');
   });
 
   it('GET /nfc/sw.js should not be cached long-term', async () => {
