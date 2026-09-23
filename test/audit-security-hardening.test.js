@@ -55,7 +55,11 @@ describe('Security Hardening Audit Regressions (P0 & P1)', () => {
       app = express();
       app.use(cookieParser());
       app.use('/api', createDesignsRouter({
-        getDb: () => ({ collection: () => ({}) }),
+        getDb: () => ({
+          collection: (name) => name === 'users'
+            ? { findOne: async () => ({ userId: 'u-audit', sessionVersion: 0 }) }
+            : {}
+        }),
         designsCollectionName: 'designs',
         usersCollectionName: 'users',
         cardRequestsCollectionName: 'cardRequests',

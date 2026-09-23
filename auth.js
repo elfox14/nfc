@@ -279,6 +279,7 @@ const Auth = {
         try {
             await fetch(this.API_LOGOUT, {
                 method: 'POST',
+                headers: { ...this.getHeader() },
                 credentials: 'include'
             });
         } catch (err) {

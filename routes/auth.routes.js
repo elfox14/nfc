@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const { nanoid } = require('nanoid');
 const EmailService = require('../email-service');
 const { createAccessToken, createRefreshToken, hashToken, isOpaqueToken } = require('../utils/tokens');
-const verifyToken = require('../auth-middleware');
+const { createVerifyToken, normalizeSessionVersion } = require('../auth-middleware');
 const { passwordValidator } = require('../utils/password-policy');
 const { redactSensitiveData } = require('../utils/error-tracking');
 const { setAuthCookies, clearAuthCookies, REFRESH_TOKEN_MAX_AGE_MS } = require('../utils/auth-cookies');
@@ -88,6 +88,32 @@ function buildFrontendActionUrl(pathname, token) {
   return `${baseUrl}/${pathname}#token=${encodeURIComponent(token)}`;
 }
 
+function sessionVersionMatch(version) {
+  const normalized = normalizeSessionVersion(version);
+  if (normalized === 0) {
+    return {
+      $or: [
+        { sessionVersion: 0 },
+        { sessionVersion: null },
+        { sessionVersion: { $exists: false } }
+      ]
+    };
+  }
+  return { sessionVersion: normalized };
+}
+
+function sessionVersionUserFilter(userId, version) {
+  return { userId, ...sessionVersionMatch(version) };
+}
+
+function readAccessToken(req) {
+  const authHeader = req.headers?.authorization;
+  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7).trim();
+  }
+  return req.cookies?.accessToken || '';
+}
+
 async function resolveGoogleAccount(users, googleUser) {
   const googleId = typeof googleUser?.id === 'string' ? googleUser.id.trim() : '';
   const email = typeof googleUser?.email === 'string' ? googleUser.email.trim().toLowerCase() : '';
@@ -108,6 +134,7 @@ async function resolveGoogleAccount(users, googleUser) {
       name: googleUser.name || email.split('@')[0],
       googleId,
       isVerified: true,
+      sessionVersion: 0,
       createdAt: new Date()
     };
     await users.insertOne(newUser);
@@ -135,8 +162,12 @@ async function resolveGoogleAccount(users, googleUser) {
       resetTokenHash: '',
       resetTokenExpiry: '',
       refreshTokenHash: '',
-      refreshTokenExpiresAt: ''
+      refreshTokenExpiresAt: '',
+      usedRefreshTokens: '',
+      sessionInitTokenHash: '',
+      sessionInitTokenExpiry: ''
     };
+    update.$inc = { sessionVersion: 1 };
   }
 
   const linkResult = await users.updateOne(
@@ -174,6 +205,7 @@ module.exports = function createAuthRouter({
   cloudinary
 }) {
   const router = express.Router();
+  const verifyToken = createVerifyToken({ getDb, usersCollectionName });
 
   router.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -221,6 +253,7 @@ router.post('/register', [
       password: hashedPassword,
       name,
       isVerified: false,
+      sessionVersion: 0,
       createdAt: new Date()
     });
 
@@ -244,7 +277,7 @@ router.post('/register', [
     }
 
     // Generate short-lived access token + HttpOnly refresh cookie
-    const accessToken = createAccessToken({ userId, email });
+    const accessToken = createAccessToken({ userId, email, sessionVersion: 0 });
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
@@ -252,7 +285,10 @@ router.post('/register', [
     // Store hashed refresh token in DB with server-side expiry
     await getDb().collection(usersCollectionName).updateOne(
       { userId },
-      { $set: { refreshTokenHash: hashedRefresh, refreshTokenExpiresAt } }
+      {
+        $set: { refreshTokenHash: hashedRefresh, refreshTokenExpiresAt },
+        $unset: { usedRefreshTokens: '' }
+      }
     );
 
     setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
@@ -303,17 +339,34 @@ router.post('/login', [
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Generate short-lived access token + HttpOnly refresh cookie
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    // A new login replaces the account's single active refresh session and
+    // increments the session version so older access JWTs stop working immediately.
+    const loginSessionVersion = normalizeSessionVersion(user.sessionVersion) + 1;
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
 
-    // Store hashed refresh token in DB with server-side expiry
     await getDb().collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { refreshTokenHash: hashedRefresh, refreshTokenExpiresAt } }
+      {
+        $set: {
+          refreshTokenHash: hashedRefresh,
+          refreshTokenExpiresAt,
+          sessionVersion: loginSessionVersion
+        },
+        $unset: {
+          usedRefreshTokens: '',
+          sessionInitTokenHash: '',
+          sessionInitTokenExpiry: ''
+        }
+      }
     );
+
+    const accessToken = createAccessToken({
+      userId: user.userId,
+      email: user.email,
+      sessionVersion: loginSessionVersion
+    });
 
     setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
 
@@ -446,16 +499,29 @@ router.get('/google/callback', async (req, res) => {
       throw accountError;
     }
 
-    // Generate tokens
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    // Google login also replaces the account's single active refresh session.
+    const oauthSessionVersion = normalizeSessionVersion(user.sessionVersion) + 1;
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
 
     await getDb().collection(usersCollectionName).updateOne(
       { userId: user.userId },
-      { $set: { refreshTokenHash: hashedRefresh, refreshTokenExpiresAt } }
+      {
+        $set: {
+          refreshTokenHash: hashedRefresh,
+          refreshTokenExpiresAt,
+          sessionVersion: oauthSessionVersion
+        },
+        $unset: { usedRefreshTokens: '' }
+      }
     );
+
+    const accessToken = createAccessToken({
+      userId: user.userId,
+      email: user.email,
+      sessionVersion: oauthSessionVersion
+    });
 
     setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
 
@@ -470,7 +536,13 @@ router.get('/google/callback', async (req, res) => {
     // SECURITY: Generate a very short-lived (60s), one-time-use token to initialize the session
     // This allows the SPA to boot even if third-party cookies are blocked by the browser.
     const sessionInitToken = jwt.sign(
-      { userId: user.userId, email: user.email, type: 'session-init', jti: nanoid(16) },
+      {
+        userId: user.userId,
+        email: user.email,
+        type: 'session-init',
+        sessionVersion: oauthSessionVersion,
+        jti: nanoid(16)
+      },
       process.env.JWT_SECRET,
       { expiresIn: '60s' }
     );
@@ -688,8 +760,17 @@ router.post('/reset-password', authLimiter, [
         resetTokenExpiry: { $gt: new Date() }
       },
       { 
-        $set: { password: hashedPassword }, 
-        $unset: { resetTokenHash: '', resetTokenExpiry: '', refreshTokenHash: '', refreshTokenExpiresAt: '' } 
+        $set: { password: hashedPassword },
+        $inc: { sessionVersion: 1 },
+        $unset: {
+          resetTokenHash: '',
+          resetTokenExpiry: '',
+          refreshTokenHash: '',
+          refreshTokenExpiresAt: '',
+          usedRefreshTokens: '',
+          sessionInitTokenHash: '',
+          sessionInitTokenExpiry: ''
+        }
       }
     );
 
@@ -698,6 +779,7 @@ router.post('/reset-password', authLimiter, [
     }
 
     console.log(`[ResetPassword] Password updated for userId: ${user.userId}`);
+    clearAuthCookies(res);
     res.json({ success: true });
 
   } catch (err) {
@@ -826,6 +908,12 @@ router.post('/refresh', async (req, res) => {
       $set: {
         refreshTokenHash: newHashedRefresh,
         refreshTokenExpiresAt: newExpiry
+      },
+      $push: {
+        usedRefreshTokens: {
+          $each: [{ hash: hashedToken, expiresAt: newExpiry }],
+          $slice: -50
+        }
       }
     };
 
@@ -848,14 +936,50 @@ router.post('/refresh', async (req, res) => {
     }
 
     if (!user || !user.userId) {
+      // If an already-rotated token is seen again, treat it as credential theft:
+      // invalidate the whole user session, including the attacker's newer token.
+      const reusedUser = typeof dbCollection.findOne === 'function'
+        ? await dbCollection.findOne(
+            {
+              usedRefreshTokens: {
+                $elemMatch: { hash: hashedToken, expiresAt: { $gt: new Date() } }
+              }
+            },
+            { projection: { userId: 1, sessionVersion: 1, _id: 0 } }
+          )
+        : null;
+
+      if (reusedUser?.userId) {
+        await dbCollection.updateOne(
+          sessionVersionUserFilter(reusedUser.userId, reusedUser.sessionVersion),
+          {
+            $inc: { sessionVersion: 1 },
+            $unset: {
+              refreshTokenHash: '',
+              refreshTokenExpiresAt: '',
+              usedRefreshTokens: '',
+              sessionInitTokenHash: '',
+              sessionInitTokenExpiry: ''
+            }
+          }
+        );
+        clearAuthCookies(res);
+        console.warn(`[Refresh] Reuse detected; revoked session for userId: ${reusedUser.userId}`);
+        return res.status(403).json({ error: 'Session revoked. Please sign in again.', code: 'SESSION_REVOKED' });
+      }
+
       console.warn('[Refresh] Invalid or expired refresh token');
       return res.status(403).json({ error: 'Invalid refresh token' });
     }
 
     console.log(`[Refresh] Refreshing session for userId: ${user.userId}`);
 
-    // Generate new access token
-    const newAccessToken = createAccessToken({ userId: user.userId, email: user.email });
+    // Generate new access token bound to the current server-side session version.
+    const newAccessToken = createAccessToken({
+      userId: user.userId,
+      email: user.email,
+      sessionVersion: normalizeSessionVersion(user.sessionVersion)
+    });
 
     setAuthCookies(res, { accessToken: newAccessToken, refreshToken: newRefreshToken });
 
@@ -874,24 +998,71 @@ router.post('/refresh', async (req, res) => {
 // --- LOGOUT ROUTE ---
 router.post('/logout', async (req, res) => {
   try {
+    const users = getDb()?.collection(usersCollectionName);
     const tokenFromCookie = req.cookies?.refreshToken;
+    let revoked = false;
 
-    if (tokenFromCookie && getDb()) {
-      // Remove refresh token and expiry from DB
+    if (users && tokenFromCookie && isOpaqueToken(tokenFromCookie)) {
       const hashedToken = hashToken(tokenFromCookie);
-      await getDb().collection(usersCollectionName).updateOne(
+      const refreshUser = await users.findOne(
         { refreshTokenHash: hashedToken },
-        { $unset: { refreshTokenHash: '', refreshTokenExpiresAt: '' } }
+        { projection: { userId: 1, sessionVersion: 1, _id: 0 } }
       );
+
+      if (refreshUser?.userId) {
+        const result = await users.updateOne(
+          { refreshTokenHash: hashedToken, ...sessionVersionMatch(refreshUser.sessionVersion) },
+          {
+            $inc: { sessionVersion: 1 },
+            $unset: {
+              refreshTokenHash: '',
+              refreshTokenExpiresAt: '',
+              usedRefreshTokens: '',
+              sessionInitTokenHash: '',
+              sessionInitTokenExpiry: ''
+            }
+          }
+        );
+        revoked = result.matchedCount === 1;
+      }
+    }
+
+    // Cookie-less/cross-origin clients can still revoke the current access
+    // session. The version match makes a stale token unable to repeatedly
+    // invalidate newer sessions.
+    if (users && !revoked) {
+      const accessToken = readAccessToken(req);
+      if (accessToken) {
+        try {
+          const decoded = jwt.verify(accessToken, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+          if (decoded.type === 'access' && decoded.userId) {
+            await users.updateOne(
+              sessionVersionUserFilter(decoded.userId, decoded.sessionVersion),
+              {
+                $inc: { sessionVersion: 1 },
+                $unset: {
+                  refreshTokenHash: '',
+                  refreshTokenExpiresAt: '',
+                  usedRefreshTokens: '',
+                  sessionInitTokenHash: '',
+                  sessionInitTokenExpiry: ''
+                }
+              }
+            );
+          }
+        } catch {
+          // Logout always clears browser credentials even if the JWT is expired.
+        }
+      }
     }
 
     clearAuthCookies(res);
-
-    res.json({ success: true });
+    return res.json({ success: true });
 
   } catch (err) {
     console.error('Logout error:', err);
-    res.status(500).json({ error: 'Logout failed' });
+    clearAuthCookies(res);
+    return res.status(500).json({ error: 'Logout failed' });
   }
 });
 
@@ -1044,7 +1215,8 @@ router.post('/session-init', async (req, res) => {
       {
         userId: decoded.userId,
         sessionInitTokenHash: hashToken(initToken),
-        sessionInitTokenExpiry: { $gt: new Date() }
+        sessionInitTokenExpiry: { $gt: new Date() },
+        ...sessionVersionMatch(decoded.sessionVersion)
       },
       { $unset: { sessionInitTokenHash: '', sessionInitTokenExpiry: '' } }
     );
@@ -1058,14 +1230,18 @@ router.post('/session-init', async (req, res) => {
     // Fetch the full user from DB to ensure we have the name
     const user = await users.findOne(
       { userId: decoded.userId },
-      { projection: { name: 1, email: 1, userId: 1 } }
+      { projection: { name: 1, email: 1, userId: 1, sessionVersion: 1 } }
     );
 
     if (!user) {
       return res.status(401).json({ error: 'User not found during initialization' });
     }
 
-    const accessToken = createAccessToken({ userId: user.userId, email: user.email });
+    const accessToken = createAccessToken({
+      userId: user.userId,
+      email: user.email,
+      sessionVersion: normalizeSessionVersion(user.sessionVersion)
+    });
 
     res.json({
       success: true,
@@ -1166,6 +1342,9 @@ router.post('/ws-token', verifyToken, async (req, res) => {
 module.exports._private = {
   buildFrontendActionUrl,
   getOAuthRedirectUri,
+  readAccessToken,
   resolveGoogleAccount,
-  serializeForInlineScript
+  serializeForInlineScript,
+  sessionVersionMatch,
+  sessionVersionUserFilter
 };

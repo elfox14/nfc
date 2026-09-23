@@ -12,8 +12,13 @@ const mockCollection = {
     createIndex: jest.fn()
 };
 
+const mockUsersCollection = {
+    findOne: jest.fn().mockResolvedValue({ userId: 'user123', sessionVersion: 0 }),
+    createIndex: jest.fn()
+};
+
 const mockDb = {
-    collection: jest.fn(() => mockCollection),
+    collection: jest.fn((name) => name === 'users' ? mockUsersCollection : mockCollection),
     command: jest.fn(() => Promise.resolve({ ok: 1 }))
 };
 
@@ -37,6 +42,7 @@ describe('PATCH /api/design/:id/element/:elementId', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        mockUsersCollection.findOne.mockResolvedValue({ userId: 'user123', sessionVersion: 0 });
         token = jwt.sign({ userId: 'user123', type: 'access' }, process.env.JWT_SECRET);
     });
 
