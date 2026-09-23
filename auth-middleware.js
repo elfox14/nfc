@@ -32,7 +32,7 @@ function createVerifyToken({ getDb, usersCollectionName = 'users' } = {}) {
             return res.status(403).json({ error: 'Invalid token.' });
         }
 
-        if (decoded.type !== 'access' || !decoded.userId) {
+        if (!decoded || decoded.type !== 'access' || !decoded.userId) {
             console.warn(`[AuthMiddleware] Invalid token type or subject: ${decoded.type}`);
             return res.status(403).json({ error: 'Invalid token type.' });
         }
