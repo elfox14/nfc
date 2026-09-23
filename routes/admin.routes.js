@@ -55,6 +55,51 @@ module.exports = function createAdminRouter({
     return secret;
   }
 
+  const ADMIN_SESSIONS_COLLECTION = 'adminSessions';
+  const ADMIN_SESSION_TTL_MS = 2 * 60 * 60 * 1000;
+
+  function readAdminToken(req) {
+    let rawToken = (req.headers['x-admin-token'] || '').trim();
+    const authHeader = req.headers['authorization'];
+    if (!rawToken && authHeader && authHeader.startsWith('Bearer ')) {
+      rawToken = authHeader.substring(7).trim();
+    }
+    return rawToken;
+  }
+
+  async function createAdminSession(db, claims) {
+    const jti = crypto.randomBytes(24).toString('hex');
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + ADMIN_SESSION_TTL_MS);
+
+    await db.collection(ADMIN_SESSIONS_COLLECTION).insertOne({
+      jti,
+      type: claims.type,
+      userId: claims.userId || null,
+      createdAt: now,
+      expiresAt
+    });
+
+    const token = jwt.sign(
+      { ...claims, jti },
+      getJwtSecret(),
+      { expiresIn: '2h' }
+    );
+
+    return { token, jti, expiresAt };
+  }
+
+  async function findActiveAdminSession(db, decoded) {
+    if (!decoded?.jti || typeof decoded.jti !== 'string') return null;
+    const query = {
+      jti: decoded.jti,
+      type: decoded.type,
+      expiresAt: { $gt: new Date() }
+    };
+    if (decoded.userId) query.userId = decoded.userId;
+    return db.collection(ADMIN_SESSIONS_COLLECTION).findOne(query);
+  }
+
   function validateMasterToken(provided) {
     if (!provided || typeof provided !== 'string') return false;
     const token = provided.trim();
@@ -101,14 +146,17 @@ module.exports = function createAdminRouter({
       // 1. Check direct token / master secret
       const candidateToken = (token || tokenOrPassword || (!email ? password : '') || '').trim();
       if (candidateToken && validateMasterToken(candidateToken)) {
-        const sessionToken = jwt.sign(
-          { role: 'admin', type: 'admin-master', name: 'المسؤول الرئيسي' },
-          getJwtSecret(),
-          { expiresIn: '2h' }
-        );
+        const db = getDb();
+        if (!db) return res.status(503).json({ error: 'قاعدة البيانات غير متصلة' });
+
+        const session = await createAdminSession(db, {
+          role: 'admin',
+          type: 'admin-master',
+          name: 'المسؤول الرئيسي'
+        });
         return res.json({
           success: true,
-          token: sessionToken,
+          token: session.token,
           admin: { name: 'المسؤول الرئيسي', email: 'admin@system', role: 'admin', type: 'master' }
         });
       }
@@ -125,14 +173,16 @@ module.exports = function createAdminRouter({
         if (user && (user.role === 'admin' || user.isAdmin === true)) {
           const isMatch = await bcrypt.compare(userPassword, user.password);
           if (isMatch) {
-            const sessionToken = jwt.sign(
-              { userId: user.userId, email: user.email, role: 'admin', type: 'admin', name: user.name || 'مسؤول' },
-              getJwtSecret(),
-              { expiresIn: '2h' }
-            );
+            const session = await createAdminSession(db, {
+              userId: user.userId,
+              email: user.email,
+              role: 'admin',
+              type: 'admin',
+              name: user.name || 'مسؤول'
+            });
             return res.json({
               success: true,
-              token: sessionToken,
+              token: session.token,
               admin: { name: user.name || 'مسؤول', email: user.email, role: 'admin' }
             });
           }
@@ -150,11 +200,7 @@ module.exports = function createAdminRouter({
   // 2. ADMIN AUTHENTICATION MIDDLEWARE
   // ==========================================
   const adminAuthMiddleware = async (req, res, next) => {
-    let rawToken = (req.headers['x-admin-token'] || '').trim();
-    const authHeader = req.headers['authorization'];
-    if (!rawToken && authHeader && authHeader.startsWith('Bearer ')) {
-      rawToken = authHeader.substring(7).trim();
-    }
+    const rawToken = readAdminToken(req);
 
     if (!rawToken) {
       return res.status(401).json({ error: 'يرجى تسجيل الدخول كمسؤول للمتابعة.' });
@@ -166,20 +212,28 @@ module.exports = function createAdminRouter({
       const decoded = jwt.verify(rawToken, getJwtSecret(), { algorithms: ['HS256'] });
       const validAdminType = decoded?.type === 'admin' || decoded?.type === 'admin-master';
       if (decoded && validAdminType && (decoded.role === 'admin' || decoded.isAdmin)) {
+        const db = getDb();
+        if (!db) return res.status(503).json({ error: 'قاعدة البيانات غير متصلة' });
+
+        const activeSession = await findActiveAdminSession(db, decoded);
+        if (!activeSession) {
+          return res.status(401).json({ error: 'جلسة الإدارة غير صالحة أو تم تسجيل الخروج منها.' });
+        }
+
         // If issued to a user account, verify user is still an active admin in DB
         if (decoded.userId) {
-          const db = getDb();
-          if (db) {
-            const user = await db.collection(usersCollectionName).findOne(
-              { userId: decoded.userId },
-              { projection: { role: 1, isAdmin: 1 } }
-            );
-            if (!user || (user.role !== 'admin' && !user.isAdmin)) {
-              return res.status(403).json({ error: 'تم سحب صلاحيات المسؤول لهذا الحساب.' });
-            }
+          const user = await db.collection(usersCollectionName).findOne(
+            { userId: decoded.userId },
+            { projection: { role: 1, isAdmin: 1 } }
+          );
+          if (!user || (user.role !== 'admin' && !user.isAdmin)) {
+            await db.collection(ADMIN_SESSIONS_COLLECTION).deleteOne({ jti: decoded.jti }).catch(() => {});
+            return res.status(403).json({ error: 'تم سحب صلاحيات المسؤول لهذا الحساب.' });
           }
         }
+
         req.admin = decoded;
+        req.adminSession = activeSession;
         return next();
       }
     } catch (_err) {
@@ -193,6 +247,26 @@ module.exports = function createAdminRouter({
     });
     return res.status(401).json({ error: 'جلسة الإدارة غير صالحة أو منتهية الصلاحية.' });
   };
+
+  // Server-side admin logout: revoke this exact JWT session immediately.
+  router.post('/logout', async (req, res) => {
+    const rawToken = readAdminToken(req);
+    if (!rawToken) return res.json({ success: true });
+
+    try {
+      const decoded = jwt.verify(rawToken, getJwtSecret(), { algorithms: ['HS256'] });
+      if (decoded?.jti && (decoded.type === 'admin' || decoded.type === 'admin-master')) {
+        const db = getDb();
+        if (db) {
+          await db.collection(ADMIN_SESSIONS_COLLECTION).deleteOne({ jti: decoded.jti });
+        }
+      }
+    } catch {
+      // Logout is idempotent; invalid/expired tokens are already unusable.
+    }
+
+    return res.json({ success: true });
+  });
 
   // Protect all downstream admin routes
   router.use(adminAuthMiddleware);
@@ -351,6 +425,10 @@ module.exports = function createAdminRouter({
         { $set: updateFields }
       );
 
+      if (role === 'user') {
+        await db.collection(ADMIN_SESSIONS_COLLECTION).deleteMany({ userId }).catch(() => {});
+      }
+
       if (result.matchedCount === 0) {
         return res.status(404).json({ error: 'المستخدم غير موجود' });
       }
@@ -386,6 +464,8 @@ module.exports = function createAdminRouter({
         savedCardsCollectionName,
         cardRequestsCollectionName
       });
+
+      await db.collection(ADMIN_SESSIONS_COLLECTION).deleteMany({ userId }).catch(() => {});
 
       const result = await db.collection(usersCollectionName).deleteOne({ userId });
       if (result.deletedCount !== 1) {
