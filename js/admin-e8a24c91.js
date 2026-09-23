@@ -202,7 +202,20 @@ function enterDashboard() {
     switchNav('dashboard');
 }
 
-function logoutAdmin() {
+async function logoutAdmin() {
+    const currentToken = token;
+    try {
+        if (currentToken) {
+            await fetch(getApiUrl('/api/admin/logout'), {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${currentToken}` },
+                cache: 'no-store'
+            });
+        }
+    } catch (err) {
+        console.warn('[Admin] Server logout failed; clearing local session anyway:', err);
+    }
+
     token = '';
     sessionStorage.removeItem('adminToken');
     const overlay = document.getElementById('auth-overlay');
