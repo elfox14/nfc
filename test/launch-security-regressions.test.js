@@ -48,9 +48,30 @@ describe('public launch security regressions', () => {
     expect(realtime).toContain('WS_LIMITS.MAX_CONNECTIONS_PER_IP');
   });
 
-  test('successful auth actions still count toward abuse limits', () => {
+  test('successful recovery actions still count toward abuse limits', () => {
     const server = read('server.js');
-    expect(server).toContain('const authLimiter = rateLimit');
+    const authRoutes = read('routes/auth.routes.js');
+    expect(server).toContain('const recoveryAccountLimiter = rateLimit');
+    expect(server).toMatch(/const recoveryAccountLimiter = rateLimit\(\{[\s\S]*?skipSuccessfulRequests: false/);
+    expect(server).toContain("app.use('/api/auth/forgot-password', recoveryAccountLimiter)");
+    expect(authRoutes).toContain('passwordResetRequestedAt');
+  });
+
+  test('service worker never serves stale executable code or HTML', () => {
+    const sw = read('sw.original.js');
+    expect(sw).toContain("const CACHE_VERSION = 'v8'");
+    expect(sw).toContain('isExecutableOrConfigAsset');
+    expect(sw).toContain('networkOnlyHtmlWithOfflineFallback');
+    expect(sw).not.toContain("'/nfc/error-reporter.js'");
+    expect(sw).not.toMatch(/function isStaticAsset[\s\S]*?\|js\|/);
+  });
+
+  test('unversioned scripts revalidate and clean NFC document routes are no-store', () => {
+    const staticFiles = read('utils/static-files.js');
+    expect(staticFiles).toContain('isNfcDocumentRoute');
+    expect(staticFiles).toContain("res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')");
+    expect(staticFiles).toContain('isFingerprintedAsset');
+    expect(staticFiles).toContain("res.setHeader('Cache-Control', 'no-cache, must-revalidate')");
   });
 
   test('public design reads cannot mutate view counters', () => {
