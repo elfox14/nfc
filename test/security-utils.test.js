@@ -27,6 +27,7 @@ describe('Production environment validation', () => {
     delete process.env.GOOGLE_CLIENT_SECRET;
     delete process.env.GOOGLE_REDIRECT_URI;
     delete process.env.SITE_BASE_URL;
+    delete process.env.RENDER_EXTERNAL_HOSTNAME;
   });
 
   afterEach(() => {
@@ -109,7 +110,11 @@ describe('Production environment validation', () => {
     process.env.GOOGLE_CLIENT_ID = 'client';
     process.env.GOOGLE_CLIENT_SECRET = 'client-secret';
 
-    expect(() => assertEnv()).toThrow(/SITE_BASE_URL|redirect/i);
+    expect(() => assertEnv()).toThrow(/redirect|RENDER_EXTERNAL_HOSTNAME/i);
+
+    process.env.RENDER_EXTERNAL_HOSTNAME = 'nfc-vjy6.onrender.com';
+    expect(() => assertEnv()).not.toThrow();
+    delete process.env.RENDER_EXTERNAL_HOSTNAME;
 
     process.env.GOOGLE_REDIRECT_URI = 'http://evil.example/api/auth/google/callback';
     expect(() => assertEnv()).toThrow(/HTTPS/i);
