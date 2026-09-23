@@ -178,6 +178,24 @@ describe('Authenticated Upload', () => {
 
     expect(res.status).toBe(413);
   });
+  it('POST /api/upload-image should reject oversized multipart fields', async () => {
+    const token = jwt.sign({ userId: 'upload-user', type: 'access' }, process.env.JWT_SECRET);
+    const tinyPng = await sharp({
+      create: { width: 1, height: 1, channels: 4, background: '#ffffff' }
+    }).png().toBuffer();
+
+    const res = await request(app)
+      .post('/api/upload-image')
+      .set('Authorization', `Bearer ${token}`)
+      .field('purpose', 'x'.repeat(2048))
+      .attach('image', tinyPng, {
+        filename: 'pixel.png',
+        contentType: 'image/png'
+      });
+
+    expect(res.status).toBe(400);
+  });
+
 
   it('never falls back to ephemeral local storage in production', async () => {
     const originalNodeEnv = process.env.NODE_ENV;
