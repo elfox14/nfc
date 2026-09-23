@@ -23,6 +23,8 @@ const {
   cleanupUserOwnedData
 } = require('../utils/data-cleanup');
 
+const RECOVERY_EMAIL_COOLDOWN_MS = 60 * 1000;
+
 function isSafeDesignId(value) {
   return typeof value === 'string' && /^[A-Za-z0-9_-]{3,32}$/.test(value);
 }
@@ -709,12 +711,32 @@ router.post('/forgot-password', [
 
     // Generate opaque reset token. The URL token carries no readable user data.
     const resetToken = createRefreshToken();
+    const now = new Date();
+    const cooldownCutoff = new Date(now.getTime() - RECOVERY_EMAIL_COOLDOWN_MS);
 
-    // Store reset token hash in DB
-    await getDb().collection(usersCollectionName).updateOne(
-      { userId: user.userId },
-      { $set: { resetTokenHash: hashToken(resetToken), resetTokenExpiry: new Date(Date.now() + 3600000) } }
+    // Persist the cooldown in MongoDB so email flooding cannot be bypassed by
+    // switching IPs, restarting the process, or running multiple app instances.
+    const reserveResult = await getDb().collection(usersCollectionName).updateOne(
+      {
+        userId: user.userId,
+        $or: [
+          { passwordResetRequestedAt: { $exists: false } },
+          { passwordResetRequestedAt: { $lte: cooldownCutoff } }
+        ]
+      },
+      {
+        $set: {
+          resetTokenHash: hashToken(resetToken),
+          resetTokenExpiry: new Date(now.getTime() + 3600000),
+          passwordResetRequestedAt: now
+        }
+      }
     );
+
+    // Preserve the anti-enumeration response even when the request is throttled.
+    if (reserveResult.matchedCount !== 1) {
+      return res.json({ success: true });
+    }
 
     const resetLink = buildFrontendActionUrl('reset-password.html', resetToken);
     
@@ -725,6 +747,11 @@ router.post('/forgot-password', [
       console.log(`[ForgotPassword] Reset link sent for userId: ${user.userId}`);
     } catch (emailErr) {
       console.warn('[ForgotPassword] Email sending failed:', emailErr.message);
+      // Allow a prompt retry if the provider itself failed.
+      await getDb().collection(usersCollectionName).updateOne(
+        { userId: user.userId, resetTokenHash: hashToken(resetToken) },
+        { $unset: { passwordResetRequestedAt: '', resetTokenHash: '', resetTokenExpiry: '' } }
+      ).catch(() => {});
     }
 
     res.json({ success: true });
@@ -783,6 +810,7 @@ router.post('/reset-password', authLimiter, [
         $unset: {
           resetTokenHash: '',
           resetTokenExpiry: '',
+          passwordResetRequestedAt: '',
           refreshTokenHash: '',
           refreshTokenExpiresAt: '',
           usedRefreshTokens: '',
