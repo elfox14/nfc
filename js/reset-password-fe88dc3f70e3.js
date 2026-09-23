@@ -1,6 +1,8 @@
-// Get token from URL and immediately scrub it from browser address bar and history
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
+// Prefer fragment tokens so secrets never reach the HTTP request URL.
+        // Query-string fallback keeps older emails working until they expire.
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        const queryParams = new URLSearchParams(window.location.search);
+        const token = hashParams.get('token') || queryParams.get('token');
 
         if (token && window.history && typeof window.history.replaceState === 'function') {
             window.history.replaceState(null, '', window.location.pathname);

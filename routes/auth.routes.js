@@ -32,6 +32,62 @@ function createOAuthAccountError(message, code) {
   return error;
 }
 
+function getOAuthRedirectUri(req) {
+  const explicitRedirect = (process.env.GOOGLE_REDIRECT_URI || '').trim();
+  const siteBase = (process.env.SITE_BASE_URL || '').trim().replace(/\/+$/, '');
+  const candidate = explicitRedirect ||
+    (process.env.NODE_ENV !== 'production' && siteBase
+      ? `${siteBase}/api/auth/google/callback`
+      : '');
+
+  if (!candidate) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('GOOGLE_REDIRECT_URI must be configured for Google OAuth in production.');
+    }
+    const protoHeader = req.headers['x-forwarded-proto'];
+    const proto = protoHeader ? protoHeader.split(',')[0].trim() : req.protocol;
+    return `${proto}://${req.get('host')}/api/auth/google/callback`;
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    throw new Error('Configured Google OAuth redirect URI is invalid.');
+  }
+
+  if (
+    !['http:', 'https:'].includes(parsed.protocol) ||
+    parsed.username ||
+    parsed.password ||
+    parsed.hash ||
+    parsed.search ||
+    parsed.pathname !== '/api/auth/google/callback'
+  ) {
+    throw new Error('Configured Google OAuth redirect URI is invalid.');
+  }
+
+  if (process.env.NODE_ENV === 'production' && parsed.protocol !== 'https:') {
+    throw new Error('Google OAuth redirect URI must use HTTPS in production.');
+  }
+
+  return parsed.href;
+}
+
+function serializeForInlineScript(value) {
+  const serialized = JSON.stringify(value);
+  if (serialized === undefined) return 'undefined';
+  return serialized
+    .replace(/</g, '\\u003c')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+function buildFrontendActionUrl(pathname, token) {
+  const baseUrl = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/+$/, '');
+  return `${baseUrl}/${pathname}#token=${encodeURIComponent(token)}`;
+}
+
 async function resolveGoogleAccount(users, googleUser) {
   const googleId = typeof googleUser?.id === 'string' ? googleUser.id.trim() : '';
   const email = typeof googleUser?.email === 'string' ? googleUser.email.trim().toLowerCase() : '';
@@ -179,8 +235,7 @@ router.post('/register', [
     );
 
     // Send verification email (non-blocking)
-    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
-    const verifyUrl = `${baseUrl}/verify-email.html?token=${verificationToken}`;
+    const verifyUrl = buildFrontendActionUrl('verify-email.html', verificationToken);
     try {
       const emailTemplate = EmailService.verificationEmail(name, verifyUrl);
       await EmailService.send({ to: email, ...emailTemplate });
@@ -289,10 +344,13 @@ router.get('/google', (req, res) => {
   }
   clientId = clientId.trim();
 
-  const protoHeader = req.headers['x-forwarded-proto'];
-  const proto = protoHeader ? protoHeader.split(',')[0].trim() : req.protocol;
-  const host = req.get('host');
-  const redirectUri = `${proto}://${host}/api/auth/google/callback`;
+  let redirectUri;
+  try {
+    redirectUri = getOAuthRedirectUri(req);
+  } catch (redirectError) {
+    console.error('[GoogleOAuth] Redirect URI configuration error:', redirectError.message);
+    return res.status(500).send('Google OAuth redirect URI is not configured securely');
+  }
 
   const lang = (req.query.lang === 'en') ? 'en' : 'ar';
   const { nonce, state } = createOAuthState(lang);
@@ -340,10 +398,7 @@ router.get('/google/callback', async (req, res) => {
     const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
     const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
     
-    const protoHeader = req.headers['x-forwarded-proto'];
-    const proto = protoHeader ? protoHeader.split(',')[0].trim() : req.protocol;
-    const host = req.get('host');
-    const redirectUri = `${proto}://${host}/api/auth/google/callback`;
+    const redirectUri = getOAuthRedirectUri(req);
 
     // Exchange code for tokens
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -445,8 +500,8 @@ router.get('/google/callback', async (req, res) => {
           bc.postMessage({
             type: 'google-auth',
             success: true,
-            initToken: ${JSON.stringify(sessionInitToken)},
-            user: ${JSON.stringify({ userId: user.userId, email: user.email, name: user.name })}
+            initToken: ${serializeForInlineScript(sessionInitToken)},
+            user: ${serializeForInlineScript({ userId: user.userId, email: user.email, name: user.name })}
           });
           bc.close();
         } catch (e) { /* BroadcastChannel not supported */ }
@@ -457,10 +512,10 @@ router.get('/google/callback', async (req, res) => {
             var msg = {
               type: 'google-auth',
               success: true,
-              initToken: ${JSON.stringify(sessionInitToken)},
-              user: ${JSON.stringify({ userId: user.userId, email: user.email, name: user.name })}
+              initToken: ${serializeForInlineScript(sessionInitToken)},
+              user: ${serializeForInlineScript({ userId: user.userId, email: user.email, name: user.name })}
             };
-            var origins = ${JSON.stringify(allowedOrigins)};
+            var origins = ${serializeForInlineScript(allowedOrigins)};
             origins.forEach(function(base) {
               try {
                 window.opener.postMessage(msg, base);
@@ -479,7 +534,7 @@ router.get('/google/callback', async (req, res) => {
 
           // If popup didn't close, fallback to redirect (pass initToken to bypass cookie blocking)
           setTimeout(function() {
-            window.location.replace(${JSON.stringify(dashboardPage)} + '#oauthSuccess=1&initToken=' + encodeURIComponent(${JSON.stringify(sessionInitToken)}));
+            window.location.replace(${serializeForInlineScript(dashboardPage)} + '#oauthSuccess=1&initToken=' + encodeURIComponent(${serializeForInlineScript(sessionInitToken)}));
           }, 1000);
         } else {
           // Path 2: No opener (COOP blocked it) — close popup; parent will recover via BroadcastChannel or cookie refresh
@@ -487,7 +542,7 @@ router.get('/google/callback', async (req, res) => {
 
           // If popup didn't close (some browsers), fallback to redirect
           setTimeout(function() {
-            window.location.replace(${JSON.stringify(dashboardPage)} + '#oauthSuccess=1&initToken=' + encodeURIComponent(${JSON.stringify(sessionInitToken)}));
+            window.location.replace(${serializeForInlineScript(dashboardPage)} + '#oauthSuccess=1&initToken=' + encodeURIComponent(${serializeForInlineScript(sessionInitToken)}));
           }, 1000);
         }
       })();
@@ -515,9 +570,9 @@ router.get('/google/callback', async (req, res) => {
             var msg = {
               type: 'google-auth',
               success: false,
-              error: ${JSON.stringify(errorMessage)}
+              error: ${serializeForInlineScript(errorMessage)}
             };
-            var origins = ${JSON.stringify(allowedOrigins)};
+            var origins = ${serializeForInlineScript(allowedOrigins)};
             origins.forEach(function(origin) { window.opener.postMessage(msg, origin); });
           }
         } catch (e) { console.error('[GoogleAuth] postMessage error failed:', e); }
@@ -526,7 +581,7 @@ router.get('/google/callback', async (req, res) => {
 
         // Fallback: redirect to login page with error
         setTimeout(function() {
-          window.location.replace(${JSON.stringify(loginPage)} + '?error=' + ${JSON.stringify(encodeURIComponent(errorMessage))});
+          window.location.replace(${serializeForInlineScript(loginPage)} + '?error=' + ${serializeForInlineScript(encodeURIComponent(errorMessage))});
         }, 500);
       })();
     `;
@@ -571,8 +626,7 @@ router.post('/forgot-password', [
       { $set: { resetTokenHash: hashToken(resetToken), resetTokenExpiry: new Date(Date.now() + 3600000) } }
     );
 
-    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
-    const resetLink = `${baseUrl}/reset-password.html?token=${resetToken}`;
+    const resetLink = buildFrontendActionUrl('reset-password.html', resetToken);
     
     // Send email using EmailService
     try {
@@ -671,7 +725,7 @@ router.post('/verify-email', authLimiter, async (req, res) => {
       return res.status(400).json({ error: 'رابط التحقق غير صالح أو منتهي الصلاحية' });
     }
 
-    if (user.verificationTokenExpiry && new Date() > new Date(user.verificationTokenExpiry)) {
+    if (!user.verificationTokenExpiry || new Date() > new Date(user.verificationTokenExpiry)) {
       return res.status(400).json({ error: 'انتهت صلاحية رابط التحقق، اطلب رابطاً جديداً' });
     }
 
@@ -685,11 +739,7 @@ router.post('/verify-email', authLimiter, async (req, res) => {
       { 
         userId: user.userId,
         verificationTokenHash: hashToken(token),
-        $or: [
-          { verificationTokenExpiry: { $exists: false } },
-          { verificationTokenExpiry: null },
-          { verificationTokenExpiry: { $gt: new Date() } }
-        ]
+        verificationTokenExpiry: { $gt: new Date() }
       },
       { $set: { isVerified: true }, $unset: { verificationTokenHash: '', verificationTokenExpiry: '' } }
     );
@@ -730,8 +780,7 @@ router.post('/resend-verification', verifyToken, authLimiter, async (req, res) =
     );
 
     // Send verification email
-    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
-    const verifyUrl = `${baseUrl}/verify-email.html?token=${verificationToken}`;
+    const verifyUrl = buildFrontendActionUrl('verify-email.html', verificationToken);
     try {
       const emailTemplate = EmailService.verificationEmail(user.name, verifyUrl);
       await EmailService.send({ to: user.email, ...emailTemplate });
@@ -1115,5 +1164,8 @@ router.post('/ws-token', verifyToken, async (req, res) => {
 };
 
 module.exports._private = {
-  resolveGoogleAccount
+  buildFrontendActionUrl,
+  getOAuthRedirectUri,
+  resolveGoogleAccount,
+  serializeForInlineScript
 };

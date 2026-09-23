@@ -87,6 +87,31 @@ function assertEnv() {
   if (googleOAuthValues.some(Boolean) && !googleOAuthValues.every(Boolean)) {
     throw new Error('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be configured together.');
   }
+
+  if (googleOAuthValues.every(Boolean)) {
+    const redirectCandidate = (process.env.GOOGLE_REDIRECT_URI || '').trim();
+    if (!redirectCandidate) {
+      throw new Error('GOOGLE_REDIRECT_URI must be configured when Google OAuth is enabled in production.');
+    }
+
+    let parsedRedirect;
+    try {
+      parsedRedirect = new URL(redirectCandidate);
+    } catch {
+      throw new Error('Google OAuth requires a valid SITE_BASE_URL or GOOGLE_REDIRECT_URI.');
+    }
+
+    if (
+      parsedRedirect.protocol !== 'https:' ||
+      parsedRedirect.username ||
+      parsedRedirect.password ||
+      parsedRedirect.hash ||
+      parsedRedirect.search ||
+      parsedRedirect.pathname !== '/api/auth/google/callback'
+    ) {
+      throw new Error('Google OAuth redirect URI must be an HTTPS /api/auth/google/callback URL.');
+    }
+  }
 }
 
 module.exports = assertEnv;

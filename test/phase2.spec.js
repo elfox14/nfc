@@ -225,14 +225,23 @@ describe('Admin Error Endpoint', () => {
     expect(res.status).toBe(401);
   });
 
-  it('GET /api/admin/errors should return errors with valid admin token', async () => {
-    // Set admin token
+  it('GET /api/admin/errors requires a login-minted JWT even with a valid legacy master secret', async () => {
     process.env.ADMIN_TOKENH = 'test-admin-token-123';
     delete process.env.ADMIN_TOKEN_SHA256;
-    
-    const res = await request(app)
+
+    const directRes = await request(app)
       .get('/api/admin/errors')
       .set('x-admin-token', 'test-admin-token-123');
+    expect(directRes.status).toBe(401);
+
+    const loginRes = await request(app)
+      .post('/api/admin/login')
+      .send({ token: 'test-admin-token-123' });
+    expect(loginRes.status).toBe(200);
+
+    const res = await request(app)
+      .get('/api/admin/errors')
+      .set('Authorization', `Bearer ${loginRes.body.token}`);
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('total');
@@ -240,7 +249,7 @@ describe('Admin Error Endpoint', () => {
     expect(Array.isArray(res.body.errors)).toBe(true);
   });
 
-  it('GET /api/admin/errors should accept hashed admin token configuration', async () => {
+  it('GET /api/admin/errors accepts a JWT minted from hashed admin token configuration', async () => {
     delete process.env.ADMIN_TOKENH;
     const plaintext = 'hashed-admin-token-123';
     const rawHash = crypto
@@ -249,9 +258,20 @@ describe('Admin Error Endpoint', () => {
       .digest('hex');
     process.env.ADMIN_TOKEN_SHA256 = rawHash;
 
-    const res = await request(app)
+    const directRes = await request(app)
       .get('/api/admin/errors')
       .set('x-admin-token', plaintext);
+    expect(directRes.status).toBe(401);
+
+    const loginRes = await request(app)
+      .post('/api/admin/login')
+      .send({ token: plaintext });
+    expect(loginRes.status).toBe(200);
+    expect(jwt.decode(loginRes.body.token).type).toBe('admin-master');
+
+    const res = await request(app)
+      .get('/api/admin/errors')
+      .set('Authorization', `Bearer ${loginRes.body.token}`);
 
     expect(res.status).toBe(200);
     expect(res.headers['cache-control']).toBe('no-store');
@@ -296,6 +316,7 @@ describe('Admin Error Endpoint', () => {
     expect(successRes.status).toBe(200);
     expect(successRes.body.success).toBe(true);
     expect(successRes.body.token).toBeDefined();
+    expect(jwt.decode(successRes.body.token).type).toBe('admin-master');
   });
 });
 
