@@ -6,7 +6,11 @@ describe('Database indexes', () => {
     const db = {
       collection: jest.fn((name) => {
         if (!collections.has(name)) {
-          collections.set(name, { createIndex: jest.fn().mockResolvedValue('ok') });
+          collections.set(name, {
+            createIndex: jest.fn().mockResolvedValue('ok'),
+            aggregate: jest.fn(() => ({ toArray: jest.fn().mockResolvedValue([]) })),
+            deleteMany: jest.fn().mockResolvedValue({ deletedCount: 0 })
+          });
         }
         return collections.get(name);
       })
@@ -29,5 +33,14 @@ describe('Database indexes', () => {
       { unique: true }
     );
     expect(collections.get('cardRequests').createIndex).toHaveBeenCalledWith({ ownerUserId: 1, status: 1 });
+    expect(collections.get('cardRequests').createIndex).toHaveBeenCalledWith(
+      { requesterId: 1, designShortId: 1, status: 1 },
+      {
+        unique: true,
+        partialFilterExpression: { status: 'pending' },
+        name: 'uniq_pending_card_request'
+      }
+    );
+    expect(collections.get('leads').createIndex).toHaveBeenCalledWith({ cardId: 1 });
   });
 });

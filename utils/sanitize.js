@@ -18,6 +18,11 @@ const MAX_TEXT_LENGTH = 2048;
 const MAX_STATE_ITEMS = 30;
 const MAX_DATA_URL_LENGTH = 8 * 1024 * 1024;
 const SAFE_KEY = /^[A-Za-z0-9_-]{1,80}$/;
+const DANGEROUS_OBJECT_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
+
+function isSafeObjectKey(key) {
+  return SAFE_KEY.test(key) && !DANGEROUS_OBJECT_KEYS.has(key);
+}
 const SAFE_TOKEN = /^[\p{L}\p{N} _.,()+/-]{0,120}$/u;
 const SAFE_CSS_VALUE = /^[\p{L}\p{N}\s#(),.%+/'-]{0,160}$/u;
 const SAFE_COLOR = /^(?:#[0-9a-f]{3,8}|rgba?\(\s*[\d.%]+\s*,\s*[\d.%]+\s*,\s*[\d.%]+(?:\s*,\s*[\d.]+)?\s*\)|hsla?\(\s*[\d.]+(?:deg)?\s*,\s*[\d.]+%\s*,\s*[\d.]+%(?:\s*,\s*[\d.]+)?\s*\)|transparent)$/i;
@@ -109,7 +114,7 @@ function sanitizeInputs(inputs) {
   if (!isPlainObject(inputs)) return {};
   const sanitized = {};
   for (const [key, value] of Object.entries(inputs).slice(0, 250)) {
-    if (!SAFE_KEY.test(key)) continue;
+    if (!isSafeObjectKey(key)) continue;
     sanitized[key] = sanitizeInputValue(key, value);
   }
   return sanitized;
@@ -129,7 +134,7 @@ function sanitizeKeyedObject(value, sanitizer) {
   if (!isPlainObject(value)) return {};
   const result = {};
   for (const [key, item] of Object.entries(value).slice(0, 100)) {
-    if (!SAFE_KEY.test(key)) continue;
+    if (!isSafeObjectKey(key)) continue;
     result[key] = sanitizer(item, key);
   }
   return result;
