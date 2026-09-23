@@ -229,7 +229,7 @@ describe('Security Hardening Round 2 Tests', () => {
 
     it('rejects admin access if admin role has been revoked in DB', async () => {
       const adminToken = jwt.sign(
-        { userId: 'demoted-user-1', email: 'demoted@test.com', role: 'admin' },
+        { userId: 'demoted-user-1', email: 'demoted@test.com', role: 'admin', type: 'admin' },
         jwtSecret,
         { expiresIn: '2h' }
       );
@@ -251,7 +251,7 @@ describe('Security Hardening Round 2 Tests', () => {
 
     it('allows admin access if user remains active admin in DB', async () => {
       const adminToken = jwt.sign(
-        { userId: 'active-admin-1', email: 'admin@test.com', role: 'admin' },
+        { userId: 'active-admin-1', email: 'admin@test.com', role: 'admin', type: 'admin' },
         jwtSecret,
         { expiresIn: '2h' }
       );
