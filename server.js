@@ -139,22 +139,33 @@ const apiLimiter = rateLimit({
 });
 app.use(['/api/', '/nfc/api/'], apiLimiter);
 
-// Stricter rate limiting for auth endpoints (5 attempts per 15 minutes per IP)
+// Login brute-force limiter: successful logins do not consume failure budget.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 100 : 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'محاولات كثيرة جداً. حاول مرة أخرى بعد 15 دقيقة.' },
+  skipSuccessfulRequests: true
+});
+
+// State-changing auth actions must count successful responses too. In particular,
+// forgot-password intentionally returns 200 for unknown addresses, so skipping
+// "successful" responses would otherwise disable abuse protection and email throttling.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'test' ? 100 : 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'محاولات كثيرة جداً. حاول مرة أخرى بعد 15 دقيقة.' },
-  skipSuccessfulRequests: true // Don't count successful logins
+  skipSuccessfulRequests: false
 });
-app.use('/api/auth/login', authLimiter);
+
+app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/forgot-password', authLimiter);
-app.use('/api/auth/reset-password', authLimiter);
-app.use('/api/auth/verify-email', authLimiter);
 
-// Account-aware rate limiting to prevent distributed brute-force attacks against specific accounts
+// Account-aware limiter for password guessing. Successful logins are not failures.
 const accountLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'test' ? 100 : 8,
@@ -169,7 +180,23 @@ const accountLimiter = rateLimit({
   message: { error: 'محاولات دخول كثيرة جداً لهذا الحساب. حاول مرة أخرى بعد 15 دقيقة.' }
 });
 app.use('/api/auth/login', accountLimiter);
-app.use('/api/auth/forgot-password', accountLimiter);
+
+// Recovery requests are deliberately indistinguishable (always 200), so they need
+// their own per-account limiter that counts every response, including success.
+const recoveryAccountLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 100 : 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false,
+  keyGenerator: (req) => {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    return email ? `recovery_${email}` : ipKeyGenerator(req.ip || '127.0.0.1');
+  },
+  validate: { keyGeneratorIpFallback: false },
+  message: { error: 'طلبات استعادة كثيرة جداً. حاول مرة أخرى بعد 15 دقيقة.' }
+});
+app.use('/api/auth/forgot-password', recoveryAccountLimiter);
 
 // --- DESIGNS & UPLOADS ROUTES (MODULAR) ---
 const createDesignsRouter = require('./routes/designs.routes');
