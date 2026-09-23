@@ -10,9 +10,9 @@ describe('production dependency security policy', () => {
     'utf8'
   );
 
-  test('audits production dependencies at high severity', () => {
+  test('audits production dependencies at moderate severity or higher', () => {
     expect(packageJson.scripts['audit:prod']).toBe(
-      'npm audit --omit=dev --audit-level=high'
+      'npm audit --omit=dev --audit-level=moderate'
     );
   });
 
