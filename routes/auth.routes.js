@@ -80,6 +80,11 @@ function serializeForInlineScript(value) {
     .replace(/\u2029/g, '\\u2029');
 }
 
+function buildFrontendActionUrl(pathname, token) {
+  const baseUrl = (process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc').replace(/\/+$/, '');
+  return `${baseUrl}/${pathname}#token=${encodeURIComponent(token)}`;
+}
+
 async function resolveGoogleAccount(users, googleUser) {
   const googleId = typeof googleUser?.id === 'string' ? googleUser.id.trim() : '';
   const email = typeof googleUser?.email === 'string' ? googleUser.email.trim().toLowerCase() : '';
@@ -227,8 +232,7 @@ router.post('/register', [
     );
 
     // Send verification email (non-blocking)
-    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
-    const verifyUrl = `${baseUrl}/verify-email.html#token=${verificationToken}`;
+    const verifyUrl = buildFrontendActionUrl('verify-email.html', verificationToken);
     try {
       const emailTemplate = EmailService.verificationEmail(name, verifyUrl);
       await EmailService.send({ to: email, ...emailTemplate });
@@ -619,8 +623,7 @@ router.post('/forgot-password', [
       { $set: { resetTokenHash: hashToken(resetToken), resetTokenExpiry: new Date(Date.now() + 3600000) } }
     );
 
-    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
-    const resetLink = `${baseUrl}/reset-password.html#token=${resetToken}`;
+    const resetLink = buildFrontendActionUrl('reset-password.html', resetToken);
     
     // Send email using EmailService
     try {
@@ -774,8 +777,7 @@ router.post('/resend-verification', verifyToken, authLimiter, async (req, res) =
     );
 
     // Send verification email
-    const baseUrl = process.env.PUBLIC_BASE_URL || 'https://mcprim.com/nfc';
-    const verifyUrl = `${baseUrl}/verify-email.html#token=${verificationToken}`;
+    const verifyUrl = buildFrontendActionUrl('verify-email.html', verificationToken);
     try {
       const emailTemplate = EmailService.verificationEmail(user.name, verifyUrl);
       await EmailService.send({ to: user.email, ...emailTemplate });
@@ -1159,6 +1161,7 @@ router.post('/ws-token', verifyToken, async (req, res) => {
 };
 
 module.exports._private = {
+  buildFrontendActionUrl,
   getOAuthRedirectUri,
   resolveGoogleAccount,
   serializeForInlineScript
