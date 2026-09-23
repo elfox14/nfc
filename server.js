@@ -232,9 +232,8 @@ app.use(createSeoRouter({
 }));
 
 registerClientErrorRoute(app);
-registerNfcStaticFiles(app, rootDir);
 
-// --- ADMIN ROUTES (must be BEFORE general error handler) ---
+// --- ADMIN ROUTES (must be BEFORE static files and general error handler) ---
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: process.env.NODE_ENV === 'test' ? 1000 : 300, // Allow sufficient quota for dashboard navigation
@@ -292,6 +291,10 @@ app.use('/api/admin', adminLimiter, createAdminRouter({
   errorBuffer, 
   MAX_ERROR_BUFFER 
 }));
+
+// Static files come after the explicit admin page route so /nfc/admin cannot
+// bypass adminPageLimiter or the page-specific no-store/noindex headers.
+registerNfcStaticFiles(app, rootDir);
 
 // --- 404 NOT FOUND HANDLER ---
 app.use((req, res, _next) => {
