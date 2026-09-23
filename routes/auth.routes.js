@@ -339,24 +339,34 @@ router.post('/login', [
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Generate short-lived access token + HttpOnly refresh cookie
-    const accessToken = createAccessToken({
-      userId: user.userId,
-      email: user.email,
-      sessionVersion: normalizeSessionVersion(user.sessionVersion)
-    });
+    // A new login replaces the account's single active refresh session and
+    // increments the session version so older access JWTs stop working immediately.
+    const loginSessionVersion = normalizeSessionVersion(user.sessionVersion) + 1;
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
 
-    // Store hashed refresh token in DB with server-side expiry
     await getDb().collection(usersCollectionName).updateOne(
       { userId: user.userId },
       {
-        $set: { refreshTokenHash: hashedRefresh, refreshTokenExpiresAt },
-        $unset: { usedRefreshTokens: '' }
+        $set: {
+          refreshTokenHash: hashedRefresh,
+          refreshTokenExpiresAt,
+          sessionVersion: loginSessionVersion
+        },
+        $unset: {
+          usedRefreshTokens: '',
+          sessionInitTokenHash: '',
+          sessionInitTokenExpiry: ''
+        }
       }
     );
+
+    const accessToken = createAccessToken({
+      userId: user.userId,
+      email: user.email,
+      sessionVersion: loginSessionVersion
+    });
 
     setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
 
@@ -489,12 +499,8 @@ router.get('/google/callback', async (req, res) => {
       throw accountError;
     }
 
-    // Generate tokens
-    const accessToken = createAccessToken({
-      userId: user.userId,
-      email: user.email,
-      sessionVersion: normalizeSessionVersion(user.sessionVersion)
-    });
+    // Google login also replaces the account's single active refresh session.
+    const oauthSessionVersion = normalizeSessionVersion(user.sessionVersion) + 1;
     const refreshTokenValue = createRefreshToken();
     const hashedRefresh = hashToken(refreshTokenValue);
     const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
@@ -502,10 +508,20 @@ router.get('/google/callback', async (req, res) => {
     await getDb().collection(usersCollectionName).updateOne(
       { userId: user.userId },
       {
-        $set: { refreshTokenHash: hashedRefresh, refreshTokenExpiresAt },
+        $set: {
+          refreshTokenHash: hashedRefresh,
+          refreshTokenExpiresAt,
+          sessionVersion: oauthSessionVersion
+        },
         $unset: { usedRefreshTokens: '' }
       }
     );
+
+    const accessToken = createAccessToken({
+      userId: user.userId,
+      email: user.email,
+      sessionVersion: oauthSessionVersion
+    });
 
     setAuthCookies(res, { accessToken, refreshToken: refreshTokenValue });
 
@@ -524,7 +540,7 @@ router.get('/google/callback', async (req, res) => {
         userId: user.userId,
         email: user.email,
         type: 'session-init',
-        sessionVersion: normalizeSessionVersion(user.sessionVersion),
+        sessionVersion: oauthSessionVersion,
         jti: nanoid(16)
       },
       process.env.JWT_SECRET,
