@@ -614,15 +614,11 @@ router.get('/google/callback', async (req, res) => {
               user: ${serializeForInlineScript(toPublicUser(user))}
             };
             var origins = ${serializeForInlineScript(allowedOrigins)};
-            origins.forEach(function(base) {
+            origins.forEach(function(origin) {
               try {
-                window.opener.postMessage(msg, base);
-                // Also try variant (www <-> non-www) to ensure target match
-                if (base.includes('://www.')) {
-                  window.opener.postMessage(msg, base.replace('://www.', '://'));
-                } else {
-                  window.opener.postMessage(msg, base.replace('://', '://www.'));
-                }
+                // Send only to origins that passed the server-side allowlist.
+                // Never synthesize www/non-www variants that were not explicitly trusted.
+                window.opener.postMessage(msg, origin);
               } catch (e) {}
             });
           } catch (e) { console.error('[GoogleAuth] postMessage failed:', e); }
