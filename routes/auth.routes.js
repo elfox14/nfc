@@ -372,8 +372,8 @@ router.post('/login', [
     const hashedRefresh = hashToken(refreshTokenValue);
     const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
 
-    await getDb().collection(usersCollectionName).updateOne(
-      { userId: user.userId },
+    const loginSessionUpdate = await getDb().collection(usersCollectionName).updateOne(
+      sessionVersionUserFilter(user.userId, user.sessionVersion),
       {
         $set: {
           refreshTokenHash: hashedRefresh,
@@ -387,6 +387,15 @@ router.post('/login', [
         }
       }
     );
+
+    // Compare-and-set prevents two concurrent logins that read the same
+    // sessionVersion from minting access tokens that remain valid together.
+    if (loginSessionUpdate.matchedCount !== 1) {
+      return res.status(409).json({
+        error: 'Session changed during login. Please retry.',
+        code: 'LOGIN_SESSION_CONFLICT'
+      });
+    }
 
     const accessToken = createAccessToken({
       userId: user.userId,
@@ -531,17 +540,28 @@ router.get('/google/callback', async (req, res) => {
     const hashedRefresh = hashToken(refreshTokenValue);
     const refreshTokenExpiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS);
 
-    await getDb().collection(usersCollectionName).updateOne(
-      { userId: user.userId },
+    const oauthSessionUpdate = await getDb().collection(usersCollectionName).updateOne(
+      sessionVersionUserFilter(user.userId, user.sessionVersion),
       {
         $set: {
           refreshTokenHash: hashedRefresh,
           refreshTokenExpiresAt,
           sessionVersion: oauthSessionVersion
         },
-        $unset: { usedRefreshTokens: '' }
+        $unset: {
+          usedRefreshTokens: '',
+          sessionInitTokenHash: '',
+          sessionInitTokenExpiry: ''
+        }
       }
     );
+
+    if (oauthSessionUpdate.matchedCount !== 1) {
+      throw createOAuthAccountError(
+        'The account session changed during Google sign-in. Please retry.',
+        'OAUTH_SESSION_CONFLICT'
+      );
+    }
 
     const accessToken = createAccessToken({
       userId: user.userId,
@@ -574,8 +594,8 @@ router.get('/google/callback', async (req, res) => {
     );
 
     // Store only a hash so the initialization token is short-lived and one-time.
-    await getDb().collection(usersCollectionName).updateOne(
-      { userId: user.userId },
+    const initTokenStore = await getDb().collection(usersCollectionName).updateOne(
+      sessionVersionUserFilter(user.userId, oauthSessionVersion),
       {
         $set: {
           sessionInitTokenHash: hashToken(sessionInitToken),
@@ -583,6 +603,16 @@ router.get('/google/callback', async (req, res) => {
         }
       }
     );
+
+    // A newer login may have replaced this OAuth session before the one-time
+    // bootstrap credential is persisted.
+    if (initTokenStore.matchedCount !== 1) {
+      clearAuthCookies(res);
+      throw createOAuthAccountError(
+        'The account session changed during Google sign-in. Please retry.',
+        'OAUTH_SESSION_CONFLICT'
+      );
+    }
 
     // Send success signal to popup opener via postMessage
     const script = `
