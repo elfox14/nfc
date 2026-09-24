@@ -267,10 +267,7 @@ describe('Security Hardening Round 6 - server-side session revocation', () => {
     expect(res.body.code).toBe('LOGIN_SESSION_CONFLICT');
     expect(res.headers['set-cookie']).toBeUndefined();
     expect(users.updateOne).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 'concurrent-user',
-        $or: expect.any(Array)
-      }),
+      { userId: 'concurrent-user', sessionVersion: 5 },
       expect.objectContaining({
         $set: expect.objectContaining({ sessionVersion: 6 })
       })
