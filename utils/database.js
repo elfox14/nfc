@@ -13,6 +13,7 @@ async function createIndexes(db, collectionNames) {
 
   await db.collection(usersCollectionName).createIndex({ email: 1 }, { unique: true });
   await db.collection(usersCollectionName).createIndex({ userId: 1 }, { unique: true });
+  await db.collection(usersCollectionName).createIndex({ googleId: 1 }, { unique: true, sparse: true });
   await db.collection(usersCollectionName).createIndex({ 'usedRefreshTokens.hash': 1 }, { sparse: true });
   await db.collection(usersCollectionName).createIndex({ refreshTokenHash: 1 }, { sparse: true });
   await db.collection(usersCollectionName).createIndex({ resetTokenHash: 1 }, { sparse: true });
