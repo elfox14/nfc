@@ -82,17 +82,19 @@ async function createIndexes(db, collectionNames) {
 async function connectDatabase({
   mongoUrl,
   dbName,
-  collectionNames,
-  onIndexesWarning = console.warn
+  collectionNames
 }) {
   const { MongoClient } = require('mongodb');
   const client = await MongoClient.connect(mongoUrl);
   const db = client.db(dbName);
 
+  // Security-critical uniqueness and TTL guarantees are part of application
+  // correctness. Do not serve traffic if these indexes cannot be established.
   try {
     await createIndexes(db, collectionNames);
   } catch (indexErr) {
-    onIndexesWarning('Some indexes may already exist:', indexErr.message);
+    await client.close().catch(() => {});
+    throw new Error(`Failed to establish required MongoDB indexes: ${indexErr.message}`);
   }
 
   return { db, client };
