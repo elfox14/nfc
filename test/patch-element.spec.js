@@ -9,7 +9,9 @@ const mockCollection = {
     findOne: jest.fn(),
     updateOne: jest.fn(),
     insertOne: jest.fn(),
-    createIndex: jest.fn()
+    createIndex: jest.fn(),
+    aggregate: jest.fn(() => ({ toArray: jest.fn().mockResolvedValue([]) })),
+    deleteMany: jest.fn().mockResolvedValue({ deletedCount: 0 })
 };
 
 const mockUsersCollection = {
