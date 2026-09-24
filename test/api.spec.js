@@ -15,6 +15,8 @@ const mockCollection = {
     updateOne: jest.fn(),
     deleteOne: jest.fn(),
     createIndex: jest.fn(),
+    aggregate: jest.fn(() => ({ toArray: jest.fn().mockResolvedValue([]) })),
+    deleteMany: jest.fn().mockResolvedValue({ deletedCount: 0 }),
     countDocuments: jest.fn()
 };
 
