@@ -37,7 +37,7 @@ function redactSensitiveValue(value) {
   return value
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted-email]')
     .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, '[redacted-jwt]')
-    .replace(/\b(password|[\\w-]*token[\\w-]*|secret|authorization|cookie|code|state)=([^&\\s\"'<>]+)/gi, '$1=[redacted]')
+    .replace(/\b(password|[\w-]*token[\w-]*|secret|authorization|cookie|code|state)=([^&\s"'<>]+)/gi, '$1=[redacted]')
     .replace(/\b[A-Fa-f0-9]{48,}\b/g, '[redacted-secret]');
 }
 
