@@ -5,6 +5,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const { createVerifyToken } = require('../auth-middleware');
 const createAuthRouter = require('../routes/auth.routes');
 const createDesignsRouter = require('../routes/designs.routes');
@@ -229,4 +230,63 @@ describe('Security Hardening Round 6 - server-side session revocation', () => {
       { returnDocument: 'after' }
     );
   });
+
+  it('rejects a stale concurrent password login before issuing credentials', async () => {
+    const password = 'ConcurrentPass123!';
+    const users = {
+      findOne: jest.fn().mockResolvedValue({
+        userId: 'concurrent-user',
+        email: 'concurrent@example.com',
+        name: 'Concurrent User',
+        password: await bcrypt.hash(password, 4),
+        sessionVersion: 5,
+        isVerified: true
+      }),
+      updateOne: jest.fn().mockResolvedValue({ matchedCount: 0 })
+    };
+    const db = { collection: jest.fn(() => users) };
+    const app = express();
+    app.use(express.json());
+    app.use(cookieParser());
+    app.use('/api/auth', createAuthRouter({
+      getDb: () => db,
+      usersCollectionName: 'users',
+      designsCollectionName: 'designs',
+      savedCardsCollectionName: 'saved',
+      cardRequestsCollectionName: 'requests',
+      authLimiter: (req, res, next) => next(),
+      allowedOrigins: ['https://mcprime.test'],
+      cloudinary: null
+    }));
+
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'concurrent@example.com', password });
+
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe('LOGIN_SESSION_CONFLICT');
+    expect(res.headers['set-cookie']).toBeUndefined();
+    expect(users.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'concurrent-user',
+        $or: expect.any(Array)
+      }),
+      expect.objectContaining({
+        $set: expect.objectContaining({ sessionVersion: 6 })
+      })
+    );
+  });
+
+  it('binds OAuth session replacement and init-token storage to sessionVersion', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const code = fs.readFileSync(path.join(__dirname, '../routes/auth.routes.js'), 'utf8');
+
+    expect(code).toContain('sessionVersionUserFilter(user.userId, user.sessionVersion)');
+    expect(code).toContain('const oauthSessionUpdate');
+    expect(code).toContain('const initTokenStore');
+    expect(code).toContain('sessionVersionUserFilter(user.userId, oauthSessionVersion)');
+    expect(code).toContain('OAUTH_SESSION_CONFLICT');
+  });
+
 });
