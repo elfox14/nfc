@@ -37,7 +37,7 @@ function redactSensitiveValue(value) {
   return value
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted-email]')
     .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, '[redacted-jwt]')
-    .replace(/\b(password|token|secret|authorization|cookie)=([^&\s"'<>]+)/gi, '$1=[redacted]')
+    .replace(/\b(password|[\\w-]*token[\\w-]*|secret|authorization|cookie|code|state)=([^&\\s\"'<>]+)/gi, '$1=[redacted]')
     .replace(/\b[A-Fa-f0-9]{48,}\b/g, '[redacted-secret]');
 }
 
@@ -45,7 +45,10 @@ function redactSensitiveData(value) {
   if (Array.isArray(value)) return value.map(redactSensitiveData);
   if (value && typeof value === 'object') {
     return Object.fromEntries(Object.entries(value).map(([key, childValue]) => {
-      if (/password|token|secret|authorization|cookie|email/i.test(key)) {
+      const keyIsSensitive =
+        /password|token|secret|authorization|cookie|email/i.test(key) ||
+        /^(?:code|state)$/i.test(key);
+      if (keyIsSensitive) {
         return [key, '[redacted]'];
       }
       return [key, redactSensitiveData(childValue)];
