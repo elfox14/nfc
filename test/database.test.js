@@ -1,4 +1,7 @@
-const { createIndexes } = require('../utils/database');
+jest.mock('mongodb', () => ({ MongoClient: { connect: jest.fn() } }));
+
+const { MongoClient } = require('mongodb');
+const { createIndexes, connectDatabase } = require('../utils/database');
 
 describe('Database indexes', () => {
   it('creates the expected indexes for core collections', async () => {
@@ -55,5 +58,32 @@ describe('Database indexes', () => {
       { expiresAt: 1 },
       { expireAfterSeconds: 0, name: 'admin_session_ttl' }
     );
+  });
+
+  it('fails closed when a required index cannot be created', async () => {
+    const failingCollection = {
+      createIndex: jest.fn().mockRejectedValue(new Error('duplicate key prevents unique index')),
+      aggregate: jest.fn(() => ({ toArray: jest.fn().mockResolvedValue([]) })),
+      deleteMany: jest.fn().mockResolvedValue({ deletedCount: 0 })
+    };
+    const db = { collection: jest.fn(() => failingCollection) };
+    const client = {
+      db: jest.fn(() => db),
+      close: jest.fn().mockResolvedValue()
+    };
+    MongoClient.connect.mockResolvedValueOnce(client);
+
+    await expect(connectDatabase({
+      mongoUrl: 'mongodb://example.test',
+      dbName: 'mcnfc',
+      collectionNames: {
+        designsCollectionName: 'designs',
+        usersCollectionName: 'users',
+        savedCardsCollectionName: 'savedCards',
+        cardRequestsCollectionName: 'cardRequests'
+      }
+    })).rejects.toThrow(/Failed to establish required MongoDB indexes/);
+
+    expect(client.close).toHaveBeenCalledTimes(1);
   });
 });
