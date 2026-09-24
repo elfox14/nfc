@@ -3,6 +3,10 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { ObjectId } = require('mongodb');
+
+// Used to keep admin-login password verification timing similar for unknown,
+// non-admin, and passwordless accounts. This value is not a credential.
+const ADMIN_DUMMY_PASSWORD_HASH = bcrypt.hashSync('invalid-admin-password', 10);
 const {
   cleanupDesignReferences,
   cleanupUserOwnedData
@@ -170,22 +174,25 @@ module.exports = function createAdminRouter({
         if (!db) return res.status(500).json({ error: 'قاعدة البيانات غير متصلة' });
 
         const user = await db.collection(usersCollectionName).findOne({ email: userEmail });
-        if (user && (user.role === 'admin' || user.isAdmin === true)) {
-          const isMatch = await bcrypt.compare(userPassword, user.password);
-          if (isMatch) {
-            const session = await createAdminSession(db, {
-              userId: user.userId,
-              email: user.email,
-              role: 'admin',
-              type: 'admin',
-              name: user.name || 'مسؤول'
-            });
-            return res.json({
-              success: true,
-              token: session.token,
-              admin: { name: user.name || 'مسؤول', email: user.email, role: 'admin' }
-            });
-          }
+        const isAdminAccount = Boolean(user && (user.role === 'admin' || user.isAdmin === true));
+        const passwordHash = isAdminAccount && typeof user.password === 'string'
+          ? user.password
+          : ADMIN_DUMMY_PASSWORD_HASH;
+        const isMatch = await bcrypt.compare(userPassword, passwordHash);
+
+        if (isAdminAccount && typeof user.password === 'string' && isMatch) {
+          const session = await createAdminSession(db, {
+            userId: user.userId,
+            email: user.email,
+            role: 'admin',
+            type: 'admin',
+            name: user.name || 'مسؤول'
+          });
+          return res.json({
+            success: true,
+            token: session.token,
+            admin: { name: user.name || 'مسؤول', email: user.email, role: 'admin', type: 'admin' }
+          });
         }
       }
 
@@ -273,7 +280,11 @@ module.exports = function createAdminRouter({
 
   // Verify active session
   router.get('/me', (req, res) => {
-    res.json({ success: true, admin: req.admin });
+    const { userId, email, name, role, type, exp } = req.admin || {};
+    res.json({
+      success: true,
+      admin: { userId, email, name, role, type, exp }
+    });
   });
 
   // ==========================================
@@ -374,11 +385,14 @@ module.exports = function createAdminRouter({
       const users = await db.collection(usersCollectionName)
         .find(query, {
           projection: {
-            password: 0,
-            refreshTokenHash: 0,
-            verificationTokenHash: 0,
-            resetTokenHash: 0,
-            resetTokenExpiry: 0
+            _id: 0,
+            userId: 1,
+            name: 1,
+            email: 1,
+            isVerified: 1,
+            role: 1,
+            isAdmin: 1,
+            createdAt: 1
           }
         })
         .sort({ createdAt: -1 })
@@ -406,6 +420,12 @@ module.exports = function createAdminRouter({
 
       const { userId } = req.params;
       const { isVerified, role } = req.body;
+
+      // Only a master session may grant or revoke administrative privileges.
+      // Regular admins can still verify/unverify ordinary user accounts.
+      if (role !== undefined && req.admin?.type !== 'admin-master') {
+        return res.status(403).json({ error: 'صلاحية المسؤول الرئيسي مطلوبة لتغيير الأدوار.' });
+      }
 
       const updateFields = {};
       if (typeof isVerified === 'boolean') {
@@ -450,10 +470,15 @@ module.exports = function createAdminRouter({
 
       const user = await db.collection(usersCollectionName).findOne(
         { userId },
-        { projection: { userId: 1, _id: 0 } }
+        { projection: { userId: 1, role: 1, isAdmin: 1, _id: 0 } }
       );
       if (!user) {
         return res.status(404).json({ error: 'المستخدم غير موجود' });
+      }
+
+      const targetIsAdmin = user.role === 'admin' || user.isAdmin === true;
+      if (targetIsAdmin && req.admin?.type !== 'admin-master') {
+        return res.status(403).json({ error: 'صلاحية المسؤول الرئيسي مطلوبة لحذف حساب مشرف.' });
       }
 
       // Delete owned designs and every record that references them before
