@@ -2,13 +2,17 @@ const assertEnv = require('../utils/env-validation');
 const { redactSensitiveData, redactSensitiveValue } = require('../utils/error-tracking');
 
 describe('Sensitive data redaction', () => {
-  it('redacts emails, JWTs, query tokens, and long secrets', () => {
-    const value = 'user@example.com token=abc123 secret=abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef jwt eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.signature';
+  it('redacts emails, JWTs, query tokens, OAuth parameters, and long secrets', () => {
+    const value = 'user@example.com token=abc123 initToken=init456 code=oauth-code-789 state=oauth-state-123 secret=abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef jwt eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.signature';
+    const redacted = redactSensitiveValue(value);
 
-    expect(redactSensitiveValue(value)).not.toContain('user@example.com');
-    expect(redactSensitiveValue(value)).not.toContain('abc123');
-    expect(redactSensitiveValue(value)).not.toContain('abcdefabcdef');
-    expect(redactSensitiveValue(value)).not.toContain('eyJhbGciOiJIUzI1NiJ9');
+    expect(redacted).not.toContain('user@example.com');
+    expect(redacted).not.toContain('abc123');
+    expect(redacted).not.toContain('init456');
+    expect(redacted).not.toContain('oauth-code-789');
+    expect(redacted).not.toContain('oauth-state-123');
+    expect(redacted).not.toContain('abcdefabcdef');
+    expect(redacted).not.toContain('eyJhbGciOiJIUzI1NiJ9');
   });
 
   it('redacts sensitive object keys recursively', () => {
@@ -17,6 +21,20 @@ describe('Sensitive data redaction', () => {
       nested: { accessToken: '[redacted]' }
     });
   });
+  it('redacts OAuth code and state object keys recursively', () => {
+    expect(redactSensitiveData({
+      code: 'oauth-code',
+      state: 'oauth-state',
+      nested: { sessionInitToken: 'init-secret' },
+      statusCode: 500
+    })).toEqual({
+      code: '[redacted]',
+      state: '[redacted]',
+      nested: { sessionInitToken: '[redacted]' },
+      statusCode: 500
+    });
+  });
+
 });
 
 describe('Production environment validation', () => {
