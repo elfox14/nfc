@@ -9,7 +9,9 @@ const jwt = require('jsonwebtoken');
 
 const mockCollection = {
   findOne: jest.fn(),
-  createIndex: jest.fn()
+  createIndex: jest.fn(),
+  aggregate: jest.fn(() => ({ toArray: jest.fn().mockResolvedValue([]) })),
+  deleteMany: jest.fn().mockResolvedValue({ deletedCount: 0 })
 };
 const mockUsersCollection = {
   findOne: jest.fn().mockResolvedValue({ userId: 'authenticated-collaborator', sessionVersion: 0 }),
