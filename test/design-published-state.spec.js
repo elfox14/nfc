@@ -49,6 +49,10 @@ describe('Published card revision persistence', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         Object.values(mockCollection).forEach(mockFn => mockFn.mockReset());
+        mockCollection.aggregate.mockImplementation(() => ({
+            toArray: jest.fn().mockResolvedValue([])
+        }));
+        mockCollection.deleteMany.mockResolvedValue({ deletedCount: 0 });
         mockUsersCollection.findOne.mockReset().mockResolvedValue({ userId: 'owner-1', isVerified: true });
         token = jwt.sign({ userId: 'owner-1', type: 'access' }, process.env.JWT_SECRET);
     });
