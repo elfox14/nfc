@@ -104,7 +104,7 @@ describe('Auth Integration Tests (Ticket 9)', () => {
                 name: 'Alice Wonder',
                 password: hashedPassword
             });
-            mockCollection.insertOne.mockResolvedValueOnce({ insertedId: 'r123' });
+            mockCollection.updateOne.mockResolvedValueOnce({ matchedCount: 1 });
 
             const res = await request(app)
                 .post('/api/auth/login')
