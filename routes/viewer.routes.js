@@ -328,6 +328,16 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
         ogImage,
         keywords,
         design: publishedDesign,
+        // Card design customization: viewer.ejs reads these locals directly
+        // (inputs/images/dynamic/positions/placements/visibilities). Without
+        // them the card renders with defaults (elements at 0,0, all on the
+        // front face) ignoring the saved design.
+        inputs,
+        images: imageUrls,
+        dynamic: dynamicData,
+        positions: publishedDesign.positions || {},
+        placements: publishedDesign.placements || {},
+        visibilities: publishedDesign.visibilities || {},
         canonical,
         structuredDataJson,
         contactLinksHtml: buildContactLinksHtml(dynamicData),
