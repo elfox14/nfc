@@ -350,6 +350,43 @@ module.exports = function createAdminRouter({
     }
   });
 
+  // إحصائيات عداد زيارات الصفحات + مصادر الوصول (للكل: الموقع وصفحات الكورس)
+  router.get('/stats/visits', async (req, res) => {
+    try {
+      const db = getDb();
+      if (!db) return res.status(500).json({ error: 'DB not connected' });
+      const today = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit'
+      }).format(new Date());
+      const docs = await db.collection('page_visits')
+        .find({}, { projection: { path: 1, total: 1, sources: 1, days: 1 } })
+        .sort({ total: -1 })
+        .limit(300)
+        .toArray();
+      const pages = docs.map((d) => {
+        const sources = d.sources || {};
+        const entries = Object.entries(sources).sort((a, b) => b[1] - a[1]);
+        const top = entries.length ? entries[0] : null;
+        return {
+          path: d.path,
+          total: d.total || 0,
+          today: (d.days && d.days[today]) || 0,
+          topSource: top ? top[0] : '—',
+          topSourceCount: top ? top[1] : 0,
+          sources
+        };
+      });
+      const totals = pages.reduce(
+        (acc, p) => ({ total: acc.total + p.total, today: acc.today + p.today }),
+        { total: 0, today: 0 }
+      );
+      res.json({ success: true, today, totals, pages });
+    } catch (err) {
+      console.error('Admin visits stats error:', err);
+      res.status(500).json({ error: 'فشل في استخراج إحصائيات الزيارات' });
+    }
+  });
+
   // ==========================================
   // 4. USERS MANAGEMENT
   // ==========================================
