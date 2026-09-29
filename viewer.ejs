@@ -10,7 +10,7 @@
     <% const pageDesc = (typeof bio !== 'undefined' && bio) ? bio.substring(0, 160) : (name + (tagline ? ' - ' + tagline : '') + ' | بطاقة عمل رقمية ذكية بتقنية NFC ومشاركة جهات الاتصال'); %>
     <meta name="description" content="<%= pageDesc %>">
     <meta name="keywords" content="<%= keywords %>">
-    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="robots" content="<%= typeof robotsMeta !== 'undefined' && robotsMeta ? robotsMeta : 'noindex, noarchive' %>">
     <link rel="canonical" href="<%= canonical || pageUrl %>">
 
     <!-- Open Graph (Facebook / WhatsApp / LinkedIn) -->
@@ -832,6 +832,45 @@
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(197, 160, 89, 0.35);
             transform: translateY(-2px);
+        }
+
+        /* Promo CTA: create-your-own-card banner (viewer conversion) */
+        .viewer-promo {
+            width: calc(100% - 32px);
+            max-width: 480px;
+            margin: 28px auto 120px;
+        }
+        .viewer-promo-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 18px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(197,160,89,0.16), rgba(197,160,89,0.05));
+            border: 1px solid rgba(197,160,89,0.4);
+            color: #f8fafc;
+            text-decoration: none;
+            font-size: 0.92rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .viewer-promo-link:hover {
+            transform: translateY(-2px);
+            border-color: rgba(197,160,89,0.7);
+        }
+        .viewer-promo-link .fa-id-card {
+            color: #c5a059;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+        }
+        .viewer-promo-text strong {
+            color: #e8c97a;
+        }
+        .viewer-promo-link .fa-chevron-left,
+        .viewer-promo-link .fa-chevron-right {
+            margin-inline-start: auto;
+            color: #c5a059;
+            font-size: 0.85rem;
+            flex-shrink: 0;
         }
 
         /* Floating Apple Capsule Dock */
@@ -1817,6 +1856,15 @@
     </div>
 
     <!-- Floating Apple Capsule Dock -->
+    <!-- Promo CTA: create your own smart card -->
+    <section class="viewer-promo" aria-label="<%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Create your own digital card' : 'اصنع بطاقتك الرقمية الخاصة' %>">
+        <a href="/nfc/" class="viewer-promo-link">
+            <i class="fas fa-id-card" aria-hidden="true"></i>
+            <span class="viewer-promo-text"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Like this card?' : 'عجبتك البطاقة؟' %> <strong><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Create your smart card' : 'اصنع بطاقتك الذكية' %></strong></span>
+            <i class="fas fa-chevron-<%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'right' : 'left' %>" aria-hidden="true"></i>
+        </a>
+    </section>
+
     <footer class="sticky-footer" aria-label="إجراءات الحفظ والمشاركة">
         <button class="footer-primary-btn" id="ejs-save-btn" aria-label="حفظ كجهة اتصال">
             <i class="fas fa-user-plus"></i>
