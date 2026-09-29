@@ -196,8 +196,9 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
       const imageUrls = publishedDesign.imageUrls || {};
 
       let ogImage = `${base}/nfc/og-image.png`;
-      if (imageUrls.front) {
-        ogImage = imageUrls.front.startsWith('http') ? imageUrls.front : `${base}${imageUrls.front.startsWith('/') ? '' : '/'}${imageUrls.front}`;
+      const frontThumb = imageUrls.capturedFront || imageUrls.front;
+      if (frontThumb) {
+        ogImage = frontThumb.startsWith('http') ? frontThumb : `${base}${frontThumb.startsWith('/') ? '' : '/'}${frontThumb}`;
       }
 
       const keywords = ['NFC', 'بطاقة عمل ذكية', 'كارت شخصي', name, ...(tagline ? tagline.split(/\s+/).filter(Boolean) : [])].filter(Boolean).join(', ');
@@ -318,6 +319,13 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
         ogImage,
         keywords,
         design: publishedDesign,
+        inputs: publishedDesign.inputs || {},
+        images: publishedDesign.imageUrls || {},
+        dynamic: publishedDesign.dynamic || {},
+        positions: publishedDesign.positions || {},
+        placements: publishedDesign.placements || {},
+        visibilities: publishedDesign.visibilities || {},
+        layout: publishedDesign.layout || publishedDesign.inputs?.['layout-select-visual'] || 'classic',
         canonical,
         structuredDataJson,
         contactLinksHtml: buildContactLinksHtml(dynamicData),

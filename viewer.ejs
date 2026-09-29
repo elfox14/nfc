@@ -388,6 +388,17 @@
             transform-style: preserve-3d;
         }
 
+        .card-captured-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: inherit;
+            display: block;
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+        }
+
         .card-front {
             transform: rotateY(0deg);
         }
@@ -1191,13 +1202,14 @@
 
     <%
     // Safe extract of server values
-    const safeInputs = typeof inputs !== 'undefined' && inputs ? inputs : {};
-    const safeImages = typeof images !== 'undefined' && images ? images : {};
-    const safeDynamic = typeof dynamic !== 'undefined' && dynamic ? dynamic : {};
-    const safePositions = typeof positions !== 'undefined' && positions ? positions : {};
-    const safePlacements = typeof placements !== 'undefined' && placements ? placements : {};
-    const safeVisibilities = typeof visibilities !== 'undefined' && visibilities ? visibilities : {};
-    const cardLayout = typeof layout !== 'undefined' && layout ? layout : 'classic';
+    const d = typeof design !== 'undefined' && design ? design : {};
+    const safeInputs = typeof inputs !== 'undefined' && inputs ? inputs : (d.inputs || {});
+    const safeImages = typeof images !== 'undefined' && images ? images : (d.imageUrls || {});
+    const safeDynamic = typeof dynamic !== 'undefined' && dynamic ? dynamic : (d.dynamic || {});
+    const safePositions = typeof positions !== 'undefined' && positions ? positions : (d.positions || {});
+    const safePlacements = typeof placements !== 'undefined' && placements ? placements : (d.placements || {});
+    const safeVisibilities = typeof visibilities !== 'undefined' && visibilities ? visibilities : (d.visibilities || {});
+    const cardLayout = typeof layout !== 'undefined' && layout ? layout : (d.layout || safeInputs['layout-select-visual'] || 'classic');
 
     const cardBio = safeInputs['input-bio'] || '';
     const cardComp = safeInputs['input-company'] || '';
@@ -1340,6 +1352,9 @@
                 <!-- === Front Face === -->
                 <div class="business-card card-front">
                     <div class="card-hologram-sheen"></div>
+                    <% if (safeImages.capturedFront) { %>
+                        <img src="<%= safeImages.capturedFront %>" alt="<%= name %>" class="card-captured-img">
+                    <% } else { %>
                     <div class="nfc-chip-indicator">
                         <i class="fas fa-wifi"></i>
                         <span>NFC SMART CARD</span>
@@ -1395,11 +1410,15 @@
                             </div>
                         <% }}); } %>
                     </div>
+                    <% } %>
                 </div>
 
                 <!-- === Back Face === -->
                 <div class="business-card card-back">
                     <div class="card-hologram-sheen"></div>
+                    <% if (safeImages.capturedBack) { %>
+                        <img src="<%= safeImages.capturedBack %>" alt="<%= name %>" class="card-captured-img">
+                    <% } else { %>
                     <div class="card-background-layer"
                         style="background-image: url('<%= safeImages.back || '' %>'); display: <%= safeImages.back ? 'block' : 'none' %>;">
                     </div>
@@ -1468,6 +1487,7 @@
                             </div>
                         <% } }); %>
                     </div>
+                    <% } %>
                 </div>
 
             </div><!-- /cards-wrapper -->
@@ -2372,7 +2392,7 @@
             triggerHaptic(20);
             showToast('اختر وجهاً لتحميله بدقة عالية 🖼️', 'info', 2000);
             const isFlipped = cardEl ? cardEl.classList.contains('is-flipped') : false;
-            const bgImg = isFlipped ? <%- JSON.stringify(safeImages.back || '') %> : <%- JSON.stringify(safeImages.front || '') %>;
+            const bgImg = isFlipped ? <%- JSON.stringify(safeImages.capturedBack || safeImages.back || '') %> : <%- JSON.stringify(safeImages.capturedFront || safeImages.front || '') %>;
             if (bgImg) {
                 const a = document.createElement('a');
                 a.href = bgImg;
