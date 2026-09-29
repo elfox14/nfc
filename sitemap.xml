@@ -47,19 +47,19 @@
   <!-- مقالات المدونة -->
   <url>
     <loc>https://www.mcprim.com/nfc/blog-nfc-at-events.html</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-09-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.mcprim.com/nfc/blog-digital-menus-for-restaurants.html</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-09-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.mcprim.com/nfc/blog-business-card-mistakes.html</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-09-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -67,19 +67,19 @@
   <!-- مقالات المدونة - إنجليزي -->
   <url>
     <loc>https://www.mcprim.com/nfc/blog-nfc-at-events-en.html</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-09-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.mcprim.com/nfc/blog-digital-menus-for-restaurants-en.html</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-09-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.mcprim.com/nfc/blog-business-card-mistakes-en.html</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-09-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -216,5 +216,29 @@
     <lastmod>2026-08-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.mcprim.com/nfc/blog-nfc-vs-qr.html</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.mcprim.com/nfc/blog-nfc-vs-qr-en.html</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.mcprim.com/nfc/blog-paper-card-alternatives.html</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.mcprim.com/nfc/blog-paper-card-alternatives-en.html</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>
