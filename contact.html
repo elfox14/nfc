@@ -28,7 +28,28 @@
     "@context": "https://schema.org",
     "@type": "ContactPage",
     "name": "تواصل معنا - MC PRIME",
-    "url": "https://www.mcprim.com/nfc/contact.html"
+    "url": "https://www.mcprim.com/nfc/contact.html",
+    "description": "صفحة التواصل والدعم الفني لمنصة MC PRIME لتصميم بطاقات العمل الرقمية الذكية.",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "MC PRIME",
+      "url": "https://www.mcprim.com",
+      "email": "support@mcprim.com",
+      "telephone": "+201029944567",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "New Cairo",
+        "addressRegion": "Cairo",
+        "addressCountry": "EG"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+201029944567",
+        "contactType": "customer support",
+        "email": "support@mcprim.com",
+        "availableLanguage": ["Arabic", "English"]
+      }
+    }
   }
   </script>
   
@@ -89,9 +110,39 @@
       <h1>اتصل بنا</h1>
       <a href="contact-en.html" class="lang-btn" aria-label="Switch to English" onclick="if(window.switchLanguage){switchLanguage('en');return false;}">EN</a>
     </div>
-    <p>لأي استفسار أو دعم فني، يسعدنا التواصل معك. يمكنك ملء النموذج أدناه أو مراسلتنا مباشرة.</p>
+    <p style="color: #8b949e; font-size: 1.05rem; margin-bottom: 2rem;">
+      يسعدنا تواصلك مع فريق MC PRIME. منصتنا مخصصة لتصميم بطاقات الأعمال الرقمية الذكية ورموز QR ومشاركتها مجاناً. إذا كان لديك أي استفسار أو اقتراح أو استفسار فني، يمكنك مراسلتنا عبر النموذج أو وسائل الاتصال المباشرة أدناه.
+    </p>
+
+    <!-- Business Contact Info Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+      <div style="background: rgba(22, 27, 34, 0.6); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(197, 160, 89, 0.25);">
+        <div style="color: #c5a059; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-envelope"></i> البريد الإلكتروني للدعم</div>
+        <p style="margin: 0; font-weight: bold; color: #fff;"><a href="mailto:support@mcprim.com" style="color: #c5a059; text-decoration: none;">support@mcprim.com</a></p>
+        <span style="font-size: 0.85rem; color: #8b949e;">الرد خلال 24 ساعة عمل</span>
+      </div>
+
+      <div style="background: rgba(22, 27, 34, 0.6); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(197, 160, 89, 0.25);">
+        <div style="color: #c5a059; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-phone-alt"></i> الهاتف / واتساب الدعم</div>
+        <p style="margin: 0; font-weight: bold; color: #fff; direction: ltr; text-align: right;"><a href="tel:+201029944567" style="color: #c5a059; text-decoration: none;">+20 102 994 4567</a></p>
+        <span style="font-size: 0.85rem; color: #8b949e;">الأحد – الخميس: 9:00 ص – 6:00 م</span>
+      </div>
+
+      <div style="background: rgba(22, 27, 34, 0.6); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(197, 160, 89, 0.25);">
+        <div style="color: #c5a059; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-map-marker-alt"></i> المقر والعنوان</div>
+        <p style="margin: 0; font-weight: bold; color: #fff;">القاهرة الجديدة، القاهرة</p>
+        <span style="font-size: 0.85rem; color: #8b949e;">جمهورية مصر العربية</span>
+      </div>
+
+      <div style="background: rgba(22, 27, 34, 0.6); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(197, 160, 89, 0.25);">
+        <div style="color: #c5a059; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-info-circle"></i> طبيعة الخدمة والمنصة</div>
+        <p style="margin: 0; font-weight: bold; color: #fff;">أداة تصميم رقمية مجانية 100%</p>
+        <span style="font-size: 0.85rem; color: #8b949e;">لا توجد أي مبيعات لمنتجات مادية</span>
+      </div>
+    </div>
     
     <div style="background: rgba(22, 27, 34, 0.4); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem;">
+      <h2 style="font-size: 1.3rem; margin-bottom: 1.2rem; color: #fff;">أرسل لنا رسالة مباشرة</h2>
       <form id="contact-form" action="mailto:support@mcprim.com" method="POST" enctype="text/plain" style="display: flex; flex-direction: column; gap: 1rem;">
         <div>
           <label for="name" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">الاسم الكامل *</label>
@@ -113,11 +164,17 @@
       </form>
     </div>
 
-    <div style="margin-bottom: 2rem;">
-      <h3>طرق تواصل أخرى:</h3>
-      <ul>
-        <li>البريد الإلكتروني المباشر: <a href="mailto:support@mcprim.com" style="color: #c5a059;">support@mcprim.com</a></li>
-      </ul>
+    <div style="margin-bottom: 2rem; padding: 1.25rem; background: rgba(197, 160, 89, 0.08); border-radius: 8px; border: 1px solid rgba(197, 160, 89, 0.2);">
+      <h3 style="margin-top: 0; color: #c5a059; font-size: 1.1rem;"><i class="fas fa-shield-alt"></i> سياسات الشفافية وحماية المستخدم</h3>
+      <p style="margin-bottom: 0.5rem; font-size: 0.95rem; color: #8b949e;">
+        منصة MC PRIME تلتزم بأعلى معايير الشفافية وحماية الخصوصية للمستخدمين. يمكنك مراجعة سياساتنا القانونية في أي وقت:
+      </p>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="privacy.html" style="color: #c5a059; font-weight: 600;">سياسة الخصوصية</a> |
+        <a href="terms.html" style="color: #c5a059; font-weight: 600;">شروط الاستخدام</a> |
+        <a href="about.html" style="color: #c5a059; font-weight: 600;">من نحن</a> |
+        <a href="editor.html" style="color: #c5a059; font-weight: 600;">محرر البطاقات المجاني</a>
+      </div>
     </div>
 
     <a href="index.html" style="color: #c5a059;">&larr; العودة للصفحة الرئيسية</a>

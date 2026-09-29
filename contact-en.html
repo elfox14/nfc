@@ -27,12 +27,27 @@
       "@type": "ContactPage",
       "name": "Contact Us - MC PRIME",
       "url": "https://www.mcprim.com/nfc/contact-en.html",
-      "description": "Contact page for MC PRIME digital NFC business cards.",
+      "description": "Customer support and contact page for MC PRIME smart digital business card editor.",
       "inLanguage": "en",
       "mainEntity": {
         "@type": "Organization",
         "name": "MC PRIME",
-        "url": "https://www.mcprim.com"
+        "url": "https://www.mcprim.com",
+        "email": "support@mcprim.com",
+        "telephone": "+201029944567",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "New Cairo",
+          "addressRegion": "Cairo",
+          "addressCountry": "EG"
+        },
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+201029944567",
+          "contactType": "customer support",
+          "email": "support@mcprim.com",
+          "availableLanguage": ["English", "Arabic"]
+        }
       }
     }
     </script>
@@ -105,9 +120,39 @@
             <h1>Contact Us</h1>
             <a href="contact.html" class="lang-btn" aria-label="التبديل إلى العربية" onclick="if(window.switchLanguage){switchLanguage('ar');return false;}">عربي</a>
         </div>
-        <p>For any inquiries or technical support, we are happy to connect with you. You can fill out the form below or email us directly.</p>
+        <p style="color: #8b949e; font-size: 1.05rem; margin-bottom: 2rem;">
+            We'd love to hear from you. MC PRIME is a dedicated platform for creating, customizing, and sharing smart digital business cards and dynamic QR codes 100% free. If you have any inquiries, suggestions, or technical support needs, please reach out via our contact channels below.
+        </p>
+
+        <!-- Business Contact Info Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+            <div style="background: rgba(22, 27, 34, 0.6); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(197, 160, 89, 0.25);">
+                <div style="color: #c5a059; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-envelope"></i> Support Email</div>
+                <p style="margin: 0; font-weight: bold; color: #fff;"><a href="mailto:support@mcprim.com" style="color: #c5a059; text-decoration: none;">support@mcprim.com</a></p>
+                <span style="font-size: 0.85rem; color: #8b949e;">Response within 24 business hours</span>
+            </div>
+
+            <div style="background: rgba(22, 27, 34, 0.6); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(197, 160, 89, 0.25);">
+                <div style="color: #c5a059; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-phone-alt"></i> Phone / WhatsApp Support</div>
+                <p style="margin: 0; font-weight: bold; color: #fff;"><a href="tel:+201029944567" style="color: #c5a059; text-decoration: none;">+20 102 994 4567</a></p>
+                <span style="font-size: 0.85rem; color: #8b949e;">Sun – Thu: 9:00 AM – 6:00 PM (GMT+2)</span>
+            </div>
+
+            <div style="background: rgba(22, 27, 34, 0.6); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(197, 160, 89, 0.25);">
+                <div style="color: #c5a059; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-map-marker-alt"></i> Office &amp; Headquarters</div>
+                <p style="margin: 0; font-weight: bold; color: #fff;">New Cairo, Cairo</p>
+                <span style="font-size: 0.85rem; color: #8b949e;">Arab Republic of Egypt</span>
+            </div>
+
+            <div style="background: rgba(22, 27, 34, 0.6); padding: 1.25rem; border-radius: 10px; border: 1px solid rgba(197, 160, 89, 0.25);">
+                <div style="color: #c5a059; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-info-circle"></i> Service Transparency</div>
+                <p style="margin: 0; font-weight: bold; color: #fff;">100% Free Digital Card Editor</p>
+                <span style="font-size: 0.85rem; color: #8b949e;">No physical product sales or hidden fees</span>
+            </div>
+        </div>
         
         <div style="background: rgba(22, 27, 34, 0.4); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem;">
+            <h2 style="font-size: 1.3rem; margin-bottom: 1.2rem; color: #fff;">Send Us a Direct Message</h2>
             <form id="contact-form" action="mailto:support@mcprim.com" method="POST" enctype="text/plain" style="display: flex; flex-direction: column; gap: 1rem;">
                 <div>
                     <label for="name" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Full Name *</label>
@@ -129,11 +174,17 @@
             </form>
         </div>
 
-        <div style="margin-bottom: 2rem;">
-            <h3>Other ways to connect:</h3>
-            <ul>
-                <li>Direct Email: <a href="mailto:support@mcprim.com" style="color: #c5a059;">support@mcprim.com</a></li>
-            </ul>
+        <div style="margin-bottom: 2rem; padding: 1.25rem; background: rgba(197, 160, 89, 0.08); border-radius: 8px; border: 1px solid rgba(197, 160, 89, 0.2);">
+            <h3 style="margin-top: 0; color: #c5a059; font-size: 1.1rem;"><i class="fas fa-shield-alt"></i> Transparency &amp; User Protection</h3>
+            <p style="margin-bottom: 0.5rem; font-size: 0.95rem; color: #8b949e;">
+                MC PRIME is committed to transparency and user privacy. Review our policies anytime:
+            </p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="privacy-en.html" style="color: #c5a059; font-weight: 600;">Privacy Policy</a> |
+                <a href="terms-en.html" style="color: #c5a059; font-weight: 600;">Terms of Service</a> |
+                <a href="about-en.html" style="color: #c5a059; font-weight: 600;">About Us</a> |
+                <a href="editor-en.html" style="color: #c5a059; font-weight: 600;">Free Card Editor</a>
+            </div>
         </div>
 
         <a href="index-en.html" style="color: #c5a059;">&larr; Back to Home Page</a>
