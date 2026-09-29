@@ -181,7 +181,7 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
 
       db.collection(designsCollectionName).updateOne({ _id: doc._id }, { $inc: { views: 1 } }).catch(err => console.error(`Failed to increment view count:`, err));
 
-      // X-Robots-Tag is set below once card content is known (conditional indexing).
+      res.setHeader('X-Robots-Tag', 'index, follow');
       const base = absoluteBaseUrl(req);
       const docSlug = doc.slug || doc.shortId;
       const canonical = `${base}/nfc/c/${encodeURIComponent(docSlug)}`;
@@ -192,16 +192,6 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
       const tagline = sanitizeText(inputs['input-tagline_ar'] || inputs['input-tagline_en'] || inputs['input-tagline'] || '');
       const company = sanitizeText(inputs['input-company_ar'] || inputs['input-company_en'] || inputs['input-company'] || '');
       const bio = sanitizeText(inputs['input-bio_ar'] || inputs['input-bio_en'] || inputs['input-bio'] || '');
-
-      // Conditional indexing: only cards with real content get indexed.
-      // Thin/empty cards (default name, no bio/company/tagline) stay noindex
-      // to avoid thin-content dilution of the domain.
-      const hasRealContent =
-        name !== '\u0628\u0637\u0627\u0642\u0629 \u0639\u0645\u0644 \u0631\u0642\u0645\u064a\u0629' &&
-        name.trim().length >= 3 &&
-        (company.trim().length >= 10 || bio.trim().length >= 10 || tagline.trim().length >= 10);
-      const robotsMeta = hasRealContent ? 'index, follow, max-image-preview:large' : 'noindex, noarchive';
-      res.setHeader('X-Robots-Tag', robotsMeta);
       const dynamicData = publishedDesign.dynamic || {};
       const imageUrls = publishedDesign.imageUrls || {};
 
@@ -334,8 +324,7 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
         initialLang,
         initialDir,
         cardShortId: doc.shortId || id,
-        docSlug,
-        robotsMeta
+        docSlug
       }, (renderError, html) => {
         if (renderError) throw renderError;
         res.type('html').send(injectCspNonceIntoRenderedHtml(html, res.locals.cspNonce));

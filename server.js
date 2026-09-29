@@ -292,12 +292,6 @@ app.use('/api/admin', adminLimiter, createAdminRouter({
   MAX_ERROR_BUFFER 
 }));
 
-// عداد زيارات الصفحات (ظاهر للزوار) — /nfc/api للوصول عبر البروكسي و /api للوصول المباشر
-const createVisitsRouter = require('./routes/visits.routes');
-const visitsRouter = createVisitsRouter({ getDb: () => db });
-app.use('/nfc/api/visits', visitsRouter);
-app.use('/api/visits', visitsRouter);
-
 // Static files come after the explicit admin page route so /nfc/admin cannot
 // bypass adminPageLimiter or the page-specific no-store/noindex headers.
 registerNfcStaticFiles(app, rootDir);

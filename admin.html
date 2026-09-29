@@ -1225,32 +1225,6 @@
                             <!-- Loaded via JS -->
                         </div>
 
-                        <!-- Page Visits Card -->
-                        <div class="card-panel" style="margin-bottom:24px;">
-                            <div class="panel-header">
-                                <div class="panel-title">
-                                    <i class="fas fa-eye"></i>
-                                    <span>زيارات الصفحات والمصادر</span>
-                                </div>
-                                <span class="filter-pill" id="visits-total-pill">…</span>
-                            </div>
-                            <div class="table-responsive">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>الصفحة</th>
-                                            <th>إجمالي الزيارات</th>
-                                            <th>اليوم</th>
-                                            <th>أشهر مصدر</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="visits-tbody">
-                                        <tr><td colspan="4" style="text-align:center;padding:30px;"><div class="spinner"></div></td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
                             <!-- Latest Users Card -->
                             <div class="card-panel">
@@ -1518,47 +1492,6 @@
     <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
 
-    <script>
-    /* تحميل إحصائيات زيارات الصفحات في لوحة الأدمن */
-    (function () {
-      var tbody = document.getElementById('visits-tbody');
-      if (!tbody) return;
-      var pill = document.getElementById('visits-total-pill');
-      function esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-      }
-      function fmt(n) { try { return Number(n || 0).toLocaleString('ar-EG'); } catch (e) { return String(n || 0); } }
-      function load() {
-        var token = null;
-        try { token = localStorage.getItem('adminToken'); } catch (e) {}
-        if (!token) return; // قبل تسجيل الدخول — تُعاد المحاولة تلقائيًا
-        fetch('/api/admin/stats/visits', { headers: { 'x-admin-token': token } })
-          .then(function (r) { return r.ok ? r.json() : null; })
-          .then(function (d) {
-            if (!d || !d.success) return;
-            if (pill) pill.textContent = 'الإجمالي: ' + fmt(d.totals.total) + ' · اليوم: ' + fmt(d.totals.today);
-            if (!d.pages.length) {
-              tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--text-muted)">لا توجد زيارات مسجلة بعد</td></tr>';
-              return;
-            }
-            tbody.innerHTML = d.pages.map(function (p) {
-              var srcs = Object.entries(p.sources || {}).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 4);
-              var title = srcs.map(function (s) { return s[0] + ': ' + fmt(s[1]); }).join('\n');
-              return '<tr><td style="font-family:monospace" dir="ltr">' + esc(p.path) + '</td>' +
-                '<td><b>' + fmt(p.total) + '</b></td>' +
-                '<td>' + fmt(p.today) + '</td>' +
-                '<td title="' + esc(title) + '">' + esc(p.topSource) + ' (' + fmt(p.topSourceCount) + ')</td></tr>';
-            }).join('');
-          })
-          .catch(function () {});
-      }
-      load();
-      setInterval(load, 60000);
-    })();
-    </script>
     <script src="js/admin-e8a24c91.js" defer></script>
-<script src="/nfc/js/visit-counter.js" defer></script>
 </body>
 </html>
