@@ -252,16 +252,18 @@ const HistoryManager = {
     // maxHistory: 20, // REMOVED: No limit for undo/redo history
 
     pushState(state) {
-        // Cut future history if we push new state after undoing
-        if (this.currentIndex < this.history.length - 1) {
-            this.history.splice(this.currentIndex + 1);
-        }
-
-        // Avoid duplicates
+        // Avoid duplicates — this check MUST run before cutting the future:
+        // autosave pushes the current state (e.g. right after an undo), and
+        // splicing first silently destroyed the redo stack on every save.
         const newStateStr = JSON.stringify(state);
         const currentStateStr = this.currentIndex >= 0 ? JSON.stringify(this.history[this.currentIndex]) : null;
 
         if (newStateStr === currentStateStr) return;
+
+        // Cut future history if we push new state after undoing
+        if (this.currentIndex < this.history.length - 1) {
+            this.history.splice(this.currentIndex + 1);
+        }
 
         this.history.push(JSON.parse(newStateStr));
         this.currentIndex++; // UPDATED: Always increment index
