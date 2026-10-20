@@ -79,8 +79,27 @@
   document.body.appendChild(overlay);
   var body = overlay.querySelector('.aid-body');
 
+  function isSignedIn() {
+    var a = authObj();
+    if (a && typeof a.isLoggedIn === 'function') {
+      try { return !!a.isLoggedIn(); } catch (e) { return false; }
+    }
+    return false;
+  }
+
+  function renderSignin() {
+    var basePath = window.location.pathname.indexOf('/nfc') === 0 ? '/nfc' : '';
+    body.innerHTML =
+      '<div class="aid-signin"><p>المصمم الذكي بيبني الكارت على حسابك، فمحتاج تسجيل دخول الأول.</p>' +
+      '<a class="aid-go aid-login-link" href="' + basePath + '/login">سجّل دخولك وكمل</a></div>';
+  }
+
   function openModal() {
     overlay.hidden = false;
+    // Guests get an in-panel sign-in prompt. Never call the API while
+    // signed out: Auth.apiFetchWithRefresh answers a failed refresh by
+    // logging out, which would redirect the whole page to /login.
+    if (!isSignedIn()) { renderSignin(); return; }
     renderForm();
     refreshUsage();
   }
@@ -144,6 +163,7 @@
   }
 
   function generate() {
+    if (!isSignedIn()) { renderSignin(); return; }
     var payload = {
       profession: body.querySelector('.aid-f-prof').value,
       mood: body.querySelector('.aid-f-mood').value,
