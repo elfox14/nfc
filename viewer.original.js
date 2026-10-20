@@ -1227,6 +1227,176 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+
+        // *** [NEW] Story image composer — 1080x1920 (Design A, approved 2026-10-21) ***
+        // Builds a real story-format image from the card's own data: gradient
+        // background in the card's colors, the rendered card front, name/tagline,
+        // a QR panel for the card URL, and MC PRIME branding. Any failure throws
+        // and the caller falls back to sharing the raw card image (old behavior).
+        const STORY_W = 1080, STORY_H = 1920;
+
+        function storyRoundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        function loadStoryImage(src) {
+            return new Promise((resolve, reject) => {
+                const im = new Image();
+                im.crossOrigin = 'anonymous';
+                im.onload = () => resolve(im);
+                im.onerror = () => reject(new Error('story image load failed'));
+                im.src = src;
+            });
+        }
+
+        async function makeStoryQrDataUrl(text) {
+            await loadScript(SCRIPT_URLS.qrcode);
+            const holder = document.createElement('div');
+            holder.style.cssText = 'position:absolute;left:-9999px;top:0;';
+            document.body.appendChild(holder);
+            try {
+                new QRCode(holder, {
+                    text: text, width: 440, height: 440,
+                    colorDark: '#101418', colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                await new Promise(r => setTimeout(r, 350));
+                const img = holder.querySelector('img');
+                const cnv = holder.querySelector('canvas');
+                if (img && img.src) return img.src;
+                if (cnv) return cnv.toDataURL('image/png');
+                return null;
+            } finally {
+                holder.remove();
+            }
+        }
+
+        function storyFitFont(ctx, text, weight, maxSize, maxWidth) {
+            let size = maxSize;
+            while (size > 24) {
+                ctx.font = weight + ' ' + size + 'px Cairo, sans-serif';
+                if (ctx.measureText(text).width <= maxWidth) break;
+                size -= 4;
+            }
+            return size;
+        }
+
+        async function buildStoryBlob(frontImg) {
+            const inputs = (cardData && cardData.inputs) || {};
+            const lang = (cardData && cardData.currentLanguage) || document.documentElement.lang || 'ar';
+            const name = inputs['input-name_' + lang] || inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || '';
+            const tagline = inputs['input-tagline_' + lang] || inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || '';
+            const cStart = inputs['front-bg-start'] || '#1B2A4A';
+            const cEnd = inputs['front-bg-end'] || '#080D18';
+            const nameColor = inputs['name-color'] || '#FFFFFF';
+            const tagColor = inputs['tagline-color'] || '#D8B56B';
+            const pageUrl = window.location.href;
+            const shortUrl = window.location.host + window.location.pathname;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = STORY_W; canvas.height = STORY_H;
+            const ctx = canvas.getContext('2d');
+
+            const g = ctx.createLinearGradient(0, 0, 0, STORY_H);
+            g.addColorStop(0, cStart); g.addColorStop(1, cEnd);
+            ctx.fillStyle = g; ctx.fillRect(0, 0, STORY_W, STORY_H);
+            const glow = (x, y, r, rgba) => {
+                const rg = ctx.createRadialGradient(x, y, 0, x, y, r);
+                rg.addColorStop(0, rgba); rg.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = rg; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+            };
+            glow(950, 170, 430, 'rgba(216,181,107,0.20)');
+            glow(80, 1760, 470, 'rgba(90,130,200,0.16)');
+
+            try { await document.fonts.ready; } catch (e) { /* fonts best-effort */ }
+
+            // Header brand
+            ctx.fillStyle = '#D8B56B';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            try { ctx.letterSpacing = '10px'; } catch (e) { /* older browsers */ }
+            ctx.font = '700 44px Cairo, sans-serif';
+            ctx.fillText('MC PRIME', STORY_W / 2, 92);
+            try { ctx.letterSpacing = '0px'; } catch (e) { /* noop */ }
+            ctx.fillRect(STORY_W / 2 - 150, 184, 300, 3);
+
+            // Card front image (rounded, shadowed)
+            const cardImg = await loadStoryImage(frontImg.src);
+            let cw = 940;
+            const ratio = (cardImg.naturalHeight && cardImg.naturalWidth) ? (cardImg.naturalHeight / cardImg.naturalWidth) : 0.63;
+            let ch = Math.round(cw * ratio);
+            if (ch > 620) { // keep room for name + QR panel on tall snapshots
+                ch = 620;
+                cw = Math.round(ch / ratio);
+            }
+            const cx = (STORY_W - cw) / 2, cy = 300;
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 42; ctx.shadowOffsetY = 20;
+            storyRoundRect(ctx, cx, cy, cw, ch, 40);
+            ctx.fillStyle = '#0B1220'; ctx.fill();
+            ctx.restore();
+            ctx.save();
+            storyRoundRect(ctx, cx, cy, cw, ch, 40); ctx.clip();
+            ctx.drawImage(cardImg, cx, cy, cw, ch);
+            ctx.restore();
+            storyRoundRect(ctx, cx, cy, cw, ch, 40);
+            ctx.strokeStyle = 'rgba(216,181,107,0.55)'; ctx.lineWidth = 2; ctx.stroke();
+
+            // Name + tagline
+            let ty = cy + ch + 58;
+            ctx.direction = 'rtl';
+            if (name) {
+                ctx.fillStyle = nameColor;
+                storyFitFont(ctx, name, '800', 64, 980);
+                ctx.fillText(name, STORY_W / 2, ty);
+                ty += 94;
+            }
+            if (tagline) {
+                ctx.fillStyle = tagColor;
+                storyFitFont(ctx, tagline, '500', 38, 980);
+                ctx.fillText(tagline, STORY_W / 2, ty);
+                ty += 64;
+            }
+            ctx.direction = 'ltr';
+
+            // QR panel
+            const pw = 470, ph = 590, px = (STORY_W - pw) / 2, py = ty + 40;
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
+            storyRoundRect(ctx, px, py, pw, ph, 36);
+            ctx.fillStyle = '#FFFFFF'; ctx.fill();
+            ctx.restore();
+            const qrData = await makeStoryQrDataUrl(pageUrl);
+            if (qrData) {
+                const qrImg = await loadStoryImage(qrData);
+                ctx.drawImage(qrImg, px + (pw - 360) / 2, py + 34, 360, 360);
+            }
+            ctx.fillStyle = '#101418';
+            ctx.font = '700 37px Cairo, sans-serif';
+            ctx.direction = 'rtl';
+            ctx.fillText('امسح الكود وافتح بطاقتي', STORY_W / 2, py + 424);
+            ctx.direction = 'ltr';
+            ctx.fillStyle = '#6E7682';
+            ctx.font = '400 29px Cairo, sans-serif';
+            ctx.fillText(shortUrl, STORY_W / 2, py + 494);
+
+            // Footer
+            ctx.fillStyle = 'rgba(255,255,255,0.55)';
+            ctx.font = '400 28px Cairo, sans-serif';
+            ctx.fillText('www.mcprim.com', STORY_W / 2, STORY_H - 84);
+
+            return new Promise((resolve, reject) => {
+                try {
+                    canvas.toBlob(b => b ? resolve(b) : reject(new Error('story toBlob failed')), 'image/png');
+                } catch (e) { reject(e); }
+            });
+        }
+
         const addToStoryBtn = document.getElementById('add-to-story-btn');
         if (addToStoryBtn) {
             addToStoryBtn.addEventListener('click', async () => {
@@ -1236,28 +1406,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
+                const originalHtml = addToStoryBtn.innerHTML;
                 try {
-                    const originalHtml = addToStoryBtn.innerHTML;
                     addToStoryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التجهيز...';
 
-                    const res = await fetch(frontImg.src);
-                    const blob = await res.blob();
+                    // Compose the 1080x1920 story image; on any failure fall
+                    // back to the raw card image (previous behavior).
+                    let blob = null;
+                    try {
+                        blob = await buildStoryBlob(frontImg);
+                    } catch (composeErr) {
+                        console.log('Story compose failed, falling back to raw image:', composeErr);
+                    }
+                    if (!blob) {
+                        const res = await fetch(frontImg.src);
+                        blob = await res.blob();
+                    }
                     const file = new File([blob], 'card_story.png', { type: 'image/png' });
 
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             files: [file],
                             title: (cardData && cardData.inputs && cardData.inputs['input-name']) ? cardData.inputs['input-name'] : 'بطاقة أعمال رقمية',
-                            text: 'اسحب للأعلى لزيارة بطاقتي!'
+                            text: window.location.href
                         });
                         trackClick('story_share_native');
                         showToast('تم فتح قائمة المشاركة لقصتك!', 'success');
                     } else {
                         const a = document.createElement('a');
-                        a.href = frontImg.src;
+                        a.href = URL.createObjectURL(blob);
                         a.download = 'card_for_story.png';
                         a.click();
-                        showToast('تم تنزيل الصورة! يمكنك الآن رفعها لقصتك.', 'success');
+                        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+                        showToast('تم تنزيل صورة الستوري! يمكنك الآن رفعها لقصتك.', 'success');
                         trackClick('story_share_download');
                     }
                     addToStoryBtn.innerHTML = originalHtml;
