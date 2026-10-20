@@ -21,12 +21,26 @@
 
   var state = { variants: [], suggestions: [], usage: null, stageTimer: null };
 
+  // NOTE: the editor declares Config and Auth as top-level `const`
+  // globals — they are reachable as bare identifiers from any classic
+  // script, but NOT as window.Config / window.Auth. Always resolve
+  // them through these typeof-guarded helpers.
+  function cfgObj() { return (typeof Config !== 'undefined') ? Config : null; }
+  function authObj() { return (typeof Auth !== 'undefined') ? Auth : null; }
   function apiBase() {
-    return (window.Config && window.Config.API_BASE_URL) || '';
+    var c = cfgObj();
+    if (c && c.API_BASE_URL) return c.API_BASE_URL;
+    if (typeof window.__API_BASE_URL === 'string' && window.__API_BASE_URL) return window.__API_BASE_URL;
+    var a = authObj();
+    if (a && typeof a.getBaseUrl === 'function') {
+      try { return a.getBaseUrl() || ''; } catch (e) { /* fall through */ }
+    }
+    return '';
   }
   function apiFetch(url, options) {
-    if (window.Auth && typeof window.Auth.apiFetchWithRefresh === 'function') {
-      return window.Auth.apiFetchWithRefresh(url, options);
+    var a = authObj();
+    if (a && typeof a.apiFetchWithRefresh === 'function') {
+      return a.apiFetchWithRefresh(url, options);
     }
     options = options || {};
     options.credentials = 'include';
