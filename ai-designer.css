@@ -20,6 +20,13 @@
 }
 .aid-fab:hover { transform: translateY(-1px); }
 
+/* On small screens the editor pins its own bottom navigation bar
+   (المحتوى / التصميم / الإعدادات والحفظ) to the viewport bottom, which
+   covered the pill almost completely. Lift the pill above that bar. */
+@media (max-width: 1024px) {
+  .aid-fab { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+}
+
 .aid-overlay {
   position: fixed;
   inset: 0;
