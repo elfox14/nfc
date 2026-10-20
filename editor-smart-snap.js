@@ -14,6 +14,8 @@
     var verticalGuide = null;
     var horizontalGuide = null;
     var frameRequested = false;
+    var downX = null;
+    var downY = null;
 
     function getCard(element) {
         return element && element.closest('.card-face, .business-card, .card-front, .card-back, #card-front, #card-back');
@@ -166,12 +168,20 @@
     function init() {
         injectStyles();
         document.addEventListener('pointerdown', function (event) {
+            downX = event.clientX;
+            downY = event.clientY;
             var element = getSelectable(event.target);
             if (element) start(element);
             else cancel();
         }, true);
         document.addEventListener('pointermove', function () { if (activeElement) requestPreview(); }, true);
-        document.addEventListener('pointerup', finish, true);
+        document.addEventListener('pointerup', function (event) {
+            var moved = downX === null || downY === null || Math.abs(event.clientX - downX) > 3 || Math.abs(event.clientY - downY) > 3;
+            downX = null;
+            downY = null;
+            if (moved) finish();
+            else cancel();
+        }, true);
         document.addEventListener('pointercancel', cancel, true);
         document.addEventListener('editor:dragstart', function (event) { if (event.detail && event.detail.element) start(event.detail.element); });
         document.addEventListener('editor:dragmove', requestPreview);
