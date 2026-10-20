@@ -46,10 +46,20 @@
     options.credentials = 'include';
     return fetch(url, options);
   }
+  // The editor declares its core objects as lexical globals (const) in
+  // classic scripts — reachable as bare identifiers, NOT as window.*.
+  // Resolve StateManager the same way Config/Auth are resolved.
+  function smObj() {
+    try {
+      if (typeof StateManager !== 'undefined' && StateManager) return StateManager;
+    } catch (e) { /* not declared in this scope */ }
+    return window.StateManager || null;
+  }
   function currentEditorState() {
     try {
-      if (window.StateManager && typeof window.StateManager.getStateObject === 'function') {
-        return window.StateManager.getStateObject();
+      var sm = smObj();
+      if (sm && typeof sm.getStateObject === 'function') {
+        return sm.getStateObject();
       }
     } catch (e) { /* noop */ }
     return null;
@@ -140,6 +150,8 @@
       '</div>' +
       '<label class="aid-wide">سطر واحد عن نفسك (اختياري — أي كلام، وهنصيغه)<input class="aid-f-line" placeholder="مثال: بشتغل في تسويق العيادات من ٥ سنين"></label>' +
       '<label class="aid-wide">رابط اللوجو (اختياري — بنقرأ منه ألوان البراند)<input class="aid-f-logo" value="' + esc(inp['input-logo'] || '') + '" placeholder="https://…"></label>' +
+      '<label class="aid-wide">أو ارفع الشعار من جهازك (اختياري)<input type="file" class="aid-f-logo-file" accept="image/*"></label>' +
+      '<label class="aid-wide">صورة شخصية من جهازك (اختياري)<input type="file" class="aid-f-photo-file" accept="image/*"></label>' +
       '<div class="aid-row"><span class="aid-usage"></span>' +
       '<button type="button" class="aid-go">ولّد ٣ نسخ</button></div>' +
       '<p class="aid-err" hidden></p>';
@@ -162,6 +174,22 @@
     }, 2600);
   }
 
+  // Upload through the editor's own image pipeline (same endpoint the
+  // editor uses for card images): POST /api/upload-image, FormData
+  // field "image", returns { url }.
+  function uploadImage(file, failText) {
+    var fd = new FormData();
+    fd.append('image', file);
+    return apiFetch(apiBase() + '/api/upload-image', { method: 'POST', body: fd })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (!r.ok || !j.url) throw new Error(failText);
+          return j.url;
+        });
+      })
+      .catch(function () { throw new Error(failText); });
+  }
+
   function generate() {
     if (!isSignedIn()) { renderSignin(); return; }
     var payload = {
@@ -179,11 +207,32 @@
     if (cur && cur.inputs && cur.inputs['input-photo-url'] && !payload.photoUrl) {
       payload.photoUrl = cur.inputs['input-photo-url'];
     }
+    // Grab the files BEFORE renderLoading() replaces the form DOM.
+    var logoFileInput = body.querySelector('.aid-f-logo-file');
+    var photoFileInput = body.querySelector('.aid-f-photo-file');
+    var logoFile = logoFileInput && logoFileInput.files ? logoFileInput.files[0] : null;
+    var photoFile = photoFileInput && photoFileInput.files ? photoFileInput.files[0] : null;
     renderLoading();
-    apiFetch(apiBase() + '/api/ai/design-card', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    var stageEl = body.querySelector('.aid-stage');
+    var chain = Promise.resolve();
+    if (logoFile) {
+      chain = chain.then(function () {
+        if (stageEl) stageEl.textContent = 'بيرفع الشعار من جهازك…';
+        return uploadImage(logoFile, 'رفع الشعار فشل — حاول تاني');
+      }).then(function (url) { payload.logoUrl = url; });
+    }
+    if (photoFile) {
+      chain = chain.then(function () {
+        if (stageEl) stageEl.textContent = 'بيرفع صورتك الشخصية…';
+        return uploadImage(photoFile, 'رفع الصورة الشخصية فشل — حاول تاني');
+      }).then(function (url) { payload.photoUrl = url; });
+    }
+    chain.then(function () {
+      return apiFetch(apiBase() + '/api/ai/design-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
     })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
@@ -198,10 +247,11 @@
         state.usage = res.j.usage || state.usage;
         renderResults(res.j);
       })
-      .catch(function () {
+      .catch(function (err) {
         if (state.stageTimer) { clearInterval(state.stageTimer); state.stageTimer = null; }
         renderForm();
-        showError('الاتصال وقع أثناء التوليد — حاول تاني');
+        var msg = err && err.message ? err.message : '';
+        showError(/[؀-ۿ]/.test(msg) ? msg : 'الاتصال وقع أثناء التوليد — حاول تاني');
       });
   }
 
@@ -239,7 +289,8 @@
       '<label class="aid-keep"><input type="checkbox" class="aid-keep-check" checked> احتفظ ببيانات التواصل الحالية (تليفونات وروابطي اللي في المحرر)</label>' +
       '<div class="aid-row"><span class="aid-usage">' +
       (state.usage ? 'التوليدات هذا الشهر: ' + state.usage.used + ' من ' + state.usage.limit : '') +
-      '</span><button type="button" class="aid-again">ولّد نسخ تانية</button></div>';
+      '</span><button type="button" class="aid-again">ولّد نسخ تانية</button></div>' +
+      '<p class="aid-err" hidden></p>';
 
     body.querySelectorAll('.aid-apply').forEach(function (b) {
       b.addEventListener('click', function () { applyVariant(Number(b.getAttribute('data-idx'))); });
@@ -249,7 +300,8 @@
 
   function applyVariant(idx) {
     var v = state.variants[idx];
-    if (!v || !window.StateManager || typeof window.StateManager.applyState !== 'function') {
+    var sm = smObj();
+    if (!v || !sm || typeof sm.applyState !== 'function') {
       showError('المحرر مش جاهز دلوقتي — حدّث الصفحة وحاول تاني');
       return;
     }
@@ -271,7 +323,22 @@
         st.dynamic.links.push({ id: 'ai_link_' + i, title: s.title_ar, url: url });
       }
     });
-    window.StateManager.applyState(st, false);
+    try {
+      sm.applyState(st, false);
+    } catch (e) {
+      showError('حصلت مشكلة أثناء الفتح في المحرر: ' + (e && e.message ? e.message : 'خطأ غير معروف'));
+      return;
+    }
+    // Verify the editor actually took the design — never fail silently.
+    try {
+      var after = typeof sm.getStateObject === 'function' ? sm.getStateObject() : null;
+      var wantBg = st.inputs && st.inputs['front-bg-start'];
+      if (after && after.inputs && wantBg && after.inputs['front-bg-start'] &&
+          String(after.inputs['front-bg-start']).toLowerCase() !== String(wantBg).toLowerCase()) {
+        showError('المحرر ما طبّقش التصميم — حدّث الصفحة وحاول تاني');
+        return;
+      }
+    } catch (e) { /* verification is best-effort */ }
     closeModal();
     if (typeof window.showToast === 'function') {
       window.showToast('اتحمّل تصميم المصمم الذكي في المحرر — راجعه واحفظ لما يعجبك');
