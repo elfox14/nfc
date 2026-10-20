@@ -160,3 +160,6 @@
 
 /* v1.4: file inputs (logo / personal photo upload) */
 .aid-wide input[type="file"] { padding: 9px 12px; font-size: 14px; }
+
+/* v1.5: apply-path note */
+.aid-note { margin: 14px 0 0; font-size: 13.5px; color: #9fb0c1; }
