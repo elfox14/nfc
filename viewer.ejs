@@ -1213,6 +1213,8 @@
 
     const cardBio = safeInputs['input-bio'] || '';
     const cardComp = safeInputs['input-company'] || (typeof company !== 'undefined' ? company : '') || '';
+    const cardLocation = safeInputs['input-location'] || (typeof location !== 'undefined' ? location : '') || '';
+    const cardLocationUrl = cardLocation ? (/^https?:\/\//i.test(cardLocation) ? cardLocation : 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(cardLocation)) : '';
     const avail = safeInputs['toggle-availability'] !== false;
 
     function isFront(key) {
@@ -1653,6 +1655,24 @@
                     </button>
                 </div>
             <% } %>
+
+            <!-- Location / Directions -->
+            <% if (cardLocation) { %>
+                <div class="sheet-item-row">
+                    <a href="<%= cardLocationUrl %>" target="_blank" rel="noopener noreferrer" class="sheet-item-main">
+                        <div class="sheet-item-icon" style="background: rgba(66,133,244,0.15); color: #4285f4;">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="sheet-item-text">
+                            <span class="sheet-item-label"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Location' : 'الموقع' %></span>
+                            <span class="sheet-item-val"><%= cardLocation %></span>
+                        </div>
+                    </a>
+                    <button class="sheet-copy-btn" data-copy-val="<%= cardLocation %>" title="نسخ العنوان" aria-label="نسخ العنوان">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            <% } %>
         </div>
     </div>
 
@@ -2056,9 +2076,11 @@
                 const p = <%- JSON.stringify(mainPhone) %>;
                 const em = <%- JSON.stringify(mainEmail) %>;
                 const co = <%- JSON.stringify(typeof company !== 'undefined' ? company : '') %>;
+                const cu = <%- JSON.stringify(typeof canonical !== 'undefined' ? canonical : '') %>;
                 vcf = 'BEGIN:VCARD\nVERSION:3.0\nFN:' + n + '\nN:' + n + ';;;;\n';
                 if (t) vcf += 'TITLE:' + t + '\n';
                 if (co) vcf += 'ORG:' + co + '\n';
+                if (cu) vcf += 'URL:' + cu + '\n';
                 if (p) vcf += 'TEL;TYPE=CELL,VOICE;PREF=1:' + p + '\n';
                 if (em) vcf += 'EMAIL;TYPE=INTERNET:' + em + '\n';
                 vcf += 'END:VCARD\n';
