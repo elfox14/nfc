@@ -116,7 +116,7 @@ function absoluteBaseUrl(req) {
 }
 
 const createViewerRouter = require('./routes/viewer.routes');
-app.use(createViewerRouter({ getDb: () => db, designsCollectionName, rootDir, absoluteBaseUrl }));
+app.use(createViewerRouter({ getDb: () => db, designsCollectionName, usersCollectionName, rootDir, absoluteBaseUrl }));
 
 const createSystemRouter = require('./routes/system.routes');
 app.use(createSystemRouter({ getDb: () => db, rootDir }));
