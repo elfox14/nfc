@@ -572,7 +572,7 @@
                                 </h1>
                                 <h2 class="tagline" id="card-tagline" data-input-target-id="tagline-accordion"
                                     style="font-size: 14px; color: rgb(77, 166, 255); font-family: Tajawal, sans-serif;">
-                                    Job Title / Company
+                                    Job Title
                                 </h2>
                                 <div class="phone-buttons-wrapper" id="phone-buttons-wrapper"></div>
                                 <div class="card-back-qr-image-wrapper" id="qr-code-wrapper"
@@ -1080,6 +1080,25 @@
                             <span class="lp-slider-val">22px</span>
                         </div>
                     </div>
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-bold"></i> Font Weight</label>
+                        <select id="name-font-weight" class="lp-input lp-select" data-update-target="card-name"
+                            data-update-property="style.fontWeight" style="height:32px; padding-top:0; padding-bottom:0;">
+                            <option value="400">Normal</option>
+                            <option value="700">Bold</option>
+                        </select>
+                    </div>
+
+                    <div class="lp-section">
+                        <label class="lp-label"><i class="fas fa-arrows-alt-h"></i> Letter Spacing</label>
+                        <div class="lp-slider-wrap">
+                            <input type="range" id="name-letter-spacing" min="0" max="8" step="0.5" value="0" class="lp-slider"
+                                data-update-target="card-name" data-update-property="style.letterSpacing"
+                                data-update-unit="px" oninput="this.nextElementSibling.textContent=this.value+'px'">
+                            <span class="lp-slider-val">0px</span>
+                        </div>
+                    </div>
+
 
                     <div class="lp-section" style="border:none; padding-bottom:0;">
                         <label class="lp-label"><i class="fas fa-layer-group"></i> Placement</label>
@@ -1146,7 +1165,7 @@
                             placeholder="المسمى الوظيفي أو النشاط"></textarea>
                         <textarea id="input-tagline_en" class="lp-input" rows="1" data-lang="en"
                             data-update-target="card-tagline" data-update-property="innerText"
-                            placeholder="Job Title / Company"></textarea>
+                            placeholder="Job Title"></textarea>
                     </div>
 
                     <div class="lp-section lp-grid-2">
@@ -1796,7 +1815,8 @@
                             </div>
 
                             <!-- Email -->
-                            <div class="lp-section" id="form-group-static-email" style="padding-top:0;">
+                            <div style="font-size:0.78rem; opacity:0.75; padding:6px 2px;">These contact methods appear on the card design itself (front or back). At the end of this section you will also find "Custom Links" with free titles that appear on the card page for visitors.</div>
+                        <div class="lp-section" id="form-group-static-email" style="padding-top:0;">
                                 <label class="lp-label"><i class="fas fa-envelope" style="color:#a78bfa;"></i> Email
                                     Address</label>
                                 <input type="email" id="input-email" value="" class="lp-input"
@@ -2216,7 +2236,19 @@
                             </div>
                         </div>
 
-                        <!-- Hidden elements kept for JS compatibility (dynamic social) -->
+                        
+                        <div class="lp-section" id="custom-links-section">
+                            <label class="lp-label"><i class="fas fa-link"></i> Custom Links</label>
+                            <p style="font-size:0.78rem; opacity:0.75; margin:4px 0 8px;">Links with a title you choose — e.g. Book a meeting, Menu, Catalog, My work. They appear for visitors on the card page under contact methods, not on the card design itself.</p>
+                            <div id="dynamic-custom-links-container"></div>
+                            <div style="display:flex; gap:6px; margin-top:8px;">
+                                <input type="text" id="custom-link-title" placeholder="Link title" style="flex:1;">
+                                <input type="url" id="custom-link-url" placeholder="https://..." dir="ltr" style="flex:1;">
+                                <button type="button" id="add-custom-link-btn" class="btn-icon" title="Add link"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+<!-- Hidden elements kept for JS compatibility (dynamic social) -->
                         <div style="display:none;" aria-hidden="true">
                             <div id="social-icon-palette" class="social-icon-palette-grid"></div>
                             <div id="dynamic-social-links-container"></div>
