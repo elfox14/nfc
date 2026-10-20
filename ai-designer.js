@@ -286,7 +286,7 @@
 
     body.innerHTML =
       '<div class="aid-cards">' + cards + '</div>' + bio + sugg +
-      '<label class="aid-keep"><input type="checkbox" class="aid-keep-check" checked> احتفظ ببيانات التواصل الحالية (تليفونات وروابطي اللي في المحرر)</label>' +
+      '<p class="aid-note">الفتح في المحرر بيغيّر الألوان والنصوص والصور بس — تليفوناتك وروابطك ومواضع العناصر بتفضل زي ما هي.</p>' +
       '<div class="aid-row"><span class="aid-usage">' +
       (state.usage ? 'التوليدات هذا الشهر: ' + state.usage.used + ' من ' + state.usage.limit : '') +
       '</span><button type="button" class="aid-again">ولّد نسخ تانية</button></div>' +
@@ -298,47 +298,79 @@
     body.querySelector('.aid-again').addEventListener('click', renderForm);
   }
 
+  // Apply the way the editor's own built-in themes (Config.THEMES /
+  // CardManager.applyTheme) do: write the values into the editor's live
+  // inputs and fire 'input' so the editor re-renders itself. Nothing else
+  // about the user's card is touched — contacts, placements, positions,
+  // visibilities and QR all stay exactly as they are. (The earlier
+  // whole-state applyState path stomped those with a legacy template
+  // shape and broke the photo/QR rendering.)
+  function setEditorInput(id, value) {
+    var elm = document.getElementById(id);
+    if (!elm || value == null || value === '') return false;
+    elm.value = value;
+    elm.dispatchEvent(new Event('input', { bubbles: true }));
+    elm.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }
+
   function applyVariant(idx) {
     var v = state.variants[idx];
-    var sm = smObj();
-    if (!v || !sm || typeof sm.applyState !== 'function') {
-      showError('المحرر مش جاهز دلوقتي — حدّث الصفحة وحاول تاني');
+    if (!v || !v.state || !v.state.inputs) {
+      showError('النسخة دي مش جاهزة — ولّد من جديد');
       return;
     }
-    var st = JSON.parse(JSON.stringify(v.state));
-    var keep = body.querySelector('.aid-keep-check');
-    var cur = currentEditorState();
-    if (keep && keep.checked && cur && cur.dynamic) {
-      st.dynamic = JSON.parse(JSON.stringify(cur.dynamic));
-    }
-    if (!st.dynamic) st.dynamic = { phones: [], social: [], staticSocial: {}, links: [] };
-    if (!Array.isArray(st.dynamic.links)) st.dynamic.links = [];
-    body.querySelectorAll('.aid-sugg-check').forEach(function (chk) {
-      if (!chk.checked) return;
-      var i = Number(chk.getAttribute('data-i'));
-      var urlInput = body.querySelector('.aid-sugg-url[data-i="' + i + '"]');
-      var url = urlInput ? urlInput.value.trim() : '';
-      var s = state.suggestions[i];
-      if (s && /^https?:\/\//i.test(url)) {
-        st.dynamic.links.push({ id: 'ai_link_' + i, title: s.title_ar, url: url });
-      }
-    });
+    var inp = v.state.inputs;
     try {
-      sm.applyState(st, false);
+      var colors = ['front-bg-start', 'front-bg-end', 'back-bg-start', 'back-bg-end',
+        'name-color', 'tagline-color', 'back-buttons-bg-color', 'back-buttons-text-color'];
+      colors.forEach(function (k) { setEditorInput(k, inp[k]); });
+      // Phone-button colors: derive from the back-button colors when the
+      // scheme does not carry them.
+      setEditorInput('phone-btn-bg-color', inp['phone-btn-bg-color'] || inp['back-buttons-bg-color']);
+      setEditorInput('phone-btn-text-color', inp['phone-btn-text-color'] || inp['back-buttons-text-color']);
+      var texts = ['input-name_ar', 'input-name_en', 'input-company_ar', 'input-company_en',
+        'input-tagline_ar', 'input-tagline_en', 'input-bio_ar', 'input-bio_en'];
+      texts.forEach(function (k) { setEditorInput(k, inp[k]); });
+      setEditorInput('input-logo', inp['input-logo']);
+      setEditorInput('input-photo-url', inp['input-photo-url']);
+
+      var cm = null;
+      try { if (typeof CardManager !== 'undefined' && CardManager) cm = CardManager; } catch (e) { /* noop */ }
+      if (!cm && window.CardManager) cm = window.CardManager;
+      if (cm) {
+        if (inp['input-photo-url']) cm.personalPhotoUrl = inp['input-photo-url'];
+        // Like applyTheme: clear background IMAGES so the gradient shows.
+        cm.frontBgImageUrl = null;
+        cm.backBgImageUrl = null;
+        if (typeof cm.updateCardBackgrounds === 'function') cm.updateCardBackgrounds();
+        if (typeof cm.renderCardContent === 'function') cm.renderCardContent();
+        // Suggested links go through the editor's own custom-link API.
+        if (typeof cm.createCustomLinkInput === 'function') {
+          body.querySelectorAll('.aid-sugg-check').forEach(function (chk) {
+            if (!chk.checked) return;
+            var i = Number(chk.getAttribute('data-i'));
+            var urlInput = body.querySelector('.aid-sugg-url[data-i="' + i + '"]');
+            var url = urlInput ? urlInput.value.trim() : '';
+            var s = state.suggestions[i];
+            if (s && /^https?:\/\//i.test(url)) {
+              cm.createCustomLinkInput({ title: s.title_ar, url: url });
+            }
+          });
+          if (typeof cm.renderCardContent === 'function') cm.renderCardContent();
+        }
+      }
     } catch (e) {
       showError('حصلت مشكلة أثناء الفتح في المحرر: ' + (e && e.message ? e.message : 'خطأ غير معروف'));
       return;
     }
-    // Verify the editor actually took the design — never fail silently.
-    try {
-      var after = typeof sm.getStateObject === 'function' ? sm.getStateObject() : null;
-      var wantBg = st.inputs && st.inputs['front-bg-start'];
-      if (after && after.inputs && wantBg && after.inputs['front-bg-start'] &&
-          String(after.inputs['front-bg-start']).toLowerCase() !== String(wantBg).toLowerCase()) {
-        showError('المحرر ما طبّقش التصميم — حدّث الصفحة وحاول تاني');
-        return;
-      }
-    } catch (e) { /* verification is best-effort */ }
+    // Verify a color actually landed in the editor — never fail silently.
+    var bgEl = document.getElementById('front-bg-start');
+    if (bgEl && inp['front-bg-start'] &&
+        String(bgEl.value).toLowerCase() !== String(inp['front-bg-start']).toLowerCase()) {
+      showError('المحرر ما طبّقش التصميم — حدّث الصفحة وحاول تاني');
+      return;
+    }
     closeModal();
     if (typeof window.showToast === 'function') {
       window.showToast('اتحمّل تصميم المصمم الذكي في المحرر — راجعه واحفظ لما يعجبك');
