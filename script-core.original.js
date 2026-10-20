@@ -19,7 +19,7 @@ const Config = {
     SCRIPT_URLS: {
         html2canvas: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
         jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-        qrCodeStyling: 'https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js',
+        qrCodeStyling: 'https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js',
         jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.0/jszip.min.js',
         qrcode: 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
     },
