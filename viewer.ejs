@@ -1212,7 +1212,7 @@
     const cardLayout = typeof layout !== 'undefined' && layout ? layout : (d.layout || safeInputs['layout-select-visual'] || 'classic');
 
     const cardBio = safeInputs['input-bio'] || '';
-    const cardComp = safeInputs['input-company'] || '';
+    const cardComp = safeInputs['input-company'] || (typeof company !== 'undefined' ? company : '') || '';
     const avail = safeInputs['toggle-availability'] !== false;
 
     function isFront(key) {
@@ -2055,8 +2055,10 @@
                 const t = <%- JSON.stringify(tagline) %>;
                 const p = <%- JSON.stringify(mainPhone) %>;
                 const em = <%- JSON.stringify(mainEmail) %>;
+                const co = <%- JSON.stringify(typeof company !== 'undefined' ? company : '') %>;
                 vcf = 'BEGIN:VCARD\nVERSION:3.0\nFN:' + n + '\nN:' + n + ';;;;\n';
                 if (t) vcf += 'TITLE:' + t + '\n';
+                if (co) vcf += 'ORG:' + co + '\n';
                 if (p) vcf += 'TEL;TYPE=CELL,VOICE;PREF=1:' + p + '\n';
                 if (em) vcf += 'EMAIL;TYPE=INTERNET:' + em + '\n';
                 vcf += 'END:VCARD\n';
