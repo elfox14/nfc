@@ -157,6 +157,15 @@ function sanitizeDynamicItem(item, { social = false } = {}) {
   return result;
 }
 
+function sanitizeCustomLink(item) {
+  if (!isPlainObject(item)) return null;
+  const url = sanitizeUrl(item.url, { allowRelative: false, allowDataImage: false });
+  if (!url) return null;
+  const result = { title: sanitizeText(item.title, 100), url };
+  if (SAFE_KEY.test(String(item.id || ''))) result.id = String(item.id);
+  return result;
+}
+
 function sanitizeDynamic(dynamic) {
   if (!isPlainObject(dynamic)) return {};
   const phones = Array.isArray(dynamic.phones)
@@ -168,10 +177,14 @@ function sanitizeDynamic(dynamic) {
   const staticSocial = sanitizeKeyedObject(dynamic.staticSocial, item =>
     sanitizeDynamicItem(item, { social: true }) || { value: '', placement: 'back', position: { x: 0, y: 0 } }
   );
+  const links = Array.isArray(dynamic.links)
+    ? dynamic.links.slice(0, MAX_STATE_ITEMS).map(item => sanitizeCustomLink(item)).filter(Boolean)
+    : [];
   return {
     phones,
     social,
     staticSocial,
+    links,
     qr: isPlainObject(dynamic.qr) ? { enabled: dynamic.qr.enabled !== false } : undefined
   };
 }
