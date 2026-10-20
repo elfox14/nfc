@@ -182,7 +182,7 @@ const CardManager = {
         const taglineInput = document.getElementById(`input-tagline_${lang}`);
 
         DOMElements.draggable.name.innerText = (nameInput && nameInput.value) ? nameInput.value : (lang === 'en' ? 'Your Name Here' : 'اسمك هنا');
-        DOMElements.draggable.tagline.innerText = (taglineInput && taglineInput.value) ? taglineInput.value : (lang === 'en' ? 'Job Title / Company' : 'المسمى الوظيفي / الشركة');
+        DOMElements.draggable.tagline.innerText = (taglineInput && taglineInput.value) ? taglineInput.value : (lang === 'en' ? 'Job Title' : 'المسمى الوظيفي');
 
         const dir = lang === 'ar' ? 'rtl' : 'ltr';
         DOMElements.draggable.name.dir = dir;
@@ -986,6 +986,37 @@ const CardManager = {
         this.updateCardBackgrounds();
         UIManager.announce(`تم تطبيق تصميم ${theme.name}`);
     },
+    createCustomLinkInput(linkData = {}) {
+        const container = document.getElementById('dynamic-custom-links-container');
+        if (!container) return;
+        const id = linkData.id || `customlink_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+        const esc = (v) => String(v || '').replace(/"/g, '&quot;');
+        const group = document.createElement('div');
+        group.className = 'dynamic-input-group dynamic-custom-link';
+        group.dataset.linkId = id;
+        group.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-link" aria-hidden="true"></i>
+                <input type="text" class="dynamic-custom-title-input" value="${esc(linkData.title)}" placeholder="${isEnglishUI() ? 'Link title (e.g. Book a meeting)' : 'عنوان الرابط (مثال: احجز موعد)'}" style="flex: 1;">
+                <button type="button" class="remove-btn" aria-label="${isEnglishUI() ? 'Delete link' : 'حذف الرابط'}">×</button>
+            </div>
+            <input type="url" class="dynamic-custom-url-input" value="${esc(linkData.url)}" placeholder="https://..." dir="ltr" style="width: 100%; margin-top: 6px;">
+        `;
+        group.querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => StateManager.saveDebounced()));
+        group.querySelector('.remove-btn').addEventListener('click', () => { group.remove(); StateManager.saveDebounced(); });
+        container.appendChild(group);
+    },
+
+    addCustomLinkFromForm() {
+        const titleInput = document.getElementById('custom-link-title');
+        const urlInput = document.getElementById('custom-link-url');
+        if (!urlInput || !urlInput.value.trim()) { if (urlInput) urlInput.focus(); return; }
+        this.createCustomLinkInput({ title: titleInput ? titleInput.value.trim() : '', url: urlInput.value.trim() });
+        if (titleInput) titleInput.value = '';
+        urlInput.value = '';
+        StateManager.saveDebounced();
+    },
+
     addSocialLink(platformKey = null) {
         if (!platformKey) {
             platformKey = DOMElements.social.typeSelect.value;
@@ -1136,7 +1167,7 @@ const StateManager = {
         const state = {
             currentLanguage: document.documentElement.lang || 'ar',
             inputs: {},
-            dynamic: { phones: [], social: [], staticSocial: {} },
+            dynamic: { phones: [], social: [], staticSocial: {}, links: [] },
             imageUrls: {},
             positions: {},
             anchors: {},
@@ -1209,6 +1240,21 @@ const StateManager = {
                 });
             }
         });
+
+        const customLinksContainer = document.getElementById('dynamic-custom-links-container');
+        if (customLinksContainer) {
+            customLinksContainer.querySelectorAll('.dynamic-custom-link').forEach(group => {
+                const titleInput = group.querySelector('.dynamic-custom-title-input');
+                const urlInput = group.querySelector('.dynamic-custom-url-input');
+                if (urlInput && urlInput.value.trim()) {
+                    state.dynamic.links.push({
+                        id: group.dataset.linkId || undefined,
+                        title: titleInput ? titleInput.value : '',
+                        url: urlInput.value
+                    });
+                }
+            });
+        }
 
         Config.STATIC_CONTACT_METHODS.forEach(method => {
             const controlGroup = document.getElementById(`form-group-static-${method.id}`);
@@ -1408,6 +1454,14 @@ const StateManager = {
             });
         }
 
+        const customLinksRestoreContainer = document.getElementById('dynamic-custom-links-container');
+        if (customLinksRestoreContainer) {
+            customLinksRestoreContainer.innerHTML = '';
+            if (state.dynamic && state.dynamic.links) {
+                state.dynamic.links.forEach(linkData => CardManager.createCustomLinkInput(linkData));
+            }
+        }
+
         if (state.dynamic && state.dynamic.staticSocial) {
             for (const [key, data] of Object.entries(state.dynamic.staticSocial)) {
                 const input = document.getElementById(`input-${key}`);
@@ -1528,3 +1582,8 @@ const StateManager = {
         UIManager.showSaveNotification('جاري الحفظ التلقائي...', 'تم الحفظ ✓');
     }, 1500)
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    const addCustomLinkBtn = document.getElementById('add-custom-link-btn');
+    if (addCustomLinkBtn) addCustomLinkBtn.addEventListener('click', () => CardManager.addCustomLinkFromForm());
+});
