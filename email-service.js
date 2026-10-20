@@ -209,6 +209,35 @@ const EmailService = {
                 </div>
             `
         };
+    },
+    leadNotificationEmail(ownerName, cardName, lead, dashboardLink) {
+        const rows = [
+            ['الاسم', lead?.visitorName],
+            ['رقم الهاتف', lead?.visitorPhone],
+            ['البريد الإلكتروني', lead?.visitorEmail],
+            ['ملاحظات', lead?.visitorNote]
+        ].filter(([, v]) => v);
+        const rowsHtml = rows.map(([k, v]) => `
+                        <tr>
+                            <td style="padding: 8px 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: bold; white-space: nowrap;">${k}</td>
+                            <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">${this._escapeHtml(v)}</td>
+                        </tr>`).join('');
+        return {
+            subject: 'عميل محتمل جديد من بطاقتك - MC PRIME',
+            html: `
+                <div style="font-family: 'Tajawal', Arial, sans-serif; direction: rtl; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #4DA6FF;">مرحباً ${this._escapeHtml(ownerName)}!</h2>
+                    <p>قام أحد زوار بطاقتك <strong>"${this._escapeHtml(cardName)}"</strong> بترك بياناته عبر نموذج تبادل جهات الاتصال:</p>
+                    <table style="border-collapse: collapse; width: 100%; margin: 20px 0;">${rowsHtml}
+                    </table>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="${dashboardLink}" style="background: linear-gradient(135deg, #4DA6FF, #00E5FF); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold;">فتح لوحة التحكم</a>
+                    </div>
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                    <p style="color: #888; font-size: 12px;">© MC PRIME NFC - بطاقات الأعمال الرقمية</p>
+                </div>
+            `
+        };
     }
 };
 
