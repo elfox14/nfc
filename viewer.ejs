@@ -1673,6 +1673,24 @@
                     </button>
                 </div>
             <% } %>
+
+            <!-- Custom Links -->
+            <% if (safeDynamic.links) { safeDynamic.links.forEach(link => { if (link && link.url && /^https?:\/\//i.test(link.url)) { %>
+                <div class="sheet-item-row">
+                    <a href="<%= link.url %>" target="_blank" rel="noopener noreferrer" class="sheet-item-main">
+                        <div class="sheet-item-icon" style="background: rgba(197,160,89,0.15); color: #c5a059;">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <div class="sheet-item-text">
+                            <span class="sheet-item-label"><%= link.title || ((typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Link' : 'رابط') %></span>
+                            <span class="sheet-item-val" dir="ltr"><%= link.url.replace(/^https?:\/\//, '') %></span>
+                        </div>
+                    </a>
+                    <button class="sheet-copy-btn" data-copy-val="<%= link.url %>" title="نسخ الرابط" aria-label="نسخ الرابط">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            <% }}); } %>
         </div>
     </div>
 
