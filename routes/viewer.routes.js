@@ -3,6 +3,7 @@ const path = require('path');
 const rateLimit = require('express-rate-limit');
 const { selectPublishedDesignData } = require('../utils/published-design');
 const { sanitizeDesignState, sanitizeText, sanitizeUrl } = require('../utils/sanitize');
+const EmailService = require('../email-service');
 
 const leadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -146,7 +147,7 @@ function injectCspNonceIntoRenderedHtml(html, nonce) {
   return html.replace(/<script(?![^>]*\bnonce\s*=)/gi, `<script nonce="${nonce}"`);
 }
 
-module.exports = function createViewerRouter({ getDb, designsCollectionName, rootDir, absoluteBaseUrl }) {
+module.exports = function createViewerRouter({ getDb, designsCollectionName, usersCollectionName = 'users', rootDir, absoluteBaseUrl }) {
   const router = express.Router();
 
   const handleViewerRender = async (req, res, idOrSlug) => {
@@ -191,6 +192,7 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
       const name = sanitizeText(inputs['input-name_ar'] || inputs['input-name_en'] || inputs['input-name'] || 'بطاقة عمل رقمية');
       const tagline = sanitizeText(inputs['input-tagline_ar'] || inputs['input-tagline_en'] || inputs['input-tagline'] || '');
       const company = sanitizeText(inputs['input-company_ar'] || inputs['input-company_en'] || inputs['input-company'] || '');
+      const location = sanitizeText(inputs['input-location_ar'] || inputs['input-location_en'] || inputs['input-location'] || '');
       const bio = sanitizeText(inputs['input-bio_ar'] || inputs['input-bio_en'] || inputs['input-bio'] || '');
       const dynamicData = publishedDesign.dynamic || {};
       const imageUrls = publishedDesign.imageUrls || {};
@@ -312,6 +314,7 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
         name,
         tagline,
         company,
+        location,
         bio,
         phones,
         emails,
@@ -403,6 +406,31 @@ module.exports = function createViewerRouter({ getDb, designsCollectionName, roo
       };
 
       await db.collection('leads').insertOne(leadDoc).catch(err => console.error('Failed to insert lead:', err));
+
+      // Notify the card owner about the new lead (fire and forget — never blocks the response)
+      if (doc.ownerId) {
+        (async () => {
+          try {
+            const owner = await db.collection(usersCollectionName).findOne(
+              { userId: doc.ownerId },
+              { projection: { email: 1, name: 1 } }
+            );
+            if (owner && owner.email) {
+              const leadInputs = publishedRevision.inputs || {};
+              const leadCardName = sanitizeText(leadInputs['input-name_ar'] || leadInputs['input-name_en'] || leadInputs['input-name'] || 'بطاقتك');
+              const emailContent = EmailService.leadNotificationEmail(
+                owner.name || 'مستخدم',
+                leadCardName,
+                leadDoc,
+                'https://mcprim.com/nfc/dashboard.html'
+              );
+              await EmailService.send({ to: owner.email, subject: emailContent.subject, html: emailContent.html });
+            }
+          } catch (notifyErr) {
+            console.error('Failed to send lead notification:', notifyErr);
+          }
+        })();
+      }
 
       return res.json({ success: true, message: 'Lead received successfully' });
     } catch (err) {
