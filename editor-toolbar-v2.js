@@ -218,7 +218,6 @@
     global.EditorToolbarV2 = {
         init: init,
         setActiveFace: setActiveFace,
-        syncTitleFromCard: syncTitleFromCard,
         syncViewControls: syncViewControls,
         getZoom: function () { return zoomLevels[zoomIndex]; }
     };
