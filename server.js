@@ -211,6 +211,14 @@ app.use('/api', createDesignsRouter({
   cloudinary
 }));
 
+// --- AI CARD DESIGNER ROUTES (MODULAR) ---
+const createAiRouter = require('./routes/ai.routes');
+app.use('/api', createAiRouter({
+  getDb: () => db,
+  usersCollectionName,
+  rootDir
+}));
+
 // --- AUTHENTICATION ROUTES (MODULAR) ---
 const createAuthRouter = require('./routes/auth.routes');
 app.use('/api/auth', createAuthRouter({ 
