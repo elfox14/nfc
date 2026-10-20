@@ -157,3 +157,6 @@
   .aid-cards { grid-template-columns: 1fr; }
   .aid-fab { inset-inline-start: 12px; bottom: 12px; padding: 11px 15px; font-size: 13.5px; }
 }
+
+/* v1.4: file inputs (logo / personal photo upload) */
+.aid-wide input[type="file"] { padding: 9px 12px; font-size: 14px; }
