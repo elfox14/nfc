@@ -14,37 +14,36 @@
             document.getElementById('input-name_ar') || document.getElementById('input-name_en');
     }
 
-    function syncTitleFromCard() {
-        var title = document.getElementById('toolbar-design-title');
-        var source = cardNameInput();
-        if (!title || !source || document.activeElement === title) return;
-        var nextValue = String(source.value || '').trim();
-        if (title.value !== nextValue) title.value = nextValue;
-    }
-
     function bindDesignTitle() {
         var title = document.getElementById('toolbar-design-title');
+        if (!title) return;
         var source = cardNameInput();
-        if (!title || !source) return;
 
-        syncTitleFromCard();
-        source.addEventListener('input', syncTitleFromCard);
-        source.addEventListener('change', syncTitleFromCard);
-        title.addEventListener('input', function () {
-            if (source.value === title.value) return;
-            source.value = title.value;
-            source.dispatchEvent(new global.Event('input', { bubbles: true }));
-        });
-        title.addEventListener('change', function () {
-            source.dispatchEvent(new global.Event('change', { bubbles: true }));
-        });
+        // The design title is an independent internal label (used to organize
+        // designs). It is seeded ONCE from the cardholder name while it is
+        // still empty and untouched, purely for convenience. Afterwards the
+        // two fields never overwrite each other: renaming the design does not
+        // change the name printed on the card, and vice versa. The title is
+        // persisted with the design state via its element id, like any input.
+        var titleTouched = false;
+        title.addEventListener('input', function () { titleTouched = true; });
+        title.addEventListener('focus', function () { titleTouched = true; });
 
-        // State restoration can set .value without firing an event.
+        function seedTitleIfEmpty() {
+            if (titleTouched || !source) return;
+            if (String(title.value || '').trim()) return;
+            var nextValue = String(source.value || '').trim();
+            if (nextValue) title.value = nextValue;
+        }
+
+        // State restoration can set .value without firing an event, so seed a
+        // few times while the title is still untouched and empty.
+        seedTitleIfEmpty();
         var checks = 0;
         var timer = global.setInterval(function () {
-            syncTitleFromCard();
+            seedTitleIfEmpty();
             checks += 1;
-            if (checks >= 20) global.clearInterval(timer);
+            if (checks >= 20 || titleTouched) global.clearInterval(timer);
         }, 250);
     }
 
