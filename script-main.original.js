@@ -245,7 +245,11 @@ const ExportManager = {
     async captureElement(element, scale = 2) {
         await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
         const style = document.createElement('style');
-        style.innerHTML = '.no-export { display: none !important; }';
+        // [FIX 2026-10-21] html2canvas 1.4.1 renders letter-spaced text with
+        // overlapping glyphs in captured images. Neutralize letter-spacing
+        // inside the card faces for the capture only (this style element is
+        // removed right after; the live editor and saved design are untouched).
+        style.innerHTML = '.no-export { display: none !important; } .card-face, .card-face * { letter-spacing: normal !important; }';
         document.head.appendChild(style);
 
         // On mobile, cards-wrapper has a CSS scale transform that breaks html2canvas.
@@ -313,6 +317,10 @@ const ExportManager = {
         }
 
         try {
+            // [FIX 2026-10-21] Ensure webfonts are fully loaded before
+            // rasterizing — measuring text with fallback font metrics while
+            // drawing with the real font smears/overlaps glyphs in captures.
+            try { await document.fonts.ready; } catch (e) { /* best effort */ }
             return await html2canvas(element, {
                 backgroundColor: null, // Transparent background so border-radius corners don't have black edges
                 scale: scale,
