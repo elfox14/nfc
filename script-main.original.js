@@ -245,7 +245,11 @@ const ExportManager = {
     async captureElement(element, scale = 2) {
         await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
         const style = document.createElement('style');
-        style.innerHTML = '.no-export { display: none !important; }';
+        // [FIX 2026-10-21] html2canvas 1.4.1 renders letter-spaced text with
+        // overlapping glyphs in captured images. Neutralize letter-spacing
+        // inside the card faces for the capture only (this style element is
+        // removed right after; the live editor and saved design are untouched).
+        style.innerHTML = '.no-export { display: none !important; } .card-face, .card-face * { letter-spacing: normal !important; }';
         document.head.appendChild(style);
 
         // On mobile, cards-wrapper has a CSS scale transform that breaks html2canvas.
@@ -256,9 +260,18 @@ const ExportManager = {
 
         const isMobile = typeof MobileUtils !== 'undefined' && MobileUtils.isMobile();
         const originalStates = [];
+        // [FIX 2026-10-21] Remember the flip state so the editor display is
+        // restored EXACTLY after capture (faces appeared swapped otherwise).
+        let flipperForRestore = null;
+        let wasFlippedForRestore = false;
 
         if (isMobile) {
             const flipper = document.querySelector('.card-flipper');
+            flipperForRestore = flipper;
+            if (flipper && flipper.classList.contains('is-flipped')) {
+                wasFlippedForRestore = true;
+                flipper.classList.remove('is-flipped');
+            }
             const flipperContainer = document.querySelector('.card-flipper-container');
             const faces = document.querySelectorAll('.card-face');
             const isCapturingBack = element.id === 'card-back-preview';
@@ -295,14 +308,45 @@ const ExportManager = {
                     'top': '0',
                     'left': '0',
                     'visibility': isTargetFace ? 'visible' : 'hidden',
-                    'z-index': isTargetFace ? '10' : '-1'
+                    'z-index': isTargetFace ? '10' : '-1',
+                    'pointer-events': isTargetFace ? 'auto' : 'none'
                 });
             });
             
             await new Promise(resolve => setTimeout(resolve, 80));
         }
 
+        // ===== Bake drag offsets into the LIVE layout (2026-10-21) =====
+        // Drag-positioned elements carry their offset ONLY as a CSS
+        // transform (translate + data-x/data-y). html2canvas 1.4.1
+        // mis-renders transformed text (ghost/double glyphs - proven by
+        // controlled drag tests). Baking the offset into left/top in the
+        // live DOM makes the html2canvas clone inherit plain positioned
+        // elements with no transform at all. The visual position is
+        // identical; everything is restored in the finally block below.
+        const bakedEls = [];
+        element.querySelectorAll('[data-x], [data-y]').forEach((el) => {
+            const bx = parseFloat(el.getAttribute('data-x')) || 0;
+            const by = parseFloat(el.getAttribute('data-y')) || 0;
+            if (!bx && !by) return;
+            bakedEls.push({ el, transform: el.style.transform, position: el.style.position, left: el.style.left, top: el.style.top });
+            const bcs = window.getComputedStyle(el);
+            el.style.transform = 'none';
+            if (bcs.position === 'absolute' || bcs.position === 'fixed') {
+                el.style.left = ((parseFloat(bcs.left) || 0) + bx) + 'px';
+                el.style.top = ((parseFloat(bcs.top) || 0) + by) + 'px';
+            } else {
+                el.style.position = 'relative';
+                el.style.left = bx + 'px';
+                el.style.top = by + 'px';
+            }
+        });
+
         try {
+            // [FIX 2026-10-21] Ensure webfonts are fully loaded before
+            // rasterizing — measuring text with fallback font metrics while
+            // drawing with the real font smears/overlaps glyphs in captures.
+            try { await document.fonts.ready; } catch (e) { /* best effort */ }
             return await html2canvas(element, {
                 backgroundColor: null, // Transparent background so border-radius corners don't have black edges
                 scale: scale,
@@ -312,14 +356,29 @@ const ExportManager = {
                 scrollX: 0,
                 scrollY: 0,
                 windowWidth: 1400,
-                windowHeight: 900
+                windowHeight: 900,
+                // [FIX 2026-10-21] ROOT CAUSE of the smeared/overlapping text in
+                // captured card images (verified by controlled reproduction):
+                // html2canvas ghost-renders text of elements that carry their
+                // own translate() — i.e. every card element the user dragged
             });
         }
         finally {
+            for (let bi = bakedEls.length - 1; bi >= 0; bi--) {
+                const b = bakedEls[bi];
+                b.el.style.transform = b.transform;
+                b.el.style.position = b.position;
+                b.el.style.left = b.left;
+                b.el.style.top = b.top;
+            }
             document.head.removeChild(style);
             // Restore the mobile scale transform
             if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = originalWrapperTransform;
             
+            // [FIX 2026-10-21] Restore the pre-capture flip state
+            if (flipperForRestore && wasFlippedForRestore) {
+                flipperForRestore.classList.add('is-flipped');
+            }
             // Restore 3D states
             for (let i = originalStates.length - 1; i >= 0; i--) {
                 const { element: el, props } = originalStates[i];
@@ -330,6 +389,11 @@ const ExportManager = {
                         el.style.removeProperty(key);
                     }
                 }
+            }
+            // [FIX 2026-10-21] Recompute the mobile scale for the CURRENT
+            // preview area so the card is never left cropped after capture.
+            if (isMobile && typeof MobileUtils !== 'undefined' && MobileUtils.updateMobileCardScale) {
+                requestAnimationFrame(() => MobileUtils.updateMobileCardScale());
             }
         }
     },
