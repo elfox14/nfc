@@ -256,9 +256,18 @@ const ExportManager = {
 
         const isMobile = typeof MobileUtils !== 'undefined' && MobileUtils.isMobile();
         const originalStates = [];
+        // [FIX 2026-10-21] Remember the flip state so the editor display is
+        // restored EXACTLY after capture (faces appeared swapped otherwise).
+        let flipperForRestore = null;
+        let wasFlippedForRestore = false;
 
         if (isMobile) {
             const flipper = document.querySelector('.card-flipper');
+            flipperForRestore = flipper;
+            if (flipper && flipper.classList.contains('is-flipped')) {
+                wasFlippedForRestore = true;
+                flipper.classList.remove('is-flipped');
+            }
             const flipperContainer = document.querySelector('.card-flipper-container');
             const faces = document.querySelectorAll('.card-face');
             const isCapturingBack = element.id === 'card-back-preview';
@@ -295,7 +304,8 @@ const ExportManager = {
                     'top': '0',
                     'left': '0',
                     'visibility': isTargetFace ? 'visible' : 'hidden',
-                    'z-index': isTargetFace ? '10' : '-1'
+                    'z-index': isTargetFace ? '10' : '-1',
+                    'pointer-events': isTargetFace ? 'auto' : 'none'
                 });
             });
             
@@ -320,6 +330,10 @@ const ExportManager = {
             // Restore the mobile scale transform
             if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = originalWrapperTransform;
             
+            // [FIX 2026-10-21] Restore the pre-capture flip state
+            if (flipperForRestore && wasFlippedForRestore) {
+                flipperForRestore.classList.add('is-flipped');
+            }
             // Restore 3D states
             for (let i = originalStates.length - 1; i >= 0; i--) {
                 const { element: el, props } = originalStates[i];
@@ -330,6 +344,11 @@ const ExportManager = {
                         el.style.removeProperty(key);
                     }
                 }
+            }
+            // [FIX 2026-10-21] Recompute the mobile scale for the CURRENT
+            // preview area so the card is never left cropped after capture.
+            if (isMobile && typeof MobileUtils !== 'undefined' && MobileUtils.updateMobileCardScale) {
+                requestAnimationFrame(() => MobileUtils.updateMobileCardScale());
             }
         }
     },
