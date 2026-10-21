@@ -2183,7 +2183,103 @@
             ctx.fillStyle = glow;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Name & Title
+            // [NEW 2026-10-21] Two-faces layout (owner-approved): the card's
+            // captured front + back images stacked, then a QR action band.
+            // Falls back to the classic name/QR composition when the card has
+            // no captured face images yet.
+            const loadStoryImg = (src) => new Promise((res, rej) => {
+                const i = new Image();
+                i.crossOrigin = 'anonymous';
+                i.onload = () => res(i);
+                i.onerror = rej;
+                i.src = src;
+            });
+            const frontEl = document.querySelector('.card-front .card-captured-img');
+            const backEl = document.querySelector('.card-back .card-captured-img');
+            let facesDrawn = false;
+
+            if (frontEl && backEl && frontEl.src && backEl.src) {
+                try {
+                    const pair = await Promise.all([loadStoryImg(frontEl.src), loadStoryImg(backEl.src)]);
+                    const fImg = pair[0], bImg = pair[1];
+                    const faceSize = (im) => {
+                        let w = 940;
+                        let h = Math.round(w * (im.naturalHeight / im.naturalWidth || 0.63));
+                        if (h > 593) { h = 593; w = Math.round(h / ((im.naturalHeight / im.naturalWidth) || 0.63)); }
+                        return { w: w, h: h };
+                    };
+                    const drawFace = (im, y) => {
+                        const s = faceSize(im);
+                        const x = (1080 - s.w) / 2;
+                        ctx.save();
+                        ctx.shadowColor = 'rgba(0,0,0,0.45)';
+                        ctx.shadowBlur = 36; ctx.shadowOffsetY = 16;
+                        ctx.beginPath(); ctx.roundRect(x, y, s.w, s.h, 40);
+                        ctx.fillStyle = '#0B1220'; ctx.fill();
+                        ctx.restore();
+                        ctx.save();
+                        ctx.beginPath(); ctx.roundRect(x, y, s.w, s.h, 40); ctx.clip();
+                        ctx.drawImage(im, x, y, s.w, s.h);
+                        ctx.restore();
+                        ctx.save();
+                        ctx.beginPath(); ctx.roundRect(x, y, s.w, s.h, 40);
+                        ctx.strokeStyle = th.accent; ctx.globalAlpha = 0.55; ctx.lineWidth = 2; ctx.stroke();
+                        ctx.restore();
+                        return s.h;
+                    };
+
+                    // Header
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillStyle = th.accent;
+                    ctx.font = '700 40px "Cairo", sans-serif';
+                    ctx.fillText('MC PRIME', 540, 52);
+                    ctx.fillRect(540 - 130, 126, 260, 3);
+
+                    const fh = drawFace(fImg, 196);
+                    const backY = 196 + fh + 56;
+                    const bh = drawFace(bImg, backY);
+
+                    // QR action band
+                    let bandY = backY + bh + 48;
+                    if (bandY < 1486) bandY = 1486;
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+                    ctx.shadowBlur = 28; ctx.shadowOffsetY = 12;
+                    ctx.beginPath(); ctx.roundRect(70, bandY, 940, 268, 34);
+                    ctx.fillStyle = '#ffffff'; ctx.fill();
+                    ctx.restore();
+                    try {
+                        const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(window.location.href) + '&format=png&qzone=1';
+                        const qrImg = await loadStoryImg(qrUrl);
+                        ctx.drawImage(qrImg, 1080 - 70 - 30 - 208, bandY + 30, 208, 208);
+                    } catch (e) { /* band still renders without the QR image */ }
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = '#101418';
+                    ctx.font = '800 46px "Cairo", sans-serif';
+                    ctx.fillText('امسح الكود', 744, bandY + 42);
+                    ctx.fillStyle = '#5A626E';
+                    ctx.font = '500 34px "Tajawal", sans-serif';
+                    ctx.fillText('وافتح بطاقتي كاملة', 744, bandY + 112);
+                    ctx.fillStyle = '#96783C';
+                    ctx.font = '500 29px "Tajawal", sans-serif';
+                    ctx.fillText(window.location.host + window.location.pathname, 744, bandY + 178);
+
+                    // Footer
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = th.sub;
+                    ctx.font = '500 27px "Tajawal", sans-serif';
+                    ctx.fillText('www.mcprim.com', 540, 1856);
+                    ctx.textBaseline = 'alphabetic';
+                    facesDrawn = true;
+                } catch (e) {
+                    facesDrawn = false;
+                }
+            }
+            if (facesDrawn) return;
+
+            // Classic composition (fallback — unchanged behavior)
+            ctx.textBaseline = 'alphabetic';
             ctx.fillStyle = th.text;
             ctx.textAlign = 'center';
             ctx.font = '800 68px "Cairo", sans-serif';
