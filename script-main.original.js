@@ -242,6 +242,69 @@ const CollaborationManager = {
 const ExportManager = {
     pendingExportTarget: null,
 
+    // [FIX 2026-10-22] Build a <style> that embeds the webfonts actually
+    // used inside rootEl as data-URI @font-face rules (every subset/weight
+    // the Google Fonts stylesheet declares). html2canvas renders inside a
+    // cloned document; when that clone does not have the card's webfont
+    // ready it measures and draws text with a fallback font's metrics —
+    // widened word gaps on desktop, overlapping letters on phones. Data-URI
+    // fonts are available to the clone synchronously. Returns null when
+    // nothing could be embedded (capture then behaves exactly as before).
+    async _embedUsedWebfonts(rootEl) {
+        try {
+            const generic = /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-serif|ui-sans-serif|ui-monospace|inherit|initial|unset)$/i;
+            const families = new Set();
+            const collect = (el) => {
+                const parts = (window.getComputedStyle(el).fontFamily || '').split(',');
+                for (const part of parts) {
+                    const name = part.trim().replace(/^["']+|["']+$/g, '');
+                    if (name && !generic.test(name)) families.add(name);
+                }
+            };
+            collect(rootEl);
+            rootEl.querySelectorAll('*').forEach(collect);
+            if (!families.size) return null;
+            const timedFetch = (u) => fetch(u, (typeof AbortSignal !== 'undefined' && AbortSignal.timeout)
+                ? { signal: AbortSignal.timeout(8000) } : {});
+            // Force-load the families in this document as well.
+            try {
+                await Promise.all([...families].map(f =>
+                    document.fonts.load('16px "' + f + '"', 'محمود عيادة').catch(() => null)));
+            } catch (e) { /* best effort */ }
+            let cssText = '';
+            for (const fam of families) {
+                try {
+                    const cssUrl = 'https://fonts.googleapis.com/css2?family=' +
+                        encodeURIComponent(fam) + ':ital,wght@0,400;0,700;1,400&display=swap';
+                    const css = await (await timedFetch(cssUrl)).text();
+                    const blocks = css.match(/@font-face\s*{[^}]*}/g) || [];
+                    for (const block of blocks) {
+                        const m = block.match(/url\((https:[^)]+)\)/);
+                        if (!m) continue;
+                        const resp = await timedFetch(m[1]);
+                        if (!resp.ok) continue;
+                        const buf = await resp.arrayBuffer();
+                        const bytes = new Uint8Array(buf);
+                        let bin = '';
+                        for (let i = 0; i < bytes.length; i += 8192) {
+                            bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+                        }
+                        const ext = (m[1].split('.').pop() || '').toLowerCase();
+                        const mime = ext === 'woff' ? 'font/woff' : (ext === 'ttf' ? 'font/ttf' : 'font/woff2');
+                        cssText += block.replace(m[1], 'data:' + mime + ';base64,' + btoa(bin)) + '\n';
+                    }
+                } catch (e) { /* skip this family */ }
+            }
+            if (!cssText) return null;
+            const st = document.createElement('style');
+            st.setAttribute('data-capture-font-embed', '1');
+            st.textContent = cssText;
+            return st;
+        } catch (e) {
+            return null;
+        }
+    },
+
     async captureElement(element, scale = 2) {
         await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
         const style = document.createElement('style');
@@ -360,11 +423,24 @@ const ExportManager = {
             }
         });
 
+        let fontEmbedStyle = null;
         try {
             // [FIX 2026-10-21] Ensure webfonts are fully loaded before
             // rasterizing — measuring text with fallback font metrics while
             // drawing with the real font smears/overlaps glyphs in captures.
             try { await document.fonts.ready; } catch (e) { /* best effort */ }
+            // [FIX 2026-10-22] Loading fonts in THIS document is not enough:
+            // html2canvas renders a cloned document, and the clone may not
+            // have the card's webfont (e.g. Amiri) ready — reproduced
+            // 2026-10-21 with the editor preview in Amiri while the capture
+            // came out in a fallback font. Embed the used families as
+            // data-URI @font-face rules the clone inherits. Best effort:
+            // any failure leaves the previous capture behavior untouched.
+            try {
+                fontEmbedStyle = await this._embedUsedWebfonts(element);
+                if (fontEmbedStyle) document.head.appendChild(fontEmbedStyle);
+                try { await document.fonts.ready; } catch (e) { /* best effort */ }
+            } catch (e) { /* best effort */ }
             return await html2canvas(element, {
                 backgroundColor: null, // Transparent background so border-radius corners don't have black edges
                 scale: scale,
@@ -382,6 +458,9 @@ const ExportManager = {
             });
         }
         finally {
+            if (fontEmbedStyle && fontEmbedStyle.parentNode) {
+                fontEmbedStyle.parentNode.removeChild(fontEmbedStyle);
+            }
             for (let bi = bakedEls.length - 1; bi >= 0; bi--) {
                 const b = bakedEls[bi];
                 b.el.style.transform = b.transform;
