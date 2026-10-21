@@ -275,6 +275,18 @@ const ExportManager = {
             const flipperContainer = document.querySelector('.card-flipper-container');
             const faces = document.querySelectorAll('.card-face');
             const isCapturingBack = element.id === 'card-back-preview';
+            // [FIX 2026-10-21] Stage the card at its NATURAL size for the
+            // capture. In the mobile layout the face renders compact
+            // (~348px wide) while html2canvas clones it at desktop size
+            // (windowWidth 1400 -> 510px); that size mismatch makes
+            // html2canvas draw texts twice (ghost/overlap) and drops the
+            // QR image. Forcing the live element to the natural size makes
+            // live and clone metrics identical. Proven by A/B saves in one
+            // session: compact-size capture = smeared 696x450; natural-size
+            // capture = crisp 1020x660.
+            const isVerticalLayout = cardsWrapper && cardsWrapper.dataset.layout === 'vertical';
+            const natW = isVerticalLayout ? 330 : 510;
+            const natH = isVerticalLayout ? 510 : 330;
             
             const setProps = (el, props) => {
                 if (!el) return;
@@ -289,13 +301,17 @@ const ExportManager = {
             setProps(flipperContainer, {
                 'perspective': 'none',
                 'transform-style': 'flat',
-                'transform': 'none'
+                'transform': 'none',
+                'width': natW + 'px',
+                'height': natH + 'px'
             });
 
             setProps(flipper, {
                 'transform-style': 'flat',
                 'transform': 'none',
-                'transition': 'none'
+                'transition': 'none',
+                'width': '100%',
+                'height': '100%'
             });
 
             faces.forEach(face => {
@@ -307,13 +323,15 @@ const ExportManager = {
                     'position': 'absolute',
                     'top': '0',
                     'left': '0',
+                    'width': natW + 'px',
+                    'height': natH + 'px',
                     'visibility': isTargetFace ? 'visible' : 'hidden',
                     'z-index': isTargetFace ? '10' : '-1',
                     'pointer-events': isTargetFace ? 'auto' : 'none'
                 });
             });
             
-            await new Promise(resolve => setTimeout(resolve, 80));
+            await new Promise(resolve => setTimeout(resolve, 150));
         }
 
         // ===== Bake drag offsets into the LIVE layout (2026-10-21) =====
