@@ -330,7 +330,39 @@ const ExportManager = {
                 scrollX: 0,
                 scrollY: 0,
                 windowWidth: 1400,
-                windowHeight: 900
+                windowHeight: 900,
+                // [FIX 2026-10-21] ROOT CAUSE of the smeared/overlapping text in
+                // captured card images (verified by controlled reproduction):
+                // html2canvas ghost-renders text of elements that carry their
+                // own translate() — i.e. every card element the user dragged
+                // into place (name, tagline, contact rows). Untouched elements
+                // rendered crisp. In the capture clone only, bake each dragged
+                // element's offset into its position and drop the transform,
+                // so the text is drawn exactly once at the same visual spot.
+                // The live editor DOM is never touched by onclone.
+                onclone: (clonedDoc, clonedElement) => {
+                    const bakeDragOffset = (el) => {
+                        const x = parseFloat(el.getAttribute('data-x')) || 0;
+                        const y = parseFloat(el.getAttribute('data-y')) || 0;
+                        if (!x && !y) return;
+                        const view = clonedDoc.defaultView;
+                        const cs = view ? view.getComputedStyle(el) : null;
+                        const pos = cs ? cs.position : 'static';
+                        el.style.transform = 'none';
+                        if (pos === 'absolute' || pos === 'fixed') {
+                            const l = parseFloat(cs.left) || 0;
+                            const t = parseFloat(cs.top) || 0;
+                            el.style.left = (l + x) + 'px';
+                            el.style.top = (t + y) + 'px';
+                        } else {
+                            el.style.position = 'relative';
+                            el.style.left = x + 'px';
+                            el.style.top = y + 'px';
+                        }
+                    };
+                    bakeDragOffset(clonedElement);
+                    clonedElement.querySelectorAll('[data-x], [data-y]').forEach(bakeDragOffset);
+                }
             });
         }
         finally {
