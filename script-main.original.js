@@ -316,6 +316,32 @@ const ExportManager = {
             await new Promise(resolve => setTimeout(resolve, 80));
         }
 
+        // ===== Bake drag offsets into the LIVE layout (2026-10-21) =====
+        // Drag-positioned elements carry their offset ONLY as a CSS
+        // transform (translate + data-x/data-y). html2canvas 1.4.1
+        // mis-renders transformed text (ghost/double glyphs - proven by
+        // controlled drag tests). Baking the offset into left/top in the
+        // live DOM makes the html2canvas clone inherit plain positioned
+        // elements with no transform at all. The visual position is
+        // identical; everything is restored in the finally block below.
+        const bakedEls = [];
+        element.querySelectorAll('[data-x], [data-y]').forEach((el) => {
+            const bx = parseFloat(el.getAttribute('data-x')) || 0;
+            const by = parseFloat(el.getAttribute('data-y')) || 0;
+            if (!bx && !by) return;
+            bakedEls.push({ el, transform: el.style.transform, position: el.style.position, left: el.style.left, top: el.style.top });
+            const bcs = window.getComputedStyle(el);
+            el.style.transform = 'none';
+            if (bcs.position === 'absolute' || bcs.position === 'fixed') {
+                el.style.left = ((parseFloat(bcs.left) || 0) + bx) + 'px';
+                el.style.top = ((parseFloat(bcs.top) || 0) + by) + 'px';
+            } else {
+                el.style.position = 'relative';
+                el.style.left = bx + 'px';
+                el.style.top = by + 'px';
+            }
+        });
+
         try {
             // [FIX 2026-10-21] Ensure webfonts are fully loaded before
             // rasterizing — measuring text with fallback font metrics while
@@ -335,37 +361,16 @@ const ExportManager = {
                 // captured card images (verified by controlled reproduction):
                 // html2canvas ghost-renders text of elements that carry their
                 // own translate() — i.e. every card element the user dragged
-                // into place (name, tagline, contact rows). Untouched elements
-                // rendered crisp. In the capture clone only, bake each dragged
-                // element's offset into its position and drop the transform,
-                // so the text is drawn exactly once at the same visual spot.
-                // The live editor DOM is never touched by onclone.
-                onclone: (clonedDoc, clonedElement) => {
-                    const bakeDragOffset = (el) => {
-                        const x = parseFloat(el.getAttribute('data-x')) || 0;
-                        const y = parseFloat(el.getAttribute('data-y')) || 0;
-                        if (!x && !y) return;
-                        const view = clonedDoc.defaultView;
-                        const cs = view ? view.getComputedStyle(el) : null;
-                        const pos = cs ? cs.position : 'static';
-                        el.style.transform = 'none';
-                        if (pos === 'absolute' || pos === 'fixed') {
-                            const l = parseFloat(cs.left) || 0;
-                            const t = parseFloat(cs.top) || 0;
-                            el.style.left = (l + x) + 'px';
-                            el.style.top = (t + y) + 'px';
-                        } else {
-                            el.style.position = 'relative';
-                            el.style.left = x + 'px';
-                            el.style.top = y + 'px';
-                        }
-                    };
-                    bakeDragOffset(clonedElement);
-                    clonedElement.querySelectorAll('[data-x], [data-y]').forEach(bakeDragOffset);
-                }
             });
         }
         finally {
+            for (let bi = bakedEls.length - 1; bi >= 0; bi--) {
+                const b = bakedEls[bi];
+                b.el.style.transform = b.transform;
+                b.el.style.position = b.position;
+                b.el.style.left = b.left;
+                b.el.style.top = b.top;
+            }
             document.head.removeChild(style);
             // Restore the mobile scale transform
             if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = originalWrapperTransform;
