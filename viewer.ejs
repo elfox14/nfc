@@ -647,6 +647,18 @@
             transform: rotate(180deg) translateX(-4px);
         }
 
+        /* [NEW 2026-10-21] Create-your-card CTA on the public card page */
+        .create-card-tile {
+            text-decoration: none;
+            background: linear-gradient(135deg, rgba(197,160,89,0.22), rgba(197,160,89,0.08));
+            border: 1px solid rgba(197,160,89,0.55);
+        }
+        .create-card-tile .tile-icon-box {
+            background: linear-gradient(135deg, #d8b56b, #b8912f);
+            color: #14100a;
+        }
+        .create-card-tile .tile-title { color: #f3d492; }
+
         /* Pop-out Luxury Sheets */
         .luxury-sheet-backdrop {
             position: fixed;
@@ -1587,6 +1599,18 @@
             <i class="fas fa-chevron-left tile-arrow"></i>
         </button>
         <% } %>
+
+        <!-- [NEW 2026-10-21] Create your own card -->
+        <a class="action-tile-btn create-card-tile" href="/nfc/editor.html" aria-label="إنشاء بطاقة ذكية">
+            <div class="tile-icon-box">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <div class="tile-info">
+                <span class="tile-title i18n-tile-create"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Want a card like this?' : 'عايز بطاقة زي دي؟' %></span>
+                <span class="tile-sub i18n-tile-create-sub"><%= (typeof initialLang !== 'undefined' && initialLang === 'en') ? 'Design your smart card in minutes' : 'صمّم بطاقتك الذكية في دقايق' %></span>
+            </div>
+            <i class="fas fa-chevron-left tile-arrow"></i>
+        </a>
     </nav>
 
     <!-- Pop-out Sheet: Direct Contact Sheet -->
@@ -2425,6 +2449,8 @@
                 tileQr: 'رمز QR الذكي',
                 tileQrSub: 'امسح الرمز بهاتفك',
                 tileStory: 'مشاركة في الستوري',
+                tileCreate: 'عايز بطاقة زي دي؟',
+                tileCreateSub: 'صمّم بطاقتك الذكية في دقايق',
                 tileStorySub: '6 قوالب فاخرة للقصص',
                 tileBio: 'الملف التعريفي',
                 saveBtn: 'حفظ كجهة اتصال',
@@ -2447,6 +2473,8 @@
                 tileQr: 'Smart QR Code',
                 tileQrSub: 'Scan code with phone',
                 tileStory: 'Story Creator',
+                tileCreate: 'Want a card like this?',
+                tileCreateSub: 'Design your smart card in minutes',
                 tileStorySub: '6 Luxury Templates',
                 tileBio: 'About Profile',
                 saveBtn: 'Save Contact',
@@ -2480,6 +2508,8 @@
             document.querySelectorAll('.i18n-tile-qr').forEach(el => el.textContent = d.tileQr);
             document.querySelectorAll('.i18n-tile-qr-sub').forEach(el => el.textContent = d.tileQrSub);
             document.querySelectorAll('.i18n-tile-story').forEach(el => el.textContent = d.tileStory);
+            document.querySelectorAll('.i18n-tile-create').forEach(el => el.textContent = d.tileCreate);
+            document.querySelectorAll('.i18n-tile-create-sub').forEach(el => el.textContent = d.tileCreateSub);
             document.querySelectorAll('.i18n-tile-story-sub').forEach(el => el.textContent = d.tileStorySub);
             document.querySelectorAll('.i18n-tile-bio').forEach(el => el.textContent = d.tileBio);
             document.querySelectorAll('.i18n-save-btn').forEach(el => el.textContent = d.saveBtn);
