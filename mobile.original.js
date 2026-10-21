@@ -11,19 +11,6 @@ window.MobileUtils = {
         MobileUtils.setupClickToEdit();
         MobileUtils.setupCardFlipper();
         MobileUtils.updateMobileCardScale(); // Add this line
-        // [FIX 2026-10-21] Keep the card scale in sync with the preview
-        // area: panels opening/closing used to leave the card cropped.
-        if (window.ResizeObserver) {
-            const canvasEl = document.querySelector('.pro-canvas');
-            if (canvasEl) {
-                let rafPending = false;
-                new ResizeObserver(() => {
-                    if (rafPending) return;
-                    rafPending = true;
-                    requestAnimationFrame(() => { rafPending = false; MobileUtils.updateMobileCardScale(); });
-                }).observe(canvasEl);
-            }
-        }
     },
 
     handleResize: () => {
@@ -148,9 +135,6 @@ window.MobileUtils = {
             document.querySelectorAll('.mobile-nav-item').forEach(nav => nav.classList.remove('active'));
             navItem.classList.add('active');
         }
-        // [FIX 2026-10-21] View switches change the preview area height —
-        // recompute the card scale so it is never cropped.
-        requestAnimationFrame(() => MobileUtils.updateMobileCardScale());
     },
 
     // --- إظهار Toast مرئي على الموبايل ---
