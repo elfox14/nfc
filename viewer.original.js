@@ -1228,11 +1228,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
-        // *** [NEW] Story image composer — 1080x1920 (Design A, approved 2026-10-21) ***
-        // Builds a real story-format image from the card's own data: gradient
-        // background in the card's colors, the rendered card front, name/tagline,
-        // a QR panel for the card URL, and MC PRIME branding. Any failure throws
-        // and the caller falls back to sharing the raw card image (old behavior).
+        // *** [NEW] Story image composer — 1080x1920, both card faces ***
+        // (layout approved by the owner 2026-10-21: front face over back face,
+        // then a QR action band). Builds a real story-format image from the
+        // rendered card faces. Any failure throws and the caller falls back to
+        // sharing the raw front image (the behavior before this feature).
         const STORY_W = 1080, STORY_H = 1920;
 
         function storyRoundRect(ctx, x, y, w, h, r) {
@@ -1277,25 +1277,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        function storyFitFont(ctx, text, weight, maxSize, maxWidth) {
-            let size = maxSize;
-            while (size > 24) {
-                ctx.font = weight + ' ' + size + 'px Cairo, sans-serif';
-                if (ctx.measureText(text).width <= maxWidth) break;
-                size -= 4;
-            }
-            return size;
+        function drawStoryFace(ctx, img, x, y, w, h) {
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 36; ctx.shadowOffsetY = 16;
+            storyRoundRect(ctx, x, y, w, h, 40);
+            ctx.fillStyle = '#0B1220'; ctx.fill();
+            ctx.restore();
+            ctx.save();
+            storyRoundRect(ctx, x, y, w, h, 40); ctx.clip();
+            ctx.drawImage(img, x, y, w, h);
+            ctx.restore();
+            storyRoundRect(ctx, x, y, w, h, 40);
+            ctx.strokeStyle = 'rgba(216,181,107,0.55)'; ctx.lineWidth = 2; ctx.stroke();
         }
 
-        async function buildStoryBlob(frontImg) {
+        function storyFaceSize(img, w) {
+            const ratio = (img.naturalHeight && img.naturalWidth) ? (img.naturalHeight / img.naturalWidth) : 0.63;
+            let h = Math.round(w * ratio);
+            if (h > 593) { h = 593; w = Math.round(h / ratio); }
+            return { w: w, h: h };
+        }
+
+        async function buildStoryBlob(frontImg, backImg) {
+            if (!backImg || !backImg.src) throw new Error('back face image not ready');
             const inputs = (cardData && cardData.inputs) || {};
-            const lang = (cardData && cardData.currentLanguage) || document.documentElement.lang || 'ar';
-            const name = inputs['input-name_' + lang] || inputs['input-name'] || inputs['input-name_ar'] || inputs['input-name_en'] || '';
-            const tagline = inputs['input-tagline_' + lang] || inputs['input-tagline'] || inputs['input-tagline_ar'] || inputs['input-tagline_en'] || '';
             const cStart = inputs['front-bg-start'] || '#1B2A4A';
             const cEnd = inputs['front-bg-end'] || '#080D18';
-            const nameColor = inputs['name-color'] || '#FFFFFF';
-            const tagColor = inputs['tagline-color'] || '#D8B56B';
             const pageUrl = window.location.href;
             const shortUrl = window.location.host + window.location.pathname;
 
@@ -1311,84 +1318,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 rg.addColorStop(0, rgba); rg.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = rg; ctx.fillRect(x - r, y - r, r * 2, r * 2);
             };
-            glow(950, 170, 430, 'rgba(216,181,107,0.20)');
-            glow(80, 1760, 470, 'rgba(90,130,200,0.16)');
+            glow(950, 150, 400, 'rgba(216,181,107,0.18)');
+            glow(60, 1780, 440, 'rgba(90,130,200,0.15)');
 
             try { await document.fonts.ready; } catch (e) { /* fonts best-effort */ }
 
-            // Header brand
+            // Compact header
             ctx.fillStyle = '#D8B56B';
             ctx.textAlign = 'center'; ctx.textBaseline = 'top';
             try { ctx.letterSpacing = '10px'; } catch (e) { /* older browsers */ }
-            ctx.font = '700 44px Cairo, sans-serif';
-            ctx.fillText('MC PRIME', STORY_W / 2, 92);
+            ctx.font = '700 40px Cairo, sans-serif';
+            ctx.fillText('MC PRIME', STORY_W / 2, 52);
             try { ctx.letterSpacing = '0px'; } catch (e) { /* noop */ }
-            ctx.fillRect(STORY_W / 2 - 150, 184, 300, 3);
+            ctx.fillRect(STORY_W / 2 - 130, 126, 260, 3);
 
-            // Card front image (rounded, shadowed)
-            const cardImg = await loadStoryImage(frontImg.src);
-            let cw = 940;
-            const ratio = (cardImg.naturalHeight && cardImg.naturalWidth) ? (cardImg.naturalHeight / cardImg.naturalWidth) : 0.63;
-            let ch = Math.round(cw * ratio);
-            if (ch > 620) { // keep room for name + QR panel on tall snapshots
-                ch = 620;
-                cw = Math.round(ch / ratio);
-            }
-            const cx = (STORY_W - cw) / 2, cy = 300;
-            ctx.save();
-            ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 42; ctx.shadowOffsetY = 20;
-            storyRoundRect(ctx, cx, cy, cw, ch, 40);
-            ctx.fillStyle = '#0B1220'; ctx.fill();
-            ctx.restore();
-            ctx.save();
-            storyRoundRect(ctx, cx, cy, cw, ch, 40); ctx.clip();
-            ctx.drawImage(cardImg, cx, cy, cw, ch);
-            ctx.restore();
-            storyRoundRect(ctx, cx, cy, cw, ch, 40);
-            ctx.strokeStyle = 'rgba(216,181,107,0.55)'; ctx.lineWidth = 2; ctx.stroke();
+            // Both faces, front over back
+            const front = await loadStoryImage(frontImg.src);
+            const back = await loadStoryImage(backImg.src);
+            const fs = storyFaceSize(front, 940);
+            drawStoryFace(ctx, front, (STORY_W - fs.w) / 2, 196, fs.w, fs.h);
+            const bs = storyFaceSize(back, 940);
+            const backY = 196 + fs.h + 56;
+            drawStoryFace(ctx, back, (STORY_W - bs.w) / 2, backY, bs.w, bs.h);
 
-            // Name + tagline
-            let ty = cy + ch + 58;
-            ctx.direction = 'rtl';
-            if (name) {
-                ctx.fillStyle = nameColor;
-                storyFitFont(ctx, name, '800', 64, 980);
-                ctx.fillText(name, STORY_W / 2, ty);
-                ty += 94;
-            }
-            if (tagline) {
-                ctx.fillStyle = tagColor;
-                storyFitFont(ctx, tagline, '500', 38, 980);
-                ctx.fillText(tagline, STORY_W / 2, ty);
-                ty += 64;
-            }
-            ctx.direction = 'ltr';
-
-            // QR panel
-            const pw = 470, ph = 590, px = (STORY_W - pw) / 2, py = ty + 40;
+            // QR action band (anchored near the bottom)
+            const bandH = 268;
+            let bandY = backY + bs.h + 48;
+            const bandTarget = 1754 - bandH;
+            if (bandY < bandTarget) bandY = bandTarget;
             ctx.save();
-            ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
-            storyRoundRect(ctx, px, py, pw, ph, 36);
+            ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 28; ctx.shadowOffsetY = 12;
+            storyRoundRect(ctx, 70, bandY, STORY_W - 140, bandH, 34);
             ctx.fillStyle = '#FFFFFF'; ctx.fill();
             ctx.restore();
             const qrData = await makeStoryQrDataUrl(pageUrl);
             if (qrData) {
                 const qrImg = await loadStoryImage(qrData);
-                ctx.drawImage(qrImg, px + (pw - 360) / 2, py + 34, 360, 360);
+                ctx.drawImage(qrImg, STORY_W - 70 - 30 - 208, bandY + 30, 208, 208);
             }
+            const tx = STORY_W - 70 - 30 - 208 - 36;
+            ctx.textAlign = 'right';
             ctx.fillStyle = '#101418';
-            ctx.font = '700 37px Cairo, sans-serif';
+            ctx.font = '700 46px Cairo, sans-serif';
             ctx.direction = 'rtl';
-            ctx.fillText('امسح الكود وافتح بطاقتي', STORY_W / 2, py + 424);
+            ctx.fillText('امسح الكود', tx, bandY + 42);
+            ctx.fillStyle = '#5A626E';
+            ctx.font = '400 34px Cairo, sans-serif';
+            ctx.fillText('وافتح بطاقتي كاملة', tx, bandY + 112);
             ctx.direction = 'ltr';
-            ctx.fillStyle = '#6E7682';
+            ctx.fillStyle = '#96783C';
             ctx.font = '400 29px Cairo, sans-serif';
-            ctx.fillText(shortUrl, STORY_W / 2, py + 494);
+            ctx.fillText(shortUrl, tx, bandY + 178);
 
             // Footer
+            ctx.textAlign = 'center';
             ctx.fillStyle = 'rgba(255,255,255,0.55)';
-            ctx.font = '400 28px Cairo, sans-serif';
-            ctx.fillText('www.mcprim.com', STORY_W / 2, STORY_H - 84);
+            ctx.font = '400 27px Cairo, sans-serif';
+            ctx.fillText('www.mcprim.com', STORY_W / 2, STORY_H - 76);
 
             return new Promise((resolve, reject) => {
                 try {
@@ -1397,7 +1383,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const addToStoryBtn = document.getElementById('add-to-story-btn');
+const addToStoryBtn = document.getElementById('add-to-story-btn');
         if (addToStoryBtn) {
             addToStoryBtn.addEventListener('click', async () => {
                 const frontImg = document.querySelector('#card-front-display img');
@@ -1414,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // back to the raw card image (previous behavior).
                     let blob = null;
                     try {
-                        blob = await buildStoryBlob(frontImg);
+                        blob = await buildStoryBlob(frontImg, document.querySelector('#card-back-display img'));
                     } catch (composeErr) {
                         console.log('Story compose failed, falling back to raw image:', composeErr);
                     }
