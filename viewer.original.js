@@ -670,7 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const nameTransform = inputs['name-uppercase'] ? `text-transform: uppercase !important;` : '';
             const nameGlow = inputs['name-glow'] ? `text-shadow: 0 0 10px ${nameColor}, 0 0 20px ${nameColor} !important;` : '';
 
-            const nameHTML = `<div id="card-name" style="font-size: ${nameSize}px !important; color: ${nameColor} !important; font-family: ${nameFont} !important; position: relative !important; margin: 5px 0 !important; white-space: pre-wrap; word-break: break-word; ${nameLetterSpacing} ${nameLineHeight} ${nameTransform} ${nameGlow} ${namePos}">${displayName}</div>`;
+            const nameHTML = `<div id="card-name" style="font-size: ${nameSize}px !important; color: ${nameColor} !important; font-family: ${nameFont} !important; position: relative !important; margin: 5px 0 !important; white-space: normal; word-break: keep-all; overflow-wrap: normal; ${nameLetterSpacing} ${nameLineHeight} ${nameTransform} ${nameGlow} ${namePos}">${displayName}</div>`;
             renderElement(nameHTML, namePlacement, containers);
         }
 
@@ -687,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const taglineTransform = inputs['tagline-uppercase'] ? `text-transform: uppercase !important;` : '';
             const taglineGlow = inputs['tagline-glow'] ? `text-shadow: 0 0 10px ${taglineColor}, 0 0 20px ${taglineColor} !important;` : '';
 
-            const taglineHTML = `<div id="card-tagline" style="font-size: ${taglineSize}px !important; color: ${taglineColor} !important; font-family: ${taglineFont} !important; position: relative !important; margin: 5px 0 !important; white-space: pre-wrap; word-break: break-word; ${taglineLetterSpacing} ${taglineLineHeight} ${taglineTransform} ${taglineGlow} ${taglinePos}">${displayTagline}</div>`;
+            const taglineHTML = `<div id="card-tagline" style="font-size: ${taglineSize}px !important; color: ${taglineColor} !important; font-family: ${taglineFont} !important; position: relative !important; margin: 5px 0 !important; white-space: normal; word-break: keep-all; overflow-wrap: normal; ${taglineLetterSpacing} ${taglineLineHeight} ${taglineTransform} ${taglineGlow} ${taglinePos}">${displayTagline}</div>`;
             renderElement(taglineHTML, taglinePlacement, containers);
         }
 
@@ -948,7 +948,28 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollX: 0,
             scrollY: 0,
             windowWidth: 1400,
-            windowHeight: 900
+            windowHeight: 900,
+            onclone: (clonedDoc, clonedEl) => {
+                if (document.fonts && clonedDoc.fonts) {
+                    document.fonts.forEach(font => {
+                        try { clonedDoc.fonts.add(font); } catch (e) {}
+                    });
+                }
+                const targetCard = clonedEl || clonedDoc.querySelector('#card-front-content-render, #card-back-content-render, .card-face');
+                if (targetCard) {
+                    const textElements = targetCard.querySelectorAll('#card-name, #card-tagline, .tagline, h1, h2, div');
+                    textElements.forEach(el => {
+                        const txt = el.textContent || '';
+                        if (/[\u0600-\u06FF]/.test(txt)) {
+                            el.style.setProperty('word-break', 'keep-all', 'important');
+                            el.style.setProperty('overflow-wrap', 'normal', 'important');
+                            el.style.setProperty('letter-spacing', '0px', 'important');
+                            el.style.setProperty('direction', 'rtl', 'important');
+                            el.setAttribute('dir', 'rtl');
+                        }
+                    });
+                }
+            }
         };
 
         try {

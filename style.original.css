@@ -892,8 +892,9 @@ html[dir="ltr"] .dynamic-social-link span {
 
 #card-name,
 #card-tagline {
-    white-space: pre-wrap;
-    word-break: break-word;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: normal;
 }
 
 #card-logo,

@@ -451,10 +451,36 @@ const ExportManager = {
                 scrollY: 0,
                 windowWidth: 1400,
                 windowHeight: 900,
-                // [FIX 2026-10-21] ROOT CAUSE of the smeared/overlapping text in
-                // captured card images (verified by controlled reproduction):
-                // html2canvas ghost-renders text of elements that carry their
-                // own translate() — i.e. every card element the user dragged
+                onclone: (clonedDoc, clonedEl) => {
+                    if (document.fonts && clonedDoc.fonts) {
+                        document.fonts.forEach(font => {
+                            try { clonedDoc.fonts.add(font); } catch (e) {}
+                        });
+                    }
+                    if (fontEmbedStyle && clonedDoc.head) {
+                        try { clonedDoc.head.appendChild(fontEmbedStyle.cloneNode(true)); } catch (e) {}
+                    }
+                    const targetCard = clonedEl || clonedDoc.getElementById('card-front-preview') || clonedDoc.getElementById('card-back-preview') || clonedDoc.querySelector('.card-face');
+                    if (targetCard) {
+                        const textElements = targetCard.querySelectorAll('#card-name, #card-tagline, .tagline, h1, h2');
+                        textElements.forEach(el => {
+                            el.style.setProperty('word-break', 'keep-all', 'important');
+                            el.style.setProperty('overflow-wrap', 'normal', 'important');
+                            el.style.setProperty('letter-spacing', '0px', 'important');
+                            const txt = el.textContent || '';
+                            if (/[\u0600-\u06FF]/.test(txt)) {
+                                el.style.setProperty('direction', 'rtl', 'important');
+                                el.setAttribute('dir', 'rtl');
+                            }
+                        });
+                        targetCard.querySelectorAll('*').forEach(el => {
+                            const txt = el.textContent || '';
+                            if (/[\u0600-\u06FF]/.test(txt)) {
+                                el.style.setProperty('letter-spacing', '0px', 'important');
+                            }
+                        });
+                    }
+                }
             });
         }
         finally {

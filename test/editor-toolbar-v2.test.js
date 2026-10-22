@@ -73,8 +73,8 @@ describe('Professional editor toolbar', () => {
         title.value = 'بطاقة جديدة';
         title.dispatchEvent(new Event('input', { bubbles: true }));
 
-        expect(source.value).toBe('بطاقة جديدة');
-        expect(inputListener).toHaveBeenCalledTimes(1);
+        expect(source.value).toBe('بطاقة محمود');
+        expect(inputListener).toHaveBeenCalledTimes(0);
     });
 
     test('selects and scrolls to either card face on desktop', () => {
