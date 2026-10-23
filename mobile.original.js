@@ -78,7 +78,7 @@ window.MobileUtils = {
         // Available space: canvas minus padding
         const canvasRect = canvas.getBoundingClientRect();
         const availableWidth = canvasRect.width - 24; // 12px horizontal padding
-        const availableHeight = canvasRect.height - 40;
+        const availableHeight = canvasRect.height - 24; // clean breathing room without buttons
 
         // Calculate scale to fit width, capped at 1.0
         let scale = Math.min(availableWidth / cardWidth, 1.0);

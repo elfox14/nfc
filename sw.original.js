@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v11';
+const CACHE_VERSION = 'v12';
 const STATIC_CACHE = `mcprime-static-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [

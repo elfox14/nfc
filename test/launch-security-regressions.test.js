@@ -59,7 +59,7 @@ describe('public launch security regressions', () => {
 
   test('service worker never serves stale executable code or HTML', () => {
     const sw = read('sw.original.js');
-    expect(sw).toContain("const CACHE_VERSION = 'v11'");
+    expect(sw).toContain("const CACHE_VERSION = 'v12'");
     expect(sw).toContain('isExecutableOrConfigAsset');
     expect(sw).toContain('networkOnlyHtmlWithOfflineFallback');
     expect(sw).not.toContain("'/nfc/error-reporter.js'");
