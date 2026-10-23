@@ -460,26 +460,17 @@ const ExportManager = {
                     if (fontEmbedStyle && clonedDoc.head) {
                         try { clonedDoc.head.appendChild(fontEmbedStyle.cloneNode(true)); } catch (e) {}
                     }
-                    const targetCard = clonedEl || clonedDoc.getElementById('card-front-preview') || clonedDoc.getElementById('card-back-preview') || clonedDoc.querySelector('.card-face');
-                    if (targetCard) {
-                        const textElements = targetCard.querySelectorAll('#card-name, #card-tagline, .tagline, h1, h2');
-                        textElements.forEach(el => {
-                            el.style.setProperty('word-break', 'keep-all', 'important');
-                            el.style.setProperty('overflow-wrap', 'normal', 'important');
-                            el.style.setProperty('letter-spacing', '0px', 'important');
-                            const txt = el.textContent || '';
-                            if (/[\u0600-\u06FF]/.test(txt)) {
-                                el.style.setProperty('direction', 'rtl', 'important');
-                                el.setAttribute('dir', 'rtl');
-                            }
-                        });
-                        targetCard.querySelectorAll('*').forEach(el => {
-                            const txt = el.textContent || '';
-                            if (/[\u0600-\u06FF]/.test(txt)) {
-                                el.style.setProperty('letter-spacing', '0px', 'important');
-                            }
-                        });
-                    }
+                    const allCardElements = clonedDoc.querySelectorAll('.card-face, .card-face *, .business-card, .business-card *');
+                    allCardElements.forEach(el => {
+                        el.style.setProperty('letter-spacing', '0px', 'important');
+                        el.style.setProperty('word-break', 'keep-all', 'important');
+                        el.style.setProperty('overflow-wrap', 'normal', 'important');
+                        const txt = el.textContent || '';
+                        if (/[\u0600-\u06FF]/.test(txt)) {
+                            el.style.setProperty('direction', 'rtl', 'important');
+                            el.setAttribute('dir', 'rtl');
+                        }
+                    });
                 }
             });
         }

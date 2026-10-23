@@ -955,20 +955,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         try { clonedDoc.fonts.add(font); } catch (e) {}
                     });
                 }
-                const targetCard = clonedEl || clonedDoc.querySelector('#card-front-content-render, #card-back-content-render, .card-face');
-                if (targetCard) {
-                    const textElements = targetCard.querySelectorAll('#card-name, #card-tagline, .tagline, h1, h2, div');
-                    textElements.forEach(el => {
-                        const txt = el.textContent || '';
-                        if (/[\u0600-\u06FF]/.test(txt)) {
-                            el.style.setProperty('word-break', 'keep-all', 'important');
-                            el.style.setProperty('overflow-wrap', 'normal', 'important');
-                            el.style.setProperty('letter-spacing', '0px', 'important');
-                            el.style.setProperty('direction', 'rtl', 'important');
-                            el.setAttribute('dir', 'rtl');
-                        }
-                    });
-                }
+                const allCardElements = clonedDoc.querySelectorAll('.card-face, .card-face *, #card-front-content-render, #card-front-content-render *, #card-back-content-render, #card-back-content-render *');
+                allCardElements.forEach(el => {
+                    el.style.setProperty('letter-spacing', '0px', 'important');
+                    el.style.setProperty('word-break', 'keep-all', 'important');
+                    el.style.setProperty('overflow-wrap', 'normal', 'important');
+                    const txt = el.textContent || '';
+                    if (/[\u0600-\u06FF]/.test(txt)) {
+                        el.style.setProperty('direction', 'rtl', 'important');
+                        el.setAttribute('dir', 'rtl');
+                    }
+                });
             }
         };
 
