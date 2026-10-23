@@ -308,23 +308,25 @@ const ExportManager = {
     async captureElement(element, scale = 2) {
         await Utils.loadScript(Config.SCRIPT_URLS.html2canvas);
         const style = document.createElement('style');
-        // [FIX 2026-10-21] html2canvas 1.4.1 renders letter-spaced text with
-        // overlapping glyphs in captured images. Neutralize letter-spacing
-        // inside the card faces for the capture only (this style element is
-        // removed right after; the live editor and saved design are untouched).
-        style.innerHTML = '.no-export { display: none !important; } .card-face, .card-face * { letter-spacing: normal !important; }';
+        // Neutralize .no-export elements for capture only.
+        style.innerHTML = '.no-export { display: none !important; }';
         document.head.appendChild(style);
 
-        // On mobile, cards-wrapper has a CSS scale transform that breaks html2canvas.
-        // Temporarily remove it before capture and restore it afterwards.
+        // On mobile, cards-wrapper / flipperContainer has a CSS scale transform that breaks html2canvas.
+        // Temporarily reset it before capture and restore it afterwards.
         const cardsWrapper = document.getElementById('cards-wrapper');
+        const flipperContainer = document.querySelector('.card-flipper-container');
         const originalWrapperTransform = cardsWrapper ? cardsWrapper.style.transform : '';
+        const originalContainerTransform = flipperContainer ? flipperContainer.style.transform : '';
+        const originalContainerHeight = flipperContainer ? flipperContainer.style.height : '';
         if (cardsWrapper && originalWrapperTransform) cardsWrapper.style.transform = '';
+        if (flipperContainer && originalContainerTransform) {
+            flipperContainer.style.transform = 'none';
+            flipperContainer.style.height = 'auto';
+        }
 
         const isMobile = typeof MobileUtils !== 'undefined' && MobileUtils.isMobile();
         const originalStates = [];
-        // [FIX 2026-10-21] Remember the flip state so the editor display is
-        // restored EXACTLY after capture (faces appeared swapped otherwise).
         let flipperForRestore = null;
         let wasFlippedForRestore = false;
 
@@ -333,68 +335,11 @@ const ExportManager = {
             flipperForRestore = flipper;
             if (flipper && flipper.classList.contains('is-flipped')) {
                 wasFlippedForRestore = true;
-                flipper.classList.remove('is-flipped');
             }
-            const flipperContainer = document.querySelector('.card-flipper-container');
-            const faces = document.querySelectorAll('.card-face');
-            const isCapturingBack = element.id === 'card-back-preview';
-            // [FIX 2026-10-21] Stage the card at its NATURAL size for the
-            // capture. In the mobile layout the face renders compact
-            // (~348px wide) while html2canvas clones it at desktop size
-            // (windowWidth 1400 -> 510px); that size mismatch makes
-            // html2canvas draw texts twice (ghost/overlap) and drops the
-            // QR image. Forcing the live element to the natural size makes
-            // live and clone metrics identical. Proven by A/B saves in one
-            // session: compact-size capture = smeared 696x450; natural-size
-            // capture = crisp 1020x660.
-            const isVerticalLayout = cardsWrapper && cardsWrapper.dataset.layout === 'vertical';
-            const natW = isVerticalLayout ? 330 : 510;
-            const natH = isVerticalLayout ? 510 : 330;
             
-            const setProps = (el, props) => {
-                if (!el) return;
-                const state = { element: el, props: {} };
-                for (const [key, value] of Object.entries(props)) {
-                    state.props[key] = el.style.getPropertyValue(key);
-                    el.style.setProperty(key, value, 'important');
-                }
-                originalStates.push(state);
-            };
-
-            setProps(flipperContainer, {
-                'perspective': 'none',
-                'transform-style': 'flat',
-                'transform': 'none',
-                'width': natW + 'px',
-                'height': natH + 'px'
-            });
-
-            setProps(flipper, {
-                'transform-style': 'flat',
-                'transform': 'none',
-                'transition': 'none',
-                'width': '100%',
-                'height': '100%'
-            });
-
-            faces.forEach(face => {
-                const isTargetFace = face.classList.contains('card-front') ? !isCapturingBack : isCapturingBack;
-                setProps(face, {
-                    'backface-visibility': 'visible',
-                    '-webkit-backface-visibility': 'visible',
-                    'transform': 'none',
-                    'position': 'absolute',
-                    'top': '0',
-                    'left': '0',
-                    'width': natW + 'px',
-                    'height': natH + 'px',
-                    'visibility': isTargetFace ? 'visible' : 'hidden',
-                    'z-index': isTargetFace ? '10' : '-1',
-                    'pointer-events': isTargetFace ? 'auto' : 'none'
-                });
-            });
-            
-            await new Promise(resolve => setTimeout(resolve, 150));
+            // Both faces are already vertically stacked and visible in the DOM.
+            // Brief pause to allow any style recalculations to settle.
+            await new Promise(resolve => setTimeout(resolve, 50));
         }
 
         // ===== Bake drag offsets into the LIVE layout (2026-10-21) =====
@@ -462,11 +407,12 @@ const ExportManager = {
                     }
                     const allCardElements = clonedDoc.querySelectorAll('.card-face, .card-face *, .business-card, .business-card *');
                     allCardElements.forEach(el => {
-                        el.style.setProperty('letter-spacing', '0px', 'important');
                         el.style.setProperty('word-break', 'keep-all', 'important');
                         el.style.setProperty('overflow-wrap', 'normal', 'important');
                         const txt = el.textContent || '';
                         if (/[\u0600-\u06FF]/.test(txt)) {
+                            // Arabic cursive script must not have disjointed letter-spacing
+                            el.style.setProperty('letter-spacing', '0px', 'important');
                             el.style.setProperty('direction', 'rtl', 'important');
                             el.setAttribute('dir', 'rtl');
                         }

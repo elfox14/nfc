@@ -272,119 +272,183 @@
         left: 0 !important;
         right: 0 !important;
         width: 100vw !important;
-        height: 35vh !important; /* Reduced from 38vh to close the gap further */
-        min-height: 240px !important; /* Ensure it doesn't collapse too much */
-        max-height: 35vh !important;
+        height: 38vh !important;
+        min-height: 240px !important;
+        max-height: 42vh !important;
         z-index: 100 !important;
         background: radial-gradient(ellipse at center, #0d1117 0%, #0d1117 100%) !important;
-        border-bottom: 1px solid rgba(197, 160, 89, 0.15) !important;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
-        padding: 0 !important;
+        border-bottom: 1px solid rgba(197, 160, 89, 0.2) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+        padding: 12px 10px 24px 10px !important;
         margin: 0 !important;
-        overflow: hidden !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        grid-column: 1 / -1 !important;
-        grid-row: 1 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        scroll-behavior: smooth !important;
+        display: block !important;
         box-sizing: border-box !important;
     }
 
-    /* Cards wrapper — fills canvas, centers the card */
+    .pro-canvas::-webkit-scrollbar {
+        width: 4px !important;
+    }
+
+    .pro-canvas::-webkit-scrollbar-thumb {
+        background: rgba(197, 160, 89, 0.35) !important;
+        border-radius: 4px !important;
+    }
+
+    .pro-canvas::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Cards wrapper — centers the cards and allows smooth vertical scrolling */
     .cards-wrapper {
-        transform-origin: center center !important;
-        margin: 0 !important;
+        transform-origin: top center !important;
+        margin: 0 auto !important;
         width: 100% !important;
-        height: auto !important; /* Allow it to fit content */
-        flex: 1 !important; /* Take remaining space */
+        height: auto !important;
         min-height: 0 !important;
         max-width: 100% !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
         gap: 0 !important;
         overflow: visible !important;
         position: relative !important;
+        padding-bottom: 24px !important;
     }
 
-    /* Card flipper container — fixed card ratio, centered */
+    /* Card flipper container — houses both faces vertically */
     .card-flipper-container {
-        perspective: 1500px;
+        perspective: none !important;
         width: 510px !important;
-        height: 330px !important;
-        margin: 0 !important;
-        transform-origin: center center !important;
+        max-width: 100% !important;
+        height: auto !important;
+        margin: 0 auto !important;
+        transform-origin: top center !important;
         flex-shrink: 0 !important;
-        /* Force centering on some browsers */
         align-self: center !important;
+        position: relative !important;
     }
 
     .cards-wrapper[data-layout="classic"] .card-flipper-container,
     .cards-wrapper[data-layout="modern"] .card-flipper-container {
         width: 510px !important;
-        height: 330px !important;
     }
 
     .cards-wrapper[data-layout="vertical"] .card-flipper-container {
         width: 330px !important;
+    }
+
+    /* Card flipper — vertical stack of both faces, just like desktop */
+    .card-flipper {
+        width: 100% !important;
+        height: auto !important;
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 24px !important;
+        transform: none !important;
+        transform-style: flat !important;
+        transition: none !important;
+    }
+
+    /* Card faces — natural block layout, both interactive */
+    .card-face {
+        position: relative !important;
+        width: 510px !important;
+        height: 330px !important;
+        max-width: 100% !important;
+        transform: none !important;
+        -webkit-backface-visibility: visible !important;
+        backface-visibility: visible !important;
+        pointer-events: auto !important;
+        margin: 0 auto !important;
+    }
+
+    .cards-wrapper[data-layout="vertical"] .card-face {
+        width: 330px !important;
         height: 510px !important;
     }
 
-    /* Card flipper — 3D flip animation */
-    .card-flipper {
-        width: 100%;
-        height: 100%;
-        position: relative;
-        transform-style: preserve-3d;
-        transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    }
-
-    .card-flipper.is-flipped {
-        transform: rotateY(180deg);
-    }
-
-    /* Card faces — stacked for flip */
-    .card-face {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-    }
-
     .card-face.card-back {
-        transform: rotateY(180deg);
-        /* Ensure no double-mirroring */
-        backface-visibility: hidden;
+        transform: none !important;
+        backface-visibility: visible !important;
     }
 
     #card-back-preview {
         display: block !important;
+        transform: none !important;
+        pointer-events: auto !important;
     }
 
     .business-card {
         margin-bottom: 0;
     }
 
-    /* Flip button — centered below the card */
+    /* Mobile face navigation bar (Front / Flip / Back) */
+    .mobile-face-nav {
+        position: sticky !important;
+        bottom: 8px !important;
+        margin-top: 14px !important;
+        display: inline-flex !important;
+        align-self: center !important;
+        align-items: center !important;
+        background: rgba(13, 17, 23, 0.9) !important;
+        border: 1px solid rgba(197, 160, 89, 0.3) !important;
+        border-radius: 30px !important;
+        padding: 4px 6px !important;
+        gap: 4px !important;
+        backdrop-filter: blur(12px) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45) !important;
+        z-index: 120 !important;
+        flex-shrink: 0 !important;
+    }
+
+    .mobile-face-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        padding: 6px 12px !important;
+        font-size: 0.72rem !important;
+        font-weight: 600 !important;
+        background: transparent !important;
+        border: 1px solid transparent !important;
+        color: #e6f0f7 !important;
+        border-radius: 20px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        user-select: none !important;
+    }
+
+    .mobile-face-btn i {
+        font-size: 0.75rem !important;
+    }
+
+    .mobile-face-btn.is-active {
+        background: rgba(197, 160, 89, 0.22) !important;
+        border-color: rgba(197, 160, 89, 0.55) !important;
+        color: #c5a059 !important;
+    }
+
+    .mobile-face-btn:active {
+        transform: scale(0.95) !important;
+        background: rgba(197, 160, 89, 0.3) !important;
+    }
+
     #flip-card-btn-mobile {
         display: inline-flex !important;
-        align-items: center;
-        gap: 6px;
-        margin-top: 4px;
-        padding: 5px 16px !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 6px 10px !important;
         font-size: 0.72rem !important;
-        background: rgba(197, 160, 89, 0.12) !important;
-        border: 1px solid rgba(197, 160, 89, 0.25) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
         color: #c5a059 !important;
-        backdrop-filter: blur(10px) !important;
         border-radius: 20px !important;
-        z-index: 110 !important;
-        transition: all 0.2s ease !important;
-        flex-shrink: 0;
-        cursor: pointer;
+        cursor: pointer !important;
     }
 
     #flip-card-btn-mobile:active {
@@ -392,12 +456,11 @@
         background: rgba(197, 160, 89, 0.25) !important;
     }
 
-
     /* --- 4. SIDEBAR PANELS — Below Preview, Tab-Switched --- */
     .pro-sidebar {
         display: none !important;
         position: fixed !important;
-        top: calc(50px + 40vh) !important;
+        top: calc(50px + 38vh) !important;
         bottom: 64px !important;
         left: 0 !important;
         right: 0 !important;

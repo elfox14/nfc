@@ -29,7 +29,7 @@
 
     <!-- Project stylesheets -->
     <link rel="stylesheet" href="style.css?v=4.5">
-    <link rel="stylesheet" href="mobile.css?v=4.4">
+    <link rel="stylesheet" href="mobile.css?v=4.5">
     <link rel="stylesheet" href="toast.css?v=4.2">
     <link rel="stylesheet" href="editor-enhancements.css?v=5.5">
     <link rel="stylesheet" href="toolbar-enhancements.css?v=4.3">
@@ -45,12 +45,12 @@
     <script src="lang-switcher.js" defer></script>
     <script src="auth.js?v=3.5" defer></script>
     <script src="security-utils.js" defer></script>
-    <script src="mobile.js?v=2.1" defer></script>
+    <script src="mobile.js?v=2.2" defer></script>
     <script src="script-core.js?v=2.2" defer></script>
     <script src="state-manager-proxy.js" defer></script>
     <script src="script-ui.js?v=2.1" defer></script>
     <script src="script-card.js?v=2.4" defer></script>
-    <script src="script-main.js?v=2.7" defer></script>
+    <script src="script-main.js?v=2.8" defer></script>
     <script src="editor-extension-persistence.js?v=1.1" defer></script>
     <script src="editor-independent-resize.js?v=1.2" defer></script>
     <script src="editor-enhancements.js" defer></script>
@@ -64,47 +64,45 @@
 
     <style>
         /* =============================================================== */
-        /* == START: DESKTOP FIX FOR FLIP CARD STRUCTURE                == */
+        /* == UNIFIED VERTICAL CARD LAYOUT ACROSS ALL SCREENS            == */
         /* =============================================================== */
+        .card-flipper {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 25px !important;
+            transform-style: flat !important;
+            position: relative !important;
+            transform: none !important;
+            width: 100% !important;
+            height: auto !important;
+        }
 
-        /* This code block undoes the flip effect on screens wider than 1024px */
+        .card-face {
+            position: relative !important;
+            transform: none !important;
+            backface-visibility: visible !important;
+            pointer-events: auto !important;
+        }
+
+        .card-flipper-container {
+            perspective: none !important;
+            height: auto !important;
+        }
+
+        #card-back-preview {
+            display: block !important;
+            transform: none !important;
+            pointer-events: auto !important;
+        }
+
         @media (min-width: 1025px) {
-
-            /* 1. Make the flipper a flex container to arrange cards side-by-side */
-            .card-flipper {
-                display: flex;
-                flex-direction: column;
-                gap: 30px;
-                /* <<< THIS IS THE SPACE BETWEEN CARDS ON DESKTOP */
-
-                /* 2. Reset 3D properties so it behaves like a normal container */
-                transform-style: flat;
-                position: relative;
-                transform: none;
-            }
-
-            /* 3. Make each card face a normal, non-overlapping block */
-            .card-face {
-                position: relative !important;
-                /* Override absolute positioning */
-                transform: none !important;
-                /* Remove any rotation */
-                backface-visibility: visible !important;
-                /* Reset visibility */
-                pointer-events: auto !important;
-                /* Ensure both are clickable */
-            }
-
-            /* 4. The main card wrapper now just centers the flipper container */
             .cards-wrapper {
                 transform: none;
-                /* Ensure no scaling is applied from old styles */
                 gap: 0;
-                /* The gap is now handled by .card-flipper */
             }
 
-            /* 5. Hide the mobile-only flip button on desktop */
-            #flip-card-btn-mobile {
+            #flip-card-btn-mobile,
+            .mobile-face-nav {
                 display: none !important;
             }
         }
@@ -592,10 +590,20 @@
                     </div>
                 </div>
 
-                <button id="flip-card-btn-mobile" class="btn btn-secondary" title="Flip Card">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Flip Card</span>
-                </button>
+                <div class="mobile-face-nav" id="mobile-face-nav">
+                    <button type="button" id="mobile-nav-front-btn" class="mobile-face-btn is-active" title="Scroll to Front">
+                        <i class="fas fa-chevron-up"></i>
+                        <span>Front Face</span>
+                    </button>
+                    <button type="button" id="flip-card-btn-mobile" class="mobile-face-btn" title="Flip Card">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Flip</span>
+                    </button>
+                    <button type="button" id="mobile-nav-back-btn" class="mobile-face-btn" title="Scroll to Back">
+                        <i class="fas fa-chevron-down"></i>
+                        <span>Back Face</span>
+                    </button>
+                </div>
 
             </section>
         </main>

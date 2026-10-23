@@ -957,11 +957,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const allCardElements = clonedDoc.querySelectorAll('.card-face, .card-face *, #card-front-content-render, #card-front-content-render *, #card-back-content-render, #card-back-content-render *');
                 allCardElements.forEach(el => {
-                    el.style.setProperty('letter-spacing', '0px', 'important');
                     el.style.setProperty('word-break', 'keep-all', 'important');
                     el.style.setProperty('overflow-wrap', 'normal', 'important');
                     const txt = el.textContent || '';
                     if (/[\u0600-\u06FF]/.test(txt)) {
+                        el.style.setProperty('letter-spacing', '0px', 'important');
                         el.style.setProperty('direction', 'rtl', 'important');
                         el.setAttribute('dir', 'rtl');
                     }

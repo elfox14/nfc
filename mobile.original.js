@@ -75,19 +75,25 @@ window.MobileUtils = {
             cardHeight = 330;
         }
 
-        // Available space: canvas minus padding and flip button area
+        // Available space: canvas minus padding
         const canvasRect = canvas.getBoundingClientRect();
         const availableWidth = canvasRect.width - 24; // 12px horizontal padding
-        const availableHeight = canvasRect.height - 64; // flip button + more vertical breathing room
+        const availableHeight = canvasRect.height - 40;
 
-        // Calculate scale to fit, capped at 1.0 to prevent pixelation
-        const scaleX = availableWidth / cardWidth;
-        const scaleY = availableHeight / cardHeight;
-        const scale = Math.min(scaleX, scaleY, 1.0);
+        // Calculate scale to fit width, capped at 1.0
+        let scale = Math.min(availableWidth / cardWidth, 1.0);
+        if (availableHeight > 0) {
+            const scaleY = availableHeight / cardHeight;
+            scale = Math.min(scale, scaleY, 1.0);
+        }
 
-        // Apply scale to the flipper container (not wrapper, so flip button stays normal)
+        // Apply scale with top-center origin so it anchors cleanly at top of scroll canvas
         flipperContainer.style.transform = `scale(${scale})`;
-        flipperContainer.style.transformOrigin = 'center center';
+        flipperContainer.style.transformOrigin = 'top center';
+        
+        // Match scroll height to visual scaled height of both stacked cards + gap (24px)
+        const unscaledTotalHeight = (cardHeight * 2) + 24;
+        flipperContainer.style.height = `${unscaledTotalHeight * scale}px`;
         
         // Reset any old wrapper transform
         cardsWrapper.style.transform = '';
@@ -108,23 +114,89 @@ window.MobileUtils = {
 
     setupCardFlipper: () => {
         const flipButton = document.getElementById('flip-card-btn-mobile');
+        const frontNavBtn = document.getElementById('mobile-nav-front-btn');
+        const backNavBtn = document.getElementById('mobile-nav-back-btn');
         const cardFlipper = document.querySelector('.card-flipper');
         const cardFront = document.getElementById('card-front-preview');
         const cardBack = document.getElementById('card-back-preview');
+        const canvas = document.querySelector('.pro-canvas');
 
-        if (flipButton && cardFlipper && cardFront && cardBack) {
-            flipButton.addEventListener('click', () => {
-                const isFlipped = cardFlipper.classList.toggle('is-flipped');
+        if (cardFront) cardFront.style.pointerEvents = 'auto';
+        if (cardBack) cardBack.style.pointerEvents = 'auto';
 
-                if (isFlipped) {
-                    cardFront.style.pointerEvents = 'none';
-                    cardBack.style.pointerEvents = 'auto';
-                } else {
-                    cardFront.style.pointerEvents = 'auto';
-                    cardBack.style.pointerEvents = 'none';
+        const scrollToFace = (face, smooth = true) => {
+            const isBack = face === 'back';
+            if (cardFlipper) {
+                cardFlipper.classList.toggle('is-flipped', isBack);
+            }
+            if (frontNavBtn) frontNavBtn.classList.toggle('is-active', !isBack);
+            if (backNavBtn) backNavBtn.classList.toggle('is-active', isBack);
+
+            const tbFront = document.getElementById('toolbar-face-front');
+            const tbBack = document.getElementById('toolbar-face-back');
+            if (isBack && tbBack) {
+                tbBack.classList.add('is-active');
+                tbBack.setAttribute('aria-pressed', 'true');
+                if (tbFront) {
+                    tbFront.classList.remove('is-active');
+                    tbFront.setAttribute('aria-pressed', 'false');
                 }
+            } else if (!isBack && tbFront) {
+                tbFront.classList.add('is-active');
+                tbFront.setAttribute('aria-pressed', 'true');
+                if (tbBack) {
+                    tbBack.classList.remove('is-active');
+                    tbBack.setAttribute('aria-pressed', 'false');
+                }
+            }
+
+            if (canvas) {
+                if (!isBack) {
+                    canvas.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+                } else if (cardBack) {
+                    const canvasRect = canvas.getBoundingClientRect();
+                    const backRect = cardBack.getBoundingClientRect();
+                    const targetScrollTop = canvas.scrollTop + (backRect.top - canvasRect.top) - 10;
+                    canvas.scrollTo({ top: Math.max(0, targetScrollTop), behavior: smooth ? 'smooth' : 'auto' });
+                }
+            }
+        };
+
+        if (frontNavBtn) {
+            frontNavBtn.addEventListener('click', () => scrollToFace('front'));
+        }
+
+        if (backNavBtn) {
+            backNavBtn.addEventListener('click', () => scrollToFace('back'));
+        }
+
+        if (flipButton) {
+            flipButton.addEventListener('click', () => {
+                const isCurrentlyFlipped = cardFlipper ? cardFlipper.classList.contains('is-flipped') : false;
+                scrollToFace(isCurrentlyFlipped ? 'front' : 'back');
             });
-            cardBack.style.pointerEvents = 'none';
+        }
+
+        if (canvas) {
+            let scrollTimer;
+            canvas.addEventListener('scroll', () => {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(() => {
+                    const maxScroll = canvas.scrollHeight - canvas.clientHeight;
+                    const isBackVisible = maxScroll > 0 && canvas.scrollTop >= (maxScroll * 0.45);
+                    if (cardFlipper) cardFlipper.classList.toggle('is-flipped', isBackVisible);
+                    if (frontNavBtn) frontNavBtn.classList.toggle('is-active', !isBackVisible);
+                    if (backNavBtn) backNavBtn.classList.toggle('is-active', isBackVisible);
+                    const tbFront = document.getElementById('toolbar-face-front');
+                    const tbBack = document.getElementById('toolbar-face-back');
+                    if (tbFront && tbBack) {
+                        tbFront.classList.toggle('is-active', !isBackVisible);
+                        tbFront.setAttribute('aria-pressed', String(!isBackVisible));
+                        tbBack.classList.toggle('is-active', isBackVisible);
+                        tbBack.setAttribute('aria-pressed', String(isBackVisible));
+                    }
+                }, 50);
+            }, { passive: true });
         }
     },
 
